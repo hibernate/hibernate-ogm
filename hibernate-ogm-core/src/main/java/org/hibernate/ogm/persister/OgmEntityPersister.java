@@ -15,7 +15,10 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
+import org.hibernate.cache.entry.CacheEntry;
+import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
@@ -23,10 +26,11 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.Key;
-import org.hibernate.ogm.util.CacheManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.CacheManagerHelper;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
@@ -163,7 +167,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 		final Cache<Key, Map<String,Object>> cache = CacheManagerHelper.getEntityCache( getFactory() );
 		//snapshot is a Map in the end
-		final Map<String,Object> resultset = cache.get( new Key( getMappedClass( EntityMode.POJO ), id ) );
+		final Map<String, Object> resultset = getResultsetById( id, cache );
 
 		//if there is no resulting row, return null
 		if ( resultset == null || resultset.size() == 0 ) {
@@ -181,7 +185,89 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
+	private Map<String, Object> getResultsetById(Serializable id, Cache<Key, Map<String, Object>> cache) {
+		final Map<String,Object> resultset = cache.get( new Key( getMappedClass( EntityMode.POJO ), id ) );
+		return resultset;
+	}
 
+	@Override
+	public Object initializeLazyProperty(String fieldName, Object entity, SessionImplementor session)
+			throws HibernateException {
+
+		final Serializable id = session.getContextEntityIdentifier( entity );
+
+		final EntityEntry entry = session.getPersistenceContext().getEntry( entity );
+		if ( entry == null ) {
+			throw new HibernateException( "entity is not associated with the session: " + id );
+		}
+
+		if ( log.isTraceEnabled() ) {
+			log.trace(
+					"initializing lazy properties of: " +
+					MessageHelper.infoString( this, id, getFactory() ) +
+					", field access: " + fieldName
+				);
+		}
+
+		if ( hasCache() ) {
+			CacheKey cacheKey = new CacheKey(id, getIdentifierType(), getEntityName(), session.getEntityMode(), getFactory() );
+			Object ce = getCacheAccessStrategy().get( cacheKey, session.getTimestamp() );
+			if (ce!=null) {
+				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure(ce, getFactory());
+				if ( !cacheEntry.areLazyPropertiesUnfetched() ) {
+					//note early exit here:
+					return initializeLazyPropertiesFromCache( fieldName, entity, session, entry, cacheEntry );
+				}
+			}
+		}
+
+		return initializeLazyPropertiesFromDatastore( fieldName, entity, session, id, entry );
+
+	}
+
+	//FIXME cache should use Core Types or Grid Types?
+	//Make superclasses method protected??
+	private Object initializeLazyPropertiesFromCache(
+			final String fieldName,
+			final Object entity,
+			final SessionImplementor session,
+			final EntityEntry entry,
+			final CacheEntry cacheEntry
+	) {
+		throw new NotSupportedException( "Lazy properties not supported in OGM" );
+	}
+
+	private Object initializeLazyPropertiesFromDatastore(
+			final String fieldName,
+			final Object entity,
+			final SessionImplementor session,
+			final Serializable id,
+			final EntityEntry entry) {
+		throw new NotSupportedException( "Lazy properties not supported in OGM" );
+	}
+
+	/**
+	 * Retrieve the version number
+	 */
+	@Override
+	public Object getCurrentVersion(Serializable id, SessionImplementor session) throws HibernateException {
+
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
+		}
+		final Cache<Key, Map<String,Object>> cache = CacheManagerHelper.getEntityCache( getFactory() );
+		final Map<String, Object> resultset = getResultsetById( id, cache );
+
+		if (resultset == null) {
+			return null;
+		}
+		else {
+			final GridType versionType = CacheManagerHelper.getCacheLifecyleManager( session.getFactory() )
+					.getTypeTranslator()
+					.getType( getVersionType() );
+			return versionType.nullSafeGet( resultset, getVersionColumnName(), session, null);
+		}
+	}
 
 	@Override
 	protected int[] getSubclassColumnTableNumberClosure() {
