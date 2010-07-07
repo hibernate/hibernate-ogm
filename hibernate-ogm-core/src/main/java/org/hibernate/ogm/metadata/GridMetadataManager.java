@@ -1,4 +1,4 @@
-package org.hibernate.ogm.factory;
+package org.hibernate.ogm.metadata;
 
 import org.infinispan.manager.CacheManager;
 import org.infinispan.manager.DefaultCacheManager;

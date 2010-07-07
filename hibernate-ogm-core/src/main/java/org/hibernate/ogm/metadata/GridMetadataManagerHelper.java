@@ -1,4 +1,4 @@
-package org.hibernate.ogm.util;
+package org.hibernate.ogm.metadata;
 
 import java.util.Map;
 
@@ -8,7 +8,7 @@ import org.infinispan.manager.CacheManager;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.ogm.factory.GridMetadataManager;
+import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.grid.Key;
 
 /**
