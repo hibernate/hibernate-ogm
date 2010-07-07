@@ -13,11 +13,11 @@ import org.hibernate.ogm.type.TypeTranslator;
  *
  * @author Emmanuel Bernard
  */
-public class CacheLifecycleManager implements SessionFactoryObserver {
+public class GridMetadataManager implements SessionFactoryObserver {
 	private CacheManager manager;
 	private final TypeTranslator typeTranslator;
 
-	public CacheLifecycleManager() {
+	public GridMetadataManager() {
 		typeTranslator = new TypeTranslator();
 	}
 

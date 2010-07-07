@@ -30,7 +30,7 @@ import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.ogm.util.CacheManagerHelper;
+import org.hibernate.ogm.util.GridMetadataManagerHelper;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
@@ -148,7 +148,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			constraintOrderedKeyColumnNames = new String[][] { getIdentifierColumnNames() };
 		}
 
-		final TypeTranslator typeTranslator = CacheManagerHelper.getCacheLifecyleManager( factory ).getTypeTranslator();
+		final TypeTranslator typeTranslator = GridMetadataManagerHelper.getGridMetadataManager( factory ).getTypeTranslator();
 		final Type[] types = getPropertyTypes();
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
@@ -165,7 +165,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.trace( "Getting current persistent state for: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
 
-		final Cache<Key, Map<String,Object>> cache = CacheManagerHelper.getEntityCache( getFactory() );
+		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( getFactory() );
 		//snapshot is a Map in the end
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
@@ -255,14 +255,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Cache<Key, Map<String,Object>> cache = CacheManagerHelper.getEntityCache( getFactory() );
+		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( getFactory() );
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
 		if (resultset == null) {
 			return null;
 		}
 		else {
-			final GridType versionType = CacheManagerHelper.getCacheLifecyleManager( session.getFactory() )
+			final GridType versionType = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() )
 					.getTypeTranslator()
 					.getType( getVersionType() );
 			return versionType.nullSafeGet( resultset, getVersionColumnName(), session, null);
