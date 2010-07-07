@@ -19,9 +19,13 @@ public class CacheManagerHelper {
 	public static final String ENTITY_CACHE = "ENTITIES";
 
 	public static CacheManager getCacheManager(SessionFactoryImplementor factory) {
+		return getCacheLifecyleManager(factory).getCacheManager();
+	}
+
+	public static CacheLifecycleManager getCacheLifecyleManager(SessionFactoryImplementor factory) {
 		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();
 		if ( sessionFactoryObserver instanceof CacheLifecycleManager ) {
-			return ( (CacheLifecycleManager) factory).getCacheManager();
+			return (CacheLifecycleManager) sessionFactoryObserver;
 		}
 		else {
 			StringBuilder error = new StringBuilder("Cannot get CacheManager for OGM. ");
