@@ -24,7 +24,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.grid.Key;
-import org.hibernate.ogm.org.hibernate.ogm.util.CacheManagerHelper;
+import org.hibernate.ogm.util.CacheManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.entity.AbstractEntityPersister;

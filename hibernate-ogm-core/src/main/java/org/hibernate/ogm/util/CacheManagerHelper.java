@@ -1,4 +1,4 @@
-package org.hibernate.ogm.org.hibernate.ogm.util;
+package org.hibernate.ogm.util;
 
 import java.util.Map;
 
