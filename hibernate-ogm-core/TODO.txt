@@ -1,0 +1,5 @@
+EntityPersister.lock
+LockingStrategy is dependent of the Dialect and is database specific
+Change Key<Class, Serializable> to Key<String, Serializable> ie the table name
+Ask Steve about a potential GenericType to extract SQL style API
+Should we do an abstracter class for AbstractEntityPerister to handle all the non persistent store logic?
