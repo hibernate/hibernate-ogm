@@ -1,5 +1,6 @@
 package org.hibernate.ogm.metadata;
 
+import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.CacheManager;
 import org.infinispan.manager.DefaultCacheManager;
 
@@ -14,7 +15,7 @@ import org.hibernate.ogm.type.TypeTranslator;
  * @author Emmanuel Bernard
  */
 public class GridMetadataManager implements SessionFactoryObserver {
-	private CacheManager manager;
+	private CacheContainer manager;
 	private final TypeTranslator typeTranslator;
 
 	public GridMetadataManager() {
@@ -28,7 +29,7 @@ public class GridMetadataManager implements SessionFactoryObserver {
 	}
 
 	//TODO abstract to other grids
-	public CacheManager getCacheManager() { return manager; }
+	public CacheContainer getCacheContainer() { return manager; }
 
 	//TODO move to a *Implementor interface
 	public TypeTranslator getTypeTranslator() { return typeTranslator; }

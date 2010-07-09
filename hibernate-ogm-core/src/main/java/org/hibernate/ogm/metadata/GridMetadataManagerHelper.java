@@ -3,12 +3,11 @@ package org.hibernate.ogm.metadata;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.CacheManager;
+import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.grid.Key;
 
 /**
@@ -36,8 +35,8 @@ public class GridMetadataManagerHelper {
 	}
 
 	public static Cache<Key, Map<String, Object>> getEntityCache(SessionFactoryImplementor factory) {
-		final CacheManager cacheManager = getGridMetadataManager(factory).getCacheManager();
-		final Cache<Key, Map<String, Object>> cache = cacheManager.getCache( ENTITY_CACHE );
+		final CacheContainer cacheContainer = getGridMetadataManager(factory).getCacheContainer();
+		final Cache<Key, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
 		return cache;
 	}
 }
