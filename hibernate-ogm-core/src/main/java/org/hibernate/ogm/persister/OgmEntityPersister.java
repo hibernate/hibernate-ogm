@@ -1,12 +1,15 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +18,7 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.StaleObjectStateException;
 import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
@@ -22,12 +26,14 @@ import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.exception.JDBCExceptionHelper;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -56,6 +62,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final String[] spaces;
 	private final String[] subclassSpaces;
 	private final GridType[] gridPropertyTypes;
+	private final GridType gridVersionType;
 
 
 	public OgmEntityPersister(
@@ -155,6 +162,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		for (int index = 0 ; index < length ; index++) {
 			gridPropertyTypes[index] = typeTranslator.getType( types[index] );
 		}
+		gridVersionType = typeTranslator.getType( getVersionType() );
 	}
 
 	@Override
@@ -255,18 +263,55 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( getFactory() );
+		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
 		if (resultset == null) {
 			return null;
 		}
 		else {
-			final GridType versionType = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() )
-					.getTypeTranslator()
-					.getType( getVersionType() );
-			return versionType.nullSafeGet( resultset, getVersionColumnName(), session, null);
+			return gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null);
 		}
+	}
+
+	@Override
+	public Object forceVersionIncrement(Serializable id, Object currentVersion, SessionImplementor session) {
+		if ( !isVersioned() ) {
+			throw new AssertionFailure( "cannot force version increment on non-versioned entity" );
+		}
+
+		if ( isVersionPropertyGenerated() ) {
+			// the difficulty here is exactly what do we update in order to
+			// force the version to be incremented in the db...
+			throw new HibernateException( "LockMode.FORCE is currently not supported for generated version properties" );
+		}
+
+		Object nextVersion = getVersionType().next( currentVersion, session );
+		if ( log.isTraceEnabled() ) {
+			log.trace(
+					"Forcing version increment [" + MessageHelper.infoString( this, id, getFactory() ) +
+					"; " + getVersionType().toLoggableString( currentVersion, getFactory() ) +
+					" -> " + getVersionType().toLoggableString( nextVersion, getFactory() ) + "]"
+			);
+		}
+
+		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		/*
+		 * We get the value from the grid and compare the version values before putting the next version in
+		 * Contrary to the database version, there is 
+		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
+		 */
+		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+		final Map<String, Object> resultset = entityCache.get( key );
+		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
+		if ( getVersionComparator().compare( currentVersion, resultSetVersion ) != 0 ) {
+			throw new StaleObjectStateException( getEntityName(), id );
+		}
+		else {
+			gridVersionType.nullSafeSet( resultset, nextVersion, getVersionColumnName(), session );
+			entityCache.put( key, resultset );
+		}
+		return nextVersion;
 	}
 
 	@Override
