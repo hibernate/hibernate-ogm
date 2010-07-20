@@ -14,11 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.hibernate.AssertionFailure;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
+import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
@@ -29,6 +31,7 @@ import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -58,6 +61,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final String[] subclassSpaces;
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
+	private final GridMetadataManager gridManager;
 
 
 	public OgmEntityPersister(
@@ -149,8 +153,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			constraintOrderedTableNames = new String[] { tableName };
 			constraintOrderedKeyColumnNames = new String[][] { getIdentifierColumnNames() };
 		}
-
-		final TypeTranslator typeTranslator = GridMetadataManagerHelper.getGridMetadataManager( factory ).getTypeTranslator();
+		gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
+		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
 		final Type[] types = getPropertyTypes();
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
@@ -307,6 +311,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			entityCache.put( key, resultset );
 		}
 		return nextVersion;
+	}
+
+	@Override
+	protected LockingStrategy generateLocker(LockMode lockMode) {
+		return gridManager.getGridDialect().getLockingStrategy( this, lockMode );
 	}
 
 	@Override
