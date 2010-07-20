@@ -246,7 +246,7 @@ public abstract class AbstractGenericBasicType<T>
 			}
 		};
 
-		nullSafeSet( rs, value, name, options );;
+		nullSafeSet( rs, value, name, options );
 	}
 
 	@SuppressWarnings({ "unchecked" })
