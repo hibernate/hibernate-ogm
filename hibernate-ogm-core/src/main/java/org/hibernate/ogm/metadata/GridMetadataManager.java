@@ -6,6 +6,8 @@ import org.infinispan.manager.DefaultCacheManager;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 
 /**
@@ -17,9 +19,11 @@ import org.hibernate.ogm.type.TypeTranslator;
 public class GridMetadataManager implements SessionFactoryObserver {
 	private CacheContainer manager;
 	private final TypeTranslator typeTranslator;
+	private GridDialect gridDialect;
 
 	public GridMetadataManager() {
 		typeTranslator = new TypeTranslator();
+		gridDialect = new InfinispanDialect();
 	}
 
 	@Override
@@ -33,6 +37,8 @@ public class GridMetadataManager implements SessionFactoryObserver {
 
 	//TODO move to a *Implementor interface
 	public TypeTranslator getTypeTranslator() { return typeTranslator; }
+
+	public GridDialect getGridDialect() { return gridDialect; }
 
 	@Override
 	public void sessionFactoryClosed(SessionFactory factory) {
