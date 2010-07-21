@@ -3,6 +3,7 @@ package org.hibernate.ogm.type.descriptor;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -39,14 +40,17 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 	}
 
 	@Override
-	public void bind(Map<String, Object> resultset, X value, String name) {
+	public void bind(Map<String, Object> resultset, X value, String[] names) {
 		if ( value == null ) {
-			log.trace( "binding [null] to parameter [{}]", name );
-			resultset.put( name, null );
+			for ( String name : names ) {
+				log.trace( "binding [null] to parameter [{}]", name );
+				resultset.put( name, null );
+			}
 		}
 		else {
-			log.trace( "binding [{}] to parameter [{}]", javaDescriptor.extractLoggableRepresentation( value ), name );
-			doBind( resultset, value, name, DEFAULT_OPTIONS );
+
+			log.trace( "binding [{}] to parameter(s) {}", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
+			doBind( resultset, value, names, DEFAULT_OPTIONS );
 		}
 	}
 
@@ -60,5 +64,5 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 	 *
 	 * @throws SQLException Indicates a problem binding to the prepared statement.
 	 */
-	protected abstract void doBind(Map<String, Object> resultset, X value, String name, WrapperOptions options);
+	protected abstract void doBind(Map<String, Object> resultset, X value, String[] names, WrapperOptions options);
 }

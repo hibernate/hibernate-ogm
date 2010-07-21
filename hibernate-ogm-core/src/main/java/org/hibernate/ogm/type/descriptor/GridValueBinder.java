@@ -9,5 +9,5 @@ import java.util.Map;
  */
 public interface GridValueBinder<X> {
 	//WrappedOptions for streams?
-	void bind(Map<String,Object> resultset, X value, String name);
+	void bind(Map<String,Object> resultset, X value, String[] names);
 }

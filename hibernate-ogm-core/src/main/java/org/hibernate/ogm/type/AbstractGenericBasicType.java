@@ -10,6 +10,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
@@ -233,7 +234,7 @@ public abstract class AbstractGenericBasicType<T>
 	public final void nullSafeSet(
 			Map<String,Object> rs,
 			Object value,
-			String name,
+			String[] names,
 			final SessionImplementor session)  {
 		// todo : have SessionImplementor extend WrapperOptions
 		final WrapperOptions options = new WrapperOptions() {
@@ -246,18 +247,21 @@ public abstract class AbstractGenericBasicType<T>
 			}
 		};
 
-		nullSafeSet( rs, value, name, options );
+		nullSafeSet( rs, value, names, options );
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected final void nullSafeSet(Map<String,Object> rs, Object value, String name, WrapperOptions options) {
-		gridTypeDescriptor.getBinder( javaTypeDescriptor ).bind( rs, (T) value, name );
+	protected final void nullSafeSet(Map<String,Object> rs, Object value, String[] names, WrapperOptions options) {
+		gridTypeDescriptor.getBinder( javaTypeDescriptor ).bind( rs, (T) value, names );
 	}
 
-	public final void nullSafeSet(Map<String, Object> st, Object value, String name, boolean[] settable, SessionImplementor session)
+	public final void nullSafeSet(Map<String, Object> st, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
+		if (settable.length > 1) {
+			throw new NotYetImplementedException("Multi column property not implemented yet");
+		}
 		if ( settable[0] ) {
-			nullSafeSet( st, value, name, session );
+			nullSafeSet( st, value, names, session );
 		}
 	}
 

@@ -17,8 +17,8 @@ public class PassThroughGridTypeDescriptor implements GridTypeDescriptor {
 	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
 		return new BasicGridBinder<X>(javaTypeDescriptor, this) {
 			@Override
-			protected void doBind(Map<String, Object> resultset, X value, String name, WrapperOptions options) {
-				resultset.put( name, javaTypeDescriptor.unwrap( value, value.getClass(), options ) );
+			protected void doBind(Map<String, Object> resultset, X value, String[] names, WrapperOptions options) {
+				resultset.put( names[0], javaTypeDescriptor.unwrap( value, value.getClass(), options ) );
 			}
 		};
 	}

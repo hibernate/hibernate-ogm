@@ -283,7 +283,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Map<String,Object> resultset, Object value, String name, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Map<String,Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 	throws HibernateException;
 
 	/**
@@ -297,7 +297,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Map<String,Object> resultset, Object value, String name, SessionImplementor session)
+	public void nullSafeSet(Map<String,Object> resultset, Object value, String[] names, SessionImplementor session)
 	throws HibernateException;
 
 	/**
