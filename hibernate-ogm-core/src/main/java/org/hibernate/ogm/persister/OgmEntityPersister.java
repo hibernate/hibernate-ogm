@@ -1,6 +1,8 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +22,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.Mapping;
@@ -37,6 +40,7 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
@@ -312,6 +316,44 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		return nextVersion;
 	}
+
+	//TODO implement loadByUniqueKey but it involves an EntityLoader most likely by overriding #createUniqueKeyLoaders instead
+	@Override
+	public Object loadByUniqueKey(
+			String propertyName,
+			Object uniqueKey,
+			SessionImplementor session) throws HibernateException {
+		throw new NotYetImplementedException( "Cannot yet load by unique key");
+	}
+
+	//TODO implement #createEntityLoader(...)
+	//TODO verify what to do with #check: Expectation seems to be very JDBC centric
+
+	//TODO look at what to do with hydrate (public API used by Loaders
+	/*
+	public Object[] hydrate(
+			final ResultSet rs,
+	        final Serializable id,
+	        final Object object,
+	        final Loadable rootLoadable,
+	        final String[][] suffixedPropertyColumns,
+	        final boolean allProperties,
+	        final SessionImplementor session) throws SQLException, HibernateException {
+	*/
+
+	@Override
+	protected boolean useInsertSelectIdentity() { return false; }
+
+	@Override
+	protected Serializable insert(
+			final Object[] fields,
+	        final boolean[] notNull,
+	        String sql,
+	        final Object object,
+	        final SessionImplementor session) throws HibernateException {
+		throw new HibernateException( "Cannot use a database generator with OGM" );
+	}
+
 
 	@Override
 	protected LockingStrategy generateLocker(LockMode lockMode) {
