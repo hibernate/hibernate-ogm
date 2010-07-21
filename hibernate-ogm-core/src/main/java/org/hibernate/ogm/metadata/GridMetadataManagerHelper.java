@@ -39,4 +39,10 @@ public class GridMetadataManagerHelper {
 		final Cache<Key, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
 		return cache;
 	}
+
+	public static Cache<Key, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
+		final CacheContainer cacheContainer = manager.getCacheContainer();
+		final Cache<Key, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
+		return cache;
+	}
 }

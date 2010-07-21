@@ -172,7 +172,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.trace( "Getting current persistent state for: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
 
-		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( getFactory() );
+		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		//snapshot is a Map in the end
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
@@ -262,7 +262,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
 		if (resultset == null) {
@@ -294,7 +294,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			);
 		}
 
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		/*
 		 * We get the value from the grid and compare the version values before putting the next version in
 		 * Contrary to the database version, there is 
