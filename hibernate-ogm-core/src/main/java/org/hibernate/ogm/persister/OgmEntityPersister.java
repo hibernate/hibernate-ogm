@@ -1,8 +1,6 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +26,8 @@ import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.ValueInclusion;
+import org.hibernate.engine.Versioning;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
@@ -40,8 +40,8 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
@@ -65,6 +65,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final String[] subclassSpaces;
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
+	private final GridType gridIdentifierType;
 	private final GridMetadataManager gridManager;
 
 
@@ -157,6 +158,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			constraintOrderedTableNames = new String[] { tableName };
 			constraintOrderedKeyColumnNames = new String[][] { getIdentifierColumnNames() };
 		}
+
 		gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
 		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
 		final Type[] types = getPropertyTypes();
@@ -166,6 +168,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			gridPropertyTypes[index] = typeTranslator.getType( types[index] );
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
+		gridIdentifierType = typeTranslator.getType( getIdentifierType() ); 
 	}
 
 	@Override
@@ -307,11 +310,12 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
 		final Map<String, Object> resultset = entityCache.get( key );
 		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
-		if ( getVersionComparator().compare( currentVersion, resultSetVersion ) != 0 ) {
+		//TODO support other entity modes
+		if ( ! gridVersionType.isEqual( currentVersion, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
 			throw new StaleObjectStateException( getEntityName(), id );
 		}
 		else {
-			gridVersionType.nullSafeSet( resultset, nextVersion, getVersionColumnName(), session );
+			gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
 			entityCache.put( key, resultset );
 		}
 		return nextVersion;
@@ -358,6 +362,146 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	protected LockingStrategy generateLocker(LockMode lockMode) {
 		return gridManager.getGridDialect().getLockingStrategy( this, lockMode );
+	}
+
+
+	/**
+	 * Update an object
+	 */
+	@Override
+	public void update(
+			final Serializable id,
+	        final Object[] fields,
+	        final int[] dirtyFields,
+	        final boolean hasDirtyCollection,
+	        final Object[] oldFields,
+	        final Object oldVersion,
+	        final Object object,
+	        final Object rowId,
+	        final SessionImplementor session) throws HibernateException {
+
+		//note: dirtyFields==null means we had no snapshot, and we couldn't get one using select-before-update
+		//	  oldFields==null just means we had no snapshot to begin with (we might have used select-before-update to get the dirtyFields)
+
+		//TODO support "multi table" entities
+		final boolean[] tableUpdateNeeded = getTableUpdateNeeded( dirtyFields, hasDirtyCollection );
+		final int span = getTableSpan();
+
+		final boolean[] propsToUpdate;
+		final String[] updateStrings;
+		EntityEntry entry = session.getPersistenceContext().getEntry( object );
+
+		// Ensure that an immutable or non-modifiable entity is not being updated unless it is
+		// in the process of being deleted.
+		if ( entry == null && ! isMutable() ) {
+			throw new IllegalStateException( "Updating immutable entity that is not in session yet!" );
+		}
+		//we always use a dynamicUpdate model for Infinispan
+		if ( (
+				//getEntityMetamodel().isDynamicUpdate() &&
+				dirtyFields != null ) ) {
+
+			propsToUpdate = getPropertiesToUpdate( dirtyFields, hasDirtyCollection );
+			// don't need to check laziness (dirty checking algorithm handles that)
+		}
+		else if ( ! isModifiableEntity( entry ) ) {
+			//TODO does that apply to OGM?
+			// We need to generate UPDATE SQL when a non-modifiable entity (e.g., read-only or immutable)
+			// needs:
+			// - to have references to transient entities set to null before being deleted
+			// - to have version incremented do to a "dirty" association
+			// If dirtyFields == null, then that means that there are no dirty properties to
+			// to be updated; an empty array for the dirty fields needs to be passed to
+			// getPropertiesToUpdate() instead of null.
+			propsToUpdate = getPropertiesToUpdate(
+					( dirtyFields == null ? ArrayHelper.EMPTY_INT_ARRAY : dirtyFields ),
+					hasDirtyCollection
+			);
+			// don't need to check laziness (dirty checking algorithm handles that)
+		}
+		else {
+			// For the case of dynamic-update="false", or no snapshot, we update all properties
+			//TODO handle lazy
+			propsToUpdate = getPropertyUpdateability( object, session.getEntityMode() );
+		}
+
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Updating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+			if ( isVersioned() ) {
+				log.trace( "Existing version: " + oldVersion + " -> New version: " + fields[getVersionProperty()] );
+			}
+		}
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Dehydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+		}
+
+		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		for ( int j = 0; j < span; j++ ) {
+			// Now update only the tables with dirty properties (and the table with the version number)
+			if ( tableUpdateNeeded[j] ) {
+				final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+				Map<String, Object> resultset = entityCache.get( key );
+				final boolean useVersion = j == 0 && isVersioned();
+
+				if (resultset == null) {
+					//FIXME use org.infinispan.atomic.AtomicMapLookup#getAtomicMap
+					resultset = new HashMap<String, Object>();
+					gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
+				}
+
+				final EntityMetamodel entityMetamodel = getEntityMetamodel();
+
+				// Write any appropriate versioning conditional parameters
+				if ( useVersion && Versioning.OPTIMISTIC_LOCK_VERSION == entityMetamodel.getOptimisticLockMode() ) {
+					if ( checkVersion( propsToUpdate ) ) {
+						gridVersionType.nullSafeSet( resultset, oldVersion, new String[] { getVersionColumnName() }, session );
+					}
+				}
+				else if ( entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION && oldFields != null ) {
+					boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
+					boolean[] includeOldField = entityMetamodel.getOptimisticLockMode() == Versioning.OPTIMISTIC_LOCK_ALL ?
+							getPropertyUpdateability() : propsToUpdate;
+					//TODO do a diff on the properties value from resultset and the dirty value
+					GridType[] types = gridPropertyTypes;
+					
+					for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+						boolean include = includeOldField[i] &&
+								isPropertyOfTable( i, j ) &&
+								versionability[i]; //TODO: is this really necessary????
+						if ( include ) {
+							final GridType type = types[i];
+							//FIXME what do do with settable?
+							boolean[] settable = type.toColumnNullness( oldFields[i], getFactory() );
+							final Object snapshotValue = type.nullSafeGet(
+									resultset, getPropertyColumnNames( i ), session, object
+							);
+							//TODO support other entity modes
+							if ( ! type.isEqual( oldFields[i], snapshotValue, EntityMode.POJO, getFactory() ) ) {
+								throw new StaleObjectStateException( getEntityName(), id );
+							}
+						}
+					}
+				}
+
+				//dehydrate
+				for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+					if ( propsToUpdate[i] && isPropertyOfTable( i, j ) ) {
+						gridPropertyTypes[i].nullSafeSet( resultset, fields[i], getPropertyColumnNames( i ), getPropertyColumnUpdateable()[i], session );
+					}
+				}
+			}
+		}
+	}
+
+	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
+	private boolean checkVersion(final boolean[] includeProperty) {
+        return includeProperty[ getVersionProperty() ] ||
+				getEntityMetamodel().getPropertyUpdateGenerationInclusions()[ getVersionProperty() ] != ValueInclusion.NONE;
+	}
+
+	//TODO make AbstractEntityPersister#isModifiableEntity protected instead
+	private boolean isModifiableEntity(EntityEntry entry) {
+		return ( entry == null ? isMutable() : entry.isModifiableEntity() );
 	}
 
 	@Override
