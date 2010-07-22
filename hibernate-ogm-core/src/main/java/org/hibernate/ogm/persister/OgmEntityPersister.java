@@ -477,11 +477,32 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 
 				//dehydrate
-				for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
-					if ( propsToUpdate[i] && isPropertyOfTable( i, j ) ) {
-						gridPropertyTypes[i].nullSafeSet( resultset, fields[i], getPropertyColumnNames( i ), getPropertyColumnUpdateable()[i], session );
-					}
-				}
+				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
+			}
+		}
+	}
+
+	private void dehydrate(
+			Map<String, Object> resultset,
+			final Object[] fields,
+			boolean[] includeProperties,
+			boolean[][] includeColumns,
+			int tableIndex,
+			Serializable id,
+			SessionImplementor session) {
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Dehydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+		}
+		final EntityMetamodel entityMetamodel = getEntityMetamodel();
+		for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+			if ( includeProperties[i] && isPropertyOfTable( i, tableIndex ) ) {
+				gridPropertyTypes[i].nullSafeSet(
+						resultset,
+						fields[i],
+						getPropertyColumnNames( i ),
+						includeColumns[i],
+						session
+				);
 			}
 		}
 	}
