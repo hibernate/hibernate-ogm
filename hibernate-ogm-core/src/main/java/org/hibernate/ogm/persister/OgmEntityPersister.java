@@ -447,7 +447,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				// Write any appropriate versioning conditional parameters
 				if ( useVersion && Versioning.OPTIMISTIC_LOCK_VERSION == entityMetamodel.getOptimisticLockMode() ) {
 					if ( checkVersion( propsToUpdate ) ) {
-						gridVersionType.nullSafeSet( resultset, oldVersion, new String[] { getVersionColumnName() }, session );
+						final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
+						if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
+							throw new StaleObjectStateException( getEntityName(), id );
+						}
 					}
 				}
 				else if ( entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION && oldFields != null ) {
