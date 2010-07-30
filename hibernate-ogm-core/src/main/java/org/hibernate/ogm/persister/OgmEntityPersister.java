@@ -23,6 +23,7 @@ import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.EntityEntry;
+import org.hibernate.engine.EntityKey;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
@@ -589,6 +590,76 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 		return true;
+	}
+
+	public void delete(Serializable id, Object version, Object object, SessionImplementor session)
+			throws HibernateException {
+		final int span = getTableSpan();
+		if ( span > 1 ) throw new HibernateException( "Hibernate OGM does not yet support entities spanning multiple tables");
+		final EntityMetamodel entityMetamodel = getEntityMetamodel();
+		boolean isImpliedOptimisticLocking = !entityMetamodel.isVersioned() && entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION;
+		Object[] loadedState = null;
+		if ( isImpliedOptimisticLocking ) {
+			// need to treat this as if it where optimistic-lock="all" (dirty does *not* make sense);
+			// first we need to locate the "loaded" state
+			//
+			// Note, it potentially could be a proxy, so doAfterTransactionCompletion the location the safe way...
+			EntityKey key = new EntityKey( id, this, session.getEntityMode() );
+			Object entity = session.getPersistenceContext().getEntity( key );
+			if ( entity != null ) {
+				EntityEntry entry = session.getPersistenceContext().getEntry( entity );
+				loadedState = entry.getLoadedState();
+			}
+		}
+
+		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+		final Map<String, Object> resultset = entityCache.get( key );
+		if ( isImpliedOptimisticLocking && loadedState != null ) {
+			// we need to utilize dynamic delete statements
+			for ( int j = span - 1; j >= 0; j-- ) {
+				boolean[] versionability = getPropertyVersionability();
+
+				//TODO do a diff on the properties value from resultset
+				GridType[] types = gridPropertyTypes;
+
+				for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+					boolean include = isPropertyOfTable( i, j ) && versionability[i];
+					if ( include ) {
+						final GridType type = types[i];
+						final Object snapshotValue = type.nullSafeGet(
+								resultset, getPropertyColumnNames( i ), session, object
+						);
+						//TODO support other entity modes
+						if ( ! type.isEqual( loadedState[i], snapshotValue, EntityMode.POJO, getFactory() ) ) {
+							throw new StaleObjectStateException( getEntityName(), id );
+						}
+					}
+				}
+			}
+		}
+		else {
+			if ( entityMetamodel.isVersioned() ) {
+				final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
+				if ( ! gridVersionType.isEqual( version, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
+					throw new StaleObjectStateException( getEntityName(), id );
+				}
+			}
+		}
+
+		for ( int j = span - 1; j >= 0; j-- ) {
+			if ( isInverseTable( j ) ) {
+				return;
+			}
+			if ( log.isTraceEnabled() ) {
+				log.trace( "Deleting entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+				if ( j == 0 && isVersioned() ) {
+					log.trace( "Version: " + version );
+				}
+			}
+			entityCache.remove( key );
+		}
+
 	}
 
 	@Override
