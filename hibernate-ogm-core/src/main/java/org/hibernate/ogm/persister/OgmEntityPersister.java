@@ -310,15 +310,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 */
 		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
 		final Map<String, Object> resultset = entityCache.get( key );
-		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
-		//TODO support other entity modes
-		if ( ! gridVersionType.isEqual( currentVersion, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
-			throw new StaleObjectStateException( getEntityName(), id );
-		}
-		else {
-			gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-			entityCache.put( key, resultset );
-		}
+		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
+		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
+		entityCache.put( key, resultset );
 		return nextVersion;
 	}
 
@@ -426,8 +420,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			propsToUpdate = getPropertyUpdateability( object, session.getEntityMode() );
 		}
 
+		final SessionFactoryImplementor factory = getFactory();
 		if ( log.isTraceEnabled() ) {
-			log.trace( "Updating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+			log.trace( "Updating entity: " + MessageHelper.infoString( this, id, factory ) );
 			if ( isVersioned() ) {
 				log.trace( "Existing version: " + oldVersion + " -> New version: " + fields[getVersionProperty()] );
 			}
@@ -448,10 +443,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				// Write any appropriate versioning conditional parameters
 				if ( useVersion && Versioning.OPTIMISTIC_LOCK_VERSION == entityMetamodel.getOptimisticLockMode() ) {
 					if ( checkVersion( propsToUpdate ) ) {
-						final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
-						if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
-							throw new StaleObjectStateException( getEntityName(), id );
-						}
+						checkVersionAndRaiseSOSE( id, oldVersion, session, resultset );
 					}
 				}
 				else if ( entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION && oldFields != null ) {
@@ -468,14 +460,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 						if ( include ) {
 							final GridType type = types[i];
 							//FIXME what do do with settable?
-							boolean[] settable = type.toColumnNullness( oldFields[i], getFactory() );
+							boolean[] settable = type.toColumnNullness( oldFields[i], factory );
 							final Object snapshotValue = type.nullSafeGet(
 									resultset, getPropertyColumnNames( i ), session, object
 							);
-							//TODO support other entity modes
-							if ( ! type.isEqual( oldFields[i], snapshotValue, EntityMode.POJO, getFactory() ) ) {
-								throw new StaleObjectStateException( getEntityName(), id );
-							}
+							comparePropertyAndRaiseSOSE(
+									id,
+									oldFields[i],
+									factory,
+									!type.isEqual( oldFields, snapshotValue, EntityMode.POJO, factory )
+							);
+
 						}
 					}
 				}
@@ -484,6 +479,29 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
 				entityCache.put( key, resultset );
 			}
+		}
+	}
+
+	private void comparePropertyAndRaiseSOSE(Serializable id, Object oldField, SessionFactoryImplementor factory, boolean b) {
+		//TODO support other entity modes
+		if ( b ) {
+			if ( factory.getStatistics().isStatisticsEnabled() ) {
+				factory.getStatisticsImplementor()
+						.optimisticFailure( getEntityName() );
+			}
+			throw new StaleObjectStateException( getEntityName(), id );
+		}
+	}
+
+	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Map<String, Object> resultset) {
+		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
+		final SessionFactoryImplementor factory = getFactory();
+		if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, EntityMode.POJO, factory ) ) {
+			if ( factory.getStatistics().isStatisticsEnabled() ) {
+				factory.getStatisticsImplementor()
+						.optimisticFailure( getEntityName() );
+			}
+			throw new StaleObjectStateException( getEntityName(), id );
 		}
 	}
 
@@ -617,6 +635,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
 		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
 		final Map<String, Object> resultset = entityCache.get( key );
+		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements
 			for ( int j = span - 1; j >= 0; j-- ) {
@@ -633,7 +652,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 								resultset, getPropertyColumnNames( i ), session, object
 						);
 						//TODO support other entity modes
-						if ( ! type.isEqual( loadedState[i], snapshotValue, EntityMode.POJO, getFactory() ) ) {
+						if ( ! type.isEqual( loadedState[i], snapshotValue, EntityMode.POJO, factory ) ) {
+							if ( factory.getStatistics().isStatisticsEnabled() ) {
+								factory.getStatisticsImplementor()
+										.optimisticFailure( getEntityName() );
+							}
 							throw new StaleObjectStateException( getEntityName(), id );
 						}
 					}
@@ -642,10 +665,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		else {
 			if ( entityMetamodel.isVersioned() ) {
-				final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
-				if ( ! gridVersionType.isEqual( version, resultSetVersion, EntityMode.POJO, getFactory() ) ) {
-					throw new StaleObjectStateException( getEntityName(), id );
-				}
+				checkVersionAndRaiseSOSE( id, version, session, resultset );
 			}
 		}
 
@@ -654,7 +674,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				return;
 			}
 			if ( log.isTraceEnabled() ) {
-				log.trace( "Deleting entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+				log.trace( "Deleting entity: " + MessageHelper.infoString( this, id, factory ) );
 				if ( j == 0 && isVersioned() ) {
 					log.trace( "Version: " + version );
 				}
