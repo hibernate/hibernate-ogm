@@ -482,6 +482,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 				//dehydrate
 				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
+				entityCache.put( key, resultset );
 			}
 		}
 	}
@@ -570,6 +571,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 			//dehydrate
 			dehydrate(resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
+			entityCache.put( key, resultset );
 		}
 	}
 
