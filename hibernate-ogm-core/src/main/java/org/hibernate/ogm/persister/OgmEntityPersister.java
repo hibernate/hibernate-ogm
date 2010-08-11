@@ -84,6 +84,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
 		// SUBCLASSES
+
+		//We do not need a discriminator as each entity type will be in its own key "space" roughly like a
+		//UnionSubclassEntityPersister / table-per-concrete-class implementation
 		subclassByDiscriminatorValue.put(
 				persistentClass.getSubclassId(),
 				persistentClass.getEntityName()
