@@ -29,6 +29,7 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.ValueInclusion;
 import org.hibernate.engine.Versioning;
+import org.hibernate.intercept.LazyPropertyInitializer;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
@@ -41,7 +42,9 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.property.BackrefPropertyAccessor;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
@@ -175,6 +178,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() ); 
 	}
 
+	/**
+	 * This snapshot is meant to be used when updating data.
+	 */
 	@Override
 	public Object[] getDatabaseSnapshot(Serializable id, SessionImplementor session)
 			throws HibernateException {
@@ -331,17 +337,74 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	//TODO implement #createEntityLoader(...)
 	//TODO verify what to do with #check: Expectation seems to be very JDBC centric
 
-	//TODO look at what to do with hydrate (public API used by Loaders
-	/*
+	/**
+	 * Unmarshall the fields of a persistent instance from a result set,
+	 * without resolving associations or collections. Question: should
+	 * this really be here, or should it be sent back to Loader?
+	 */
 	public Object[] hydrate(
-			final ResultSet rs,
+			final Map<String,Object> resultset,
 	        final Serializable id,
 	        final Object object,
 	        final Loadable rootLoadable,
-	        final String[][] suffixedPropertyColumns,
+			//We probably don't need suffixedColumns, use column names instead
+	        //final String[][] suffixedPropertyColumns,
 	        final boolean allProperties,
-	        final SessionImplementor session) throws SQLException, HibernateException {
-	*/
+	        final SessionImplementor session) throws HibernateException {
+
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Hydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+		}
+
+		final OgmEntityPersister rootPersister = (OgmEntityPersister) rootLoadable;
+
+
+		final boolean hasDeferred = rootPersister.hasSequentialSelect();
+		boolean sequentialSelectEmpty = false;
+		if ( hasDeferred ) {
+			//note: today we don't have sequential select in OGM
+			//check AbstractEntityPersister#hydrate for the detail
+		}
+
+		final String[] propNames = getPropertyNames();
+		final Type[] types = getPropertyTypes();
+		final Object[] values = new Object[types.length];
+		final boolean[] laziness = getPropertyLaziness();
+		final String[] propSubclassNames = getSubclassPropertySubclassNameClosure();
+		final boolean[] propertySelectable = getPropertySelectable();
+		for ( int i = 0; i < types.length; i++ ) {
+			if ( !propertySelectable[i] ) {
+				values[i] = BackrefPropertyAccessor.UNKNOWN;
+			}
+			else if ( allProperties || !laziness[i] ) {
+				//decide which ResultSet to get the property value from:
+				final boolean propertyIsDeferred = hasDeferred &&
+						rootPersister.isSubclassPropertyDeferred( propNames[i], propSubclassNames[i] );
+				if ( propertyIsDeferred && sequentialSelectEmpty ) {
+					values[i] = null;
+				}
+				else {
+					//FIXME We don't handle deferred property yet
+					//final ResultSet propertyResultSet = propertyIsDeferred ? sequentialResultSet : rs;
+					GridType[] gridTypes = gridPropertyTypes;
+					final String[] cols;
+					if ( propertyIsDeferred ) {
+						cols = getPropertyAliases( "", i );
+					}
+					else {
+						//TODO What to do?
+						//: suffixedPropertyColumns[i];
+						throw new NotYetImplementedException( "Not sure what you are doing but OGM does not support deferred properties yet. File a bug with as much detail as possible");
+					}
+					values[i] = gridTypes[i].hydrate( resultset, cols, session, object ); //null owner ok??
+				}
+			}
+			else {
+				values[i] = LazyPropertyInitializer.UNFETCHED_PROPERTY;
+			}
+		}
+		return values;
+	}
 
 	@Override
 	protected boolean useInsertSelectIdentity() { return false; }
