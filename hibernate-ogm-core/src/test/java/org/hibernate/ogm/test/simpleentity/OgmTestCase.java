@@ -13,6 +13,7 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
+import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 /**
  * A base class for all OGM tests.
@@ -66,6 +67,16 @@ public abstract class OgmTestCase extends HibernateTestCase {
 
 	protected SessionFactoryImplementor sfi() {
 		return (SessionFactoryImplementor) getSessions();
+	}
+
+	//FIXME clear cache when this happens
+	protected void runSchemaGeneration() {
+
+	}
+
+	//FIXME clear cache when this happens
+	protected void runSchemaDrop() {
+		
 	}
 
 	@Override
