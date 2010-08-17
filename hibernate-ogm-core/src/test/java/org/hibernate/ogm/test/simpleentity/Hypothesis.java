@@ -13,7 +13,7 @@ import org.hibernate.ogm.persister.OgmEntityPersister;
 @Entity @Persister( impl = OgmEntityPersister.class)
 public class Hypothesis {
 
-	@Id @GeneratedValue
+	@Id
 	public String getId() { return id; }
 	public void setId(String id) { this.id = id; }
 	private String id;
