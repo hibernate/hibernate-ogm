@@ -6,7 +6,7 @@ import org.hibernate.Transaction;
 /**
  * @author Emmanuel Bernard
  */
-public class BootstrapTest extends OgmTestCase {
+public class CRUDTest extends OgmTestCase {
 
 	public void testSimpleCRUD() throws Exception {
 		final Session session = openSession();
@@ -52,10 +52,30 @@ public class BootstrapTest extends OgmTestCase {
 		session.close();
 	}
 
+	public void testGeneratedValue() throws Exception {
+		final Session session = openSession();
+
+		Transaction transaction = session.beginTransaction();
+		Helicopter h = new Helicopter();
+		h.setName( "Eurocopter" );
+		session.persist( h );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		h = (Helicopter) session.get( Helicopter.class, h.getUUID() );
+		session.delete( h );
+		transaction.commit();
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
-				Hypothesis.class
+				Hypothesis.class,
+				Helicopter.class
 		};
 	}
 }
