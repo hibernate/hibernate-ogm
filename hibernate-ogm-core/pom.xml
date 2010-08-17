@@ -24,7 +24,7 @@
       <version.javassist>3.4.GA</version.javassist>
       <version.org.jboss.naming>5.0.3.GA</version.org.jboss.naming>
       <version.xapool>1.5.0</version.xapool>       
-      <skipUnitTests>true</skipUnitTests>
+      <skipUnitTests>false</skipUnitTests>
       <!-- 
          Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
          may be problems with multicast on the interface JGroups uses by default on your machine. You can
