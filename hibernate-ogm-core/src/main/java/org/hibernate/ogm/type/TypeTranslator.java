@@ -25,7 +25,10 @@ public class TypeTranslator {
 	}
 
 	public GridType getType(Type type) {
-		if ( type instanceof AbstractStandardBasicType ) {
+		if ( type == null ) {
+			return null;
+		}
+		else if ( type instanceof AbstractStandardBasicType ) {
 			AbstractStandardBasicType exposedType = (AbstractStandardBasicType) type;
 			final GridType gridType = typeConverter.get( exposedType.getJavaTypeDescriptor() );
 			if (gridType == null) {
