@@ -503,6 +503,12 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	@Override
+	public String[] getPropertyAliases(String suffix, int i) {
+		//TODO do something about suffixes
+		return getPropertyColumnNames(i);
+	}
+
+	@Override
 	protected boolean useInsertSelectIdentity() { return false; }
 
 	@Override
