@@ -1,5 +1,6 @@
 package org.hibernate.ogm.test.simpleentity;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -21,4 +22,9 @@ public class Hypothesis {
 	public String getDescription() { return description; }
 	public void setDescription(String description) { this.description = description; }
 	private String description;
+
+	@Column(name = "pos")
+	public int getPosition() { return position; }
+	public void setPosition(int position ) { this.position = position; }
+	private int position; 
 }

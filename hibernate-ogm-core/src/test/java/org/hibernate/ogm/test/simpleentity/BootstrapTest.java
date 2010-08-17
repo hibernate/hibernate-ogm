@@ -13,12 +13,14 @@ public class BootstrapTest extends OgmTestCase {
 		Hypothesis hyp = new Hypothesis();
 		hyp.setId( "1234567890" );
 		hyp.setDescription( "P != NP" );
+		hyp.setPosition( 1 );
 		final Transaction transaction = session.beginTransaction();
 		session.persist( hyp );
 		session.flush();
 		session.clear();
 		final Hypothesis loadedHyp = (Hypothesis) session.get( Hypothesis.class, hyp.getId() );
 		assertEquals( hyp.getDescription(), loadedHyp.getDescription() );
+		assertEquals( hyp.getPosition(), loadedHyp.getPosition() );
 		transaction.rollback();
 		session.close();
 	}
