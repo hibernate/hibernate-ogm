@@ -165,6 +165,11 @@ public class OgmLoader implements UniqueEntityLoader {
 		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final Map<String,Object> resultset = entityCache.get( new Key( persister.getMappedClass( EntityMode.POJO ), id ) );
 
+		//it's a non existing object: cut short
+		if (resultset == null) {
+			return null;
+		}
+
 		final Object[] row = getRow(
 				resultset,
 				persisters,
