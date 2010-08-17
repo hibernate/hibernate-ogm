@@ -30,6 +30,7 @@ import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
@@ -193,7 +194,9 @@ public class OgmLoader implements UniqueEntityLoader {
 		//applyPostLoadLocks
 		//nothing to do atm it seems, the code in Hibernate Core does not do anything either
 
-		return getResultColumnOrRow( row );
+		final Object result = getResultColumnOrRow( row );
+		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
+		return result;
 	}
 
 	private Object getResultColumnOrRow(Object[] row) {
@@ -207,6 +210,92 @@ public class OgmLoader implements UniqueEntityLoader {
 	private void readCollectionElements(Object[] row, Map<String, Object> resultset, SessionImplementor session)
 			throws HibernateException {
 		//FIXME implement it :)
+	}
+
+	/**
+	 * copied from Loader#initializeEntitiesAndCollections
+	 */
+	private void initializeEntitiesAndCollections(
+			final List hydratedObjects,
+			final Object resultSetId,
+			final SessionImplementor session,
+			final boolean readOnly)
+	throws HibernateException {
+
+		final CollectionPersister[] collectionPersisters = getCollectionPersisters();
+		if ( collectionPersisters != null ) {
+			for ( int i=0; i<collectionPersisters.length; i++ ) {
+				if ( collectionPersisters[i].isArray() ) {
+					//for arrays, we should end the collection load before resolving
+					//the entities, since the actual array instances are not instantiated
+					//during loading
+					//TODO: or we could do this polymorphically, and have two
+					//      different operations implemented differently for arrays
+					endCollectionLoad( resultSetId, session, collectionPersisters[i] );
+				}
+			}
+		}
+
+		//important: reuse the same event instances for performance!
+		final PreLoadEvent pre;
+		final PostLoadEvent post;
+		if ( session.isEventSource() ) {
+			pre = new PreLoadEvent( (EventSource) session );
+			post = new PostLoadEvent( (EventSource) session );
+		}
+		else {
+			pre = null;
+			post = null;
+		}
+
+		if ( hydratedObjects!=null ) {
+			int hydratedObjectsSize = hydratedObjects.size();
+			if ( log.isTraceEnabled() ) {
+				log.trace( "total objects hydrated: " + hydratedObjectsSize );
+			}
+			for ( int i = 0; i < hydratedObjectsSize; i++ ) {
+				TwoPhaseLoad.initializeEntity( hydratedObjects.get(i), readOnly, session, pre, post );
+			}
+		}
+
+		if ( collectionPersisters != null ) {
+			for ( int i=0; i<collectionPersisters.length; i++ ) {
+				if ( !collectionPersisters[i].isArray() ) {
+					//for sets, we should end the collection load after resolving
+					//the entities, since we might call hashCode() on the elements
+					//TODO: or we could do this polymorphically, and have two
+					//      different operations implemented differently for arrays
+					endCollectionLoad( resultSetId, session, collectionPersisters[i] );
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * copied from Loader#endCollectionLoad
+	 */
+	private void endCollectionLoad(
+			final Object resultSetId,
+			final SessionImplementor session,
+			final CollectionPersister collectionPersister) {
+		//this is a query and we are loading multiple instances of the same collection role
+		session.getPersistenceContext()
+				.getLoadContexts()
+				//FIXME we don't have actual SQL ResultSet but deep down Hibernate does not need the resultset unfortunately It's more like a marker
+				.getCollectionLoadContext( null )
+				//.getCollectionLoadContext( ( ResultSet ) resultSetId )
+				.endLoadingCollections( collectionPersister );
+	}
+
+	/**
+	 * An (optional) persister for a collection to be initialized; only
+	 * collection loaders return a non-null value
+	 *
+	 * copied from Loader#getCollectionPersisters
+	 */
+	protected CollectionPersister[] getCollectionPersisters() {
+		return null;
 	}
 
 	/**
@@ -644,41 +733,5 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	protected EntityType[] getOwnerAssociationTypes() {
 		return null;
-	}
-
-	/**
-	 * Hydrate the objects and their associations in the two phase load
-	 *
-	 * This method comes from the Loader class
-	 */
-	private void initializeEntitiesAndCollections(
-			final List hydratedObjects,
-			final Object resultSetId,
-			final SessionImplementor session,
-			final boolean readOnly)
-	throws HibernateException {
-		//TODO collections
-
-		//important: reuse the same event instances for performance!
-		final PreLoadEvent pre;
-		final PostLoadEvent post;
-		if ( session.isEventSource() ) {
-			pre = new PreLoadEvent( ( EventSource ) session );
-			post = new PostLoadEvent( (EventSource) session );
-		}
-		else {
-			pre = null;
-			post = null;
-		}
-
-		if ( hydratedObjects!=null ) {
-			int hydratedObjectsSize = hydratedObjects.size();
-			if ( log.isTraceEnabled() ) {
-				log.trace( "total objects hydrated: " + hydratedObjectsSize );
-			}
-			for ( int i = 0; i < hydratedObjectsSize; i++ ) {
-				TwoPhaseLoad.initializeEntity( hydratedObjects.get(i), readOnly, session, pre, post );
-			}
-		}
 	}
 }
