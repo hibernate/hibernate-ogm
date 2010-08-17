@@ -402,11 +402,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		//FIXME handle cascading merge and refresh
 		loaders.put(
 				"merge",
-				new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
+				createEntityLoader( LockMode.READ )
+				//new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
 			);
 		loaders.put(
 				"refresh",
-				new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
+				createEntityLoader( LockMode.READ )
+				//new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
 			);
 	}
 
@@ -426,7 +428,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	@Override
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode) throws MappingException {
-		throw new AssertionFailure( "This method should not be called");
+		return createEntityLoader( lockMode, LoadQueryInfluencers.NONE );
 	}
 
 	//TODO verify what to do with #check: Expectation seems to be very JDBC centric
@@ -488,7 +490,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 					else {
 						//TODO What to do?
 						//: suffixedPropertyColumns[i];
-						throw new NotYetImplementedException( "Not sure what you are doing but OGM does not support deferred properties yet. File a bug with as much detail as possible");
+						cols = getPropertyAliases( "", i );
 					}
 					values[i] = gridTypes[i].hydrate( resultset, cols, session, object ); //null owner ok??
 				}
