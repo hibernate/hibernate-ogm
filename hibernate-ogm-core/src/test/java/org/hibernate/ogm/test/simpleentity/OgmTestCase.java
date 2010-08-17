@@ -11,6 +11,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.NoopDialect;
+import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
@@ -90,6 +91,7 @@ public abstract class OgmTestCase extends HibernateTestCase {
 			//Grid specific configuration
 			cfg.setProperty( Environment.DIALECT, NoopDialect.class.getName() );
 			cfg.setSessionFactoryObserver( new GridMetadataManager() );
+			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 
 
 			//Other configurations
