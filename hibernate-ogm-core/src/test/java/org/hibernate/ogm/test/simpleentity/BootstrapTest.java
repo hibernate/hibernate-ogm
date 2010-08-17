@@ -8,20 +8,47 @@ import org.hibernate.Transaction;
  */
 public class BootstrapTest extends OgmTestCase {
 
-	public void testBootstrap() throws Exception {
+	public void testSimpleCRUD() throws Exception {
 		final Session session = openSession();
+
+		Transaction transaction = session.beginTransaction();
 		Hypothesis hyp = new Hypothesis();
 		hyp.setId( "1234567890" );
-		hyp.setDescription( "P != NP" );
+		hyp.setDescription( "NP != P" );
 		hyp.setPosition( 1 );
-		final Transaction transaction = session.beginTransaction();
 		session.persist( hyp );
-		session.flush();
+		transaction.commit();
+
 		session.clear();
+
+		transaction = session.beginTransaction();
 		final Hypothesis loadedHyp = (Hypothesis) session.get( Hypothesis.class, hyp.getId() );
-		assertEquals( hyp.getDescription(), loadedHyp.getDescription() );
-		assertEquals( hyp.getPosition(), loadedHyp.getPosition() );
-		transaction.rollback();
+		assertNotNull( "Cannot load persisted object", loadedHyp );
+		assertEquals( "persist and load fails", hyp.getDescription(), loadedHyp.getDescription() );
+		assertEquals( "@Column fails", hyp.getPosition(), loadedHyp.getPosition() );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		loadedHyp.setDescription( "P != NP");
+		session.merge( loadedHyp );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		Hypothesis secondLoadedHyp = (Hypothesis) session.get( Hypothesis.class, hyp.getId() );
+		assertEquals( "Merge fails", loadedHyp.getDescription(), secondLoadedHyp.getDescription() );
+		session.delete( secondLoadedHyp );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertNull( session.get( Hypothesis.class, hyp.getId() ) );
+		transaction.commit();
+
 		session.close();
 	}
 
