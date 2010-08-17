@@ -1,3 +1,11 @@
+Implement OgmEntityPersister#postInstantiate createUniqueKeyLoaders
+Loaders are supposed to behave differently depending on the lock mode targeted. Should OgmLoader do the same
+  A priori yes (eg should UPGRADE / UPGRADE_NOWAIT influence how to get an object from the grid?
+Add support for loadQueryInfluencers in OgmLoader in particular, the fetch profiles
+in OgmEntityPersister#createLoaders, handle cascading merge and refresh
+
+
+
 LockingStrategy is dependent of the Dialect and is database specific
 Change Key<Class, Serializable> to Key<String, Serializable> ie the table name
 Ask Steve about a potential GenericType to extract SQL style API

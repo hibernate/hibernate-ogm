@@ -15,6 +15,7 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.cache.CacheKey;
@@ -22,20 +23,25 @@ import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.CascadingAction;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.EntityKey;
+import org.hibernate.engine.LoadQueryInfluencers;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.ValueInclusion;
 import org.hibernate.engine.Versioning;
 import org.hibernate.intercept.LazyPropertyInitializer;
+import org.hibernate.loader.entity.CascadeEntityLoader;
+import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
@@ -176,6 +182,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() ); 
+	}
+
+	//FIXME finish implement postInstantiate
+	public void postInstantiate() {
+		createLoaders();
+		//createUniqueKeyLoaders();
+		createQueryLoader();
 	}
 
 	/**
@@ -334,7 +347,88 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		throw new NotYetImplementedException( "Cannot yet load by unique key");
 	}
 
-	//TODO implement #createEntityLoader(...)
+	@Override
+	protected void createLoaders() {
+		Map<Object, Object> loaders = getLoaders();
+		loaders.put( LockMode.NONE, createEntityLoader( LockMode.NONE ) );
+
+		UniqueEntityLoader readLoader = createEntityLoader( LockMode.READ );
+		loaders.put( LockMode.READ, readLoader );
+
+		//TODO: inexact, what we really need to know is: are any outer joins used?
+		boolean disableForUpdate = getSubclassTableSpan() > 1 &&
+				hasSubclasses() &&
+				!getFactory().getDialect().supportsOuterJoinForUpdate();
+
+		loaders.put(
+				LockMode.UPGRADE,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.UPGRADE )
+			);
+		loaders.put(
+				LockMode.UPGRADE_NOWAIT,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.UPGRADE_NOWAIT )
+			);
+		loaders.put(
+				LockMode.FORCE,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.FORCE )
+			);
+		loaders.put(
+				LockMode.PESSIMISTIC_READ,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.PESSIMISTIC_READ )
+			);
+		loaders.put(
+				LockMode.PESSIMISTIC_WRITE,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.PESSIMISTIC_WRITE )
+			);
+		loaders.put(
+				LockMode.PESSIMISTIC_FORCE_INCREMENT,
+				disableForUpdate ?
+						readLoader :
+						createEntityLoader( LockMode.PESSIMISTIC_FORCE_INCREMENT )
+			);
+		loaders.put( LockMode.OPTIMISTIC, createEntityLoader( LockMode.OPTIMISTIC) );
+		loaders.put( LockMode.OPTIMISTIC_FORCE_INCREMENT, createEntityLoader(LockMode.OPTIMISTIC_FORCE_INCREMENT) );
+
+		//FIXME handle cascading merge and refresh
+		loaders.put(
+				"merge",
+				new CascadeEntityLoader( this, CascadingAction.MERGE, getFactory() )
+			);
+		loaders.put(
+				"refresh",
+				new CascadeEntityLoader( this, CascadingAction.REFRESH, getFactory() )
+			);
+	}
+
+	@Override
+	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
+			throws MappingException {
+		//FIXME add support to lock mode and loadQueryInfluencers
+		return new OgmLoader( this );
+	}
+
+	@Override
+	protected UniqueEntityLoader createEntityLoader(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers)
+			throws MappingException {
+		//FIXME add support to lock options and loadQueryInfluencers
+		return new OgmLoader( this );
+	}
+
+	@Override
+	protected UniqueEntityLoader createEntityLoader(LockMode lockMode) throws MappingException {
+		throw new AssertionFailure( "This method should not be called");
+	}
+
 	//TODO verify what to do with #check: Expectation seems to be very JDBC centric
 
 	/**
