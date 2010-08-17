@@ -7,6 +7,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
+import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
@@ -21,6 +22,7 @@ public class TypeTranslator {
 		typeConverter = new HashMap<JavaTypeDescriptor, GridType>();
 		typeConverter.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		typeConverter.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
+		typeConverter.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
 		typeConverter.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
 	}
 

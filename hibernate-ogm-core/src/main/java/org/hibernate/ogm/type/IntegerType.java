@@ -3,6 +3,7 @@ package org.hibernate.ogm.type;
 import org.hibernate.MappingException;
 import org.hibernate.engine.Mapping;
 import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 
 /**
@@ -10,20 +11,20 @@ import org.hibernate.type.descriptor.java.LongTypeDescriptor;
  * 
  * @author Emmanuel Bernard
  */
-public class LongType extends AbstractGenericBasicType<Long> {
-	public static final LongType INSTANCE = new LongType();
+public class IntegerType extends AbstractGenericBasicType<Integer> {
+	public static final IntegerType INSTANCE = new IntegerType();
 
-	public LongType() {
-		super( PassThroughGridTypeDescriptor.INSTANCE, LongTypeDescriptor.INSTANCE );
+	public IntegerType() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, IntegerTypeDescriptor.INSTANCE );
 	}
 
 	public String getName() {
-		return "long";
+		return "integer";
 	}
 
 	@Override
 	public String[] getRegistrationKeys() {
-		return new String[] { getName(), long.class.getName(), Long.class.getName() };
+		return new String[] { getName(), int.class.getName(), Integer.class.getName() };
 	}
 
 	@Override
