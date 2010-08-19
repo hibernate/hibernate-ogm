@@ -31,5 +31,6 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 			throws StaleObjectStateException, JDBCException {
 		AdvancedCache advCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() ).getAdvancedCache();
 		advCache.lock( new Key( lockable.getRootTableName(), id ) );
+		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 }
