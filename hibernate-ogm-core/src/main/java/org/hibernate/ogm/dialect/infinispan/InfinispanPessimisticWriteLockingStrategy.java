@@ -30,6 +30,6 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
 		AdvancedCache advCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() ).getAdvancedCache();
-		advCache.lock( new Key( lockable.getMappedClass( EntityMode.POJO ), id ) );
+		advCache.lock( new Key( lockable.getRootTableName(), id ) );
 	}
 }

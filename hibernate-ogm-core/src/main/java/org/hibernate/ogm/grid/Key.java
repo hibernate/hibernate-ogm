@@ -8,27 +8,19 @@ import java.io.Serializable;
  * @author Emmanuel Bernard
  */
 public class Key {
-	private final Class<?> type;
+	private final String table;
 	private final Serializable id;
 
-	public Key(Class<?> type, Serializable id) {
-		this.type = type;
+	public Key(String table, Serializable id) {
+		this.table = table;
 		this.id = id;
-	}
-
-	public Class<?> getType() {
-		return type;
-	}
-
-	public Serializable getId() {
-		return id;
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "Key" );
-		sb.append( "{type=" ).append( type );
+		sb.append( "{table=" ).append( table );
 		sb.append( ", id=" ).append( id );
 		sb.append( '}' );
 		return sb.toString();
@@ -48,7 +40,7 @@ public class Key {
 		if ( id != null ? !id.equals( key.id ) : key.id != null ) {
 			return false;
 		}
-		if ( !type.equals( key.type ) ) {
+		if ( !table.equals( key.table ) ) {
 			return false;
 		}
 
@@ -57,7 +49,7 @@ public class Key {
 
 	@Override
 	public int hashCode() {
-		int result = type.hashCode();
+		int result = table.hashCode();
 		result = 31 * result + ( id != null ? id.hashCode() : 0 );
 		return result;
 	}

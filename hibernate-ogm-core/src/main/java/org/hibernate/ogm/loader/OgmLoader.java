@@ -163,7 +163,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		qp.setLockOptions( lockOptions );
 
 		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String,Object> resultset = entityCache.get( new Key( persister.getMappedClass( EntityMode.POJO ), id ) );
+		final Map<String,Object> resultset = entityCache.get( new Key( persister.getTableName(), id ) );
 
 		//it's a non existing object: cut short
 		if (resultset == null) {

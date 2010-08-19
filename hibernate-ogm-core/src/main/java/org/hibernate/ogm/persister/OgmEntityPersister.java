@@ -223,7 +223,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	private Map<String, Object> getResultsetById(Serializable id, Cache<Key, Map<String, Object>> cache) {
-		final Map<String,Object> resultset = cache.get( new Key( getMappedClass( EntityMode.POJO ), id ) );
+		final Map<String,Object> resultset = cache.get( new Key( getTableName(), id ) );
 		return resultset;
 	}
 
@@ -330,7 +330,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 * Contrary to the database version, there is 
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
-		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+		final Key key = new Key( getTableName(), id );
 		final Map<String, Object> resultset = entityCache.get( key );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
@@ -600,7 +600,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
-				final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+				final Key key = new Key( getTableName(), id );
 				Map<String, Object> resultset = entityCache.get( key );
 				final boolean useVersion = j == 0 && isVersioned();
 
@@ -741,7 +741,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+			final Key key = new Key( getTableName(), id );
 			Map<String, Object> resultset = entityCache.get( key );
 			// add the discriminator
 			if ( j == 0 ) {
@@ -801,7 +801,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 
 		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
-		final Key key = new Key( getMappedClass( EntityMode.POJO ), id );
+		final Key key = new Key( getTableName(), id );
 		final Map<String, Object> resultset = entityCache.get( key );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
