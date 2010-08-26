@@ -61,6 +61,10 @@ public class TypeTranslator {
 			}
 			return gridType;
 		}
+		else if ( type instanceof org.hibernate.type.ComponentType ) {
+			org.hibernate.type.ComponentType componentType = (org.hibernate.type.ComponentType) type;
+			return new ComponentType(componentType, this);
+		}
 		throw new HibernateException( "Unable to find a GridType for " + type.getClass().getName() );
 	}
 }
