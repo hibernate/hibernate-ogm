@@ -34,7 +34,8 @@ import org.hibernate.ogm.persister.OgmEntityPersister;
 /**
  * @author Emmanuel Bernard
  */
-@Entity @Persister( impl = OgmEntityPersister.class)
+@Entity
+@Persister( impl = OgmEntityPersister.class)
 public class Helicopter {
 	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
 	public String getUUID() { return uuid; }
