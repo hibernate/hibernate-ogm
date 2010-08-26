@@ -230,7 +230,7 @@ public abstract class AbstractGenericBasicType<T>
 		return nullSafeGet( rs, name, session );
 	}
 
-	public final T nullSafeGet(Map<String,Object> rs, String name, final SessionImplementor session) {
+	private final T nullSafeGet(Map<String,Object> rs, String name, final SessionImplementor session) {
 		// todo : have SessionImplementor extend WrapperOptions
 		final WrapperOptions options = new WrapperOptions() {
 			public boolean useStreamForLobBinding() {
