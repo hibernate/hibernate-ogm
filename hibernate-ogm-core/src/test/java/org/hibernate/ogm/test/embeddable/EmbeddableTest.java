@@ -44,7 +44,7 @@ public class EmbeddableTest extends OgmTestCase {
 		address.setCity( "Paris" );
 		address.setCountry( "France" );
 		address.setStreet1( "1 avenue des Champs Elysées" );
-		address.setZipCode( "705007" );
+		address.setZipCode( "75007" );
 		session.persist( account );
 		transaction.commit();
 
@@ -56,6 +56,7 @@ public class EmbeddableTest extends OgmTestCase {
 		final Address loadedAddress = loadedAccount.getHomeAddress();
 		assertNotNull( "Embeddable should not be null", loadedAddress );
 		assertEquals( "persist and load fails for embeddable", loadedAddress.getCity(), address.getCity() );
+		assertEquals( "@Column support for embeddable does not work", loadedAddress.getZipCode(), address.getZipCode() );
 		transaction.commit();
 
 		session.clear();
