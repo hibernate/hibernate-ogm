@@ -6,6 +6,7 @@ import org.infinispan.manager.DefaultCacheManager;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
+import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -22,6 +23,7 @@ public class GridMetadataManager implements SessionFactoryObserver {
 	private GridDialect gridDialect;
 
 	public GridMetadataManager() {
+		Version.touch();
 		typeTranslator = new TypeTranslator();
 		gridDialect = new InfinispanDialect();
 	}
