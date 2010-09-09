@@ -33,7 +33,7 @@ import org.hibernate.ogm.persister.OgmEntityPersister;
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister( impl = OgmEntityPersister.class)
+@Persister(impl = OgmEntityPersister.class)
 public class Account {
 	@Id
 	public String getLogin() { return login; }
