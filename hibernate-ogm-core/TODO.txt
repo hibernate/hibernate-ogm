@@ -1,3 +1,6 @@
+Implement an default annotation for @GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
+  this is a very common id generation strategy in the cloud
+
 Implement OgmEntityPersister#postInstantiate createUniqueKeyLoaders
 Loaders are supposed to behave differently depending on the lock mode targeted. Should OgmLoader do the same
   A priori yes (eg should UPGRADE / UPGRADE_NOWAIT influence how to get an object from the grid?
