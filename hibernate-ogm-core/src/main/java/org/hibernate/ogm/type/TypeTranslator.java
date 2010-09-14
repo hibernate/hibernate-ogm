@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
@@ -64,6 +65,11 @@ public class TypeTranslator {
 		else if ( type instanceof org.hibernate.type.ComponentType ) {
 			org.hibernate.type.ComponentType componentType = (org.hibernate.type.ComponentType) type;
 			return new ComponentType(componentType, this);
+		}
+		else if ( type instanceof org.hibernate.type.ManyToOneType ) {
+			//do some stuff
+			org.hibernate.type.ManyToOneType manyToOneType = (org.hibernate.type.ManyToOneType) type;
+			return new ManyToOneType(manyToOneType, this);
 		}
 		throw new HibernateException( "Unable to find a GridType for " + type.getClass().getName() );
 	}
