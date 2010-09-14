@@ -43,7 +43,7 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public abstract class GridTypeDelegatingToCoreType implements GridType {
-	private Type delegate;
+	private final Type delegate;
 
 	GridTypeDelegatingToCoreType(Type type) {
 		this.delegate = type;
