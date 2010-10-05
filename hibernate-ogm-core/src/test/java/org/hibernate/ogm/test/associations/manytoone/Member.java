@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.ogm.test.manytoone;
+package org.hibernate.ogm.test.associations.manytoone;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
