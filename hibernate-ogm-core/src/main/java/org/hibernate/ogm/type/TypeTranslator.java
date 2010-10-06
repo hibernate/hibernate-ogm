@@ -31,6 +31,7 @@ import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
+import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
@@ -47,6 +48,7 @@ public class TypeTranslator {
 		typeConverter.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		typeConverter.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
 		typeConverter.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
+		typeConverter.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
 		typeConverter.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
 	}
 
