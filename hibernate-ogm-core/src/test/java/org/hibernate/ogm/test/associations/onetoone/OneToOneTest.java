@@ -53,11 +53,34 @@ public class OneToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	public void testUnidirectionalOneToOne() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Vehicule vehicule = new Vehicule();
+		vehicule.setBrand( "Mercedes" );
+		Wheel wheel = new Wheel();
+		wheel.setVehicule( vehicule );
+		session.persist( vehicule );
+		session.persist( wheel );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		wheel = (Wheel) session.get( Wheel.class, wheel.getId() );
+		vehicule = wheel.getVehicule();
+		session.delete( wheel );
+		session.delete( vehicule );
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				Horse.class,
-				Cavalier.class
+				Cavalier.class,
+				Vehicule.class,
+				Wheel.class
 		};
 	}
 }
