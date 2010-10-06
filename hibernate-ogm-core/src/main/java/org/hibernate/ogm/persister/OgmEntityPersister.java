@@ -195,6 +195,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			constraintOrderedKeyColumnNames = new String[][] { getIdentifierColumnNames() };
 		}
 
+		initPropertyPaths(mapping);
+
+		//Grid related metadata
 		gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
 		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
 		final Type[] types = getPropertyTypes();
