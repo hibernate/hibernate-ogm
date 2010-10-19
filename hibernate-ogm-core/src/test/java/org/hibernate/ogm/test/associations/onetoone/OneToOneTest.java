@@ -74,13 +74,68 @@ public class OneToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	public void testBidirectionalManyToOne() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Husband husband = new Husband();
+		husband.setName( "Alex" );
+		Wife wife = new Wife();
+		wife.setName("Bea");
+		husband.setWife(wife);
+		wife.setHusband(husband);
+		session.persist( husband );
+		session.persist( wife );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		husband = (Husband) session.get( Husband.class, husband.getId() );
+		assertNotNull(husband);
+		assertNotNull( husband.getWife() );
+		session.clear();
+		wife = (Wife) session.get(Wife.class, wife.getId() );
+		assertNotNull(wife);
+		husband = wife.getHusband();
+		assertNotNull(husband);
+		Wife bea2 = new Wife();
+		session.persist( bea2 );
+		bea2.setName("Still Bea");
+		husband.setWife(bea2);
+		wife.setHusband(null);
+		bea2.setHusband(husband);
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		husband = (Husband) session.get( Husband.class, husband.getId() );
+		assertNotNull(husband);
+		assertNotNull( husband.getWife() );
+		session.clear();
+		wife = (Wife) session.get(Wife.class, wife.getId() );
+		assertNotNull(wife);
+		assertNull(wife.getHusband());
+		session.delete(wife);
+		bea2 = (Wife) session.get(Wife.class, bea2.getId() );
+		assertNotNull(bea2);
+		husband = bea2.getHusband();
+		assertNotNull(husband);
+		bea2.setHusband(null);
+		husband.setWife(null);
+		session.delete(husband);
+		session.delete(wife);
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				Horse.class,
 				Cavalier.class,
 				Vehicule.class,
-				Wheel.class
+				Wheel.class,
+				Husband.class,
+				Wife.class
 		};
 	}
 }
