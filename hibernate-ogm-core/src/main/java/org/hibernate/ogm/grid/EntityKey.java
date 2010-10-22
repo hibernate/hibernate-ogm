@@ -30,11 +30,11 @@ import java.io.Serializable;
  *
  * @author Emmanuel Bernard
  */
-public class Key {
+public class EntityKey {
 	private final String table;
 	private final Serializable id;
 
-	public Key(String table, Serializable id) {
+	public EntityKey(String table, Serializable id) {
 		this.table = table;
 		this.id = id;
 	}
@@ -58,7 +58,7 @@ public class Key {
 			return false;
 		}
 
-		Key key = ( Key ) o;
+		EntityKey key = ( EntityKey ) o;
 
 		if ( id != null ? !id.equals( key.id ) : key.id != null ) {
 			return false;

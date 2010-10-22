@@ -32,13 +32,11 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.WrongClassException;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.EntityKey;
 import org.hibernate.engine.EntityUniqueKey;
 import org.hibernate.engine.PersistenceContext;
 import org.hibernate.engine.QueryParameters;
@@ -49,7 +47,7 @@ import org.hibernate.event.EventSource;
 import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.entity.UniqueEntityLoader;
-import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -172,8 +170,8 @@ public class OgmLoader implements UniqueEntityLoader {
 		//extractLeysFromResultSet
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
-		final EntityKey key = new EntityKey( optionalId, persister, session.getEntityMode() );
-		final EntityKey[] keys = { key };
+		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
+		final org.hibernate.engine.EntityKey[] keys = { key };
 
 		registerNonExists( keys, persisters, session);
 
@@ -185,8 +183,8 @@ public class OgmLoader implements UniqueEntityLoader {
 		qp.setOptionalId( optionalId );
 		qp.setLockOptions( lockOptions );
 
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String,Object> resultset = entityCache.get( new Key( persister.getTableName(), id ) );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final Map<String,Object> resultset = entityCache.get( new EntityKey( persister.getTableName(), id ) );
 
 		//it's a non existing object: cut short
 		if (resultset == null) {
@@ -350,13 +348,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Copied from Loader#getOptionalObjectKey
 	 */
-	private static EntityKey getOptionalObjectKey(QueryParameters queryParameters, SessionImplementor session) {
+	private static org.hibernate.engine.EntityKey getOptionalObjectKey(QueryParameters queryParameters, SessionImplementor session) {
 		final Object optionalObject = queryParameters.getOptionalObject();
 		final Serializable optionalId = queryParameters.getOptionalId();
 		final String optionalEntityName = queryParameters.getOptionalEntityName();
 
 		if ( optionalObject != null && optionalEntityName != null ) {
-			return new EntityKey(
+			return new org.hibernate.engine.EntityKey(
 					optionalId,
 					session.getEntityPersister( optionalEntityName, optionalObject ),
 					session.getEntityMode()
@@ -379,9 +377,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	private Object[] getRow(
 			final Map<String, Object> resultset,
 	        final OgmEntityPersister[] persisters,
-	        final EntityKey[] keys,
+	        final org.hibernate.engine.EntityKey[] keys,
 	        final Object optionalObject,
-	        final EntityKey optionalObjectKey,
+	        final org.hibernate.engine.EntityKey optionalObjectKey,
 	        final LockMode[] lockModes,
 	        final List hydratedObjects,
 	        final SessionImplementor session)
@@ -402,7 +400,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		for ( int i = 0; i < cols; i++ ) {
 
 			Object object = null;
-			EntityKey key = keys[i];
+			org.hibernate.engine.EntityKey key = keys[i];
 
 			if ( keys[i] == null ) {
 				//do nothing
@@ -456,7 +454,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 			//TODO create an interface for this usage
 	        final OgmEntityPersister persister,
-	        final EntityKey key,
+	        final org.hibernate.engine.EntityKey key,
 	        final Object object,
 	        final LockMode lockMode,
 	        final SessionImplementor session)
@@ -498,9 +496,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 	        final Loadable persister,
 	        final String rowIdAlias,
-	        final EntityKey key,
+	        final org.hibernate.engine.EntityKey key,
 	        final LockMode lockMode,
-	        final EntityKey optionalObjectKey,
+	        final org.hibernate.engine.EntityKey optionalObjectKey,
 	        final Object optionalObject,
 	        final List hydratedObjects,
 	        final SessionImplementor session)
@@ -575,7 +573,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 	        final Object object,
 	        final String instanceEntityName,
-	        final EntityKey key,
+	        final org.hibernate.engine.EntityKey key,
 	        final String rowIdAlias,
 	        final LockMode lockMode,
 	        final Loadable rootPersister,
@@ -683,7 +681,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied form Loader#registerNonExists
 	 */
 	private void registerNonExists(
-	        final EntityKey[] keys,
+	        final org.hibernate.engine.EntityKey[] keys,
 	        final Loadable[] persisters,
 	        final SessionImplementor session) {
 
@@ -695,7 +693,7 @@ public class OgmLoader implements UniqueEntityLoader {
 
 				int owner = owners[i];
 				if ( owner > -1 ) {
-					EntityKey ownerKey = keys[owner];
+					org.hibernate.engine.EntityKey ownerKey = keys[owner];
 					if ( keys[i] == null && ownerKey != null ) {
 
 						final PersistenceContext persistenceContext = session.getPersistenceContext();

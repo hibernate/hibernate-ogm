@@ -31,7 +31,7 @@ import org.infinispan.manager.CacheContainer;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * Helper class to be refactored and abstracted from specific grid implementation
@@ -57,9 +57,13 @@ public class GridMetadataManagerHelper {
 		}
 	}
 
-	public static Cache<Key, Map<String, Object>> getEntityCache(SessionFactoryImplementor factory) {
-		final CacheContainer cacheContainer = getGridMetadataManager(factory).getCacheContainer();
-		final Cache<Key, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
+	public static Cache<EntityKey, Map<String, Object>> getEntityCache(SessionFactoryImplementor factory) {
+		return getEntityCache( getGridMetadataManager(factory) );
+	}
+
+	public static Cache<EntityKey, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
+		final CacheContainer cacheContainer = manager.getCacheContainer();
+		final Cache<EntityKey, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
 		return cache;
 	}
 

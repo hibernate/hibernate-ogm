@@ -46,9 +46,7 @@ import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.CascadingAction;
 import org.hibernate.engine.EntityEntry;
-import org.hibernate.engine.EntityKey;
 import org.hibernate.engine.LoadQueryInfluencers;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
@@ -56,14 +54,13 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.ValueInclusion;
 import org.hibernate.engine.Versioning;
 import org.hibernate.intercept.LazyPropertyInitializer;
-import org.hibernate.loader.entity.CascadeEntityLoader;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -228,7 +225,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.trace( "Getting current persistent state for: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
 
-		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		//snapshot is a Map in the end
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
@@ -248,8 +245,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
-	private Map<String, Object> getResultsetById(Serializable id, Cache<Key, Map<String, Object>> cache) {
-		final Map<String,Object> resultset = cache.get( new Key( getTableName(), id ) );
+	private Map<String, Object> getResultsetById(Serializable id, Cache<EntityKey, Map<String, Object>> cache) {
+		final Map<String,Object> resultset = cache.get( new EntityKey( getTableName(), id ) );
 		return resultset;
 	}
 
@@ -318,7 +315,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Cache<Key, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final Map<String, Object> resultset = getResultsetById( id, cache );
 
 		if (resultset == null) {
@@ -350,13 +347,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			);
 		}
 
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		/*
 		 * We get the value from the grid and compare the version values before putting the next version in
 		 * Contrary to the database version, there is 
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
-		final Key key = new Key( getTableName(), id );
+		final EntityKey key = new EntityKey( getTableName(), id );
 		final Map<String, Object> resultset = entityCache.get( key );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
@@ -622,11 +619,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
-				final Key key = new Key( getTableName(), id );
+				final EntityKey key = new EntityKey( getTableName(), id );
 				Map<String, Object> resultset = entityCache.get( key );
 				final boolean useVersion = j == 0 && isVersioned();
 
@@ -748,7 +745,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int span = getTableSpan();
 		//insert operations are always dynamic in OGM
 		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
 		for ( int j = 0; j < span; j++ ) {
 			if ( isInverseTable( j ) ) {
 				return;
@@ -767,7 +764,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			final Key key = new Key( getTableName(), id );
+			final EntityKey key = new EntityKey( getTableName(), id );
 			Map<String, Object> resultset = entityCache.get( key );
 			// add the discriminator
 			if ( j == 0 ) {
@@ -818,7 +815,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			// first we need to locate the "loaded" state
 			//
 			// Note, it potentially could be a proxy, so doAfterTransactionCompletion the location the safe way...
-			EntityKey key = new EntityKey( id, this, session.getEntityMode() );
+			org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( id, this, session.getEntityMode() );
 			Object entity = session.getPersistenceContext().getEntity( key );
 			if ( entity != null ) {
 				EntityEntry entry = session.getPersistenceContext().getEntry( entity );
@@ -826,8 +823,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<Key, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
-		final Key key = new Key( getTableName(), id );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final EntityKey key = new EntityKey( getTableName(), id );
 		final Map<String, Object> resultset = entityCache.get( key );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
