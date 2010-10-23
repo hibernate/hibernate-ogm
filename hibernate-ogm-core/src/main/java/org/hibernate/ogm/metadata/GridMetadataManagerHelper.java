@@ -23,6 +23,8 @@
  */
 package org.hibernate.ogm.metadata;
 
+import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -32,6 +34,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.PropertyKey;
 
 /**
  * Helper class to be refactored and abstracted from specific grid implementation
@@ -39,6 +42,8 @@ import org.hibernate.ogm.grid.EntityKey;
  */
 public class GridMetadataManagerHelper {
 	public static final String ENTITY_CACHE = "ENTITIES";
+	//TODO same or different? Customizable?
+	public static final String PROPERTY_CACHE = ENTITY_CACHE;
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
 		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();
@@ -67,9 +72,13 @@ public class GridMetadataManagerHelper {
 		return cache;
 	}
 
-	public static Cache<Key, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
+	public static Cache<PropertyKey, List<Serializable>> getPropertyCache(SessionFactoryImplementor factory) {
+		return getPropertyCache( getGridMetadataManager( factory ) );
+	}
+
+	private static Cache<PropertyKey, List<Serializable>> getPropertyCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<Key, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
+		final Cache<PropertyKey, List<Serializable>> cache = cacheContainer.getCache( PROPERTY_CACHE );
 		return cache;
 	}
 }
