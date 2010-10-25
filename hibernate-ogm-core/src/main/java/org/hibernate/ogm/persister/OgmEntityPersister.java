@@ -494,37 +494,68 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final String[] propSubclassNames = getSubclassPropertySubclassNameClosure();
 		final boolean[] propertySelectable = getPropertySelectable();
 		for ( int i = 0; i < types.length; i++ ) {
-			if ( !propertySelectable[i] ) {
-				values[i] = BackrefPropertyAccessor.UNKNOWN;
-			}
-			else if ( allProperties || !laziness[i] ) {
-				//decide which ResultSet to get the property value from:
-				final boolean propertyIsDeferred = hasDeferred &&
-						rootPersister.isSubclassPropertyDeferred( propNames[i], propSubclassNames[i] );
-				if ( propertyIsDeferred && sequentialSelectEmpty ) {
-					values[i] = null;
-				}
-				else {
-					//FIXME We don't handle deferred property yet
-					//final ResultSet propertyResultSet = propertyIsDeferred ? sequentialResultSet : rs;
-					GridType[] gridTypes = gridPropertyTypes;
-					final String[] cols;
-					if ( propertyIsDeferred ) {
-						cols = getPropertyAliases( "", i );
-					}
-					else {
-						//TODO What to do?
-						//: suffixedPropertyColumns[i];
-						cols = getPropertyAliases( "", i );
-					}
-					values[i] = gridTypes[i].hydrate( resultset, cols, session, object ); //null owner ok??
-				}
-			}
-			else {
-				values[i] = LazyPropertyInitializer.UNFETCHED_PROPERTY;
-			}
+			values[i] = hydrateValue(
+					resultset,
+					session,
+					object,
+					i,
+					propertySelectable,
+					allProperties,
+					laziness,
+					hasDeferred,
+					rootPersister,
+					propNames,
+					propSubclassNames,
+					sequentialSelectEmpty);
 		}
 		return values;
+	}
+
+	public Object hydrateValue(
+			Map<String,Object> resultset,
+			SessionImplementor session,
+			Object object,
+			int index, 
+			boolean[] propertySelectable,
+			boolean allProperties,
+			boolean[] laziness,
+			boolean hasDeferred,
+			OgmEntityPersister rootPersister,
+			String[] propNames,
+			String[] propSubclassNames,
+			boolean sequentialSelectEmpty
+			) {
+		Object value;
+		if ( !propertySelectable[index] ) {
+			value = BackrefPropertyAccessor.UNKNOWN;
+		}
+		else if ( allProperties || !laziness[index] ) {
+			//decide which ResultSet to get the property value from:
+			final boolean propertyIsDeferred = hasDeferred &&
+					rootPersister.isSubclassPropertyDeferred( propNames[index], propSubclassNames[index] );
+			if ( propertyIsDeferred && sequentialSelectEmpty ) {
+				value = null;
+			}
+			else {
+				//FIXME We don't handle deferred property yet
+				//final ResultSet propertyResultSet = propertyIsDeferred ? sequentialResultSet : rs;
+				GridType[] gridTypes = gridPropertyTypes;
+				final String[] cols;
+				if ( propertyIsDeferred ) {
+					cols = getPropertyAliases( "", index );
+				}
+				else {
+					//TODO What to do?
+					//: suffixedPropertyColumns[i];
+					cols = getPropertyAliases( "", index );
+				}
+				value = gridTypes[index].hydrate( resultset, cols, session, object ); //null owner ok??
+			}
+		}
+		else {
+			value = LazyPropertyInitializer.UNFETCHED_PROPERTY;
+		}
+		return value;
 	}
 
 	@Override
