@@ -97,7 +97,7 @@ class Dehydrator {
 				if ( removePropertyMetadata ) {
 					//remove from property cache
 					if ( uniqueness[index] ) {
-						Object[] oldColumnValues = getColumnValuesFromProperty( resultset, index );
+						Object[] oldColumnValues = Helper.getColumnValuesFromResultset( resultset, index, persister );
 						PropertyKey propertyKey = new PropertyKey(
 								persister.getTableName( tableIndex ),
 								persister.getPropertyNames()[index],
@@ -131,7 +131,7 @@ class Dehydrator {
 				if ( addPropertyMetadata ) {
 					//add to property cache
 					if ( uniqueness[index] ) {
-						Object[] newColumnValues = getColumnValuesFromProperty( resultset, index );
+						Object[] newColumnValues = Helper.getColumnValuesFromResultset( resultset, index, persister );
 
 						PropertyKey propertyKey = new PropertyKey(
 								persister.getTableName( tableIndex ),
@@ -147,16 +147,5 @@ class Dehydrator {
 				}
 			}
 		}
-	}
-
-	private Object[] getColumnValuesFromProperty(Map<String, Object> resultset, int index) {
-		Object[] columnValues;
-		final String[] propertyColumnNames = persister.getPropertyColumnNames( index );
-		final int nbrOfColumns = propertyColumnNames.length;
-		columnValues = new Object[nbrOfColumns];
-		for ( int columnIndex = 0; columnIndex < nbrOfColumns; columnIndex++ ) {
-			columnValues[columnIndex] = resultset.get( propertyColumnNames[columnIndex] );
-		}
-		return columnValues;
 	}
 }
