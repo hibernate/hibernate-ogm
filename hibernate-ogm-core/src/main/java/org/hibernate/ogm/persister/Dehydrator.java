@@ -112,6 +112,7 @@ class Dehydrator {
 							else {
 								//TODO should we remove all (ie remove till it returns false?
 								propertyValues.remove( id );
+								propertyCache.put( propertyKey, propertyValues );
 							}
 						}
 					}
@@ -143,6 +144,7 @@ class Dehydrator {
 							propertyValues = new ArrayList<Serializable>();
 						}
 						propertyValues.add( id );
+						propertyCache.put( propertyKey, propertyValues );
 					}
 				}
 			}
