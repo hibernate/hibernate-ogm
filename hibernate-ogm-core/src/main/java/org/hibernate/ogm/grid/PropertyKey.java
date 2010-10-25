@@ -51,4 +51,16 @@ public class PropertyKey {
 		result = 31 * result + ( columnValues != null ? Arrays.hashCode( columnValues ) : 0 );
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append( "PropertyKey" );
+		sb.append( "{table='" ).append( table ).append( '\'' );
+		sb.append( ", property='" ).append( property ).append( '\'' );
+		sb.append( ", columnValues=" )
+				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
+		sb.append( '}' );
+		return sb.toString();
+	}
 }
