@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -62,7 +61,6 @@ import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -511,7 +509,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
-	public Object hydrateValue(
+	private Object hydrateValue(
 			Map<String,Object> resultset,
 			SessionImplementor session,
 			Object object,
@@ -737,39 +735,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
-		if ( log.isTraceEnabled() ) {
-			log.trace( "Dehydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
-		}
-		final EntityMetamodel entityMetamodel = getEntityMetamodel();
-		final boolean[] uniqueness = getPropertyUniqueness();
-		final Cache<PropertyKey, List<Serializable>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
-		for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
-			if ( includeProperties[i] && isPropertyOfTable( i, tableIndex ) ) {
-				PropertyKey maybePropertyKey = null;
-				List<Serializable> maybePropertyValues = null;
-				//TODO remove from property cache
-				if ( uniqueness[i] ) {
-					maybePropertyKey = new PropertyKey(
-							getTableName( tableIndex ), getPropertyNames()[i], ( Serializable ) fields[i]
-					);
-					maybePropertyValues = propertyCache.get( maybePropertyKey );
-					if (maybePropertyValues == null) {
-						maybePropertyValues = new ArrayList<Serializable>();
-					}
-				}
-
-				//dehydrate
-				gridPropertyTypes[i].nullSafeSet(
-						resultset,
-						fields[i],
-						getPropertyColumnNames( i ),
-						includeColumns[i],
-						session
-				);
-
-				//TODO add to property cache
-			}
-		}
+		new Dehydrator()
+				.fields( fields )
+				.gridPropertyTypes( gridPropertyTypes )
+				.id( id )
+				.includeColumns( includeColumns )
+				.includeProperties( includeProperties )
+				.persister( this )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.dehydrate();
 	}
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
@@ -921,7 +897,19 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 					log.trace( "Version: " + version );
 				}
 			}
+
 			entityCache.remove( key );
+
+			//delete property metadata
+			new Dehydrator()
+				.gridPropertyTypes( gridPropertyTypes )
+				.id( id )
+				.persister( this )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( j )
+				.onlyRemovePropertyMetadata()
+				.dehydrate();
 		}
 
 	}
