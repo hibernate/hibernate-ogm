@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -61,6 +62,7 @@ import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -72,6 +74,7 @@ import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.BackrefPropertyAccessor;
 import org.hibernate.tuple.entity.EntityMetamodel;
+import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
@@ -212,6 +215,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		createLoaders();
 		//createUniqueKeyLoaders();
 		createQueryLoader();
+	}
+
+	public GridType getGridIdentifierType() {
+		return gridIdentifierType;
 	}
 
 	/**
@@ -361,13 +368,55 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return nextVersion;
 	}
 
-	//TODO implement loadByUniqueKey but it involves an EntityLoader most likely by overriding #createUniqueKeyLoaders instead
+	//TODO move that code to the EntityLoader as it is in AbstractEntityPersister?
 	@Override
 	public Object loadByUniqueKey(
 			String propertyName,
 			Object uniqueKey,
 			SessionImplementor session) throws HibernateException {
-		throw new NotYetImplementedException( "Cannot yet load by unique key");
+		final Cache<PropertyKey, List<Serializable>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
+		//we get the property type for an associated entity
+		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
+		//get the associated property index (to get its column names)
+		final int propertyIndex = getPropertyIndex( propertyName );
+		Map<String, Object> tempResultset = new HashMap<String, Object>(2);
+		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, getPropertyColumnNames( propertyIndex ), session) ;
+		final Object[] columnValues = Helper.getColumnValuesFromResultset( tempResultset, propertyIndex, this );
+		//find the ids per unique property name
+		final List<Serializable> ids = propertyCache.get(
+				new PropertyKey(
+						getTableName(), propertyName, columnValues
+				)
+		);
+		if (ids == null || ids.size() == 0 ) {
+			return null;
+		}
+		else if (ids.size() == 1) {
+			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
+			return load( ids.get(0), null, LockMode.NONE, session );
+		}
+		else {
+			throw new AssertionFailure(
+					"Loading by unique key but finding several matches: table:" + getTableName()
+							+ " property: " + propertyName
+							+ " value: " + uniqueKey );
+		}
+		//throw new NotYetImplementedException( "Cannot yet load by unique key");
+	}
+
+	private GridType getUniqueKeyTypeFromAssociatedEntity(String propertyName) {
+		GridType gridUniqueKeyType;//get the unique key type and if it's an entity type, get it's identifier type
+		final Type uniqueKeyType = propertyMapping.toType( propertyName );
+		if ( uniqueKeyType.isEntityType() ) {
+			String className = ( ( EntityType ) uniqueKeyType ).getAssociatedEntityName();
+			//we run under the assumption that we are fully in an OGM world
+			final OgmEntityPersister entityPersister = (OgmEntityPersister) getFactory().getEntityPersister( className );
+			gridUniqueKeyType = entityPersister.getGridIdentifierType();
+		}
+		else {
+			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
+		}
+		return gridUniqueKeyType;
 	}
 
 	@Override
