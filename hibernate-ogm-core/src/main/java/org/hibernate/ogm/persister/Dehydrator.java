@@ -92,62 +92,97 @@ class Dehydrator {
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
 		final Cache<PropertyKey, List<Serializable>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
-		for ( int index = 0; index < entityMetamodel.getPropertySpan(); index++ ) {
-			if ( persister.isPropertyOfTable( index, tableIndex ) ) {
+		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
+			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
 				if ( removePropertyMetadata ) {
 					//remove from property cache
-					if ( uniqueness[index] ) {
-						Object[] oldColumnValues = Helper.getColumnValuesFromResultset( resultset, index, persister );
-						PropertyKey propertyKey = new PropertyKey(
-								persister.getTableName( tableIndex ),
-								persister.getPropertyNames()[index],
-								oldColumnValues
-						);
-						List<Serializable> propertyValues = propertyCache.get( propertyKey );
-						if ( propertyValues != null ) {
-							final boolean lastId = propertyValues.size() == 1 && id.equals( propertyValues.get( 0 ) );
-							if ( lastId ) {
-								propertyCache.remove( propertyKey );
-							}
-							else {
-								//TODO should we remove all (ie remove till it returns false?
-								propertyValues.remove( id );
-								propertyCache.put( propertyKey, propertyValues );
-							}
+					if ( uniqueness[propertyIndex] ) {
+						Object[] oldColumnValues = Helper.getColumnValuesFromResultset( resultset,
+								propertyIndex, persister );
+						//don't index null columns, this means not association
+						if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
+							doRemovePropertyMetadata(
+									propertyCache,
+									tableIndex,
+									propertyIndex,
+									oldColumnValues);
 						}
 					}
 				}
 
-				if ( dehydrate && includeProperties[index] ) {
+				if ( dehydrate && includeProperties[propertyIndex] ) {
 					//dehydrate
-					gridPropertyTypes[index].nullSafeSet(
+					gridPropertyTypes[propertyIndex].nullSafeSet(
 							resultset,
-							fields[index],
-							persister.getPropertyColumnNames( index ),
-							includeColumns[index],
+							fields[propertyIndex],
+							persister.getPropertyColumnNames( propertyIndex ),
+							includeColumns[propertyIndex],
 							session
 					);
 				}
 
 				if ( addPropertyMetadata ) {
 					//add to property cache
-					if ( uniqueness[index] ) {
-						Object[] newColumnValues = Helper.getColumnValuesFromResultset( resultset, index, persister );
-
-						PropertyKey propertyKey = new PropertyKey(
-								persister.getTableName( tableIndex ),
-								persister.getPropertyNames()[index],
-								newColumnValues
-						);
-						List<Serializable> propertyValues = propertyCache.get( propertyKey );
-						if ( propertyValues == null ) {
-							propertyValues = new ArrayList<Serializable>();
+					if ( uniqueness[propertyIndex] ) {
+						Object[] newColumnValues = Helper.getColumnValuesFromResultset( resultset,
+								propertyIndex, persister );
+						//don't index null columns, this means not association
+						if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
+							doAddPropertyMetadata(
+									propertyCache,
+									tableIndex,
+									propertyIndex,
+									newColumnValues);
 						}
-						propertyValues.add( id );
-						propertyCache.put( propertyKey, propertyValues );
 					}
 				}
 			}
 		}
+	}
+
+	private void doAddPropertyMetadata(Cache<PropertyKey, List<Serializable>> propertyCache,
+										  int tableIndex,
+										  int propertyIndex,
+										  Object[] newColumnValue) {
+		PropertyKey propertyKey = new PropertyKey(
+				persister.getTableName( tableIndex ),
+				persister.getPropertyNames()[propertyIndex],
+				newColumnValue);
+		List<Serializable> propertyValues = propertyCache.get( propertyKey );
+		if ( propertyValues == null ) {
+			propertyValues = new ArrayList<Serializable>();
+		}
+		propertyValues.add( id );
+		propertyCache.put( propertyKey, propertyValues );
+	}
+
+	private void doRemovePropertyMetadata(Cache<PropertyKey, List<Serializable>> propertyCache,
+										  int tableIndex,
+										  int propertyIndex,
+										  Object[] oldColumnValue) {
+
+		PropertyKey propertyKey = new PropertyKey(
+				persister.getTableName( tableIndex ),
+				persister.getPropertyNames()[propertyIndex],
+				oldColumnValue);
+		List<Serializable> propertyValues = propertyCache.get( propertyKey );
+		if ( propertyValues != null ) {
+			final boolean lastId = propertyValues.size() == 1 && id.equals( propertyValues.get( 0 ) );
+			if ( lastId ) {
+				propertyCache.remove( propertyKey );
+			}
+			else {
+				//TODO should we remove all (ie remove till it returns false?
+				propertyValues.remove( id );
+				propertyCache.put( propertyKey, propertyValues );
+			}
+		}
+	}
+
+	private boolean isEmptyOrAllColumnsNull(Object[] objects) {
+		for (Object object : objects) {
+			if ( object != null ) return false;
+		}
+		return true;
 	}
 }
