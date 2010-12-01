@@ -107,7 +107,7 @@ class Dehydrator {
 						if ( propertyValues != null ) {
 							final boolean lastId = propertyValues.size() == 1 && id.equals( propertyValues.get( 0 ) );
 							if ( lastId ) {
-								propertyCache.remove( propertyValues );
+								propertyCache.remove( propertyKey );
 							}
 							else {
 								//TODO should we remove all (ie remove till it returns false?
