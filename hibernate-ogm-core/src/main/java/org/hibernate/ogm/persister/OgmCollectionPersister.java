@@ -132,4 +132,16 @@ public class OgmCollectionPersister extends AbstractCollectionPersister {
 	public boolean consumesCollectionAlias() {
 		return false;  //To change body of implemented methods use File | Settings | File Templates.
 	}
+
+	@Override
+	protected void logStaticSQL() {
+		if ( log.isDebugEnabled() ) {
+			log.debug( "No SQL used when using OGM: " + getRole() );
+		}
+	}
+
+	@Override
+	public void postInstantiate() throws MappingException {
+		//we don't have custom query loader, nothing to do
+	}
 }
