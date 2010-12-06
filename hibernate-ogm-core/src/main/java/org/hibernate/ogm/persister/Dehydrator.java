@@ -104,8 +104,9 @@ class Dehydrator {
 				if ( removePropertyMetadata ) {
 					//remove from property cache
 					if ( uniqueness[propertyIndex] ) {
-						Object[] oldColumnValues = Helper.getColumnValuesFromResultset( resultset,
-								propertyIndex, persister );
+						Object[] oldColumnValues = Helper.getColumnValuesFromResultset(
+								resultset,
+								persister.getPropertyColumnNames( propertyIndex ) );
 						//don't index null columns, this means not association
 						if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
 							doRemovePropertyMetadata(
@@ -131,8 +132,9 @@ class Dehydrator {
 				if ( addPropertyMetadata ) {
 					//add to property cache
 					if ( uniqueness[propertyIndex] ) {
-						Object[] newColumnValues = Helper.getColumnValuesFromResultset( resultset,
-								propertyIndex, persister );
+						Object[] newColumnValues = Helper.getColumnValuesFromResultset(
+								resultset,
+								persister.getPropertyColumnNames( propertyIndex ) );
 						//don't index null columns, this means not association
 						if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
 							doAddPropertyMetadata(

@@ -379,9 +379,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
 		//get the associated property index (to get its column names)
 		final int propertyIndex = getPropertyIndex( propertyName );
-		Map<String, Object> tempResultset = new HashMap<String, Object>(2);
-		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, getPropertyColumnNames( propertyIndex ), session) ;
-		final Object[] columnValues = Helper.getColumnValuesFromResultset( tempResultset, propertyIndex, this );
+		final Object[] columnValues = Helper.getColumnsValuesFromObjectValue(
+				uniqueKey, gridUniqueKeyType, getPropertyColumnNames( propertyIndex ), session
+		);
 		//find the ids per unique property name
 		final List<Map<String,Object>> ids = propertyCache.get(
 				new PropertyKey(
