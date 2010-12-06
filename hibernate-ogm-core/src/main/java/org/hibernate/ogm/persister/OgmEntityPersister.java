@@ -385,7 +385,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		//find the ids per unique property name
 		final List<Serializable> ids = propertyCache.get(
 				new PropertyKey(
-						getTableName(), propertyName, columnValues
+						getTableName(), getPropertyColumnNames( propertyName ), columnValues
 				)
 		);
 		if (ids == null || ids.size() == 0 ) {

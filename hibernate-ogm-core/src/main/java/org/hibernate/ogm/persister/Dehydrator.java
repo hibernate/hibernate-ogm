@@ -146,7 +146,7 @@ class Dehydrator {
 										  Object[] newColumnValue) {
 		PropertyKey propertyKey = new PropertyKey(
 				persister.getTableName( tableIndex ),
-				persister.getPropertyNames()[propertyIndex],
+				persister.getPropertyColumnNames(propertyIndex),
 				newColumnValue);
 		List<Serializable> propertyValues = propertyCache.get( propertyKey );
 		if ( propertyValues == null ) {
@@ -163,7 +163,7 @@ class Dehydrator {
 
 		PropertyKey propertyKey = new PropertyKey(
 				persister.getTableName( tableIndex ),
-				persister.getPropertyNames()[propertyIndex],
+				persister.getPropertyColumnNames(propertyIndex),
 				oldColumnValue);
 		List<Serializable> propertyValues = propertyCache.get( propertyKey );
 		if ( propertyValues != null ) {

@@ -10,13 +10,12 @@ import java.util.Arrays;
  */
 public class PropertyKey {
 	private final String table;
-	//TODO replace property with columns
-	private final String property;
+	private final String[] columns;
 	private final Object[] columnValues;
 
-	public PropertyKey(String table, String property, Object[] columnValues) {
+	public PropertyKey(String table, String[] columns, Object[] columnValues) {
 		this.table = table;
-		this.property = property;
+		this.columns = columns;
 		this.columnValues = columnValues;
 	}
 
@@ -31,13 +30,14 @@ public class PropertyKey {
 
 		PropertyKey that = ( PropertyKey ) o;
 
+		// Probably incorrect - comparing Object[] arrays with Arrays.equals
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
 			return false;
 		}
-		if ( property != null ? !property.equals( that.property ) : that.property != null ) {
+		if ( !Arrays.equals( columns, that.columns ) ) {
 			return false;
 		}
-		if ( table != null ? !table.equals( that.table ) : that.table != null ) {
+		if ( !table.equals( that.table ) ) {
 			return false;
 		}
 
@@ -46,9 +46,9 @@ public class PropertyKey {
 
 	@Override
 	public int hashCode() {
-		int result = table != null ? table.hashCode() : 0;
-		result = 31 * result + ( property != null ? property.hashCode() : 0 );
-		result = 31 * result + ( columnValues != null ? Arrays.hashCode( columnValues ) : 0 );
+		int result = table.hashCode();
+		result = 31 * result + Arrays.hashCode( columns );
+		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
 
@@ -57,7 +57,7 @@ public class PropertyKey {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "PropertyKey" );
 		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", property='" ).append( property ).append( '\'' );
+		sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
 		sb.append( ", columnValues=" )
 				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
