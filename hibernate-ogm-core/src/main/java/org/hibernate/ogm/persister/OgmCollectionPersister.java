@@ -64,7 +64,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister {
 	@Override
 	protected CollectionInitializer createCollectionInitializer(LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		//TODO pass constructor
+		return new OgmCollectionInitializer(this);
 	}
 
 	@Override
@@ -143,5 +144,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister {
 	@Override
 	public void postInstantiate() throws MappingException {
 		//we don't have custom query loader, nothing to do
+	}
+
+	@Override
+	protected CollectionInitializer getAppropriateInitializer(Serializable key, SessionImplementor session) {
+		//we have no query loader
+		//we don't handle subselect
+		//we don't know how to support filters on OGM today
+		return createCollectionInitializer( session.getLoadQueryInfluencers() );
 	}
 }
