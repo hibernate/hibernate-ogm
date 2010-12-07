@@ -102,7 +102,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	@Override
 	public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
-		Object result = loadEntityAndNonLazyCollections(
+		Object result = doQueryAndInitializeNonLazyCollections(
 				session,
 				id,
 				persister.getIdentifierType(),
@@ -119,7 +119,16 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Load the entity activating the persistence context execution boundaries
 	 */
-	private Object loadEntityAndNonLazyCollections(SessionImplementor session, Serializable id, Type identifierType, Object optionalObject, String optionalEntityName, Serializable optionalId, OgmEntityPersister persister, LockOptions lockOptions, boolean returnProxies) {
+	private Object doQueryAndInitializeNonLazyCollections(
+			SessionImplementor session,
+			Serializable id,
+			Type identifierType,
+			Object optionalObject,
+			String optionalEntityName,
+			Serializable optionalId,
+			OgmEntityPersister persister,
+			LockOptions lockOptions,
+			boolean returnProxies) {
 		if ( log.isDebugEnabled() ) {
 			log.debug(
 					"loading entity: " +
@@ -134,7 +143,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		Object result;
 		try {
 			try {
-				result = loadEntity(
+				result = doQuery(
 						session,
 						id,
 						identifierType,
@@ -160,7 +169,19 @@ public class OgmLoader implements UniqueEntityLoader {
 		return result;
 	}
 
-	private Object loadEntity(SessionImplementor session, Serializable id, Type identifierType, Object optionalObject, String optionalEntityName, Serializable optionalId, OgmEntityPersister persister, LockOptions lockOptions, boolean returnProxies) {
+	/**
+	 * Execute the physical query and initialize the various entities and collections
+	 */
+	private Object doQuery(
+			SessionImplementor session,
+			Serializable id,
+			Type identifierType,
+			Object optionalObject,
+			String optionalEntityName,
+			Serializable optionalId,
+			OgmEntityPersister persister,
+			LockOptions lockOptions,
+			boolean returnProxies) {
 		//TODO support lock timeout
 
 		int entitySpan = 1; //only one persister at this stage
