@@ -209,8 +209,9 @@ public class OgmLoader implements UniqueEntityLoader {
 		qp.setOptionalId( optionalId );
 		qp.setLockOptions( lockOptions );
 
-		//FIXME
-		//handleEmptyCollections()
+		//TODO is resultset a good marker, or should it be an ad-hoc marker??
+		//It likely all depends on what resultset ends up being
+		handleEmptyCollections( qp.getCollectionKeys(), resultset, session );
 
 
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
@@ -237,6 +238,45 @@ public class OgmLoader implements UniqueEntityLoader {
 		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
 		//TODO create subselects
 		return result;
+	}
+
+	/**
+	 * If this is a collection initializer, we need to tell the session that a collection
+	 * is being initialized, to account for the possibility of the collection having
+	 * no elements (hence no rows in the result set).
+	 */
+	private void handleEmptyCollections(
+	        final Serializable[] keys,
+	        final Object resultSetId,
+	        final SessionImplementor session) {
+
+		if ( keys != null ) {
+			// this is a collection initializer, so we must create a collection
+			// for each of the passed-in keys, to account for the possibility
+			// that the collection is empty and has no rows in the result set
+
+			CollectionPersister[] collectionPersisters = getCollectionPersisters();
+			for ( int j=0; j<collectionPersisters.length; j++ ) {
+				for ( int i = 0; i < keys.length; i++ ) {
+					//handle empty collections
+
+					if ( log.isDebugEnabled() ) {
+						log.debug(
+								"result set contains (possibly empty) collection: " +
+								MessageHelper.collectionInfoString( collectionPersisters[j], keys[i], getFactory() )
+							);
+					}
+
+					session.getPersistenceContext()
+							.getLoadContexts()
+							.getCollectionLoadContext( resultSetId )
+							.getLoadingCollection( collectionPersisters[j], keys[i] );
+				}
+			}
+		}
+
+		// else this is not a collection initializer (and empty collections will
+		// be detected by looking for the owner's identifier in the result set)
 	}
 
 	private Object getRowFromResultSet(
