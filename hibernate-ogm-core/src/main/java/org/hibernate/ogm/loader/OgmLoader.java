@@ -213,11 +213,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//It likely all depends on what resultset ends up being
 		handleEmptyCollections( qp.getCollectionKeys(), resultset, session );
 
-
-		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
-		//in the mean time the next two lines are the simplified version
-		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
-		final org.hibernate.engine.EntityKey[] keys = { key };
+		final org.hibernate.engine.EntityKey[] keys = new org.hibernate.engine.EntityKey[entitySpan];
 
 		//for each element in resultset
 
@@ -287,10 +283,10 @@ public class OgmLoader implements UniqueEntityLoader {
 			List<Object> hydratedObjects,
 			org.hibernate.engine.EntityKey[] keys,
 			boolean returnProxies) {
-
 		final OgmEntityPersister[] persisters = getEntityPersisters();
 		final int entitySpan = persisters.length;
-		//FIXME extractKeysFromResultSet
+		extractKeysFromResultSet( session, optionalId, keys );
+
 		registerNonExists( keys, persisters, session);
 
 		//it's a non existing object: cut short
@@ -328,6 +324,13 @@ public class OgmLoader implements UniqueEntityLoader {
 		//nothing to do atm it seems, the code in Hibernate Core does not do anything either
 
 		return getResultColumnOrRow( row );
+	}
+
+	private void extractKeysFromResultSet(SessionImplementor session, Serializable optionalId, org.hibernate.engine.EntityKey[] keys) {
+		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
+		//in the mean time the next two lines are the simplified version
+		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
+		keys[0] = key;
 	}
 
 	private Map<String, Object> getResultSet(Serializable id, OgmEntityPersister persister) {
