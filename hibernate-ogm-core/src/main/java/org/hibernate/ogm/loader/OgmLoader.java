@@ -52,6 +52,7 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
@@ -114,6 +115,10 @@ public class OgmLoader implements UniqueEntityLoader {
 				false
 			);
 		return result;
+	}
+
+	OgmEntityPersister[] getEntityPersisters() {
+		return new OgmEntityPersister[] { persister };
 	}
 
 	/**
@@ -188,14 +193,14 @@ public class OgmLoader implements UniqueEntityLoader {
 		final OgmEntityPersister[] persisters = { persister };
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 
-		//extractLeysFromResultSet
-		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
-		//in the mean time the next two lines are the simplified version
-		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
-		final org.hibernate.engine.EntityKey[] keys = { key };
+		final Map<String, Object> resultset = getResultSet( id, persister );
 
-		registerNonExists( keys, persisters, session);
+		//Todo implement lockmode
+		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
+		//FIXME should we use subselects as it's closer to this process??
 
+
+		//TODO Move up eventually
 		QueryParameters qp = new QueryParameters();
 		qp.setPositionalParameterTypes( new Type[] { identifierType } );
 		qp.setPositionalParameterValues( new Object[] { id } );
@@ -204,8 +209,49 @@ public class OgmLoader implements UniqueEntityLoader {
 		qp.setOptionalId( optionalId );
 		qp.setLockOptions( lockOptions );
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String,Object> resultset = entityCache.get( new EntityKey( persister.getTableName(), id ) );
+		//FIXME
+		//handleEmptyCollections()
+
+
+		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
+		//in the mean time the next two lines are the simplified version
+		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
+		final org.hibernate.engine.EntityKey[] keys = { key };
+
+		//for each element in resultset
+
+		Object result = getRowFromResultSet(
+				resultset,
+				session,
+				qp,
+				//lockmodeArray,
+				optionalId,
+				hydratedObjects,
+				keys,
+				returnProxies);
+
+		//TODO collect subselect result key
+
+		//end of for each element in resultset
+
+		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
+		//TODO create subselects
+		return result;
+	}
+
+	private Object getRowFromResultSet(
+			Map<String, Object> resultset,
+			SessionImplementor session,
+			QueryParameters qp,
+			Serializable optionalId,
+			List<Object> hydratedObjects,
+			org.hibernate.engine.EntityKey[] keys,
+			boolean returnProxies) {
+
+		final OgmEntityPersister[] persisters = getEntityPersisters();
+		final int entitySpan = persisters.length;
+		//FIXME extractKeysFromResultSet
+		registerNonExists( keys, persisters, session);
 
 		//it's a non existing object: cut short
 		if (resultset == null) {
@@ -216,7 +262,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				resultset,
 				persisters,
 				keys,
-				optionalObject,
+				qp.getOptionalObject(),
 				getOptionalObjectKey( qp, session ),
 				getLockModes( qp.getLockOptions() ),
 				hydratedObjects,
@@ -241,9 +287,13 @@ public class OgmLoader implements UniqueEntityLoader {
 		//applyPostLoadLocks
 		//nothing to do atm it seems, the code in Hibernate Core does not do anything either
 
-		final Object result = getResultColumnOrRow( row );
-		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
-		return result;
+		return getResultColumnOrRow( row );
+	}
+
+	private Map<String, Object> getResultSet(Serializable id, OgmEntityPersister persister) {
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final Map<String,Object> resultset = entityCache.get( new EntityKey( persister.getTableName(), id ) );
+		return resultset;
 	}
 
 	private Object getResultColumnOrRow(Object[] row) {
