@@ -118,7 +118,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	OgmEntityPersister[] getEntityPersisters() {
-		return new OgmEntityPersister[] { persister };
+		//TODO cache this
+		if ( persister == null ) {
+			return new OgmEntityPersister[] {};
+		}
+		else {
+			return new OgmEntityPersister[] { persister };
+		}
 	}
 
 	/**
@@ -329,8 +335,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	private void extractKeysFromResultSet(SessionImplementor session, Serializable optionalId, org.hibernate.engine.EntityKey[] keys) {
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
-		final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
-		keys[0] = key;
+		if (keys.length == 0) {
+			//do nothing, this is a collection
+		}
+		else {
+			final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
+			keys[0] = key;
+		}
 	}
 
 	private Map<String, Object> getResultSet(Serializable id, OgmEntityPersister persister) {
