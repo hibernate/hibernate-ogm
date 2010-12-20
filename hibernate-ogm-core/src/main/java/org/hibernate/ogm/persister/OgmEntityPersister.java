@@ -490,14 +490,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	protected UniqueEntityLoader createEntityLoader(LockMode lockMode, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//FIXME add support to lock mode and loadQueryInfluencers
-		return new OgmLoader( this );
+		return new OgmLoader( new OgmEntityPersister[] { this } );
 	}
 
 	@Override
 	protected UniqueEntityLoader createEntityLoader(LockOptions lockOptions, LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//FIXME add support to lock options and loadQueryInfluencers
-		return new OgmLoader( this );
+		return new OgmLoader( new OgmEntityPersister[] { this } );
 	}
 
 	@Override

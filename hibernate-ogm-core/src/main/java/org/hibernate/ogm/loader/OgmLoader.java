@@ -36,6 +36,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.WrongClassException;
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.EntityUniqueKey;
 import org.hibernate.engine.PersistenceContext;
@@ -53,7 +54,6 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
@@ -72,19 +72,22 @@ import org.hibernate.util.StringHelper;
 public class OgmLoader implements UniqueEntityLoader {
 	private static final Logger log = LoggerFactory.getLogger( OgmLoader.class );
 
-	private final OgmEntityPersister persister;
+	private final OgmEntityPersister[] entityPersisters;
+	private final OgmCollectionPersister[] collectionPersisters;
 	private final GridMetadataManager gridManager;
 	private final SessionFactoryImplementor factory;
 	private LockMode[] defaultLockModes;
-	private final OgmCollectionPersister collectionPersister;
 
 	/**
 	 * Load a collection
 	 */
-	public OgmLoader(OgmCollectionPersister collectionPersister) {
-		this.persister = null;
-		this.collectionPersister = collectionPersister;
-		this.factory = collectionPersister.getFactory();
+	public OgmLoader(OgmCollectionPersister[] collectionPersisters) {
+		if ( collectionPersisters == null || collectionPersisters.length == 0) {
+			throw new AssertionFailure( "CollectionPersister[] must not be null or empty" );
+		}
+		this.entityPersisters = new OgmEntityPersister[] {};
+		this.collectionPersisters = collectionPersisters;
+		this.factory = collectionPersisters[0].getFactory();
 		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
 
 		//NONE, because its the requested lock mode, not the actual!
@@ -95,11 +98,14 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Load an entity
 	 */
-	public OgmLoader(OgmEntityPersister persister) {
-		this.persister = persister;
-		this.collectionPersister = null;
-		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( persister.getFactory() );
-		this.factory = persister.getFactory();
+	public OgmLoader(OgmEntityPersister[] entityPersisters) {
+		if ( entityPersisters == null || entityPersisters.length == 0) {
+			throw new AssertionFailure( "EntityPersister[] must not be null or empty" );
+		}
+		this.entityPersisters = entityPersisters;
+		this.collectionPersisters = new OgmCollectionPersister[] {};
+		this.factory = entityPersisters[0].getFactory();
+		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
 
 		//NONE, because its the requested lock mode, not the actual! 
 		final int fromSize = 1;
@@ -123,14 +129,15 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	@Override
 	public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
+		final OgmEntityPersister currentPersister = entityPersisters[0];
 		Object result = doQueryAndInitializeNonLazyCollections(
 				session,
 				id,
-				persister.getIdentifierType(),
+				currentPersister.getIdentifierType(),
 				optionalObject,
-				persister.getEntityName(),
+				currentPersister.getEntityName(),
 				id,
-				persister,
+				currentPersister,
 				lockOptions,
 				false
 			);
@@ -138,13 +145,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	OgmEntityPersister[] getEntityPersisters() {
-		//TODO cache this
-		if ( persister == null ) {
-			return new OgmEntityPersister[] {};
-		}
-		else {
-			return new OgmEntityPersister[] { persister };
-		}
+		return entityPersisters;
 	}
 
 	/**
@@ -359,7 +360,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			//do nothing, this is a collection
 		}
 		else {
-			final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, persister, session.getEntityMode() );
+			final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, entityPersisters[0], session.getEntityMode() );
 			keys[0] = key;
 		}
 	}
@@ -380,7 +381,8 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	private void readCollectionElements(Object[] row, Map<String, Object> resultset, SessionImplementor session)
 			throws HibernateException {
-		//FIXME implement it :)
+		final CollectionPersister[] collectionPersisters = getCollectionPersisters();
+
 	}
 
 	/**
@@ -466,7 +468,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied from Loader#getCollectionPersisters
 	 */
 	protected CollectionPersister[] getCollectionPersisters() {
-		return new CollectionPersister[] { collectionPersister };
+		return collectionPersisters;
 	}
 
 	/**
