@@ -50,6 +50,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -75,9 +76,28 @@ public class OgmLoader implements UniqueEntityLoader {
 	private final GridMetadataManager gridManager;
 	private final SessionFactoryImplementor factory;
 	private LockMode[] defaultLockModes;
+	private final OgmCollectionPersister collectionPersister;
 
+	/**
+	 * Load a collection
+	 */
+	public OgmLoader(OgmCollectionPersister collectionPersister) {
+		this.persister = null;
+		this.collectionPersister = collectionPersister;
+		this.factory = collectionPersister.getFactory();
+		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
+
+		//NONE, because its the requested lock mode, not the actual!
+		final int fromSize = 1;
+		this.defaultLockModes = ArrayHelper.fillArray( LockMode.NONE, fromSize );
+	}
+
+	/**
+	 * Load an entity
+	 */
 	public OgmLoader(OgmEntityPersister persister) {
 		this.persister = persister;
+		this.collectionPersister = null;
 		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( persister.getFactory() );
 		this.factory = persister.getFactory();
 
@@ -446,7 +466,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied from Loader#getCollectionPersisters
 	 */
 	protected CollectionPersister[] getCollectionPersisters() {
-		return null;
+		return new CollectionPersister[] { collectionPersister };
 	}
 
 	/**
