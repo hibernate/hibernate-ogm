@@ -24,6 +24,8 @@
 package org.hibernate.ogm.loader;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.hibernate.LockOptions;
 import org.hibernate.WrongClassException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cfg.NotYetImplementedException;
+import org.hibernate.collection.PersistentCollection;
 import org.hibernate.engine.EntityUniqueKey;
 import org.hibernate.engine.PersistenceContext;
 import org.hibernate.engine.QueryParameters;
@@ -49,6 +52,7 @@ import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
@@ -220,7 +224,9 @@ public class OgmLoader implements UniqueEntityLoader {
 		final OgmEntityPersister[] persisters = { persister };
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 
-		final Map<String, Object> resultset = getResultSet( id, persister );
+		//TODO CURRENT if OgmEntityPersister stay as is
+		// if OgmCollectionPersister, return the list of ids of the collection
+		TupleAsMapResultSet resultset = getResultSet( id, persister );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
@@ -243,18 +249,26 @@ public class OgmLoader implements UniqueEntityLoader {
 		final org.hibernate.engine.EntityKey[] keys = new org.hibernate.engine.EntityKey[entitySpan];
 
 		//for each element in resultset
+		//TODO should we collect List<Object> as result? Not necessary today
+		Object result = null;
+		try {
+			while ( resultset.next() ) {
+				result = getRowFromResultSet(
+						resultset,
+						session,
+						qp,
+						//lockmodeArray,
+						optionalId,
+						hydratedObjects,
+						keys,
+						returnProxies);
+			}
 
-		Object result = getRowFromResultSet(
-				resultset,
-				session,
-				qp,
-				//lockmodeArray,
-				optionalId,
-				hydratedObjects,
-				keys,
-				returnProxies);
-
-		//TODO collect subselect result key
+			//TODO collect subselect result key
+		}
+		catch ( SQLException e ) {
+			//never happens this is not a regular ResultSet
+		}
 
 		//end of for each element in resultset
 
@@ -303,13 +317,14 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	private Object getRowFromResultSet(
-			Map<String, Object> resultset,
+			ResultSet resultset,
 			SessionImplementor session,
 			QueryParameters qp,
 			Serializable optionalId,
 			List<Object> hydratedObjects,
 			org.hibernate.engine.EntityKey[] keys,
-			boolean returnProxies) {
+			boolean returnProxies)
+	throws SQLException {
 		final OgmEntityPersister[] persisters = getEntityPersisters();
 		final int entitySpan = persisters.length;
 		extractKeysFromResultSet( session, optionalId, keys );
@@ -322,7 +337,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		}
 
 		final Object[] row = getRow(
-				resultset,
+				resultset.unwrap( TupleAsMapResultSet.class ).getTuple(),
 				persisters,
 				keys,
 				qp.getOptionalObject(),
@@ -365,9 +380,13 @@ public class OgmLoader implements UniqueEntityLoader {
 		}
 	}
 
-	private Map<String, Object> getResultSet(Serializable id, OgmEntityPersister persister) {
+	private TupleAsMapResultSet getResultSet(Serializable id, OgmEntityPersister persister) {
 		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String,Object> resultset = entityCache.get( new EntityKey( persister.getTableName(), id ) );
+		final Map<String,Object> entry = entityCache.get( new EntityKey( persister.getTableName(), id ) );
+		TupleAsMapResultSet resultset = new TupleAsMapResultSet();
+		if ( entry != null ) {
+			resultset.addTuple( entry );
+		}
 		return resultset;
 	}
 
@@ -379,9 +398,128 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	}
 
-	private void readCollectionElements(Object[] row, Map<String, Object> resultset, SessionImplementor session)
-			throws HibernateException {
+	private void readCollectionElements(Object[] row, ResultSet resultSet, SessionImplementor session)
+			throws HibernateException, SQLException {
+		//TODO: make this handle multiple collection roles!
+
 		final CollectionPersister[] collectionPersisters = getCollectionPersisters();
+		if ( collectionPersisters != null ) {
+
+			//we don't load more than one instance per row, shortcircuiting it for the moment
+			final int[] collectionOwners = null;
+
+			for ( int i=0; i<collectionPersisters.length; i++ ) {
+
+				final boolean hasCollectionOwners = collectionOwners !=null &&
+						collectionOwners[i] > -1;
+				//true if this is a query and we are loading multiple instances of the same collection role
+				//otherwise this is a CollectionInitializer and we are loading up a single collection or batch
+
+				final Object owner = hasCollectionOwners ?
+						row[ collectionOwners[i] ] :
+						null; //if null, owner will be retrieved from session
+
+				final CollectionPersister collectionPersister = collectionPersisters[i];
+				final Serializable key;
+				if ( owner == null ) {
+					key = null;
+				}
+				else {
+					key = collectionPersister.getCollectionType().getKeyOfOwner( owner, session );
+					//TODO: old version did not require hashmap lookup:
+					//keys[collectionOwner].getIdentifier()
+				}
+
+				readCollectionElement(
+						owner,
+						key,
+						collectionPersister,
+						resultSet, //TODO CURRENT must use the same instance across all calls
+						session
+					);
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * Read one collection element from the current row of the JDBC result set
+	 */
+	private void readCollectionElement(
+	        final Object optionalOwner,
+	        final Serializable optionalKey,
+	        final CollectionPersister persister,
+	        //final CollectionAliases descriptor,
+	        final ResultSet rs,
+	        final SessionImplementor session)
+	throws HibernateException, SQLException {
+
+		final PersistenceContext persistenceContext = session.getPersistenceContext();
+
+		//implement persister.readKey using the grid type (later)
+		final Serializable collectionRowKey = (Serializable) persister.readKey(
+				rs,
+				null, //descriptor.getSuffixedKeyAliases(),
+				session
+			);
+
+		if ( collectionRowKey != null ) {
+			// we found a collection element in the result set
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"found row of collection: " +
+						MessageHelper.collectionInfoString( persister, collectionRowKey, getFactory() )
+					);
+			}
+
+			Object owner = optionalOwner;
+			if ( owner == null ) {
+				owner = persistenceContext.getCollectionOwner( collectionRowKey, persister );
+				if ( owner == null ) {
+					//TODO: This is assertion is disabled because there is a bug that means the
+					//	  original owner of a transient, uninitialized collection is not known
+					//	  if the collection is re-referenced by a different object associated
+					//	  with the current Session
+					//throw new AssertionFailure("bug loading unowned collection");
+				}
+			}
+
+			PersistentCollection rowCollection = persistenceContext.getLoadContexts()
+					.getCollectionLoadContext( rs )
+					.getLoadingCollection( persister, collectionRowKey );
+
+			if ( rowCollection != null ) {
+				//TODO CURRENT implement
+				rowCollection.readFrom(
+						rs,
+						persister,
+						null, //descriptor,
+						owner );
+			}
+
+		}
+		else if ( optionalKey != null ) {
+			// we did not find a collection element in the result set, so we
+			// ensure that a collection is created with the owner's identifier,
+			// since what we have is an empty collection
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"result set contains (possibly empty) collection: " +
+						MessageHelper.collectionInfoString( persister, optionalKey, getFactory() )
+					);
+			}
+
+			persistenceContext.getLoadContexts()
+					.getCollectionLoadContext( rs )
+					.getLoadingCollection( persister, optionalKey ); // handle empty collection
+
+		}
+
+		// else no collection element, but also no owner
 
 	}
 
