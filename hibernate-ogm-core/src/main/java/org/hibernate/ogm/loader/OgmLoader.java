@@ -146,6 +146,12 @@ public class OgmLoader implements UniqueEntityLoader {
 	@Override
 	public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
 		final OgmEntityPersister currentPersister = entityPersisters[0];
+		if ( log.isDebugEnabled() ) {
+			log.debug(
+					"loading entity: " +
+					MessageHelper.infoString( currentPersister, id, currentPersister.getIdentifierType(), session.getFactory() )
+				);
+		}
 		Object result = doQueryAndInitializeNonLazyCollections(
 				session,
 				id,
@@ -153,11 +159,42 @@ public class OgmLoader implements UniqueEntityLoader {
 				optionalObject,
 				currentPersister.getEntityName(),
 				id,
-				currentPersister,
 				lockOptions,
 				false
 			);
 		return result;
+	}
+
+	/**
+	 * Called by subclasses that initialize collections
+	 */
+	public final void loadCollection(
+	        final SessionImplementor session,
+	        final Serializable id,
+	        final Type type) throws HibernateException {
+
+		if ( log.isDebugEnabled() ) {
+			log.debug(
+					"loading collection: "+
+					MessageHelper.collectionInfoString( getCollectionPersisters()[0], id, getFactory() )
+				);
+		}
+
+		//Serializable[] ids = new Serializable[]{id};
+		//new QueryParameters( new Type[]{type}, ids, ids ),
+		doQueryAndInitializeNonLazyCollections(
+				session,
+				id,
+				type,
+				null,
+				null,
+				null,
+				null,
+				true
+			);
+
+		log.debug("done loading collection");
+
 	}
 
 	OgmEntityPersister[] getEntityPersisters() {
@@ -174,15 +211,10 @@ public class OgmLoader implements UniqueEntityLoader {
 			Object optionalObject,
 			String optionalEntityName,
 			Serializable optionalId,
-			OgmEntityPersister persister,
+			//OgmEntityPersister persister,
 			LockOptions lockOptions,
 			boolean returnProxies) {
-		if ( log.isDebugEnabled() ) {
-			log.debug(
-					"loading entity: " +
-					MessageHelper.infoString( persister, id, identifierType, session.getFactory() )
-				);
-		}
+
 
 		//TODO handles the read only
 		final PersistenceContext persistenceContext = session.getPersistenceContext();
@@ -198,7 +230,6 @@ public class OgmLoader implements UniqueEntityLoader {
 						optionalObject,
 						optionalEntityName,
 						optionalId,
-						persister,
 						lockOptions,
 						returnProxies
 				);
@@ -227,18 +258,14 @@ public class OgmLoader implements UniqueEntityLoader {
 			Object optionalObject,
 			String optionalEntityName,
 			Serializable optionalId,
-			OgmEntityPersister persister,
 			LockOptions lockOptions,
 			boolean returnProxies) {
 		//TODO support lock timeout
 
 		int entitySpan = 1; //only one persister at this stage
-		final OgmEntityPersister[] persisters = { persister };
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 
-		//TODO CURRENT if OgmEntityPersister stay as is
-		// if OgmCollectionPersister, return the list of ids of the collection
-		TupleAsMapResultSet resultset = getResultSet( id, persister );
+		TupleAsMapResultSet resultset = getResultSet( id );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
@@ -392,12 +419,21 @@ public class OgmLoader implements UniqueEntityLoader {
 		}
 	}
 
-	private TupleAsMapResultSet getResultSet(Serializable id, OgmEntityPersister persister) {
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String,Object> entry = entityCache.get( new EntityKey( persister.getTableName(), id ) );
-		TupleAsMapResultSet resultset = new TupleAsMapResultSet();
-		if ( entry != null ) {
-			resultset.addTuple( entry );
+	private TupleAsMapResultSet getResultSet(Serializable id) {
+		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
+		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
+		if ( getEntityPersisters().length > 0 ) {
+			final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+			final Map<String,Object> entry = entityCache.get( new EntityKey( getEntityPersisters()[0].getTableName(), id ) );
+			if ( entry != null ) {
+				resultset.addTuple( entry );
+			}
+		}
+		else {
+			//collection persister
+			if ( getCollectionPersisters().length != 1 ) {
+				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
+			}
 		}
 		return resultset;
 	}

@@ -76,7 +76,7 @@ public class GridMetadataManagerHelper {
 		return getPropertyCache( getGridMetadataManager( factory ) );
 	}
 
-	private static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(GridMetadataManager manager) {
+	public static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
 		final Cache<PropertyKey, List<Map<String,Object>>> cache = cacheContainer.getCache( PROPERTY_CACHE );
 		return cache;
