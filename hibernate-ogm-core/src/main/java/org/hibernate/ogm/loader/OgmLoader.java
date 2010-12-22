@@ -50,6 +50,7 @@ import org.hibernate.engine.TwoPhaseLoad;
 import org.hibernate.event.EventSource;
 import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PreLoadEvent;
+import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
@@ -81,6 +82,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private final GridMetadataManager gridManager;
 	private final SessionFactoryImplementor factory;
 	private LockMode[] defaultLockModes;
+	private final CollectionAliases[] collectionAliases;
 
 	/**
 	 * Load a collection
@@ -97,6 +99,10 @@ public class OgmLoader implements UniqueEntityLoader {
 		//NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
 		this.defaultLockModes = ArrayHelper.fillArray( LockMode.NONE, fromSize );
+		this.collectionAliases = new CollectionAliases[collectionPersisters.length];
+		for (int i = 0 ; i < collectionPersisters.length ; i++) {
+		 	collectionAliases[i] = new OgmColumnCollectionAliases( collectionPersisters[i] );
+		}
 	}
 
 	/**
@@ -114,6 +120,12 @@ public class OgmLoader implements UniqueEntityLoader {
 		//NONE, because its the requested lock mode, not the actual! 
 		final int fromSize = 1;
 		this.defaultLockModes = ArrayHelper.fillArray( LockMode.NONE, fromSize );
+		this.collectionAliases = new CollectionAliases[0];
+	}
+
+	/** returns the collection column names */
+	public CollectionAliases[] getCollectionAliases() {
+		return collectionAliases;
 	}
 
 	private SessionFactoryImplementor getFactory() {
@@ -409,7 +421,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			final int[] collectionOwners = null;
 
 			for ( int i=0; i<collectionPersisters.length; i++ ) {
-
+				final CollectionAliases[] descriptors = getCollectionAliases();
 				final boolean hasCollectionOwners = collectionOwners !=null &&
 						collectionOwners[i] > -1;
 				//true if this is a query and we are loading multiple instances of the same collection role
@@ -434,6 +446,7 @@ public class OgmLoader implements UniqueEntityLoader {
 						owner,
 						key,
 						collectionPersister,
+						descriptors[i],
 						resultSet, //TODO CURRENT must use the same instance across all calls
 						session
 					);
@@ -451,7 +464,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final Object optionalOwner,
 	        final Serializable optionalKey,
 	        final CollectionPersister persister,
-	        //final CollectionAliases descriptor,
+	        final CollectionAliases descriptor,
 	        final ResultSet rs,
 	        final SessionImplementor session)
 	throws HibernateException, SQLException {
@@ -461,7 +474,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//implement persister.readKey using the grid type (later)
 		final Serializable collectionRowKey = (Serializable) persister.readKey(
 				rs,
-				null, //descriptor.getSuffixedKeyAliases(),
+				descriptor.getSuffixedKeyAliases(),
 				session
 			);
 
@@ -496,7 +509,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				rowCollection.readFrom(
 						rs,
 						persister,
-						null, //descriptor,
+						descriptor,
 						owner );
 			}
 
