@@ -374,7 +374,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			String propertyName,
 			Object uniqueKey,
 			SessionImplementor session) throws HibernateException {
-		final Cache<PropertyKey, List<Serializable>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
+		final Cache<PropertyKey, List<Map<String,Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
 		//we get the property type for an associated entity
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
 		//get the associated property index (to get its column names)
@@ -383,7 +383,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, getPropertyColumnNames( propertyIndex ), session) ;
 		final Object[] columnValues = Helper.getColumnValuesFromResultset( tempResultset, propertyIndex, this );
 		//find the ids per unique property name
-		final List<Serializable> ids = propertyCache.get(
+		final List<Map<String,Object>> ids = propertyCache.get(
 				new PropertyKey(
 						getTableName(), getPropertyColumnNames( propertyName ), columnValues
 				)
@@ -393,7 +393,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		else if (ids.size() == 1) {
 			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
-			return load( ids.get(0), null, LockMode.NONE, session );
+			final Map<String, Object> tuple = ids.get( 0 );
+			final Serializable id = (Serializable) getGridIdentifierType().nullSafeGet( tuple, getIdentifierColumnNames(), session, null );
+			return load( id, null, LockMode.NONE, session );
 		}
 		else {
 			throw new AssertionFailure(
@@ -787,6 +789,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		new Dehydrator()
 				.fields( fields )
 				.gridPropertyTypes( gridPropertyTypes )
+				.gridIdentifierType( gridIdentifierType )
 				.id( id )
 				.includeColumns( includeColumns )
 				.includeProperties( includeProperties )
@@ -952,6 +955,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			//delete property metadata
 			new Dehydrator()
 				.gridPropertyTypes( gridPropertyTypes )
+				.gridIdentifierType( gridIdentifierType )
 				.id( id )
 				.persister( this )
 				.resultset( resultset )

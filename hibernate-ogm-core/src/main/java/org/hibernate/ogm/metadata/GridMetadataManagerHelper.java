@@ -72,13 +72,13 @@ public class GridMetadataManagerHelper {
 		return cache;
 	}
 
-	public static Cache<PropertyKey, List<Serializable>> getPropertyCache(SessionFactoryImplementor factory) {
+	public static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(SessionFactoryImplementor factory) {
 		return getPropertyCache( getGridMetadataManager( factory ) );
 	}
 
-	private static Cache<PropertyKey, List<Serializable>> getPropertyCache(GridMetadataManager manager) {
+	private static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<PropertyKey, List<Serializable>> cache = cacheContainer.getCache( PROPERTY_CACHE );
+		final Cache<PropertyKey, List<Map<String,Object>>> cache = cacheContainer.getCache( PROPERTY_CACHE );
 		return cache;
 	}
 }

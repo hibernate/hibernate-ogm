@@ -2,6 +2,7 @@ package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ class Dehydrator {
 	private boolean addPropertyMetadata = true;
 	private boolean dehydrate = true;
 	private boolean removePropertyMetadata = true;
+	private GridType gridIdentifierType;
 
 
 	public Dehydrator persister(OgmEntityPersister persister) {
@@ -40,6 +42,11 @@ class Dehydrator {
 
 	public Dehydrator gridPropertyTypes(GridType[] gridPropertyTypes) {
 		this.gridPropertyTypes = gridPropertyTypes;
+		return this;
+	}
+
+	public Dehydrator gridIdentifierType(GridType gridIdentifierType) {
+		this.gridIdentifierType = gridIdentifierType;
 		return this;
 	}
 
@@ -91,7 +98,7 @@ class Dehydrator {
 		}
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
-		final Cache<PropertyKey, List<Serializable>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
+		final Cache<PropertyKey, List<Map<String,Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
 				if ( removePropertyMetadata ) {
@@ -140,7 +147,7 @@ class Dehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(Cache<PropertyKey, List<Serializable>> propertyCache,
+	private void doAddPropertyMetadata(Cache<PropertyKey, List<Map<String,Object>>> propertyCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] newColumnValue) {
@@ -148,15 +155,17 @@ class Dehydrator {
 				persister.getTableName( tableIndex ),
 				persister.getPropertyColumnNames(propertyIndex),
 				newColumnValue);
-		List<Serializable> propertyValues = propertyCache.get( propertyKey );
+		List<Map<String,Object>> propertyValues = propertyCache.get( propertyKey );
 		if ( propertyValues == null ) {
-			propertyValues = new ArrayList<Serializable>();
+			propertyValues = new ArrayList<Map<String,Object>>();
 		}
-		propertyValues.add( id );
+		Map<String,Object> idtuple = new HashMap<String, Object>(2);
+		gridIdentifierType.nullSafeSet( idtuple, id, persister.getIdentifierColumnNames(), session );
+		propertyValues.add( idtuple );
 		propertyCache.put( propertyKey, propertyValues );
 	}
 
-	private void doRemovePropertyMetadata(Cache<PropertyKey, List<Serializable>> propertyCache,
+	private void doRemovePropertyMetadata(Cache<PropertyKey, List<Map<String,Object>>> propertyCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] oldColumnValue) {
@@ -165,15 +174,19 @@ class Dehydrator {
 				persister.getTableName( tableIndex ),
 				persister.getPropertyColumnNames(propertyIndex),
 				oldColumnValue);
-		List<Serializable> propertyValues = propertyCache.get( propertyKey );
+		List<Map<String,Object>> propertyValues = propertyCache.get( propertyKey );
+		Map<String,Object> idTuple = new HashMap<String, Object>(2);
+		gridIdentifierType.nullSafeSet( idTuple, id, persister.getIdentifierColumnNames(), session );
 		if ( propertyValues != null ) {
-			final boolean lastId = propertyValues.size() == 1 && id.equals( propertyValues.get( 0 ) );
+			//Map's equals operation delegates to all it's key and value, should be fine for now
+			//TODO use the type's comparison method?
+			final boolean lastId = propertyValues.size() == 1 && idTuple.equals( propertyValues.get( 0 ) );
 			if ( lastId ) {
 				propertyCache.remove( propertyKey );
 			}
 			else {
 				//TODO should we remove all (ie remove till it returns false?
-				propertyValues.remove( id );
+				propertyValues.remove( idTuple );
 				propertyCache.put( propertyKey, propertyValues );
 			}
 		}
