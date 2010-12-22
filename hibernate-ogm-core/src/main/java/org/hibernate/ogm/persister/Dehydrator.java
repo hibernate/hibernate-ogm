@@ -14,6 +14,7 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 
@@ -104,9 +105,10 @@ class Dehydrator {
 				if ( removePropertyMetadata ) {
 					//remove from property cache
 					if ( uniqueness[propertyIndex] ) {
-						Object[] oldColumnValues = Helper.getColumnValuesFromResultset(
+						Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
 								resultset,
-								persister.getPropertyColumnNames( propertyIndex ) );
+								persister.getPropertyColumnNames( propertyIndex )
+						);
 						//don't index null columns, this means not association
 						if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
 							doRemovePropertyMetadata(
@@ -132,9 +134,10 @@ class Dehydrator {
 				if ( addPropertyMetadata ) {
 					//add to property cache
 					if ( uniqueness[propertyIndex] ) {
-						Object[] newColumnValues = Helper.getColumnValuesFromResultset(
+						Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
 								resultset,
-								persister.getPropertyColumnNames( propertyIndex ) );
+								persister.getPropertyColumnNames( propertyIndex )
+						);
 						//don't index null columns, this means not association
 						if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
 							doAddPropertyMetadata(

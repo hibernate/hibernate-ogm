@@ -45,7 +45,6 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.cache.CacheKey;
 import org.hibernate.cache.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.entry.CacheEntry;
-import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.EntityEntry;
 import org.hibernate.engine.LoadQueryInfluencers;
@@ -68,6 +67,7 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
@@ -379,7 +379,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
 		//get the associated property index (to get its column names)
 		final int propertyIndex = getPropertyIndex( propertyName );
-		final Object[] columnValues = Helper.getColumnsValuesFromObjectValue(
+		final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
 				uniqueKey, gridUniqueKeyType, getPropertyColumnNames( propertyIndex ), session
 		);
 		//find the ids per unique property name
