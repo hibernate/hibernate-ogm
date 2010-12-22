@@ -21,35 +21,31 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.ogm.persister;
+package org.hibernate.ogm.loader;
 
 import java.io.Serializable;
 
 import org.hibernate.HibernateException;
-import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.loader.collection.CollectionInitializer;
-import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.ogm.persister.OgmCollectionPersister;
+import org.hibernate.type.Type;
 
 /**
  * @author Emmanuel Bernard
  */
-public class OgmCollectionInitializer implements CollectionInitializer {
-	private final EntityPersister elementPersister;
-	private OgmCollectionPersister ogmCollectionPersister;
-
-	public OgmCollectionInitializer(OgmCollectionPersister ogmCollectionPersister) {
-		this.ogmCollectionPersister = ogmCollectionPersister;
-		if ( ogmCollectionPersister.isOneToMany() ) {
-			elementPersister = ogmCollectionPersister.getElementPersister();
-		}
-		else {
-			throw new NotYetImplementedException( "Non oneToMany collections not yet implemented" );
-		}
+public class OgmBasicCollectionLoader extends OgmLoader implements CollectionInitializer {
+	public OgmBasicCollectionLoader(OgmCollectionPersister collectionPersister) {
+		super( new OgmCollectionPersister[] { collectionPersister } );
 	}
 
 	@Override
-	public void initialize(Serializable id, SessionImplementor session) throws HibernateException {
+	public void initialize(Serializable id, SessionImplementor session)
+	throws HibernateException {
+		loadCollection( session, id, getKeyType() );
+	}
 
+	protected Type getKeyType() {
+		return getCollectionPersisters()[0].getKeyType();
 	}
 }

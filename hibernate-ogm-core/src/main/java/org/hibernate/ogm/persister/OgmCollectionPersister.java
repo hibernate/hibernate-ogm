@@ -44,6 +44,7 @@ import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
+import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
@@ -97,7 +98,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	protected CollectionInitializer createCollectionInitializer(LoadQueryInfluencers loadQueryInfluencers)
 			throws MappingException {
 		//TODO pass constructor
-		return new OgmCollectionInitializer(this);
+		return new OgmBasicCollectionLoader(this);
 	}
 
 	@Override
