@@ -24,6 +24,9 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +43,11 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
+import org.hibernate.ogm.metadata.GridMetadataManager;
+import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
 
@@ -48,12 +56,36 @@ import org.hibernate.persister.entity.Joinable;
  *
  * @author Emmanuel Bernard
  */
-public class OgmCollectionPersister extends AbstractCollectionPersister {
+public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {
 	private static final Logger log = LoggerFactory.getLogger( OgmCollectionPersister.class );
+
+	private final GridType keyGridType;
+	private final GridType elementGridType;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
 		super( collection, cacheAccessStrategy, cfg, factory );
+		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
+		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
+		keyGridType = typeTranslator.getType( getKeyType() );
+		elementGridType = typeTranslator.getType( getElementType() );
+
+	}
+
+	@Override
+	public Object readKey(ResultSet rs, String[] aliases, SessionImplementor session)
+	throws HibernateException, SQLException {
+		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
+		final Map<String,Object> keyTuple = resultset.getTuple();
+		return keyGridType.nullSafeGet( keyTuple, aliases, session, null );
+	}
+
+	@Override
+	public Object readElement(ResultSet rs, Object owner, String[] aliases, SessionImplementor session)
+	throws HibernateException, SQLException {
+		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
+		final Map<String,Object> keyTuple = resultset.getTuple();
+		return elementGridType.nullSafeGet( keyTuple, aliases, session, owner );
 	}
 
 	@Override
@@ -70,37 +102,39 @@ public class OgmCollectionPersister extends AbstractCollectionPersister {
 
 	@Override
 	public boolean isOneToMany() {
-		return false;  //To change body of implemented methods use File | Settings | File Templates.
+		return false;
 	}
 
 	@Override
 	public boolean isManyToMany() {
-		return false;  //To change body of implemented methods use File | Settings | File Templates.
+		//Let's see if we can model everything like that. That'd be nice
+		return true;
 	}
 
 	@Override
 	public boolean isCascadeDeleteEnabled() {
-		return false;  //To change body of implemented methods use File | Settings | File Templates.
+		//TODO always false: OGM does not assume cascade delete is supported by the underlying engine
+		return false;
 	}
 
 	@Override
 	protected String generateDeleteString() {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
 	protected String generateDeleteRowString() {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
 	protected String generateUpdateRowString() {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
 	protected String generateInsertRowString() {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
@@ -111,17 +145,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister {
 
 	@Override
 	public String selectFragment(Joinable rhs, String rhsAlias, String lhsAlias, String currentEntitySuffix, String currentCollectionSuffix, boolean includeCollectionColumns) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
 	public String whereJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
 	public String fromJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		return null;
 	}
 
 	@Override
