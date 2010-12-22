@@ -53,11 +53,14 @@ import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
@@ -265,7 +268,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		int entitySpan = 1; //only one persister at this stage
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 
-		TupleAsMapResultSet resultset = getResultSet( id );
+		TupleAsMapResultSet resultset = getResultSet( id, session );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
@@ -419,7 +422,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		}
 	}
 
-	private TupleAsMapResultSet getResultSet(Serializable id) {
+	private TupleAsMapResultSet getResultSet(Serializable id, SessionImplementor session) {
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
@@ -433,6 +436,18 @@ public class OgmLoader implements UniqueEntityLoader {
 			//collection persister
 			if ( getCollectionPersisters().length != 1 ) {
 				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
+			}
+			final CollectionPhysicalModel persister = (CollectionPhysicalModel) getCollectionPersisters()[0];
+			final Cache<PropertyKey, List<Map<String, Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
+			final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+					id, persister.getKeyGridType(), persister.getKeyColumnNames(), session
+			);
+			PropertyKey key = new PropertyKey( persister.getTableName(), persister.getKeyColumnNames(), columnValues );
+			final List<Map<String,Object>> entry = propertyCache.get( key );
+			if ( entry != null ) {
+				for ( Map<String,Object> tuple : entry ) {
+					resultset.addTuple( tuple );
+				}
 			}
 		}
 		return resultset;

@@ -101,6 +101,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return new OgmBasicCollectionLoader(this);
 	}
 
+	public GridType getKeyGridType() {
+		return keyGridType;
+	}
+
+	public GridType getElementGridType() {
+		return elementGridType;
+	}
+
 	@Override
 	public boolean isOneToMany() {
 		return false;

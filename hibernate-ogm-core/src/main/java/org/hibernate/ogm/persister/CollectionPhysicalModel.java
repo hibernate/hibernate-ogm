@@ -23,10 +23,18 @@
  */
 package org.hibernate.ogm.persister;
 
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.persister.collection.CollectionPersister;
+
 /**
  * @author Emmanuel Bernard
  */
-interface CollectionPhysicalModel {
+public interface CollectionPhysicalModel extends CollectionPersister {
+	/**
+	 * The table to join to.
+	 */
+	public String getTableName();
+
 	/**
 	 * The columns to join on
 	 */
@@ -45,4 +53,9 @@ interface CollectionPhysicalModel {
 	public String[] getElementColumnNames();
 
 	public String getIdentifierColumnName();
+
+	//The following should really be moved somewhere else or the interface renamed
+	public GridType getKeyGridType();
+
+	public GridType getElementGridType();
 }
