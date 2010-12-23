@@ -265,7 +265,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			boolean returnProxies) {
 		//TODO support lock timeout
 
-		int entitySpan = 1; //only one persister at this stage
+		int entitySpan = entityPersisters.length;
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 
 		TupleAsMapResultSet resultset = getResultSet( id, session );
@@ -556,7 +556,6 @@ public class OgmLoader implements UniqueEntityLoader {
 					.getLoadingCollection( persister, collectionRowKey );
 
 			if ( rowCollection != null ) {
-				//TODO CURRENT implement
 				rowCollection.readFrom(
 						rs,
 						persister,
@@ -657,8 +656,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//this is a query and we are loading multiple instances of the same collection role
 		session.getPersistenceContext()
 				.getLoadContexts()
-				//FIXME we don't have actual SQL ResultSet but deep down Hibernate does not need the resultset unfortunately It's more like a marker
-				.getCollectionLoadContext( null )
+				.getCollectionLoadContext( resultSetId )
 				//.getCollectionLoadContext( ( ResultSet ) resultSetId )
 				.endLoadingCollections( collectionPersister );
 	}
