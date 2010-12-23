@@ -76,6 +76,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType indexGridType;
 	private final GridType identifierGridType;
 	private final GridMetadataManager gridManager;
+	private final boolean isInverse;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -86,6 +87,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		elementGridType = typeTranslator.getType( getElementType() );
 		indexGridType = typeTranslator.getType( getIndexType() );
 		identifierGridType = typeTranslator.getType( getIdentifierType() );
+		//copied from the superclass constructor
+		isInverse = collection.isInverse();
 	}
 
 	@Override
@@ -226,6 +229,32 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return tupleKey;
 	}
 
+	private Map<String, Object> getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
+		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		if ( hasIdentifier ) {
+			final Object identifier = entry;
+			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session );
+		}
+		else {
+			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+			//No need to write to where as we don't do where clauses in OGM :)
+			if ( findByIndex ) {
+				Object index = entry;
+				indexGridType.nullSafeSet(
+						tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+				);
+			}
+			else {
+				final Object snapshotElement = entry;
+				if (elementIsPureFormula) {
+					throw new AssertionFailure("cannot use a formula-based element in the where condition");
+				}
+				getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
+			}
+		}
+		return tupleKey;
+	}
+
 	private Map<String, Object> findMatchingTuple(PropertyMetadataProvider metadataProvider, Map<String, Object> tupleKey) {
 		Map<String,Object> matchingTuple = null;
 		for ( Map<String,Object> collTuple : metadataProvider.getCollectionMetadata() ) {
@@ -261,6 +290,64 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		else {
 			return collectionMetadata.size();
+		}
+	}
+
+	@Override
+	public void deleteRows(PersistentCollection collection, Serializable id, SessionImplementor session)
+			throws HibernateException {
+
+		if ( !isInverse && isRowDeleteEnabled() ) {
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"Deleting rows of collection: " +
+						MessageHelper.collectionInfoString( this, id, getFactory() )
+					);
+			}
+
+			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
+
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.key( id )
+				.keyColumnNames( getKeyColumnNames() )
+				.keyGridType( getKeyGridType() )
+				.session( session );
+
+			//delete all the deleted entries
+			Iterator deletes = collection.getDeletes( this, !deleteByIndex );
+			if ( deletes.hasNext() ) {
+				int count = 0;
+				while ( deletes.hasNext() ) {
+					Object entry = deletes.next();
+					final Map<String, Object> tupleKey = getTupleKeyForDelete(
+							id, collection, session, entry, deleteByIndex
+					);
+
+					//find the matching element
+					Map<String, Object> matchingTuple = findMatchingTuple( metadataProvider, tupleKey );
+					if ( matchingTuple == null ) {
+						throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
+								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
+					}
+
+					//delete the tuple
+					metadataProvider.getCollectionMetadata().remove( matchingTuple );
+
+					count++;
+
+					if ( log.isDebugEnabled() ) {
+						log.debug( "done deleting collection rows: " + count + " deleted" );
+					}
+				}
+				metadataProvider.flushToCache();
+			}
+			else {
+				if ( log.isDebugEnabled() ) {
+					log.debug( "no rows to delete" );
+				}
+			}
 		}
 	}
 
