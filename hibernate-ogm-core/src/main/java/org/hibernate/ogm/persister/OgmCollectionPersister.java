@@ -203,6 +203,27 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return count;
 	}
 
+	private Map<String, Object> buildTupleKey(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		if ( hasIdentifier ) {
+			final Object identifier = collection.getIdentifier( entry, i );
+			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
+		}
+		getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+		//No need to write to where as we don't do where clauses in OGM :)
+		if ( hasIndex ) {
+			Object index = collection.getIndex( entry, i, this );
+			indexGridType.nullSafeSet(
+					tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+			);
+		}
+		else {
+			final Object element = collection.getElement( entry );
+			getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
+		}
+		return tupleKey;
+	}
+
 	private Map<String, Object> getTupleKey(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
@@ -347,6 +368,49 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				if ( log.isDebugEnabled() ) {
 					log.debug( "no rows to delete" );
 				}
+			}
+		}
+	}
+
+	@Override
+	public void insertRows(PersistentCollection collection, Serializable id, SessionImplementor session)
+			throws HibernateException {
+
+		if ( !isInverse && isRowInsertEnabled() ) {
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"Inserting rows of collection: " +
+						MessageHelper.collectionInfoString( this, id, getFactory() )
+					);
+			}
+
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.key( id )
+				.keyColumnNames( getKeyColumnNames() )
+				.keyGridType( getKeyGridType() )
+				.session( session );
+
+			//insert all the new entries
+			collection.preInsert( this );
+			Iterator entries = collection.entries( this );
+			int i = 0;
+			int count = 0;
+			while ( entries.hasNext() ) {
+				Object entry = entries.next();
+				if ( collection.needsInserting( entry, i, elementType ) ) {
+					//TODO: copy/paste from recreate()
+					final Map<String, Object> newTuple = buildTupleKey( id, collection, session, i, entry );
+					metadataProvider.getCollectionMetadata().add( newTuple );
+					collection.afterRowInsert( this, entry, i );
+					count++;
+				}
+				i++;
+			}
+			metadataProvider.flushToCache();
+			if ( log.isDebugEnabled() ) {
+				log.debug( "done inserting rows: " + count + " inserted" );
 			}
 		}
 	}
