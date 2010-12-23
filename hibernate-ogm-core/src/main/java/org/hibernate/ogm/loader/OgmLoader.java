@@ -155,14 +155,17 @@ public class OgmLoader implements UniqueEntityLoader {
 					MessageHelper.infoString( currentPersister, id, currentPersister.getIdentifierType(), session.getFactory() )
 				);
 		}
+		QueryParameters qp = new QueryParameters();
+		qp.setPositionalParameterTypes( new Type[] { currentPersister.getIdentifierType() } );
+		qp.setPositionalParameterValues( new Object[] { id } );
+		qp.setOptionalObject( optionalObject );
+		qp.setOptionalEntityName( currentPersister.getEntityName() );
+		qp.setOptionalId( id );
+		qp.setLockOptions( lockOptions );
+
 		Object result = doQueryAndInitializeNonLazyCollections(
 				session,
-				id,
-				currentPersister.getIdentifierType(),
-				optionalObject,
-				currentPersister.getEntityName(),
-				id,
-				lockOptions,
+				qp,
 				false
 			);
 		return result;
@@ -183,16 +186,11 @@ public class OgmLoader implements UniqueEntityLoader {
 				);
 		}
 
-		//Serializable[] ids = new Serializable[]{id};
-		//new QueryParameters( new Type[]{type}, ids, ids ),
+		Serializable[] ids = new Serializable[]{id};
+		QueryParameters qp = new QueryParameters( new Type[]{type}, ids, ids );
 		doQueryAndInitializeNonLazyCollections(
 				session,
-				id,
-				type,
-				null,
-				null,
-				null,
-				null,
+				qp,
 				true
 			);
 
@@ -209,13 +207,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	private Object doQueryAndInitializeNonLazyCollections(
 			SessionImplementor session,
-			Serializable id,
-			Type identifierType,
-			Object optionalObject,
-			String optionalEntityName,
-			Serializable optionalId,
-			//OgmEntityPersister persister,
-			LockOptions lockOptions,
+			QueryParameters qp,
 			boolean returnProxies) {
 
 
@@ -228,12 +220,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			try {
 				result = doQuery(
 						session,
-						id,
-						identifierType,
-						optionalObject,
-						optionalEntityName,
-						optionalId,
-						lockOptions,
+						qp,
 						returnProxies
 				);
 			}
@@ -256,33 +243,19 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	private Object doQuery(
 			SessionImplementor session,
-			Serializable id,
-			Type identifierType,
-			Object optionalObject,
-			String optionalEntityName,
-			Serializable optionalId,
-			LockOptions lockOptions,
+			QueryParameters qp,
 			boolean returnProxies) {
 		//TODO support lock timeout
 
 		int entitySpan = entityPersisters.length;
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
-
+		//TODO yuk! Is there a cleaner way to access the id?
+		final Serializable id = qp.getOptionalId() != null ? qp.getOptionalId() : ( Serializable ) qp.getCollectionKeys()[0];
 		TupleAsMapResultSet resultset = getResultSet( id, session );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
 		//FIXME should we use subselects as it's closer to this process??
-
-
-		//TODO Move up eventually
-		QueryParameters qp = new QueryParameters();
-		qp.setPositionalParameterTypes( new Type[] { identifierType } );
-		qp.setPositionalParameterValues( new Object[] { id } );
-		qp.setOptionalObject( optionalObject );
-		qp.setOptionalEntityName( optionalEntityName );
-		qp.setOptionalId( optionalId );
-		qp.setLockOptions( lockOptions );
 
 		//TODO is resultset a good marker, or should it be an ad-hoc marker??
 		//It likely all depends on what resultset ends up being
@@ -300,7 +273,7 @@ public class OgmLoader implements UniqueEntityLoader {
 						session,
 						qp,
 						//lockmodeArray,
-						optionalId,
+						qp.getOptionalId(),
 						hydratedObjects,
 						keys,
 						returnProxies);
