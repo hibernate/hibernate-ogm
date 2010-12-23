@@ -57,8 +57,10 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
+import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
+import org.hibernate.pretty.MessageHelper;
 import org.hibernate.util.ArrayHelper;
 
 /**
@@ -166,59 +168,21 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		int count = 0;
 		int i = 0;
 		Iterator entries = collection.entries( this );
-		final Cache<PropertyKey, List<Map<String, Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
-		final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
-				key, getKeyGridType(), getKeyColumnNames(), session
-		);
-		PropertyKey metadataKey = new PropertyKey( getTableName(), getKeyColumnNames(), columnValues );
-		List<Map<String,Object>> collectionMetadata = propertyCache.get( metadataKey );
-		if (collectionMetadata == null) {
-			collectionMetadata = new ArrayList<Map<String,Object>>();
-		}
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.key( key )
+				.keyColumnNames( getKeyColumnNames() )
+				.keyGridType( getKeyGridType() )
+				.session( session );
 
 		while ( entries.hasNext() ) {
 			Object entry = entries.next();
 			if ( collection.needsUpdating( entry, i, elementType ) ) {
 				//get the tuple Key
-				Map<String,Object> tupleKey = new HashMap<String,Object>();
-				if ( hasIdentifier ) {
-					final Object identifier = collection.getIdentifier( entry, i );
-					identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
-				}
-				else {
-					getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
-					//No need to write to where as we don't do where clauses in OGM :)
-					if ( hasIndex && !indexContainsFormula ) {
-						Object index = collection.getIndex( entry, i, this );
-						indexGridType.nullSafeSet(
-								tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
-						);
-					}
-					else {
-						final Object snapshotElement = collection.getSnapshotElement( entry, i );
-						if (elementIsPureFormula) {
-							throw new AssertionFailure("cannot use a formula-based element in the where condition");
-						}
-						getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
-					}
-				}
+				Map<String, Object> tupleKey = getTupleKey( key, collection, session, i, entry );
 
 				//find the matching element
-				Map<String,Object> matchingTuple = null;
-				for (Map<String,Object> collTuple : collectionMetadata) {
-					boolean notFound = false;
-					for ( String columnName : tupleKey.keySet() ) {
-						final Object value = collTuple.get( columnName );
-						//values should not be null
-						if ( ! tupleKey.get(columnName).equals( value ) ) {
-							notFound = true;
-							break;
-						}
-					}
-					if ( ! notFound ) {
-						matchingTuple = collTuple;
-					}
-				}
+				Map<String, Object> matchingTuple = findMatchingTuple( metadataProvider, tupleKey );
 				if ( matchingTuple == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
 							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
@@ -232,8 +196,53 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 
 		//need to put the data back in the cache
-		propertyCache.put( metadataKey, collectionMetadata );
+		metadataProvider.flushToCache();
 		return count;
+	}
+
+	private Map<String, Object> getTupleKey(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		if ( hasIdentifier ) {
+			final Object identifier = collection.getIdentifier( entry, i );
+			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
+		}
+		else {
+			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+			//No need to write to where as we don't do where clauses in OGM :)
+			if ( hasIndex && !indexContainsFormula ) {
+				Object index = collection.getIndex( entry, i, this );
+				indexGridType.nullSafeSet(
+						tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+				);
+			}
+			else {
+				final Object snapshotElement = collection.getSnapshotElement( entry, i );
+				if (elementIsPureFormula) {
+					throw new AssertionFailure("cannot use a formula-based element in the where condition");
+				}
+				getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
+			}
+		}
+		return tupleKey;
+	}
+
+	private Map<String, Object> findMatchingTuple(PropertyMetadataProvider metadataProvider, Map<String, Object> tupleKey) {
+		Map<String,Object> matchingTuple = null;
+		for ( Map<String,Object> collTuple : metadataProvider.getCollectionMetadata() ) {
+			boolean notFound = false;
+			for ( String columnName : tupleKey.keySet() ) {
+				final Object value = collTuple.get( columnName );
+				//values should not be null
+				if ( ! tupleKey.get(columnName).equals( value ) ) {
+					notFound = true;
+					break;
+				}
+			}
+			if ( ! notFound ) {
+				matchingTuple = collTuple;
+			}
+		}
+		return matchingTuple;
 	}
 
 	@Override
