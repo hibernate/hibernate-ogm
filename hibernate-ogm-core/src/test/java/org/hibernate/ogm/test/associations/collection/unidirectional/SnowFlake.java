@@ -21,13 +21,11 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.ogm.test.associations.collection;
+package org.hibernate.ogm.test.associations.collection.unidirectional;
 
-import java.util.Set;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Persister;
@@ -38,23 +36,14 @@ import org.hibernate.ogm.persister.OgmEntityPersister;
  */
 @Entity
 @Persister(impl = OgmEntityPersister.class)
-public class Cloud {
+public class SnowFlake {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
 	public String getId() { return id; }
 	public void setId(String id) {  this.id = id; }
 	private String id;
 
-	public String getType() { return type; }
-	public void setType(String type) {  this.type = type; }
-	private String type;
-
-	public double getLength() { return length; }
-	public void setLength(double length) {  this.length = length; }
-	private double length;
-
-	@OneToMany
-	public Set<SnowFlake> getProducedSnowFlakes() { return producedSnowFlakes; }
-	public void setProducedSnowFlakes(Set<SnowFlake> producedSnowFlakes) {  this.producedSnowFlakes = producedSnowFlakes; }
-	private Set<SnowFlake> producedSnowFlakes;
+	public String getDescription() { return description; }
+	public void setDescription(String description) {  this.description = description; }
+	private String description;
 }
