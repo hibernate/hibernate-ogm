@@ -246,6 +246,25 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	@Override
+	public int getSize(Serializable key, SessionImplementor session) {
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.key( key )
+				.session( session )
+				.gridManager( gridManager )
+				.tableName( getTableName() )
+				.keyGridType( getKeyGridType() )
+				.keyColumnNames( getKeyColumnNames() );
+
+		final List<Map<String, Object>> collectionMetadata = metadataProvider.getCollectionMetadata();
+		if ( collectionMetadata == null ) {
+			return 0;
+		}
+		else {
+			return collectionMetadata.size();
+		}
+	}
+
+	@Override
 	public String selectFragment(Joinable rhs, String rhsAlias, String lhsAlias, String currentEntitySuffix, String currentCollectionSuffix, boolean includeCollectionColumns) {
 		return null;
 	}
