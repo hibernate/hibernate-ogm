@@ -77,6 +77,9 @@ public class TypeTranslator {
 			org.hibernate.type.OneToOneType oneToOneType = (org.hibernate.type.OneToOneType) type;
 			return new OneToOneType(oneToOneType, this);
 		}
+		else if ( type instanceof org.hibernate.type.CollectionType ) {
+			return new CollectionType( (org.hibernate.type.CollectionType) type );
+		}
 		throw new HibernateException( "Unable to find a GridType for " + type.getClass().getName() );
 	}
 }
