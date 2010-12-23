@@ -173,6 +173,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Iterator entries = collection.entries( this );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.tableName( getTableName() )
 				.key( key )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -299,6 +300,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public int getSize(Serializable key, SessionImplementor session) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.key( key )
+				.tableName( getTableName() )
 				.session( session )
 				.gridManager( gridManager )
 				.tableName( getTableName() )
@@ -331,6 +333,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -387,6 +390,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -430,6 +434,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -482,6 +487,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			// Remove all the old entries
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
