@@ -26,13 +26,19 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
+import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cache.CacheException;
 import org.hibernate.cache.access.CollectionRegionAccessStrategy;
 import org.hibernate.cfg.Configuration;
@@ -43,14 +49,17 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
+import org.hibernate.util.ArrayHelper;
 
 /**
  * CollectionPersister storing the collection in a grid 
@@ -62,15 +71,19 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private final GridType keyGridType;
 	private final GridType elementGridType;
+	private final GridType indexGridType;
+	private final GridType identifierGridType;
+	private final GridMetadataManager gridManager;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
 		super( collection, cacheAccessStrategy, cfg, factory );
-		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
+		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
 		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );
-
+		indexGridType = typeTranslator.getType( getIndexType() );
+		identifierGridType = typeTranslator.getType( getIdentifierType() );
 	}
 
 	@Override
@@ -149,7 +162,78 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	protected int doUpdateRows(Serializable key, PersistentCollection collection, SessionImplementor session)
 			throws HibernateException {
-		return 0;  //To change body of implemented methods use File | Settings | File Templates.
+		if ( ArrayHelper.isAllFalse( elementColumnIsSettable ) ) return 0;
+		int count = 0;
+		int i = 0;
+		Iterator entries = collection.entries( this );
+		final Cache<PropertyKey, List<Map<String, Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
+		final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				key, getKeyGridType(), getKeyColumnNames(), session
+		);
+		PropertyKey metadataKey = new PropertyKey( getTableName(), getKeyColumnNames(), columnValues );
+		List<Map<String,Object>> collectionMetadata = propertyCache.get( metadataKey );
+		if (collectionMetadata == null) {
+			collectionMetadata = new ArrayList<Map<String,Object>>();
+		}
+
+		while ( entries.hasNext() ) {
+			Object entry = entries.next();
+			if ( collection.needsUpdating( entry, i, elementType ) ) {
+				//get the tuple Key
+				Map<String,Object> tupleKey = new HashMap<String,Object>();
+				if ( hasIdentifier ) {
+					final Object identifier = collection.getIdentifier( entry, i );
+					identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
+				}
+				else {
+					getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+					//No need to write to where as we don't do where clauses in OGM :)
+					if ( hasIndex && !indexContainsFormula ) {
+						Object index = collection.getIndex( entry, i, this );
+						indexGridType.nullSafeSet(
+								tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+						);
+					}
+					else {
+						final Object snapshotElement = collection.getSnapshotElement( entry, i );
+						if (elementIsPureFormula) {
+							throw new AssertionFailure("cannot use a formula-based element in the where condition");
+						}
+						getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
+					}
+				}
+
+				//find the matching element
+				Map<String,Object> matchingTuple = null;
+				for (Map<String,Object> collTuple : collectionMetadata) {
+					boolean notFound = false;
+					for ( String columnName : tupleKey.keySet() ) {
+						final Object value = collTuple.get( columnName );
+						//values should not be null
+						if ( ! tupleKey.get(columnName).equals( value ) ) {
+							notFound = true;
+							break;
+						}
+					}
+					if ( ! notFound ) {
+						matchingTuple = collTuple;
+					}
+				}
+				if ( matchingTuple == null ) {
+					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
+							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
+				}
+
+				//update the matching element
+				getElementGridType().nullSafeSet( matchingTuple, collection.getElement( entry ), getElementColumnNames(), session );
+				count++;
+			}
+			i++;
+		}
+
+		//need to put the data back in the cache
+		propertyCache.put( metadataKey, collectionMetadata );
+		return count;
 	}
 
 	@Override
