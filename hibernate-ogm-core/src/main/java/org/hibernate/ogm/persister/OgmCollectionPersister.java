@@ -416,6 +416,58 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	@Override
+	public void recreate(PersistentCollection collection, Serializable id, SessionImplementor session)
+			throws HibernateException {
+
+		if ( !isInverse && isRowInsertEnabled() ) {
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"Inserting collection: " +
+						MessageHelper.collectionInfoString( this, id, getFactory() )
+					);
+			}
+
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.key( id )
+				.keyColumnNames( getKeyColumnNames() )
+				.keyGridType( getKeyGridType() )
+				.session( session );
+
+			//create all the new entries
+			Iterator entries = collection.entries(this);
+			if ( entries.hasNext() ) {
+				collection.preInsert( this );
+				int i = 0;
+				int count = 0;
+				while ( entries.hasNext() ) {
+
+					final Object entry = entries.next();
+					if ( collection.entryExists( entry, i ) ) {
+						//TODO: copy/paste from insertRows()
+						final Map<String, Object> newTuple = buildTupleKey( id, collection, session, i, entry );
+						metadataProvider.getCollectionMetadata().add( newTuple );
+						collection.afterRowInsert( this, entry, i );
+						count++;
+					}
+					i++;
+				}
+				metadataProvider.flushToCache();
+				if ( log.isDebugEnabled() ) {
+					log.debug( "done inserting collection: " + count + " rows inserted" );
+				}
+
+			}
+			else {
+				if ( log.isDebugEnabled() ) {
+					log.debug( "collection was empty" );
+				}
+			}
+		}
+	}
+
+	@Override
 	public String selectFragment(Joinable rhs, String rhsAlias, String lhsAlias, String currentEntitySuffix, String currentCollectionSuffix, boolean includeCollectionColumns) {
 		return null;
 	}
