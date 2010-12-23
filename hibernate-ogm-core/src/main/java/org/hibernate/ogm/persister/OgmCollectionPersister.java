@@ -468,6 +468,35 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	@Override
+	public void remove(Serializable id, SessionImplementor session) throws HibernateException {
+
+		if ( !isInverse && isRowDeleteEnabled() ) {
+
+			if ( log.isDebugEnabled() ) {
+				log.debug(
+						"Deleting collection: " +
+						MessageHelper.collectionInfoString( this, id, getFactory() )
+					);
+			}
+
+			// Remove all the old entries
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.key( id )
+				.keyColumnNames( getKeyColumnNames() )
+				.keyGridType( getKeyGridType() )
+				.session( session );
+			metadataProvider.getCollectionMetadata().clear();
+			metadataProvider.flushToCache();
+
+			if ( log.isDebugEnabled() ) {
+				log.debug( "done deleting collection" );
+			}
+		}
+
+	}
+
+	@Override
 	public String selectFragment(Joinable rhs, String rhsAlias, String lhsAlias, String currentEntitySuffix, String currentCollectionSuffix, boolean includeCollectionColumns) {
 		return null;
 	}
