@@ -61,6 +61,7 @@ import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
+import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
@@ -411,12 +412,14 @@ public class OgmLoader implements UniqueEntityLoader {
 				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
 			}
 			final CollectionPhysicalModel persister = (CollectionPhysicalModel) getCollectionPersisters()[0];
-			final Cache<PropertyKey, List<Map<String, Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
-			final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
-					id, persister.getKeyGridType(), persister.getKeyColumnNames(), session
-			);
-			PropertyKey key = new PropertyKey( persister.getTableName(), persister.getKeyColumnNames(), columnValues );
-			final List<Map<String,Object>> entry = propertyCache.get( key );
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
+				.tableName( persister.getTableName() )
+				.key( id )
+				.keyColumnNames( persister.getKeyColumnNames() )
+				.keyGridType( persister.getKeyGridType() )
+				.session( session );
+			final List<Map<String,Object>> entry = metadataProvider.getCollectionMetadata();
 			if ( entry != null ) {
 				for ( Map<String,Object> tuple : entry ) {
 					resultset.addTuple( tuple );
