@@ -186,7 +186,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Map<String, Object> tupleKey = getTupleKey( key, collection, session, i, entry );
 
 				//find the matching element
-				Map<String, Object> matchingTuple = findMatchingTuple( metadataProvider, tupleKey );
+				Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( tupleKey );
 				if ( matchingTuple == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
 							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
@@ -277,24 +277,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return tupleKey;
 	}
 
-	private Map<String, Object> findMatchingTuple(PropertyMetadataProvider metadataProvider, Map<String, Object> tupleKey) {
-		Map<String,Object> matchingTuple = null;
-		for ( Map<String,Object> collTuple : metadataProvider.getCollectionMetadata() ) {
-			boolean notFound = false;
-			for ( String columnName : tupleKey.keySet() ) {
-				final Object value = collTuple.get( columnName );
-				//values should not be null
-				if ( ! tupleKey.get(columnName).equals( value ) ) {
-					notFound = true;
-					break;
-				}
-			}
-			if ( ! notFound ) {
-				matchingTuple = collTuple;
-			}
-		}
-		return matchingTuple;
-	}
+
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
@@ -350,7 +333,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					);
 
 					//find the matching element
-					Map<String, Object> matchingTuple = findMatchingTuple( metadataProvider, tupleKey );
+					Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( tupleKey );
 					if ( matchingTuple == null ) {
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );

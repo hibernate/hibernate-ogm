@@ -48,9 +48,17 @@ public class PropertyMetadataProvider {
 	private SessionImplementor session;
 	private PropertyKey collectionMetadataKey;
 	private List<Map<String,Object>> collectionMetadata;
+	private Object[] columnValues;
 
+	// alternative gridManager or propertyCache
 	public PropertyMetadataProvider gridManager(GridMetadataManager gridManager) {
 		this.gridManager = gridManager;
+		return this;
+	}
+
+	// alternative gridManager or propertyCache
+	public PropertyMetadataProvider propertyCache(Cache<PropertyKey, List<Map<String, Object>>> propertyCache) {
+		this.propertyCache = propertyCache;
 		return this;
 	}
 
@@ -79,6 +87,11 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
+	public PropertyMetadataProvider columnValues(Object[] columnValues) {
+		this.columnValues = columnValues;
+		return this;
+	}
+
 	private Cache<PropertyKey, List<Map<String, Object>>> getPropertyCache() {
 		if (propertyCache == null) {
 			propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
@@ -88,12 +101,19 @@ public class PropertyMetadataProvider {
 
 	public PropertyKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
-			final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
-					key, keyGridType, keyColumnNames, session
-			);
+			final Object[] columnValues = getColumnValues();
 			collectionMetadataKey = new PropertyKey( tableName, keyColumnNames, columnValues );
 		}
 		return collectionMetadataKey;
+	}
+
+	private Object[] getColumnValues() {
+		if ( columnValues == null ) {
+			columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+					key, keyGridType, keyColumnNames, session
+			);
+		}
+		return columnValues;
 	}
 
 	public List<Map<String,Object>> getCollectionMetadata() {
@@ -113,5 +133,24 @@ public class PropertyMetadataProvider {
 		else {
 			getPropertyCache().put( getCollectionMetadataKey(), getCollectionMetadata() );
 		}
+	}
+
+	public Map<String, Object> findMatchingTuple(Map<String, Object> tupleKey) {
+		Map<String,Object> matchingTuple = null;
+		for ( Map<String,Object> collTuple : getCollectionMetadata() ) {
+			boolean notFound = false;
+			for ( String columnName : tupleKey.keySet() ) {
+				final Object value = collTuple.get( columnName );
+				//values should not be null
+				if ( ! tupleKey.get(columnName).equals( value ) ) {
+					notFound = true;
+					break;
+				}
+			}
+			if ( ! notFound ) {
+				matchingTuple = collTuple;
+			}
+		}
+		return matchingTuple;
 	}
 }
