@@ -68,6 +68,7 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
+import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
@@ -374,20 +375,20 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			String propertyName,
 			Object uniqueKey,
 			SessionImplementor session) throws HibernateException {
-		final Cache<PropertyKey, List<Map<String,Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
 		//we get the property type for an associated entity
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
 		//get the associated property index (to get its column names)
 		final int propertyIndex = getPropertyIndex( propertyName );
-		final Object[] columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
-				uniqueKey, gridUniqueKeyType, getPropertyColumnNames( propertyIndex ), session
-		);
 		//find the ids per unique property name
-		final List<Map<String,Object>> ids = propertyCache.get(
-				new PropertyKey(
-						getTableName(), getPropertyColumnNames( propertyName ), columnValues
-				)
-		);
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.tableName( getTableName() )
+				.gridManager( gridManager )
+				.key( uniqueKey )
+				.keyGridType( gridUniqueKeyType )
+				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
+				.session( session );
+		final List<Map<String,Object>> ids = metadataProvider.getCollectionMetadata();
+
 		if (ids == null || ids.size() == 0 ) {
 			return null;
 		}
@@ -403,7 +404,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 							+ " property: " + propertyName
 							+ " value: " + uniqueKey );
 		}
-		//throw new NotYetImplementedException( "Cannot yet load by unique key");
 	}
 
 	private GridType getUniqueKeyTypeFromAssociatedEntity(String propertyName) {
