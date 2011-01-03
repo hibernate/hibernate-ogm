@@ -54,11 +54,54 @@ public class ManyToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	public void testBidirectionalManyToOneRegular() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		SalesForce force = new SalesForce();
+		force.setCorporation( "Red Hat" );
+		session.save( force );
+		SalesGuy eric = new SalesGuy();
+		eric.setName( "Eric" );
+		eric.setSalesForce( force );
+		force.getSalesGuys().add( eric );
+		session.save( eric );
+		SalesGuy simon = new SalesGuy();
+		simon.setName( "Simon" );
+		simon.setSalesForce( force );
+		force.getSalesGuys().add( simon );
+		session.save( simon );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		assertNotNull( force.getSalesGuys() );
+		assertEquals( 2, force.getSalesGuys().size() );
+		simon = (SalesGuy) session.get( SalesGuy.class, simon.getId() );
+		//purposely faulty
+		//force.getSalesGuys().remove( simon );
+		session.delete( simon );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		assertNotNull( force.getSalesGuys() );
+		assertEquals( 1, force.getSalesGuys().size() );
+		session.delete( force.getSalesGuys().iterator().next() );
+		session.delete( force );
+		transaction.commit();
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				JUG.class,
-				Member.class
+				Member.class,
+				SalesForce.class,
+				SalesGuy.class
 		};
 	}
 }
