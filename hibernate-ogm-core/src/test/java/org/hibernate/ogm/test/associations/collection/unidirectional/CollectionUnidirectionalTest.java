@@ -39,7 +39,7 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		sf.setDescription( "Snowflake 1" );
 		session.save( sf );
 		SnowFlake sf2 = new SnowFlake();
-		sf.setDescription( "Snowflake 2" );
+		sf2.setDescription( "Snowflake 2" );
 		session.save( sf2 );
 		Cloud cloud = new Cloud();
 		cloud.setLength( 23 );
