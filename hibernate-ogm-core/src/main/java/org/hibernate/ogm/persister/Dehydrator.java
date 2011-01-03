@@ -1,7 +1,6 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +11,14 @@ import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.PropertyKey;
+import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
+import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
+import org.hibernate.type.Type;
 
 class Dehydrator {
 	private static final Logger log = LoggerFactory.getLogger( Dehydrator.class );
@@ -99,24 +101,26 @@ class Dehydrator {
 		}
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
+		final Type[] propertyTypes = persister.getPropertyTypes();
 		final Cache<PropertyKey, List<Map<String,Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				if ( removePropertyMetadata ) {
+				final Type propertyType = propertyTypes[propertyIndex];
+				boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
+				final boolean createMetadata = isStarToOne || uniqueness[propertyIndex];
+				if ( removePropertyMetadata && createMetadata ) {
 					//remove from property cache
-					if ( uniqueness[propertyIndex] ) {
-						Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-								resultset,
-								persister.getPropertyColumnNames( propertyIndex )
-						);
-						//don't index null columns, this means not association
-						if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
-							doRemovePropertyMetadata(
-									propertyCache,
-									tableIndex,
-									propertyIndex,
-									oldColumnValues);
-						}
+					Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
+							resultset,
+							persister.getPropertyColumnNames( propertyIndex )
+					);
+					//don't index null columns, this means no association
+					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
+						doRemovePropertyMetadata(
+								propertyCache,
+								tableIndex,
+								propertyIndex,
+								oldColumnValues);
 					}
 				}
 
@@ -131,21 +135,19 @@ class Dehydrator {
 					);
 				}
 
-				if ( addPropertyMetadata ) {
+				if ( addPropertyMetadata && createMetadata ) {
 					//add to property cache
-					if ( uniqueness[propertyIndex] ) {
-						Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-								resultset,
-								persister.getPropertyColumnNames( propertyIndex )
-						);
-						//don't index null columns, this means not association
-						if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
-							doAddPropertyMetadata(
-									propertyCache,
-									tableIndex,
-									propertyIndex,
-									newColumnValues);
-						}
+					Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
+							resultset,
+							persister.getPropertyColumnNames( propertyIndex )
+					);
+					//don't index null columns, this means no association
+					if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
+						doAddPropertyMetadata(
+								propertyCache,
+								tableIndex,
+								propertyIndex,
+								newColumnValues);
 					}
 				}
 			}
@@ -156,44 +158,49 @@ class Dehydrator {
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] newColumnValue) {
-		PropertyKey propertyKey = new PropertyKey(
-				persister.getTableName( tableIndex ),
-				persister.getPropertyColumnNames(propertyIndex),
-				newColumnValue);
-		List<Map<String,Object>> propertyValues = propertyCache.get( propertyKey );
-		if ( propertyValues == null ) {
-			propertyValues = new ArrayList<Map<String,Object>>();
-		}
-		Map<String,Object> idtuple = new HashMap<String, Object>(2);
-		gridIdentifierType.nullSafeSet( idtuple, id, persister.getIdentifierColumnNames(), session );
-		propertyValues.add( idtuple );
-		propertyCache.put( propertyKey, propertyValues );
+
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		        .propertyCache( propertyCache )
+				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
+				.columnValues( newColumnValue )
+				.session( session )
+				.tableName( persister.getTableName( tableIndex ) );
+		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
+		final Map<String, Object> tuple = new HashMap<String, Object>( 4 );
+		//add the id column
+		gridIdentifierType.nullSafeSet( tuple, id, persister.getIdentifierColumnNames(), session );
+		//add the fk column
+		gridPropertyTypes[propertyIndex].nullSafeSet(
+							tuple,
+							fields[propertyIndex],
+							persister.getPropertyColumnNames( propertyIndex ),
+							includeColumns[propertyIndex],
+							session
+					);
+		propertyValues.add( tuple );
+		metadataProvider.flushToCache();
 	}
 
 	private void doRemovePropertyMetadata(Cache<PropertyKey, List<Map<String,Object>>> propertyCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] oldColumnValue) {
-
-		PropertyKey propertyKey = new PropertyKey(
-				persister.getTableName( tableIndex ),
-				persister.getPropertyColumnNames(propertyIndex),
-				oldColumnValue);
-		List<Map<String,Object>> propertyValues = propertyCache.get( propertyKey );
-		Map<String,Object> idTuple = new HashMap<String, Object>(2);
-		gridIdentifierType.nullSafeSet( idTuple, id, persister.getIdentifierColumnNames(), session );
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		        .propertyCache( propertyCache )
+				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
+				.columnValues( oldColumnValue )
+				.session( session )
+				.tableName( persister.getTableName( tableIndex ) );
+		Map<String,Object> idTuple = getTupleKey();
+		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
-			//TODO use the type's comparison method?
-			final boolean lastId = propertyValues.size() == 1 && idTuple.equals( propertyValues.get( 0 ) );
-			if ( lastId ) {
-				propertyCache.remove( propertyKey );
+			final Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( idTuple );
+			//TODO what should we do if that's null?
+			if (matchingTuple != null) {
+				metadataProvider.getCollectionMetadata().remove( matchingTuple );
 			}
-			else {
-				//TODO should we remove all (ie remove till it returns false?
-				propertyValues.remove( idTuple );
-				propertyCache.put( propertyKey, propertyValues );
-			}
+			metadataProvider.flushToCache();
 		}
 	}
 
@@ -202,5 +209,11 @@ class Dehydrator {
 			if ( object != null ) return false;
 		}
 		return true;
+	}
+
+	private Map<String,Object> getTupleKey() {
+		Map<String,Object> tupleKey = new HashMap<String,Object>(4);
+		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
+		return tupleKey;
 	}
 }
