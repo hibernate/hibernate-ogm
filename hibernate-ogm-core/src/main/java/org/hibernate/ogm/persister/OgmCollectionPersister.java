@@ -26,13 +26,11 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,14 +47,12 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
-import org.hibernate.ogm.grid.PropertyKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
@@ -105,6 +101,22 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
 		final Map<String,Object> keyTuple = resultset.getTuple();
 		return elementGridType.nullSafeGet( keyTuple, aliases, session, owner );
+	}
+
+	@Override
+	public Object readIdentifier(ResultSet rs, String alias, SessionImplementor session)
+			throws HibernateException, SQLException {
+		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
+		final Map<String,Object> keyTuple = resultset.getTuple();
+		return identifierGridType.nullSafeGet( keyTuple, alias, session, null );
+	}
+
+	@Override
+	public Object readIndex(ResultSet rs, String[] aliases, SessionImplementor session)
+			throws HibernateException, SQLException {
+		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
+		final Map<String,Object> keyTuple = resultset.getTuple();
+		return indexGridType.nullSafeGet( keyTuple, aliases, session, null );
 	}
 
 	@Override
@@ -219,9 +231,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			);
 		}
 		else {
-			final Object element = collection.getElement( entry );
-			getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
+			//use element as tuple key
+			//but since we need element in the tuple, move it out of the else
 		}
+		final Object element = collection.getElement( entry );
+		getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
 		return tupleKey;
 	}
 
