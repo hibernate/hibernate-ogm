@@ -183,7 +183,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			Object entry = entries.next();
 			if ( collection.needsUpdating( entry, i, elementType ) ) {
 				//get the tuple Key
-				Map<String, Object> tupleKey = getTupleKey( key, collection, session, i, entry );
+				Map<String, Object> tupleKey = getTupleKeyForUpdate( key, collection, session, i, entry );
 
 				//find the matching element
 				Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( tupleKey );
@@ -204,7 +204,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return count;
 	}
 
-	private Map<String, Object> buildTupleKey(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+	private Map<String, Object> buildFullTuple(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
@@ -225,7 +225,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return tupleKey;
 	}
 
-	private Map<String, Object> getTupleKey(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+	private Map<String, Object> getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
@@ -388,7 +388,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Object entry = entries.next();
 				if ( collection.needsInserting( entry, i, elementType ) ) {
 					//TODO: copy/paste from recreate()
-					final Map<String, Object> newTuple = buildTupleKey( id, collection, session, i, entry );
+					final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 					metadataProvider.getCollectionMetadata().add( newTuple );
 					collection.afterRowInsert( this, entry, i );
 					count++;
@@ -434,7 +434,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					final Object entry = entries.next();
 					if ( collection.entryExists( entry, i ) ) {
 						//TODO: copy/paste from insertRows()
-						final Map<String, Object> newTuple = buildTupleKey( id, collection, session, i, entry );
+						final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 						metadataProvider.getCollectionMetadata().add( newTuple );
 						collection.afterRowInsert( this, entry, i );
 						count++;
