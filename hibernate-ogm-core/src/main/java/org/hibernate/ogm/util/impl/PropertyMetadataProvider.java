@@ -99,7 +99,7 @@ public class PropertyMetadataProvider {
 		return propertyCache;
 	}
 
-	public PropertyKey getCollectionMetadataKey() {
+	private PropertyKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			final Object[] columnValues = getColumnValues();
 			collectionMetadataKey = new PropertyKey( tableName, keyColumnNames, columnValues );
