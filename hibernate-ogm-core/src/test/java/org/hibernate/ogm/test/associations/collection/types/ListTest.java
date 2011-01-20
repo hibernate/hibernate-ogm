@@ -24,6 +24,9 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import static org.fest.assertions.Assertions.*;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
+import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
 
 /**
  * @author Emmanuel Bernard  <emmanuel@hibernate.org>
@@ -56,7 +59,7 @@ public class ListTest extends OgmTestCase {
 		assertThat( father.getOrderedChildren().get(0).getName() )
 				.as( "Luke should be first" )
 				.isEqualTo( luke.getName() );
-		assertThat( father.getOrderedChildren().get(1) )
+		assertThat( father.getOrderedChildren().get( 1 ) )
 				.as( "Second born should be null" )
 				.isNull();
 		assertThat( father.getOrderedChildren().get(2).getName() )
@@ -66,6 +69,10 @@ public class ListTest extends OgmTestCase {
 		session.delete( session.load(Child.class, luke.getId() ) );
 		session.delete( session.load(Child.class, leia.getId() ) );
 		tx.commit();
+
+		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
+		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
+
 		session.close();
 	}
 

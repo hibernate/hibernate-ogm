@@ -27,6 +27,10 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
+import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
+
 /**
  * @author Emmanuel Bernard
  */
@@ -51,6 +55,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( emmanuel );
 		session.delete( jug );
 		transaction.commit();
+
+		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
+		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
+
 		session.close();
 	}
 
@@ -91,6 +99,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( force.getSalesGuys().iterator().next() );
 		session.delete( force );
 		transaction.commit();
+
+		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
+		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
+
 
 		session.close();
 	}
