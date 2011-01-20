@@ -23,7 +23,6 @@
  */
 package org.hibernate.ogm.metadata;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -33,8 +32,8 @@ import org.infinispan.manager.CacheContainer;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.PropertyKey;
 
 /**
  * Helper class to be refactored and abstracted from specific grid implementation
@@ -43,7 +42,7 @@ import org.hibernate.ogm.grid.PropertyKey;
 public class GridMetadataManagerHelper {
 	public static final String ENTITY_CACHE = "ENTITIES";
 	//TODO same or different? Customizable?
-	public static final String PROPERTY_CACHE = ENTITY_CACHE;
+	public static final String ASSOCIATION_CACHE = ENTITY_CACHE;
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
 		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();
@@ -72,13 +71,13 @@ public class GridMetadataManagerHelper {
 		return cache;
 	}
 
-	public static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(SessionFactoryImplementor factory) {
-		return getPropertyCache( getGridMetadataManager( factory ) );
+	public static Cache<AssociationKey, List<Map<String,Object>>> getAssociationCache(SessionFactoryImplementor factory) {
+		return getAssociationCache( getGridMetadataManager( factory ) );
 	}
 
-	public static Cache<PropertyKey, List<Map<String,Object>>> getPropertyCache(GridMetadataManager manager) {
+	public static Cache<AssociationKey, List<Map<String,Object>>> getAssociationCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<PropertyKey, List<Map<String,Object>>> cache = cacheContainer.getCache( PROPERTY_CACHE );
+		final Cache<AssociationKey, List<Map<String,Object>>> cache = cacheContainer.getCache( ASSOCIATION_CACHE );
 		return cache;
 	}
 }

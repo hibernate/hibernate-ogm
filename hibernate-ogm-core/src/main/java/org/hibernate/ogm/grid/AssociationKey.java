@@ -1,6 +1,5 @@
 package org.hibernate.ogm.grid;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -8,12 +7,12 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public class PropertyKey {
+public class AssociationKey {
 	private final String table;
 	private final String[] columns;
 	private final Object[] columnValues;
 
-	public PropertyKey(String table, String[] columns, Object[] columnValues) {
+	public AssociationKey(String table, String[] columns, Object[] columnValues) {
 		this.table = table;
 		this.columns = columns;
 		this.columnValues = columnValues;
@@ -28,7 +27,7 @@ public class PropertyKey {
 			return false;
 		}
 
-		PropertyKey that = ( PropertyKey ) o;
+		AssociationKey that = ( AssociationKey ) o;
 
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
@@ -55,7 +54,7 @@ public class PropertyKey {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "PropertyKey" );
+		sb.append( "AssociationKey" );
 		sb.append( "{table='" ).append( table ).append( '\'' );
 		sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
 		sb.append( ", columnValues=" )

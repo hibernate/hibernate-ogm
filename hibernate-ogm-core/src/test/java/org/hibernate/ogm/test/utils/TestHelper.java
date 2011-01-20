@@ -39,7 +39,7 @@ public class TestHelper {
 
 	public static Cache getAssociationCache(Session session) {
 		final SessionFactoryObserver observer = getObserver( session );
-		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.PROPERTY_CACHE );
+		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
 	}
 
 	private static SessionFactoryObserver getObserver(Session session) {

@@ -10,8 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
-import org.hibernate.ogm.grid.PropertyKey;
-import org.hibernate.ogm.metadata.GridMetadataManager;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
@@ -102,7 +101,9 @@ class Dehydrator {
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
 		final Type[] propertyTypes = persister.getPropertyTypes();
-		final Cache<PropertyKey, List<Map<String,Object>>> propertyCache = GridMetadataManagerHelper.getPropertyCache( session.getFactory() );
+		final Cache<AssociationKey, List<Map<String,Object>>> associationCache = GridMetadataManagerHelper.getAssociationCache(
+				session.getFactory()
+		);
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
 				final Type propertyType = propertyTypes[propertyIndex];
@@ -117,7 +118,7 @@ class Dehydrator {
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
 						doRemovePropertyMetadata(
-								propertyCache,
+								associationCache,
 								tableIndex,
 								propertyIndex,
 								oldColumnValues);
@@ -144,7 +145,7 @@ class Dehydrator {
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
 						doAddPropertyMetadata(
-								propertyCache,
+								associationCache,
 								tableIndex,
 								propertyIndex,
 								newColumnValues);
@@ -154,13 +155,13 @@ class Dehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(Cache<PropertyKey, List<Map<String,Object>>> propertyCache,
+	private void doAddPropertyMetadata(Cache<AssociationKey, List<Map<String,Object>>> associationCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-		        .propertyCache( propertyCache )
+		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.columnValues( newColumnValue )
 				.session( session )
@@ -181,12 +182,12 @@ class Dehydrator {
 		metadataProvider.flushToCache();
 	}
 
-	private void doRemovePropertyMetadata(Cache<PropertyKey, List<Map<String,Object>>> propertyCache,
+	private void doRemovePropertyMetadata(Cache<AssociationKey, List<Map<String,Object>>> associationCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-		        .propertyCache( propertyCache )
+		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.columnValues( oldColumnValue )
 				.session( session )

@@ -30,7 +30,7 @@ import java.util.Map;
 import org.infinispan.Cache;
 
 import org.hibernate.engine.SessionImplementor;
-import org.hibernate.ogm.grid.PropertyKey;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
@@ -40,25 +40,25 @@ import org.hibernate.ogm.type.GridType;
  */
 public class PropertyMetadataProvider {
 	private GridMetadataManager gridManager;
-	private Cache<PropertyKey, List<Map<String, Object>>> propertyCache;
+	private Cache<AssociationKey, List<Map<String, Object>>> associationCache;
 	private String tableName;
 	private String[] keyColumnNames;
 	private GridType keyGridType;
 	private Object key;
 	private SessionImplementor session;
-	private PropertyKey collectionMetadataKey;
+	private AssociationKey collectionMetadataKey;
 	private List<Map<String,Object>> collectionMetadata;
 	private Object[] columnValues;
 
-	// alternative gridManager or propertyCache
+	// alternative gridManager or associationCache
 	public PropertyMetadataProvider gridManager(GridMetadataManager gridManager) {
 		this.gridManager = gridManager;
 		return this;
 	}
 
-	// alternative gridManager or propertyCache
-	public PropertyMetadataProvider propertyCache(Cache<PropertyKey, List<Map<String, Object>>> propertyCache) {
-		this.propertyCache = propertyCache;
+	// alternative gridManager or associationCache
+	public PropertyMetadataProvider associationCache(Cache<AssociationKey, List<Map<String, Object>>> associationCache) {
+		this.associationCache = associationCache;
 		return this;
 	}
 
@@ -92,17 +92,17 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	private Cache<PropertyKey, List<Map<String, Object>>> getPropertyCache() {
-		if (propertyCache == null) {
-			propertyCache = GridMetadataManagerHelper.getPropertyCache( gridManager );
+	private Cache<AssociationKey, List<Map<String, Object>>> getAssociationCache() {
+		if ( associationCache == null) {
+			associationCache = GridMetadataManagerHelper.getAssociationCache( gridManager );
 		}
-		return propertyCache;
+		return associationCache;
 	}
 
-	private PropertyKey getCollectionMetadataKey() {
+	private AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			final Object[] columnValues = getColumnValues();
-			collectionMetadataKey = new PropertyKey( tableName, keyColumnNames, columnValues );
+			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 		}
 		return collectionMetadataKey;
 	}
@@ -118,7 +118,7 @@ public class PropertyMetadataProvider {
 
 	public List<Map<String,Object>> getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = getPropertyCache().get( getCollectionMetadataKey() );
+			collectionMetadata = getAssociationCache().get( getCollectionMetadataKey() );
 			if (collectionMetadata == null) {
 				collectionMetadata = new ArrayList<Map<String,Object>>();
 			}
@@ -128,10 +128,10 @@ public class PropertyMetadataProvider {
 
 	public void flushToCache() {
 		if ( getCollectionMetadata().size() == 0 ) {
-			getPropertyCache().remove( getCollectionMetadataKey() );
+			getAssociationCache().remove( getCollectionMetadataKey() );
 		}
 		else {
-			getPropertyCache().put( getCollectionMetadataKey(), getCollectionMetadata() );
+			getAssociationCache().put( getCollectionMetadataKey(), getCollectionMetadata() );
 		}
 	}
 
