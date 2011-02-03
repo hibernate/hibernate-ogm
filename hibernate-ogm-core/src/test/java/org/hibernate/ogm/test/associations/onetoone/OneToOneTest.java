@@ -55,10 +55,9 @@ public class OneToOneTest extends OgmTestCase {
 		session.delete( horse );
 		transaction.commit();
 
-		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
-		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
-
 		session.close();
+
+		checkCleanCache();
 	}
 
 	public void testUnidirectionalOneToOne() throws Exception {

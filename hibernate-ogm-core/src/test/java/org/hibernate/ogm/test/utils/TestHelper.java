@@ -20,9 +20,13 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import java.io.Serializable;
+import java.lang.annotation.Target;
+
 import org.infinispan.Cache;
 
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.impl.SessionFactoryImpl;
 import org.hibernate.ogm.metadata.GridMetadataManager;
@@ -33,20 +37,43 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
  */
 public class TestHelper {
 	public static Cache getEntityCache(Session session) {
-		final SessionFactoryObserver observer = getObserver( session );
+		final SessionFactoryObserver observer = getObserver( session.getSessionFactory() );
+		return getEntityCache(observer);
+	}
+
+	public static Cache getEntityCache(SessionFactory sessionFactory) {
+		final SessionFactoryObserver observer = getObserver( sessionFactory );
+		return getEntityCache(observer);
+	}
+
+	private static Cache getEntityCache(SessionFactoryObserver observer) {
 		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
 	}
 
 	public static Cache getAssociationCache(Session session) {
-		final SessionFactoryObserver observer = getObserver( session );
+		final SessionFactoryObserver observer = getObserver( session.getSessionFactory() );
 		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
 	}
 
-	private static SessionFactoryObserver getObserver(Session session) {
-		final SessionFactoryObserver observer = ( ( SessionFactoryImpl ) session.getSessionFactory() ).getFactoryObserver();
+	public static Cache getAssociationCache(SessionFactory sessionFactory) {
+		final SessionFactoryObserver observer = getObserver( sessionFactory );
+		return getAssociationCache( observer );
+	}
+
+	private static Cache getAssociationCache(SessionFactoryObserver observer) {
+		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+	}
+
+	private static SessionFactoryObserver getObserver(SessionFactory factory) {
+		final SessionFactoryObserver observer = ( ( SessionFactoryImpl ) factory ).getFactoryObserver();
 		if (observer == null) {
 			throw new RuntimeException( "Wrong OGM configuration: observer not set" );
 		}
 		return observer;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
+		return (T) session.get(clazz, id);
 	}
 }

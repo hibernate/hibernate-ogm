@@ -56,10 +56,9 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( jug );
 		transaction.commit();
 
-		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
-		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
-
 		session.close();
+
+		checkCleanCache();
 	}
 
 	public void testBidirectionalManyToOneRegular() throws Exception {
@@ -100,11 +99,9 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( force );
 		transaction.commit();
 
-		assertThat(getEntityCache( session )).as("Entity cache should be empty").hasSize( 0 );
-		assertThat(getAssociationCache( session )).as("Association cache should be empty").hasSize( 0 );
-
-
 		session.close();
+
+		checkCleanCache();
 	}
 
 	@Override

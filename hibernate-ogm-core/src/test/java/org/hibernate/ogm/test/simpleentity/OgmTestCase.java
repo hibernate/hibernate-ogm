@@ -40,6 +40,10 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
+import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
+
 /**
  * A base class for all OGM tests.
  *
@@ -179,5 +183,10 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		}
 		catch ( Exception ignore ) {
 		}
+	}
+
+	public void checkCleanCache() {
+		assertThat(getEntityCache( sessions )).as("Entity cache should be empty").hasSize( 0 );
+		assertThat(getAssociationCache( sessions )).as("Association cache should be empty").hasSize( 0 );
 	}
 }
