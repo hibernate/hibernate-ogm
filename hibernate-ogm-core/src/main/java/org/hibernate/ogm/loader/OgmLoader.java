@@ -57,6 +57,7 @@ import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.CollectionPhysicalModel;
+import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
@@ -399,7 +400,12 @@ public class OgmLoader implements UniqueEntityLoader {
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
 			final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-			final Map<String,Object> entry = entityCache.get( new EntityKey( getEntityPersisters()[0].getTableName(), id ) );
+			final Map<String,Object> entry = entityCache.get(
+					new EntityKeyBuilder()
+							.entityPersister( getEntityPersisters()[0] )
+							.id( id )
+							.getKey()
+			);
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}

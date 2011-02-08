@@ -34,6 +34,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -52,7 +53,11 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
 		AdvancedCache advCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() ).getAdvancedCache();
-		advCache.lock( new EntityKey( lockable.getRootTableName(), id ) );
+		advCache.lock( new EntityKeyBuilder()
+				.tableName( lockable.getRootTableName() )
+				.id( id )
+				.getKey()
+		);
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 }
