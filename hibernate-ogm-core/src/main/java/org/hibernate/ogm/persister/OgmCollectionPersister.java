@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,7 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
@@ -57,6 +59,8 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.type.EntityType;
+import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
 
 /**
@@ -73,6 +77,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType identifierGridType;
 	private final GridMetadataManager gridManager;
 	private final boolean isInverse;
+	private final boolean oneToMany;
+	private final GridType gridTypeOfAssociatedId;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -85,6 +91,19 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		identifierGridType = typeTranslator.getType( getIdentifierType() );
 		//copied from the superclass constructor
 		isInverse = collection.isInverse();
+		if ( collection.isOneToMany() && getElementPersister() != null && getElementType().isEntityType() ) {
+			oneToMany = true;
+			final Type identifierOrUniqueKeyType = ( ( EntityType ) getElementType() ).getIdentifierOrUniqueKeyType( factory );
+			gridTypeOfAssociatedId = typeTranslator.getType( identifierOrUniqueKeyType );
+		}
+		else if ( collection.isOneToMany() ) {
+			//one to many but not what we expected
+			throw new AssertionFailure( "Association marked as one to many but has no ManyToOneType: " + collection.getRole() );
+		}
+		else {
+			oneToMany = false;
+			gridTypeOfAssociatedId = null;
+		}
 	}
 
 	@Override
@@ -141,7 +160,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public boolean isOneToMany() {
-		return false;
+		return oneToMany;
 	}
 
 	@Override
@@ -205,7 +224,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				}
 
 				//update the matching element
+				//FIXME update the associated entity key data
+				updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.REMOVE );
 				getElementGridType().nullSafeSet( matchingTuple, collection.getElement( entry ), getElementColumnNames(), session );
+				updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.ADD );
 				count++;
 			}
 			i++;
@@ -354,6 +376,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					}
 
 					//delete the tuple
+					updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.REMOVE );
 					metadataProvider.getCollectionMetadata().remove( matchingTuple );
 
 					count++;
@@ -404,6 +427,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					//TODO: copy/paste from recreate()
 					final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 					metadataProvider.getCollectionMetadata().add( newTuple );
+					updateAssociatedEntityTableIfNeeded( session, newTuple, Action.ADD );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -444,12 +468,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				int i = 0;
 				int count = 0;
 				while ( entries.hasNext() ) {
-
 					final Object entry = entries.next();
 					if ( collection.entryExists( entry, i ) ) {
 						//TODO: copy/paste from insertRows()
 						final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 						metadataProvider.getCollectionMetadata().add( newTuple );
+						updateAssociatedEntityTableIfNeeded( session, newTuple, Action.ADD );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -467,6 +491,54 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				}
 			}
 		}
+	}
+
+	/**
+	 * If the association is a true one to many, ensure that the entity tuple of the associated entity
+	 * is updated with index and fk information
+	 */
+	private void updateAssociatedEntityTableIfNeeded(SessionImplementor session, Map<String, Object> tuple, Action action) {
+		if ( oneToMany ) {
+			//update the associated object
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
+			final EntityKey entityKey = new EntityKeyBuilder()
+					.entityPersister( ( OgmEntityPersister ) getElementPersister() )
+					.id( entityId )
+					.getKey();
+			final Cache<EntityKey,Map<String,Object>> entityCache = GridMetadataManagerHelper.getEntityCache(
+					gridManager
+			);
+			final Map<String, Object> entityTuple = entityCache.get( entityKey );
+			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
+			if (entityTuple == null) {
+				return;
+			}
+			if (action == Action.ADD) {
+				//copy all collection tuple entries in the entity tuple as this is the same table essentially
+				for ( Map.Entry<String, Object> tupleEntry : tuple.entrySet() ) {
+					entityTuple.put( tupleEntry.getKey(), tupleEntry.getValue() );
+				}
+			}
+			else if (action == Action.REMOVE) {
+				if (hasIdentifier) {
+					throw new AssertionFailure( "A true OneToMany with an identifier for the collection: " + getRole() );
+				}
+				if (hasIndex) {
+					//nullify the index
+					indexGridType.nullSafeSet( entityTuple, null, getIndexColumnNames(), session );
+				}
+				keyGridType.nullSafeSet( entityTuple, null, getKeyColumnNames(), session );
+			}
+			else {
+				throw new AssertionFailure( "Unknown action type: " + action );
+			}
+			entityCache.put( entityKey, entityTuple ); //update cache
+		}
+	}
+
+	private static enum Action {
+		ADD,
+		REMOVE
 	}
 
 	@Override
@@ -489,6 +561,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
 				.session( session );
+			//guard by onToMany as the loop can be costly
+			if (oneToMany) {
+				for ( Map<String,Object> tuple : metadataProvider.getCollectionMetadata() ) {
+					//we unfortunately cannot mass change the update of the associated entity
+					updateAssociatedEntityTableIfNeeded( session, tuple, Action.REMOVE );
+				}
+			}
 			metadataProvider.getCollectionMetadata().clear();
 			metadataProvider.flushToCache();
 
