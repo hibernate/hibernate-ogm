@@ -23,11 +23,14 @@
  */
 package org.hibernate.ogm.test.associations.manytoone;
 
+import org.infinispan.Cache;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.get;
 import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
 import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
 
@@ -104,13 +107,63 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	public void testBiDirManyToOneInsertUpdateFalse() throws Exception {
+		final Session session = openSession();
+		Transaction tx = session.beginTransaction();
+		Beer hoegaarden = new Beer();
+		Brewery hoeBrewery = new Brewery();
+		hoeBrewery.getBeers().add( hoegaarden );
+		hoegaarden.setBrewery( hoeBrewery );
+		session.persist( hoeBrewery );
+		tx.commit();
+		final Cache entityCache = getEntityCache( sessions );
+		session.clear();
+
+		tx = session.beginTransaction();
+		hoegaarden = get( session, Beer.class, hoegaarden.getId() );
+		assertThat(hoegaarden)
+			.isNotNull();
+		assertThat(hoegaarden.getBrewery())
+			.isNotNull();
+		assertThat( hoegaarden.getBrewery().getBeers() )
+			.hasSize( 1 )
+			.containsOnly( hoegaarden );
+		Beer citron = new Beer();
+		hoeBrewery = hoegaarden.getBrewery();
+		hoeBrewery.getBeers().remove( hoegaarden );
+		hoeBrewery.getBeers().add(citron);
+		citron.setBrewery( hoeBrewery );
+		session.delete( hoegaarden );
+		tx.commit();
+
+		session.clear();
+
+		tx = session.beginTransaction();
+		citron = get( session, Beer.class, citron.getId() );
+		assertThat( citron.getBrewery().getBeers() )
+			.hasSize( 1 )
+			.containsOnly( citron );
+		hoeBrewery = citron.getBrewery();
+		citron.setBrewery( null );
+		hoeBrewery.getBeers().clear();
+		session.delete( citron );
+		session.delete( hoeBrewery );
+		tx.commit();
+
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				JUG.class,
 				Member.class,
 				SalesForce.class,
-				SalesGuy.class
+				SalesGuy.class,
+				Beer.class,
+				Brewery.class
 		};
 	}
 }
