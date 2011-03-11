@@ -299,7 +299,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	private void handleEmptyCollections(
 	        final Serializable[] keys,
-	        final Object resultSetId,
+	        final ResultSet resultSetId,
 	        final SessionImplementor session) {
 
 		if ( keys != null ) {
@@ -571,7 +571,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	private void initializeEntitiesAndCollections(
 			final List hydratedObjects,
-			final Object resultSetId,
+			final ResultSet resultSetId,
 			final SessionImplementor session,
 			final boolean readOnly)
 	throws HibernateException {
@@ -630,7 +630,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied from Loader#endCollectionLoad
 	 */
 	private void endCollectionLoad(
-			final Object resultSetId,
+			final ResultSet resultSetId,
 			final SessionImplementor session,
 			final CollectionPersister collectionPersister) {
 		//this is a query and we are loading multiple instances of the same collection role
