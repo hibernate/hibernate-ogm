@@ -33,7 +33,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.hibernate</groupId>
+        <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
         <version>3.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
