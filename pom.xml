@@ -35,7 +35,7 @@
 
     <name>Hibernate OGM Aggregator</name>
     <description>Hibernate OGM Aggregator POM</description>
-    <url>http://hibernate.org</url>
+    <url>http://community.jboss.org/en/hibernate/ogm</url>
 
     <inceptionYear>2010</inceptionYear>
 
