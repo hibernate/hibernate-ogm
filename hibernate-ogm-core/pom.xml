@@ -34,25 +34,23 @@
 
     <parent>
         <groupId>org.hibernate</groupId>
-        <artifactId>hibernate-parent</artifactId>
-        <version>3.6.2-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <artifactId>hibernate-ogm-parent</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     
-    <groupId>org.hibernate</groupId>
-    <artifactId>hibernate-ogm</artifactId>
+    <artifactId>hibernate-ogm-core</artifactId>
     <packaging>jar</packaging>
 
     <name>Hibernate Object Grid Mapper</name>
     <description>Persist data in a grid rather than a relational database</description>
 
     <properties>
-      <version.infinispan>4.1.0.CR1</version.infinispan>
-      <version.hsqldb>1.8.0.2</version.hsqldb>
       <version.cglib>2.2</version.cglib>
       <version.javassist>3.4.GA</version.javassist>
+<!--      <version.hsqldb>1.8.0.2</version.hsqldb> -->
       <version.org.jboss.naming>5.0.3.GA</version.org.jboss.naming>
-      <version.xapool>1.5.0</version.xapool>       
+      <version.xapool>1.5.0</version.xapool>
       <skipUnitTests>false</skipUnitTests>
       <!-- 
          Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -65,24 +63,21 @@
 
     <dependencies>
         <dependency>
-            <groupId>${groupId}</groupId>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>${version.infinispan}</version> 
         </dependency>
         
         <!-- test dependencies -->
         <dependency>
-            <groupId>${groupId}</groupId>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-testing</artifactId>
-            <version>${version}</version>
             <!-- <scope>test</scope> TODO fix this -->
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
             <version>${version.infinispan}</version>
@@ -94,7 +89,7 @@
             <artifactId>hsqldb</artifactId>
             <version>${version.hsqldb}</version>
             <scope>test</scope>
-        </dependency>
+        </dependency> -->
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
             <groupId>cglib</groupId>
@@ -140,7 +135,6 @@
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
-            <version>1.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
