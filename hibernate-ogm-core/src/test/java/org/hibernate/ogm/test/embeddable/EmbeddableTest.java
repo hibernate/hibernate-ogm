@@ -43,7 +43,7 @@ public class EmbeddableTest extends OgmTestCase {
 		final Address address = account.getHomeAddress();
 		address.setCity( "Paris" );
 		address.setCountry( "France" );
-		address.setStreet1( "1 avenue des Champs Elyses" );
+		address.setStreet1( "1 avenue des Champs Elysees" );
 		address.setZipCode( "75007" );
 		session.persist( account );
 		transaction.commit();
