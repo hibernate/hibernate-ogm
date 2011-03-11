@@ -27,6 +27,8 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
+import static org.fest.assertions.Assertions.*;
+
 /**
  * @author Emmanuel Bernard
  */
@@ -52,11 +54,11 @@ public class EmbeddableTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		final Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertNotNull( "Cannot load persisted object", loadedAccount );
+		assertThat( loadedAccount ).as( "Cannot load persisted object" ).isNotNull();
 		final Address loadedAddress = loadedAccount.getHomeAddress();
-		assertNotNull( "Embeddable should not be null", loadedAddress );
-		assertEquals( "persist and load fails for embeddable", loadedAddress.getCity(), address.getCity() );
-		assertEquals( "@Column support for embeddable does not work", loadedAddress.getZipCode(), address.getZipCode() );
+		assertThat( loadedAddress ).as( "Embeddable should not be null" ).isNotNull();
+		assertThat( loadedAddress.getCity() ).as("persist and load fails for embeddable").isEqualTo( address.getCity() );
+		assertThat( loadedAddress.getZipCode() ).as("@Column support for embeddable does not work").isEqualTo( address.getZipCode() );
 		transaction.commit();
 
 		session.clear();
@@ -70,17 +72,16 @@ public class EmbeddableTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		Account secondLoadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertEquals(
-				"Merge fails for embeddable",
-				loadedAccount.getHomeAddress().getCity(),
-				secondLoadedAccount.getHomeAddress().getCity() );
+		assertThat( loadedAccount.getHomeAddress().getCity() )
+				.as( "Merge fails for embeddable" )
+				.isEqualTo( secondLoadedAccount.getHomeAddress().getCity() );
 		session.delete( secondLoadedAccount );
 		transaction.commit();
 
 		session.clear();
 
 		transaction = session.beginTransaction();
-		assertNull( session.get( Account.class, account.getLogin() ) );
+		assertThat( session.get( Account.class, account.getLogin() ) ).isNull();
 		transaction.commit();
 
 		session.close();
