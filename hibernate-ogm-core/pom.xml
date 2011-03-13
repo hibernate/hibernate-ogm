@@ -47,9 +47,9 @@
 
     <properties>
       <version.cglib>2.2</version.cglib>
-      <version.javassist>3.4.GA</version.javassist>
+      <version.javassist>3.12.1.GA</version.javassist>
 <!--      <version.hsqldb>1.8.0.2</version.hsqldb> -->
-      <version.org.jboss.naming>5.0.3.GA</version.org.jboss.naming>
+      <version.org.jboss.naming>5.0.6.CR1</version.org.jboss.naming>
       <version.xapool>1.5.0</version.xapool>
       <skipUnitTests>false</skipUnitTests>
       <!-- 
