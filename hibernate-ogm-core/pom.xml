@@ -45,22 +45,6 @@
     <name>Hibernate Object Grid Mapper</name>
     <description>Persist data in a grid rather than a relational database</description>
 
-    <properties>
-      <version.cglib>2.2</version.cglib>
-      <version.javassist>3.12.1.GA</version.javassist>
-<!--      <version.hsqldb>1.8.0.2</version.hsqldb> -->
-      <version.org.jboss.naming>5.0.6.CR1</version.org.jboss.naming>
-      <version.xapool>1.5.0</version.xapool>
-      <skipUnitTests>false</skipUnitTests>
-      <!-- 
-         Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
-         may be problems with multicast on the interface JGroups uses by default on your machine. You can
-         try to resolve setting 'jgroups.bind_addr' as a system-property to the jvm launching maven and
-         setting the value to an interface where you know multicast works
-      -->
-      <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -84,64 +68,45 @@
 <!--        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>${version.infinispan}</version>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <version>${version.hsqldb}</version>
             <scope>test</scope>
         </dependency> -->
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
-            <version>${version.cglib}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>${version.javassist}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
           <groupId>org.jboss.naming</groupId>
           <artifactId>jnp-client</artifactId>
           <scope>test</scope>
-          <version>${version.org.jboss.naming}</version>
         </dependency>
-
         <dependency>
           <groupId>org.jboss.naming</groupId>
           <artifactId>jnpserver</artifactId>
           <scope>test</scope>
-          <version>${version.org.jboss.naming}</version>
         </dependency>
-
         <dependency>
           <groupId>com.experlog</groupId>
           <artifactId>xapool</artifactId>
           <scope>test</scope>
-          <version>${version.xapool}</version>
         </dependency>
-
         <dependency>
           <groupId>jboss.jbossts</groupId>
           <artifactId>jbossjta</artifactId>
-          <version>4.9.0.GA</version>
           <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert</artifactId>
             <scope>test</scope>
         </dependency>
-        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

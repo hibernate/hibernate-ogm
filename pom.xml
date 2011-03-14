@@ -118,7 +118,16 @@
         <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>4.2.1.CR4</infinispanVersion>
         <hibernateVersion>3.6.2.Final</hibernateVersion>
+        <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- 
+             Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
+             may be problems with multicast on the interface JGroups uses by default on your machine. You can
+             try to resolve setting 'jgroups.bind_addr' as a system-property to the jvm launching maven and
+             setting the value to an interface where you know multicast works
+          -->
+      <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
+      <skipUnitTests>false</skipUnitTests>
     </properties>
 
     <dependencyManagement>
@@ -182,6 +191,42 @@
                 <groupId>org.easytesting</groupId>
                 <artifactId>fest-assert</artifactId>
                 <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>jboss.jbossts</groupId>
+                <artifactId>jbossjta</artifactId>
+                <version>4.9.0.GA</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.experlog</groupId>
+                <artifactId>xapool</artifactId>
+                <scope>test</scope>
+                <version>1.5.0</version>
+            </dependency>
+            <dependency>
+                <groupId>javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>3.12.1.GA</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>2.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+              <groupId>org.jboss.naming</groupId>
+              <artifactId>jnp-client</artifactId>
+              <scope>test</scope>
+              <version>${jbossNamingVersion}</version>
+            </dependency>
+            <dependency>
+              <groupId>org.jboss.naming</groupId>
+              <artifactId>jnpserver</artifactId>
+              <scope>test</scope>
+              <version>${jbossNamingVersion}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
