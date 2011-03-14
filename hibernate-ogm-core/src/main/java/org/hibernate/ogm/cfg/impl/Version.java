@@ -34,7 +34,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class Version {
 
 	public static String getVersionString() {
-		return "1.0.0-SNAPSHOT";
+		return "3.0.0-SNAPSHOT";
 	}
 
 	static {
