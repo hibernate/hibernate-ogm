@@ -48,9 +48,6 @@
 
     <modules>
         <module>manual</module>
-        <!--
-        <module>jbosscache2</module>
--->
         <module>examples</module>
     </modules>
 

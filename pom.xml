@@ -664,32 +664,6 @@
                 <module>hibernate-ogm-documentation</module>
             </modules>
         </profile>
-        <!-- =============================== -->
-        <!-- Database profiles               -->
-        <!-- =============================== -->
-        <!-- H2 is the default -->
-        <!-- database not needed
-        <profile>
-            <id>h2</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.h2database</groupId>
-                    <artifactId>h2</artifactId>
-                    <version>1.2.134</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-            <properties>
-                <db.dialect>org.hibernate.dialect.H2Dialect</db.dialect>
-                <jdbc.driver>org.h2.Driver</jdbc.driver>
-                <jdbc.url>jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1</jdbc.url>
-                <jdbc.user>sa</jdbc.user>
-                <jdbc.pass />
-                <jdbc.isolation />
-            </properties>
-        </profile> -->
     </profiles>
+
 </project>
