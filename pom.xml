@@ -43,10 +43,10 @@
         <module>hibernate-ogm-core</module>
     </modules>
 
-    <!-- issueManagement>
+    <issueManagement>
         <system>JIRA</system>
-        <url>http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH</url>
-    </issueManagement -->
+        <url>http://opensource.atlassian.com/projects/hibernate/browse/OGM</url>
+    </issueManagement>
 
     <scm>
         <connection>scm:git:git://github.com/emmanuelbernard/hibernate-ogm.git</connection>
