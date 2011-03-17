@@ -29,7 +29,9 @@ import org.infinispan.manager.DefaultCacheManager;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.Version;
+import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -41,7 +43,7 @@ import org.hibernate.ogm.type.TypeTranslator;
  * @author Emmanuel Bernard
  */
 public class GridMetadataManager implements SessionFactoryObserver {
-	private CacheContainer manager;
+	private CacheManagerServiceProvider manager;
 	private final TypeTranslator typeTranslator;
 	private GridDialect gridDialect;
 
@@ -53,12 +55,13 @@ public class GridMetadataManager implements SessionFactoryObserver {
 
 	@Override
 	public void sessionFactoryCreated(SessionFactory factory) {
-		manager = new DefaultCacheManager( );
-		manager.start();
+		SessionFactoryImplementor factoryImplementor = (SessionFactoryImplementor ) factory;
+		manager = new CacheManagerServiceProvider();
+		manager.start( factoryImplementor.getProperties() );
 	}
 
 	//TODO abstract to other grids
-	public CacheContainer getCacheContainer() { return manager; }
+	public CacheContainer getCacheContainer() { return manager.getService(); }
 
 	//TODO move to a *Implementor interface
 	public TypeTranslator getTypeTranslator() { return typeTranslator; }
