@@ -118,6 +118,7 @@
         <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>4.2.1.CR4</infinispanVersion>
         <hibernateVersion>3.6.3-SNAPSHOT</hibernateVersion>
+        <jbossjtaVersion>4.14.0.Final</jbossjtaVersion>
         <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
@@ -181,6 +182,8 @@
                 <version>${infinispanVersion}</version>
             </dependency>
 
+            <!-- utils -->
+
             <!-- Tests -->
             <dependency>
                 <groupId>junit</groupId>
@@ -193,10 +196,71 @@
                 <version>1.4</version>
             </dependency>
             <dependency>
-                <groupId>jboss.jbossts</groupId>
+                <groupId>org.jboss.jbossts</groupId>
                 <artifactId>jbossjta</artifactId>
-                <version>4.9.0.GA</version>
-                <scope>test</scope>
+                <version>${jbossjtaVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.ws.native</groupId>
+                        <artifactId>jbossws-native-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>emma</artifactId>
+                        <groupId>emma</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>emma_ant</artifactId>
+                        <groupId>emma</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hornetq-core</artifactId>
+                        <groupId>org.hornetq</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>netty</artifactId>
+                        <groupId>org.jboss.netty</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>wrapper</artifactId>
+                        <groupId>tanukisoft</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jacorb</artifactId>
+                        <groupId>jacorb</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jfreechart</artifactId>
+                        <groupId>jfree</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-corba-ots-spi</artifactId>
+                        <groupId>org.jboss.integration</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-server-manager</artifactId>
+                        <groupId>org.jboss.jbossas</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.ejb</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jnp-client</artifactId>
+                        <groupId>org.jboss.naming</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.servlet</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jbossws-common</artifactId>
+                        <groupId>org.jboss.ws</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jcl-over-slf4j</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.experlog</groupId>

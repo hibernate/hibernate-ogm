@@ -87,24 +87,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.jboss.naming</groupId>
-          <artifactId>jnp-client</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>org.jboss.naming</groupId>
-          <artifactId>jnpserver</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>com.experlog</groupId>
-          <artifactId>xapool</artifactId>
-          <scope>test</scope>
-        </dependency>
-        <dependency>
-          <groupId>jboss.jbossts</groupId>
-          <artifactId>jbossjta</artifactId>
-          <scope>test</scope>
+            <groupId>org.jboss.jbossts</groupId>
+            <artifactId>jbossjta</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.easytesting</groupId>
