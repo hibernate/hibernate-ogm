@@ -292,6 +292,12 @@
               <scope>test</scope>
               <version>${jbossNamingVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-impl-base</artifactId>
+                <version>1.0.0-alpha-12</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
