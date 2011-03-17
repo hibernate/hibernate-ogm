@@ -66,7 +66,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 							metadata.getProvider()
 					) ) {
 						//correct provider
-						Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(map);
+						Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
 						enforceOgmConfig( protectiveCopy );
 						protectiveCopy.put( HibernatePersistence.PROVIDER, delegate.getClass().getName() );
 						return delegate.createEntityManagerFactory( emName, protectiveCopy );
@@ -89,8 +89,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	private void enforceOgmConfig(Map<Object,Object> map) {
 		map.put( AvailableSettings.SESSION_FACTORY_OBSERVER, GridMetadataManager.class.getName() );
 		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
-		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class );
-		map.put( Environment.DIALECT, NoopDialect.class );
+		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+		map.put( Environment.DIALECT, NoopDialect.class.getName() );
 	}
 
 	@Override
