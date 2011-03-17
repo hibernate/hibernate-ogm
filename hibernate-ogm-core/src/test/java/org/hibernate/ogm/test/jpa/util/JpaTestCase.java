@@ -15,6 +15,8 @@ import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
+import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.internal.arjuna.objectstore.VolatileStore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,6 +45,10 @@ public abstract class JpaTestCase {
 
 	@Before
 	public void createFactory() throws MalformedURLException {
+		//set in memory tx persistence store
+		arjPropertyManager.getCoordinatorEnvironmentBean().setActionStore( VolatileStore.class.getName() );
+		transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
+
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
 		//we explicitly list them to avoid scanning
@@ -70,7 +76,6 @@ public abstract class JpaTestCase {
 				info,
 				Collections.EMPTY_MAP
 		);
-		transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
 	}
 
 	@After

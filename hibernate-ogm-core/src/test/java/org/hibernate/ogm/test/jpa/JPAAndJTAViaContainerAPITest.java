@@ -30,6 +30,8 @@ public class JPAAndJTAViaContainerAPITest extends JpaTestCase {
 		assertThat( poem.getName() ).isEqualTo( "L'albatros" );
 		em.remove( poem );
 		getTransactionManager().commit();
+
+		em.close();
 	}
 
 	@Override
