@@ -5,14 +5,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister( impl = OgmEntityPersister.class )
 public class Poem {
 	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name = "uuid", strategy = "uuid2")
 	public String getId() { return id; }

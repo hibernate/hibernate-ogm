@@ -25,6 +25,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.util.CollectionHelper;
@@ -91,6 +92,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 		map.put( Environment.DIALECT, NoopDialect.class.getName() );
+		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
 	}
 
 	@Override
