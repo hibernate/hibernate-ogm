@@ -26,16 +26,15 @@ import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
+import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
@@ -115,6 +114,7 @@ public abstract class OgmTestCase extends HibernateTestCase {
 
 			//Grid specific configuration
 			cfg.setProperty( Environment.DIALECT, NoopDialect.class.getName() );
+			cfg.setProperty( CacheManagerServiceProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
 			cfg.setSessionFactoryObserver( new GridMetadataManager() );
 			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 			cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
