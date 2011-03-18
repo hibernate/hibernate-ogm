@@ -32,6 +32,7 @@ import org.hibernate.persister.entity.EntityPersister;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmPersisterClassProvider implements PersisterClassProvider {
+	public static final OgmPersisterClassProvider INSTANCE = new OgmPersisterClassProvider();
 	@Override
 	public Class<? extends EntityPersister> getEntityPersisterClass(String entityName) {
 		return OgmEntityPersister.class;
