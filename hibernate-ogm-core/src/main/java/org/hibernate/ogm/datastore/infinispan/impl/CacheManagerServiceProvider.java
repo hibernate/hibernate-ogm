@@ -23,9 +23,6 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 
 import org.infinispan.config.Configuration;
 import org.infinispan.config.ConfigurationValidatingVisitor;
@@ -35,8 +32,6 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 import org.hibernate.HibernateException;
-import org.hibernate.util.NamingHelper;
-import org.hibernate.util.PropertiesHelper;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -48,9 +43,9 @@ import org.hibernate.util.PropertiesHelper;
  */
 //TODO extract an interface for other datastores
 public class CacheManagerServiceProvider {
+
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
-	 * Ignored if hibernate.search.infinispan.cachemanager_jndiname is defined.
 	 */
 	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
 	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";

@@ -97,13 +97,11 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 			//not the right provider
 			return null;
 		}
+		catch (PersistenceException pe) {
+			throw (PersistenceException) pe;
+		}
 		catch (Exception e) {
-			if ( e instanceof PersistenceException ) {
-				throw (PersistenceException) e;
-			}
-			else {
-				throw new PersistenceException( "Unable to build EntityManagerFactory", e );
-			}
+			throw new PersistenceException( "Unable to build EntityManagerFactory", e );
 		}
 	}
 

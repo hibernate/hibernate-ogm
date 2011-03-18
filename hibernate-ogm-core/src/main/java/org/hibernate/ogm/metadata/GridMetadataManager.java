@@ -21,8 +21,6 @@
 package org.hibernate.ogm.metadata;
 
 import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.CacheManager;
-import org.infinispan.manager.DefaultCacheManager;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
