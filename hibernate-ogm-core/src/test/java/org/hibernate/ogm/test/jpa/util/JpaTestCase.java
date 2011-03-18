@@ -20,29 +20,24 @@
  */
 package org.hibernate.ogm.test.jpa.util;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
-import com.arjuna.ats.arjuna.common.arjPropertyManager;
-import com.arjuna.ats.internal.arjuna.objectstore.VolatileStore;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
+import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
 
 /**
@@ -65,9 +60,7 @@ public abstract class JpaTestCase {
 
 	@Before
 	public void createFactory() throws MalformedURLException {
-		//set in memory tx persistence store
-		arjPropertyManager.getCoordinatorEnvironmentBean().setActionStore( VolatileStore.class.getName() );
-		transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
+		transactionManager = getJBossTransactionManager();
 
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
@@ -82,7 +75,7 @@ public abstract class JpaTestCase {
 		info.setNonJtaDataSource( null );
 		info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
 		info.setPersistenceUnitName( "default" );
-		final URL persistenceUnitRootUrl = new File( "/Users/manu/projects/notbackedup/git/ogm" ).toURI().toURL();
+		final URL persistenceUnitRootUrl = PackagingRule.getTargetDir().toURI().toURL();
 		info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
 		info.setPersistenceXMLSchemaVersion( "2.0" );
 		info.setProperties( new Properties() );
@@ -96,6 +89,15 @@ public abstract class JpaTestCase {
 				info,
 				Collections.EMPTY_MAP
 		);
+	}
+
+	/**
+	 * Initializes a JBossTS Standalone TransactionManager to not use permanent journals.
+	 * See jbossts-properties.xml for configuration.
+	 */
+	private static TransactionManager getJBossTransactionManager() {
+		TransactionManager transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
+		return transactionManager;
 	}
 
 	@After

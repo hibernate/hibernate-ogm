@@ -44,7 +44,7 @@ public class PackagingRule extends ExternalResource implements MethodRule {
 	protected static ClassLoader bundleClassLoader;
 	protected static File targetDir;
 
-	public File getTargetDir() {
+	public static File getTargetDir() {
 		return targetDir;
 	}
 
