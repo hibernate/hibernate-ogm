@@ -38,8 +38,7 @@ import org.hibernate.ogm.grid.EntityKey;
  */
 public class GridMetadataManagerHelper {
 	public static final String ENTITY_CACHE = "ENTITIES";
-	//TODO same or different? Customizable?
-	public static final String ASSOCIATION_CACHE = ENTITY_CACHE;
+	public static final String ASSOCIATION_CACHE = "ASSOCIATIONS";
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
 		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();

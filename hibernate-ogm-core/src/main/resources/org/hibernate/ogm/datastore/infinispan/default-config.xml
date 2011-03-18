@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
@@ -18,4 +19,107 @@
   ~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
   ~ MA  02110-1301, USA.
   -->
-<infinispan/>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:4.2 http://www.infinispan.org/schemas/infinispan-config-4.2.xsd"
+    xmlns="urn:infinispan:config:4.2">
+
+    <!-- *************************** -->
+    <!-- System-wide global settings -->
+    <!-- *************************** -->
+
+    <global>
+
+        <!-- Duplicate domains are allowed so that multiple deployments with default configuration 
+            of Hibernate OGM applications work - a better solution would be to use JNDI to share 
+            the CacheManager across applications, or use a custom configuration -->
+        <globalJmxStatistics
+            enabled="true"
+            cacheManagerName="HibernateOGM"
+            allowDuplicateDomains="true" />
+
+        <!-- If the transport is omitted, there is no way to create distributed or clustered 
+            caches. There is no added cost to defining a transport but not creating a cache that uses one, 
+            since the transport is created and initialized lazily. -->
+        <transport
+            clusterName="HibernateOGM-Infinispan-cluster"
+            distributedSyncTimeout="50000">
+            <!-- This is the default TCP based configuration, bundled in Infinispan core jar -->
+            <properties>
+                <property name="configurationFile" value="jgroups-tcp.xml" />
+            </properties>
+        </transport>
+
+        <!-- Used to register JVM shutdown hooks. hookBehavior: DEFAULT, REGISTER, DONT_REGISTER. 
+            Hibernate OGM takes care to stop the CacheManager so registering is not needed -->
+        <shutdown
+            hookBehavior="DONT_REGISTER" />
+
+    </global>
+
+    <!-- *************************** -->
+    <!--   Default cache settings    -->
+    <!-- *************************** -->
+
+    <default>
+
+        <locking
+            useLockStriping="false" />
+
+        <!-- Invocation batching is required for some features, including the Lucene Directory -->
+        <invocationBatching
+            enabled="true" />
+
+        <!-- This element specifies that the cache is clustered. modes supported: distribution 
+            (d), replication (r) or invalidation (i). Don't use invalidation as OGM storage! -->
+        <clustering
+            mode="distribution">
+
+            <!-- Force loading all data at startup: to be enabled when using replication 
+            <stateRetrieval
+                timeout="20000"
+                fetchInMemoryState="true"
+                alwaysProvideInMemoryState="true" />  -->
+
+            <!-- Network calls are synchronous by default -->
+            <sync
+                replTimeout="25000" />
+        </clustering>
+
+        <jmxStatistics
+            enabled="true" />
+
+        <eviction
+            maxEntries="-1"
+            strategy="NONE" />
+
+        <expiration
+            maxIdle="-1" />
+
+    </default>
+
+    <!-- **************************************************************** -->
+    <!-- Individually configured "named" caches.                          -->
+    <!--                                                                  -->
+    <!-- Technically not necessary, use it as template to create          -->
+    <!-- your own configuration.                                          -->
+    <!--                                                                  -->
+    <!-- Current settings could lead to OutOfMemory exception as a        -->
+    <!-- CacheStore should be enabled.                                    -->
+    <!-- **************************************************************** -->
+
+    <!-- *************************************** -->
+    <!--     Cache to store the OGM entities     -->
+    <!-- *************************************** -->
+    <namedCache
+        name="ENTITIES">
+    </namedCache>
+
+    <!-- *********************************************** -->
+    <!--   Cache to store the relations across entities  -->
+    <!-- *********************************************** -->
+    <namedCache
+        name="ASSOCIATIONS">
+    </namedCache>
+
+</infinispan>
