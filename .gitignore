@@ -2,8 +2,22 @@
 .DS_Store
 
 #IDEs
+
+# IntelliJ specific files/directories
 .idea
+*.ipr
+*.iws
 *.iml
+atlassian-ide-plugin.xml
+
+# Eclipse specific files/directories
+.classpath
+.project
+.settings
+.externalToolBuilders
+
+# NetBeans specific files/directories
+.nbattrs
 
 #build
 target/
