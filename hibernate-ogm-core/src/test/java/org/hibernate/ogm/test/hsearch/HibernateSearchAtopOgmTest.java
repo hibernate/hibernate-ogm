@@ -61,6 +61,7 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		final FullTextQuery ftQuery = ftem.createFullTextQuery( lq, Insurance.class );
 		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.getResultList();
+		assertThat( getFactory().getPersistenceUnitUtil().isLoaded( resultList.get(0) ) ).isTrue();
 		assertThat(resultList).hasSize( 1 );
 		for (Object e : resultList) {
 			ftem.remove( e );
