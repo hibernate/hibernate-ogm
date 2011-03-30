@@ -55,6 +55,12 @@
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search</artifactId>
+            <!-- likely more than test very soon -->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
         </dependency>
