@@ -85,10 +85,16 @@ public abstract class JpaTestCase {
 		info.getProperties().setProperty( Environment.TRANSACTION_MANAGER_STRATEGY,
 				JBossTSStandaloneTransactionManagerLookup.class.getName()
 		);
+		refineInfo(info);
 		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory(
 				info,
 				Collections.EMPTY_MAP
 		);
+	}
+
+	//can be overridden by subclasses
+	protected void refineInfo(GetterPersistenceUnitInfo info) {
+
 	}
 
 	/**
