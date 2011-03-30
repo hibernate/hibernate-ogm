@@ -25,7 +25,7 @@ package org.hibernate.ogm.exception;
  * @author Emmanuel Bernard
  */
 public class NotSupportedException extends RuntimeException {
-	public NotSupportedException(String message) {
-		super( message );
+	public NotSupportedException(String jira, String message) {
+		super( jira + " - " + message );
 	}
 }

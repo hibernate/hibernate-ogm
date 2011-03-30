@@ -297,7 +297,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			final EntityEntry entry,
 			final CacheEntry cacheEntry
 	) {
-		throw new NotSupportedException( "Lazy properties not supported in OGM" );
+		throw new NotSupportedException( "OGM-9", "Lazy properties not supported in OGM" );
 	}
 
 	private Object initializeLazyPropertiesFromDatastore(
@@ -306,7 +306,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			final SessionImplementor session,
 			final Serializable id,
 			final EntityEntry entry) {
-		throw new NotSupportedException( "Lazy properties not supported in OGM" );
+		throw new NotSupportedException( "OGM-9", "Lazy properties not supported in OGM" );
 	}
 
 	/**
