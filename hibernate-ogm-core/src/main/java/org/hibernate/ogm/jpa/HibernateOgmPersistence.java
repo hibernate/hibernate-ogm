@@ -45,6 +45,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
+import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -90,7 +91,10 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 						Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
 						enforceOgmConfig( protectiveCopy );
 						protectiveCopy.put( HibernatePersistence.PROVIDER, delegate.getClass().getName() );
-						return delegate.createEntityManagerFactory( emName, protectiveCopy );
+						final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
+								emName, protectiveCopy
+						);
+						return new OgmEntityManagerFactory( coreEMF );
 					}
 				}
 			}
@@ -122,7 +126,13 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 			//HEM only builds an EntityManagerFactory when HibernatePersistence.class.getName() is the PersistenceProvider
 			//that's why we override it when
 			//new DelegatorPersistenceUnitInfo(info)
-			return delegate.createContainerEntityManagerFactory( new DelegatorPersistenceUnitInfo( info ), protectiveCopy );
+			final EntityManagerFactory coreEMF = delegate.createContainerEntityManagerFactory(
+					new DelegatorPersistenceUnitInfo(
+							info
+					),
+					protectiveCopy
+			);
+			return new OgmEntityManagerFactory( coreEMF );
 		}
 		else {
 			//not the right provider
