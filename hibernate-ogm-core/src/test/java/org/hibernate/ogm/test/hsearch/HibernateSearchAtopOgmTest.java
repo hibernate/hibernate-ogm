@@ -22,11 +22,15 @@ package org.hibernate.ogm.test.hsearch;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 
+import org.hibernate.Session;
 import org.hibernate.ogm.test.jpa.util.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
@@ -42,7 +46,7 @@ import static org.fest.assertions.Assertions.assertThat;
 public class HibernateSearchAtopOgmTest extends JpaTestCase {
 
 	@Test
-	public void testHibernateSearchAPIUsage() throws Exception {
+	public void testHibernateSearchJPAAPIUsage() throws Exception {
 		getTransactionManager().begin();
 		final FullTextEntityManager ftem = Search.getFullTextEntityManager( getFactory().createEntityManager() );
 		final Insurance insurance = new Insurance();
@@ -62,12 +66,42 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.getResultList();
 		assertThat( getFactory().getPersistenceUnitUtil().isLoaded( resultList.get(0) ) ).isTrue();
-		assertThat(resultList).hasSize( 1 );
+		assertThat( resultList ).hasSize( 1 );
 		for (Object e : resultList) {
 			ftem.remove( e );
 		}
 		getTransactionManager().commit();
 		ftem.close();
+	}
+
+	@Test
+	public void testHibernateSearchNativeAPIUsage() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager entityManager = getFactory().createEntityManager();
+		final FullTextSession ftSession = org.hibernate.search.Search.getFullTextSession( entityManager.unwrap( Session.class ) );
+		final Insurance insurance = new Insurance();
+		insurance.setName( "Macif" );
+		ftSession.persist( insurance );
+		getTransactionManager().commit();
+
+		ftSession.clear();
+
+		getTransactionManager().begin();
+		final QueryBuilder b = ftSession.getSearchFactory()
+				.buildQueryBuilder()
+				.forEntity( Insurance.class )
+				.get();
+		final Query lq = b.keyword().onField( "name" ).matching( "Macif" ).createQuery();
+		final org.hibernate.search.FullTextQuery ftQuery = ftSession.createFullTextQuery( lq, Insurance.class );
+		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
+		final List<Insurance> resultList = ftQuery.list();
+		assertThat( getFactory().getPersistenceUnitUtil().isLoaded( resultList.get(0) ) ).isTrue();
+		assertThat(resultList).hasSize( 1 );
+		for (Object e : resultList) {
+			ftSession.delete( e );
+		}
+		getTransactionManager().commit();
+		entityManager.close();
 	}
 
 	@Override
