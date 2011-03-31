@@ -32,7 +32,16 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.metamodel.Metamodel;
 
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.SessionImplementor;
+import org.hibernate.event.EventSource;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -212,8 +221,14 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> T unwrap(Class<T> cls) {
-		//TODO wrap SessionFActory Session and co
-		return hibernateEm.unwrap( cls );
+		final T session = hibernateEm.unwrap( cls );
+		if ( Session.class.isAssignableFrom( cls ) || SessionImplementor.class.isAssignableFrom( cls ) ) {
+			final SessionFactory sessionFactory = ( ( HibernateEntityManagerFactory ) hibernateEm.getEntityManagerFactory() )
+					.getSessionFactory();
+			final OgmSessionFactory ogmSessionFactory = new OgmSessionFactory( ( SessionFactoryImplementor ) sessionFactory );
+			return (T) new OgmSession( ogmSessionFactory, (EventSource) session );
+		}
+		throw new HibernateException( "Cannot unwrap the following type: " + cls );
 	}
 
 	@Override

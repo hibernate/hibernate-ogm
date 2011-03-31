@@ -28,13 +28,20 @@ import javax.persistence.PersistenceUnitUtil;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.metamodel.Metamodel;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.event.EventSource;
+import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+
 /**
  * Delegate most work to the underlying EntityManagerFactory.
  * REturn an OgmEntityManager to cope with query operations
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmEntityManagerFactory implements EntityManagerFactory {
+public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateEntityManagerFactory {
 	private final EntityManagerFactory hibernateEmf;
 
 	public OgmEntityManagerFactory(EntityManagerFactory hibernateEmf) {
@@ -50,6 +57,14 @@ public class OgmEntityManagerFactory implements EntityManagerFactory {
 	public EntityManager createEntityManager(Map map) {
 		return new OgmEntityManager( this, hibernateEmf.createEntityManager(map) );
 	}
+
+	@Override
+	public SessionFactory getSessionFactory() {
+		final SessionFactory sessionFactory = ( ( HibernateEntityManagerFactory ) hibernateEmf ).getSessionFactory();
+		return new OgmSessionFactory( ( SessionFactoryImplementor ) sessionFactory );
+	}
+
+	//Delegation
 
 	@Override
 	public CriteriaBuilder getCriteriaBuilder() {
