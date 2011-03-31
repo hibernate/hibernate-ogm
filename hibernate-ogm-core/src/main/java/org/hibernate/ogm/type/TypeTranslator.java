@@ -26,15 +26,21 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.Type;
+import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
+import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
+import org.hibernate.type.descriptor.java.BooleanTypeDescriptor;
+import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
+import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 
 /**
  * @author Emmanuel Bernard
+ * @author Nicolas Helleringer
  */
 public class TypeTranslator {
 	private final Map<JavaTypeDescriptor, GridType> typeConverter;
@@ -46,6 +52,11 @@ public class TypeTranslator {
 		typeConverter.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
 		typeConverter.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
 		typeConverter.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
+		typeConverter.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
+		typeConverter.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
+		typeConverter.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
+		typeConverter.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
+		typeConverter.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
 	}
 
 	public GridType getType(Type type) {
