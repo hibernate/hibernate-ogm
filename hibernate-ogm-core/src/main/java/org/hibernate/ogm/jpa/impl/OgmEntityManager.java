@@ -167,7 +167,7 @@ public class OgmEntityManager implements EntityManager {
 	@Override
 	public Query createQuery(String qlString) {
 		//TODO plug the lucene query engine
-		return hibernateEm.createQuery( qlString );
+		throw new NotSupportedException( "OGM-21", "JP-QL queries are not supported yet" );
 	}
 
 	@Override
@@ -182,7 +182,7 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createNamedQuery(String name) {
-		throw new NotSupportedException( "OGM-15", "typed queries are not supported yet" );
+		throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
 	}
 
 	@Override
