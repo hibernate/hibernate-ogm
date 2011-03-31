@@ -44,7 +44,6 @@ import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
- * Test that PersistenceProvider#createContainerEntityManagerFactory work properly in a JTA environment
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class JPAAPIWrappingTest extends JpaTestCase {
