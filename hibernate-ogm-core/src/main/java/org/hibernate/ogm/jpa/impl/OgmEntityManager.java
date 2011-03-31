@@ -223,17 +223,27 @@ public class OgmEntityManager implements EntityManager {
 	public <T> T unwrap(Class<T> cls) {
 		final T session = hibernateEm.unwrap( cls );
 		if ( Session.class.isAssignableFrom( cls ) || SessionImplementor.class.isAssignableFrom( cls ) ) {
-			final SessionFactory sessionFactory = ( ( HibernateEntityManagerFactory ) hibernateEm.getEntityManagerFactory() )
-					.getSessionFactory();
-			final OgmSessionFactory ogmSessionFactory = new OgmSessionFactory( ( SessionFactoryImplementor ) sessionFactory );
-			return (T) new OgmSession( ogmSessionFactory, (EventSource) session );
+			return (T) buildOgmSession( ( EventSource ) session );
 		}
 		throw new HibernateException( "Cannot unwrap the following type: " + cls );
 	}
 
+	private OgmSession buildOgmSession(Session session) {
+		final SessionFactory sessionFactory = ( ( HibernateEntityManagerFactory ) hibernateEm.getEntityManagerFactory() )
+				.getSessionFactory();
+		final OgmSessionFactory ogmSessionFactory = new OgmSessionFactory( ( SessionFactoryImplementor ) sessionFactory );
+		return new OgmSession( ogmSessionFactory, (EventSource) session );
+	}
+
 	@Override
 	public Object getDelegate() {
-		return hibernateEm.getDelegate();
+		final Object delegate = hibernateEm.getDelegate();
+		if ( Session.class.isAssignableFrom( delegate.getClass() ) ) {
+			return buildOgmSession( ( EventSource ) delegate );
+		}
+		else {
+			return delegate;
+		}
 	}
 
 	@Override
