@@ -118,7 +118,7 @@
         <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>4.2.1.CR4</infinispanVersion>
         <hibernateVersion>3.6.3-SNAPSHOT</hibernateVersion>
-        <hibernateSearchVersion>3.4.0.CR1</hibernateSearchVersion>
+        <hibernateSearchVersion>3.4.0-SNAPSHOT</hibernateSearchVersion>
         <jbossjtaVersion>4.14.0.Final</jbossjtaVersion>
         <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
