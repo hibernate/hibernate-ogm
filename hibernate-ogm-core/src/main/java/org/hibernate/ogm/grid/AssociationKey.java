@@ -23,6 +23,8 @@ package org.hibernate.ogm.grid;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import org.hibernate.annotations.common.AssertionFailure;
+
 /**
  * Represents the key used to link a property value and the id of it's owning entity
  *
@@ -30,14 +32,17 @@ import java.util.Arrays;
  */
 public class AssociationKey implements Serializable {
 	private final String table;
-	private final String[] columns;
+	private final String[] columnNames;
 	//column value types do have to be serializable so AssociationKey is serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 
-	public AssociationKey(String table, String[] columns, Object[] columnValues) {
+	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
+		if ( columnNames.length != columnValues.length ) {
+			throw new AssertionFailure( "Column names do not match column values" );
+		}
 		this.table = table;
-		this.columns = columns;
+		this.columnNames = columnNames;
 		this.columnValues = columnValues;
 	}
 
@@ -56,7 +61,7 @@ public class AssociationKey implements Serializable {
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
 			return false;
 		}
-		if ( !Arrays.equals( columns, that.columns ) ) {
+		if ( !Arrays.equals( columnNames, that.columnNames ) ) {
 			return false;
 		}
 		if ( !table.equals( that.table ) ) {
@@ -69,7 +74,7 @@ public class AssociationKey implements Serializable {
 	@Override
 	public int hashCode() {
 		int result = table.hashCode();
-		result = 31 * result + Arrays.hashCode( columns );
+		result = 31 * result + Arrays.hashCode( columnNames );
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
@@ -78,11 +83,12 @@ public class AssociationKey implements Serializable {
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "AssociationKey" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
-		sb.append( ", columnValues=" )
-				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
-		sb.append( '}' );
+		sb.append( "{table='" ).append( table ).append( "'" );
+		for( int index = 0 ; index < columnNames.length ; index++) {
+			sb.append("\n\t").append( columnNames[index] ).append( " = '" ).append( columnValues[index] ).append( "'" );
+		}
+
+		sb.append( "\n}" );
 		return sb.toString();
 	}
 }
