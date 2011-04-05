@@ -116,7 +116,7 @@
 
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
-        <infinispanVersion>4.2.1.CR4</infinispanVersion>
+        <infinispanVersion>5.0.0-SNAPSHOT</infinispanVersion>
         <hibernateVersion>3.6.3-SNAPSHOT</hibernateVersion>
         <hibernateSearchVersion>3.4.0-SNAPSHOT</hibernateSearchVersion>
         <jbossjtaVersion>4.14.0.Final</jbossjtaVersion>
@@ -161,6 +161,12 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search</artifactId>
                 <version>${hibernateSearchVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>hibernate-search-analyzers</artifactId>
+                        <groupId>org.hibernate</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -266,6 +272,62 @@
                         <artifactId>jcl-over-slf4j</artifactId>
                         <groupId>org.slf4j</groupId>
                     </exclusion>
+                    <exclusion>
+                        <artifactId>stax-api</artifactId>
+                        <groupId>stax</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>idl</artifactId>
+                        <groupId>jacorb</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-logging-tools</artifactId>
+                        <groupId>org.jboss.logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-connector-api_1.5_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.resource</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-transaction-spi</artifactId>
+                        <groupId>org.jboss.integration</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-remoting</artifactId>
+                        <groupId>org.jboss.remoting</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-api</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>dom4j</artifactId>
+                        <groupId>dom4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-codec</artifactId>
+                        <groupId>commons-codec</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-logmanager</artifactId>
+                        <groupId>org.jboss.logmanager</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jcommon</artifactId>
+                        <groupId>jfree</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                        <groupId>org.jboss.spec.javax.transaction</groupId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
@@ -278,12 +340,6 @@
                 <groupId>javassist</groupId>
                 <artifactId>javassist</artifactId>
                 <version>3.12.1.GA</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib</artifactId>
-                <version>2.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
