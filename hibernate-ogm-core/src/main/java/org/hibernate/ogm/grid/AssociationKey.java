@@ -31,6 +31,8 @@ import java.util.Arrays;
 public class AssociationKey implements Serializable {
 	private final String table;
 	private final String[] columns;
+	//column value types do have to be serializable so AssociationKey is serializable
+	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 
 	public AssociationKey(String table, String[] columns, Object[] columnValues) {
