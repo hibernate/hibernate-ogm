@@ -31,6 +31,7 @@ import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
  * Helper class to be refactored and abstracted from specific grid implementation
@@ -39,6 +40,7 @@ import org.hibernate.ogm.grid.EntityKey;
 public class GridMetadataManagerHelper {
 	public static final String ENTITY_CACHE = "ENTITIES";
 	public static final String ASSOCIATION_CACHE = "ASSOCIATIONS";
+	public static final String IDENTIFIER_CACHE = "IDENTIFIERS";
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
 		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();
@@ -64,6 +66,12 @@ public class GridMetadataManagerHelper {
 	public static Cache<EntityKey, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
 		final Cache<EntityKey, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
+		return cache;
+	}
+
+	public static Cache<RowKey, Object> getIdentifierCache(GridMetadataManager manager) {
+		final CacheContainer cacheContainer = manager.getCacheContainer();
+		final Cache<RowKey, Object> cache = cacheContainer.getCache( IDENTIFIER_CACHE );
 		return cache;
 	}
 
