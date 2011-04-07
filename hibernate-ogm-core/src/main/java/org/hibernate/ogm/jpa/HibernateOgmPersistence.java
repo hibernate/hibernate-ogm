@@ -35,6 +35,7 @@ import javax.persistence.spi.ProviderUtil;
 
 import org.slf4j.Logger;
 
+import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.EJB3DTDEntityResolver;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.AvailableSettings;
@@ -46,6 +47,7 @@ import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
+import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -115,6 +117,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 		map.put( Environment.DIALECT, NoopDialect.class.getName() );
 		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
+		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
+		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 	}
 
 	@Override
