@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.grid;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -27,9 +28,11 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public class RowKey {
+public class RowKey implements Serializable {
 		private final String table;
 	private final String[] columns;
+	//column value types do have to be serializable so RowKey can eb serializable
+	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 
 	public RowKey(String table, String[] columns, Object[] columnValues) {
