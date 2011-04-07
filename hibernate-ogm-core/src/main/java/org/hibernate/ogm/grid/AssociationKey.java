@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.grid;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -27,7 +28,7 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public class AssociationKey {
+public class AssociationKey implements Serializable {
 	private final String table;
 	private final String[] columns;
 	private final Object[] columnValues;

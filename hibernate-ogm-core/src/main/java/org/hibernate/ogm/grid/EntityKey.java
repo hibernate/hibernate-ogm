@@ -27,7 +27,7 @@ import java.io.Serializable;
  *
  * @author Emmanuel Bernard
  */
-public class EntityKey {
+public class EntityKey implements Serializable {
 	private final String table;
 	private final Serializable id;
 
