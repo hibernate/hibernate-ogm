@@ -121,7 +121,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	public EntityManagerFactory createContainerEntityManagerFactory(PersistenceUnitInfo info, Map map) {
 		final String persistenceProviderClassName = info.getPersistenceProviderClassName();
 		if ( persistenceProviderClassName == null || IMPLEMENTATION_NAME.equals( persistenceProviderClassName ) ) {
-			Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(map);
+			Map<Object,Object> protectiveCopy = map != null ? new HashMap<Object,Object>(map) : new HashMap<Object,Object>();
 			enforceOgmConfig( protectiveCopy );
 			//HEM only builds an EntityManagerFactory when HibernatePersistence.class.getName() is the PersistenceProvider
 			//that's why we override it when
