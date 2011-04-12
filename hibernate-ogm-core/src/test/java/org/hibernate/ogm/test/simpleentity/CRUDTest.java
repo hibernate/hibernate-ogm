@@ -26,6 +26,7 @@ import java.net.URL;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.test.type.Bookmark;
 
 /**
  * @author Emmanuel Bernard
@@ -95,46 +96,12 @@ public class CRUDTest extends OgmTestCase {
 
 		session.close();
 	}
-	
-	public void testTypesSupport() throws Exception {
-		final Session session = openSession();
-
-		Transaction transaction = session.beginTransaction();
-		Bookmark b = new Bookmark();
-		b.setId("42");
-		b.setDescription( "Hibernate Site" );
-		b.setUrl(new URL("http://www.hibernate.org/"));
-		BigDecimal weigth= new BigDecimal("21.77");
-		b.setSiteWeigth( weigth);
-		BigInteger visitCount= new BigInteger( "444");
-		b.setVisitCount(visitCount);
-		b.setFavourite(true);
-		Byte displayMask= new Byte((byte) '8');
-		b.setDisplayMask(displayMask);
-		session.persist( b );
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		b = (Bookmark) session.get( Bookmark.class, b.getId() );
-		assertEquals("http://www.hibernate.org/",b.getUrl().toString());
-		assertEquals(weigth,b.getSiteWeigth());
-		assertEquals(visitCount,b.getVisitCount());
-		assertEquals(new Boolean(true),b.isFavourite());
-		assertEquals(displayMask,b.getDisplayMask());
-		session.delete( b );
-		transaction.commit();
-
-		session.close();
-	}	
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
 				Hypothesis.class,
-				Helicopter.class,
-				Bookmark.class
+				Helicopter.class
 		};
 	}
 }
