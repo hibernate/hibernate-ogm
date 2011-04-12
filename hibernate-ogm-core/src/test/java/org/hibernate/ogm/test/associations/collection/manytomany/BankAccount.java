@@ -28,15 +28,11 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister( impl = OgmEntityPersister.class )
 public class BankAccount {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -49,7 +45,6 @@ public class BankAccount {
 	private String accountNumber;
 
 	@ManyToMany(mappedBy = "bankAccounts")
-	@Persister( impl = OgmCollectionPersister.class )
 	public Set<AccountOwner> getOwners() { return owners; }
 	public void setOwners(Set<AccountOwner> owners) {  this.owners = owners; }
 	private Set<AccountOwner> owners = new HashSet<AccountOwner>(  );

@@ -25,14 +25,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Horse {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")

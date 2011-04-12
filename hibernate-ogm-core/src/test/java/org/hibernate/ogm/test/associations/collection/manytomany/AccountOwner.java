@@ -30,15 +30,11 @@ import javax.persistence.ManyToMany;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister( impl= OgmEntityPersister.class )
 public class AccountOwner {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -52,7 +48,6 @@ public class AccountOwner {
 
 	@ManyToMany(cascade = CascadeType.PERSIST)
 	@Cascade( org.hibernate.annotations.CascadeType.SAVE_UPDATE )
-	@Persister( impl = OgmCollectionPersister.class )
 	public Set<BankAccount> getBankAccounts() { return bankAccounts; }
 	public void setBankAccounts(Set<BankAccount> bankAccounts) {  this.bankAccounts = bankAccounts; }
 	private Set<BankAccount> bankAccounts = new HashSet<BankAccount>(  );

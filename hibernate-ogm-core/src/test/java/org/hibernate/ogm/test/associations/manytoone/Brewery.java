@@ -26,21 +26,16 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Brewery {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -50,7 +45,6 @@ public class Brewery {
 
 	@OneToMany @JoinColumn(name = "brewery_id")
 	@Cascade( { CascadeType.PERSIST, CascadeType.SAVE_UPDATE} )
-	@Persister( impl = OgmCollectionPersister.class )
 	public Set<Beer> getBeers() { return beers; }
 	public void setBeers(Set<Beer> beers) {  this.beers = beers; }
 	private Set<Beer> beers = new HashSet<Beer>(  );

@@ -22,16 +22,12 @@ package org.hibernate.ogm.test.simpleentity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard
  */
-@Entity @Persister( impl = OgmEntityPersister.class)
+@Entity
 public class Hypothesis {
 
 	@Id

@@ -32,6 +32,7 @@ import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Nicolas Helleringer
  */
 public class BuiltInTypeTest extends OgmTestCase {
 

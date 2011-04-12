@@ -33,6 +33,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
 
@@ -118,6 +119,7 @@ public abstract class OgmTestCase extends HibernateTestCase {
 			cfg.setSessionFactoryObserver( new GridMetadataManager() );
 			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 			cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+			cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 
 
 			//Other configurations

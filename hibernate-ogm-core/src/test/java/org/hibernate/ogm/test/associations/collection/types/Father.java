@@ -30,15 +30,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Father {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -48,7 +44,6 @@ public class Father {
 
 	@OneToMany @JoinTable(name = "Father_child")
 	@OrderColumn(name = "birthorder")
-	@Persister(impl = OgmCollectionPersister.class)
 	public List<Child> getOrderedChildren() { return orderedChildren; }
 	public void setOrderedChildren(List<Child> orderedChildren) {  this.orderedChildren = orderedChildren; }
 	private List<Child> orderedChildren = new ArrayList<Child>(  );

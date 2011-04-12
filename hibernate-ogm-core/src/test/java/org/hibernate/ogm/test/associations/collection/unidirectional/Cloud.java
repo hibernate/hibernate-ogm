@@ -29,15 +29,11 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Cloud {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -53,7 +49,7 @@ public class Cloud {
 	public void setLength(double length) {  this.length = length; }
 	private double length;
 
-	@OneToMany @JoinTable @Persister(impl = OgmCollectionPersister.class)
+	@OneToMany @JoinTable
 	public Set<SnowFlake> getProducedSnowFlakes() { return producedSnowFlakes; }
 	public void setProducedSnowFlakes(Set<SnowFlake> producedSnowFlakes) {  this.producedSnowFlakes = producedSnowFlakes; }
 	private Set<SnowFlake> producedSnowFlakes = new HashSet<SnowFlake>();

@@ -28,13 +28,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
-
 /**
  * @author Nicolas Helleringer
  */
-@Entity @Persister( impl = OgmEntityPersister.class)
+@Entity
 public class Bookmark {
 
 	@Id

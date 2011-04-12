@@ -23,14 +23,10 @@ package org.hibernate.ogm.test.embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
-
 /**
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Account {
 	@Id
 	public String getLogin() { return login; }

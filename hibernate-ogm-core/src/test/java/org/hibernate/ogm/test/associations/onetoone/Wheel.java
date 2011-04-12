@@ -28,14 +28,11 @@ import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Wheel {
 	@Id
 	public String getId() { return id; }

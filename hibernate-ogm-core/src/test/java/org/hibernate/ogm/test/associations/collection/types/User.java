@@ -34,15 +34,11 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class User {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -53,14 +49,12 @@ public class User {
 	@OneToMany
 	@JoinTable(name = "User_Address")
 	@MapKeyColumn(name = "nick")
-	@Persister(impl = OgmCollectionPersister.class)
 	public Map<String,Address> getAddresses() { return addresses; }
 	public void setAddresses(Map<String,Address> addresses) {  this.addresses = addresses; }
 	private Map<String,Address> addresses = new HashMap<String,Address>();
 
 	@ElementCollection
 	@JoinTable(name = "Nicks", joinColumns = @JoinColumn(name = "user_id") )
-	@Persister(impl = OgmCollectionPersister.class)
 	public Set<String> getNicknames() { return nicknames; }
 	public void setNicknames(Set<String> nicknames) {  this.nicknames = nicknames; }
 	private Set<String> nicknames = new HashSet<String>();

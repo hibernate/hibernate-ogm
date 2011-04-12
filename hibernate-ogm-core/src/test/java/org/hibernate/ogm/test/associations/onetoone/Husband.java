@@ -21,8 +21,6 @@
 package org.hibernate.ogm.test.associations.onetoone;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -35,7 +33,6 @@ import javax.persistence.OneToOne;
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class Husband {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")

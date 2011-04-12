@@ -28,15 +28,11 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Persister;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 
 /**
  * @author Emmanuel Bernard
  */
 @Entity
-@Persister(impl = OgmEntityPersister.class)
 public class SalesForce {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
@@ -49,7 +45,6 @@ public class SalesForce {
 	private String corporation;
 
 	@OneToMany(mappedBy = "salesForce")
-	@Persister(impl = OgmCollectionPersister.class)
 	public Set<SalesGuy> getSalesGuys() { return salesGuys; }
 	public void setSalesGuys(Set<SalesGuy> salesGuys) {  this.salesGuys = salesGuys; }
 	private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
