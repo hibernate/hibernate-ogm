@@ -487,14 +487,14 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return optimizer.generate(
 				new AccessCallback() {
 					public IntegralDataTypeHolder getNextValue() {
-						return ( IntegralDataTypeHolder ) doWorkInNewTransaction( session );
+						return ( IntegralDataTypeHolder ) doWorkInIsolationTransaction( session );
 					}
 				}
 		);
 	}
 
 	//copied and altered from TransactionHelper
-	public Serializable doWorkInNewTransaction(final SessionImplementor session)
+	public Serializable doWorkInIsolationTransaction(final SessionImplementor session)
 			throws HibernateException {
 		class Work implements IsolatedWork {
 			private SessionImplementor localSession = session;
@@ -502,7 +502,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 			public void doWork(Connection connection) throws HibernateException {
 				try {
-					generatedValue = doWorkInCurrentTransaction( localSession );
+					generatedValue = doWorkInCurrentTransactionIfAny( localSession );
 				}
 				catch ( RuntimeException sqle ) {
 					throw new HibernateException( "Could not get or update next value", sqle );
@@ -522,7 +522,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return work.generatedValue;
 	}
 
-	public Serializable doWorkInCurrentTransaction(SessionImplementor session) {
+	public Serializable doWorkInCurrentTransactionIfAny(SessionImplementor session) {
 		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() );
 		defineGridTypes( gridManager );
 		final AdvancedCache<RowKey, Object> identifierCache =
