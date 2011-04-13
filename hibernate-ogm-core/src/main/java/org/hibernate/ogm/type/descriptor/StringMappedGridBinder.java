@@ -74,15 +74,5 @@ public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
 		}
 	}
 
-	/**
-	 * Perform the binding.  Safe to assume that value is not null.
-	 *
-	 * @param st The prepared statement
-	 * @param value The value to bind (not null).
-	 * @param index The index at which to bind
-	 * @param options The binding options
-	 *
-	 * @throws SQLException Indicates a problem binding to the prepared statement.
-	 */
 	protected abstract void doBind(Map<String, Object> resultset, X value, String[] names, WrapperOptions options);
 }

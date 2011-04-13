@@ -29,6 +29,15 @@ import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
 
 /**
+ * Type descriptor for translating a BigDecimal Java type into its string representation
+ * in order to be stored in a datastore.
+ * 
+ * The {@link BigDecimal#toString} method is used to get a string representation, this method use
+ * the standard scientific notation that should be cross platform/language usable.
+ * 
+ * @see java.math.BigDecimal
+ * @see java.math.BigDecimal#toString()
+ * 
  * @author Nicolas Helleringer
  */
 public class BigDecimalType extends AbstractGenericBasicType<BigDecimal> {
