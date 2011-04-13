@@ -24,14 +24,21 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import org.infinispan.config.Configuration;
 import org.infinispan.config.ConfigurationValidatingVisitor;
 import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.config.InfinispanConfiguration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.util.NamingHelper;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -48,15 +55,56 @@ public class CacheManagerServiceProvider {
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
 	 */
 	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
+	
+	/**
+	 * The key for the configuration property to define the jndi name of the cachemanager.
+	 * If this property is defined, the cachemanager will be looked up via JNDI.
+	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
+	 */
+	public static final String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
+	
 	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
+	
+	private static final Logger LOG = LoggerFactory.make();
+	
 	private EmbeddedCacheManager cacheManager;
 
 	public void start(Properties cfg) {
-		String cfgName = cfg.getProperty(
+		String jndiProperty = cfg.getProperty( CACHE_MANAGER_RESOURCE_PROP );
+		if ( jndiProperty == null ) {
+			String cfgName = cfg.getProperty(
 				INFINISPAN_CONFIGURATION_RESOURCENAME,
 				INFINISPAN_DEFAULT_CONFIG
-		);
-		cacheManager = createCustomCacheManager(cfgName, cfg);
+					);
+			cacheManager = createCustomCacheManager( cfgName, cfg );
+		}
+		else {
+			cacheManager = lookupCacheManager( jndiProperty, cfg );
+		}
+	}
+
+	private EmbeddedCacheManager lookupCacheManager(String jndiName, Properties properties) {
+		Properties jndiProperties = NamingHelper.getJndiProperties( properties );
+		Context ctx = null;
+		try {
+			ctx = new InitialContext( jndiProperties );
+			return (EmbeddedCacheManager) ctx.lookup( jndiName );
+		}
+		catch ( NamingException ne ) {
+			String msg = "Unable to retrieve CacheManager from JNDI [" + jndiName + "]";
+			LOG.error( msg, ne );
+			throw new HibernateException( msg );
+		}
+		finally {
+			if ( ctx != null ) {
+				try {
+					ctx.close();
+				}
+				catch ( NamingException ne ) {
+					LOG.error( "Unable to release initial context", ne );
+				}
+			}
+		}
 	}
 
 	private EmbeddedCacheManager createCustomCacheManager(String cfgName, Properties properties) {
