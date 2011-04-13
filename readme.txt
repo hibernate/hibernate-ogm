@@ -15,25 +15,24 @@ The benefits are fairly obvious:
 Instructions
 ------------
 
-TODO
-
+Checkout http://community.jboss.org/en/hibernate/ogm for more information
+The code is available on GitHub at https://github.com/hibernate/hibernate-core
 
 Contact
 ------------
 
 Latest Documentation:
 
-   TODO
+   http://community.jboss.org/en/hibernate/ogm
 
 Bug Reports:
 
-   TODO (not up to date) Hibernate JIRA (preferred): http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH
+   Hibernate JIRA (preferred): http://opensource.atlassian.com/projects/hibernate/browse/OGM
    hibernate-dev@lists.jboss.org
 
 Free Technical Support:
 
-   http://forum.hibernate.org (http://forum.hibernate.org/viewforum.php?f=9)
-
+   http://forum.hibernate.org (https://forum.hibernate.org/viewforum.php?f=31)
 
 Notes
 -----------
