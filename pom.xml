@@ -49,9 +49,9 @@
     </issueManagement>
 
     <scm>
-        <connection>scm:git:git://github.com/emmanuelbernard/hibernate-ogm.git</connection>
-        <developerConnection>scm:git:git@github.com:emmanuelbernard/hibernate-ogm.git</developerConnection>
-        <url>http://github.com/emmanuelbernard/hibernate-ogm</url>
+        <connection>scm:git:git://github.com/hibernate/hibernate-ogm.git</connection>
+        <developerConnection>scm:git:git@github.com:hibernate/hibernate-ogm.git</developerConnection>
+        <url>http://github.com/hibernate/hibernate-ogm</url>
     </scm>
 
     <organization>
