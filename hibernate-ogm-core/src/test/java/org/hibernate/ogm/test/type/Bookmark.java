@@ -23,10 +23,14 @@ package org.hibernate.ogm.test.type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  * @author Nicolas Helleringer
@@ -66,5 +70,35 @@ public class Bookmark {
 	public Byte getDisplayMask() { return displayMask; }
 	public void setDisplayMask(Byte displayMask) { this.displayMask= displayMask; }
 	private Byte displayMask;
-	
+
+	@Temporal(TemporalType.DATE)
+	public Date getCreationDate() { return creationDate; }
+	public void setCreationDate(Date date) {  this.creationDate = date; }
+	private Date creationDate;
+
+	@Temporal(TemporalType.TIME)
+	public Date getUpdateDate() { return updateDate; }
+	public void setUpdateDate(Date updateDate) {  this.updateDate = updateDate; }
+	private Date updateDate;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	public Date getDestructionDate() { return destructionDate; }
+	public void setDestructionDate(Date destructionDate) {  this.destructionDate = destructionDate; }
+	private Date destructionDate;
+
+	@Temporal(TemporalType.DATE)
+	public Calendar getCreationCalendar() { return creationCalendar; }
+	public void setCreationCalendar(Calendar creationCalendar) {  this.creationCalendar = creationCalendar; }
+	private Calendar creationCalendar;
+
+	//not supported by core today: nobody misses it apparently ;)
+//	@Temporal(TemporalType.TIME)
+//	public Calendar getUpdateCalendar() { return updateCalendar; }
+//	public void setUpdateCalendar(Calendar updateCalendar) {  this.updateCalendar = updateCalendar; }
+//	private Calendar updateCalendar;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	public Calendar getDestructionCalendar() { return destructionCalendar; }
+	public void setDestructionCalendar(Calendar destructionCalendar) {  this.destructionCalendar = destructionCalendar; }
+	private Calendar destructionCalendar;
 }

@@ -23,6 +23,8 @@ package org.hibernate.ogm.test.type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.junit.Test;
 
@@ -45,13 +47,21 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setId("42");
 		b.setDescription( "Hibernate Site" );
 		b.setUrl(new URL("http://www.hibernate.org/"));
-		BigDecimal weigth= new BigDecimal("21.77");
+		BigDecimal weigth = new BigDecimal("21.77");
 		b.setSiteWeigth( weigth);
 		BigInteger visitCount= new BigInteger( "444");
 		b.setVisitCount(visitCount);
 		b.setFavourite(true);
 		Byte displayMask= new Byte((byte) '8');
 		b.setDisplayMask(displayMask);
+		Date now = new Date( System.currentTimeMillis() );
+		b.setCreationDate( now );
+		b.setDestructionDate( now );
+		b.setUpdateDate( now );
+		final Calendar iCal = Calendar.getInstance();
+		iCal.setTimeInMillis( now.getTime() );
+		b.setCreationCalendar( iCal );
+		b.setDestructionCalendar( iCal );
 		session.persist( b );
 		transaction.commit();
 

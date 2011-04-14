@@ -30,10 +30,16 @@ import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
 import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.BooleanTypeDescriptor;
 import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
+import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
+import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
+import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import org.hibernate.type.descriptor.java.JdbcDateTypeDescriptor;
+import org.hibernate.type.descriptor.java.JdbcTimeTypeDescriptor;
+import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
@@ -57,6 +63,11 @@ public class TypeTranslator {
 		typeConverter.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
 		typeConverter.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
 		typeConverter.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
+		typeConverter.put( JdbcDateTypeDescriptor.INSTANCE, DateType.INSTANCE );
+		typeConverter.put( JdbcTimestampTypeDescriptor.INSTANCE, TimestampType.INSTANCE );
+		typeConverter.put( JdbcTimeTypeDescriptor.INSTANCE, TimeType.INSTANCE );
+		typeConverter.put( CalendarDateTypeDescriptor.INSTANCE, CalendarDateType.INSTANCE );
+		typeConverter.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
 	}
 
 	public GridType getType(Type type) {
