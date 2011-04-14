@@ -54,4 +54,11 @@
         name="ASSOCIATIONS">
     </namedCache>
 
+    <!-- ***************************** -->
+    <!--   Cache to store identifiers  -->
+    <!-- ***************************** -->
+    <namedCache
+        name="IDENTIFIERS">
+    </namedCache>
+
 </infinispan>
