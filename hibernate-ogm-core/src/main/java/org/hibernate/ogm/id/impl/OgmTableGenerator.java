@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2010, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2010-2011, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -59,6 +59,7 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
+import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 import org.hibernate.util.PropertiesHelper;
 import org.hibernate.util.StringHelper;
@@ -135,6 +136,7 @@ import org.hibernate.util.StringHelper;
  * </table>
  *
  * @author Steve Ebersole
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmTableGenerator implements PersistentIdentifierGenerator, Configurable {
 	private static final Logger log = LoggerFactory.getLogger( TableGenerator.class );
@@ -183,7 +185,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	private Optimizer optimizer;
 	private long accessCount = 0;
-	private volatile GridType identifierGridType;
+	private volatile GridType identifierValueGridType;
 	private GridType segmentGridType = StringType.INSTANCE;
 
 	/**
@@ -546,19 +548,17 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 			if ( valueFromDb == null ) {
 				//if not there, insert initial value
 				value.initialize( initialValue );
-				valueFromDb = nullSafeSet( identifierGridType, value.makeValue(), valueColumnName, session, tuple );
+				valueFromDb = nullSafeSet( identifierValueGridType, value.makeValue().longValue(), valueColumnName, session, tuple );
 				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
 				//check in case somebody has inserted it behind our back
 				if ( oldValue != null ) {
-					//DB value has to be a long
-					value.initialize( ( ( Long ) oldValue ).longValue() );
+					value.initialize( ( (Number) oldValue ).longValue() );
 					valueFromDb = oldValue;
 				}
 			}
 			else {
 				//read the value from the table
-				//DB value has to be a long
-				value.initialize( ( ( Long ) valueFromDb ).longValue() );
+				value.initialize( ( ( Number ) valueFromDb ).longValue() );
 			}
 
 			//update value
@@ -571,7 +571,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				updateValue.increment();
 			}
 			final Object newValueFromDb = nullSafeSet(
-					identifierGridType, updateValue.makeValue(), valueColumnName, session, tuple
+					identifierValueGridType, updateValue.makeValue().longValue(), valueColumnName, session, tuple
 			);
 			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
 		}
@@ -589,8 +589,8 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	}
 
 	private void defineGridTypes(GridMetadataManager gridManager) {
-		if ( identifierGridType == null ) {
-			identifierGridType = gridManager.getTypeTranslator().getType( identifierType );
+		if ( identifierValueGridType == null ) {
+			identifierValueGridType = gridManager.getTypeTranslator().getType( new LongType() );
 		}
 	}
 

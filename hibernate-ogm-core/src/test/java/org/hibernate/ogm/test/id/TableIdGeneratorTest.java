@@ -41,6 +41,10 @@ public class TableIdGeneratorTest extends JpaTestCase {
 		music.setName( "Variations Sur Marilou" );
 		music.setComposer( "Gainsbourg" );
 		em.persist( music );
+		Video video = new Video();
+		video.setDirector( "Wes Craven" );
+		video.setName( "Scream" );
+		em.persist( video );
 		getTransactionManager().commit();
 
 		em.clear();
@@ -50,6 +54,10 @@ public class TableIdGeneratorTest extends JpaTestCase {
 		assertThat( music ).isNotNull();
 		assertThat( music.getName() ).isEqualTo( "Variations Sur Marilou" );
 		em.remove( music );
+		video = em.find( Video.class, video.getId() );
+		assertThat( video ).isNotNull();
+		assertThat( video.getName() ).isEqualTo( "Scream" );
+		em.remove( video );
 		getTransactionManager().commit();
 
 		em.close();
@@ -58,7 +66,8 @@ public class TableIdGeneratorTest extends JpaTestCase {
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class<?>[] {
-				Music.class
+				Music.class,
+				Video.class
 		};
 	}
 }
