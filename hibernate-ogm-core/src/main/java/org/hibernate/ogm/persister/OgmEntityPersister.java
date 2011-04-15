@@ -1050,10 +1050,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return 0;
 	}
 
-	//FIXME useful?
 	@Override
 	protected String filterFragment(String alias) throws MappingException {
-		throw new HibernateException( "Filters are not supported in OGM");
+		//TODO support filter in OGM??? How???
+		return "";
 //		return hasWhere() ?
 //			" and " + getSQLWhereString(alias) :
 //			"";
