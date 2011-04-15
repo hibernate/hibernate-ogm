@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.type.AbstractStandardBasicType;
+import org.hibernate.type.CustomType;
+import org.hibernate.type.EnumType;
 import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
 import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
@@ -43,6 +45,7 @@ import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
+import org.hibernate.usertype.UserType;
 
 /**
  * @author Emmanuel Bernard
@@ -81,6 +84,16 @@ public class TypeTranslator {
 				throw new HibernateException( "Unable to find a GridType for " + exposedType.getClass().getName() );
 			}
 			return gridType;
+		}
+		else if ( type instanceof CustomType ) {
+			CustomType cType = (CustomType) type;
+			final UserType userType = cType.getUserType();
+			if ( userType instanceof EnumType ) {
+				EnumType enumType = (EnumType) userType;
+				//should we cache that (the key must be enumClass / isOrdinal
+				return new org.hibernate.ogm.type.EnumType( cType, enumType );
+			}
+			//let it go it will eventually fail
 		}
 		else if ( type instanceof org.hibernate.type.ComponentType ) {
 			org.hibernate.type.ComponentType componentType = (org.hibernate.type.ComponentType) type;

@@ -28,6 +28,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -101,4 +103,9 @@ public class Bookmark {
 	public Calendar getDestructionCalendar() { return destructionCalendar; }
 	public void setDestructionCalendar(Calendar destructionCalendar) {  this.destructionCalendar = destructionCalendar; }
 	private Calendar destructionCalendar;
+
+	@Enumerated(EnumType.STRING)
+	public BookmarkType getType() { return type; }
+	public void setType(BookmarkType type) {  this.type = type; }
+	private BookmarkType type;
 }
