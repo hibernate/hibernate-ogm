@@ -160,6 +160,10 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		else {
 			session = null;
 		}
+		if ( sessions != null && !sessions.isClosed() ) {
+			sessions.close();
+			sessions = null;
+		}
 	}
 
 	@Override
