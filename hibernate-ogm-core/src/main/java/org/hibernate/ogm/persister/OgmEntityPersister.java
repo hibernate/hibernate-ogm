@@ -104,6 +104,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			final SessionFactoryImplementor factory,
 			final Mapping mapping) throws HibernateException {
 		super(persistentClass, cacheAccessStrategy, factory);
+		log.trace( "Creating OgmEntityPersister for {}", persistentClass.getClassName() );
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
 				factory.getSettings().getDefaultCatalogName(),
