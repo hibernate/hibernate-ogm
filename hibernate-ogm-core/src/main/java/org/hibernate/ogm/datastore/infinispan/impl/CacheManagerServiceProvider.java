@@ -123,6 +123,7 @@ public class CacheManagerServiceProvider {
 				}
 				cacheManager.defineConfiguration( entry.getKey(), cfg );
 			}
+			cacheManager.start();
 			return cacheManager;
 		} catch (RuntimeException re) {
 			raiseConfigurationError(re, cfgName);
