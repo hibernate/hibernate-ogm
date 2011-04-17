@@ -21,8 +21,8 @@
   -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:4.2 http://www.infinispan.org/schemas/infinispan-config-4.2.xsd"
-    xmlns="urn:infinispan:config:4.2">
+    xsi:schemaLocation="urn:infinispan:config:5.0 http://www.infinispan.org/schemas/infinispan-config-5.0.xsd"
+    xmlns="urn:infinispan:config:5.0">
 
     <!-- *************************** -->
     <!-- System-wide global settings -->
@@ -43,7 +43,8 @@
             since the transport is created and initialized lazily. -->
         <transport
             clusterName="HibernateOGM-Infinispan-cluster"
-            distributedSyncTimeout="50000">
+            distributedSyncTimeout="50000"
+            strictPeerToPeer="false">
             <!-- This is the default TCP based configuration, bundled in Infinispan core jar -->
             <properties>
                 <property name="configurationFile" value="jgroups-tcp.xml" />
@@ -84,6 +85,10 @@
             <!-- Network calls are synchronous by default -->
             <sync
                 replTimeout="25000" />
+
+            <!-- Keep L1 disabled until issues have been fixed -->
+            <l1 enabled="false" />
+
         </clustering>
 
         <jmxStatistics

@@ -37,6 +37,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.util.NamingHelper;
 
@@ -81,6 +82,19 @@ public class CacheManagerServiceProvider {
 		else {
 			cacheManager = lookupCacheManager( jndiProperty, cfg );
 		}
+		eagerlyInitializeCaches(cacheManager);
+	}
+
+	/**
+	 * Need to make sure all needed caches are started before state transfer happens.
+	 * This prevents this node to return undefined cache errors during replication
+	 * when other nodes join this one.
+	 * @param cacheManager
+	 */
+	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
+		cacheManager.getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+		cacheManager.getCache( GridMetadataManagerHelper.ENTITY_CACHE );
+		cacheManager.getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
 	}
 
 	private EmbeddedCacheManager lookupCacheManager(String jndiName, Properties properties) {
