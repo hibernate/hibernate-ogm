@@ -22,8 +22,6 @@ package org.hibernate.ogm.type;
 
 import java.util.Calendar;
 
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
-
 import org.hibernate.MappingException;
 import org.hibernate.engine.Mapping;
 import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
