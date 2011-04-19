@@ -35,7 +35,7 @@
     </parent>
 
     <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hhibernate-ogm-documentation-manual</artifactId>
+    <artifactId>hibernate-ogm-documentation-manual</artifactId>
     <packaging>jdocbook</packaging>
 
     <name>Hibernate OGM Manual</name>
@@ -56,7 +56,7 @@
                     <execution>
                         <!--
                             here we are attaching the translate goal so that the translations are processed
-                            before compilation so that the transated XML is also transformed during
+                            before compilation so that the translated XML is also transformed during
                             generation
                         -->
                         <phase>process-resources</phase>
@@ -67,7 +67,7 @@
                 </executions>
 
                 <configuration>
-                    <sourceDocumentName>Hibernate_OGM_Reference_Manual.xml</sourceDocumentName>
+                    <sourceDocumentName>master.xml</sourceDocumentName>
                     <masterTranslation>en-US</masterTranslation>
                     <translations>
                         <!-- <translation>de-DE</translation>
@@ -81,11 +81,40 @@
                         <directory>${basedir}/src/main/docbook/en-US</directory>
                         <excludes>
                             <exclude>*.xml</exclude>
+                            <exclude>*.ent</exclude>
                             <exclude>**/*.xml</exclude>
                             <exclude>*.zargo</exclude>
                             <exclude>**/*.zargo</exclude>
                         </excludes>
                     </imageResource>
+                    <formats>
+                        <format>
+                            <formatName>pdf</formatName>
+                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/pdf.xsl
+                            </stylesheetResource>
+                            <finalName>hibernate_ogm_reference.pdf</finalName>
+                        </format>
+                        <format>
+                            <formatName>html_single</formatName>
+                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml-single.xsl
+                            </stylesheetResource>
+                            <finalName>index.html</finalName>
+                        </format>
+                        <format>
+                            <formatName>html</formatName>
+                            <stylesheetResource>classpath:/xslt/org/hibernate/jdocbook/xslt/xhtml.xsl
+                            </stylesheetResource>
+                            <finalName>index.html</finalName>
+                        </format>
+                    </formats>
+                    <options>
+                        <xincludeSupported>true</xincludeSupported>
+                        <xmlTransformerType>saxon</xmlTransformerType>
+                        <!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
+                        <!--     could also locate the docbook dependency and inspect its version... -->
+                        <docbookVersion>1.72.0</docbookVersion>
+                        <localeSeparator>-</localeSeparator>
+                    </options>
                     <profiling>
                         <enabled>true</enabled>
                     </profiling>

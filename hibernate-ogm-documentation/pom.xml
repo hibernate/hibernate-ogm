@@ -35,11 +35,11 @@
     </parent>
 
     <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hhibernate-ogm-documentation</artifactId>
+    <artifactId>hibernate-ogm-documentation</artifactId>
     <packaging>pom</packaging>
 
     <name>Hibernate OGM Documentation</name>
-    <description>Grouping of Hibernate Core Project documentation modules</description>
+    <description>Grouping of Hibernate OGM Project documentation modules</description>
 
     <properties>
         <!-- Skip artifact deployment -->
@@ -48,9 +48,6 @@
 
     <modules>
         <module>manual</module>
-        <module>envers</module>
-        <module>quickstart</module>
-        <module>devguide</module>
         <!--
         <module>jbosscache2</module>
 -->

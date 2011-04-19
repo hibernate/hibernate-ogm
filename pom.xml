@@ -624,6 +624,18 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>doc</id>
+            <activation>
+                <property>
+                    <name>buildDocs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate-ogm-documentation</module>
+            </modules>
+        </profile>
         <!-- =============================== -->
         <!-- Database profiles               -->
         <!-- =============================== -->
