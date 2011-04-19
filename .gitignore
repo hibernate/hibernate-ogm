@@ -10,6 +10,9 @@
 *.iml
 atlassian-ide-plugin.xml
 
+#XMLEditor
+*.*xml~
+
 # Eclipse specific files/directories
 .classpath
 .project
