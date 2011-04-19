@@ -34,7 +34,7 @@
   <bookinfo>
     <title>Hibernate OGM</title>
 
-    <subtitle>Object/Grid Mapper</subtitle>
+    <subtitle>Hibernate Object/Grid Mapper</subtitle>
 
     <subtitle>Reference Guide</subtitle>
 
@@ -53,18 +53,179 @@
 
   <toc></toc>
 
-  <preface id="preface" revision="1">
+  <preface id="preface">
     <title>Preface</title>
 
-    <para>Blah</para>
+    <para>Hibernate Object/Grid Mapper (OGM) aims at providing Java
+    Persistence (JPA) support for NoSQL solutions. It reuses Hibernate Core's
+    engine but persists entities into a NoSQL data store instead of a
+    relational database. It reuses the Java Persistence Query Language (JP-QL)
+    to search their data.</para>
+
+    <para>That's the grand scheme of things. The short term goal for us is to
+    be a JPA front end for key/value stores and specifically to Infinispan and
+    offer JP-QL support for relatively simple queries. If you want some
+    features in (like other NoSQL store support, we would be glad to explore
+    that with you, check our the <xref linkend="ogm-contribution" />.</para>
+
+    <section>
+      <title>Goals</title>
+
+      <para>Hibernate OGM tries to achieve a few goals:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>offer a familiar environment for NoSQL stores</para>
+        </listitem>
+
+        <listitem>
+          <para>encourage new data usage patterns and NoSQL exploration in
+          more "traditional" enterprises</para>
+        </listitem>
+
+        <listitem>
+          <para>help scale existing applications with a NoSQL front end to a
+          more traditional database.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>NoSQL can be very disconcerting as it is composed of many
+      different solutions with different benefits and drawbacks. Speaking only
+      of types, NoSQL is at least categorized in four families:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>graph oriented databases</para>
+        </listitem>
+
+        <listitem>
+          <para>key / value stores: essentially Maps but with different
+          behaviors and ideas behind various products (data grids, persistent
+          with strong or eventual consistency etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>document based datastores: contains as value semi structured
+          documents (think JSON)</para>
+        </listitem>
+
+        <listitem>
+          <para>column based datastores</para>
+        </listitem>
+      </itemizedlist>
+
+      <mediaobject>
+        <imageobject role="html">
+          <imagedata align="center" fileref="images/nosql.png" format="PNG"
+                     role="html" />
+        </imageobject>
+
+        <imageobject role="fo">
+          <imagedata align="center" depth="" fileref="images/nosql.png"
+                     format="PNG" role="fo" scalefit="1" width="12cm" />
+        </imageobject>
+
+        <caption><para>Various NoSQL families</para></caption>
+      </mediaobject>
+
+      <para>Each have different benefits and drawbacks and one solution might
+      fit a use case better than an other. However access patterns and APIs
+      are different from one product to the others. </para>
+
+      <para>While Hibernate OGM will not try to address all of these problem,
+      simplify NoSQL access by offering a familiar programmatic model and API
+      that is JPA will help people explore various datastore alternatives
+      (including relational databases).</para>
+
+      <para>Hibernate OGM also aims at helping people scale traditional
+      relational databases by providing a NoSQL front-end and keeping the same
+      JPA APIs and domain model.</para>
+    </section>
+
+    <section>
+      <title>What we have today</title>
+
+      <para>Today, Hibernate OGM does not support all of its goals. Here is a
+      list of what we have</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>store data in Infinispan's datagrid</para>
+        </listitem>
+
+        <listitem>
+          <para>CRUD support for entities</para>
+        </listitem>
+
+        <listitem>
+          <para>polymorphic entities</para>
+        </listitem>
+
+        <listitem>
+          <para>embeddable objects (aka components)</para>
+        </listitem>
+
+        <listitem>
+          <para>basic types support (numbers, String, URL, Date, enums
+          etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>support for associations</para>
+        </listitem>
+
+        <listitem>
+          <para>support for collections (Set, List, Map, etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>support for Hibernate Search's full-text queries</para>
+        </listitem>
+
+        <listitem>
+          <para>JPA and native Hibernate Core API support</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Use cases</title>
+
+      <para>Here are a few areas where Hibernate OGM can be beneficial:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>need to scale your data store up and down rapidly (via
+          Infinispan's capability)</para>
+        </listitem>
+
+        <listitem>
+          <para>keep your domain model generic of the underlying datastore
+          technology (RDBMS, Infinispan, NoSQL)</para>
+        </listitem>
+
+        <listitem>
+          <para>explore the best tool for the use case while keeping your
+          development familiar</para>
+        </listitem>
+
+        <listitem>
+          <para>use a familiar JPA front end to Infinispan's datagrid</para>
+        </listitem>
+
+        <listitem>
+          <para>use Hibernate Search full-text search / text analysis
+          capabilities and store the data set in an elastic grid</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>These are a few ideas and the list will grow when we will add more
+      capabilities to Hibernate OGM.</para>
+    </section>
   </preface>
 
-    <!--
   <xi:include href="modules/getting-started.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-    -->
-  <chapter>
-      <title>Blah</title>
-      <para>blah</para>
-  </chapter>
+  <xi:include href="modules/architecture.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 </book>
