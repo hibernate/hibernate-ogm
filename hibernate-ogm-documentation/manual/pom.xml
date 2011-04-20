@@ -85,6 +85,7 @@
                             <exclude>**/*.xml</exclude>
                             <exclude>*.zargo</exclude>
                             <exclude>**/*.zargo</exclude>
+                            <exclude>**/*.graffle</exclude>
                         </excludes>
                     </imageResource>
                     <formats>

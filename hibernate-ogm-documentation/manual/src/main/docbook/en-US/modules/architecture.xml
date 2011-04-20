@@ -30,17 +30,334 @@
 <chapter id="ogm-architecture">
   <title>Architecture</title>
 
-  <para>Hibernate OGM reuses as much as possible from the Hibernate Core
-  infrastructure. There is no need to rewrite a JPA engine with its lot of
-  bugs. The <classname>Persister</classname>s and the
-  <classname>Loader</classname>s have been rewritten to persist data using
-  Infinispan instead of JDBC.</para>
-
   <note>
     <para>Note that abstracting Infinispan should be an easy enough task as
     tuples are represented as Maps.</para>
   </note>
 
-  <para>You will find more interesting to explore how the data is persisted in
-  the datagrid.</para>
+  <para>In this chapter we will will explore</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>the general architecture</para>
+    </listitem>
+
+    <listitem>
+      <para>how the data is persisted in the data grid</para>
+    </listitem>
+
+    <listitem>
+      <para>how we support JP-QL queries</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Let's start with the general architecture.</para>
+
+  <section>
+    <title>General architecture</title>
+
+    <para>Hibernate OGM is really made possible by the reuse of a few key
+    components:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Hibernate Core for JPA support</para>
+      </listitem>
+
+      <listitem>
+        <para>Hibernate Search for indexing purposes</para>
+      </listitem>
+
+      <listitem>
+        <para>Infinispan for the data grid</para>
+      </listitem>
+
+      <listitem>
+        <para>Infinispan's Lucene directory to store indexed in Infinispan
+        itself</para>
+      </listitem>
+
+      <listitem>
+        <para>Hibernate OGM itself</para>
+      </listitem>
+    </itemizedlist>
+
+    <mediaobject>
+      <imageobject role="html">
+        <imagedata align="center" fileref="images/architecture-components.png"
+                   format="PNG" role="html" />
+      </imageobject>
+
+      <imageobject role="fo">
+        <imagedata align="center" depth=""
+                   fileref="images/architecture-components.png" format="PNG"
+                   role="fo" scalefit="1" width="12cm" />
+      </imageobject>
+
+      <caption><para>General architecture</para></caption>
+    </mediaobject>
+
+    <para>Hibernate OGM reuses as much as possible from the Hibernate Core
+    infrastructure. There is no need to rewrite a JPA engine with its shipment
+    of new bugs ;) The <classname>Persister</classname>s and the
+    <classname>Loader</classname>s have been rewritten to persist data using
+    Infinispan instead of JDBC. These implementations are the core of
+    Hibernate OGM. We will see in <xref
+    linkend="ogm-architecture-datapersisted" /> how the data is structured.
+    Other than that, all the Create/Read/Update/Delete (CRUD) operations are
+    implemented by Hibernate Core.</para>
+
+    <para>To implement JP-QL queries, Hibernate OGM converts the JP-QL string
+    into an Hibernate Search query. This query is then executed against the
+    Lucene indexes stored in Infinispan and return the list of matching
+    entities. Hibernate Search also listens to entity changes thanks to
+    Hibernate Core events and update the Lucene indexes accordingly.</para>
+
+    <note>
+      <para>Complex JP-QL queries esp with collection joins will require
+      capabilities beyond Hibernate Search's current approach. We have several
+      ideas in mind to address this problem.</para>
+    </note>
+
+    <para>Let's now see how and in which structure data is persisted in the
+    NoSQL data store.</para>
+  </section>
+
+  <section id="ogm-architecture-datapersisted">
+    <title>How is data persisted</title>
+
+    <para>Hibernate OGM tries to reuse as much as possible the relational
+    model concepts (at least when they are practical and make sense). For very
+    good reasons, the relational model brought peace in the database landscape
+    over 30 years ago. In particular, Hibernate OGM inherits the following
+    philosophy traits:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>abstraction between the application object model and the
+        persistent data model</para>
+      </listitem>
+
+      <listitem>
+        <para>persist data as basic types</para>
+      </listitem>
+
+      <listitem>
+        <para>keep the notion of primary key to address an entity</para>
+      </listitem>
+
+      <listitem>
+        <para>keep the notion of foreign key to link two entities</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If the application data model is too tightly coupled with your
+    persistent data model a few issues arise including:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>any change in the application object hierarchy / composition
+        must be reflected in the persistent data</para>
+      </listitem>
+
+      <listitem>
+        <para>any change in the application object model will require a
+        migration at the persistent level</para>
+      </listitem>
+
+      <listitem>
+        <para>any access to the data by another application instantly tied
+        both applications</para>
+      </listitem>
+
+      <listitem>
+        <para>any access to the data from another platform become somewhat
+        more challenging</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Entities are stored as tuples of values by Hibernate OGM. More
+    specifically, each entity is represented by a Map&lt;String,Object&gt;
+    conceptually where the key represents the column name (often the property
+    name but not always) and the value represents the column value as a basic
+    type. We favor basic types over complex ones to increase portability
+    (across platforms and across type / class schema evolution over time). For
+    example a URL object is store as its String representation.</para>
+
+    <para>The key where a given entity instance is stored is composed
+    of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the table name</para>
+      </listitem>
+
+      <listitem>
+        <para>the primary key column name(s)</para>
+      </listitem>
+
+      <listitem>
+        <para> the primary key column value(s)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>An entity is addressable by a single lookup.</para>
+
+    <mediaobject>
+      <imageobject role="html">
+        <imagedata align="center" fileref="images/data-entity.png"
+                   format="PNG" role="html" />
+      </imageobject>
+
+      <imageobject role="fo">
+        <imagedata align="center" depth="" fileref="images/data-entity.png"
+                   format="PNG" role="fo" scalefit="1" width="12cm" />
+      </imageobject>
+
+      <caption><para>Storing entities</para></caption>
+    </mediaobject>
+
+    <note>
+      <title>Why aren't entities serialized in the key/value entry</title>
+
+      <para>There are a couple of reasons why serializing the entity directly
+      in the datastore can lead to problems:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>When entities are pointing to other entities are you storing
+          the whole graph?</para>
+
+          <para>Hint this can be quite big!</para>
+        </listitem>
+
+        <listitem>
+          <para>If so, how do you guarantee object identity or even
+          consistency amongst duplicated objects?</para>
+
+          <para>It might make sense to store the same object graph from
+          different root objects.</para>
+        </listitem>
+
+        <listitem>
+          <para>What happens in case of class schema change?</para>
+
+          <para>If you add or remove a property or include a superclass, you
+          must migrate all entities in your datastore to avoid deserialization
+          issues.</para>
+        </listitem>
+      </itemizedlist>
+    </note>
+
+    <para>Associations are also stored as tuple as well or more precisely as a
+    set of tuples. To ensure that associations are reachable via key lookups
+    from the entity hosting them, we store one copy of the association data
+    per entity instance pointing to it.</para>
+
+    <para>The key in which association data are stored is composed of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the table name</para>
+      </listitem>
+
+      <listitem>
+        <para>the column name(s) representing the foreign key to an
+        entity</para>
+      </listitem>
+
+      <listitem>
+        <para>the column value(s) representing the foreign key to an
+        entity</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Using this approach, we favor fast read and (slightly slower
+    writes).</para>
+
+    <mediaobject>
+      <imageobject role="html">
+        <imagedata align="center" fileref="images/data-association.png"
+                   format="PNG" role="html" />
+      </imageobject>
+
+      <imageobject role="fo">
+        <imagedata align="center" depth=""
+                   fileref="images/data-association.png" format="PNG"
+                   role="fo" scalefit="1" width="12cm" />
+      </imageobject>
+
+      <caption><para>Storing associations</para></caption>
+    </mediaobject>
+
+    <para>Note that this approach has benefits and drawbacks:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>it ensures that all CRUD operations are doable via key
+        lookups</para>
+      </listitem>
+
+      <listitem>
+        <para>it favors reads over writes (for associations)</para>
+      </listitem>
+
+      <listitem>
+        <para>but it duplicates data</para>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>We might offer alternative association data persistence options in
+      the future based on feedback.</para>
+    </note>
+
+    <para>Some identifiers require to store a seed in the datastore (think
+    about sequences for examples). The seend is stored in the value whose key
+    is composed of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the table name</para>
+      </listitem>
+
+      <listitem>
+        <para>the column name representing the segment</para>
+      </listitem>
+
+      <listitem>
+        <para>the column value representing the segment</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Infinispan is a key/value store which means that per se it has no
+    notion of schema. Likewise, the tuple stored by Hibernate OGM is not tied
+    to a particular schema: the tuple is represented by a
+    <classname>Map</classname>, not a typed <classname>Map</classname>
+    specific to a given entity type. Nevertheless, JPA does describe a schema
+    thanks to:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the class schema</para>
+      </listitem>
+
+      <listitem>
+        <para>the JPA physical annotations like <classname>@Table</classname>
+        and <classname>@Column</classname>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>While tied to the application, it offers some robustness and
+    explicit understanding when the schema is changed as the schema is right
+    in front of the developers' eyes. This is an intermediary model between
+    the strictly typed relational model and the totally schema-less approach
+    pushed by some NoSQL families.</para>
+  </section>
+
+  <section>
+    <title>How is data queried</title>
+
+    <para>TODO</para>
+  </section>
 </chapter>
