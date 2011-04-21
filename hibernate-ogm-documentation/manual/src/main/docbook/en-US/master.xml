@@ -68,6 +68,28 @@
     features in (like other NoSQL store support, we would be glad to explore
     that with you, check our the <xref linkend="ogm-contribution" />.</para>
 
+    <warning>
+      <para>This documentation and this project are work in progress. Please
+      give us feedback on</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>what you like</para>
+        </listitem>
+
+        <listitem>
+          <para>what you don't like</para>
+        </listitem>
+
+        <listitem>
+          <para>what is confusing</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Check <xref linkend="ogm-howtocontribute-contribute" /> on how to
+      contact us.</para>
+    </warning>
+
     <section>
       <title>Goals</title>
 
@@ -224,8 +246,12 @@
     </section>
   </preface>
 
+  <xi:include href="modules/how-to-contribute.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="modules/getting-started.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="modules/architecture.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
