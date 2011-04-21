@@ -130,7 +130,7 @@
 
       <para>Each have different benefits and drawbacks and one solution might
       fit a use case better than an other. However access patterns and APIs
-      are different from one product to the others. </para>
+      are different from one product to the others.</para>
 
       <para>While Hibernate OGM will not try to address all of these problem,
       simplify NoSQL access by offering a familiar programmatic model and API
@@ -227,5 +227,8 @@
   <xi:include href="modules/getting-started.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
   <xi:include href="modules/architecture.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="modules/configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 </book>

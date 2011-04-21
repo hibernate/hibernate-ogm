@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ JBoss, Home of Professional Open Source
+  ~ Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+  ~ as indicated by the @authors tag. All rights reserved.
+  ~ See the copyright.txt in the distribution for a
+  ~ full listing of individual contributors.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use,
+  ~ modify, copy, or redistribute it subject to the terms and conditions
+  ~ of the GNU Lesser General Public License, v. 2.1.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT A
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  ~ PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+  ~ You should have received a copy of the GNU Lesser General Public License,
+  ~ v.2.1 along with this distribution; if not, write to the Free Software
+  ~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+  ~ MA  02110-1301, USA.
+  -->
+<!--
+    @author Emmanuel Bernard <emmanuel@hibernate.org>
+-->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../ogm.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="ogm-configuration">
+  <title>Configure ans start Hibernate OGM</title>
+
+  <para>Hibernate OGM favors ease of use and convention over configuration.
+  This makes its configuration quite minimalist by default.</para>
+
+  <section>
+    <title>Bootstrapping Hibernate OGM</title>
+
+    <para>Hibernate OGM can be used via the Hibernate native APIs
+    (<classname>Session</classname>) or via the JPA APIs
+    (<classname>EntityManager</classname>). Depending of your choice, the
+    bootstrapping strategy is slightly different.</para>
+
+    <section>
+      <title>Using JPA</title>
+
+      <para>The good news is that if you use JPA as your primary API, the
+      configuration is extremely simple. Hibernate OGM is seen as a
+      persistence provider which you need to configure in your
+      persistence.xml. That's it! The provider name is
+      <classname>org.hibernate.ogm.jpa.HibernateOgmPersistence</classname>.</para>
+
+      <example>
+        <title>persistence.xml file</title>
+
+        <programlisting language="XML" role="XML">&lt;?xml version="1.0"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0"&gt;
+
+    &lt;persistence-unit name="org.hibernate.ogm.tutorial.jpa" transaction-type="JTA"&gt;
+        &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
+        &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
+        &lt;properties&gt;
+            &lt;property name="hibernate.transaction.manager_lookup_class"
+                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+        &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</programlisting>
+      </example>
+
+      <para>There are a couple of things to notice:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>there is no JDBC dialect setting</para>
+        </listitem>
+
+        <listitem>
+          <para>there is no JDBC datasource setting</para>
+        </listitem>
+
+        <listitem>
+          <para>there is no DDL scheme generation options
+          (<literal>hbm2ddl</literal>) as Infinispan does not require
+          schemas</para>
+        </listitem>
+
+        <listitem>
+          <para>if you use JTA, you will need to set the transaction manager
+          lookup strategy</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>It is possible to configure how to connect to Infinispan, see
+      <xref
+      linkend="ogm-configuration-optionsogm-configuration-options" />.</para>
+
+      <para>From there, simply bootstrap JPA the way you are used to with
+      Hibernate Core:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>via
+          <classname>Persistence.createEntityManagerFactory</classname></para>
+        </listitem>
+
+        <listitem>
+          <para>by injecting the <classname>EntityManager</classname> /
+          <classname>EntityManagerFactory</classname> in a Java EE
+          container</para>
+        </listitem>
+
+        <listitem>
+          <para>by using your favorite injection framework (CDI - Weld,
+          Spring, Guice)</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Using Hibernate Core native APIs</title>
+
+      <para>If you want to bootstrap Hibernate OGM using the native Hibernate
+      APIs, you will have some more work to do.</para>
+
+      <warning>
+        <para>This process is subject to change in the near future. Prefer
+        JPA's approach.</para>
+      </warning>
+
+      <para>You need to configure a few of the internals of Hibernate OGM
+      namely:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>the <classname>SessionFactoryObserver</classname>:
+          <classname>GridMetadataManager</classname></para>
+        </listitem>
+
+        <listitem>
+          <para>the <classname>ConnectionProvider</classname>:
+          <classname>NoopConnectionProvider</classname></para>
+        </listitem>
+
+        <listitem>
+          <para>the <classname>NamingStrategy</classname>:
+          <classname>OgmNamingStrategy</classname></para>
+        </listitem>
+
+        <listitem>
+          <para>the <classname>PersistenceClassProvider</classname>:
+          <classname>OgmPersisterClassProvider</classname></para>
+        </listitem>
+
+        <listitem>
+          <para>the <classname>Dialect</classname>:
+          <classname>NoopDialect</classname></para>
+        </listitem>
+      </itemizedlist>
+
+      <example>
+        <title>Bootstrap Hibernate OGM with Hibernate Core native APIs</title>
+
+        <programlisting language="XML" role="XML">Configuration cfg = new Configuration();
+cfg.setSessionFactoryObserver( new GridMetadataManager() );
+cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
+cfg.setProperty(Environment.DIALECT, NoopDialect.class.getName() );
+//assuming you are using JTA in a non contained environment
+cfg.setProperty( Environment.TRANSACTION_STRATEGY, 
+                 "org.hibernate.transaction.JTATransactionFactory" );
+//assuming JBoss TransactionManager
+cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, 
+                 "org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" );
+
+//add your annotated classes
+cfg.addAnnotatedClass(Order.class)
+   .addAnnotatedClass(Item.class)
+
+//build the SessionFactory
+SessionFactory sf = cfg.buildSessionFactory();</programlisting>
+      </example>
+
+      <para>There are a couple of things to notice:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>there is no DDL scheme generation options
+          (<literal>hbm2ddl</literal>) as Infinispan does not require
+          schemas</para>
+        </listitem>
+
+        <listitem>
+          <para>you need to set the right transaction strategy and the right
+          transaction manager lookup strategy if you use a JTA based
+          transaction strategy (see <xref
+          linkend="ogm-configuration-environments" />)</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>You will ans</para>
+
+      <para>It is possible to configure how to connect to Infinispan, see
+      <xref
+      linkend="ogm-configuration-optionsogm-configuration-options" />.</para>
+    </section>
+  </section>
+
+  <section id="ogm-configuration-environments">
+    <title>Environments</title>
+
+    <para>Hibernate OGM runs in various environments, pretty much what you are
+    used to with Hibernate Core. There are however environments where it works
+    better and has been more thoroughly tested.</para>
+
+    <section>
+      <title>In a Java EE container</title>
+
+      <para>You don't have to do much in this case. You need two specific
+      settings:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>the transaction factory</para>
+        </listitem>
+
+        <listitem>
+          <para>the transaction manager lookup strategy</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>If you use JPA, simply set the <literal>transaction-type</literal>
+      to <literal>JTA</literal> and the transaction factory will be set for
+      you. </para>
+
+      <para>If you use Hibernate Core native APIs only, then set
+      <literal>hibernate.transaction.factory_class</literal> to:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal>org.hibernate.transaction.CMTTransactionFactory</literal>
+          if you use declarative transaction demarcation.</para>
+        </listitem>
+
+        <listitem>
+          <para>or
+          <literal>org.hibernate.transaction.JTATransactionFactory</literal>
+          if you manually demarcate transaction boundaries</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Set the transaction manager lookup strategy to the right Java EE
+      container. The property is
+      <literal>hibernate.transaction.manager_lookup_class</literal> and must
+      contain the fully qualified class name of the lookup implementation. The
+      list of available values are listed in <ulink
+      url="http://docs.jboss.org/hibernate/stable/core/reference/en-US/html_single/#configuration-optional-transactionstrategy">Hibernate
+      Core's configuration section</ulink>. For example, in JBoss AS, use
+      <literal>org.hibernate.transaction.JBossTransactionManagerLookup</literal>.</para>
+    </section>
+
+    <section id="ogm-configuration-environments-standalonejta">
+      <title>In a standalone JTA environment</title>
+
+      <para>There is a set of common misconceptions in the Java community
+      about JTA</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>JTA is hard to use</para>
+        </listitem>
+
+        <listitem>
+          <para>JTA is needed when you need transactions spanning several
+          databases</para>
+        </listitem>
+
+        <listitem>
+          <para>JTA works in Java EE only</para>
+        </listitem>
+
+        <listitem>
+          <para>JTA is slower than "simple" transactions</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>None of that is true of course, let me show you how to use JBoss
+      Transaction in a standalone environment with Hibernate OGM.</para>
+
+      <para>In Hibernate OGM, make sure to set the following
+      properties:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal>transaction-type</literal> to <literal>JTA</literal>
+          in your persistence.xml if you use JPA</para>
+        </listitem>
+
+        <listitem>
+          <para>or <literal>hibernate.transaction.factory_class</literal> to
+          <literal>org.hibernate.transaction.JTATransactionFactory</literal>
+          if you only use Hibernate Core native APIs</para>
+        </listitem>
+
+        <listitem>
+          <para><literal>hibernate.transaction.factory_class</literal> to
+          <literal>org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup</literal><parameter>
+          in both cases.</parameter></para>
+        </listitem>
+      </itemizedlist>
+
+      <para>On the JBoss Transaction side, add JBoss Transaction in your
+      classpath, if you use maven, it should look like this:</para>
+
+      <example>
+        <title>JBoss Transaction dependency declaration</title>
+
+        <programlisting language="XML" role="XML">&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
+    &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
+    &lt;version&gt;4.14.0.Final&lt;/version&gt;
+    &lt;exclusions&gt;
+        &lt;exclusion&gt;
+            &lt;groupId&gt;org.jboss.ws.native&lt;/groupId&gt;
+            &lt;artifactId&gt;jbossws-native-core&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;emma&lt;/artifactId&gt;
+            &lt;groupId&gt;emma&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;emma_ant&lt;/artifactId&gt;
+            &lt;groupId&gt;emma&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
+            &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;netty&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;wrapper&lt;/artifactId&gt;
+            &lt;groupId&gt;tanukisoft&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jacorb&lt;/artifactId&gt;
+            &lt;groupId&gt;jacorb&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jfreechart&lt;/artifactId&gt;
+            &lt;groupId&gt;jfree&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-corba-ots-spi&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.integration&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-server-manager&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-ejb-api_3.1_spec&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.spec.javax.ejb&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jnp-client&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.naming&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-servlet-api_3.0_spec&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.spec.javax.servlet&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jbossws-common&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.ws&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jcl-over-slf4j&lt;/artifactId&gt;
+            &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+    &lt;/exclusions&gt;
+&lt;/dependency&gt;</programlisting>
+      </example>
+
+      <para>The next step is you get access to the transaction manager. The
+      easiest solution is to do as followed</para>
+
+      <programlisting language="JAVA" role="JAVA">//accessing JBoss's Transaction can be done differently but this one works nicely
+TransactionManager transactionManager = new JBossTSStandaloneTransactionManagerLookup()
+   .getTransactionManager( null );</programlisting>
+
+      <para>Then use the standard JTA APIs to demarcate your transaction and
+      you are done!</para>
+
+      <example>
+        <title>Demarcate your transaction with standalone JTA</title>
+
+        <programlisting language="JAVA" role="JAVA">//note that you must start the transaction before creating the EntityManager 
+//or else call entityManager.joinTransaction() 
+transactionManager.begin();
+
+final EntityManager em = emf.createEntityManager();
+
+Poem poem = new Poem();
+poem.setName( "L'albatros" );
+em.persist( poem );
+
+transactionManager.commit();
+ 
+em.clear();
+ 
+transactionManager.begin();
+
+poem = em.find( Poem.class, poem.getId() );
+assertThat( poem ).isNotNull();
+assertThat( poem.getName() ).isEqualTo( "L'albatros" );
+em.remove( poem );
+
+transactionManager.commit();
+ 
+em.close();</programlisting>
+      </example>
+
+      <para>That was not too hard, was it? Note that application frameworks
+      like Seam or Spring Framework should be able to initialize the
+      transaction manager and call it to demarcate transactions for you. Check
+      their respective documentation.</para>
+    </section>
+
+    <section>
+      <title>Without JTA</title>
+
+      <para>While this approach works today, it does not ensure that works are
+      done transitionally and hence won't be able to rollback your work. This
+      will change in the future but in the mean time, such an environment is
+      not recommended. </para>
+    </section>
+  </section>
+
+  <section>
+    <title id="ogm-configuration-options">Configuration options</title>
+
+    <para>Most options from Hibernate Core and Hibernate Search are applicable
+    to Hibernate OGM. You can pass them as you are used to do either in your
+    <filename>persistence.xml</filename> file, your
+    <filename>hibernate.cfg.xml</filename> file or programmatically.</para>
+
+    <para>There are however a couple of Hibernate OGM specific
+    configurations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>hibernate.ogm.infinispan.configuration_resourcename: the
+        resource path to the Infinispan XMl configuration file (eg
+        <filename>com/acme/app/config/infinispan-config.xml</filename>). By
+        default, the configuration used is Hibernate OGM's default
+        configuration (TODO describe its behavior)</para>
+      </listitem>
+
+      <listitem>
+        <para>hibernate.ogm.infinispan.cachemanager_jndiname: the JNDI name
+        containing the Infinispan <classname>CacheManager</classname>. This
+        option is rarely used.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Here is the list of options that do not apply to Hibernate
+    OGM:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><literal>hibernate.dialect</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.connection.provider_class</literal></para>
+      </listitem>
+
+      <listitem>
+        <para>TODO finish this list</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Configuring Infinispan</title>
+
+    <para>TODO Talk about the 3 caches (and may the ones for Hibernate
+    Search)</para>
+  </section>
+
+  <section>
+    <title>Configuring Hibernate Search</title>
+
+    <para>All Hibernate Search options apply when you use Hibernate OGM. Here
+    is a detailed explanation on how to store your indexed on
+    Infinispan.</para>
+
+    <para>TODO explain how to store your indexed on Infinispan.</para>
+  </section>
+</chapter>

@@ -119,6 +119,12 @@
       ideas in mind to address this problem.</para>
     </note>
 
+    <para>Hibernate OGM best work in a JTA environment. The easiest solution
+    is to deploy it on a Java EE container. Alternatively, you can use a
+    standalone JTA <classname>TransactionManager</classname>. We do explain
+    how to in <xref linkend="ogm-configuration-environments-standalonejta" />.
+    </para>
+
     <para>Let's now see how and in which structure data is persisted in the
     NoSQL data store.</para>
   </section>
