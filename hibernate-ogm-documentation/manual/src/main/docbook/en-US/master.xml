@@ -68,6 +68,8 @@
     features in (like other NoSQL store support, we would be glad to explore
     that with you, check our the <xref linkend="ogm-contribution" />.</para>
 
+    <para>Hibernate OGM is released under the LGPL open source license.</para>
+
     <warning>
       <para>This documentation and this project are work in progress. Please
       give us feedback on</para>
