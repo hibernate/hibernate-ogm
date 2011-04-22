@@ -31,9 +31,8 @@
   <title>How to get help and contribute on Hibernate OGM</title>
 
   <para>Hibernate OGM is a young project. The code, the direction and the
-  documentation are all in flux and being built by the community.</para>
-
-  <para>Come and help us shape it.</para>
+  documentation are all in flux and being built by the community. Come and
+  help us shape it!</para>
 
   <section id="ogm-howtocontribute-help">
     <title>How to get help</title>
@@ -41,12 +40,28 @@
     <para>First of all, make sure to read this reference documentation. This
     is the most comprehensive formal source of information. Of course, it is
     not perfect, feel free to come and ask for help, comment or propose
-    improvements in:</para>
+    improvements in our <ulink
+    url="https://forum.hibernate.org/viewforum.php?f=31">Hibernate OGM
+    forum.</ulink></para>
+
+    <para>You can also</para>
 
     <itemizedlist>
       <listitem>
-        <para>in Hibernate OGM <ulink
-        url="https://forum.hibernate.org/viewforum.php?f=31">forum</ulink></para>
+        <para>open bug reports in <ulink
+        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>propose improvements on the <ulink
+        url="http://www.hibernate.org/community/mailinglists">development
+        mailing list</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>and join us on IRC to discuss developments and improvements
+        (#hibernate-dev on freenode.net ; you need to be registered on
+        freenode, the room does not accept "anonymous" persons).</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -54,6 +69,107 @@
   <section id="ogm-howtocontribute-contribute">
     <title>How to contribute</title>
 
-    <para>TODO</para>
+    <para>Welcome!</para>
+
+    <para>There are many ways to contribute:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>report bugs in <ulink
+        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>give feedback in the forum, IRC or the development mailing
+        list</para>
+      </listitem>
+
+      <listitem>
+        <para>improve the documentation</para>
+      </listitem>
+
+      <listitem>
+        <para>fix bug or contribute new features</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Hibernate OGM's code is available on GitHub at <ulink
+    url="https://github.com/hibernate/hibernate-ogm">https://github.com/hibernate/hibernate-ogm</ulink>.</para>
+
+    <section>
+      <title>how to build Hibernate OGM</title>
+
+      <para>Hibernate OGM uses Git and Maven 3, make sure to have both
+      installed on your system.</para>
+
+      <para>Clone the git repository from GitHub:</para>
+
+      <programlisting>#get the sources
+git clone https://github.com/hibernate/hibernate-ogm
+cd hibernate-ogm</programlisting>
+
+      <para>Run maven</para>
+
+      <programlisting>#build project
+mvn clean install</programlisting>
+
+      <note>
+        <para>Note that Hibernate OGM uses artifacts from the Maven repository
+        hosted by JBoss. Make sure to adjust your
+        <filename>~/.m2/settings.xml</filename> according to the descriptions
+        available <ulink
+        url="http://community.jboss.org/wiki/MavenGettingStarted-Users">here</ulink>.</para>
+      </note>
+
+      <para>To build the documentation, set the buildDocs property to
+      true.</para>
+
+      <programlisting>mvn clean install -DbuildDocs=true</programlisting>
+
+      <remark>If you just want to build the documentation, go in the
+      <filename>hibernate-ogm-documentation/manual</filename>
+      subdirectory.</remark>
+    </section>
+
+    <section>
+      <title>How to best contribute code</title>
+
+      <para>The best way to share code is to fork Hibernate OGM repository on
+      GitHub and open a pull request when you are ready. Make sure to rebase
+      your pull request on the latest version in master before offering
+      it.</para>
+
+      <para>Here are a couple of approaches the team follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>We do small independent commits for each code change. In
+          particular, we do not mix stylistic code changes (import, typo etc)
+          and new feature in the same commit.</para>
+        </listitem>
+
+        <listitem>
+          <para>Commit messages follow the following convention: a short
+          commit summary preceded by the JIRA issue number, an empty line, a
+          longer description if needed.</para>
+
+          <programlisting>OGM-XX Summary of commit operation
+
+Optional details on the commit.</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>A pull request contains the feature, its unit tests, its
+          documentation</para>
+        </listitem>
+
+        <listitem>
+          <para>All commits are proposed via pull requests and reviewed by
+          another member of the team before being pushed to the reference
+          repository. This is not 100% true in practice as the project is at
+          an early stage but that will become true soon enough :)</para>
+        </listitem>
+      </itemizedlist>
+    </section>
   </section>
 </chapter>
