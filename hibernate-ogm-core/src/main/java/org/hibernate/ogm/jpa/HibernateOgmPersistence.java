@@ -115,6 +115,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( AvailableSettings.SESSION_FACTORY_OBSERVER, GridMetadataManager.class.getName() );
 		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
+		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( Environment.DIALECT, NoopDialect.class.getName() );
 		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());

@@ -66,7 +66,7 @@ public abstract class JpaTestCase {
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
 		//we explicitly list them to avoid scanning
 		info.setExcludeUnlistedClasses( true );
-		info.setJtaDataSource( null );
+		info.setJtaDataSource( new NoopDatasource() );
 		List<String> classNames = new ArrayList<String>();
 		for ( Class<?> clazz : getEntities() ) {
 			classNames.add( clazz.getName() );
