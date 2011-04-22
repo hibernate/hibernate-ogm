@@ -30,5 +30,234 @@
 <chapter id="ogm-gettingstarted">
   <title>Getting started with Hibernate OGM</title>
 
-  <para>TODO</para>
+  <para>If you are familiar with JPA, you are almost good to go :)</para>
+
+  <para>We will nevertheless walk you through the first few steps of
+  persisting and retrieving an entity using Hibernate OGM.</para>
+
+  <para>Before we can start, make sure you have the following tools
+  configured:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Java JDK 6 or above</para>
+    </listitem>
+
+    <listitem>
+      <para>Maven 3.x</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Hibernate OGM is published in the JBoss hosted Maven repositories.
+  Adjust your <filename>~/.m2/settings.xml</filename> file according to the
+  guidelines found <ulink url="???">here</ulink>.</para>
+
+  <para>Add
+  <literal>org.hibernate.ogm:hibernate-ogm-core:3.0.0-SNAPSHOT</literal> to
+  your project dependencies.</para>
+
+  <programlisting language="XML" role="XML">&lt;dependency&gt;
+  &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+  &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
+  &lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;</programlisting>
+
+  <para>Transitively, Hibernate OGM depends on JPA 2.0: we will use these APIs
+  in this tutorial. </para>
+
+  <para>Let's now map our first Hibernate OGM entity.</para>
+
+  <programlisting language="JAVA" role="JAVA">@Entity
+public class Dog {
+   @Id @GeneratedValue(strategy = GenerationType.TABLE, generator = "dog")
+   @TableGenerator(
+      name = "dog",
+      table = "sequences",
+      pkColumnName = "key",
+      pkColumnValue = "dog",
+      valueColumnName = "seed"
+   )
+   public Long getId() { return id; }
+   public void setId(Long id) { this.id = id; }
+   private Long id;
+
+   public String getName() { return name; }
+   public void setId(String name) { this.name = name; }
+   private String name;
+
+   @ManyToOne
+   public Breed getBreed() { return breed; }
+   public void setBreed(Breed breed) { this.breed = breed; }
+   private Breed breed;
+}
+
+@Entity
+public class Breed {
+
+   @Id @GeneratedValue(generator = "uuid")
+   @GenericGenerator(name="uuid", strategy="uuid2")
+   public String getId() { return id; }
+   public void setId(String id) { this.id = id; }
+   private String id;
+
+   public String getName() { return name; }
+   public void setId(String name) { this.name = name; }
+   private String name;
+}</programlisting>
+
+  <para>I lied to you, we have already mapped two entities! If you are
+  familiar with JPA, you can see that there is nothing specific to Hibernate
+  OGM in our mapping.</para>
+
+  <para>In this tutorial, we will use JBoss Transaction for our JTA
+  transaction manager. Add the following dependency. The set of exclusion is
+  something that should be fixed in the next version of JBoss
+  Transaction.</para>
+
+  <programlisting language="XML" role="XML">&lt;dependency&gt;
+    &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
+    &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
+    &lt;version&gt;4.14.0.Final&lt;/version&gt;
+    &lt;exclusions&gt;
+        &lt;exclusion&gt;
+            &lt;groupId&gt;org.jboss.ws.native&lt;/groupId&gt;
+            &lt;artifactId&gt;jbossws-native-core&lt;/artifactId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;emma&lt;/artifactId&gt;
+            &lt;groupId&gt;emma&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;emma_ant&lt;/artifactId&gt;
+            &lt;groupId&gt;emma&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
+            &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;netty&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;wrapper&lt;/artifactId&gt;
+            &lt;groupId&gt;tanukisoft&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jacorb&lt;/artifactId&gt;
+            &lt;groupId&gt;jacorb&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jfreechart&lt;/artifactId&gt;
+            &lt;groupId&gt;jfree&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-corba-ots-spi&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.integration&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-server-manager&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-ejb-api_3.1_spec&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.spec.javax.ejb&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jnp-client&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.naming&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jboss-servlet-api_3.0_spec&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.spec.javax.servlet&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jbossws-common&lt;/artifactId&gt;
+            &lt;groupId&gt;org.jboss.ws&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+        &lt;exclusion&gt;
+            &lt;artifactId&gt;jcl-over-slf4j&lt;/artifactId&gt;
+            &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;/exclusion&gt;
+    &lt;/exclusions&gt;
+&lt;/dependency&gt;</programlisting>
+
+  <para>Next we need to define the persistence unit. Create a
+  <filename>META-INF/persistence.xml</filename> file</para>
+
+  <programlisting language="XML" role="XML">&lt;?xml version="1.0"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0"&gt;
+
+    &lt;persistence-unit name="org.hibernate.ogm.tutorial.jpa" transaction-type="JTA"&gt;
+        &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
+        &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
+        &lt;properties&gt;
+            &lt;property name="hibernate.transaction.manager_lookup_class"
+                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+        &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</programlisting>
+
+  <para>Let's now persist a set of entities and retrieve them.</para>
+
+  <programlisting language="JAVA" role="JAVA">//accessing JBoss's Transaction can be done differently but this one works nicely
+TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
+   .getTransactionManager( null );
+
+//build the EntityManagerFactory as you would build in in Hibernate Core
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate.ogm.tutorial.jpa");
+
+[...]
+
+//Persist entities the way you are used to in plain JPA
+tm.begin();
+EntityManager em = emf.createEntityManager();
+Breed colley = new Breed();
+colley.setName("Colley");
+em.persist(colley);
+Dog dina = new Dog();
+dina.setName("Dina");
+dina.setBreed(colley);
+em.persist(dina);
+em.flush();
+em.close();
+tm.commit();
+
+[...]
+
+//Retrieve your entities the way you are used to in plain JPA
+tm.begin();
+EntityManager em = emf.createEntityManager();
+Dog dina = em.find(Dog.class, dinaId);
+assertThat( dina.getName() ).isEqualsTo("Dina");
+assertThat( dina.getBreed().getName().isEqualsTo("Colley");
+em.flush();
+em.close();
+tm.commit();
+
+[...]
+emf.close();</programlisting>
+
+  <para>TODO: explain how to run a second Infinispan node to show how data
+  does outlive the <classname>EntityManagerFactory</classname>
+  lifecycle.</para>
+
+  <para>What have we seen?</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>Hibernate OGM is a JPA implementation and is used as such both for
+      mapping and in API usage</para>
+    </listitem>
+
+    <listitem>
+      <para>It is configured as a specific JPA provider:
+      <classname>org.hibernate.ogm.jpa.HibernateOgmPersistence</classname></para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Explore more in the next chapters.</para>
 </chapter>
