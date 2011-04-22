@@ -28,7 +28,7 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="ogm-configuration">
-  <title>Configure ans start Hibernate OGM</title>
+  <title>Configure and start Hibernate OGM</title>
 
   <para>Hibernate OGM favors ease of use and convention over configuration.
   This makes its configuration quite minimalist by default.</para>
