@@ -26,11 +26,14 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -108,4 +111,11 @@ public class Bookmark {
 	public BookmarkType getType() { return type; }
 	public void setType(BookmarkType type) {  this.type = type; }
 	private BookmarkType type;
+
+	@Lob
+    @Basic(fetch= FetchType.EAGER)
+    @Column(name="DS_BLOB")
+	public byte[] getBlob() { return blob; }
+	public void setBlob(byte[] blob) {  this.blob = blob; }
+	private byte[] blob;
 }

@@ -62,6 +62,13 @@ public class BuiltInTypeTest extends OgmTestCase {
 		iCal.setTimeInMillis( now.getTime() );
 		b.setCreationCalendar( iCal );
 		b.setDestructionCalendar( iCal );
+		byte[] blob = new byte[5];
+		blob[0] = '1';
+		blob[1] = '2';
+		blob[2] = '3';
+		blob[3] = '4';
+		blob[4] = '5';
+		b.setBlob( blob );
 		session.persist( b );
 		transaction.commit();
 
