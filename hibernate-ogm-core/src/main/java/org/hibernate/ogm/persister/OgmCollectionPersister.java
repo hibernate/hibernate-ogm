@@ -45,6 +45,7 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
@@ -518,7 +519,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			final Cache<EntityKey,Map<String,Object>> entityCache = GridMetadataManagerHelper.getEntityCache(
 					gridManager
 			);
-			final Map<String, Object> entityTuple = entityCache.get( entityKey );
+			final GridDialect gridDialect = gridManager.getGridDialect();
+			final Map<String, Object> entityTuple = gridDialect.getTuple( entityKey, entityCache );
 			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if (entityTuple == null) {
 				return;
@@ -542,7 +544,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			entityCache.put( entityKey, entityTuple ); //update cache
+			gridDialect.updateTuple( entityTuple, entityKey, entityCache ); //update cache
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
