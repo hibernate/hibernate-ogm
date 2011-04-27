@@ -56,6 +56,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.loader.OgmLoader;
@@ -250,11 +251,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	private Map<String, Object> getResultsetById(Serializable id, Cache<EntityKey, Map<String, Object>> cache) {
-		final Map<String,Object> resultset = cache.get(
-				new EntityKeyBuilder().entityPersister( this )
-						.id( id )
-						.getKey()
-		);
+		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id( id ).getKey();
+		final Map<String,Object> resultset = gridManager.getGridDialect().getTuple(key,cache);
 		return resultset;
 	}
 
@@ -362,10 +360,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-		final Map<String, Object> resultset = entityCache.get( key );
+		final GridDialect gridDialect = gridManager.getGridDialect();
+		final Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		entityCache.put( key, resultset );
+		gridDialect.updateTuple( resultset, key, entityCache );
 		return nextVersion;
 	}
 
@@ -701,15 +700,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final GridDialect gridDialect = gridManager.getGridDialect();
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-				Map<String, Object> resultset = entityCache.get( key );
+				Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
 				final boolean useVersion = j == 0 && isVersioned();
 
-				resultset = createNewResultSetIfNull( resultset, id, session );
+				resultset = createNewResultSetIfNull( key, entityCache, resultset, id, session );
 
 				final EntityMetamodel entityMetamodel = getEntityMetamodel();
 
@@ -750,7 +750,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 				//dehydrate
 				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				entityCache.put( key, resultset );
+				gridDialect.updateTuple( resultset, key, entityCache );
 			}
 		}
 	}
@@ -824,7 +824,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int span = getTableSpan();
 		//insert operations are always dynamic in OGM
 		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
+		final GridDialect gridDialect = gridManager.getGridDialect();
 		for ( int j = 0; j < span; j++ ) {
 			if ( isInverseTable( j ) ) {
 				return;
@@ -844,7 +845,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 
 			final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-			Map<String, Object> resultset = entityCache.get( key );
+			Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
 			// add the discriminator
 			if ( j == 0 ) {
 				if (resultset != null) {
@@ -855,18 +856,22 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 			}
 
-			resultset = createNewResultSetIfNull( resultset, id, session );
+			resultset = createNewResultSetIfNull( key, entityCache, resultset, id, session );
 
 			//dehydrate
 			dehydrate(resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
-			entityCache.put( key, resultset );
+			gridDialect.updateTuple( resultset, key, entityCache );
 		}
 	}
 
-	private Map<String, Object> createNewResultSetIfNull(Map<String, Object> resultset, Serializable id, SessionImplementor session) {
+	private Map<String, Object> createNewResultSetIfNull(
+			EntityKey key,
+			Cache<EntityKey, Map<String, Object>> entityCache,
+			Map<String, Object> resultset,
+			Serializable id,
+			SessionImplementor session) {
 		if (resultset == null) {
-			//FIXME use org.infinispan.atomic.AtomicMapLookup#getAtomicMap
-			resultset = new HashMap<String, Object>();
+			resultset = gridManager.getGridDialect().createTuple( key, entityCache );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -902,9 +907,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() );
+		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-		final Map<String, Object> resultset = entityCache.get( key );
+		final GridDialect gridDialect = gridManager.getGridDialect();
+		final Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements
@@ -950,7 +956,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			entityCache.remove( key );
+			gridDialect.removeTuple( key, entityCache );
 
 			//delete property metadata
 			new EntityDehydrator()
