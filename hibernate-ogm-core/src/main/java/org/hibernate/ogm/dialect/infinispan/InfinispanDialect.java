@@ -20,6 +20,11 @@
  */
 package org.hibernate.ogm.dialect.infinispan;
 
+import java.util.Map;
+
+import org.infinispan.Cache;
+import org.infinispan.atomic.AtomicMapLookup;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
@@ -29,6 +34,7 @@ import org.hibernate.dialect.lock.PessimisticReadSelectLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticWriteSelectLockingStrategy;
 import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -64,6 +70,28 @@ public class InfinispanDialect implements GridDialect {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode);
 		}
 		return new SelectLockingStrategy( lockable, lockMode );
+	}
+
+	@Override
+	public Map<String, Object> getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+		return AtomicMapLookup.getAtomicMap( cache, key, false );
+	}
+
+	@Override
+	public Map<String, Object> createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
+		//should we improve?
+		return AtomicMapLookup.getAtomicMap( cache, key, true );
+	}
+
+	@Override
+	public void updateTuple(Map<String, Object> tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+		//cache.put( key, tuple );
+	}
+
+	@Override
+	public void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
 
