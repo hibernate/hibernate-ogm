@@ -20,8 +20,13 @@
  */
 package org.hibernate.ogm.dialect;
 
+import java.util.Map;
+
+import org.infinispan.Cache;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -31,4 +36,22 @@ import org.hibernate.persister.entity.Lockable;
  */
 public interface GridDialect {
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
+
+	/**
+	 * Return the tuple for a given key in a given cache or null if not present
+	 */
+	Map<String,Object> getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	/**
+	 * Return a new tuple for a given key in a given cache
+	 */
+	Map<String,Object> createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	/**
+	 * Update the tuple for a given key in a given cache or null if not present
+	 */
+	void updateTuple(Map<String, Object> tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+
+	/**
+	 * Remove the tuple for a given key in a given cache
+	 */
+	void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 }
