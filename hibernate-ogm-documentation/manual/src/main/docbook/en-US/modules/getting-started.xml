@@ -215,12 +215,12 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate
 //Persist entities the way you are used to in plain JPA
 tm.begin();
 EntityManager em = emf.createEntityManager();
-Breed colley = new Breed();
-colley.setName("Colley");
-em.persist(colley);
+Breed collie = new Breed();
+collie.setName("Collie");
+em.persist(collie);
 Dog dina = new Dog();
 dina.setName("Dina");
-dina.setBreed(colley);
+dina.setBreed(collie);
 em.persist(dina);
 em.flush();
 em.close();
@@ -233,7 +233,7 @@ tm.begin();
 EntityManager em = emf.createEntityManager();
 Dog dina = em.find(Dog.class, dinaId);
 assertThat( dina.getName() ).isEqualsTo("Dina");
-assertThat( dina.getBreed().getName().isEqualsTo("Colley");
+assertThat( dina.getBreed().getName().isEqualsTo("Collie");
 em.flush();
 em.close();
 tm.commit();
