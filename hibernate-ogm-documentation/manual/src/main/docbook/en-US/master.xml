@@ -56,17 +56,11 @@
   <preface id="preface">
     <title>Preface</title>
 
-    <para>Hibernate Object/Grid Mapper (OGM) aims at providing Java
-    Persistence (JPA) support for NoSQL solutions. It reuses Hibernate Core's
-    engine but persists entities into a NoSQL data store instead of a
-    relational database. It reuses the Java Persistence Query Language (JP-QL)
-    to search their data.</para>
+    <para>Hibernate Object/Grid Mapper (OGM) is a persistence engine providing Java Persistence (JPA) support for NoSQL storage solutions. It reuses Hibernate Core's object introspection and composition/decomposition engine but persists entities into a key/value store instead of a relational database. It reuses the Java Persistence Query Language (JP-QL) as an interface to querying stored data.</para>
 
-    <para>That's the grand scheme of things. The short term goal for us is to
-    be a JPA front end for key/value stores and specifically to Infinispan and
-    offer JP-QL support for relatively simple queries. If you want some
-    features in (like other NoSQL store support, we would be glad to explore
-    that with you, check our the <xref linkend="ogm-contribution" />.</para>
+    <para>Hibernate OGM is developed specifically with Infinispan - an open source distributed in-memory key/value store - in mind, but the longer term goal is to abstract Hibernate OGM to work with any NoSQL store, not just key/value stores, similar to the way Hibernate Core works with any SQL-based relational database, regardless of specific SQL dialect.</para>
+
+    <para>If you wish to help with this effort, please refer to <xref linkend="ogm-contribution" />.</para>
 
     <para>Hibernate OGM is released under the LGPL open source license.</para>
 
