@@ -1,7 +1,8 @@
-Hibernate Search Changelog
+Hibernate OGM Changelog
 ==========================
 
-3.0.0.Alpha1 (xx-xx-2011)
+3.0.0.Alpha1 (29-04-2011)
 -------------------------
 
 Initial release
+
