@@ -21,6 +21,7 @@
   -->
 <!--
     @author Emmanuel Bernard <emmanuel@hibernate.org>
+	@author Nicolas Helleringer <nicolas.helleringer@novacodex.net>
 -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
@@ -32,6 +33,58 @@
   <para>Talk about supported approaches (properties, embedded objects, inheritance</para>
   <para>Talk about associations</para>
   <para>Talk about identifier recommendations</para>
-  <para>Talk about supported built-in types today</para>
-
+  <section id="ogm-supported-types">
+	<title>Supported Types</title>
+		<section id="ogm-supported-types-native-mapped">
+			<title>Types mapped as native Java Types</title>
+			<itemizedlist>
+				<listitem>
+					<para>Boolean</para>
+				</listitem>
+				<listitem>
+					<para>Byte</para>
+				</listitem>
+				<listitem>
+					<para>Calendar</para>
+				</listitem>
+				<listitem>
+					<para>Class</para>
+				</listitem>
+				<listitem>
+					<para>Date</para>
+				</listitem>
+				<listitem>
+					<para>Double</para>
+				</listitem>
+				<listitem>
+					<para>Integer</para>
+				</listitem>
+				<listitem>
+					<para>Long</para>
+				</listitem>
+				<listitem>
+					<para>Byte Array</para>
+				</listitem>
+				<listitem>
+					<para>String</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+		<section id="ogm-supported-types-string-mapped">
+			<title>Types mapped as Strings</title>
+			<para>For non basic Java types support, OGM stores the data of the object as a String in the data store.
+			Serialisation to a String value is done with cross platform compatibility in mind when required.</para>
+			<itemizedlist>
+				<listitem>
+					<para>BigDecimal (mapped as scientific notation)</para>
+				</listitem>
+				<listitem>
+					<para>BigInteger</para>
+				</listitem>
+				<listitem>
+					<para>Url (as described by RFC 1738 and returned by toString of the Java URL type)</para>
+				</listitem>
+			</itemizedlist>
+		</section>
+	</section>
 </chapter>
