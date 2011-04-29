@@ -50,6 +50,7 @@ import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
+import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.util.CollectionHelper;
 
@@ -117,6 +118,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
+		//FIXME use Environment.DEFAULT_TRANSACTION_STRATEGY when 3.6.4 is out
+		map.put( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 		map.put( Environment.DIALECT, NoopDialect.class.getName() );
 		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
