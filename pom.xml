@@ -119,6 +119,7 @@
         <infinispanVersion>5.0.0.CR1</infinispanVersion>
         <hibernateVersion>3.6.3.Final</hibernateVersion>
         <hibernateSearchVersion>3.4.0.Final</hibernateSearchVersion>
+        <luceneVersion>3.1.0</luceneVersion>
         <jbossjtaVersion>4.15.0.Final</jbossjtaVersion>
         <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -139,11 +140,13 @@
                 <groupId>javax.transaction</groupId>
                 <artifactId>jta</artifactId>
                 <version>1.1</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.0-api</artifactId>
                 <version>1.0.0.Final</version>
+                <scope>provided</scope>
             </dependency>
 
             <!-- Hibernate Core -->
@@ -170,8 +173,19 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-infinispan</artifactId>
+                <version>${hibernateSearchVersion}</version>
+            </dependency>
+            <dependency>
+                <artifactId>lucene-core</artifactId>
+                <groupId>org.apache.lucene</groupId>
+                <version>${luceneVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-testing</artifactId>
                 <version>${hibernateVersion}</version>
+                <scope>test</scope>
             </dependency>
             
             <!-- Logging -->
@@ -179,6 +193,7 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4jVersion}</version>
+                <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -193,6 +208,11 @@
                 <artifactId>infinispan-core</artifactId>
                 <version>${infinispanVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-lucene-directory</artifactId>
+                <version>${infinispanVersion}</version>
+            </dependency>
 
             <!-- utils -->
 
@@ -201,11 +221,13 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.8.2</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.easytesting</groupId>
                 <artifactId>fest-assert</artifactId>
                 <version>1.4</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.jboss.jbossts</groupId>
@@ -439,7 +461,7 @@
                     <descriptors>
                         <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
                     </descriptors>
-                    <finalName>hibernate-search-${project.version}</finalName>
+                    <finalName>hibernate-ogm-${project.version}</finalName>
                 </configuration>
             </plugin>
             <plugin>

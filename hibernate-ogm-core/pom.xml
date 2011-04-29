@@ -57,12 +57,26 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search</artifactId>
-            <!-- likely more than test very soon -->
-            <scope>test</scope>
+            <scope>optional</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-infinispan</artifactId>
+            <scope>optional</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+            <scope>optional</scope>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-lucene-directory</artifactId>
+            <scope>optional</scope>
         </dependency>
         
         <!-- test dependencies -->
@@ -101,6 +115,7 @@
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -112,65 +127,36 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
-                    <compilerVersion>1.6</compilerVersion>
-                    <executable>${jdk16_home}/bin/javac</executable>
-                    <fork>true</fork>
-                    <verbose>true</verbose>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <jvm>${jdk16_home}/bin/java</jvm>
+                   <forkMode>once</forkMode>
                     <excludes>
                         <!-- Skip a long-running test of a prototype class -->
                         <exclude>**/ClusteredConcurrentTimestampRegionTestCase.java</exclude>
                     </excludes>
-                    <systemProperties>
-                        <property>
-                            <name>hibernate.test.validatefailureexpected</name>
-                            <value>true</value>
-                        </property>
-                        <property>
-                            <name>jgroups.bind_addr</name>
-                            <value>${jgroups.bind_addr}</value>
-                        </property>
-                        <!-- There are problems with multicast and IPv6 on some
-                             OS/JDK combos, so we tell Java to use IPv4. If you
-                             have problems with multicast when running the tests
-                             you can try setting this to 'false', although typically
-                             that won't be helpful.
-                        -->
-                        <property>
-                            <name>java.net.preferIPv4Stack</name>
-                            <value>true</value>
-                        </property>
-                        <!-- Tell JGroups to only wait a short time for PING 
-                             responses before determining coordinator. Speeds cluster
-                             formation during integration tests. (This is too
-                             low a value for a real system; only use for tests.)
-                        -->
-                        <property>
-                            <name>jgroups.ping.timeout</name>
-                            <value>500</value>
-                        </property>
-                        <!-- Tell JGroups to only require one PING response
-                             before determining coordinator. Speeds cluster
-                             formation during integration tests. (This is too
-                             low a value for a real system; only use for tests.)
-                        -->
-                        <property>
-                            <name>jgroups.ping.num_initial_members</name>
-                            <value>1</value>
-                        </property>
-                        <!-- Disable the JGroups message bundling feature
-                             to speed tests and avoid FLUSH issue -->
-                        <property>
-                            <name>jgroups.udp.enable_bundling</name>
-                            <value>false</value>
-                        </property>
-                    </systemProperties>
+                     <!-- 
+                          java.net.preferIPv4Stack :
+                             There are problems with multicast and IPv6 on some
+                          OS/JDK combos, so we tell Java to use IPv4. If you
+                          have problems with multicast when running the tests
+                          you can try setting this to 'false', although typically
+                          that won't be helpful.
+                          
+                          jgroups.ping.timeout=500 :
+                             Tell JGroups to only wait a short time for PING 
+                          responses before determining coordinator. Speeds cluster
+                          formation during integration tests. (This is too
+                          low a value for a real system; only use for tests.)
+                          
+                          jgroups.udp.enable_bundling=false :
+                             Disable the JGroups message bundling feature
+                          to speed tests and avoid FLUSH issue
+                           -->
+                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false</argLine>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>
