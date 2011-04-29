@@ -131,6 +131,10 @@
                 <exclude>**/*.iml</exclude>
             </excludes>
         </fileSet>
+        <fileSet>
+            <directory>hibernate-ogm-documentation/manual/target/docbook/publish/en-US</directory>
+            <outputDirectory>docs</outputDirectory>
+        </fileSet>
     </fileSets>
 
 </assembly>
