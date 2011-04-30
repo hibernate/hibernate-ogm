@@ -122,7 +122,7 @@ public abstract class OgmTestCase extends HibernateTestCase {
 			cfg.setSessionFactoryObserver( new GridMetadataManager() );
 			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 			cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
-			cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, DummyTransactionManagerLookup.class.getName() );
+			cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 			cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 			cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 
