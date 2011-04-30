@@ -46,7 +46,13 @@ public class ManyToOneTest extends OgmTestCase {
 		emmanuel.setName( "Emmanuel Bernard" );
 		emmanuel.setMemberOf( jug );
 		session.persist( emmanuel );
+		session.flush();
+		assertThat(getEntityCache( sessions )).hasSize( 2 );
+		assertThat(getAssociationCache( sessions )).hasSize( 1 );
 		transaction.commit();
+		assertThat(getEntityCache( sessions )).hasSize( 2 );
+		assertThat(getAssociationCache( sessions )).hasSize( 1 );
+
 		session.clear();
 
 		transaction = session.beginTransaction();
@@ -55,6 +61,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( emmanuel );
 		session.delete( jug );
 		transaction.commit();
+		assertThat(getEntityCache( sessions )).hasSize( 0 );
+		assertThat(getAssociationCache( sessions )).hasSize( 0 );
 
 		session.close();
 
