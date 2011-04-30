@@ -956,9 +956,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			gridDialect.removeTuple( key, entityCache );
-
-			//delete property metadata
+			//delete association information
+			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			new EntityDehydrator()
 				.gridPropertyTypes( gridPropertyTypes )
 				.gridIdentifierType( gridIdentifierType )
@@ -969,6 +968,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.tableIndex( j )
 				.onlyRemovePropertyMetadata()
 				.dehydrate();
+
+			gridDialect.removeTuple( key, entityCache );
 		}
 
 	}
