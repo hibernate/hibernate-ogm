@@ -46,6 +46,7 @@ import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
+import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 import org.hibernate.usertype.UserType;
 
 /**
@@ -73,6 +74,7 @@ public class TypeTranslator {
 		typeConverter.put( CalendarDateTypeDescriptor.INSTANCE, CalendarDateType.INSTANCE );
 		typeConverter.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
 		typeConverter.put( PrimitiveByteArrayTypeDescriptor.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		typeConverter.put( UUIDTypeDescriptor.INSTANCE, UUIDType.INSTANCE );
 	}
 
 	public GridType getType(Type type) {
