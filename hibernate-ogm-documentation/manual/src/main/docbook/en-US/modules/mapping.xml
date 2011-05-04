@@ -21,7 +21,7 @@
   -->
 <!--
     @author Emmanuel Bernard <emmanuel@hibernate.org>
-	@author Nicolas Helleringer <nicolas.helleringer@novacodex.net>
+    @author Nicolas Helleringer <nicolas.helleringer@novacodex.net>
 -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
@@ -33,9 +33,9 @@
   <para>Talk about supported approaches (properties, embedded objects, inheritance</para>
   <para>Talk about associations</para>
   <para>Talk about identifier recommendations</para>
-  <section id="ogm-supported-types">
+  <section id="ogm-mapping-supported-types">
 	<title>Supported Types</title>
-		<section id="ogm-supported-types-native-mapped">
+		<section id="ogm-mapping-supported-types-native-mapped">
 			<title>Types mapped as native Java Types</title>
 			<itemizedlist>
 				<listitem>
@@ -70,7 +70,7 @@
 				</listitem>
 			</itemizedlist>
 		</section>
-		<section id="ogm-supported-types-string-mapped">
+		<section id="ogm-mapping-supported-types-string-mapped">
 			<title>Types mapped as Strings</title>
 			<para>For non basic Java types support, OGM stores the data of the object as a String in the data store.
 			Serialisation to a String value is done with cross platform compatibility in mind when required.</para>
