@@ -30,61 +30,87 @@
 ]>
 <chapter id="ogm-mapping">
   <title>Map your entities</title>
-  <para>Talk about supported approaches (properties, embedded objects, inheritance</para>
+
+  <para>Talk about supported approaches (properties, embedded objects,
+  inheritance</para>
+
   <para>Talk about associations</para>
+
   <para>Talk about identifier recommendations</para>
+
   <section id="ogm-mapping-supported-types">
-	<title>Supported Types</title>
-		<section id="ogm-mapping-supported-types-native-mapped">
-			<title>Types mapped as native Java Types</title>
-			<itemizedlist>
-				<listitem>
-					<para>Boolean</para>
-				</listitem>
-				<listitem>
-					<para>Byte</para>
-				</listitem>
-				<listitem>
-					<para>Calendar</para>
-				</listitem>
-				<listitem>
-					<para>Class</para>
-				</listitem>
-				<listitem>
-					<para>Date</para>
-				</listitem>
-				<listitem>
-					<para>Double</para>
-				</listitem>
-				<listitem>
-					<para>Integer</para>
-				</listitem>
-				<listitem>
-					<para>Long</para>
-				</listitem>
-				<listitem>
-					<para>Byte Array</para>
-				</listitem>
-				<listitem>
-					<para>String</para>
-				</listitem>
-			</itemizedlist>
-		</section>
-		<section id="ogm-mapping-supported-types-string-mapped">
-			<title>Types mapped as Strings</title>
-			<para>For non basic Java types support, OGM stores the data of the object as a String in the data store.
-			Serialisation to a String value is done with cross platform compatibility in mind when required.</para>
-			<itemizedlist>
-				<listitem>
-					<para>BigDecimal (mapped as scientific notation)</para>
-				</listitem>
-				<listitem>
-					<para>BigInteger</para>
-				</listitem>
-				<listitem>
-					<para>Url (as described by RFC 1738 and returned by toString of the Java URL type)</para>
-				</listitem>
-			</itemizedlist>
-		</section>
-	</section>
+    <title>Supported Types</title>
+
+    <section id="ogm-mapping-supported-types-native-mapped">
+      <title>Types mapped as native Java Types</title>
+
+      <para>A few types are supported natively (ie serialized as is in the
+      tuple data structure):</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Boolean</para>
+        </listitem>
+
+        <listitem>
+          <para>Byte</para>
+        </listitem>
+
+        <listitem>
+          <para>Calendar (this may change)</para>
+        </listitem>
+
+        <listitem>
+          <para>Class (this may change)</para>
+        </listitem>
+
+        <listitem>
+          <para>Date (this may change)</para>
+        </listitem>
+
+        <listitem>
+          <para>Double</para>
+        </listitem>
+
+        <listitem>
+          <para>Integer</para>
+        </listitem>
+
+        <listitem>
+          <para>Long</para>
+        </listitem>
+
+        <listitem>
+          <para>Byte Array</para>
+        </listitem>
+
+        <listitem>
+          <para>String</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="ogm-mapping-supported-types-string-mapped">
+      <title>Types mapped as Strings</title>
+
+      <para>For non basic Java types support, OGM stores the data of the
+      object as a String in the data store. Serialisation to a String value is
+      done with cross platform compatibility in mind when required.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>BigDecimal (mapped as scientific notation)</para>
+        </listitem>
+
+        <listitem>
+          <para>BigInteger</para>
+        </listitem>
+
+        <listitem>
+          <para>Url (as described by RFC 1738 and returned by toString of the
+          Java URL type)</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
 </chapter>
