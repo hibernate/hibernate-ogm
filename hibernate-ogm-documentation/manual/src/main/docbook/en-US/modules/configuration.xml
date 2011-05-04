@@ -166,9 +166,10 @@
       <example>
         <title>Bootstrap Hibernate OGM with Hibernate Core native APIs</title>
 
-        <programlisting language="XML" role="XML">Configuration cfg = new Configuration();
+        <programlisting language="JAVA" role="JAVA">Configuration cfg = new Configuration();
 cfg.setSessionFactoryObserver( new GridMetadataManager() );
-cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+cfg.setProperty( Environment.CONNECTION_PROVIDER,
+    NoopConnectionProvider.class.getName() );
 cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 cfg.setProperty(Environment.DIALECT, NoopDialect.class.getName() );
@@ -242,7 +243,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       you.</para>
 
       <para>If you use Hibernate Core native APIs only, then set
-      <literal>hibernate.transaction.factory_class</literal> to:</para>
+      <literal>hibernate.transaction.factory_class</literal> to either:</para>
 
       <itemizedlist>
         <listitem>
@@ -531,9 +532,9 @@ em.close();</programlisting>
     <title>Configuring Hibernate Search</title>
 
     <para>All Hibernate Search options apply when you use Hibernate OGM. Here
-    is a detailed explanation on how to store your indexed on
+    is a detailed explanation on how to store your indexes on
     Infinispan.</para>
 
-    <para>TODO explain how to store your indexed on Infinispan.</para>
+    <para>TODO explain how to store your indexes on Infinispan</para>
   </section>
 </chapter>

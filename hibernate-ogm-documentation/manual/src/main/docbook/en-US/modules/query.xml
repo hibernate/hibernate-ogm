@@ -29,7 +29,7 @@
 ]>
 <chapter id="ogm-query">
   <title>Query your entities</title>
-  <para> talka bout the necessary indexing annoations from Hibernate Search</para>
+  <para> talk about the necessary indexing annotations from Hibernate Search</para>
   <para>TODO: talk about Hibernate Search queries.</para>
   <para>Talk about the JP-QL parser when we have that integrated.</para>
 </chapter>

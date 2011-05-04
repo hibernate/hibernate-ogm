@@ -114,7 +114,7 @@
 
         <listitem>
           <para>help scale existing applications with a NoSQL front end to a
-          more traditional database.</para>
+          more traditional database</para>
         </listitem>
       </itemizedlist>
 
@@ -163,8 +163,8 @@
 
       <para>While Hibernate OGM will not try to address all of these problem,
       simplify NoSQL access by offering a familiar programmatic model and API
-      that is JPA will help people explore various datastore alternatives
-      (including relational databases).</para>
+      that is JPA will help people explore various datastore alternatives,
+      including relational databases.</para>
 
       <para>Hibernate OGM also aims at helping people scale traditional
       relational databases by providing a NoSQL front-end and keeping the same
@@ -175,7 +175,7 @@
       <title>What we have today</title>
 
       <para>Today, Hibernate OGM does not support all of its goals. Here is a
-      list of what we have</para>
+      list of what we have:</para>
 
       <itemizedlist>
         <listitem>

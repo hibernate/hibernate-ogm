@@ -171,7 +171,8 @@ TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
    .getTransactionManager( null );
 
 //build the EntityManagerFactory as you would build in in Hibernate Core
-EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate.ogm.tutorial.jpa");
+EntityManagerFactory emf = Persistence.createEntityManagerFactory(
+    "org.hibernate.ogm.tutorial.jpa");
 
 final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
 

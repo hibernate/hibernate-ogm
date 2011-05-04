@@ -49,7 +49,7 @@
     <itemizedlist>
       <listitem>
         <para>open bug reports in <ulink
-        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink>.</para>
+        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink></para>
       </listitem>
 
       <listitem>
@@ -126,17 +126,17 @@ mvn clean install</programlisting>
 
       <programlisting>mvn clean install -DbuildDocs=true</programlisting>
 
-      <remark>If you just want to build the documentation, go in the
+      <remark>If you just want to build the documentation, run it from the
       <filename>hibernate-ogm-documentation/manual</filename>
       subdirectory.</remark>
     </section>
 
     <section>
-      <title>How to best contribute code</title>
+      <title>How to contribute code effectively</title>
 
       <para>The best way to share code is to fork Hibernate OGM repository on
-      GitHub and open a pull request when you are ready. Make sure to rebase
-      your pull request on the latest version in master before offering
+      GitHub, create a branch and open a pull request when you are ready. Make sure
+      to rebase your pull request on the latest version in master before offering
       it.</para>
 
       <para>Here are a couple of approaches the team follows:</para>
@@ -153,7 +153,7 @@ mvn clean install</programlisting>
           commit summary preceded by the JIRA issue number, an empty line, a
           longer description if needed.</para>
 
-          <programlisting>OGM-XX Summary of commit operation
+          <programlisting>OGM-123 Summary of commit operation
 
 Optional details on the commit.</programlisting>
         </listitem>
@@ -166,8 +166,7 @@ Optional details on the commit.</programlisting>
         <listitem>
           <para>All commits are proposed via pull requests and reviewed by
           another member of the team before being pushed to the reference
-          repository. This is not 100% true in practice as the project is at
-          an early stage but that will become true soon enough :)</para>
+          repository.</para>
         </listitem>
       </itemizedlist>
     </section>
