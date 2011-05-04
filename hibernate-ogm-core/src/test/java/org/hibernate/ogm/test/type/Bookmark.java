@@ -25,6 +25,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.Basic;
 import javax.persistence.Column;
@@ -118,4 +119,8 @@ public class Bookmark {
 	public byte[] getBlob() { return blob; }
 	public void setBlob(byte[] blob) {  this.blob = blob; }
 	private byte[] blob;
+	
+	public UUID getSerialNumber() { return serialNumber; }
+	public void setSerialNumber(UUID serialNumber) { this.serialNumber = serialNumber; }
+	private UUID serialNumber;
 }
