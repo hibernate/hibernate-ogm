@@ -25,6 +25,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -69,6 +70,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		blob[3] = '4';
 		blob[4] = '5';
 		b.setBlob( blob );
+		UUID serialNumber= UUID.randomUUID();
+		b.setSerialNumber(serialNumber);
 		session.persist( b );
 		transaction.commit();
 
@@ -81,6 +84,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals(visitCount,b.getVisitCount());
 		assertEquals(new Boolean(true),b.isFavourite());
 		assertEquals(displayMask,b.getDisplayMask());
+		assertEquals(serialNumber,b.getSerialNumber());
 		session.delete( b );
 		transaction.commit();
 
