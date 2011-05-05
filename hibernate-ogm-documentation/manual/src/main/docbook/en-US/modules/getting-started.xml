@@ -230,7 +230,7 @@ public class Breed {
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
             &lt;property name="hibernate.transaction.manager_lookup_class"
-                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+                      value="org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup" /&gt;
         &lt;/properties&gt;
     &lt;/persistence-unit&gt;
 &lt;/persistence&gt;</programlisting>
