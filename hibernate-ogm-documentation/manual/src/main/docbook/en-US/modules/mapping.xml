@@ -110,6 +110,10 @@
           <para>Url (as described by RFC 1738 and returned by toString of the
           Java URL type)</para>
         </listitem>
+		
+        <listitem>
+          <para>UUID stored as described by RFC 4122</para>
+        </listitem>		
       </itemizedlist>
     </section>
   </section>
