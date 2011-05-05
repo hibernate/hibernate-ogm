@@ -244,6 +244,8 @@ TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
 //build the EntityManagerFactory as you would build in in Hibernate Core
 EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate.ogm.tutorial.jpa");
 
+final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
+
 [...]
 
 //Persist entities the way you are used to in plain JPA
@@ -256,6 +258,7 @@ Dog dina = new Dog();
 dina.setName("Dina");
 dina.setBreed(collie);
 em.persist(dina);
+Long dinaId = dina.getId();
 em.flush();
 em.close();
 tm.commit();
@@ -264,16 +267,16 @@ tm.commit();
 
 //Retrieve your entities the way you are used to in plain JPA
 tm.begin();
-EntityManager em = emf.createEntityManager();
-Dog dina = em.find(Dog.class, dinaId);
-assertThat( dina.getName() ).isEqualsTo("Dina");
-assertThat( dina.getBreed().getName().isEqualsTo("Collie");
+em = emf.createEntityManager();
+dina = em.find(Dog.class, dinaId);
+logger.debug(dina.getName());
+logger.debug(dina.getBreed().getName());
 em.flush();
 em.close();
 tm.commit();
 
 [...]
-emf.close();</programlisting>
+emf.close();;</programlisting>
 
   <para>TODO: explain how to run a second Infinispan node to show how data
   does outlive the <classname>EntityManagerFactory</classname>
