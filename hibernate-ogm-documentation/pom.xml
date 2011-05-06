@@ -51,6 +51,7 @@
         <!--
         <module>jbosscache2</module>
 -->
+        <module>examples</module>
     </modules>
 
 </project>

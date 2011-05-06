@@ -82,7 +82,7 @@ public class Dog {
    private Long id;
 
    public String getName() { return name; }
-   public void setId(String name) { this.name = name; }
+   public void setName(String name) { this.name = name; }
    private String name;
 
    @ManyToOne
@@ -109,78 +109,46 @@ public class Breed {
   familiar with JPA, you can see that there is nothing specific to Hibernate
   OGM in our mapping.</para>
 
-  <para>In this tutorial, we will use JBoss Transaction for our JTA
-  transaction manager. Add the following dependency. The set of exclusion is
-  something that should be fixed in the next version of JBoss
-  Transaction.</para>
+  <para>In this tutorial, we will use JBoss Transactions for our JTA
+  transaction manager. The set of exclusions is for JBoss Transactions is
+  something that should be fixed in its next version. The final list of
+  dependencies should look like this:</para>
 
-  <programlisting language="XML" role="XML">&lt;dependency&gt;
-    &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
-    &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-    &lt;version&gt;4.14.0.Final&lt;/version&gt;
-    &lt;exclusions&gt;
-        &lt;exclusion&gt;
-            &lt;groupId&gt;org.jboss.ws.native&lt;/groupId&gt;
-            &lt;artifactId&gt;jbossws-native-core&lt;/artifactId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;emma&lt;/artifactId&gt;
-            &lt;groupId&gt;emma&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;emma_ant&lt;/artifactId&gt;
-            &lt;groupId&gt;emma&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
-            &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;netty&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;wrapper&lt;/artifactId&gt;
-            &lt;groupId&gt;tanukisoft&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jacorb&lt;/artifactId&gt;
-            &lt;groupId&gt;jacorb&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jfreechart&lt;/artifactId&gt;
-            &lt;groupId&gt;jfree&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-corba-ots-spi&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.integration&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-server-manager&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-ejb-api_3.1_spec&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.spec.javax.ejb&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jnp-client&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.naming&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-servlet-api_3.0_spec&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.spec.javax.servlet&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jbossws-common&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.ws&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jcl-over-slf4j&lt;/artifactId&gt;
-            &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-    &lt;/exclusions&gt;
-&lt;/dependency&gt;</programlisting>
+  <programlisting language="XML" role="XML">&lt;dependencies&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+		&lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
+		&lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
+	&lt;/dependency&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;javassist&lt;/groupId&gt;
+		&lt;artifactId&gt;javassist&lt;/artifactId&gt;
+		&lt;version&gt;3.12.1.GA&lt;/version&gt;
+		&lt;scope&gt;compile&lt;/scope&gt;
+	&lt;/dependency&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.infinispan&lt;/groupId&gt;
+		&lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
+		&lt;version&gt;5.0.0.CR1&lt;/version&gt;
+	&lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
+        &lt;version&gt;1.6.1&lt;/version&gt;
+        &lt;scope&gt;compile&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;
+        &lt;version&gt;1.6.1&lt;/version&gt;
+        &lt;scope&gt;compile&lt;/scope&gt;
+    &lt;/dependency&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
+		&lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
+		&lt;version&gt;4.15.0.Final&lt;/version&gt;
+	&lt;/dependency&gt;
+&lt;/dependencies&gt;</programlisting>
 
   <para>Next we need to define the persistence unit. Create a
   <filename>META-INF/persistence.xml</filename> file</para>
@@ -196,7 +164,7 @@ public class Breed {
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
             &lt;property name="hibernate.transaction.manager_lookup_class"
-                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+                      value="org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup" /&gt;
         &lt;/properties&gt;
     &lt;/persistence-unit&gt;
 &lt;/persistence&gt;</programlisting>
@@ -210,6 +178,8 @@ TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
 //build the EntityManagerFactory as you would build in in Hibernate Core
 EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate.ogm.tutorial.jpa");
 
+final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
+
 [...]
 
 //Persist entities the way you are used to in plain JPA
@@ -222,6 +192,7 @@ Dog dina = new Dog();
 dina.setName("Dina");
 dina.setBreed(collie);
 em.persist(dina);
+Long dinaId = dina.getId();
 em.flush();
 em.close();
 tm.commit();
@@ -230,16 +201,16 @@ tm.commit();
 
 //Retrieve your entities the way you are used to in plain JPA
 tm.begin();
-EntityManager em = emf.createEntityManager();
-Dog dina = em.find(Dog.class, dinaId);
-assertThat( dina.getName() ).isEqualsTo("Dina");
-assertThat( dina.getBreed().getName().isEqualsTo("Collie");
+em = emf.createEntityManager();
+dina = em.find(Dog.class, dinaId);
+logger.debug(dina.getName());
+logger.debug(dina.getBreed().getName());
 em.flush();
 em.close();
 tm.commit();
 
 [...]
-emf.close();</programlisting>
+emf.close();;</programlisting>
 
   <para>TODO: explain how to run a second Infinispan node to show how data
   does outlive the <classname>EntityManagerFactory</classname>
