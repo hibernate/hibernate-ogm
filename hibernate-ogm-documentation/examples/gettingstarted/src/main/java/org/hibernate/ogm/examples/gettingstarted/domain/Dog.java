@@ -1,4 +1,4 @@
-package org.hibernate.ogm.examples.gettingstarted.jpa;
+package org.hibernate.ogm.examples.gettingstarted.domain;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
