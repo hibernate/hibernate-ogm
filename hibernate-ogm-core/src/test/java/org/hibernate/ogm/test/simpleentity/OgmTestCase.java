@@ -35,7 +35,10 @@ import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
 import org.hibernate.ogm.metadata.GridMetadataManager;
+import org.hibernate.ogm.transaction.infinispan.impl.DummyTransactionManagerLookup;
+import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
+import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
@@ -118,6 +121,8 @@ public abstract class OgmTestCase extends HibernateTestCase {
 			cfg.setProperty( CacheManagerServiceProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
 			cfg.setSessionFactoryObserver( new GridMetadataManager() );
 			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+			cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
+			cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 			cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 			cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 

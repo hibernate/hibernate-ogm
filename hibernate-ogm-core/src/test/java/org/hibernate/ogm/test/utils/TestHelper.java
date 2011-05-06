@@ -28,6 +28,7 @@ import org.infinispan.Cache;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
+import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.impl.SessionFactoryImpl;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -65,7 +66,7 @@ public class TestHelper {
 	}
 
 	private static SessionFactoryObserver getObserver(SessionFactory factory) {
-		final SessionFactoryObserver observer = ( ( SessionFactoryImpl ) factory ).getFactoryObserver();
+		final SessionFactoryObserver observer = ( ( SessionFactoryImplementor ) factory ).getFactoryObserver();
 		if (observer == null) {
 			throw new RuntimeException( "Wrong OGM configuration: observer not set" );
 		}

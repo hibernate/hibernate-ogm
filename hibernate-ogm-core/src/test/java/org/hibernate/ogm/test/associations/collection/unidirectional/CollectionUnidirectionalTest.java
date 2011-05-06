@@ -47,7 +47,13 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf );
 		cloud.getProducedSnowFlakes().add( sf2 );
 		session.persist( cloud );
+		session.flush();
+		assertThat(getEntityCache( sessions )).hasSize( 3 );
+		assertThat(getAssociationCache( sessions )).hasSize( 1 );
 		transaction.commit();
+
+		assertThat(getEntityCache( sessions )).hasSize( 3 );
+		assertThat(getAssociationCache( sessions )).hasSize( 1 );
 
 		session.clear();
 
@@ -62,6 +68,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().remove( removedSf );
 		cloud.getProducedSnowFlakes().add( sf3 );
 		transaction.commit();
+
+		assertThat(getEntityCache( sessions )).hasSize( 4 );
 
 		session.clear();
 
@@ -83,6 +91,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().clear();
 		transaction.commit();
 
+		assertThat(getEntityCache( sessions )).hasSize( 1 );
+
 		session.clear();
 
 		transaction = session.beginTransaction();
@@ -90,8 +100,10 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		assertNotNull( cloud.getProducedSnowFlakes() );
 		assertEquals( 0, cloud.getProducedSnowFlakes().size() );
 		session.delete( cloud );
+		session.flush();
 		transaction.commit();
 
+		assertThat(getEntityCache( sessions )).hasSize( 0 );
 		session.close();
 
 		checkCleanCache();
