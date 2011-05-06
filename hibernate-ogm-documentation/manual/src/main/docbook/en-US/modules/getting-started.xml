@@ -63,7 +63,7 @@
 &lt;/dependency&gt;</programlisting>
 
   <para>Transitively, Hibernate OGM depends on JPA 2.0: we will use these APIs
-  in this tutorial. </para>
+  in this tutorial.</para>
 
   <para>Let's now map our first Hibernate OGM entity.</para>
 
@@ -115,22 +115,22 @@ public class Breed {
   dependencies should look like this:</para>
 
   <programlisting language="XML" role="XML">&lt;dependencies&gt;
-	&lt;dependency&gt;
-		&lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
-		&lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-		&lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
-	&lt;/dependency&gt;
-	&lt;dependency&gt;
-		&lt;groupId&gt;javassist&lt;/groupId&gt;
-		&lt;artifactId&gt;javassist&lt;/artifactId&gt;
-		&lt;version&gt;3.12.1.GA&lt;/version&gt;
-		&lt;scope&gt;compile&lt;/scope&gt;
-	&lt;/dependency&gt;
-	&lt;dependency&gt;
-		&lt;groupId&gt;org.infinispan&lt;/groupId&gt;
-		&lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
-		&lt;version&gt;5.0.0.CR1&lt;/version&gt;
-	&lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
+        &lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;javassist&lt;/groupId&gt;
+        &lt;artifactId&gt;javassist&lt;/artifactId&gt;
+        &lt;version&gt;3.12.1.GA&lt;/version&gt;
+        &lt;scope&gt;compile&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.infinispan&lt;/groupId&gt;
+        &lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
+        &lt;version&gt;5.0.0.CR1&lt;/version&gt;
+    &lt;/dependency&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
         &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
@@ -143,11 +143,11 @@ public class Breed {
         &lt;version&gt;1.6.1&lt;/version&gt;
         &lt;scope&gt;compile&lt;/scope&gt;
     &lt;/dependency&gt;
-	&lt;dependency&gt;
-		&lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
-		&lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-		&lt;version&gt;4.15.0.Final&lt;/version&gt;
-	&lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
+        &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
+        &lt;version&gt;4.15.0.Final&lt;/version&gt;
+    &lt;/dependency&gt;
 &lt;/dependencies&gt;</programlisting>
 
   <para>Next we need to define the persistence unit. Create a
