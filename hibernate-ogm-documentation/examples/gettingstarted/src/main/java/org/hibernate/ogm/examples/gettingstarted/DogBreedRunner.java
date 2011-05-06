@@ -5,8 +5,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.ogm.examples.gettingstarted.jpa.Breed;
-import org.hibernate.ogm.examples.gettingstarted.jpa.Dog;
+import org.hibernate.ogm.examples.gettingstarted.domain.Breed;
+import org.hibernate.ogm.examples.gettingstarted.domain.Dog;
 import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
