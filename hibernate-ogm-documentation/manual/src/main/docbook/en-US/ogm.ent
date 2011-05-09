@@ -25,7 +25,7 @@
   @author Emmanuel Bernard <emmanuel@hibernate.org>
 -->
 <!ENTITY version "WORKING">
-<!ENTITY hibernateVersion "3.6.3.Final">
+<!ENTITY hibernateVersion "3.6.4.Final">
 <!ENTITY today "TODAY">
 <!ENTITY copyrightYear "2011">
 <!ENTITY copyrightHolder "Red Hat Inc., Emmanuel Bernard and the various authors">

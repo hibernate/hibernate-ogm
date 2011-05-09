@@ -117,7 +117,7 @@
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>5.0.0-SNAPSHOT</infinispanVersion>
-        <hibernateVersion>3.6.4-SNAPSHOT</hibernateVersion>
+        <hibernateVersion>3.6.4.Final</hibernateVersion>
         <hibernateSearchVersion>3.4.0.Final</hibernateSearchVersion>
         <luceneVersion>3.1.0</luceneVersion>
         <jbossjtaVersion>4.15.0.Final</jbossjtaVersion>
