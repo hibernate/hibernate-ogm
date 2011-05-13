@@ -48,8 +48,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setId("42");
 		b.setDescription( "Hibernate Site" );
 		b.setUrl(new URL("http://www.hibernate.org/"));
-		BigDecimal weigth = new BigDecimal("21.77");
-		b.setSiteWeigth( weigth);
+		BigDecimal weight = new BigDecimal("21.77");
+		b.setSiteWeight( weight);
 		BigInteger visitCount= new BigInteger( "444");
 		b.setVisitCount(visitCount);
 		b.setFavourite(true);
@@ -80,7 +80,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 		b = (Bookmark) session.get( Bookmark.class, b.getId() );
 		assertEquals("http://www.hibernate.org/",b.getUrl().toString());
-		assertEquals(weigth,b.getSiteWeigth());
+		assertEquals(weight,b.getSiteWeight());
 		assertEquals(visitCount,b.getVisitCount());
 		assertEquals(new Boolean(true),b.isFavourite());
 		assertEquals(displayMask,b.getDisplayMask());
@@ -90,7 +90,6 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 		session.close();
 	}
-
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
