@@ -57,10 +57,10 @@ public class Bookmark {
 	public void setUrl(URL url ) { this.url = url; }
 	private URL url; 
 	
-	@Column(name = "site_weigth")
-	public BigDecimal getSiteWeigth() { return siteWeigth; }
-	public void setSiteWeigth(BigDecimal siteWeigth) { this.siteWeigth= siteWeigth; }
-	private BigDecimal siteWeigth;
+	@Column(name = "site_weight")
+	public BigDecimal getSiteWeight() { return siteWeight; }
+	public void setSiteWeight(BigDecimal siteWeight) { this.siteWeight= siteWeight; }
+	private BigDecimal siteWeight;
 	
 	@Column(name = "visits_count")
 	public BigInteger getVisitCount() { return visitCount; }
