@@ -75,13 +75,13 @@ public class GridMetadataManagerHelper {
 		return cache;
 	}
 
-	public static Cache<AssociationKey, List<Map<String,Object>>> getAssociationCache(SessionFactoryImplementor factory) {
+	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(SessionFactoryImplementor factory) {
 		return getAssociationCache( getGridMetadataManager( factory ) );
 	}
 
-	public static Cache<AssociationKey, List<Map<String,Object>>> getAssociationCache(GridMetadataManager manager) {
+	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(GridMetadataManager manager) {
 		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<AssociationKey, List<Map<String,Object>>> cache = cacheContainer.getCache( ASSOCIATION_CACHE );
+		final Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache = cacheContainer.getCache( ASSOCIATION_CACHE );
 		return cache;
 	}
 }

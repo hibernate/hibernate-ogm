@@ -59,6 +59,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -386,14 +387,15 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
 				.session( session );
-		final List<Map<String,Object>> ids = metadataProvider.getCollectionMetadata();
+		final Map<RowKey,Map<String,Object>> ids = metadataProvider.getCollectionMetadata();
 
 		if (ids == null || ids.size() == 0 ) {
 			return null;
 		}
 		else if (ids.size() == 1) {
 			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
-			final Map<String, Object> tuple = ids.get( 0 );
+			//there is only one element in the list
+			final Map<String, Object> tuple = ids.entrySet().iterator().next().getValue();
 			final Serializable id = (Serializable) getGridIdentifierType().nullSafeGet( tuple, getIdentifierColumnNames(), session, null );
 			return load( id, null, LockMode.NONE, session );
 		}
