@@ -271,8 +271,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
-			//FIXME Should it be getIdentifierColumnName?????
-			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
+			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session  );
 		}
 		getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
 		//No need to write to where as we don't do where clauses in OGM :)
@@ -294,7 +293,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
-			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
+			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session  );
 		}
 		else {
 			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
@@ -320,7 +319,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
-			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session );
+			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session );
 		}
 		else {
 			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
@@ -478,8 +477,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.values( newTupleId );
 		//Order matters and should be respected
 		if ( hasIdentifier ) {
-			//FIXME should it be getIdentifierColumnName???
-			rowKeyBuilder.addColumns( getIndexColumnNames() );
+			rowKeyBuilder.addColumns( getIdentifierColumnName() );
 		}
 		rowKeyBuilder.addColumns( getKeyColumnNames() );
 		//No need to write to where as we don't do where clauses in OGM :)
