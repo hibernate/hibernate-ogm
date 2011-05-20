@@ -50,6 +50,7 @@ import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -419,9 +420,9 @@ public class OgmLoader implements UniqueEntityLoader {
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
 				.session( session );
-			final List<Map<String,Object>> entry = metadataProvider.getCollectionMetadata();
+			final Map<RowKey,Map<String,Object>> entry = metadataProvider.getCollectionMetadata();
 			if ( entry != null ) {
-				for ( Map<String,Object> tuple : entry ) {
+				for ( Map<String,Object> tuple : entry.values() ) {
 					resultset.addTuple( tuple );
 				}
 			}

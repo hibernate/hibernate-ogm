@@ -21,6 +21,7 @@
 package org.hibernate.ogm.util.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.infinispan.Cache;
 
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
@@ -37,14 +39,14 @@ import org.hibernate.ogm.type.GridType;
  */
 public class PropertyMetadataProvider {
 	private GridMetadataManager gridManager;
-	private Cache<AssociationKey, List<Map<String, Object>>> associationCache;
+	private Cache<AssociationKey, Map<RowKey,Map<String, Object>>> associationCache;
 	private String tableName;
 	private String[] keyColumnNames;
 	private GridType keyGridType;
 	private Object key;
 	private SessionImplementor session;
 	private AssociationKey collectionMetadataKey;
-	private List<Map<String,Object>> collectionMetadata;
+	private Map<RowKey,Map<String,Object>> collectionMetadata;
 	private Object[] columnValues;
 
 	// alternative gridManager or associationCache
@@ -54,7 +56,7 @@ public class PropertyMetadataProvider {
 	}
 
 	// alternative gridManager or associationCache
-	public PropertyMetadataProvider associationCache(Cache<AssociationKey, List<Map<String, Object>>> associationCache) {
+	public PropertyMetadataProvider associationCache(Cache<AssociationKey, Map<RowKey,Map<String, Object>>> associationCache) {
 		this.associationCache = associationCache;
 		return this;
 	}
@@ -89,7 +91,7 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	private Cache<AssociationKey, List<Map<String, Object>>> getAssociationCache() {
+	private Cache<AssociationKey, Map<RowKey,Map<String, Object>>> getAssociationCache() {
 		if ( associationCache == null) {
 			associationCache = GridMetadataManagerHelper.getAssociationCache( gridManager );
 		}
@@ -113,11 +115,11 @@ public class PropertyMetadataProvider {
 		return columnValues;
 	}
 
-	public List<Map<String,Object>> getCollectionMetadata() {
+	public Map<RowKey,Map<String,Object>> getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
 			collectionMetadata = getAssociationCache().get( getCollectionMetadataKey() );
 			if (collectionMetadata == null) {
-				collectionMetadata = new ArrayList<Map<String,Object>>();
+				collectionMetadata = new HashMap<RowKey,Map<String,Object>>();
 			}
 		}
 		return collectionMetadata;
@@ -132,20 +134,23 @@ public class PropertyMetadataProvider {
 		}
 	}
 
-	public Map<String, Object> findMatchingTuple(Map<String, Object> tupleKey) {
-		Map<String,Object> matchingTuple = null;
-		for ( Map<String,Object> collTuple : getCollectionMetadata() ) {
+	public RowKey findMatchingTuple(Map<String, Object> tupleKey) {
+		//FIXME optimize and use tupleKey as key fo the Map of Map for the association
+		RowKey matchingTuple = null;
+		for ( Map.Entry<RowKey,Map<String,Object>> collTuple : getCollectionMetadata().entrySet() ) {
 			boolean notFound = false;
+			final RowKey key = collTuple.getKey();
+			final Map<String, Object> value = collTuple.getValue();
 			for ( String columnName : tupleKey.keySet() ) {
-				final Object value = collTuple.get( columnName );
+				final Object columnValue = value.get( columnName );
 				//values should not be null
-				if ( ! tupleKey.get(columnName).equals( value ) ) {
+				if ( ! tupleKey.get(columnName).equals( columnValue ) ) {
 					notFound = true;
 					break;
 				}
 			}
 			if ( ! notFound ) {
-				matchingTuple = collTuple;
+				matchingTuple = key;
 			}
 		}
 		return matchingTuple;

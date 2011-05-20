@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
@@ -121,9 +122,8 @@ class EntityDehydrator {
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
 		final Type[] propertyTypes = persister.getPropertyTypes();
-		final Cache<AssociationKey, List<Map<String,Object>>> associationCache = GridMetadataManagerHelper.getAssociationCache(
-				session.getFactory()
-		);
+		final Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache =
+				GridMetadataManagerHelper.getAssociationCache( session.getFactory() );
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
 				final Type propertyType = propertyTypes[propertyIndex];
@@ -175,7 +175,7 @@ class EntityDehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(Cache<AssociationKey, List<Map<String,Object>>> associationCache,
+	private void doAddPropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] newColumnValue) {
@@ -186,23 +186,27 @@ class EntityDehydrator {
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
-		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
+		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
 		final Map<String, Object> tuple = new HashMap<String, Object>( 4 );
 		//add the id column
-		gridIdentifierType.nullSafeSet( tuple, id, persister.getIdentifierColumnNames(), session );
+		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
+		tuple.putAll( tuple );
 		//add the fk column
 		gridPropertyTypes[propertyIndex].nullSafeSet(
-				tuple,
-				fields[propertyIndex],
-				persister.getPropertyColumnNames( propertyIndex ),
-				includeColumns[propertyIndex],
-				session
-		);
-		propertyValues.add( tuple );
+							tuple,
+							fields[propertyIndex],
+							persister.getPropertyColumnNames( propertyIndex ),
+							includeColumns[propertyIndex],
+							session
+					);
+		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, identifierColumnNames);
+		final RowKey rowKey = new RowKey( persister.getTableName(), identifierColumnNames, columnValues );
+		propertyValues.put( rowKey, tuple );
 		metadataProvider.flushToCache();
 	}
 
-	private void doRemovePropertyMetadata(Cache<AssociationKey, List<Map<String,Object>>> associationCache,
+	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
 										  int tableIndex,
 										  int propertyIndex,
 										  Object[] oldColumnValue) {
@@ -213,10 +217,10 @@ class EntityDehydrator {
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		Map<String,Object> idTuple = getTupleKey();
-		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
+		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
-			final Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( idTuple );
+			final RowKey matchingTuple = metadataProvider.findMatchingTuple( idTuple );
 			//TODO what should we do if that's null?
 			if (matchingTuple != null) {
 				metadataProvider.getCollectionMetadata().remove( matchingTuple );

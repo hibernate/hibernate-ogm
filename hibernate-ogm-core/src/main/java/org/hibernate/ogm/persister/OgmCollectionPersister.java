@@ -23,6 +23,7 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,8 @@ import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
@@ -232,17 +235,20 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Map<String, Object> tupleKey = getTupleKeyForUpdate( key, collection, session, i, entry );
 
 				//find the matching element
-				Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( tupleKey );
-				if ( matchingTuple == null ) {
+				RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
+				if ( matchingTupleKey == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
 							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
 				}
+				//copy on read to avoid concurrent transactions issues
+				Map<String,Object> matchingTuple = new HashMap<String, Object>();
+				matchingTuple.putAll( metadataProvider.getCollectionMetadata().get( matchingTupleKey ) );
 
 				//update the matching element
 				//FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE );
+				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
 				getElementGridType().nullSafeSet( matchingTuple, collection.getElement( entry ), getElementColumnNames(), session );
-				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.ADD );
+				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.ADD, matchingTupleKey );
 				count++;
 			}
 			i++;
@@ -253,10 +259,19 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return count;
 	}
 
-	private Map<String, Object> buildFullTuple(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+	private Map<String, Object> completeTuple(Map<String, Object> newTupleId, PersistentCollection collection, SessionImplementor session, Object entry) {
+		Map<String,Object> tuple = new HashMap<String,Object>();
+		tuple.putAll( newTupleId );
+		final Object element = collection.getElement( entry );
+		getElementGridType().nullSafeSet( tuple, element, getElementColumnNames(), session );
+		return tuple;
+	}
+
+	private Map<String, Object> buildTupleForInsert(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
+			//FIXME Should it be getIdentifierColumnName?????
 			identifierGridType.nullSafeSet( tupleKey, identifier, getIndexColumnNames(), session  );
 		}
 		getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
@@ -269,10 +284,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		else {
 			//use element as tuple key
-			//but since we need element in the tuple, move it out of the else
+			final Object element = collection.getElement( entry );
+			getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
 		}
-		final Object element = collection.getElement( entry );
-		getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
 		return tupleKey;
 	}
 
@@ -341,7 +355,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.keyGridType( getKeyGridType() )
 				.keyColumnNames( getKeyColumnNames() );
 
-		final List<Map<String, Object>> collectionMetadata = metadataProvider.getCollectionMetadata();
+		final Map<RowKey,Map<String, Object>> collectionMetadata = metadataProvider.getCollectionMetadata();
 		if ( collectionMetadata == null ) {
 			return 0;
 		}
@@ -384,15 +398,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					);
 
 					//find the matching element
-					Map<String, Object> matchingTuple = metadataProvider.findMatchingTuple( tupleKey );
-					if ( matchingTuple == null ) {
+					RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
+					if ( matchingTupleKey == null ) {
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
-
+					Map<String,Object> matchingTuple = metadataProvider.getCollectionMetadata().get( matchingTupleKey );
 					//delete the tuple
-					updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE );
-					metadataProvider.getCollectionMetadata().remove( matchingTuple );
+					updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
+					metadataProvider.getCollectionMetadata().remove( matchingTupleKey );
 
 					count++;
 
@@ -440,9 +454,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Object entry = entries.next();
 				if ( collection.needsInserting( entry, i, elementType ) ) {
 					//TODO: copy/paste from recreate()
-					final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
-					metadataProvider.getCollectionMetadata().add( newTuple );
-					updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD );
+					final Map<String, Object> newTupleId = buildTupleForInsert( id, collection, session, i, entry );
+					RowKey key = buildRowKey( newTupleId );
+					final Map<String, Object> newTuple = completeTuple( newTupleId, collection, session, entry );
+					metadataProvider.getCollectionMetadata().put( key, newTuple );
+					updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD, key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -453,6 +469,28 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "done inserting rows: " + count + " inserted" );
 			}
 		}
+	}
+
+	private RowKey buildRowKey(Map<String, Object> newTupleId) {
+		RowKeyBuilder rowKeyBuilder = new RowKeyBuilder();
+		rowKeyBuilder
+				.tableName( getTableName() )
+				.values( newTupleId );
+		//Order matters and should be respected
+		if ( hasIdentifier ) {
+			//FIXME should it be getIdentifierColumnName???
+			rowKeyBuilder.addColumns( getIndexColumnNames() );
+		}
+		rowKeyBuilder.addColumns( getKeyColumnNames() );
+		//No need to write to where as we don't do where clauses in OGM :)
+		if ( hasIndex ) {
+			rowKeyBuilder.addColumns( getIndexColumnNames() );
+		}
+		else {
+			//use element as tuple key
+			rowKeyBuilder.addColumns( getElementColumnNames() );
+		}
+		return rowKeyBuilder.build();
 	}
 
 	@Override
@@ -486,9 +524,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					final Object entry = entries.next();
 					if ( collection.entryExists( entry, i ) ) {
 						//TODO: copy/paste from insertRows()
-						final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
-						metadataProvider.getCollectionMetadata().add( newTuple );
-						updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD );
+						final Map<String, Object> newTupleId = buildTupleForInsert( id, collection, session, i, entry );
+						RowKey key = buildRowKey( newTupleId );
+						metadataProvider.findMatchingTuple( newTupleId );
+						final Map<String, Object> newTuple = completeTuple( newTupleId, collection, session, entry );
+						metadataProvider.getCollectionMetadata().put( key, newTuple );
+						updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD, key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -508,7 +549,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Map<String, Object> tuple, Action action) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Map<String, Object> tuple, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			//update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
@@ -556,17 +597,20 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.session( session )
 					.tableName( getTableName() );
 
+			//FIXME what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if (action == Action.ADD) {
-				associationProvider.getCollectionMetadata().add( tuple );
+				//FIXMEbuild the key
+				associationProvider.getCollectionMetadata().put( rowKey, tuple );
 			}
 			else if (action == Action.REMOVE) {
 				//we try and match the whole tuple as it should be on both sides of the navigation
-				final Map<String, Object> matchingTuple = associationProvider.findMatchingTuple( tuple );
-				if ( matchingTuple == null ) {
+				//FIXME myRowKey => rowKey
+				RowKey myRowKey = associationProvider.findMatchingTuple( tuple );
+				if ( rowKey == null ) {
 					throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 							"table {" + getTableName() + "} key column names {" + elementColumnNames + "} key column values {" + elementColumnValues + "}" );
 				}
-				associationProvider.getCollectionMetadata().remove( matchingTuple );
+				associationProvider.getCollectionMetadata().remove( rowKey );
 			}
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
@@ -600,11 +644,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
 				.session( session );
+
 			//shortcut to avoid loop if we can
 			if (associationType != AssociationType.OTHER) {
-				for ( Map<String,Object> tuple : metadataProvider.getCollectionMetadata() ) {
+				for ( Map.Entry<RowKey,Map<String,Object>> tupleEntry : metadataProvider.getCollectionMetadata().entrySet() ) {
 					//we unfortunately cannot mass change the update of the associated entity
-					updateInverseSideOfAssociationNavigation( session, tuple, Action.REMOVE );
+					updateInverseSideOfAssociationNavigation( session, tupleEntry.getValue(), Action.REMOVE, tupleEntry.getKey() );
 				}
 			}
 			metadataProvider.getCollectionMetadata().clear();
