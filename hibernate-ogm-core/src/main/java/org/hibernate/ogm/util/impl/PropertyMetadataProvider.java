@@ -49,13 +49,14 @@ public class PropertyMetadataProvider {
 	private Map<RowKey,Map<String,Object>> collectionMetadata;
 	private Object[] columnValues;
 
-	// alternative gridManager or associationCache
+	//fluent methods for populating data
+
 	public PropertyMetadataProvider gridManager(GridMetadataManager gridManager) {
 		this.gridManager = gridManager;
 		return this;
 	}
 
-	// alternative gridManager or associationCache
+	//optional: data retrieved from gridManager if not set up
 	public PropertyMetadataProvider associationCache(Cache<AssociationKey, Map<RowKey,Map<String, Object>>> associationCache) {
 		this.associationCache = associationCache;
 		return this;
@@ -91,6 +92,9 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
+
+	//action methods
+
 	private Cache<AssociationKey, Map<RowKey,Map<String, Object>>> getAssociationCache() {
 		if ( associationCache == null) {
 			associationCache = GridMetadataManagerHelper.getAssociationCache( gridManager );
@@ -117,9 +121,9 @@ public class PropertyMetadataProvider {
 
 	public Map<RowKey,Map<String,Object>> getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = getAssociationCache().get( getCollectionMetadataKey() );
+			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
 			if (collectionMetadata == null) {
-				collectionMetadata = new HashMap<RowKey,Map<String,Object>>();
+				collectionMetadata = gridManager.getGridDialect().createAssociation( getCollectionMetadataKey(), getAssociationCache() );
 			}
 		}
 		return collectionMetadata;
@@ -127,10 +131,11 @@ public class PropertyMetadataProvider {
 
 	public void flushToCache() {
 		if ( getCollectionMetadata().size() == 0 ) {
-			getAssociationCache().remove( getCollectionMetadataKey() );
+			gridManager.getGridDialect().removeAssociation( getCollectionMetadataKey(), getAssociationCache() );
+			collectionMetadata = null;
 		}
 		else {
-			getAssociationCache().put( getCollectionMetadataKey(), getCollectionMetadata() );
+			gridManager.getGridDialect().updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationCache() );
 		}
 	}
 
