@@ -98,13 +98,13 @@ public class PropertyMetadataProvider {
 
 	private AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
-			final Object[] columnValues = getColumnValues();
+			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 		}
 		return collectionMetadataKey;
 	}
 
-	private Object[] getColumnValues() {
+	private Object[] getKeyColumnValues() {
 		if ( columnValues == null ) {
 			columnValues = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
 					key, keyGridType, keyColumnNames, session
