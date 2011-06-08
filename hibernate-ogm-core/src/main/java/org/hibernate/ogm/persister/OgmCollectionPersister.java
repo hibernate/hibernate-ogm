@@ -354,13 +354,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.keyGridType( getKeyGridType() )
 				.keyColumnNames( getKeyColumnNames() );
 
-		final Map<RowKey,Map<String, Object>> collectionMetadata = metadataProvider.getCollectionMetadata();
-		if ( collectionMetadata == null ) {
-			return 0;
-		}
-		else {
-			return collectionMetadata.size();
-		}
+		final Map<RowKey,Map<String, Object>> collectionMetadata = metadataProvider.getCollectionMetadataOrNull();
+		return collectionMetadata == null ? 0 : collectionMetadata.size();
 	}
 
 	@Override
@@ -524,7 +519,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						//TODO: copy/paste from insertRows()
 						final Map<String, Object> newTupleId = buildTupleForInsert( id, collection, session, i, entry );
 						RowKey key = buildRowKey( newTupleId );
-						metadataProvider.findMatchingTuple( newTupleId );
 						final Map<String, Object> newTuple = completeTuple( newTupleId, collection, session, entry );
 						metadataProvider.getCollectionMetadata().put( key, newTuple );
 						updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD, key );
@@ -595,7 +589,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.session( session )
 					.tableName( getTableName() );
 
-			//FIXME what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
+			//TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if (action == Action.ADD) {
 				//FIXMEbuild the key
 				associationProvider.getCollectionMetadata().put( rowKey, tuple );
