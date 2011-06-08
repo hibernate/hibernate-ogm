@@ -799,6 +799,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
+				.gridManager(gridManager)
 				.dehydrate();
 	}
 
@@ -961,6 +962,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			new EntityDehydrator()
+				.gridManager( gridManager )
 				.gridPropertyTypes( gridPropertyTypes )
 				.gridIdentifierType( gridIdentifierType )
 				.id( id )

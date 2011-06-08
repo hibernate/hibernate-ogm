@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
@@ -56,7 +57,9 @@ class EntityDehydrator {
 	private boolean dehydrate = true;
 	private boolean removePropertyMetadata = true;
 	private GridType gridIdentifierType;
+	private GridMetadataManager gridManager;
 
+	// fluent methods populating data
 
 	public EntityDehydrator persister(OgmEntityPersister persister) {
 		this.persister = persister;
@@ -107,6 +110,13 @@ class EntityDehydrator {
 		this.session = session;
 		return this;
 	}
+
+	public EntityDehydrator gridManager(GridMetadataManager gridManager) {
+		this.gridManager = gridManager;
+		return this;
+	}
+
+	//action methods
 
 	public EntityDehydrator onlyRemovePropertyMetadata() {
 		this.addPropertyMetadata = false;
@@ -181,6 +191,7 @@ class EntityDehydrator {
 										  Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( newColumnValue )
@@ -211,6 +222,7 @@ class EntityDehydrator {
 										  int propertyIndex,
 										  Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+				.gridManager( gridManager )
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( oldColumnValue )
