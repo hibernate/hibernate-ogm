@@ -420,7 +420,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
 				.session( session );
-			final Map<RowKey,Map<String,Object>> entry = metadataProvider.getCollectionMetadata();
+			final Map<RowKey,Map<String,Object>> entry = metadataProvider.getCollectionMetadataOrNull();
 			if ( entry != null ) {
 				for ( Map<String,Object> tuple : entry.values() ) {
 					resultset.addTuple( tuple );

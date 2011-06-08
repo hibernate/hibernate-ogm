@@ -129,6 +129,13 @@ public class PropertyMetadataProvider {
 		return collectionMetadata;
 	}
 
+	public Map<RowKey,Map<String,Object>> getCollectionMetadataOrNull() {
+		if ( collectionMetadata == null ) {
+			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
+		}
+		return collectionMetadata;
+	}
+
 	public void flushToCache() {
 		if ( getCollectionMetadata().size() == 0 ) {
 			gridManager.getGridDialect().removeAssociation( getCollectionMetadataKey(), getAssociationCache() );
