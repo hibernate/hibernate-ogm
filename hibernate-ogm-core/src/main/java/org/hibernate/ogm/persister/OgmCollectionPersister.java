@@ -602,8 +602,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 			else if (action == Action.REMOVE) {
 				//we try and match the whole tuple as it should be on both sides of the navigation
-				//FIXME myRowKey => rowKey
-				RowKey myRowKey = associationProvider.findMatchingTuple( tuple );
 				if ( rowKey == null ) {
 					throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 							"table {" + getTableName() + "} key column names {" + elementColumnNames + "} key column values {" + elementColumnValues + "}" );
