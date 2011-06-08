@@ -43,10 +43,10 @@ public class ManyToManyTest extends OgmTestCase {
 		session.persist( owner );
 		tx.commit();
 
-		session.clear();
+		assertThat(getEntityCache( sessions )).hasSize( 2 );
+		assertThat(getAssociationCache( sessions )).hasSize( 2 );
 
-		assertThat( getEntityCache( sessions ) ).hasSize( 2 );
-		assertThat( getAssociationCache( sessions ) ).hasSize( 2 );
+		session.clear();
 
 		//read from inverse side
 		tx = session.beginTransaction();
@@ -96,6 +96,9 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( barclays );
 		session.delete( owner );
 		tx.commit();
+
+		assertThat(getEntityCache( sessions )).hasSize( 0 );
+		assertThat(getAssociationCache( sessions )).hasSize( 0 );
 
 		session.close();
 		checkCleanCache();

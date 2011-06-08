@@ -70,6 +70,7 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		transaction.commit();
 
 		assertThat(getEntityCache( sessions )).hasSize( 4 );
+		assertThat(getAssociationCache( sessions )).hasSize( 3 );
 
 		session.clear();
 
@@ -92,6 +93,7 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		transaction.commit();
 
 		assertThat(getEntityCache( sessions )).hasSize( 1 );
+		assertThat(getAssociationCache( sessions )).hasSize( 0 );
 
 		session.clear();
 
@@ -104,6 +106,7 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		transaction.commit();
 
 		assertThat(getEntityCache( sessions )).hasSize( 0 );
+		assertThat(getAssociationCache( sessions )).hasSize( 0 );
 		session.close();
 
 		checkCleanCache();
