@@ -39,8 +39,8 @@ import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
 
-class Dehydrator {
-	private static final Logger log = LoggerFactory.getLogger( Dehydrator.class );
+class EntityDehydrator {
+	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
 
 	private Map<String, Object> resultset;
 	private Object[] fields;
@@ -57,57 +57,57 @@ class Dehydrator {
 	private GridType gridIdentifierType;
 
 
-	public Dehydrator persister(OgmEntityPersister persister) {
+	public EntityDehydrator persister(OgmEntityPersister persister) {
 		this.persister = persister;
 		return this;
 	}
 
-	public Dehydrator gridPropertyTypes(GridType[] gridPropertyTypes) {
+	public EntityDehydrator gridPropertyTypes(GridType[] gridPropertyTypes) {
 		this.gridPropertyTypes = gridPropertyTypes;
 		return this;
 	}
 
-	public Dehydrator gridIdentifierType(GridType gridIdentifierType) {
+	public EntityDehydrator gridIdentifierType(GridType gridIdentifierType) {
 		this.gridIdentifierType = gridIdentifierType;
 		return this;
 	}
 
-	public Dehydrator resultset(Map<String, Object> resultset) {
+	public EntityDehydrator resultset(Map<String, Object> resultset) {
 		this.resultset = resultset;
 		return this;
 	}
 
-	public Dehydrator fields(Object[] fields) {
+	public EntityDehydrator fields(Object[] fields) {
 		this.fields = fields;
 		return this;
 	}
 
-	public Dehydrator includeProperties(boolean[] includeProperties) {
+	public EntityDehydrator includeProperties(boolean[] includeProperties) {
 		this.includeProperties = includeProperties;
 		return this;
 	}
 
-	public Dehydrator includeColumns(boolean[][] includeColumns) {
+	public EntityDehydrator includeColumns(boolean[][] includeColumns) {
 		this.includeColumns = includeColumns;
 		return this;
 	}
 
-	public Dehydrator tableIndex(int tableIndex) {
+	public EntityDehydrator tableIndex(int tableIndex) {
 		this.tableIndex = tableIndex;
 		return this;
 	}
 
-	public Dehydrator id(Serializable id) {
+	public EntityDehydrator id(Serializable id) {
 		this.id = id;
 		return this;
 	}
 
-	public Dehydrator session(SessionImplementor session) {
+	public EntityDehydrator session(SessionImplementor session) {
 		this.session = session;
 		return this;
 	}
 
-	public Dehydrator onlyRemovePropertyMetadata() {
+	public EntityDehydrator onlyRemovePropertyMetadata() {
 		this.addPropertyMetadata = false;
 		this.dehydrate = false;
 		this.removePropertyMetadata = true;
@@ -183,7 +183,7 @@ class Dehydrator {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
-				.columnValues( newColumnValue )
+				.keyColumnValues( newColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
@@ -192,12 +192,12 @@ class Dehydrator {
 		gridIdentifierType.nullSafeSet( tuple, id, persister.getIdentifierColumnNames(), session );
 		//add the fk column
 		gridPropertyTypes[propertyIndex].nullSafeSet(
-							tuple,
-							fields[propertyIndex],
-							persister.getPropertyColumnNames( propertyIndex ),
-							includeColumns[propertyIndex],
-							session
-					);
+				tuple,
+				fields[propertyIndex],
+				persister.getPropertyColumnNames( propertyIndex ),
+				includeColumns[propertyIndex],
+				session
+		);
 		propertyValues.add( tuple );
 		metadataProvider.flushToCache();
 	}
@@ -209,7 +209,7 @@ class Dehydrator {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
-				.columnValues( oldColumnValue )
+				.keyColumnValues( oldColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		Map<String,Object> idTuple = getTupleKey();

@@ -49,11 +49,11 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.persist( cloud );
 		session.flush();
 		assertThat(getEntityCache( sessions )).hasSize( 3 );
-		assertThat(getAssociationCache( sessions )).hasSize( 1 );
+		assertThat(getAssociationCache( sessions )).hasSize( 3 );
 		transaction.commit();
 
 		assertThat(getEntityCache( sessions )).hasSize( 3 );
-		assertThat(getAssociationCache( sessions )).hasSize( 1 );
+		assertThat(getAssociationCache( sessions )).hasSize( 3 );
 
 		session.clear();
 

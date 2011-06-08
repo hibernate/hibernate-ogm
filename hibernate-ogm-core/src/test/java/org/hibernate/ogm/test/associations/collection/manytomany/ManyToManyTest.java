@@ -45,6 +45,22 @@ public class ManyToManyTest extends OgmTestCase {
 
 		session.clear();
 
+		assertThat( getEntityCache( sessions ) ).hasSize( 2 );
+		assertThat( getAssociationCache( sessions ) ).hasSize( 2 );
+
+		//read from inverse side
+		tx = session.beginTransaction();
+		soge = get( session, BankAccount.class, soge.getId() );
+		assertThat( soge.getOwners() )
+			.hasSize( 1 );
+		assertThat( soge.getOwners() )
+			.onProperty( "id" )
+			.contains( owner.getId() );
+		tx.commit();
+
+		session.clear();
+
+		//read from non-inverse side and update data
 		tx = session.beginTransaction();
 		owner = get( session, AccountOwner.class, owner.getId() );
 		assertThat( owner.getBankAccounts() )
@@ -62,8 +78,11 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( soge );
 		tx.commit();
 
+		assertThat( getEntityCache( sessions ) ).hasSize( 2 );
+		assertThat( getAssociationCache( sessions ) ).hasSize( 2 );
 		session.clear();
 
+		//delete data
 		tx = session.beginTransaction();
 		owner = get( session, AccountOwner.class, owner.getId() );
 		assertThat( owner.getBankAccounts() )

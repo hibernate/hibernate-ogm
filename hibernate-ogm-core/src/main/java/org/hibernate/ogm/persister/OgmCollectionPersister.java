@@ -52,6 +52,7 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
@@ -76,6 +77,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final boolean isInverse;
 	private final boolean oneToMany;
 	private final GridType gridTypeOfAssociatedId;
+	private final AssociationType associationType;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -88,8 +90,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		identifierGridType = typeTranslator.getType( getIdentifierType() );
 		//copied from the superclass constructor
 		isInverse = collection.isInverse();
+		oneToMany = collection.isOneToMany();
 		if ( collection.isOneToMany() && getElementPersister() != null && getElementType().isEntityType() ) {
-			oneToMany = true;
+			associationType = AssociationType.EMBEDDED_FK_TO_ENTITY;
 			final Type identifierOrUniqueKeyType = ( ( EntityType ) getElementType() ).getIdentifierOrUniqueKeyType( factory );
 			gridTypeOfAssociatedId = typeTranslator.getType( identifierOrUniqueKeyType );
 		}
@@ -97,10 +100,24 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			//one to many but not what we expected
 			throw new AssertionFailure( "Association marked as one to many but has no ManyToOneType: " + collection.getRole() );
 		}
-		else {
-			oneToMany = false;
+		else if ( getElementType().isAssociationType() && getElementType().isEntityType() ) {
+			associationType = AssociationType.ASSOCIATION_TABLE_TO_ENTITY;
 			gridTypeOfAssociatedId = null;
 		}
+		else {
+			gridTypeOfAssociatedId = null;
+			associationType = AssociationType.OTHER;
+		}
+	}
+
+	/** represents the type of associations at stake */
+	private enum AssociationType {
+		/** @OneToMany @JoinColumn */
+		EMBEDDED_FK_TO_ENTITY,
+		/** @ManyToMany @JoinTable */
+		ASSOCIATION_TABLE_TO_ENTITY,
+		/** collection of Embeddable */
+		OTHER
 	}
 
 	@Override
@@ -222,9 +239,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 				//update the matching element
 				//FIXME update the associated entity key data
-				updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.REMOVE );
+				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE );
 				getElementGridType().nullSafeSet( matchingTuple, collection.getElement( entry ), getElementColumnNames(), session );
-				updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.ADD );
+				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.ADD );
 				count++;
 			}
 			i++;
@@ -373,7 +390,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					}
 
 					//delete the tuple
-					updateAssociatedEntityTableIfNeeded( session, matchingTuple, Action.REMOVE );
+					updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE );
 					metadataProvider.getCollectionMetadata().remove( matchingTuple );
 
 					count++;
@@ -424,7 +441,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					//TODO: copy/paste from recreate()
 					final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 					metadataProvider.getCollectionMetadata().add( newTuple );
-					updateAssociatedEntityTableIfNeeded( session, newTuple, Action.ADD );
+					updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -470,7 +487,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						//TODO: copy/paste from insertRows()
 						final Map<String, Object> newTuple = buildFullTuple( id, collection, session, i, entry );
 						metadataProvider.getCollectionMetadata().add( newTuple );
-						updateAssociatedEntityTableIfNeeded( session, newTuple, Action.ADD );
+						updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -490,12 +507,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	/**
-	 * If the association is a true one to many, ensure that the entity tuple of the associated entity
-	 * is updated with index and fk information
-	 */
-	private void updateAssociatedEntityTableIfNeeded(SessionImplementor session, Map<String, Object> tuple, Action action) {
-		if ( oneToMany ) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Map<String, Object> tuple, Action action) {
+		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			//update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
 			final EntityKey entityKey = new EntityKeyBuilder()
@@ -531,6 +544,33 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 			entityCache.put( entityKey, entityTuple ); //update cache
 		}
+		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
+			String[] elementColumnNames = getElementColumnNames();
+			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, elementColumnNames);
+			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
+					.gridManager( gridManager )
+					.keyColumnNames( elementColumnNames )
+					.keyColumnValues( elementColumnValues )
+					.session( session )
+					.tableName( getTableName() );
+
+			if (action == Action.ADD) {
+				associationProvider.getCollectionMetadata().add( tuple );
+			}
+			else if (action == Action.REMOVE) {
+				//we try and match the whole tuple as it should be on both sides of the navigation
+				final Map<String, Object> matchingTuple = associationProvider.findMatchingTuple( tuple );
+				if ( matchingTuple == null ) {
+					throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
+							"table {" + getTableName() + "} key column names {" + elementColumnNames + "} key column values {" + elementColumnValues + "}" );
+				}
+				associationProvider.getCollectionMetadata().remove( matchingTuple );
+			}
+			else {
+				throw new AssertionFailure( "Unknown action type: " + action );
+			}
+			associationProvider.flushToCache();
+		}
 	}
 
 	private static enum Action {
@@ -558,11 +598,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
 				.session( session );
-			//guard by onToMany as the loop can be costly
-			if (oneToMany) {
+			//shortcut to avoid loop if we can
+			if (associationType != AssociationType.OTHER) {
 				for ( Map<String,Object> tuple : metadataProvider.getCollectionMetadata() ) {
 					//we unfortunately cannot mass change the update of the associated entity
-					updateAssociatedEntityTableIfNeeded( session, tuple, Action.REMOVE );
+					updateInverseSideOfAssociationNavigation( session, tuple, Action.REMOVE );
 				}
 			}
 			metadataProvider.getCollectionMetadata().clear();
