@@ -147,7 +147,7 @@ public class PropertyMetadataProvider {
 	}
 
 	public RowKey findMatchingTuple(Map<String, Object> tupleKey) {
-		//FIXME optimize and use tupleKey as key fo the Map of Map for the association
+		//FIXME Optimize this method, we probably can compute RowKey insead of finding it by value
 		RowKey matchingTuple = null;
 		for ( Map.Entry<RowKey,Map<String,Object>> collTuple : getCollectionMetadata().entrySet() ) {
 			boolean notFound = false;
