@@ -26,7 +26,9 @@ import org.infinispan.Cache;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -43,6 +45,7 @@ public interface GridDialect {
 	Map<String,Object> getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 	/**
 	 * Return a new tuple for a given key in a given cache
+	 * Only used if the tuple is not present
 	 */
 	Map<String,Object> createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 	/**
@@ -54,4 +57,25 @@ public interface GridDialect {
 	 * Remove the tuple for a given key in a given cache
 	 */
 	void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+
+	/**
+	 * Return the list of tuples corresponding to a given association
+	 */
+	Map<RowKey,Map<String,Object>> getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+
+	/**
+	 * Create an empty container for the list of tuples corresponding to a given association
+	 * Only used if the association data is not present
+	 */
+	Map<RowKey,Map<String,Object>> createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+
+	/**
+	 * Update a given list of tuples corresponding to a given association
+	 */
+	void updateAssociation(Map<RowKey,Map<String,Object>> association, AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+
+	/**
+	 * Remove the list of tuples corresponding to a given association
+	 */
+	void removeAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
 }

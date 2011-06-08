@@ -34,7 +34,9 @@ import org.hibernate.dialect.lock.PessimisticReadSelectLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticWriteSelectLockingStrategy;
 import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
 
 /**
@@ -86,11 +88,31 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Map<String, Object> tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
-		//cache.put( key, tuple );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+		AtomicMapLookup.removeAtomicMap( cache, key );
+	}
+
+	@Override
+	public Map<RowKey, Map<String, Object>> getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+		return AtomicMapLookup.getAtomicMap( cache, key, false );
+	}
+
+	@Override
+	public Map<RowKey, Map<String, Object>> createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
+		//should we improve?
+		return AtomicMapLookup.getAtomicMap( cache, key, true );
+	}
+
+	@Override
+	public void updateAssociation(Map<RowKey, Map<String, Object>> association, AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	}
+
+	@Override
+	public void removeAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
