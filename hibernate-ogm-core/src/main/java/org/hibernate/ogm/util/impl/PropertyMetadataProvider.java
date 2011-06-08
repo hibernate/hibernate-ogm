@@ -84,7 +84,7 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	public PropertyMetadataProvider columnValues(Object[] columnValues) {
+	public PropertyMetadataProvider keyColumnValues(Object[] columnValues) {
 		this.columnValues = columnValues;
 		return this;
 	}

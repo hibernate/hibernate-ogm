@@ -183,7 +183,7 @@ class EntityDehydrator {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
-				.columnValues( newColumnValue )
+				.keyColumnValues( newColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		List<Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
@@ -209,7 +209,7 @@ class EntityDehydrator {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 		        .associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
-				.columnValues( oldColumnValue )
+				.keyColumnValues( oldColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		Map<String,Object> idTuple = getTupleKey();

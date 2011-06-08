@@ -550,7 +550,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
 					.gridManager( gridManager )
 					.keyColumnNames( elementColumnNames )
-					.columnValues( elementColumnValues )
+					.keyColumnValues( elementColumnValues )
 					.session( session )
 					.tableName( getTableName() );
 
