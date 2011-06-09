@@ -98,42 +98,42 @@ public class BuiltInTypeTest extends OgmTestCase {
 
     @Test
     public void testStringMappedTypeSerialisation() throws Exception {
-        final Session session = openSession();
-        Transaction transaction = session.beginTransaction();
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
 
-        Bookmark b = new Bookmark();
-        b.setId("42");
-        b.setUrl(new URL("http://www.hibernate.org/"));
-        BigDecimal weight = new BigDecimal("21.77");
-        b.setSiteWeight( weight);
-        BigInteger visitCount= new BigInteger( "444");
-        b.setVisitCount(visitCount);
-        UUID serialNumber= UUID.randomUUID();
-        b.setSerialNumber(serialNumber);
+		Bookmark b = new Bookmark();
+		b.setId( "42" );
+		b.setUrl( new URL( "http://www.hibernate.org/" ) );
+		BigDecimal weight = new BigDecimal( "21.77" );
+		b.setSiteWeight( weight );
+		BigInteger visitCount = new BigInteger( "444" );
+		b.setVisitCount( visitCount );
+		UUID serialNumber = UUID.randomUUID();
+		b.setSerialNumber( serialNumber );
 
-        session.persist( b );
-        transaction.commit();
-        session.clear();
-
-        transaction = session.beginTransaction();
-		b = (Bookmark) session.get( Bookmark.class, b.getId() );
-
-        //Check directly in the cache the values stored
-        final Cache entityCache = getEntityCache( sessions );
-
-        EntityKey key= new EntityKey("Bookmark", "42");
-
-
-        Map<String,String> entity= (Map<String, String>) entityCache.get(key);
-
-        assertEquals(entity.get("visits_count"), "444");
-        assertEquals(entity.get("serialNumber"),serialNumber.toString());
-        assertEquals(entity.get("url"),"http://www.hibernate.org/");
-        assertEquals(entity.get("site_weight"),"21.77");
-
-        session.delete(b);
+		session.persist( b );
 		transaction.commit();
-        session.close();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		b = ( Bookmark ) session.get( Bookmark.class, b.getId() );
+
+		//Check directly in the cache the values stored
+		final Cache entityCache = getEntityCache( sessions );
+
+		EntityKey key = new EntityKey( "Bookmark", "42" );
+
+
+		Map<String, String> entity = ( Map<String, String> ) entityCache.get( key );
+
+		assertEquals( entity.get( "visits_count" ), "444" );
+		assertEquals( entity.get( "serialNumber" ), serialNumber.toString() );
+		assertEquals( entity.get( "url" ), "http://www.hibernate.org/" );
+		assertEquals( entity.get( "site_weight" ), "21.77" );
+
+		session.delete( b );
+		transaction.commit();
+		session.close();
 	}
 
 	@Override
