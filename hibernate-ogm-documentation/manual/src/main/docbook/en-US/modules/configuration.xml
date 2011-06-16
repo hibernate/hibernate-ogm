@@ -31,7 +31,7 @@
   <title>Configure and start Hibernate OGM</title>
 
   <para>Hibernate OGM favors ease of use and convention over configuration.
-  This makes its configuration quite minimalist by default.</para>
+  This makes its configuration quite simple by default.</para>
 
   <section>
     <title>Bootstrapping Hibernate OGM</title>
@@ -192,7 +192,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>there is no DDL scheme generation options
+          <para>there is no DDL schema generation options
           (<literal>hbm2ddl</literal>) as Infinispan does not require
           schemas</para>
         </listitem>
@@ -308,7 +308,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         </listitem>
 
         <listitem>
-          <para>JTA is needed when you need transactions spanning several
+          <para>JTA is only needed when you need transactions spanning several
           databases</para>
         </listitem>
 
@@ -355,69 +355,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         <programlisting language="XML" role="XML">&lt;dependency&gt;
     &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
     &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-    &lt;version&gt;4.14.0.Final&lt;/version&gt;
-    &lt;exclusions&gt;
-        &lt;exclusion&gt;
-            &lt;groupId&gt;org.jboss.ws.native&lt;/groupId&gt;
-            &lt;artifactId&gt;jbossws-native-core&lt;/artifactId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;emma&lt;/artifactId&gt;
-            &lt;groupId&gt;emma&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;emma_ant&lt;/artifactId&gt;
-            &lt;groupId&gt;emma&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;hornetq-core&lt;/artifactId&gt;
-            &lt;groupId&gt;org.hornetq&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;netty&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.netty&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;wrapper&lt;/artifactId&gt;
-            &lt;groupId&gt;tanukisoft&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jacorb&lt;/artifactId&gt;
-            &lt;groupId&gt;jacorb&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jfreechart&lt;/artifactId&gt;
-            &lt;groupId&gt;jfree&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-corba-ots-spi&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.integration&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-server-manager&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-ejb-api_3.1_spec&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.spec.javax.ejb&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jnp-client&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.naming&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jboss-servlet-api_3.0_spec&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.spec.javax.servlet&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jbossws-common&lt;/artifactId&gt;
-            &lt;groupId&gt;org.jboss.ws&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-        &lt;exclusion&gt;
-            &lt;artifactId&gt;jcl-over-slf4j&lt;/artifactId&gt;
-            &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
-        &lt;/exclusion&gt;
-    &lt;/exclusions&gt;
+    &lt;version&gt;4.15.0.Final&lt;/version&gt;
 &lt;/dependency&gt;</programlisting>
       </example>
 
@@ -470,7 +408,7 @@ em.close();</programlisting>
       <title>Without JTA</title>
 
       <para>While this approach works today, it does not ensure that works are
-      done transitionally and hence won't be able to rollback your work. This
+      done transactionally and hence won't be able to rollback your work. This
       will change in the future but in the mean time, such an environment is
       not recommended.</para>
     </section>
@@ -490,7 +428,7 @@ em.close();</programlisting>
     <itemizedlist>
       <listitem>
         <para>hibernate.ogm.infinispan.configuration_resourcename: the
-        resource path to the Infinispan XMl configuration file (eg
+        resource path to the Infinispan XML configuration file (eg
         <filename>com/acme/app/config/infinispan-config.xml</filename>). By
         default, the configuration used is Hibernate OGM's default
         configuration (TODO describe its behavior)</para>
