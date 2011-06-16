@@ -30,10 +30,9 @@
 <chapter id="ogm-gettingstarted">
   <title>Getting started with Hibernate OGM</title>
 
-  <para>If you are familiar with JPA, you are almost good to go :)</para>
-
-  <para>We will nevertheless walk you through the first few steps of
-  persisting and retrieving an entity using Hibernate OGM.</para>
+  <para>If you are familiar with JPA, you are almost good to go :) We will
+  nevertheless walk you through the first few steps of persisting and
+  retrieving an entity using Hibernate OGM.</para>
 
   <para>Before we can start, make sure you have the following tools
   configured:</para>
@@ -110,9 +109,8 @@ public class Breed {
   OGM in our mapping.</para>
 
   <para>In this tutorial, we will use JBoss Transactions for our JTA
-  transaction manager. The set of exclusions is for JBoss Transactions is
-  something that should be fixed in its next version. The final list of
-  dependencies should look like this:</para>
+  transaction manager. The final list of dependencies should look like
+  this:</para>
 
   <programlisting language="XML" role="XML">&lt;dependencies&gt;
     &lt;dependency&gt;
@@ -226,5 +224,5 @@ emf.close();;</programlisting>
     </listitem>
   </itemizedlist>
 
-  <para>Explore more in the next chapters.</para>
+  <para>Let's explore more in the next chapters.</para>
 </chapter>

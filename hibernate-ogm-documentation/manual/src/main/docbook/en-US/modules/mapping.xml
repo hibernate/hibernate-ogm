@@ -88,6 +88,11 @@
           <para>String</para>
         </listitem>
       </itemizedlist>
+
+      <warning>
+        <para>This list is subject to change and specifically be reduced to a
+        smaller set of core types.</para>
+      </warning>
     </section>
 
     <section id="ogm-mapping-supported-types-string-mapped">
@@ -110,10 +115,10 @@
           <para>Url (as described by RFC 1738 and returned by toString of the
           Java URL type)</para>
         </listitem>
-		
+
         <listitem>
           <para>UUID stored as described by RFC 4122</para>
-        </listitem>		
+        </listitem>
       </itemizedlist>
     </section>
   </section>

@@ -31,11 +31,11 @@
   <title>Architecture</title>
 
   <note>
-    <para>Note that abstracting Infinispan should be an easy enough task as
-    tuples are represented as Maps.</para>
+    <para>Note that abstracting Infinispan is a work in progress and should be
+    an easy enough task as tuples are represented as Maps.</para>
   </note>
 
-  <para>In this chapter we will will explore</para>
+  <para>In this chapter we will will explore:</para>
 
   <itemizedlist>
     <listitem>
@@ -98,11 +98,11 @@
     </mediaobject>
 
     <para>Hibernate OGM reuses as much as possible from the Hibernate Core
-    infrastructure. There is no need to rewrite a JPA engine with its shipment
-    of new bugs ;) The <classname>Persister</classname>s and the
-    <classname>Loader</classname>s have been rewritten to persist data using
-    Infinispan instead of JDBC. These implementations are the core of
-    Hibernate OGM. We will see in <xref
+    infrastructure. There is no need to rewrite an entirely new JPA engine.
+    The <classname>Persister</classname>s and the
+    <classname>Loader</classname>s (two interfaces used by Hibernate Core)
+    have been rewritten to persist data using Infinispan instead of JDBC.
+    These implementations are the core of Hibernate OGM. We will see in <xref
     linkend="ogm-architecture-datapersisted" /> how the data is structured.
     Other than that, all the Create/Read/Update/Delete (CRUD) operations are
     implemented by Hibernate Core.</para>
@@ -119,11 +119,11 @@
       ideas in mind to address this problem.</para>
     </note>
 
-    <para>Hibernate OGM best work in a JTA environment. The easiest solution
+    <para>Hibernate OGM best works in a JTA environment. The easiest solution
     is to deploy it on a Java EE container. Alternatively, you can use a
     standalone JTA <classname>TransactionManager</classname>. We do explain
-    how to in <xref linkend="ogm-configuration-environments-standalonejta" />.
-    </para>
+    how to in <xref
+    linkend="ogm-configuration-environments-standalonejta" />.</para>
 
     <para>Let's now see how and in which structure data is persisted in the
     NoSQL data store.</para>
@@ -133,10 +133,10 @@
     <title>How is data persisted</title>
 
     <para>Hibernate OGM tries to reuse as much as possible the relational
-    model concepts (at least when they are practical and make sense). For very
-    good reasons, the relational model brought peace in the database landscape
-    over 30 years ago. In particular, Hibernate OGM inherits the following
-    philosophy traits:</para>
+    model concepts (at least when they are practical and make sense in OGM's
+    case). For very good reasons, the relational model brought peace in the
+    database landscape over 30 years ago. In particular, Hibernate OGM
+    inherits the following philosophy traits:</para>
 
     <itemizedlist>
       <listitem>
@@ -153,7 +153,8 @@
       </listitem>
 
       <listitem>
-        <para>keep the notion of foreign key to link two entities</para>
+        <para>keep the notion of foreign key to link two entities (not
+        enforced)</para>
       </listitem>
     </itemizedlist>
 
@@ -168,60 +169,24 @@
 
       <listitem>
         <para>any change in the application object model will require a
-        migration at the persistent level</para>
+        migration at the data level</para>
       </listitem>
 
       <listitem>
-        <para>any access to the data by another application instantly tied
-        both applications</para>
+        <para>any access to the data by another application ties both
+        applications losing flexibility</para>
       </listitem>
 
       <listitem>
         <para>any access to the data from another platform become somewhat
         more challenging</para>
       </listitem>
-    </itemizedlist>
-
-    <para>Entities are stored as tuples of values by Hibernate OGM. More
-    specifically, each entity is represented by a Map&lt;String,Object&gt;
-    conceptually where the key represents the column name (often the property
-    name but not always) and the value represents the column value as a basic
-    type. We favor basic types over complex ones to increase portability
-    (across platforms and across type / class schema evolution over time). For
-    example a URL object is store as its String representation.</para>
-
-    <para>The key where a given entity instance is stored is composed
-    of:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>the table name</para>
-      </listitem>
 
       <listitem>
-        <para>the primary key column name(s)</para>
-      </listitem>
-
-      <listitem>
-        <para> the primary key column value(s)</para>
+        <para>serializing entities leads to many additional problems (see note
+        below)</para>
       </listitem>
     </itemizedlist>
-
-    <para>An entity is addressable by a single lookup.</para>
-
-    <mediaobject>
-      <imageobject role="html">
-        <imagedata align="center" fileref="images/data-entity.png"
-                   format="PNG" role="html" />
-      </imageobject>
-
-      <imageobject role="fo">
-        <imagedata align="center" depth="" fileref="images/data-entity.png"
-                   format="PNG" role="fo" scalefit="1" width="12cm" />
-      </imageobject>
-
-      <caption><para>Storing entities</para></caption>
-    </mediaobject>
 
     <note>
       <title>Why aren't entities serialized in the key/value entry</title>
@@ -255,10 +220,59 @@
       </itemizedlist>
     </note>
 
-    <para>Associations are also stored as tuple as well or more precisely as a
-    set of tuples. To ensure that associations are reachable via key lookups
-    from the entity hosting them, we store one copy of the association data
-    per entity instance pointing to it.</para>
+    <para>Entities are stored as tuples of values by Hibernate OGM. More
+    specifically, each entity is represented by a
+    <classname>Map&lt;String,Object&gt;</classname> conceptually where the key
+    represents the column name (often the property name but not always) and
+    the value represents the column value as a basic type. We favor basic
+    types over complex ones to increase portability (across platforms and
+    across type / class schema evolution over time). For example a URL object
+    is store as its String representation.</para>
+
+    <para>The key where a given entity instance is stored is composed
+    of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>the table name</para>
+      </listitem>
+
+      <listitem>
+        <para>the primary key column name(s)</para>
+      </listitem>
+
+      <listitem>
+        <para>the primary key column value(s)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>This gives us several interesting properties. An entity is
+    addressable by a single lookup. All entity types can leave in the same key
+    name space as they are entirely isolated.</para>
+
+    <mediaobject>
+      <imageobject role="html">
+        <imagedata align="center" fileref="images/data-entity.png"
+                   format="PNG" role="html" />
+      </imageobject>
+
+      <imageobject role="fo">
+        <imagedata align="center" depth="" fileref="images/data-entity.png"
+                   format="PNG" role="fo" scalefit="1" width="12cm" />
+      </imageobject>
+
+      <caption><para>Storing entities</para></caption>
+    </mediaobject>
+
+    <para></para>
+
+    <para>Associations are also stored as tuple as well or more specifically
+    as a set of tuples. Hibernate OGM stores the information necessary to
+    navigate from an entity to its associations. This is a departure from the
+    pure relational model but it ensures that association data is reachable
+    via key lookups based on the information contained in the entity tuple we
+    want to navigate from. Note that this leads to some level of duplication
+    as information has to be stored for both sides of the association.</para>
 
     <para>The key in which association data are stored is composed of:</para>
 
@@ -268,18 +282,18 @@
       </listitem>
 
       <listitem>
-        <para>the column name(s) representing the foreign key to an
-        entity</para>
+        <para>the column name(s) representing the foreign key to the entity we
+        come from</para>
       </listitem>
 
       <listitem>
-        <para>the column value(s) representing the foreign key to an
-        entity</para>
+        <para>the column value(s) representing the foreign key to the entity
+        we come from</para>
       </listitem>
     </itemizedlist>
 
-    <para>Using this approach, we favor fast read and (slightly slower
-    writes).</para>
+    <para>Using this approach, we favor fast read and (slightly) slower
+    writes.</para>
 
     <mediaobject>
       <imageobject role="html">
@@ -319,7 +333,7 @@
     </note>
 
     <para>Some identifiers require to store a seed in the datastore (think
-    about sequences for examples). The seend is stored in the value whose key
+    about sequences for examples). The seed is stored in the value whose key
     is composed of:</para>
 
     <itemizedlist>
