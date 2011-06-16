@@ -66,10 +66,10 @@
         </license>
     </licenses>
 
-    <!-- ciManagement>
-        <system>Hudson</system>
-        <url>http://hudson.jboss.org/hudson/view/hibernate/job/hibernate-search-trunk/</url>
-    </ciManagement -->
+    <ciManagement>
+        <url>http://ci.jboss.org/jenkins/view/hibernate/job/hibernate-ogm/</url>
+        <system>Jenkins</system>
+    </ciManagement>
 
     <developers>
         <developer>
@@ -77,6 +77,12 @@
             <name>Emmanuel Bernard</name>
             <email>emmanuel@hibernate.org</email>
             <url>http://in.relation.to/Bloggers/Emmanuel</url>
+        </developer>
+        <developer>
+            <id>sannegrinovero</id>
+            <name>Sanne Grinovero</name>
+            <email>sanne@hibernate.org</email>
+            <url>http://in.relation.to/Bloggers/Sanne</url>
         </developer>
     </developers>
 
@@ -117,7 +123,7 @@
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>5.0.0.CR5</infinispanVersion>
-        <hibernateVersion>3.6.4.Final</hibernateVersion>
+        <hibernateVersion>3.6.5.Final</hibernateVersion>
         <hibernateSearchVersion>3.4.0.Final</hibernateSearchVersion>
         <luceneVersion>3.1.0</luceneVersion>
         <jbossjtaVersion>4.15.1.Final</jbossjtaVersion>
