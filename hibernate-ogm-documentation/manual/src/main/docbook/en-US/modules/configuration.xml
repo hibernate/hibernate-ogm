@@ -441,8 +441,8 @@ em.close();</programlisting>
       </listitem>
     </itemizedlist>
 
-    <para>Here is the list of options that do not apply to Hibernate
-    OGM:</para>
+    <para>Here is the list of options that do not apply to Hibernate OGM and
+    that should not be set:</para>
 
     <itemizedlist>
       <listitem>
@@ -450,11 +450,31 @@ em.close();</programlisting>
       </listitem>
 
       <listitem>
-        <para><literal>hibernate.connection.provider_class</literal></para>
+        <para><literal>hibernate.connection.*</literal> and in particular
+        <literal>hibernate.connection.provider_class</literal></para>
       </listitem>
 
       <listitem>
-        <para>TODO finish this list</para>
+        <para><literal>hibernate.show_sql</literal> and
+        <literal>hibermate.format_sql</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.default_schema</literal> and
+        <literal>hibernate.default_catalog</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.use_sql_comments</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.jdbc.*</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.hbm2ddl.auto</literal> and
+        <literal>hibernate.hbm2ddl.import_file</literal></para>
       </listitem>
     </itemizedlist>
   </section>
