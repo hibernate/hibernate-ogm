@@ -29,7 +29,22 @@
 ]>
 <chapter id="ogm-query">
   <title>Query your entities</title>
-  <para> talk about the necessary indexing annotations from Hibernate Search</para>
+
+  <para>Hibernate Search works perfectly well with Hibernate OGM. You can wrap
+  an Hibernate OGM <classname>Session</classname> or
+  <classname>EntityManager</classname> with a
+  <classname>FullTextSession</classname> or
+  <classname>FullTextEntityManager</classname> like you would do with
+  Hibernate Core (via the static methods hosted on
+  <classname>Search</classname>).</para>
+
+  <para>The same configurations options available in Hibernate Search when
+  using Hibernate Core are also relevant.</para>
+
+  <para>Of course, make sure to add the necessary Hibernate Search mapping
+  annotations on your domain model to properly index your entities.</para>
+
   <para>TODO: talk about Hibernate Search queries.</para>
+
   <para>Talk about the JP-QL parser when we have that integrated.</para>
 </chapter>
