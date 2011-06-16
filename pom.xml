@@ -116,11 +116,11 @@
 
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
-        <infinispanVersion>5.0.0-SNAPSHOT</infinispanVersion>
+        <infinispanVersion>5.0.0.CR5</infinispanVersion>
         <hibernateVersion>3.6.4.Final</hibernateVersion>
         <hibernateSearchVersion>3.4.0.Final</hibernateSearchVersion>
         <luceneVersion>3.1.0</luceneVersion>
-        <jbossjtaVersion>4.15.0.Final</jbossjtaVersion>
+        <jbossjtaVersion>4.15.1.Final</jbossjtaVersion>
         <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
@@ -145,7 +145,7 @@
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.0.Final</version>
+                <version>1.0.1.Final</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -379,7 +379,7 @@
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>1.0.0-alpha-12</version>
+                <version>1.0.0-beta-2</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
