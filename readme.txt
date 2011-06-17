@@ -1,6 +1,6 @@
 Hibernate OGM
 ==================================================
-Version: 3.0.0-SNAPSHOT
+Version: 3.0.0.Alpha2
 
 Description
 -----------
@@ -15,8 +15,8 @@ The benefits are fairly obvious:
 Instructions
 ------------
 
-Checkout http://community.jboss.org/en/hibernate/ogm for more information
-The code is available on GitHub at https://github.com/hibernate/hibernate-core
+Checkout http://hibernate.org/subprojects/ogm for more information
+The code is available on GitHub at https://github.com/hibernate/hibernate-ogm
 
 Contact
 ------------

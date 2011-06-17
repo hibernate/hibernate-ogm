@@ -1,5 +1,33 @@
 Hibernate OGM Changelog
-==========================
+=======================
+
+3.0.0.Alpha2 (16-06-2011)
+-------------------------
+
+** Sub-task
+    * [OGM-66] - Add a Test to enforce String mapped types as string in storage
+
+** Bug
+    * [OGM-31] - ConcurrentModificationException on ArrayList representing the collection
+    * [OGM-59] - Getting Started - Code doesn't compiles and missing maven dependencies
+    * [OGM-68] - Inverse side of a @ManyToMany does not get populated on object load
+
+
+** Improvement
+    * [OGM-32] - Make use of AtomicMap instead of Map for tuples
+    * [OGM-62] - Getting Started - Infinispan doesn't needs to be explicitly added to the maven dependencies
+
+** New Feature
+    * [OGM-12] - Support more GridTypes
+    * [OGM-50] - Write simple reference documentation
+    * [OGM-56] - Make OGM work on explicit Hibernate Transaction demarcation
+    * [OGM-60] - Provide a full implementation of the Getting Started
+    * [OGM-61] - Support UUID type
+    * [OGM-76] - Upgrade various dependency versions
+
+** Task
+    * [OGM-64] - Move dependency to Hibernate Core 3.6.4.Final
+
 
 3.0.0.Alpha1 (29-04-2011)
 -------------------------
