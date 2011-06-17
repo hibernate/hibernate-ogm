@@ -161,6 +161,41 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <tags>
+                        <tag>
+                            <name>experimental</name>
+                            <placement>a</placement>
+                            <head>Experimental</head>
+                        </tag>
+                    </tags>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
+                    <links>
+                        <link>http://java.sun.com/j2se/1.5.0/docs/api/</link>
+                        <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
+                        <link>http://docs.jboss.org/hibernate/stable/search/api/</link>
+                        <link>http://lucene.apache.org/java/3_1_0/api/all</link>
+                    </links>
+                    <packagesheader>Hibernate OGM Packages</packagesheader>
+                    <doctitle>Hibernate OGM ${project.version}</doctitle>
+                    <windowtitle>Hibernate OGM ${project.version}</windowtitle>
+                    <bottom>
+                        <![CDATA[Copyright &copy; ${project.inceptionYear}-{currentYear} <a href="http://redhat.com">Red Hat Middleware, LLC</a>, Emmanuel Bernard and various contributors.  All Rights Reserved]]></bottom>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.jboss.maven.plugins</groupId>
                 <artifactId>maven-injection-plugin</artifactId>
                 <executions>
