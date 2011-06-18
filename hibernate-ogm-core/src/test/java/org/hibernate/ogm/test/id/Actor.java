@@ -18,25 +18,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.jpa.impl;
+package org.hibernate.ogm.test.id;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.hibernate.ejb.cfg.spi.IdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
-import org.hibernate.ogm.id.impl.OgmTableGenerator;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * Test entity for {@link org.hibernate.ogm.id.impl.OgmSequenceGenerator}
+ *
  * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
-public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
-	@Override
-	public Map<String, Class<?>> getStrategies() {
-		Map<String, Class<?>> strategies = new HashMap<String, Class<?>>();
-		strategies.put( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
-		strategies.put( org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), OgmSequenceGenerator.class );
-		return strategies;
+@Entity
+public class Actor {
+	static final transient int INITIAL_VALUE = 1;
+	private Long id;
+	private String name;
+	private String totalMovies;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "actorSequenceGenerator")
+	@SequenceGenerator(name = "actorSequenceGenerator",
+			sequenceName = "actor_sequence_name",
+			initialValue = INITIAL_VALUE,
+			allocationSize = 10)
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getBestMovieTitle() {
+		return totalMovies;
+	}
+
+	public void setBestMovieTitle(String bestMovieTitle) {
+		this.totalMovies = bestMovieTitle;
 	}
 }
