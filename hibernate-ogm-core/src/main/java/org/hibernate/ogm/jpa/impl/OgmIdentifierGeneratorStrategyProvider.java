@@ -24,16 +24,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ejb.cfg.spi.IdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
 public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
 	@Override
 	public Map<String, Class<?>> getStrategies() {
 		Map<String,Class<?>> strategies = new HashMap<String,Class<?>>();
 		strategies.put( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
+        strategies.put( org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), OgmSequenceGenerator.class );
 		return strategies;
 	}
 }
