@@ -22,6 +22,8 @@ package org.hibernate.ogm.test.hibernatecore;
 
 import java.io.File;
 import java.util.HashMap;
+
+import javax.naming.Reference;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -39,6 +41,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.jpa.impl.OgmEntityManager;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.test.jpa.Poem;
@@ -74,6 +77,17 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
+
+		Reference reference = factory.getReference();
+		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactory.class.getName() );
+		assertThat( reference.getFactoryClassName() ).isEqualTo( OgmSessionFactoryObjectFactory.class.getName() );
+		assertThat( reference.get( 0 ) ).isNotNull();
+		assertThat( reference.getFactoryClassLocation() ).isNull();
+
+		OgmSessionFactoryObjectFactory objFactory = new OgmSessionFactoryObjectFactory();
+		SessionFactory factoryFromRegistry = (SessionFactory) objFactory.getObjectInstance( reference, null, null, null );
+		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( factoryFromRegistry.getReference() ).isEqualTo( factory.getReference() );
 
 		Session s = factory.openSession();
 		assertThat( s.getClass() ).isEqualTo( OgmSession.class );

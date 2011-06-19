@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.StringRefAddr;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.Cache;
@@ -409,6 +410,13 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 
 	@Override
 	public Reference getReference() throws NamingException {
-		throw new NotSupportedException( "OGM-19", "OGM SessionFactory cannot be referenced" );
+		String uuid = String.valueOf( delegate.getReference().get( 0 ).getContent() );
+		return new Reference(
+				OgmSessionFactory.class.getName(),
+				new StringRefAddr( "uuid", uuid ),
+				OgmSessionFactoryObjectFactory.class.getName(),
+				null
+				);
 	}
+	
 }
