@@ -20,20 +20,111 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ejb.cfg.spi.IdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
+import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 
+import static org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider.StrategyImplementationProvider.*;
+
 /**
+ * Provides a registry of JPA identifier generator types and
+ * it's corresponding OGM implementations.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
 public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
+
+    enum StrategyImplementationProvider {
+        /**
+         * {@code Table}-type JPA identifier generator.
+         */
+        Table {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            String identifier() {
+                return org.hibernate.id.enhanced.TableGenerator.class.getName();
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            Class<?> generator() {
+                return OgmTableGenerator.class;
+            }
+        },
+
+        /**
+         * {@code Sequence}-type JPA identifier generator.
+         */
+        Sequence {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            String identifier() {
+                return org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName();
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            Class<?> generator() {
+                return OgmSequenceGenerator.class;
+            }
+        },
+
+        /**
+         * {@code Identity}-type JPA identifier generator.
+         */
+        Identity {
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            String identifier() {
+                return "identity";
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            @Override
+            Class<?> generator() {
+                return OgmIdentityGenerator.class;
+            }
+        };
+
+        /**
+         * @return The name of JPA identifier generator.
+         */
+        abstract String identifier();
+
+        /**
+         * @return The JPA identifier generator class
+         */
+        abstract Class<?> generator();
+    }
+
+    /**
+     * @return The actual registry of various JPA identifier generators
+     * and their corresponding generator implementations.
+     */
 	@Override
 	public Map<String, Class<?>> getStrategies() {
 		Map<String,Class<?>> strategies = new HashMap<String,Class<?>>();
-		strategies.put( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
-		return strategies;
+		strategies.put( Table.identifier(), Table.generator() );
+        strategies.put( Sequence.identifier(), Sequence.generator() );
+        strategies.put( Identity.identifier(), Identity.generator() );
+		return Collections.unmodifiableMap( strategies );
 	}
 }

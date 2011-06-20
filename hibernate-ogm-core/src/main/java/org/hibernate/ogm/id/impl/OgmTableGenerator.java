@@ -204,6 +204,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return identifierType;
 	}
 
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param identifierType Identifier type mapping
+     */
+    void setIdentifierType(Type identifierType) {
+        this.identifierType = identifierType;
+    }
+
 	/**
 	 * The name of the table in which we store this generator's persistent state.
 	 *
@@ -212,6 +222,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	public final String getTableName() {
 		return tableName;
 	}
+
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param tableName The table name
+     */
+    void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
 
 	/**
 	 * The name of the column in which we store the segment to which each row
@@ -223,6 +243,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return segmentColumnName;
 	}
 
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param segmentColumnName The segment column name
+     */
+    void setSegmentColumnName(String segmentColumnName) {
+        this.segmentColumnName = segmentColumnName;
+    }
+
 	/**
 	 * The value in {@link #getSegmentColumnName segment column} which
 	 * corresponding to this generator instance.  In other words this value
@@ -233,6 +263,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	public final String getSegmentValue() {
 		return segmentValue;
 	}
+
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param segmentValue The segment value for this generator instance.
+     */
+    void setSegmentValue(String segmentValue) {
+        this.segmentValue = segmentValue;
+    }
 
 	/**
 	 * The size of the {@link #getSegmentColumnName segment column} in the
@@ -247,6 +287,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return segmentValueLength;
 	}
 
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param segmentValueLength The column size of segment
+     */
+    void setSegmentValueLength(int segmentValueLength) {
+        this.segmentValueLength = segmentValueLength;
+    }
+
 	/**
 	 * The name of the column in which we store our persistent generator value.
 	 *
@@ -255,6 +305,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	public final String getValueColumnName() {
 		return valueColumnName;
 	}
+
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param valueColumnName The name of value column.
+     */
+    void setValueColumnName(String valueColumnName) {
+        this.valueColumnName = valueColumnName;
+    }
 
 	/**
 	 * The initial value to use when we find no previous state in the
@@ -266,6 +326,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return initialValue;
 	}
 
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param initialValue The initial value to use.
+     */
+    void setInitialValue(int initialValue) {
+        this.initialValue = initialValue;
+    }
+
 	/**
 	 * The amount of increment to use.  The exact implications of this
 	 * depends on the {@link #getOptimizer() optimizer} being used.
@@ -276,6 +346,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return incrementSize;
 	}
 
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param incrementSize The increment amount.
+     */
+    void setIncrementSize(int incrementSize) {
+        this.incrementSize = incrementSize;
+    }
+
 	/**
 	 * The optimizer being used by this generator.
 	 *
@@ -284,6 +364,16 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	public final Optimizer getOptimizer() {
 		return optimizer;
 	}
+
+    /**
+     * Intended for other identifier generators that may use
+     * {@code OgmTableGenerator} as a delegate.
+     *
+     * @param optimizer Out optimizer.
+     */
+    void setOptimizer(Optimizer optimizer) {
+        this.optimizer = optimizer;
+    }
 
 	/**
 	 * Getter for property 'tableAccessCount'.  Only really useful for unit test
@@ -314,25 +404,27 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		//this.selectQuery = buildSelectQuery( dialect );
 		//this.updateQuery = buildUpdateQuery();
 		//this.insertQuery = buildInsertQuery();
+        optimizer = determinePoolOptimization( params, identifierType );
+    }
 
-		// if the increment size is greater than one, we prefer pooled optimization; but we
-		// need to see if the user prefers POOL or POOL_LO...
-		String defaultPooledOptimizerStrategy = PropertiesHelper.getBoolean(
-				Environment.PREFER_POOLED_VALUES_LO, params, false
-		)
-				? OptimizerFactory.POOL_LO
-				: OptimizerFactory.POOL;
-		final String defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.NONE : defaultPooledOptimizerStrategy;
-		final String optimizationStrategy = PropertiesHelper.getString( OPT_PARAM, params, defaultOptimizerStrategy );
-		optimizer = OptimizerFactory.buildOptimizer(
-				optimizationStrategy,
-				identifierType.getReturnedClass(),
-				incrementSize,
-				PropertiesHelper.getInt( INITIAL_PARAM, params, -1 )
-		);
-	}
+    protected Optimizer determinePoolOptimization(Properties params, Type identifierType) {// if the increment size is greater than one, we prefer pooled optimization; but we
+        // need to see if the user prefers POOL or POOL_LO...
+        String defaultPooledOptimizerStrategy = PropertiesHelper.getBoolean(
+                Environment.PREFER_POOLED_VALUES_LO, params, false
+        )
+                ? OptimizerFactory.POOL_LO
+                : OptimizerFactory.POOL;
+        final String defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.NONE : defaultPooledOptimizerStrategy;
+        final String optimizationStrategy = PropertiesHelper.getString( OPT_PARAM, params, defaultOptimizerStrategy );
+        return OptimizerFactory.buildOptimizer(
+                optimizationStrategy,
+                identifierType.getReturnedClass(),
+                incrementSize,
+                PropertiesHelper.getInt( INITIAL_PARAM, params, -1 )
+        );
+    }
 
-	/**
+    /**
 	 * Determine the table name to use for the generator values.
 	 * <p/>
 	 * Called during {@link #configure configuration}.
