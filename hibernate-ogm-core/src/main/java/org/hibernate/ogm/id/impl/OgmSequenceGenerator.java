@@ -39,8 +39,9 @@ import java.io.Serializable;
 import java.util.Properties;
 
 /**
- * <p>A sequence-based identifier generator.
- * The underlying implementation uses {@link OgmTableGenerator}
+ * <p>A sequence-based identifier generator.</p>
+ * <p>The JPA Auto identifier generator for grid also uses this generator.</p>
+ * <p>The underlying implementation uses {@link OgmTableGenerator}
  * to actually generate and use the sequence for the identifier.
  * </p>
  *
