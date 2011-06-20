@@ -34,9 +34,12 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.type.Type;
+import org.hibernate.util.PropertiesHelper;
 
 /**
  * <p>A JPA sequence-based identifier generator.</p>
+ * <p>This identifier generator is also used for
+ * JPA auto identifier generation.</p>
  *
  * Configuration parameters:
  * <table>
@@ -54,6 +57,7 @@ import org.hibernate.type.Type;
  */
 public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Configurable {
 	static final String SEQUENCE_NAME = "sequence_name";
+	static final String TABLE_NAME = "target_table";
 	static final String SEGMENT_VALUE_PARAM = "segment_value";
 	private final OgmTableGenerator tableGenerator;
 
@@ -66,7 +70,13 @@ public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Conf
 	 */
 	@Override
 	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
-		params.setProperty( SEGMENT_VALUE_PARAM, params.getProperty( SEQUENCE_NAME ) );
+		params.setProperty(
+				SEGMENT_VALUE_PARAM, PropertiesHelper.getString(
+				SEQUENCE_NAME,
+				params,
+				params.getProperty( TABLE_NAME )
+		)
+		);
 		tableGenerator.configure( type, params, dialect );
 	}
 
