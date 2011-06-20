@@ -34,11 +34,13 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
-import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.type.Type;
+import org.hibernate.util.PropertiesHelper;
 
 /**
  * <p>A JPA sequence-based identifier generator.</p>
+ * <p>This identifier generator is also used for
+ * JPA auto identifier generation.</p>
  *
  * Configuration parameters:
  * <table>
@@ -72,7 +74,11 @@ public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Conf
 		}
 		newParams.setProperty(
 				OgmTableGenerator.SEGMENT_VALUE_PARAM,
-				params.getProperty( SequenceStyleGenerator.SEQUENCE_PARAM )
+				PropertiesHelper.getString(
+						OgmTableGenerator.SEGMENT_VALUE_PARAM,
+						newParams,
+						newParams.getProperty( PersistentIdentifierGenerator.TABLE )
+				)
 		);
 		tableGenerator.configure( type, newParams, dialect );
 	}
