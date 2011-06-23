@@ -410,6 +410,7 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 
 	@Override
 	public Reference getReference() throws NamingException {
+		//Expect Hibernate Core to use one StringRefAddr based address
 		String uuid = String.valueOf( delegate.getReference().get( 0 ).getContent() );
 		return new Reference(
 				OgmSessionFactory.class.getName(),

@@ -42,6 +42,7 @@ public class OgmSessionFactoryObjectFactory implements ObjectFactory {
 	public Object getObjectInstance(Object reference, Name name, Context nameCtx, Hashtable<?, ?> environment)
 			throws Exception {
 		final String uuid = (String) ( (Reference) reference ).get( 0 ).getContent();
+		//OgmSessionFactory does not have state so we can create a new instance each time instead of keeping a registry
 		return new OgmSessionFactory( (SessionFactoryImplementor) SessionFactoryObjectFactory.getInstance( uuid ) );
 	}
 
