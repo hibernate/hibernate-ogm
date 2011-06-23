@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.hibernatecore;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 
 import javax.naming.Reference;
@@ -60,6 +61,28 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
+		buildArchive();
+
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
+		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
+		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
+
+		Session s = factory.openSession();
+		assertThat( s.getClass() ).isEqualTo( OgmSession.class );
+		assertThat( s.getSessionFactory().getClass() ).isEqualTo( OgmSessionFactory.class );
+		s.close();
+
+		EntityManager em = emf.createEntityManager();
+		assertThat( em.unwrap( Session.class ).getClass() ).isEqualTo( OgmSession.class );
+		assertThat( em.getDelegate().getClass() ).isEqualTo( OgmSession.class );
+
+		em.close();
+
+		emf.close();
+	}
+
+	private void buildArchive() throws MalformedURLException {
 		String fileName = "jtastandalone.jar";
 		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
 
@@ -72,12 +95,14 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 
 		packaging.addPackageToClasspath( testPackage );
+	}
+
+	@Test
+	public void testJNDIReference() throws Exception {
+		buildArchive();
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
-		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
-		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
-
 		Reference reference = factory.getReference();
 		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactory.class.getName() );
 		assertThat( reference.getFactoryClassName() ).isEqualTo( OgmSessionFactoryObjectFactory.class.getName() );
@@ -88,17 +113,6 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		SessionFactory factoryFromRegistry = (SessionFactory) objFactory.getObjectInstance( reference, null, null, null );
 		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactory.class );
 		assertThat( factoryFromRegistry.getReference() ).isEqualTo( factory.getReference() );
-
-		Session s = factory.openSession();
-		assertThat( s.getClass() ).isEqualTo( OgmSession.class );
-		assertThat( s.getSessionFactory().getClass() ).isEqualTo( OgmSessionFactory.class );
-		s.close();
-
-		EntityManager em = emf.createEntityManager();
-		assertThat( em.unwrap( Session.class ).getClass() ).isEqualTo( OgmSession.class );
-		assertThat( em.getDelegate().getClass() ).isEqualTo( OgmSession.class );
-
-		em.close();
 
 		emf.close();
 	}
