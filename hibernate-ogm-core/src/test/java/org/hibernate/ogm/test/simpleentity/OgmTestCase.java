@@ -29,12 +29,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
-import org.hibernate.ogm.dialect.NoopDialect;
-import org.hibernate.ogm.jdbc.NoopConnectionProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
-import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.transaction.infinispan.impl.DummyTransactionManagerLookup;
 import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
@@ -114,17 +110,12 @@ public abstract class OgmTestCase extends HibernateTestCase {
 			getSessions().close();
 		}
 		try {
-			setCfg( new Configuration() );
+			setCfg( new OgmConfiguration() );
 
 			//Grid specific configuration
-			cfg.setProperty( Environment.DIALECT, NoopDialect.class.getName() );
 			cfg.setProperty( CacheManagerServiceProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
-			cfg.setSessionFactoryObserver( new GridMetadataManager() );
-			cfg.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
 			cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 			cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
-			cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
-			cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 
 
 			//Other configurations
