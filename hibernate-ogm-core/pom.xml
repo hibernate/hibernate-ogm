@@ -57,17 +57,17 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-infinispan</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-core</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-lucene-directory</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
         
         <!-- test dependencies -->
