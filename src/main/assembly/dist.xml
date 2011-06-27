@@ -63,7 +63,6 @@
 
                     <dependencySet>
                         <outputDirectory>/dist/lib/optional</outputDirectory>
-                        <scope>optional</scope>
                         <includes>
                             <include>org.hibernate:hibernate-search</include>
                             <include>org.hibernate:hibernate-search-infinispan</include>
