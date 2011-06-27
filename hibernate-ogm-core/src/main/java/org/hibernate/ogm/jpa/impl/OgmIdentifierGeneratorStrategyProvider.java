@@ -20,20 +20,42 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ejb.cfg.spi.IdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
+import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 
 /**
+ * Provides a registry of JPA identifier generator types and
+ * it's corresponding OGM implementations.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
 public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
+	/**
+	 * @return The registry of different JPA identifier generator names
+	 *         and their corresponding generator implementations for grid.
+	 */
 	@Override
 	public Map<String, Class<?>> getStrategies() {
-		Map<String,Class<?>> strategies = new HashMap<String,Class<?>>();
-		strategies.put( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
-		return strategies;
+		Map<String, Class<?>> strategies = new HashMap<String, Class<?>>();
+		strategies.put(
+				org.hibernate.id.enhanced.TableGenerator.class.getName(),
+				OgmTableGenerator.class
+		);
+		strategies.put(
+				org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(),
+				OgmSequenceGenerator.class
+		);
+		strategies.put(
+				"identity",
+				OgmIdentityGenerator.class
+		);
+		return Collections.unmodifiableMap( strategies );
 	}
 }
