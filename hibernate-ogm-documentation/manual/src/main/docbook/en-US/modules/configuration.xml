@@ -126,53 +126,13 @@
       <title>Using Hibernate Core native APIs</title>
 
       <para>If you want to bootstrap Hibernate OGM using the native Hibernate
-      APIs, you will have some more work to do.</para>
-
-      <warning>
-        <para>This process is subject to change in the near future. Prefer
-        JPA's approach.</para>
-      </warning>
-
-      <para>You need to configure a few of the internals of Hibernate OGM
-      namely:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>the <classname>SessionFactoryObserver</classname>:
-          <classname>GridMetadataManager</classname></para>
-        </listitem>
-
-        <listitem>
-          <para>the <classname>ConnectionProvider</classname>:
-          <classname>NoopConnectionProvider</classname></para>
-        </listitem>
-
-        <listitem>
-          <para>the <classname>NamingStrategy</classname>:
-          <classname>OgmNamingStrategy</classname></para>
-        </listitem>
-
-        <listitem>
-          <para>the <classname>PersistenceClassProvider</classname>:
-          <classname>OgmPersisterClassProvider</classname></para>
-        </listitem>
-
-        <listitem>
-          <para>the <classname>Dialect</classname>:
-          <classname>NoopDialect</classname></para>
-        </listitem>
-      </itemizedlist>
+      APIs, you can use the class <classname>org.hibernate.ogm.cfg.OgmConfiguration</classname>.</para>
 
       <example>
         <title>Bootstrap Hibernate OGM with Hibernate Core native APIs</title>
 
-        <programlisting language="JAVA" role="JAVA">Configuration cfg = new Configuration();
-cfg.setSessionFactoryObserver( new GridMetadataManager() );
-cfg.setProperty( Environment.CONNECTION_PROVIDER,
-    NoopConnectionProvider.class.getName() );
-cfg.setNamingStrategy( OgmNamingStrategy.INSTANCE );
-cfg.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
-cfg.setProperty(Environment.DIALECT, NoopDialect.class.getName() );
+        <programlisting language="JAVA" role="JAVA">Configuration cfg = new OgmConfiguration();
+
 //assuming you are using JTA in a non contained environment
 cfg.setProperty( Environment.TRANSACTION_STRATEGY, 
                  "org.hibernate.transaction.JTATransactionFactory" );
