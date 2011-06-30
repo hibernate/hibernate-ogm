@@ -38,7 +38,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class JNDIReferenceTest extends OgmTestCase {
 
-	@Test @FailureExpected( jiraKey = "OGM-80" )
+	@Test
 	public void testGetReferenceImplementation() throws Exception {
 		final Session session = openSession();
 		SessionFactory factory = session.getSessionFactory();
