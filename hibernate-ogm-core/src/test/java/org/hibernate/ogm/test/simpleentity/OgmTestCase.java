@@ -147,7 +147,9 @@ public abstract class OgmTestCase extends HibernateTestCase {
 	protected void handleUnclosedResources() {
 		if ( session != null && session.isOpen() ) {
 			if ( session.isConnected() ) {
-				session.doWork( new RollbackWork() );
+				if ( session.getTransaction().isActive() ) {
+					session.getTransaction().rollback();
+				}
 			}
 			session.close();
 			session = null;
@@ -167,7 +169,9 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		try {
 			if ( session != null && session.isOpen() ) {
 				if ( session.isConnected() ) {
-					session.doWork( new RollbackWork() );
+					if ( session.getTransaction().isActive() ) {
+						session.getTransaction().rollback();
+					}
 				}
 				session.close();
 			}
