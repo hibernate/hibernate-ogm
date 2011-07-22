@@ -44,6 +44,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
+
 /**
  * Implements JDBC's ResultSet interface but is essentially a wrapper for
  * propagating a list of Map<String, Object> that reach represent a tuple.
@@ -59,20 +61,20 @@ import java.util.Map;
  * @author Emmanuel Bernard
  */
 public class TupleAsMapResultSet implements ResultSet {
-	private List<Map<String, Object>> tuples = new ArrayList<Map<String, Object>>();
+	private List<Tuple> tuples = new ArrayList<Tuple>();
 	private int index = -1;
 
 	/**
 	 * Define the current value for the collection entry
 	 */
-	public void addTuple(Map<String, Object> tuple) {
+	public void addTuple(Tuple tuple) {
 		this.tuples.add( tuple );
 	}
 
 	/**
 	 * Retrieve the current value for the collection entry
 	 */
-	public Map<String, Object> getTuple() {
+	public Tuple getTuple() {
 		return tuples.get(index);
 	}
 

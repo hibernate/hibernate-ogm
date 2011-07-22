@@ -21,13 +21,13 @@
 package org.hibernate.ogm.type;
 
 import java.sql.Types;
-import java.util.Map;
 
 import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.CustomType;
 
@@ -52,7 +52,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		if ( names.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
@@ -61,7 +61,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 			throws HibernateException {
 		final Object object = rs.get( name );
 		if ( object == null ) {
@@ -101,13 +101,13 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public Object hydrate(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, names, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
 		if ( settable.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
@@ -118,7 +118,7 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		if ( names.length > 1 ) {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );

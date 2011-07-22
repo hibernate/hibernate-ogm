@@ -35,6 +35,7 @@ import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.jdbc.LobCreator;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.StringRepresentableType;
@@ -215,19 +216,21 @@ public abstract class AbstractGenericBasicType<T>
 		return isDirty( oldHydratedState, currentState );
 	}
 
+	@Override
 	public final Object nullSafeGet(
-			Map<String,Object> rs,
+			Tuple rs,
 			String[] names,
 			SessionImplementor session,
 			Object owner) {
 		return nullSafeGet( rs, names[0], session );
 	}
 
-	public final Object nullSafeGet(Map<String,Object> rs, String name, SessionImplementor session, Object owner) {
+	@Override
+	public final Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner) {
 		return nullSafeGet( rs, name, session );
 	}
 
-	private final T nullSafeGet(Map<String,Object> rs, String name, final SessionImplementor session) {
+	private final T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
 		// todo : have SessionImplementor extend WrapperOptions
 		final WrapperOptions options = new WrapperOptions() {
 			public boolean useStreamForLobBinding() {
@@ -242,7 +245,7 @@ public abstract class AbstractGenericBasicType<T>
 		return nullSafeGet( rs, name, options );
 	}
 
-	protected final T nullSafeGet(Map<String,Object> rs, String name, WrapperOptions options) {
+	protected final T nullSafeGet(Tuple rs, String name, WrapperOptions options) {
 		return gridTypeDescriptor.getExtractor( javaTypeDescriptor ).extract( rs, name );
 	}
 
@@ -251,8 +254,9 @@ public abstract class AbstractGenericBasicType<T>
 //	}
 
 	@SuppressWarnings({ "unchecked" })
+	@Override
 	public final void nullSafeSet(
-			Map<String,Object> rs,
+			Tuple rs,
 			Object value,
 			String[] names,
 			final SessionImplementor session)  {
@@ -271,11 +275,12 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected final void nullSafeSet(Map<String,Object> rs, Object value, String[] names, WrapperOptions options) {
+	protected final void nullSafeSet(Tuple rs, Object value, String[] names, WrapperOptions options) {
 		gridTypeDescriptor.getBinder( javaTypeDescriptor ).bind( rs, (T) value, names );
 	}
 
-	public final void nullSafeSet(Map<String, Object> st, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	@Override
+	public final void nullSafeSet(Tuple st, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
 		if (settable.length > 1) {
 			throw new NotYetImplementedException("Multi column property not implemented yet");
@@ -328,7 +333,8 @@ public abstract class AbstractGenericBasicType<T>
 	public final void beforeAssemble(Serializable cached, SessionImplementor session) {
 	}
 
-	public final Object hydrate(Map<String,Object> rs, String[] names, SessionImplementor session, Object owner)
+	@Override
+	public final Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet(rs, names, session, owner);
 	}

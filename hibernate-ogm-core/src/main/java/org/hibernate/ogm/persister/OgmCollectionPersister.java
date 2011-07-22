@@ -23,10 +23,8 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -46,6 +44,7 @@ import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.SubselectFetch;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -64,6 +63,9 @@ import org.hibernate.pretty.MessageHelper;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
+
+import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.getTupleFromMapTuple;
+import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.populateMapTupleByColumnName;
 
 /**
  * CollectionPersister storing the collection in a grid 
@@ -128,7 +130,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public Object readKey(ResultSet rs, String[] aliases, SessionImplementor session)
 	throws HibernateException, SQLException {
 		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
-		final Map<String,Object> keyTuple = resultset.getTuple();
+		final Tuple keyTuple = resultset.getTuple();
 		return keyGridType.nullSafeGet( keyTuple, aliases, session, null );
 	}
 
@@ -136,7 +138,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public Object readElement(ResultSet rs, Object owner, String[] aliases, SessionImplementor session)
 	throws HibernateException, SQLException {
 		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
-		final Map<String,Object> keyTuple = resultset.getTuple();
+		final Tuple keyTuple = resultset.getTuple();
 		return elementGridType.nullSafeGet( keyTuple, aliases, session, owner );
 	}
 
@@ -144,7 +146,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public Object readIdentifier(ResultSet rs, String alias, SessionImplementor session)
 			throws HibernateException, SQLException {
 		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
-		final Map<String,Object> keyTuple = resultset.getTuple();
+		final Tuple keyTuple = resultset.getTuple();
 		return identifierGridType.nullSafeGet( keyTuple, alias, session, null );
 	}
 
@@ -152,7 +154,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public Object readIndex(ResultSet rs, String[] aliases, SessionImplementor session)
 			throws HibernateException, SQLException {
 		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
-		final Map<String,Object> keyTuple = resultset.getTuple();
+		final Tuple keyTuple = resultset.getTuple();
 		return indexGridType.nullSafeGet( keyTuple, aliases, session, null );
 	}
 
@@ -245,16 +247,23 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Map<String,Object> matchingTuple = new HashMap<String, Object>();
 				matchingTuple.putAll( oldTuple );
 
+				Tuple tuple = getTupleFromMapTuple( matchingTuple );
+
 				//update the matching element
 				//FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
+				updateInverseSideOfAssociationNavigation( session, tuple, matchingTuple, Action.REMOVE, matchingTupleKey );
+
 				getElementGridType().nullSafeSet(
-						matchingTuple,
+						tuple,
 						collection.getElement( entry ),
 						getElementColumnNames(),
 						session
 				);
-				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.ADD, matchingTupleKey );
+
+				populateMapTupleByColumnName( tuple, getElementColumnNames(), matchingTuple );
+
+				updateInverseSideOfAssociationNavigation( session, tuple, matchingTuple, Action.ADD, matchingTupleKey );
+
 				count++;
 			}
 			i++;
@@ -269,53 +278,68 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Map<String,Object> tuple = new HashMap<String,Object>();
 		tuple.putAll( newTupleId );
 		final Object element = collection.getElement( entry );
-		getElementGridType().nullSafeSet( tuple, element, getElementColumnNames(), session );
+		Tuple tupleObject = getTupleFromMapTuple(tuple);
+		getElementGridType().nullSafeSet( tupleObject, element, getElementColumnNames(), session );
+		populateMapTupleByColumnName( tupleObject, getElementColumnNames(), tuple );
 		return tuple;
 	}
 
 	private Map<String, Object> buildTupleForInsert(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		Tuple tupleObjectKey = getTupleFromMapTuple( tupleKey );
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
-			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session  );
+			String[] names = { getIdentifierColumnName() };
+			identifierGridType.nullSafeSet( tupleObjectKey, identifier, names, session  );
+			populateMapTupleByColumnName( tupleObjectKey, names, tupleKey );
 		}
-		getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
+		getKeyGridType().nullSafeSet( tupleObjectKey, key, getKeyColumnNames(), session );
+		populateMapTupleByColumnName( tupleObjectKey, getKeyColumnNames(), tupleKey );
 		//No need to write to where as we don't do where clauses in OGM :)
 		if ( hasIndex ) {
 			Object index = collection.getIndex( entry, i, this );
 			indexGridType.nullSafeSet(
-					tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+					tupleObjectKey, incrementIndexByBase( index ), getIndexColumnNames(), session
 			);
+			populateMapTupleByColumnName( tupleObjectKey, getIndexColumnNames(), tupleKey );
 		}
 		else {
 			//use element as tuple key
 			final Object element = collection.getElement( entry );
-			getElementGridType().nullSafeSet( tupleKey, element, getElementColumnNames(), session );
+			getElementGridType().nullSafeSet( tupleObjectKey, element, getElementColumnNames(), session );
+			populateMapTupleByColumnName( tupleObjectKey, getElementColumnNames(), tupleKey );
+
 		}
 		return tupleKey;
 	}
 
 	private Map<String, Object> getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		Tuple tupleObjectKey = getTupleFromMapTuple( tupleKey );
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
-			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session );
+			String[] names = { getIdentifierColumnName() };
+			identifierGridType.nullSafeSet( tupleObjectKey, identifier, names, session  );
+			populateMapTupleByColumnName( tupleObjectKey, names, tupleKey );
 		}
 		else {
-			getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
+			getKeyGridType().nullSafeSet( tupleObjectKey, key, getKeyColumnNames(), session );
+			populateMapTupleByColumnName( tupleObjectKey, getKeyColumnNames(), tupleKey );
 			//No need to write to where as we don't do where clauses in OGM :)
 			if ( hasIndex && !indexContainsFormula ) {
 				Object index = collection.getIndex( entry, i, this );
 				indexGridType.nullSafeSet(
-						tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+						tupleObjectKey, incrementIndexByBase( index ), getIndexColumnNames(), session
 				);
+				populateMapTupleByColumnName( tupleObjectKey, getIndexColumnNames(), tupleKey );
 			}
 			else {
 				final Object snapshotElement = collection.getSnapshotElement( entry, i );
 				if (elementIsPureFormula) {
 					throw new AssertionFailure("cannot use a formula-based element in the where condition");
 				}
-				getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
+				getElementGridType().nullSafeSet( tupleObjectKey, snapshotElement, getElementColumnNames(), session );
+				populateMapTupleByColumnName( tupleObjectKey, getIndexColumnNames(), tupleKey );
 			}
 		}
 		return tupleKey;
@@ -323,25 +347,31 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private Map<String, Object> getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
+		Tuple tupleObjectKey = getTupleFromMapTuple( tupleKey );
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
-			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session );
+			String[] names = { getIdentifierColumnName() };
+			identifierGridType.nullSafeSet( tupleObjectKey, identifier, names, session );
+			populateMapTupleByColumnName( tupleObjectKey, names, tupleKey );
 		}
 		else {
-			getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
+			getKeyGridType().nullSafeSet( tupleObjectKey, key, getKeyColumnNames(), session );
+			populateMapTupleByColumnName( tupleObjectKey, getKeyColumnNames(), tupleKey );
 			//No need to write to where as we don't do where clauses in OGM :)
 			if ( findByIndex ) {
 				Object index = entry;
 				indexGridType.nullSafeSet(
-						tupleKey, incrementIndexByBase( index ), getIndexColumnNames(), session
+						tupleObjectKey, incrementIndexByBase( index ), getIndexColumnNames(), session
 				);
+				populateMapTupleByColumnName( tupleObjectKey, getIndexColumnNames(), tupleKey );
 			}
 			else {
 				final Object snapshotElement = entry;
 				if (elementIsPureFormula) {
 					throw new AssertionFailure("cannot use a formula-based element in the where condition");
 				}
-				getElementGridType().nullSafeSet( tupleKey, snapshotElement, getElementColumnNames(), session );
+				getElementGridType().nullSafeSet( tupleObjectKey, snapshotElement, getElementColumnNames(), session );
+				populateMapTupleByColumnName( tupleObjectKey, getElementColumnNames(), tupleKey );
 			}
 		}
 		return tupleKey;
@@ -405,7 +435,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
 					//delete the tuple
-					updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
+					updateInverseSideOfAssociationNavigation( session, getTupleFromMapTuple( matchingTuple ), matchingTuple, Action.REMOVE, matchingTupleKey );
 					metadataProvider.getCollectionMetadata().remove( matchingTupleKey );
 
 					count++;
@@ -458,7 +488,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					RowKey key = buildRowKey( newTupleId );
 					final Map<String, Object> newTuple = completeTuple( newTupleId, collection, session, entry );
 					metadataProvider.getCollectionMetadata().put( key, newTuple );
-					updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD, key );
+					updateInverseSideOfAssociationNavigation( session, getTupleFromMapTuple( newTuple ), newTuple, Action.ADD, key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -527,7 +557,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						RowKey key = buildRowKey( newTupleId );
 						final Map<String, Object> newTuple = completeTuple( newTupleId, collection, session, entry );
 						metadataProvider.getCollectionMetadata().put( key, newTuple );
-						updateInverseSideOfAssociationNavigation( session, newTuple, Action.ADD, key );
+						updateInverseSideOfAssociationNavigation( session, getTupleFromMapTuple( newTuple ), newTuple, Action.ADD, key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -547,7 +577,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Map<String, Object> tuple, Action action, RowKey rowKey) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Tuple tuple, Map<String, Object> tupleAsMap, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			//update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
@@ -559,14 +589,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					gridManager
 			);
 			final GridDialect gridDialect = gridManager.getGridDialect();
-			final Map<String, Object> entityTuple = gridDialect.getTuple( entityKey, entityCache );
+			final Tuple entityTuple = gridDialect.getTuple( entityKey, entityCache );
 			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if (entityTuple == null) {
 				return;
 			}
 			if (action == Action.ADD) {
 				//copy all collection tuple entries in the entity tuple as this is the same table essentially
-				for ( Map.Entry<String, Object> tupleEntry : tuple.entrySet() ) {
+				for ( Map.Entry<String, Object> tupleEntry : tupleAsMap.entrySet() ) {
 					entityTuple.put( tupleEntry.getKey(), tupleEntry.getValue() );
 				}
 			}
@@ -598,7 +628,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			//TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if (action == Action.ADD) {
 				//FIXMEbuild the key
-				associationProvider.getCollectionMetadata().put( rowKey, tuple );
+				associationProvider.getCollectionMetadata().put( rowKey, tupleAsMap );
 			}
 			else if (action == Action.REMOVE) {
 				//we try and match the whole tuple as it should be on both sides of the navigation
@@ -645,7 +675,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			if (associationType != AssociationType.OTHER) {
 				for ( Map.Entry<RowKey,Map<String,Object>> tupleEntry : metadataProvider.getCollectionMetadata().entrySet() ) {
 					//we unfortunately cannot mass change the update of the associated entity
-					updateInverseSideOfAssociationNavigation( session, tupleEntry.getValue(), Action.REMOVE, tupleEntry.getKey() );
+					Map<String, Object> mapTuple = tupleEntry.getValue();
+					updateInverseSideOfAssociationNavigation( session, getTupleFromMapTuple( mapTuple ),
+							mapTuple, Action.REMOVE, tupleEntry.getKey() );
 				}
 			}
 			metadataProvider.getCollectionMetadata().clear();

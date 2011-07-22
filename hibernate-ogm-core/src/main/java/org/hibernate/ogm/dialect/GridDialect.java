@@ -26,6 +26,7 @@ import org.infinispan.Cache;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -42,16 +43,16 @@ public interface GridDialect {
 	/**
 	 * Return the tuple for a given key in a given cache or null if not present
 	 */
-	Map<String,Object> getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	Tuple getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 	/**
 	 * Return a new tuple for a given key in a given cache
 	 * Only used if the tuple is not present
 	 */
-	Map<String,Object> createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	Tuple createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 	/**
 	 * Update the tuple for a given key in a given cache or null if not present
 	 */
-	void updateTuple(Map<String, Object> tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	void updateTuple(Tuple tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
 
 	/**
 	 * Remove the tuple for a given key in a given cache

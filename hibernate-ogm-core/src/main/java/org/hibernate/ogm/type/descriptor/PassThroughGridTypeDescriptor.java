@@ -22,6 +22,7 @@ package org.hibernate.ogm.type.descriptor;
 
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
@@ -37,7 +38,7 @@ public class PassThroughGridTypeDescriptor implements GridTypeDescriptor {
 	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
 		return new BasicGridBinder<X>(javaTypeDescriptor, this) {
 			@Override
-			protected void doBind(Map<String, Object> resultset, X value, String[] names, WrapperOptions options) {
+			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
 				resultset.put( names[0], javaTypeDescriptor.unwrap( value, value.getClass(), options ) );
 			}
 		};

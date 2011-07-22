@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.GridType;
 
 /**
@@ -32,7 +34,7 @@ import org.hibernate.ogm.type.GridType;
  * @author Emmanuel Bernard
  */
 public class LogicalPhysicalConverterHelper {
-	public static Object[] getColumnValuesFromResultset(Map<String, Object> resultset, String[] propertyColumnNames) {
+	public static Object[] getColumnValuesFromResultset(Tuple resultset, String[] propertyColumnNames) {
 		Object[] columnValues;
 		final int nbrOfColumns = propertyColumnNames.length;
 		columnValues = new Object[nbrOfColumns];
@@ -43,7 +45,7 @@ public class LogicalPhysicalConverterHelper {
 	}
 
 	public static Object[] getColumnsValuesFromObjectValue(Object uniqueKey, GridType gridUniqueKeyType, String[] propertyColumnNames, SessionImplementor session) {
-		Map<String, Object> tempResultset = new HashMap<String, Object>(2);
+		Tuple tempResultset = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		gridUniqueKeyType.nullSafeSet( tempResultset, uniqueKey, propertyColumnNames, session) ;
 		return LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tempResultset, propertyColumnNames );
 	}

@@ -54,6 +54,8 @@ import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.OptimizerFactory;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
@@ -531,7 +533,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				GridMetadataManagerHelper.getIdentifierCache( gridManager ).getAdvancedCache();
 		final Map<String, Object> tuple = new HashMap<String, Object>( 1 );
 		final Object segmentColumnValue = nullSafeSet(
-				segmentGridType, segmentValue, segmentColumnName, session, tuple
+				segmentGridType, segmentValue, segmentColumnName, session
 		);
 		RowKey key = new RowKey(
 				tableName,
@@ -548,7 +550,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 			if ( valueFromDb == null ) {
 				//if not there, insert initial value
 				value.initialize( initialValue );
-				valueFromDb = nullSafeSet( identifierValueGridType, value.makeValue().longValue(), valueColumnName, session, tuple );
+				valueFromDb = nullSafeSet( identifierValueGridType, value.makeValue().longValue(), valueColumnName, session );
 				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
 				//check in case somebody has inserted it behind our back
 				if ( oldValue != null ) {
@@ -571,7 +573,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				updateValue.increment();
 			}
 			final Object newValueFromDb = nullSafeSet(
-					identifierValueGridType, updateValue.makeValue().longValue(), valueColumnName, session, tuple
+					identifierValueGridType, updateValue.makeValue().longValue(), valueColumnName, session
 			);
 			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
 		}
@@ -582,8 +584,8 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return value;
 	}
 
-	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session, Map<String, Object> tuple) {
-		tuple.clear();
+	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {
+		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		type.nullSafeSet( tuple, value, new String[] { columnName }, session );
 		return tuple.get( columnName );
 	}

@@ -31,6 +31,7 @@ import org.hibernate.MappingException;
 import org.hibernate.engine.Mapping;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.ForeignKeyDirection;
 
 /**
@@ -273,7 +274,7 @@ public interface GridType extends Serializable {
 	 * @return Object
 	 * @throws HibernateException
 	 */
-	public Object nullSafeGet(Map<String,Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -288,7 +289,7 @@ public interface GridType extends Serializable {
 	 * @return Object
 	 * @throws HibernateException
 	 */
-	public Object nullSafeGet(Map<String,Object> rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -303,7 +304,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Map<String,Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 	throws HibernateException;
 
 	/**
@@ -317,7 +318,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Map<String,Object> resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 	throws HibernateException;
 
 	/**
@@ -417,7 +418,7 @@ public interface GridType extends Serializable {
 	 * @return Object an identifier or actual value
 	 * @throws HibernateException
 	 */
-	public Object hydrate(Map<String,Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**

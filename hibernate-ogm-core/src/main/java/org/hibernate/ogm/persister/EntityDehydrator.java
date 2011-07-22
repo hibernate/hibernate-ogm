@@ -22,7 +22,6 @@ package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -30,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
@@ -42,10 +43,12 @@ import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
 
+import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.populateMapTupleByColumnName;
+
 class EntityDehydrator {
 	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
 
-	private Map<String, Object> resultset;
+	private Tuple resultset;
 	private Object[] fields;
 	private boolean[] includeProperties;
 	private boolean[][] includeColumns;
@@ -77,7 +80,7 @@ class EntityDehydrator {
 		return this;
 	}
 
-	public EntityDehydrator resultset(Map<String, Object> resultset) {
+	public EntityDehydrator resultset(Tuple resultset) {
 		this.resultset = resultset;
 		return this;
 	}
@@ -199,11 +202,10 @@ class EntityDehydrator {
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
-		final Map<String, Object> tuple = new HashMap<String, Object>( 4 );
+		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
 		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
-		tuple.putAll( tuple );
 		//add the fk column
 		gridPropertyTypes[propertyIndex].nullSafeSet(
 							tuple,
@@ -214,9 +216,17 @@ class EntityDehydrator {
 					);
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, identifierColumnNames);
 		final RowKey rowKey = new RowKey( persister.getTableName(), identifierColumnNames, columnValues );
-		propertyValues.put( rowKey, tuple );
+
+		//FIXME clean this
+		Map<String,Object> mapTuple = new HashMap<String, Object>(  );
+		populateMapTupleByColumnName( tuple, identifierColumnNames, mapTuple );
+		populateMapTupleByColumnName( tuple, persister.getPropertyColumnNames( propertyIndex ), mapTuple );
+
+		propertyValues.put( rowKey, mapTuple );
 		metadataProvider.flushToCache();
 	}
+
+
 
 	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
 										  int tableIndex,
@@ -253,8 +263,11 @@ class EntityDehydrator {
 	}
 
 	private Map<String,Object> getTupleKey() {
-		Map<String,Object> tupleKey = new HashMap<String,Object>(4);
+		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
-		return tupleKey;
+		//FIXME clean this
+		Map<String,Object> mapTupleKey = new HashMap<String, Object>(  );
+		populateMapTupleByColumnName( tupleKey, persister.getIdentifierColumnNames(), mapTupleKey );
+		return mapTupleKey;
 	}
 }
