@@ -235,7 +235,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Map<String, Object> tupleKey = getTupleKeyForUpdate( key, collection, session, i, entry );
 
 				//find the matching element
-				RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
+				RowKey matchingTupleKey = buildRowKey( tupleKey );
 				if ( matchingTupleKey == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
 							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
@@ -392,7 +392,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					);
 
 					//find the matching element
-					RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
+					RowKey matchingTupleKey = buildRowKey( tupleKey );
 					if ( matchingTupleKey == null ) {
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
