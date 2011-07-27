@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
@@ -232,11 +233,14 @@ class EntityDehydrator {
 		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
-			final RowKey matchingTuple = metadataProvider.findMatchingTuple( idTuple );
+			//this is a StarToOne case ie the FK is on the owning entity
+			final RowKey matchingTuple = new RowKeyBuilder()
+					.tableName( persister.getTableName() )
+					.addColumns( persister.getIdentifierColumnNames() )
+					.values( idTuple )
+					.build();
 			//TODO what should we do if that's null?
-			if (matchingTuple != null) {
-				metadataProvider.getCollectionMetadata().remove( matchingTuple );
-			}
+			metadataProvider.getCollectionMetadata().remove( matchingTuple );
 			metadataProvider.flushToCache();
 		}
 	}
