@@ -145,26 +145,4 @@ public class PropertyMetadataProvider {
 			gridManager.getGridDialect().updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationCache() );
 		}
 	}
-
-	public RowKey findMatchingTuple(Map<String, Object> tupleKey) {
-		//FIXME Optimize this method, we probably can compute RowKey insead of finding it by value
-		RowKey matchingTuple = null;
-		for ( Map.Entry<RowKey,Map<String,Object>> collTuple : getCollectionMetadata().entrySet() ) {
-			boolean notFound = false;
-			final RowKey key = collTuple.getKey();
-			final Map<String, Object> value = collTuple.getValue();
-			for ( String columnName : tupleKey.keySet() ) {
-				final Object columnValue = value.get( columnName );
-				//values should not be null
-				if ( ! tupleKey.get(columnName).equals( columnValue ) ) {
-					notFound = true;
-					break;
-				}
-			}
-			if ( ! notFound ) {
-				matchingTuple = key;
-			}
-		}
-		return matchingTuple;
-	}
 }
