@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.test.associations.manytoone;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -34,6 +35,7 @@ import org.hibernate.annotations.GenericGenerator;
 public class Member {
 	@Id
 	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
+    @Column(name = "member_id")
 	public String getId() { return id; }
 	public void setId(String id) {  this.id = id; }
 	private String id;
