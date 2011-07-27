@@ -248,7 +248,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				//update the matching element
 				//FIXME update the associated entity key data
 				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
-				getElementGridType().nullSafeSet( matchingTuple, collection.getElement( entry ), getElementColumnNames(), session );
+				getElementGridType().nullSafeSet(
+						matchingTuple,
+						collection.getElement( entry ),
+						getElementColumnNames(),
+						session
+				);
 				updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.ADD, matchingTupleKey );
 				count++;
 			}
@@ -274,7 +279,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			final Object identifier = collection.getIdentifier( entry, i );
 			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session  );
 		}
-		getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+		getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
 		//No need to write to where as we don't do where clauses in OGM :)
 		if ( hasIndex ) {
 			Object index = collection.getIndex( entry, i, this );
@@ -294,10 +299,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Map<String,Object> tupleKey = new HashMap<String,Object>();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
-			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session  );
+			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session );
 		}
 		else {
-			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+			getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
 			//No need to write to where as we don't do where clauses in OGM :)
 			if ( hasIndex && !indexContainsFormula ) {
 				Object index = collection.getIndex( entry, i, this );
@@ -323,7 +328,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			identifierGridType.nullSafeSet( tupleKey, identifier, new String[] { getIdentifierColumnName() }, session );
 		}
 		else {
-			getKeyGridType().nullSafeSet(tupleKey, key, getKeyColumnNames(), session);
+			getKeyGridType().nullSafeSet( tupleKey, key, getKeyColumnNames(), session );
 			//No need to write to where as we don't do where clauses in OGM :)
 			if ( findByIndex ) {
 				Object index = entry;
