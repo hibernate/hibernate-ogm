@@ -21,6 +21,7 @@
 package org.hibernate.ogm.datastore.impl;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
@@ -41,6 +42,11 @@ public class MapBasedTupleSnapshot implements TupleSnapshot {
 	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		return map.keySet();
 	}
 
 	public Map<String, Object> getMap() {

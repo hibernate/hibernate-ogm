@@ -82,4 +82,20 @@ public class Tuple {
 	public TupleSnapshot getSnapshot() {
 		return snapshot;
 	}
+
+	public Set<String> getColumnNames() {
+		Set<String> columnNames = new HashSet<String>( snapshot.getColumnNames() );
+		for ( TupleOperation op : currentState.values() ) {
+			switch ( op.getType() ) {
+				case PUT :
+				case PUT_NULL :
+					columnNames.add( op.getColumn() );
+					break;
+				case REMOVE:
+					columnNames.remove( op.getColumn() );
+					break;
+			}
+		}
+		return columnNames;
+	}
 }

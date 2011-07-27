@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Set;
+
 /**
  * Represents the Tuple snapshot as loaded by the datastore.
  * Interface implemented by the datastore dialect to avoid data
@@ -36,4 +38,6 @@ public interface TupleSnapshot {
 	public Object get(String column);
 
 	public boolean isEmpty();
+
+	public Set<String> getColumnNames();
 }

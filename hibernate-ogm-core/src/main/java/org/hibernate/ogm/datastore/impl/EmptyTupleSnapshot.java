@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
 /**
@@ -38,5 +41,10 @@ public class EmptyTupleSnapshot implements TupleSnapshot {
 	@Override
 	public boolean isEmpty() {
 		return true;
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		return Collections.EMPTY_SET;
 	}
 }

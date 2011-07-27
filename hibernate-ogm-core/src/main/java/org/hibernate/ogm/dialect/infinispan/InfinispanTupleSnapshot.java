@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.infinispan;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
@@ -41,6 +42,11 @@ public class InfinispanTupleSnapshot implements TupleSnapshot {
 	@Override
 	public boolean isEmpty() {
 		return atomicMap.isEmpty();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		return atomicMap.keySet();
 	}
 
 	public Map<String, Object> getAtomicMap() {
