@@ -235,14 +235,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Map<String, Object> tupleKey = getTupleKeyForUpdate( key, collection, session, i, entry );
 
 				//find the matching element
-				RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
-				if ( matchingTupleKey == null ) {
+				RowKey matchingTupleKey = buildRowKey( tupleKey );
+				Map<String, Object> oldTuple = metadataProvider.getCollectionMetadata().get( matchingTupleKey );
+				if ( oldTuple == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " +
 							"table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
 				}
 				//copy on read to avoid concurrent transactions issues
 				Map<String,Object> matchingTuple = new HashMap<String, Object>();
-				matchingTuple.putAll( metadataProvider.getCollectionMetadata().get( matchingTupleKey ) );
+				matchingTuple.putAll( oldTuple );
 
 				//update the matching element
 				//FIXME update the associated entity key data
@@ -392,12 +393,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					);
 
 					//find the matching element
-					RowKey matchingTupleKey = metadataProvider.findMatchingTuple( tupleKey );
-					if ( matchingTupleKey == null ) {
+					RowKey matchingTupleKey = buildRowKey( tupleKey );
+					Map<String,Object> matchingTuple = metadataProvider.getCollectionMetadata().get( matchingTupleKey );
+					if ( matchingTuple == null ) {
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
 								"table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
-					Map<String,Object> matchingTuple = metadataProvider.getCollectionMetadata().get( matchingTupleKey );
 					//delete the tuple
 					updateInverseSideOfAssociationNavigation( session, matchingTuple, Action.REMOVE, matchingTupleKey );
 					metadataProvider.getCollectionMetadata().remove( matchingTupleKey );
