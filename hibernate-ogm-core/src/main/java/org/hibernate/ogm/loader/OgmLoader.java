@@ -49,6 +49,7 @@ import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
+import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -423,10 +424,10 @@ public class OgmLoader implements UniqueEntityLoader {
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
 				.session( session );
-			final Map<RowKey,Map<String,Object>> entry = metadataProvider.getCollectionMetadataOrNull();
-			if ( entry != null ) {
-				for ( Map<String,Object> tuple : entry.values() ) {
-					resultset.addTuple( getTupleFromMapTuple(tuple) );
+			Association assoc = metadataProvider.getCollectionMetadataOrNull();
+			if ( assoc != null ) {
+				for ( RowKey rowKey : assoc.getKeys() ) {
+					resultset.addTuple( assoc.get( rowKey ) );
 				}
 			}
 		}

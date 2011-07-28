@@ -56,6 +56,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -390,18 +391,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
 				.session( session );
-		final Map<RowKey,Map<String,Object>> ids = metadataProvider.getCollectionMetadata();
+		final Association ids = metadataProvider.getCollectionMetadata();
 
 		if (ids == null || ids.size() == 0 ) {
 			return null;
 		}
 		else if (ids.size() == 1) {
 			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
-			//there is only one element in the list
-			final Map<String, Object> tuple = ids.entrySet().iterator().next().getValue();
-			//FIXME get rid of that
-			Tuple wrapper = getTupleFromMapTuple(tuple);
-			final Serializable id = (Serializable) getGridIdentifierType().nullSafeGet( wrapper, getIdentifierColumnNames(), session, null );
+			//there is only one element in the list, so get the first
+			Tuple tuple = ids.get( ids.getKeys().iterator().next() );
+			final Serializable id = (Serializable) getGridIdentifierType().nullSafeGet( tuple, getIdentifierColumnNames(), session, null );
 			return load( id, null, LockMode.NONE, session );
 		}
 		else {

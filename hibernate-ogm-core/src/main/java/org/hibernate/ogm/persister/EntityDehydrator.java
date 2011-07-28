@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -201,7 +202,6 @@ class EntityDehydrator {
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
-		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -217,12 +217,10 @@ class EntityDehydrator {
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, identifierColumnNames);
 		final RowKey rowKey = new RowKey( persister.getTableName(), identifierColumnNames, columnValues );
 
-		//FIXME clean this
-		Map<String,Object> mapTuple = new HashMap<String, Object>(  );
-		populateMapTupleByColumnName( tuple, identifierColumnNames, mapTuple );
-		populateMapTupleByColumnName( tuple, persister.getPropertyColumnNames( propertyIndex ), mapTuple );
-
-		propertyValues.put( rowKey, mapTuple );
+		Tuple assocEntryTuple = metadataProvider.createAndPutAssociationTuple( rowKey );
+		for ( String column : tuple.getColumnNames() ) {
+			assocEntryTuple.put(column, tuple.get(column) );
+		}
 		metadataProvider.flushToCache();
 	}
 
@@ -240,7 +238,7 @@ class EntityDehydrator {
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
 		Map<String,Object> idTuple = getTupleKey();
-		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
+		Association propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
 			//this is a StarToOne case ie the FK is on the owning entity

@@ -20,14 +20,13 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
 
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.metadata.GridMetadataManager;
@@ -46,7 +45,7 @@ public class PropertyMetadataProvider {
 	private Object key;
 	private SessionImplementor session;
 	private AssociationKey collectionMetadataKey;
-	private Map<RowKey,Map<String,Object>> collectionMetadata;
+	private Association collectionMetadata;
 	private Object[] columnValues;
 
 	//fluent methods for populating data
@@ -119,7 +118,14 @@ public class PropertyMetadataProvider {
 		return columnValues;
 	}
 
-	public Map<RowKey,Map<String,Object>> getCollectionMetadata() {
+	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
+		Tuple associationTuple = gridManager.getGridDialect()
+				.createTupleAssociation( getCollectionMetadataKey(), rowKey, associationCache );
+		getCollectionMetadata().put( rowKey, associationTuple);
+		return associationTuple;
+	}
+
+	public Association getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
 			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
 			if (collectionMetadata == null) {
@@ -129,7 +135,7 @@ public class PropertyMetadataProvider {
 		return collectionMetadata;
 	}
 
-	public Map<RowKey,Map<String,Object>> getCollectionMetadataOrNull() {
+	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
 			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
 		}
@@ -137,7 +143,7 @@ public class PropertyMetadataProvider {
 	}
 
 	public void flushToCache() {
-		if ( getCollectionMetadata().size() == 0 ) {
+		if ( getCollectionMetadata().isEmpty() ) {
 			gridManager.getGridDialect().removeAssociation( getCollectionMetadataKey(), getAssociationCache() );
 			collectionMetadata = null;
 		}
