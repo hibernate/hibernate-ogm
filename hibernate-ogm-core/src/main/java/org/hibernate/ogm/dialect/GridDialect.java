@@ -26,6 +26,7 @@ import org.infinispan.Cache;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -62,21 +63,23 @@ public interface GridDialect {
 	/**
 	 * Return the list of tuples corresponding to a given association
 	 */
-	Map<RowKey,Map<String,Object>> getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	Association getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
 
 	/**
 	 * Create an empty container for the list of tuples corresponding to a given association
 	 * Only used if the association data is not present
 	 */
-	Map<RowKey,Map<String,Object>> createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	Association createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
 
 	/**
 	 * Update a given list of tuples corresponding to a given association
 	 */
-	void updateAssociation(Map<RowKey,Map<String,Object>> association, AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	void updateAssociation(Association association, AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
 	 */
 	void removeAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+
+	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache);
 }
