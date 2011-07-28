@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Set;
+
 import org.hibernate.ogm.grid.RowKey;
 
 /**
@@ -37,5 +39,7 @@ public interface AssociationSnapshot {
 	 */
 	public Tuple get(RowKey column);
 
-	public boolean isEmpty();
+	public int size();
+
+	public Set<RowKey> getRowKeys();
 }

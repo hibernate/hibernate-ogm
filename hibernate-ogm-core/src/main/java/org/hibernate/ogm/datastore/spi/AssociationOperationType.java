@@ -28,5 +28,6 @@ package org.hibernate.ogm.datastore.spi;
 public enum AssociationOperationType {
 	PUT,
 	REMOVE,
-	PUT_NULL
+	PUT_NULL,
+	CLEAR
 }

@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +46,7 @@ import static org.hibernate.ogm.datastore.spi.AssociationOperationType.*;
 public class Association {
 	private final AssociationSnapshot snapshot;
 	private final Map<RowKey, AssociationOperation> currentState = new HashMap<RowKey, AssociationOperation>();
+	private boolean cleared;
 
 	public Association(AssociationSnapshot snapshot) {
 		this.snapshot = snapshot;
@@ -52,7 +55,7 @@ public class Association {
 	public Tuple get(RowKey key) {
 		AssociationOperation result = currentState.get( key );
 		if ( result == null ) {
-			return snapshot.get( key );
+			return cleared ? null : snapshot.get( key );
 		}
 		else if ( result.getType() == PUT_NULL || result.getType() == REMOVE ) {
 			return null;
@@ -74,12 +77,75 @@ public class Association {
 	/**
 	 * Return the list of actions on the tuple.
 	 * Inherently deduplicate operations
+	 *
+	 * Note that the global CLEAR operation is put at the top of the list.
 	 */
-	public Set<AssociationOperation> getOperations() {
-		return new HashSet<AssociationOperation>( currentState.values() );
+	public List<AssociationOperation> getOperations() {
+		List<AssociationOperation> result = new ArrayList<AssociationOperation>(  );
+		if (cleared) {
+			result.add( new AssociationOperation( null, null, AssociationOperationType.CLEAR ) );
+		}
+		result.addAll( currentState.values() );
+		return result;
 	}
 
 	public AssociationSnapshot getSnapshot() {
 		return snapshot;
+	}
+
+	public boolean isEmpty() {
+		int snapshotSize = cleared ? 0 : snapshot.size();
+		//nothing in both
+		if ( snapshotSize == 0 && currentState.isEmpty() ) {
+			return true;
+		}
+		//snapshot bigger than changeset
+		if ( snapshotSize > currentState.size() ) {
+			return false;
+		}
+		return size() == 0;
+	}
+
+	public int size() {
+		int size = cleared ? 0 : snapshot.size();
+		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
+			switch ( op.getValue().getType() ) {
+				case PUT:
+				case PUT_NULL:
+					if ( cleared || snapshot.get( op.getKey() ) == null ) {
+						size++;
+					}
+					break;
+				case REMOVE:
+					if ( !cleared && snapshot.get( op.getKey() ) != null ) {
+						size--;
+					}
+					break;
+			}
+		}
+		return size;
+	}
+
+	public Set<RowKey> getKeys() {
+		Set<RowKey> keys = new HashSet<RowKey>();
+		if (!cleared) {
+			keys.addAll( snapshot.getRowKeys() );
+		}
+		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
+			switch ( op.getValue().getType() ) {
+				case PUT:
+				case PUT_NULL:
+						keys.add( op.getKey() );
+					break;
+				case REMOVE:
+					keys.remove( op.getKey() );
+					break;
+			}
+		}
+		return keys;
+	}
+
+	public void clear() {
+		cleared = true;
 	}
 }
