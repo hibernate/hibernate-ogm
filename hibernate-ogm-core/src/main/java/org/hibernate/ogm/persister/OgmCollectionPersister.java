@@ -65,9 +65,6 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
 
-import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.getTupleFromMapTuple;
-import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.populateMapTupleByColumnName;
-
 /**
  * CollectionPersister storing the collection in a grid 
  *

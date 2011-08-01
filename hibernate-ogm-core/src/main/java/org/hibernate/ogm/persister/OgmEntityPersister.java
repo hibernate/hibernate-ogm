@@ -79,8 +79,6 @@ import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
 
-import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.getTupleFromMapTuple;
-
 /**
  * Use a table per concrete class strategy
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}

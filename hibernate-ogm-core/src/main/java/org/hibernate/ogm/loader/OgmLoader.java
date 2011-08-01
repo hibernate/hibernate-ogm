@@ -72,8 +72,6 @@ import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
 import org.hibernate.util.StringHelper;
 
-import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.getTupleFromMapTuple;
-
 /**
  * Load an entity from the Grid
  *

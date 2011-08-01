@@ -21,7 +21,6 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -43,8 +42,6 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
-
-import static org.hibernate.ogm.datastore.impl.TupleToMapHelper.populateMapTupleByColumnName;
 
 class EntityDehydrator {
 	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
@@ -237,7 +234,9 @@ class EntityDehydrator {
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
-		Map<String,Object> idTuple = getTupleKey();
+		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
+
 		Association propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
@@ -245,7 +244,7 @@ class EntityDehydrator {
 			final RowKey matchingTuple = new RowKeyBuilder()
 					.tableName( persister.getTableName() )
 					.addColumns( persister.getIdentifierColumnNames() )
-					.values( idTuple )
+					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?
 			metadataProvider.getCollectionMetadata().remove( matchingTuple );
@@ -258,14 +257,5 @@ class EntityDehydrator {
 			if ( object != null ) return false;
 		}
 		return true;
-	}
-
-	private Map<String,Object> getTupleKey() {
-		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
-		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
-		//FIXME clean this
-		Map<String,Object> mapTupleKey = new HashMap<String, Object>(  );
-		populateMapTupleByColumnName( tupleKey, persister.getIdentifierColumnNames(), mapTupleKey );
-		return mapTupleKey;
 	}
 }
