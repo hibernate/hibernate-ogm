@@ -135,7 +135,7 @@ public class Association {
 			switch ( op.getValue().getType() ) {
 				case PUT:
 				case PUT_NULL:
-						keys.add( op.getKey() );
+					keys.add( op.getKey() );
 					break;
 				case REMOVE:
 					keys.remove( op.getKey() );

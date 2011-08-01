@@ -63,21 +63,21 @@ public class InfinispanDialect implements GridDialect {
 	 */
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		if ( lockMode==LockMode.PESSIMISTIC_FORCE_INCREMENT) {
-			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode);
+		if ( lockMode==LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
+			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_WRITE) {
-			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode);
+		else if ( lockMode==LockMode.PESSIMISTIC_WRITE ) {
+			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_READ) {
+		else if ( lockMode==LockMode.PESSIMISTIC_READ ) {
 			//TODO find a more efficient pessimistic read
-			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode);
+			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC) {
-			return new OptimisticLockingStrategy( lockable, lockMode);
+		else if ( lockMode==LockMode.OPTIMISTIC ) {
+			return new OptimisticLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT) {
-			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode);
+		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
+			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
 		return new SelectLockingStrategy( lockable, lockMode );
 	}
@@ -165,12 +165,13 @@ public class InfinispanDialect implements GridDialect {
 		Map<String, Object> snapshot;
 		TupleSnapshot snapshotInstance = tuple.getSnapshot();
 		if ( snapshotInstance == EmptyTupleSnapshot.SINGLETON ) {
+			//new assoc tuples are made of EmptyTupleSnapshot
 			snapshot = Collections.EMPTY_MAP;
 		}
 		else {
+			//loaded assoc tuples are made of MapBasedTupleSnapshot
 			snapshot = ( ( MapBasedTupleSnapshot) snapshotInstance ).getMap();
 		}
-		;
 		Map<String, Object> map = new HashMap<String, Object>( snapshot );
 		applyTupleOpsOnMap( tuple, map );
 		return map;
