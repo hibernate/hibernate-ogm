@@ -53,7 +53,7 @@ public class Tuple {
 			return snapshot.get( column );
 		}
 		else if ( result.getType() == PUT_NULL || result.getType() == REMOVE ) {
-			return result;
+			return null;
 		}
 		else {
 			return result.getValue();
