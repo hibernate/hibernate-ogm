@@ -45,6 +45,11 @@ public class InfinispanAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	@Override
+	public boolean containsKey(RowKey column) {
+		return atomicMap.containsKey( column );
+	}
+
+	@Override
 	public int size() {
 		return atomicMap.size();
 	}

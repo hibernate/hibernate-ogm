@@ -112,12 +112,12 @@ public class Association {
 			switch ( op.getValue().getType() ) {
 				case PUT:
 				case PUT_NULL:
-					if ( cleared || snapshot.get( op.getKey() ) == null ) {
+					if ( cleared || !snapshot.containsKey( op.getKey() ) ) {
 						size++;
 					}
 					break;
 				case REMOVE:
-					if ( !cleared && snapshot.get( op.getKey() ) != null ) {
+					if ( !cleared && snapshot.containsKey( op.getKey() ) ) {
 						size--;
 					}
 					break;

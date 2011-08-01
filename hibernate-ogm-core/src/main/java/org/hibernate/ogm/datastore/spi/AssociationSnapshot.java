@@ -39,6 +39,8 @@ public interface AssociationSnapshot {
 	 */
 	public Tuple get(RowKey column);
 
+	public boolean containsKey(RowKey column);
+
 	public int size();
 
 	public Set<RowKey> getRowKeys();
