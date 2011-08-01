@@ -20,19 +20,12 @@
  */
 package org.hibernate.ogm.type;
 
-import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Map;
-
-import org.dom4j.Node;
 
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
-import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.engine.SessionImplementor;
-import org.hibernate.type.ForeignKeyDirection;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.Type;
 import org.hibernate.util.ArrayHelper;
 
@@ -56,19 +49,19 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate( rs, names, session, owner ), session, owner ) ;
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
 		Object[] subvalues = nullSafeGetValues( value, session.getEntityMode() );
 		//TODO in the original componentType begin and loc are different (namely begin only counts settable slots
@@ -96,7 +89,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		final boolean[] trueSettable = new boolean[names.length];
 		Arrays.fill( trueSettable, true);
@@ -104,7 +97,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public Object hydrate(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		int begin = 0;
 		boolean notNull = false;

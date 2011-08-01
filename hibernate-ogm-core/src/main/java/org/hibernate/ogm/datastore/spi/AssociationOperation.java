@@ -18,34 +18,38 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.type.descriptor;
+package org.hibernate.ogm.datastore.spi;
 
-import java.util.Map;
-
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Map field to string value and persist it to the grid
- * 
- * @author Nicolas Helleringer
+ * Operation applied to the association.
+ * A RowKey is provided and when it makes sense a Tuple
+ * (eg DELETE or PUT_NULL do not have tuples)
+ *
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class StringMappedGridTypeDescriptor implements GridTypeDescriptor {
-	public static final StringMappedGridTypeDescriptor INSTANCE = new StringMappedGridTypeDescriptor();
 
-	@Override
-	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new StringMappedGridBinder<X>(javaTypeDescriptor, this) {
-			@Override
-			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
-				resultset.put( names[0], javaTypeDescriptor.toString( value) );
-			}
-		};
+public class AssociationOperation {
+	private final RowKey key;
+	private final Tuple value;
+	private final AssociationOperationType type;
+
+	public AssociationOperation(RowKey key, Tuple value, AssociationOperationType type) {
+		this.key = key;
+		this.value = value;
+		this.type = type;
 	}
 
-	@Override
-	public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new StringMappedGridExtractor<X>( javaTypeDescriptor, this );
+	public RowKey getKey() {
+		return key;
+	}
+
+	public Tuple getValue() {
+		return value;
+	}
+
+	public AssociationOperationType getType() {
+		return type;
 	}
 }

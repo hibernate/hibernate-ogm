@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -56,6 +55,9 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
@@ -233,10 +235,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		//snapshot is a Map in the end
-		final Map<String, Object> resultset = getResultsetById( id, cache );
+		final Tuple resultset = getResultsetById( id, cache );
 
 		//if there is no resulting row, return null
-		if ( resultset == null || resultset.size() == 0 ) {
+		if ( resultset == null || resultset.getSnapshot().isEmpty() ) {
 			return null;
 		}
 		//otherwise return the "hydrated" state (ie. associations are not resolved)
@@ -251,9 +253,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
-	private Map<String, Object> getResultsetById(Serializable id, Cache<EntityKey, Map<String, Object>> cache) {
+	private Tuple getResultsetById(Serializable id, Cache<EntityKey, Map<String, Object>> cache) {
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id( id ).getKey();
-		final Map<String,Object> resultset = gridManager.getGridDialect().getTuple(key,cache);
+		final Tuple resultset = gridManager.getGridDialect().getTuple(key,cache);
 		return resultset;
 	}
 
@@ -323,7 +325,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
 		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Map<String, Object> resultset = getResultsetById( id, cache );
+		final Tuple resultset = getResultsetById( id, cache );
 
 		if (resultset == null) {
 			return null;
@@ -362,7 +364,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 */
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
 		final GridDialect gridDialect = gridManager.getGridDialect();
-		final Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
+		final Tuple resultset = gridDialect.getTuple( key, entityCache );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
 		gridDialect.updateTuple( resultset, key, entityCache );
@@ -387,15 +389,15 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
 				.session( session );
-		final Map<RowKey,Map<String,Object>> ids = metadataProvider.getCollectionMetadata();
+		final Association ids = metadataProvider.getCollectionMetadata();
 
 		if (ids == null || ids.size() == 0 ) {
 			return null;
 		}
 		else if (ids.size() == 1) {
 			//EntityLoader#loadByUniqueKey uses a null object and LockMode.NONE
-			//there is only one element in the list
-			final Map<String, Object> tuple = ids.entrySet().iterator().next().getValue();
+			//there is only one element in the list, so get the first
+			Tuple tuple = ids.get( ids.getKeys().iterator().next() );
 			final Serializable id = (Serializable) getGridIdentifierType().nullSafeGet( tuple, getIdentifierColumnNames(), session, null );
 			return load( id, null, LockMode.NONE, session );
 		}
@@ -514,7 +516,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	 * this really be here, or should it be sent back to Loader?
 	 */
 	public Object[] hydrate(
-			final Map<String,Object> resultset,
+			final Tuple resultset,
 	        final Serializable id,
 	        final Object object,
 	        final Loadable rootLoadable,
@@ -562,7 +564,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	private Object hydrateValue(
-			Map<String,Object> resultset,
+			Tuple resultset,
 			SessionImplementor session,
 			Object object,
 			int index, 
@@ -708,7 +710,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-				Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
+				Tuple resultset = gridDialect.getTuple( key, entityCache );
 				final boolean useVersion = j == 0 && isVersioned();
 
 				resultset = createNewResultSetIfNull( key, entityCache, resultset, id, session );
@@ -768,7 +770,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 	}
 
-	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Map<String, Object> resultset) {
+	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Tuple resultset) {
 		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, EntityMode.POJO, factory ) ) {
@@ -781,7 +783,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	private void dehydrate(
-			Map<String, Object> resultset,
+			Tuple resultset,
 			final Object[] fields,
 			boolean[] includeProperties,
 			boolean[][] includeColumns,
@@ -848,7 +850,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 
 			final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-			Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
+			Tuple resultset = gridDialect.getTuple( key, entityCache );
 			// add the discriminator
 			if ( j == 0 ) {
 				if (resultset != null) {
@@ -867,10 +869,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 	}
 
-	private Map<String, Object> createNewResultSetIfNull(
+	private Tuple createNewResultSetIfNull(
 			EntityKey key,
 			Cache<EntityKey, Map<String, Object>> entityCache,
-			Map<String, Object> resultset,
+			Tuple resultset,
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
@@ -913,7 +915,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
 		final GridDialect gridDialect = gridManager.getGridDialect();
-		final Map<String, Object> resultset = gridDialect.getTuple( key, entityCache );
+		final Tuple resultset = gridDialect.getTuple( key, entityCache );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements

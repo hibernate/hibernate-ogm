@@ -21,8 +21,6 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -30,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
@@ -45,7 +46,7 @@ import org.hibernate.type.Type;
 class EntityDehydrator {
 	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
 
-	private Map<String, Object> resultset;
+	private Tuple resultset;
 	private Object[] fields;
 	private boolean[] includeProperties;
 	private boolean[][] includeColumns;
@@ -77,7 +78,7 @@ class EntityDehydrator {
 		return this;
 	}
 
-	public EntityDehydrator resultset(Map<String, Object> resultset) {
+	public EntityDehydrator resultset(Tuple resultset) {
 		this.resultset = resultset;
 		return this;
 	}
@@ -198,12 +199,10 @@ class EntityDehydrator {
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
-		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
-		final Map<String, Object> tuple = new HashMap<String, Object>( 4 );
+		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
 		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
-		tuple.putAll( tuple );
 		//add the fk column
 		gridPropertyTypes[propertyIndex].nullSafeSet(
 							tuple,
@@ -214,9 +213,15 @@ class EntityDehydrator {
 					);
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, identifierColumnNames);
 		final RowKey rowKey = new RowKey( persister.getTableName(), identifierColumnNames, columnValues );
-		propertyValues.put( rowKey, tuple );
+
+		Tuple assocEntryTuple = metadataProvider.createAndPutAssociationTuple( rowKey );
+		for ( String column : tuple.getColumnNames() ) {
+			assocEntryTuple.put(column, tuple.get(column) );
+		}
 		metadataProvider.flushToCache();
 	}
+
+
 
 	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
 										  int tableIndex,
@@ -229,15 +234,17 @@ class EntityDehydrator {
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				.tableName( persister.getTableName( tableIndex ) );
-		Map<String,Object> idTuple = getTupleKey();
-		Map<RowKey,Map<String,Object>> propertyValues = metadataProvider.getCollectionMetadata();
+		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
+
+		Association propertyValues = metadataProvider.getCollectionMetadata();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
 			//this is a StarToOne case ie the FK is on the owning entity
 			final RowKey matchingTuple = new RowKeyBuilder()
 					.tableName( persister.getTableName() )
 					.addColumns( persister.getIdentifierColumnNames() )
-					.values( idTuple )
+					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?
 			metadataProvider.getCollectionMetadata().remove( matchingTuple );
@@ -250,11 +257,5 @@ class EntityDehydrator {
 			if ( object != null ) return false;
 		}
 		return true;
-	}
-
-	private Map<String,Object> getTupleKey() {
-		Map<String,Object> tupleKey = new HashMap<String,Object>(4);
-		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
-		return tupleKey;
 	}
 }

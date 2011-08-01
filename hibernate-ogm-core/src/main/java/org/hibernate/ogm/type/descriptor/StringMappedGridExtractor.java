@@ -25,6 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
@@ -41,7 +42,7 @@ public class StringMappedGridExtractor<J> implements GridValueExtractor<J> {
 	}
 
 	@Override
-	public J extract(Map<String, Object> resultset, String name) {
+	public J extract(Tuple resultset, String name) {
 		@SuppressWarnings( "unchecked" )
 		final String result = (String) resultset.get( name );
 		if ( result == null ) {

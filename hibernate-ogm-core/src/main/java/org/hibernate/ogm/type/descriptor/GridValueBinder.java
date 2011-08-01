@@ -22,6 +22,8 @@ package org.hibernate.ogm.type.descriptor;
 
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
+
 /**
  * Contract to bind a value to the resultset
  *
@@ -29,5 +31,5 @@ import java.util.Map;
  */
 public interface GridValueBinder<X> {
 	//WrappedOptions for streams?
-	void bind(Map<String,Object> resultset, X value, String[] names);
+	void bind(Tuple resultset, X value, String[] names);
 }

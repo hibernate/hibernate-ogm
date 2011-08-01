@@ -21,7 +21,6 @@
 package org.hibernate.ogm.type;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
@@ -30,6 +29,7 @@ import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.EntityKey;
 import org.hibernate.engine.ForeignKeys;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
 
@@ -47,19 +47,19 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate(rs, names, session, owner), session, owner );
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
 		GridType idGridType = getIdGridType( session );
 		idGridType.nullSafeSet( resultset, getIdentifier( value, session ), names, settable, session );
@@ -72,14 +72,14 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		GridType idGridType = getIdGridType( session );
 		idGridType.nullSafeSet( resultset, getIdentifier( value, session ), names, session );
 	}
 
 	@Override
-	public Object hydrate(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		// return the (fully resolved) identifier value, but do not resolve
 		// to the actual referenced entity instance

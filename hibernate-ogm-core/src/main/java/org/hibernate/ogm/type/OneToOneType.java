@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**
  * @author Emmanuel Bernard
@@ -39,31 +40,31 @@ public class OneToOneType extends GridTypeDelegatingToCoreType implements GridTy
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return resolve( hydrate(rs, names, session, owner), session, owner );
 	}
 
 	@Override
-	public Object nullSafeGet(Map<String, Object> rs, String name, SessionImplementor session, Object owner)
+	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return nullSafeGet( rs, new String[] {name}, session, owner );
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
 		//Nothing to do
 	}
 
 	@Override
-	public void nullSafeSet(Map<String, Object> resultset, Object value, String[] names, SessionImplementor session)
+	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 			throws HibernateException {
 		//nothing to do
 	}
 
 	@Override
-	public Object hydrate(Map<String, Object> rs, String[] names, SessionImplementor session, Object owner)
+	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
 		return session.getContextEntityIdentifier(owner);
 	}

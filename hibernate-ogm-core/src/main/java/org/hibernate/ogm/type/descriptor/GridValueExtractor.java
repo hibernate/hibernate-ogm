@@ -22,6 +22,8 @@ package org.hibernate.ogm.type.descriptor;
 
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
+
 /**
  * Extract value from the result set
  *
@@ -29,5 +31,5 @@ import java.util.Map;
  */
 public interface GridValueExtractor<X> {
 	//WrappedOptions for streams?
-	X extract(Map<String, Object> resultset, String name);
+	X extract(Tuple resultset, String name);
 }

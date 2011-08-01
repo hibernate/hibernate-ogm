@@ -49,6 +49,8 @@ import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PreLoadEvent;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
@@ -402,7 +404,7 @@ public class OgmLoader implements UniqueEntityLoader {
 					.entityPersister( getEntityPersisters()[0] )
 					.id( id )
 					.getKey();
-			final Map<String,Object> entry = gridManager.getGridDialect().getTuple( key, entityCache );
+			Tuple entry = gridManager.getGridDialect().getTuple( key, entityCache );
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}
@@ -420,10 +422,10 @@ public class OgmLoader implements UniqueEntityLoader {
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
 				.session( session );
-			final Map<RowKey,Map<String,Object>> entry = metadataProvider.getCollectionMetadataOrNull();
-			if ( entry != null ) {
-				for ( Map<String,Object> tuple : entry.values() ) {
-					resultset.addTuple( tuple );
+			Association assoc = metadataProvider.getCollectionMetadataOrNull();
+			if ( assoc != null ) {
+				for ( RowKey rowKey : assoc.getKeys() ) {
+					resultset.addTuple( assoc.get( rowKey ) );
 				}
 			}
 		}
@@ -699,7 +701,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#getRow
 	 */
 	private Object[] getRow(
-			final Map<String, Object> resultset,
+			final Tuple resultset,
 	        final OgmEntityPersister[] persisters,
 	        final org.hibernate.engine.EntityKey[] keys,
 	        final Object optionalObject,
@@ -774,7 +776,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#instanceAlreadyLoaded
 	 */
 	private void instanceAlreadyLoaded(
-			final Map<String, Object> resultset,
+			final Tuple resultset,
 	        final int i,
 			//TODO create an interface for this usage
 	        final OgmEntityPersister persister,
@@ -816,7 +818,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#instanceNotYetLoaded
 	 */
 	private Object instanceNotYetLoaded(
-	        final Map<String, Object> resultset,
+	        final Tuple resultset,
 	        final int i,
 	        final Loadable persister,
 	        final String rowIdAlias,
@@ -875,7 +877,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#getInstanceClass
 	 */
 	private String getInstanceClass(
-	        final Map<String, Object> resultset,
+	        final Tuple resultset,
 	        final int i,
 	        final Loadable persister,
 	        final Serializable id,
@@ -893,7 +895,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#loadFromResultSet
 	 */
 	private void loadFromResultSet(
-	        final Map<String, Object> resultset,
+	        final Tuple resultset,
 	        final int i,
 	        final Object object,
 	        final String instanceEntityName,

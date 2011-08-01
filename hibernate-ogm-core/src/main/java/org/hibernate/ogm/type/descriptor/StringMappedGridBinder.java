@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.NonContextualLobCreator;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
@@ -60,7 +61,7 @@ public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
 	}
 
 	@Override
-	public void bind(Map<String, Object> resultset, X value, String[] names) {
+	public void bind(Tuple resultset, X value, String[] names) {
 		if ( value == null ) {
 			for ( String name : names ) {
 				log.trace( "binding [null] to parameter [{}]", name );
@@ -74,5 +75,5 @@ public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
 		}
 	}
 
-	protected abstract void doBind(Map<String, Object> resultset, X value, String[] names, WrapperOptions options);
+	protected abstract void doBind(Tuple resultset, X value, String[] names, WrapperOptions options);
 }
