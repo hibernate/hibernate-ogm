@@ -147,5 +147,6 @@ public class Association {
 
 	public void clear() {
 		cleared = true;
+		currentState.clear();
 	}
 }
