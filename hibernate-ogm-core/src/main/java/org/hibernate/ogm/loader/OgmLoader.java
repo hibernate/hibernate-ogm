@@ -447,40 +447,18 @@ public class OgmLoader implements UniqueEntityLoader {
 		final CollectionPersister[] collectionPersisters = getCollectionPersisters();
 		if ( collectionPersisters != null ) {
 
-			//we don't load more than one instance per row, shortcircuiting it for the moment
-			final int[] collectionOwners = null;
-
+			final CollectionAliases[] descriptors = getCollectionAliases();
 			for ( int i=0; i<collectionPersisters.length; i++ ) {
-				final CollectionAliases[] descriptors = getCollectionAliases();
-				final boolean hasCollectionOwners = collectionOwners !=null &&
-						collectionOwners[i] > -1;
-				//true if this is a query and we are loading multiple instances of the same collection role
-				//otherwise this is a CollectionInitializer and we are loading up a single collection or batch
-
-				final Object owner = hasCollectionOwners ?
-						row[ collectionOwners[i] ] :
-						null; //if null, owner will be retrieved from session
-
 				final CollectionPersister collectionPersister = collectionPersisters[i];
-				final Serializable key;
-				if ( owner == null ) {
-					key = null;
-				}
-				else {
-					key = collectionPersister.getCollectionType().getKeyOfOwner( owner, session );
-					//TODO: old version did not require hashmap lookup:
-					//keys[collectionOwner].getIdentifier()
-				}
 
 				readCollectionElement(
-						owner,
-						key,
+						null,
+						null,
 						collectionPersister,
 						descriptors[i],
 						resultSet, //TODO CURRENT must use the same instance across all calls
 						session
 					);
-
 			}
 
 		}

@@ -593,14 +593,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				//final ResultSet propertyResultSet = propertyIsDeferred ? sequentialResultSet : rs;
 				GridType[] gridTypes = gridPropertyTypes;
 				final String[] cols;
-				if ( propertyIsDeferred ) {
-					cols = getPropertyAliases( "", index );
-				}
-				else {
-					//TODO What to do?
-					//: suffixedPropertyColumns[i];
-					cols = getPropertyAliases( "", index );
-				}
+				cols = getPropertyAliases( "", index );
 				value = gridTypes[index].hydrate( resultset, cols, session, object ); //null owner ok??
 			}
 		}
@@ -668,10 +661,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			throw new IllegalStateException( "Updating immutable entity that is not in session yet!" );
 		}
 		//we always use a dynamicUpdate model for Infinispan
-		if ( (
-				//getEntityMetamodel().isDynamicUpdate() &&
-				dirtyFields != null ) ) {
-
+		if (dirtyFields != null) {
 			propsToUpdate = getPropertiesToUpdate( dirtyFields, hasDirtyCollection );
 			// don't need to check laziness (dirty checking algorithm handles that)
 		}
@@ -684,10 +674,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			// If dirtyFields == null, then that means that there are no dirty properties to
 			// to be updated; an empty array for the dirty fields needs to be passed to
 			// getPropertiesToUpdate() instead of null.
-			propsToUpdate = getPropertiesToUpdate(
-					( dirtyFields == null ? ArrayHelper.EMPTY_INT_ARRAY : dirtyFields ),
-					hasDirtyCollection
-			);
+			propsToUpdate = getPropertiesToUpdate(ArrayHelper.EMPTY_INT_ARRAY,hasDirtyCollection);
 			// don't need to check laziness (dirty checking algorithm handles that)
 		}
 		else {
