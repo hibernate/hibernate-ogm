@@ -122,7 +122,7 @@
 
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
-        <infinispanVersion>5.0.0.CR5</infinispanVersion>
+        <infinispanVersion>5.0.0.FINAL</infinispanVersion>
         <hibernateVersion>3.6.6.Final</hibernateVersion>
         <hibernateSearchVersion>3.4.0.Final</hibernateSearchVersion>
         <luceneVersion>3.1.0</luceneVersion>

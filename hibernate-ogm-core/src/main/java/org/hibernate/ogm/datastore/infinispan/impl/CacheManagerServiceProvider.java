@@ -125,7 +125,8 @@ public class CacheManagerServiceProvider {
 		try {
 			InfinispanConfiguration configuration = InfinispanConfiguration.newInfinispanConfiguration(
 					cfgName, InfinispanConfiguration.resolveSchemaPath(),
-					new ConfigurationValidatingVisitor());
+					new ConfigurationValidatingVisitor(),
+					Thread.currentThread().getContextClassLoader() );
 			GlobalConfiguration globalConfiguration = configuration.parseGlobalConfiguration();
 			Configuration defaultConfiguration = configuration.parseDefaultConfiguration();
 			TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( properties );
