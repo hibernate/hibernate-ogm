@@ -23,7 +23,7 @@ package org.hibernate.ogm.cfg.impl;
 import org.hibernate.AssertionFailure;
 import org.hibernate.cfg.EJB3NamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
-import org.hibernate.util.StringHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * Implements the OGM naming strategy:
@@ -71,7 +71,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 
 	@Override
 	public String logicalColumnName(String columnName, String propertyName) {
-		return StringHelper.isNotEmpty( columnName ) ? columnName : propertyName;
+		return StringHelper.isEmpty( columnName ) == false ? columnName : propertyName;
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 
 	@Override
 	public String logicalCollectionColumnName(String columnName, String propertyName, String referencedColumn) {
-		return StringHelper.isNotEmpty( columnName ) ?
+		return StringHelper.isEmpty( columnName ) == false ?
 				columnName :
 				propertyName + "_" + referencedColumn;
 	}

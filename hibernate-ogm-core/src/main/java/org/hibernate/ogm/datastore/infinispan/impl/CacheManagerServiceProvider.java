@@ -38,8 +38,8 @@ import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.util.impl.JndiHelper;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.util.NamingHelper;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -98,7 +98,7 @@ public class CacheManagerServiceProvider {
 	}
 
 	private EmbeddedCacheManager lookupCacheManager(String jndiName, Properties properties) {
-		Properties jndiProperties = NamingHelper.getJndiProperties( properties );
+		Properties jndiProperties = JndiHelper.extractJndiProperties( properties );
 		Context ctx = null;
 		try {
 			ctx = new InitialContext( jndiProperties );

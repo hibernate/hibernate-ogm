@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.metadata;
 
-import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
@@ -28,7 +27,7 @@ import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactoryObserver;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;

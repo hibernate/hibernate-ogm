@@ -22,19 +22,14 @@ package org.hibernate.ogm.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Properties;
 
-import org.hibernate.HibernateException;
-import org.hibernate.connection.ConnectionProvider;
+import org.hibernate.service.UnknownUnwrapTypeException;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 
 /**
  * @author Emmanuel Bernard
  */
 public class NoopConnectionProvider implements ConnectionProvider {
-	@Override
-	public void configure(Properties props) throws HibernateException {
-	}
-
 	@Override
 	public Connection getConnection() throws SQLException {
 		return new NoopConnection();
@@ -45,11 +40,17 @@ public class NoopConnectionProvider implements ConnectionProvider {
 	}
 
 	@Override
-	public void close() throws HibernateException {
+	public boolean supportsAggressiveRelease() {
+		return true;
 	}
 
 	@Override
-	public boolean supportsAggressiveRelease() {
-		return true;
+	public boolean isUnwrappableAs(Class unwrapType) {
+		return false;
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> unwrapType) {
+		throw new UnknownUnwrapTypeException(unwrapType);
 	}
 }
