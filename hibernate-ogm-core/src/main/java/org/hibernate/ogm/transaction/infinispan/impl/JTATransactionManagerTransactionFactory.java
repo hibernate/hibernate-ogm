@@ -23,14 +23,17 @@ package org.hibernate.ogm.transaction.infinispan.impl;
 import java.util.Properties;
 
 import javax.transaction.SystemException;
+import javax.transaction.UserTransaction;
 
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.TransactionException;
-import org.hibernate.jdbc.JDBCContext;
-import org.hibernate.transaction.TransactionFactory;
-import org.hibernate.util.JTAHelper;
+import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
+import org.hibernate.engine.transaction.spi.TransactionCoordinator;
+import org.hibernate.engine.transaction.spi.TransactionFactory;
+import org.hibernate.engine.transaction.spi.TransactionImplementor;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
@@ -38,35 +41,46 @@ import org.hibernate.util.JTAHelper;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class JTATransactionManagerTransactionFactory implements TransactionFactory {
-	public Transaction createTransaction(JDBCContext jdbcContext, Context context)
-			throws HibernateException {
-		return new JTATransactionManagerTransaction(jdbcContext, context) ;
-		//return new JBossTSTransaction(jdbcContext, context) ;
+
+	@Override
+	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
+		return new JTATransactionManagerTransaction(coordinator) ;
 	}
 
-	public void configure(Properties props) throws HibernateException {
-	}
-
-	public ConnectionReleaseMode getDefaultReleaseMode() {
-		return ConnectionReleaseMode.ON_CLOSE;
-	}
-
-	public boolean isTransactionManagerRequired() {
+	@Override
+	public boolean canBeDriver() {
 		return true;
 	}
 
-	public boolean areCallbacksLocalToHibernateTransactions() {
-		return false;
+	@Override
+	public boolean compatibleWithJtaSynchronization() {
+		return true;
 	}
 
-	public boolean isTransactionInProgress(JDBCContext jdbcContext, Context transactionContext, Transaction transaction) {
+	@Override
+	public boolean isJoinableJtaTransaction(TransactionCoordinator transactionCoordinator, TransactionImplementor transaction) {
 		try {
-			return JTAHelper.isTransactionInProgress(
-					transactionContext.getFactory().getTransactionManager().getTransaction()
-			);
+			final JtaPlatform jtaPlatform = transactionCoordinator
+					.getTransactionContext()
+					.getTransactionEnvironment()
+					.getJtaPlatform();
+			if ( jtaPlatform == null ) {
+				throw new TransactionException( "Unable to check transaction status" );
+			}
+			if ( jtaPlatform.retrieveTransactionManager() != null ) {
+				return JtaStatusHelper.isActive( jtaPlatform.retrieveTransactionManager().getStatus() );
+			}
+			else {
+				final UserTransaction ut = jtaPlatform.retrieveUserTransaction();
+				return ut != null && JtaStatusHelper.isActive( ut );
+			}
 		}
 		catch( SystemException se ) {
 			throw new TransactionException( "Unable to check transaction status", se );
 		}
+	}
+
+	public ConnectionReleaseMode getDefaultReleaseMode() {
+		return ConnectionReleaseMode.AFTER_STATEMENT;
 	}
 }
