@@ -25,12 +25,11 @@ import java.util.Map;
 
 import org.dom4j.Node;
 
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.ForeignKeyDirection;
 
@@ -132,13 +131,12 @@ public interface GridType extends Serializable {
 	 *
 	 * @param x The first value
 	 * @param y The second value
-	 * @param entityMode The entity mode of the values.
 	 *
 	 * @return True if there are considered the same (see discussion above).
 	 *
 	 * @throws org.hibernate.HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isSame(Object x, Object y, EntityMode entityMode) throws HibernateException;
+	public boolean isSame(Object x, Object y) throws HibernateException;
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -150,13 +148,12 @@ public interface GridType extends Serializable {
 	 *
 	 * @param x The first value
 	 * @param y The second value
-	 * @param entityMode The entity mode of the values.
 	 *
 	 * @return True if there are considered equal (see discussion above).
 	 *
 	 * @throws HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isEqual(Object x, Object y, EntityMode entityMode) throws HibernateException;
+	public boolean isEqual(Object x, Object y) throws HibernateException;
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -168,14 +165,13 @@ public interface GridType extends Serializable {
 	 *
 	 * @param x The first value
 	 * @param y The second value
-	 * @param entityMode The entity mode of the values.
 	 * @param factory The session factory
 	 *
 	 * @return True if there are considered equal (see discussion above).
 	 *
 	 * @throws HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isEqual(Object x, Object y, EntityMode entityMode, SessionFactoryImplementor factory)
+	public boolean isEqual(Object x, Object y, SessionFactoryImplementor factory)
 			throws HibernateException;
 
 	/**
@@ -183,38 +179,35 @@ public interface GridType extends Serializable {
 	 * delegate to the value's {@link #hashCode}.
 	 *
 	 * @param x The value for which to retrieve a hash code
-	 * @param entityMode The entity mode of the value.
 	 *
 	 * @return The hash code
 	 *
 	 * @throws HibernateException A problem occurred calculating the hash code
 	 */
-	public int getHashCode(Object x, EntityMode entityMode) throws HibernateException;
+	public int getHashCode(Object x) throws HibernateException;
 
 	/**
 	 * Get a hash code, consistent with persistence "equality".  Again for most types the normal usage is to
 	 * delegate to the value's {@link #hashCode}.
 	 *
 	 * @param x The value for which to retrieve a hash code
-	 * @param entityMode The entity mode of the value.
 	 * @param factory The session factory
 	 *
 	 * @return The hash code
 	 *
 	 * @throws HibernateException A problem occurred calculating the hash code
 	 */
-	public int getHashCode(Object x, EntityMode entityMode, SessionFactoryImplementor factory) throws HibernateException;
+	public int getHashCode(Object x, SessionFactoryImplementor factory) throws HibernateException;
 
 	/**
 	 * Perform a {@link java.util.Comparator} style comparison between values
 	 *
 	 * @param x The first value
 	 * @param y The second value
-	 * @param entityMode The entity mode of the values.
 	 *
 	 * @return The comparison result.  See {@link java.util.Comparator#compare} for a discussion.
 	 */
-	public int compare(Object x, Object y, EntityMode entityMode);
+	public int compare(Object x, Object y);
 
 	/**
 	 * Should the parent be considered dirty, given both the old and current value?
@@ -364,11 +357,10 @@ public interface GridType extends Serializable {
 	 * Return a deep copy of the persistent state, stopping at entities and at
 	 * collections.
 	 * @param value generally a collection element or entity field
-	 * @param entityMode
 	 * @param factory
 	 * @return Object a copy
 	 */
-	public Object deepCopy(Object value, EntityMode entityMode, SessionFactoryImplementor factory)
+	public Object deepCopy(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
 
 	/**

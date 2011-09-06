@@ -20,12 +20,10 @@
  */
 package org.hibernate.ogm.type;
 
-import java.math.BigInteger;
 import java.util.UUID;
 
 import org.hibernate.HibernateException;
-import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
+import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 
@@ -61,7 +59,7 @@ public class UUIDType extends AbstractGenericBasicType<UUID> {
 	}
 
 	@Override
-	public int getColumnSpan(Mapping mapping) throws MappingException {
+	public int getColumnSpan(Mapping mapping) {
 		return 1;
 	}
 	

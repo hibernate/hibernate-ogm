@@ -25,12 +25,11 @@ import java.util.Map;
 
 import org.dom4j.Node;
 
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.Type;
 
@@ -87,35 +86,35 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	public boolean isSame(Object x, Object y, EntityMode entityMode) throws HibernateException {
-		return delegate.isSame( x, y, entityMode );
+	public boolean isSame(Object x, Object y) throws HibernateException {
+		return delegate.isSame( x, y );
 	}
 
 	@Override
-	public boolean isEqual(Object x, Object y, EntityMode entityMode) throws HibernateException {
-		return delegate.isEqual( x, y, entityMode );
+	public boolean isEqual(Object x, Object y) throws HibernateException {
+		return delegate.isEqual( x, y );
 	}
 
 	@Override
-	public boolean isEqual(Object x, Object y, EntityMode entityMode, SessionFactoryImplementor factory)
+	public boolean isEqual(Object x, Object y, SessionFactoryImplementor factory)
 			throws HibernateException {
-		return delegate.isEqual( x, y, entityMode, factory );
+		return delegate.isEqual( x, y, factory );
 	}
 
 	@Override
-	public int getHashCode(Object x, EntityMode entityMode) throws HibernateException {
-		return delegate.getHashCode( x, entityMode );
+	public int getHashCode(Object x) throws HibernateException {
+		return delegate.getHashCode( x );
 	}
 
 	@Override
-	public int getHashCode(Object x, EntityMode entityMode, SessionFactoryImplementor factory)
+	public int getHashCode(Object x, SessionFactoryImplementor factory)
 			throws HibernateException {
-		return delegate.getHashCode( x, entityMode, factory );
+		return delegate.getHashCode( x, factory );
 	}
 
 	@Override
-	public int compare(Object x, Object y, EntityMode entityMode) {
-		return delegate.compare( x, y, entityMode );
+	public int compare(Object x, Object y) {
+		return delegate.compare( x, y );
 	}
 
 	@Override
@@ -156,9 +155,9 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
-	public Object deepCopy(Object value, EntityMode entityMode, SessionFactoryImplementor factory)
+	public Object deepCopy(Object value, SessionFactoryImplementor factory)
 			throws HibernateException {
-		return delegate.deepCopy( value, entityMode, factory );
+		return delegate.deepCopy( value, factory );
 	}
 
 	@Override

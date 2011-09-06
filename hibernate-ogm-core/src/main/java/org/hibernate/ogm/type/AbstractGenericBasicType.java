@@ -25,16 +25,15 @@ import java.util.Map;
 
 import org.dom4j.Node;
 
-import org.hibernate.EntityMode;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.Mapping;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
 import org.hibernate.engine.jdbc.LobCreator;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
 import org.hibernate.type.ForeignKeyDirection;
@@ -43,7 +42,7 @@ import org.hibernate.type.XmlRepresentableType;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.MutabilityPlan;
-import org.hibernate.util.ArrayHelper;
+import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
 /**
  * Not a public API
@@ -54,6 +53,9 @@ import org.hibernate.util.ArrayHelper;
 public abstract class AbstractGenericBasicType<T>
 		implements  GridType, //BasicType,
 				StringRepresentableType<T>, XmlRepresentableType<T> {
+
+	private static final boolean[] TRUE = { true };
+	private static final boolean[] FALSE = { false };
 
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<T> javaTypeDescriptor;
@@ -100,7 +102,7 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	public boolean[] toColumnNullness(Object value, Mapping mapping) {
-		return value == null ? ArrayHelper.FALSE : ArrayHelper.TRUE;
+		return value == null ? FALSE : TRUE;
 	}
 
 	public String[] getRegistrationKeys() {
@@ -154,45 +156,38 @@ public abstract class AbstractGenericBasicType<T>
 		return false;
 	}
 
-	public final boolean isSame(Object x, Object y, EntityMode entityMode) {
-		return isSame( x, y );
-	}
-
 	@SuppressWarnings({ "unchecked" })
-	protected final boolean isSame(Object x, Object y) {
+	@Override
+	public final boolean isSame(Object x, Object y) {
 		return isEqual( (T) x, (T) y );
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public final boolean isEqual(Object x, Object y, EntityMode entityMode) {
+	@Override
+	public final boolean isEqual(Object x, Object y, SessionFactoryImplementor factory) {
 		return isEqual( (T) x, (T) y );
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public final boolean isEqual(Object x, Object y, EntityMode entityMode, SessionFactoryImplementor factory) {
-		return isEqual( (T) x, (T) y );
+	@Override
+	public final boolean isEqual(Object one, Object another) {
+		return javaTypeDescriptor.areEqual( (T) one, (T) another );
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	public final boolean isEqual(T one, T another) {
-		return javaTypeDescriptor.areEqual( one, another );
-	}
-
-	public final int getHashCode(Object x, EntityMode entityMode) {
-		return getHashCode( x );
-	}
-
-	public final int getHashCode(Object x, EntityMode entityMode, SessionFactoryImplementor factory) {
+	@Override
+	public final int getHashCode(Object x, SessionFactoryImplementor factory) {
 		return getHashCode( x );
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	protected final int getHashCode(Object x) {
+	@Override
+	public final int getHashCode(Object x) {
 		return javaTypeDescriptor.extractHashCode( (T) x );
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public final int compare(Object x, Object y, EntityMode entityMode) {
+	@Override
+	public final int compare(Object x, Object y) {
 		return javaTypeDescriptor.getComparator().compare( (T) x, (T) y );
 	}
 
@@ -240,6 +235,14 @@ public abstract class AbstractGenericBasicType<T>
 			public LobCreator getLobCreator() {
 				return Hibernate.getLobCreator( session );
 			}
+
+			@Override
+			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
+				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
+						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
+						: sqlTypeDescriptor;
+				return remapped == null ? sqlTypeDescriptor : remapped;
+			}
 		};
 
 		return nullSafeGet( rs, name, options );
@@ -268,6 +271,14 @@ public abstract class AbstractGenericBasicType<T>
 
 			public LobCreator getLobCreator() {
 				return Hibernate.getLobCreator( session );
+			}
+
+			@Override
+			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
+				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
+						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
+						: sqlTypeDescriptor;
+				return remapped == null ? sqlTypeDescriptor : remapped;
 			}
 		};
 
@@ -312,8 +323,9 @@ public abstract class AbstractGenericBasicType<T>
 		return getMutabilityPlan().isMutable();
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked" })
-	public final Object deepCopy(Object value, EntityMode entityMode, SessionFactoryImplementor factory) {
+	public Object deepCopy(Object value, SessionFactoryImplementor factory) throws HibernateException {
 		return deepCopy( (T) value );
 	}
 
