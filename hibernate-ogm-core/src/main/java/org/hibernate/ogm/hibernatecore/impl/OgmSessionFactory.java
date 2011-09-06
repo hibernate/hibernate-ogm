@@ -29,33 +29,34 @@ import java.util.Set;
 import javax.naming.NamingException;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
-import javax.transaction.TransactionManager;
 
 import org.hibernate.Cache;
-import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.MappingException;
+import org.hibernate.Session;
+import org.hibernate.SessionBuilder;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.StatelessSession;
+import org.hibernate.StatelessSessionBuilder;
 import org.hibernate.TypeHelper;
-import org.hibernate.cache.QueryCache;
-import org.hibernate.cache.Region;
-import org.hibernate.cache.UpdateTimestampsCache;
+import org.hibernate.cache.spi.QueryCache;
+import org.hibernate.cache.spi.Region;
+import org.hibernate.cache.spi.UpdateTimestampsCache;
 import org.hibernate.cfg.Settings;
-import org.hibernate.classic.Session;
-import org.hibernate.connection.ConnectionProvider;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionRegistry;
-import org.hibernate.engine.FilterDefinition;
-import org.hibernate.engine.NamedQueryDefinition;
-import org.hibernate.engine.NamedSQLQueryDefinition;
 import org.hibernate.engine.ResultSetMappingDefinition;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.engine.profile.FetchProfile;
-import org.hibernate.engine.query.QueryPlanCache;
-import org.hibernate.event.EventSource;
-import org.hibernate.exception.SQLExceptionConverter;
+import org.hibernate.engine.query.spi.QueryPlanCache;
+import org.hibernate.engine.spi.FilterDefinition;
+import org.hibernate.engine.spi.NamedQueryDefinition;
+import org.hibernate.engine.spi.NamedSQLQueryDefinition;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.exception.spi.SQLExceptionConverter;
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.factory.IdentifierGeneratorFactory;
 import org.hibernate.metadata.ClassMetadata;
@@ -64,8 +65,10 @@ import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.proxy.EntityNotFoundDelegate;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.stat.Statistics;
-import org.hibernate.stat.StatisticsImplementor;
+import org.hibernate.stat.spi.StatisticsImplementor;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
 
@@ -97,6 +100,11 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	@Override
 	public CollectionPersister getCollectionPersister(String role) throws MappingException {
 		return delegate.getCollectionPersister( role );
+	}
+
+	@Override
+	public JdbcServices getJdbcServices() {
+		return delegate.getJdbcServices();
 	}
 
 	@Override
@@ -137,11 +145,6 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	@Override
 	public String getImportedClassName(String name) {
 		return delegate.getImportedClassName( name );
-	}
-
-	@Override
-	public TransactionManager getTransactionManager() {
-		return delegate.getTransactionManager();
 	}
 
 	@Override
@@ -200,6 +203,11 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
+	public SqlExceptionHelper getSQLExceptionHelper() {
+		return delegate.getSQLExceptionHelper();
+	}
+
+	@Override
 	public Settings getSettings() {
 		return delegate.getSettings();
 	}
@@ -207,15 +215,6 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	@Override
 	public Session openTemporarySession() throws HibernateException {
 		return new OgmSession( this, (EventSource) delegate.openTemporarySession() );
-	}
-
-	@Override
-	public Session openSession(Connection connection, boolean flushBeforeCompletionEnabled, boolean autoCloseSessionEnabled, ConnectionReleaseMode connectionReleaseMode)
-			throws HibernateException {
-		final Session session = delegate.openSession(
-				connection, flushBeforeCompletionEnabled, autoCloseSessionEnabled, connectionReleaseMode
-		);
-		return new OgmSession(this, (EventSource) session);
 	}
 
 	@Override
@@ -239,8 +238,13 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
-	public SessionFactoryObserver getFactoryObserver() {
-		return delegate.getFactoryObserver();
+	public ServiceRegistryImplementor getServiceRegistry() {
+		return delegate.getServiceRegistry();
+	}
+
+	@Override
+	public void addObserver(SessionFactoryObserver observer) {
+		delegate.addObserver( observer );
 	}
 
 	@Override
@@ -264,26 +268,18 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
+	public SessionFactoryOptions getSessionFactoryOptions() {
+		return delegate.getSessionFactoryOptions();
+	}
+
+	@Override
+	public SessionBuilder withOptions() {
+		return new OgmSessionBuilderDelegator( delegate.withOptions(), this );
+	}
+
+	@Override
 	public Session openSession() throws HibernateException {
 		final Session session = delegate.openSession();
-		return new OgmSession(this, (EventSource) session);
-	}
-
-	@Override
-	public Session openSession(Interceptor interceptor) throws HibernateException {
-		final Session session = delegate.openSession( interceptor );
-		return new OgmSession(this, (EventSource) session);
-	}
-
-	@Override
-	public Session openSession(Connection connection) {
-		final Session session = delegate.openSession( connection );
-		return new OgmSession(this, (EventSource) session);
-	}
-
-	@Override
-	public Session openSession(Connection connection, Interceptor interceptor) {
-		final Session session = delegate.openSession( connection, interceptor );
 		return new OgmSession(this, (EventSource) session);
 	}
 
@@ -291,6 +287,11 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	public Session getCurrentSession() throws HibernateException {
 		final Session session = delegate.getCurrentSession();
 		return new OgmSession(this, (EventSource) session);
+	}
+
+	@Override
+	public StatelessSessionBuilder withStatelessOptions() {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override

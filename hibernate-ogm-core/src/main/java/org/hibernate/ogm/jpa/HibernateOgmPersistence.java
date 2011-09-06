@@ -48,9 +48,8 @@ import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
 import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.transaction.infinispan.impl.DummyTransactionManagerLookup;
 import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
@@ -125,7 +124,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		//FIXME use Environment.DEFAULT_MANAGER_LOOKUP when 3.6.4 is out
 		map.put( "hibernate.transaction.default_manager_lookup_class", JBossTSStandaloneTransactionManagerLookup.class.getName() );
 		map.put( Environment.DIALECT, NoopDialect.class.getName() );
-		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
+		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassResolver.class.getName() );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 	}

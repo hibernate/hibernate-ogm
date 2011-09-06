@@ -45,24 +45,27 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.SharedSessionBuilder;
 import org.hibernate.Transaction;
 import org.hibernate.TypeHelper;
 import org.hibernate.UnknownProfileException;
-import org.hibernate.collection.PersistentCollection;
-import org.hibernate.engine.ActionQueue;
-import org.hibernate.engine.EntityEntry;
-import org.hibernate.engine.EntityKey;
-import org.hibernate.engine.LoadQueryInfluencers;
-import org.hibernate.engine.NonFlushedChanges;
-import org.hibernate.engine.PersistenceContext;
-import org.hibernate.engine.QueryParameters;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.query.sql.NativeSQLQuerySpecification;
-import org.hibernate.event.EventListeners;
-import org.hibernate.event.EventSource;
-import org.hibernate.impl.CriteriaImpl;
-import org.hibernate.jdbc.Batcher;
-import org.hibernate.jdbc.JDBCContext;
+import org.hibernate.cache.spi.CacheKey;
+import org.hibernate.collection.spi.PersistentCollection;
+import org.hibernate.engine.jdbc.LobCreationContext;
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
+import org.hibernate.engine.spi.ActionQueue;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.engine.spi.LoadQueryInfluencers;
+import org.hibernate.engine.spi.NonFlushedChanges;
+import org.hibernate.engine.spi.PersistenceContext;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.spi.TransactionCoordinator;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.internal.CriteriaImpl;
+import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -76,7 +79,7 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmSession implements org.hibernate.classic.Session, EventSource {
+public class OgmSession implements org.hibernate.Session, EventSource {
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
 
@@ -89,11 +92,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	@Override
 	public SessionFactoryImplementor getFactory() {
 		return factory;
-	}
-
-	@Override
-	public Session getSession(EntityMode entityMode) {
-		return new OgmSession( factory, (EventSource) delegate.getSession( entityMode ) );
 	}
 
 	@Override
@@ -162,11 +160,11 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 		throw new IllegalStateException( "Hibernate OGM does not support SQL Connections hence no Work" );
 	}
 
-	//helper methods
-	private org.hibernate.classic.Session getClassicSession() {
-		throw new IllegalStateException( "Hibernate OGM does not support classic.Session" );
-		//return (org.hibernate.classic.Session) delegate;
+	@Override
+	public <T> T doReturningWork(ReturningWork<T> work) throws HibernateException {
+		return delegate.doReturningWork( work );
 	}
+
 
 	//Event Source methods
 	@Override
@@ -205,13 +203,23 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
-	public void saveOrUpdateCopy(String entityName, Object object, Map copiedAlready) throws HibernateException {
-		delegate.saveOrUpdateCopy( entityName, object, copiedAlready );
+	public void delete(String entityName, Object child, boolean isCascadeDeleteEnabled, Set transientEntities) {
+		delegate.delete( entityName, child, isCascadeDeleteEnabled, transientEntities );
 	}
 
 	@Override
-	public void delete(String entityName, Object child, boolean isCascadeDeleteEnabled, Set transientEntities) {
-		delegate.delete( entityName, child, isCascadeDeleteEnabled, transientEntities );
+	public JdbcConnectionAccess getJdbcConnectionAccess() {
+		return delegate.getJdbcConnectionAccess();
+	}
+
+	@Override
+	public EntityKey generateEntityKey(Serializable id, EntityPersister persister) {
+		return delegate.generateEntityKey( id, persister );
+	}
+
+	@Override
+	public CacheKey generateCacheKey(Serializable id, Type type, String entityOrRoleName) {
+		return delegate.generateCacheKey( id, type, entityOrRoleName );
 	}
 
 	//SessionImplementor methods
@@ -223,6 +231,11 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	@Override
 	public void setAutoClear(boolean enabled) {
 		delegate.setAutoClear( enabled );
+	}
+
+	@Override
+	public void disableTransactionAutoJoin() {
+		delegate.disableTransactionAutoJoin();
 	}
 
 	@Override
@@ -249,11 +262,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	@Override
 	public long getTimestamp() {
 		return delegate.getTimestamp();
-	}
-
-	@Override
-	public Batcher getBatcher() {
-		return delegate.getBatcher();
 	}
 
 	@Override
@@ -301,16 +309,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	@Override
 	public Object getEntityUsingInterceptor(EntityKey key) throws HibernateException {
 		return delegate.getEntityUsingInterceptor( key );
-	}
-
-	@Override
-	public void afterTransactionCompletion(boolean successful, Transaction tx) {
-		delegate.afterTransactionCompletion( successful, tx );
-	}
-
-	@Override
-	public void beforeTransactionCompletion(Transaction tx) {
-		delegate.beforeTransactionCompletion( tx );
 	}
 
 	@Override
@@ -376,11 +374,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
-	public EventListeners getListeners() {
-		return delegate.getListeners();
-	}
-
-	@Override
 	public PersistenceContext getPersistenceContext() {
 		return delegate.getPersistenceContext();
 	}
@@ -438,8 +431,8 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
-	public JDBCContext getJDBCContext() {
-		return delegate.getJDBCContext();
+	public TransactionCoordinator getTransactionCoordinator() {
+		return delegate.getTransactionCoordinator();
 	}
 
 	@Override
@@ -453,11 +446,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	//Session methods
-	@Override
-	public EntityMode getEntityMode() {
-		return delegate.getEntityMode();
-	}
-
 	@Override
 	public CacheMode getCacheMode() {
 		return delegate.getCacheMode();
@@ -491,6 +479,11 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	@Override
 	public Connection connection() {
 		return delegate.connection();
+	}
+
+	@Override
+	public SharedSessionBuilder sessionWithOptions() {
+		return new OgmSharedSessionBuilderDelegator( delegate.sessionWithOptions(), factory );
 	}
 
 	@Override
@@ -664,6 +657,11 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
+	public void refresh(String entityName, Object object) throws HibernateException {
+		delegate.refresh( entityName, object );
+	}
+
+	@Override
 	public void refresh(Object object, LockMode lockMode) throws HibernateException {
 		delegate.refresh( object, lockMode );
 	}
@@ -674,8 +672,18 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
+	public void refresh(String entityName, Object object, LockOptions lockOptions) throws HibernateException {
+		delegate.refresh( entityName, object, lockOptions);
+	}
+
+	@Override
 	public LockMode getCurrentLockMode(Object object) throws HibernateException {
 		return delegate.getCurrentLockMode( object );
+	}
+
+	@Override
+	public String getTenantIdentifier() {
+		return delegate.getTenantIdentifier();
 	}
 
 	@Override
@@ -749,11 +757,6 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 	}
 
 	@Override
-	public void reconnect() throws HibernateException {
-		delegate.reconnect();
-	}
-
-	@Override
 	public void reconnect(Connection connection) throws HibernateException {
 		delegate.reconnect( connection );
 	}
@@ -783,118 +786,9 @@ public class OgmSession implements org.hibernate.classic.Session, EventSource {
 		return delegate.getLobHelper();
 	}
 
-	//classic.Session methods
 	@Override
-	public Object saveOrUpdateCopy(Object object) throws HibernateException {
-		return getClassicSession().saveOrUpdateCopy( object );
-	}
-
-	@Override
-	public Object saveOrUpdateCopy(Object object, Serializable id) throws HibernateException {
-		return getClassicSession().saveOrUpdateCopy( object, id );
-	}
-
-	@Override
-	public Object saveOrUpdateCopy(String entityName, Object object) throws HibernateException {
-		return getClassicSession().saveOrUpdateCopy( entityName, object );
-	}
-
-	@Override
-	public Object saveOrUpdateCopy(String entityName, Object object, Serializable id) throws HibernateException {
-		return getClassicSession().saveOrUpdateCopy( entityName, object, id );
-	}
-
-	@Override
-	public void save(Object object, Serializable id) throws HibernateException {
-		getClassicSession().save( object, id );
-	}
-
-	@Override
-	public void save(String entityName, Object object, Serializable id) throws HibernateException {
-		getClassicSession().save( entityName, object, id );
-	}
-
-	@Override
-	public List find(String query) throws HibernateException {
-		return getClassicSession().find( query );
-	}
-
-	@Override
-	public List find(String query, Object value, Type type) throws HibernateException {
-		return getClassicSession().find( query, value, type );
-	}
-
-	@Override
-	public List find(String query, Object[] values, Type[] types) throws HibernateException {
-		return getClassicSession().find( query, values, types );
-	}
-
-	@Override
-	public Iterator iterate(String query) throws HibernateException {
-		return getClassicSession().iterate( query );
-	}
-
-	@Override
-	public Iterator iterate(String query, Object value, Type type) throws HibernateException {
-		return getClassicSession().iterate( query, value, type );
-	}
-
-	@Override
-	public Iterator iterate(String query, Object[] values, Type[] types) throws HibernateException {
-		return getClassicSession().iterate( query, values, types );
-	}
-
-	@Override
-	public Collection filter(Object collection, String filter) throws HibernateException {
-		return getClassicSession().filter( collection, filter );
-	}
-
-	@Override
-	public Collection filter(Object collection, String filter, Object value, Type type) throws HibernateException {
-		return getClassicSession().filter( collection, filter, value, type );
-	}
-
-	@Override
-	public Collection filter(Object collection, String filter, Object[] values, Type[] types)
-			throws HibernateException {
-		return getClassicSession().filter( collection, filter, values, types );
-	}
-
-	@Override
-	public int delete(String query) throws HibernateException {
-		return getClassicSession().delete( query );
-	}
-
-	@Override
-	public int delete(String query, Object value, Type type) throws HibernateException {
-		return getClassicSession().delete( query, value, type );
-	}
-
-	@Override
-	public int delete(String query, Object[] values, Type[] types) throws HibernateException {
-		return getClassicSession().delete( query, values, types );
-	}
-
-	@Override
-	@Deprecated
-	public Query createSQLQuery(String sql, String returnAlias, Class returnClass) {
-		return getClassicSession().createSQLQuery( sql, returnAlias, returnClass );
-	}
-
-	@Override
-	@Deprecated
-	public Query createSQLQuery(String sql, String[] returnAliases, Class[] returnClasses) {
-		return getClassicSession().createSQLQuery( sql, returnAliases, returnClasses );
-	}
-
-	@Override
-	public void update(Object object, Serializable id) throws HibernateException {
-		getClassicSession().update( object, id );
-	}
-
-	@Override
-	public void update(String entityName, Object object, Serializable id) throws HibernateException {
-		getClassicSession().update( entityName, object, id );
+	public <T> T execute(Callback<T> callback) {
+		return delegate.execute( callback );
 	}
 }
 
