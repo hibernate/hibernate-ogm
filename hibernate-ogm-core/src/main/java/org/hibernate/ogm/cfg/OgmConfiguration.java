@@ -29,7 +29,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 
 /**
@@ -48,7 +48,7 @@ public class OgmConfiguration extends Configuration {
 
 	private void resetOgm() {
 		super.setSessionFactoryObserver( new GridMetadataManager() );
-		super.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
+		super.setPersisterClassProvider( OgmPersisterClassResolver.INSTANCE );
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 
 		super.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
