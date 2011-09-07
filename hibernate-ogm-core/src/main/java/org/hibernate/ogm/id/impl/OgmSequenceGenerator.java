@@ -31,11 +31,11 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
+import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.type.Type;
-import org.hibernate.util.PropertiesHelper;
 
 /**
  * <p>A JPA sequence-based identifier generator.</p>
@@ -74,7 +74,7 @@ public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Conf
 		}
 		newParams.setProperty(
 				OgmTableGenerator.SEGMENT_VALUE_PARAM,
-				PropertiesHelper.getString(
+				ConfigurationHelper.getString(
 						OgmTableGenerator.SEGMENT_VALUE_PARAM,
 						newParams,
 						newParams.getProperty( PersistentIdentifierGenerator.TABLE )

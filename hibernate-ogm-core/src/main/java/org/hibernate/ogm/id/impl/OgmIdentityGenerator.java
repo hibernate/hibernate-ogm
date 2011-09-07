@@ -31,11 +31,10 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.type.Type;
-import org.hibernate.util.PropertiesHelper;
 
 /**
  * <p>A JPA identity-based identifier generator.</p>
