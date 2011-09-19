@@ -42,18 +42,14 @@ public class GridMetadataManagerHelper {
 	public static final String IDENTIFIER_CACHE = "IDENTIFIERS";
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
-		final SessionFactoryObserver sessionFactoryObserver = factory.getFactoryObserver();
-		if ( sessionFactoryObserver instanceof GridMetadataManager ) {
-			return ( GridMetadataManager ) sessionFactoryObserver;
+		//TODO use service registry instead of observer
+		GridMetadataManager service = factory.getServiceRegistry().getService( GridMetadataManager.class );
+		if ( service != null ) {
+			return service;
 		}
 		else {
 			StringBuilder error = new StringBuilder("Cannot get CacheManager for OGM. ");
-			if ( sessionFactoryObserver == null ) {
-				error.append("SessionFactoryObserver not configured");
-			}
-			else {
-				error.append("SessionFactoryObserver not of type " + GridMetadataManager.class);
-			}
+			error.append("OGM Services not configured");
 			throw new HibernateException( error.toString() );
 		}
 	}

@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.metadata;
 
+import java.util.Map;
+
 import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.SessionFactory;
@@ -30,6 +32,12 @@ import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.service.Service;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.service.spi.Startable;
+import org.hibernate.service.spi.Stoppable;
 
 /**
  * Start and stop the Infinispan CacheManager with the SearchFactory
@@ -37,22 +45,19 @@ import org.hibernate.ogm.type.TypeTranslator;
  *
  * @author Emmanuel Bernard
  */
-public class GridMetadataManager implements SessionFactoryObserver {
+public class GridMetadataManager implements Service, ServiceRegistryAwareService, Stoppable, Startable {
 	private CacheManagerServiceProvider manager;
 	private final TypeTranslator typeTranslator;
 	private GridDialect gridDialect;
+	private Map<?, ?> configurationValues;
+	private ServiceRegistryImplementor serviceRegistry;
 
-	public GridMetadataManager() {
+	public GridMetadataManager(Map<?,?> configurationValues) {
 		Version.touch();
 		typeTranslator = new TypeTranslator();
 		gridDialect = new InfinispanDialect();
-	}
-
-	@Override
-	public void sessionFactoryCreated(SessionFactory factory) {
-		SessionFactoryImplementor factoryImplementor = (SessionFactoryImplementor ) factory;
 		manager = new CacheManagerServiceProvider();
-		manager.start( factoryImplementor.getProperties() );
+		this.configurationValues = configurationValues;
 	}
 
 	//TODO abstract to other grids
@@ -64,7 +69,20 @@ public class GridMetadataManager implements SessionFactoryObserver {
 	public GridDialect getGridDialect() { return gridDialect; }
 
 	@Override
-	public void sessionFactoryClosed(SessionFactory factory) {
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
+	}
+
+	@Override
+	public void stop() {
 		manager.stop();
+	}
+
+	@Override
+	public void start() {
+		this.manager.start( serviceRegistry, configurationValues );
+		// no longer needed, get rid of it
+		this.configurationValues = null;
+		this.serviceRegistry = null;
 	}
 }

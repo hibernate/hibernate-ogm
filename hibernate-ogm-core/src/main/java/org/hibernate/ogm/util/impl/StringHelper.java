@@ -24,6 +24,10 @@ package org.hibernate.ogm.util.impl;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class StringHelper {
+	public static boolean isEmpty(String value) {
+		return value != null ? value.length() == 0 : true;
+	}
+
 	public static String toString(Object[] array) {
 		int len = array.length;
 		if ( len == 0 ) return "";
