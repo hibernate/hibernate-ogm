@@ -20,11 +20,9 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import java.util.Properties;
-
 import javax.transaction.TransactionManager;
 
-import org.hibernate.transaction.TransactionManagerLookupFactory;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 
 /**
@@ -35,18 +33,16 @@ import org.infinispan.transaction.lookup.TransactionManagerLookup;
  */
 public class TransactionManagerLookupDelegator implements TransactionManagerLookup {
 
-	private final org.hibernate.transaction.TransactionManagerLookup transactionManagerLookup;
-	private final Properties hibernateConfiguration;
+	private final JtaPlatform platform;
 
-	public TransactionManagerLookupDelegator(Properties hibernateConfiguration) {
-		this.hibernateConfiguration = hibernateConfiguration;
-		this.transactionManagerLookup = TransactionManagerLookupFactory.getTransactionManagerLookup( hibernateConfiguration );
+	public TransactionManagerLookupDelegator(JtaPlatform platform) {
+		this.platform = platform;
 	}
 
 	@Override
 	public TransactionManager getTransactionManager() throws Exception {
-		if ( transactionManagerLookup != null ) {
-			return transactionManagerLookup.getTransactionManager( hibernateConfiguration );
+		if ( platform != null ) {
+			return platform.retrieveTransactionManager();
 		}
 		else {
 			return null;
@@ -54,7 +50,7 @@ public class TransactionManagerLookupDelegator implements TransactionManagerLook
 	}
 
 	protected boolean isValid() {
-		return transactionManagerLookup != null;
+		return platform != null ? platform.retrieveTransactionManager() != null : false;
 	}
 
 }
