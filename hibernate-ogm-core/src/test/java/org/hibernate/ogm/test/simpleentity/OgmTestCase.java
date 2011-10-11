@@ -20,54 +20,276 @@
  */
 package org.hibernate.ogm.test.simpleentity;
 
-import java.io.InputStream;
-
-import org.hibernate.HibernateException;
-import org.hibernate.Interceptor;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
-import org.hibernate.ogm.transaction.infinispan.impl.DummyTransactionManagerLookup;
-import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
-import org.hibernate.testing.junit.functional.annotations.HibernateTestCase;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
-
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
 import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
 
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.slf4j.Logger;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.annotations.common.util.StringHelper;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.search.FullTextSession;
+import org.hibernate.search.Search;
+import org.hibernate.search.SearchFactory;
+import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.testing.FailureExpected;
+import org.hibernate.testing.SkipForDialect;
+
 /**
  * A base class for all OGM tests.
+ *
+ * This class is a mix of SearchTestCase from HSearch 4 and OgmTestCase from the Core 3.6 days
+ * It could get some love to clean this mess
  *
  * @author Emmnauel Bernand
  * @author Hardy Ferentschik
  */
-public abstract class OgmTestCase extends HibernateTestCase {
+public abstract class OgmTestCase extends TestCase {
 
+    private static final Logger log = LoggerFactory.make();
 	protected static SessionFactory sessions;
 	private Session session;
 
-	public OgmTestCase() {
-		super();
+	protected static Configuration cfg;
+	private static Class<?> lastTestClass;
+
+	@Before
+	public void setUp() throws Exception {
+		if ( cfg == null || lastTestClass != getClass() ) {
+			buildConfiguration();
+			lastTestClass = getClass();
+		}
 	}
 
-	public OgmTestCase(String name) {
-		super( name );
+	protected String[] getXmlFiles() {
+		return new String[] { };
 	}
+
+	protected static void setCfg(Configuration cfg) {
+		OgmTestCase.cfg = cfg;
+	}
+
+	protected static Configuration getCfg() {
+		return cfg;
+	}
+
+	protected void configure(Configuration cfg) {
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		//runSchemaDrop();
+		handleUnclosedResources();
+		closeResources();
+
+		if ( sessions != null ) {
+			sessions.close();
+			sessions = null;
+		}
+	}
+
+	protected abstract Class<?>[] getAnnotatedClasses();
+
+	protected boolean recreateSchema() {
+		return true;
+	}
+
+	protected String[] getAnnotatedPackages() {
+		return new String[] { };
+	}
+
+	protected SearchFactoryImplementor getSearchFactoryImpl() {
+		FullTextSession s = Search.getFullTextSession( openSession() );
+		s.close();
+		SearchFactory searchFactory = s.getSearchFactory();
+		return (SearchFactoryImplementor) searchFactory;
+	}
+
+	private void reportSkip(Skip skip) {
+		reportSkip( skip.reason, skip.testDescription );
+	}
+
+	protected void reportSkip(String reason, String testDescription) {
+		StringBuilder builder = new StringBuilder();
+		builder.append( "*** skipping test [" );
+		builder.append( fullTestName() );
+		builder.append( "] - " );
+		builder.append( testDescription );
+		builder.append( " : " );
+		builder.append( reason );
+		log.warn( builder.toString() );
+	}
+
+	protected Skip buildSkip(Dialect dialect, String comment, String jiraKey) {
+		StringBuilder buffer = new StringBuilder();
+		buffer.append( "skipping database-specific test [" );
+		buffer.append( fullTestName() );
+		buffer.append( "] for dialect [" );
+		buffer.append( dialect.getClass().getName() );
+		buffer.append( ']' );
+
+		if ( StringHelper.isNotEmpty(comment) ) {
+			buffer.append( "; " ).append( comment );
+		}
+
+		if ( StringHelper.isNotEmpty( jiraKey ) ) {
+			buffer.append( " (" ).append( jiraKey ).append( ')' );
+		}
+
+		return new Skip( buffer.toString(), null );
+	}
+
+	protected <T extends Annotation> T locateAnnotation(Class<T> annotationClass, Method runMethod) {
+		T annotation = runMethod.getAnnotation( annotationClass );
+		if ( annotation == null ) {
+			annotation = getClass().getAnnotation( annotationClass );
+		}
+		if ( annotation == null ) {
+			annotation = runMethod.getDeclaringClass().getAnnotation( annotationClass );
+		}
+		return annotation;
+	}
+
+	protected final Skip determineSkipByDialect(Dialect dialect, Method runMethod) throws Exception {
+		// skips have precedence, so check them first
+		SkipForDialect skipForDialectAnn = locateAnnotation( SkipForDialect.class, runMethod );
+		if ( skipForDialectAnn != null ) {
+			for ( Class<? extends Dialect> dialectClass : skipForDialectAnn.value() ) {
+				if ( skipForDialectAnn.strictMatching() ) {
+					if ( dialectClass.equals( dialect.getClass() ) ) {
+						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
+					}
+				}
+				else {
+					if ( dialectClass.isInstance( dialect ) ) {
+						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	protected static class Skip {
+		private final String reason;
+		private final String testDescription;
+
+		public Skip(String reason, String testDescription) {
+			this.reason = reason;
+			this.testDescription = testDescription;
+		}
+	}
+
+	@Override
+	protected void runTest() throws Throwable {
+		Method runMethod = findTestMethod();
+		FailureExpected failureExpected = locateAnnotation( FailureExpected.class, runMethod );
+		try {
+			super.runTest();
+			if ( failureExpected != null ) {
+				throw new FailureExpectedTestPassedException();
+			}
+		}
+		catch ( FailureExpectedTestPassedException t ) {
+			closeResources();
+			throw t;
+		}
+		catch ( Throwable t ) {
+			if ( t instanceof InvocationTargetException) {
+				t = ( ( InvocationTargetException ) t ).getTargetException();
+			}
+			if ( t instanceof IllegalAccessException ) {
+				t.fillInStackTrace();
+			}
+			closeResources();
+			if ( failureExpected != null ) {
+				StringBuilder builder = new StringBuilder();
+				if ( StringHelper.isNotEmpty( failureExpected.message() ) ) {
+					builder.append( failureExpected.message() );
+				}
+				else {
+					builder.append( "ignoring @FailureExpected test" );
+				}
+				builder.append( " (" )
+						.append( failureExpected.jiraKey() )
+						.append( ")" );
+				log.warn( builder.toString(), t );
+			}
+			else {
+				throw t;
+			}
+		}
+	}
+
+	@Override
+	public void runBare() throws Throwable {
+		Method runMethod = findTestMethod();
+
+		final Skip skip = determineSkipByDialect( Dialect.getDialect(), runMethod );
+		if ( skip != null ) {
+			reportSkip( skip );
+			return;
+		}
+
+		setUp();
+		try {
+			runTest();
+		}
+		finally {
+			tearDown();
+		}
+	}
+
+		public String fullTestName() {
+		return this.getClass().getName() + "#" + this.getName();
+	}
+
+	private Method findTestMethod() {
+		String fName = getName();
+		assertNotNull( fName );
+		Method runMethod = null;
+		try {
+			runMethod = getClass().getMethod( fName );
+		}
+		catch ( NoSuchMethodException e ) {
+			fail( "Method \"" + fName + "\" not found" );
+		}
+		if ( !Modifier.isPublic(runMethod.getModifiers()) ) {
+			fail( "Method \"" + fName + "\" should be public" );
+		}
+		return runMethod;
+	}
+
+	private static class FailureExpectedTestPassedException extends Exception {
+		public FailureExpectedTestPassedException() {
+			super( "Test marked as @FailureExpected, but did not fail!" );
+		}
+	}
+
+
+
 
 	public Session openSession() throws HibernateException {
 		rebuildSessionFactory();
 		session = getSessions().openSession();
-		return session;
-	}
-
-	public Session openSession(Interceptor interceptor) throws HibernateException {
-		rebuildSessionFactory();
-		session = getSessions().openSession( interceptor );
 		return session;
 	}
 
@@ -104,7 +326,6 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		
 	}
 
-	@Override
 	protected void buildConfiguration() throws Exception {
 		if ( getSessions() != null ) {
 			getSessions().close();
@@ -114,8 +335,8 @@ public abstract class OgmTestCase extends HibernateTestCase {
 
 			//Grid specific configuration
 			cfg.setProperty( CacheManagerServiceProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
-			cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
-			cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
+			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
+			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 
 
 			//Other configurations
@@ -143,7 +364,6 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		}
 	}
 
-	@Override
 	protected void handleUnclosedResources() {
 		if ( session != null && session.isOpen() ) {
 			if ( session.isConnected() ) {
@@ -164,7 +384,6 @@ public abstract class OgmTestCase extends HibernateTestCase {
 		}
 	}
 
-	@Override
 	protected void closeResources() {
 		try {
 			if ( session != null && session.isOpen() ) {
