@@ -20,11 +20,12 @@
  */
 package org.hibernate.ogm.test.jpa;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.transaction.TransactionManager;
 
 import org.infinispan.Cache;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -38,9 +39,6 @@ import org.junit.Test;
 import org.hibernate.Session;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.TestHelper;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

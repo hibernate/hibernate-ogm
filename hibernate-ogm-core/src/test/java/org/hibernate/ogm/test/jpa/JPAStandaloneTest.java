@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.test.jpa;
 
-import java.io.File;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.jpa.util.JpaTestCase.extractJBossTransactionManager;
 
+import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -36,9 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.hibernate.ogm.test.utils.PackagingRule;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -63,9 +62,9 @@ public class JPAStandaloneTest {
 
 		packaging.addPackageToClasspath( testPackage );
 
-		TransactionManager transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+
+        TransactionManager transactionManager = extractJBossTransactionManager(emf);
 
 		transactionManager.begin();
 		final EntityManager em = emf.createEntityManager();
