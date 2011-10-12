@@ -36,7 +36,6 @@ import org.hibernate.persister.spi.PersisterClassResolver;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmPersisterClassResolver implements PersisterClassResolver {
-	public static final OgmPersisterClassResolver INSTANCE = new OgmPersisterClassResolver();
 
 	@Override
 	public Class<? extends EntityPersister> getEntityPersisterClass(PersistentClass metadata) {
