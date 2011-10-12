@@ -99,9 +99,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final GridMetadataManager gridManager;
+    private Object discriminatorValue;
 
 
-	public OgmEntityPersister(
+    public OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final SessionFactoryImplementor factory,
@@ -113,6 +114,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
+        discriminatorValue = persistentClass.getSubclassId();
 		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
 		// SUBCLASSES
@@ -1113,7 +1115,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return IntegerType.INSTANCE;
 	}
 
-	@Override
+    @Override public Object getDiscriminatorValue() {
+        return discriminatorValue;
+    }
+
+    @Override
 	public String getSubclassForDiscriminatorValue(Object value) {
 		return subclassByDiscriminatorValue.get(value);
 	}
