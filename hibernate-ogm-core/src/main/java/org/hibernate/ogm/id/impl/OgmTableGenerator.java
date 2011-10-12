@@ -49,7 +49,6 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.AccessCallback;
 import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.OptimizerFactory;
-import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;

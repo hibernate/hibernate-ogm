@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.util.Map;
-
 import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**

@@ -35,7 +35,6 @@ import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
-import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;

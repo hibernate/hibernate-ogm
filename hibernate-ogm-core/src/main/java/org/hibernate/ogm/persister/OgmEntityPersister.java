@@ -30,7 +30,6 @@ import java.util.Map;
 import org.infinispan.Cache;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;

@@ -20,12 +20,7 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Map;
-
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.NonContextualLobCreator;
 import org.hibernate.ogm.datastore.spi.Tuple;

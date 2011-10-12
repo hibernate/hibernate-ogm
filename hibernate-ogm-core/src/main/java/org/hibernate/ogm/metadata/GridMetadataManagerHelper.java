@@ -26,7 +26,6 @@ import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;

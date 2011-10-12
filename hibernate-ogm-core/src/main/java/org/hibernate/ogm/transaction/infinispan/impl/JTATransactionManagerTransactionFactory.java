@@ -20,14 +20,10 @@
  */
 package org.hibernate.ogm.transaction.infinispan.impl;
 
-import java.util.Properties;
-
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.hibernate.ConnectionReleaseMode;
-import org.hibernate.HibernateException;
-import org.hibernate.Transaction;
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;

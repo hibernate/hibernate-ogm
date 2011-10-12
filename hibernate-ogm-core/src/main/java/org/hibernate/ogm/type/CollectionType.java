@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.type;
 
-import java.util.Map;
-
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
