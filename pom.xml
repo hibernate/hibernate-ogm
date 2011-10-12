@@ -121,7 +121,6 @@
     </mailingLists>
 
     <properties>
-        <slf4jVersion>1.6.1</slf4jVersion>
         <infinispanVersion>5.0.1.FINAL</infinispanVersion>
         <hibernateVersion>4.0.0-SNAPSHOT</hibernateVersion>
         <hibernateSearchVersion>4.0.0.CR1</hibernateSearchVersion>
@@ -210,17 +209,6 @@
                 <artifactId>log4j</artifactId>
                 <version>1.2.16</version>
                 <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>${slf4jVersion}</version>
-                <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-log4j12</artifactId>
-                <version>${slf4jVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.logging</groupId>
