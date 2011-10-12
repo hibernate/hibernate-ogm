@@ -188,13 +188,13 @@ class EntityDehydrator {
 	}
 
 	private void doAddPropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										  int tableIndex,
-										  int propertyIndex,
-										  Object[] newColumnValue) {
+										int tableIndex,
+										int propertyIndex,
+										Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-		        .associationCache( associationCache )
+				.associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( newColumnValue )
 				.session( session )
@@ -224,12 +224,12 @@ class EntityDehydrator {
 
 
 	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										  int tableIndex,
-										  int propertyIndex,
-										  Object[] oldColumnValue) {
+										int tableIndex,
+										int propertyIndex,
+										Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-		        .associationCache( associationCache )
+			.associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
@@ -253,7 +253,7 @@ class EntityDehydrator {
 	}
 
 	private boolean isEmptyOrAllColumnsNull(Object[] objects) {
-		for (Object object : objects) {
+		for ( Object object : objects ) {
 			if ( object != null ) return false;
 		}
 		return true;

@@ -108,7 +108,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	}
 
 	private void enforceOgmConfig(Map<Object,Object> map) {
-        map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
+		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());

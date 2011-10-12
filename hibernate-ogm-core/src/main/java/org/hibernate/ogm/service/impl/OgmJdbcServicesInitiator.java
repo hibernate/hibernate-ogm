@@ -56,44 +56,53 @@ public class OgmJdbcServicesInitiator implements BasicServiceInitiator<JdbcServi
 		return new OgmJdbcServicesImpl();
 	}
 
-    private static final class OgmJdbcServicesImpl implements JdbcServices, ServiceRegistryAwareService, Configurable {
-        public JdbcServicesImpl delegate = new JdbcServicesImpl();
+	private static final class OgmJdbcServicesImpl implements JdbcServices, ServiceRegistryAwareService, Configurable {
+		public JdbcServicesImpl delegate = new JdbcServicesImpl();
 
-        @Override public void configure(Map configurationValues) {
-            configurationValues.put("hibernate.temp.use_jdbc_metadata_defaults", false);
-            delegate.configure(configurationValues);
-        }
+		@Override
+		public void configure(Map configurationValues) {
+			configurationValues.put( "hibernate.temp.use_jdbc_metadata_defaults", false );
+			delegate.configure( configurationValues );
+		}
 
-        @Override public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-            delegate.injectServices(serviceRegistry);
-        }
+		@Override
+		public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+			delegate.injectServices( serviceRegistry );
+		}
 
-        @Override public ConnectionProvider getConnectionProvider() {
-            return delegate.getConnectionProvider();
-        }
+		@Override
+		public ConnectionProvider getConnectionProvider() {
+			return delegate.getConnectionProvider();
+		}
 
-        @Override public Dialect getDialect() {
-            return delegate.getDialect();
-        }
+		@Override
+		public Dialect getDialect() {
+			return delegate.getDialect();
+		}
 
-        @Override public SqlStatementLogger getSqlStatementLogger() {
-            return delegate.getSqlStatementLogger();
-        }
+		@Override
+		public SqlStatementLogger getSqlStatementLogger() {
+			return delegate.getSqlStatementLogger();
+		}
 
-        @Override public SqlExceptionHelper getSqlExceptionHelper() {
-            return delegate.getSqlExceptionHelper();
-        }
+		@Override
+		public SqlExceptionHelper getSqlExceptionHelper() {
+			return delegate.getSqlExceptionHelper();
+		}
 
-        @Override public ExtractedDatabaseMetaData getExtractedMetaDataSupport() {
-            return delegate.getExtractedMetaDataSupport();
-        }
+		@Override
+		public ExtractedDatabaseMetaData getExtractedMetaDataSupport() {
+			return delegate.getExtractedMetaDataSupport();
+		}
 
-        @Override public LobCreator getLobCreator(LobCreationContext lobCreationContext) {
-            return delegate.getLobCreator(lobCreationContext);
-        }
+		@Override
+		public LobCreator getLobCreator(LobCreationContext lobCreationContext) {
+			return delegate.getLobCreator( lobCreationContext );
+		}
 
-        @Override public ResultSetWrapper getResultSetWrapper() {
-            return delegate.getResultSetWrapper();
-        }
-    }
+		@Override
+		public ResultSetWrapper getResultSetWrapper() {
+			return delegate.getResultSetWrapper();
+		}
+	}
 }

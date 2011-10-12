@@ -74,17 +74,17 @@ public class OgmJtaPlatformInitiator implements BasicServiceInitiator<JtaPlatfor
 		if ( ! hasExplicitPlatform( configurationValues ) ) {
 			return new JBossStandAloneJtaPlatform();
 		}
-        return JtaPlatformInitiator.INSTANCE.initiateService(configurationValues, registry);
+		return JtaPlatformInitiator.INSTANCE.initiateService(configurationValues, registry);
 	}
 
 	private boolean hasExplicitPlatform(Map configVales) {
 		Object platform = configVales.get( AvailableSettings.JTA_PLATFORM );
 		if ( platform == null ) {
 			final String transactionManagerLookupImplName = (String) configVales.get( Environment.TRANSACTION_MANAGER_STRATEGY );
-            return transactionManagerLookupImplName != null;
+			return transactionManagerLookupImplName != null;
 		}
-        else {
-		    return true;
-        }
+		else {
+			return true;
+		}
 	}
 }

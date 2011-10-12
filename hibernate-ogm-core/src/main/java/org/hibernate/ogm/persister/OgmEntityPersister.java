@@ -99,10 +99,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final GridMetadataManager gridManager;
-    private Object discriminatorValue;
+	private Object discriminatorValue;
 
 
-    public OgmEntityPersister(
+	public OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final SessionFactoryImplementor factory,
@@ -114,7 +114,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
-        discriminatorValue = persistentClass.getSubclassId();
+		discriminatorValue = persistentClass.getSubclassId();
 		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
 		// SUBCLASSES
@@ -518,13 +518,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	 */
 	public Object[] hydrate(
 			final Tuple resultset,
-	        final Serializable id,
-	        final Object object,
-	        final Loadable rootLoadable,
+			final Serializable id,
+			final Object object,
+			final Loadable rootLoadable,
 			//We probably don't need suffixedColumns, use column names instead
-	        //final String[][] suffixedPropertyColumns,
-	        final boolean allProperties,
-	        final SessionImplementor session) throws HibernateException {
+		//final String[][] suffixedPropertyColumns,
+			final boolean allProperties,
+			final SessionImplementor session) throws HibernateException {
 
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Hydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
@@ -623,10 +623,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	protected Serializable insert(
 			final Object[] fields,
-	        final boolean[] notNull,
-	        String sql,
-	        final Object object,
-	        final SessionImplementor session) throws HibernateException {
+			final boolean[] notNull,
+			String sql,
+			final Object object,
+			final SessionImplementor session) throws HibernateException {
 		throw new HibernateException( "Cannot use a database generator with OGM" );
 	}
 
@@ -643,14 +643,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	public void update(
 			final Serializable id,
-	        final Object[] fields,
-	        final int[] dirtyFields,
-	        final boolean hasDirtyCollection,
-	        final Object[] oldFields,
-	        final Object oldVersion,
-	        final Object object,
-	        final Object rowId,
-	        final SessionImplementor session) throws HibernateException {
+			final Object[] fields,
+			final int[] dirtyFields,
+			final boolean hasDirtyCollection,
+			final Object[] oldFields,
+			final Object oldVersion,
+			final Object object,
+			final Object rowId,
+			final SessionImplementor session) throws HibernateException {
 
 		//note: dirtyFields==null means we had no snapshot, and we couldn't get one using select-before-update
 		//	  oldFields==null just means we had no snapshot to begin with (we might have used select-before-update to get the dirtyFields)
@@ -816,7 +816,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
 	private boolean checkVersion(final boolean[] includeProperty) {
-        return includeProperty[ getVersionProperty() ] ||
+		return includeProperty[ getVersionProperty() ] ||
 				getEntityMetamodel().getPropertyUpdateGenerationInclusions()[ getVersionProperty() ] != ValueInclusion.NONE;
 
 	}
@@ -1115,11 +1115,12 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return IntegerType.INSTANCE;
 	}
 
-    @Override public Object getDiscriminatorValue() {
-        return discriminatorValue;
-    }
+	@Override
+	public Object getDiscriminatorValue() {
+		return discriminatorValue;
+	}
 
-    @Override
+	@Override
 	public String getSubclassForDiscriminatorValue(Object value) {
 		return subclassByDiscriminatorValue.get(value);
 	}

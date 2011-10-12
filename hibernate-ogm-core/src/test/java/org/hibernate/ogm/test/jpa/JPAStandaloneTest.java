@@ -64,7 +64,7 @@ public class JPAStandaloneTest {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 
-        TransactionManager transactionManager = extractJBossTransactionManager(emf);
+		TransactionManager transactionManager = extractJBossTransactionManager( emf );
 
 		transactionManager.begin();
 		final EntityManager em = emf.createEntityManager();

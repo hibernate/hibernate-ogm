@@ -73,8 +73,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );
-        serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
-        serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
-        serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
 	}
 }

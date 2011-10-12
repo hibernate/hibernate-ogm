@@ -91,7 +91,7 @@ public abstract class JpaTestCase {
 				info,
 				Collections.EMPTY_MAP
 		);
-        transactionManager = extractJBossTransactionManager(factory);
+		transactionManager = extractJBossTransactionManager(factory);
 	}
 
 	//can be overridden by subclasses
@@ -103,8 +103,9 @@ public abstract class JpaTestCase {
 	 * Get JBoss TM out of Hibernate
 	 */
 	public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ((HibernateEntityManagerFactory) factory).getSessionFactory();
-        return sessionFactory.getServiceRegistry().getService(JtaPlatform.class).retrieveTransactionManager();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
+				.getSessionFactory();
+		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 	}
 
 	@After
