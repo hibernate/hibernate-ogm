@@ -35,7 +35,7 @@ public class Version {
 	}
 
 	static {
-		LoggerFactory.make().info( "Hibernate OGM {}", getVersionString() );
+		LoggerFactory.make().version( getVersionString() );
 	}
 
 	public static void touch() {

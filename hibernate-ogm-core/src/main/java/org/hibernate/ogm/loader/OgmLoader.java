@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -61,6 +59,8 @@ import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -78,7 +78,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmLoader implements UniqueEntityLoader {
-	private static final Logger log = LoggerFactory.getLogger( OgmLoader.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	private final OgmEntityPersister[] entityPersisters;
 	private final OgmCollectionPersister[] collectionPersisters;

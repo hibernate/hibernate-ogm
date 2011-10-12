@@ -33,7 +33,6 @@ import java.lang.reflect.Modifier;
 import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
-import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -45,6 +44,7 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -64,7 +64,7 @@ import org.hibernate.testing.SkipForDialect;
  */
 public abstract class OgmTestCase extends TestCase {
 
-    private static final Logger log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 	protected static SessionFactory sessions;
 	private Session session;
 

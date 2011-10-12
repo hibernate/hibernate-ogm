@@ -27,6 +27,7 @@ import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -38,7 +39,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class OgmTransactionFactoryInitiator implements BasicServiceInitiator<TransactionFactory> {
 
-    private static final org.slf4j.Logger log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 
 	public static final OgmTransactionFactoryInitiator INSTANCE = new OgmTransactionFactoryInitiator();
 
@@ -52,12 +53,11 @@ public class OgmTransactionFactoryInitiator implements BasicServiceInitiator<Tra
 	@SuppressWarnings( {"unchecked"})
 	public TransactionFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
-        //Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
+		//Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
 		if ( strategy == null || JdbcTransactionFactory.class.getName().equals(strategy) ) {
-            //FIXME convert to JBoss Logging
-            log.info("Use default transaction factory (use an TransactionManager exclusively to pilot the transaction)");
+			log.usingDefaultTransactionFactory();
 			return new JTATransactionManagerTransactionFactory();
 		}
-        return TransactionFactoryInitiator.INSTANCE.initiateService(configurationValues, registry);
+		return TransactionFactoryInitiator.INSTANCE.initiateService(configurationValues, registry);
 	}
 }

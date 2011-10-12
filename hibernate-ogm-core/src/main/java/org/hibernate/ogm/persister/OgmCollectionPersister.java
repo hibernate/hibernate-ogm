@@ -27,8 +27,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -57,6 +55,8 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
@@ -71,7 +71,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {
-	private static final Logger log = LoggerFactory.getLogger( OgmCollectionPersister.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	private final GridType keyGridType;
 	private final GridType elementGridType;
@@ -445,9 +446,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				metadataProvider.flushToCache();
 			}
 			else {
-				if ( log.isDebugEnabled() ) {
-					log.debug( "no rows to delete" );
-				}
+				log.debug( "no rows to delete" );
 			}
 		}
 	}
