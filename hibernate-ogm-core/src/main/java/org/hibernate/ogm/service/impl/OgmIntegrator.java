@@ -32,7 +32,6 @@ import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
-import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 

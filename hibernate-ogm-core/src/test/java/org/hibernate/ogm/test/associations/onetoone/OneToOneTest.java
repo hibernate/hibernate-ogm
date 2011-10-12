@@ -24,10 +24,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
-import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
-
 /**
  * @author Emmanuel Bernard
  */

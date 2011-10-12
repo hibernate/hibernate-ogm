@@ -20,13 +20,8 @@
  */
 package org.hibernate.ogm.test.simpleentity;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.net.URL;
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.test.type.Bookmark;
 
 /**
  * @author Emmanuel Bernard

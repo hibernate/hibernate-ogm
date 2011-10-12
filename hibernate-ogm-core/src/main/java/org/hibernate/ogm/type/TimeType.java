@@ -26,7 +26,6 @@ import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.JdbcTimeTypeDescriptor;
-import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

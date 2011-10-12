@@ -25,7 +25,6 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.*;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

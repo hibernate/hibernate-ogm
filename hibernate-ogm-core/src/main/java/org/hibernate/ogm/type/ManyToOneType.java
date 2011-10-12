@@ -22,7 +22,6 @@ package org.hibernate.ogm.type;
 
 import java.io.Serializable;
 
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.NotYetImplementedException;
