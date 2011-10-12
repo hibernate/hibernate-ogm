@@ -37,16 +37,17 @@ import org.hibernate.LockOptions;
 import org.hibernate.WrongClassException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.collection.PersistentCollection;
-import org.hibernate.engine.EntityUniqueKey;
-import org.hibernate.engine.PersistenceContext;
-import org.hibernate.engine.QueryParameters;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.engine.TwoPhaseLoad;
-import org.hibernate.event.EventSource;
-import org.hibernate.event.PostLoadEvent;
-import org.hibernate.event.PreLoadEvent;
+import org.hibernate.collection.spi.PersistentCollection;
+import org.hibernate.engine.internal.TwoPhaseLoad;
+import org.hibernate.engine.spi.EntityUniqueKey;
+import org.hibernate.engine.spi.PersistenceContext;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.PostLoadEvent;
+import org.hibernate.event.spi.PreLoadEvent;
+import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -61,6 +62,7 @@ import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
+import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
@@ -69,8 +71,6 @@ import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
-import org.hibernate.util.ArrayHelper;
-import org.hibernate.util.StringHelper;
 
 /**
  * Load an entity from the Grid
@@ -261,7 +261,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//It likely all depends on what resultset ends up being
 		handleEmptyCollections( qp.getCollectionKeys(), resultset, session );
 
-		final org.hibernate.engine.EntityKey[] keys = new org.hibernate.engine.EntityKey[entitySpan];
+		final org.hibernate.engine.spi.EntityKey[] keys = new org.hibernate.engine.spi.EntityKey[entitySpan];
 
 		//for each element in resultset
 		//TODO should we collect List<Object> as result? Not necessary today
@@ -337,7 +337,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			QueryParameters qp,
 			Serializable optionalId,
 			List<Object> hydratedObjects,
-			org.hibernate.engine.EntityKey[] keys,
+			org.hibernate.engine.spi.EntityKey[] keys,
 			boolean returnProxies)
 	throws SQLException {
 		final OgmEntityPersister[] persisters = getEntityPersisters();
@@ -383,14 +383,14 @@ public class OgmLoader implements UniqueEntityLoader {
 		return getResultColumnOrRow( row );
 	}
 
-	private void extractKeysFromResultSet(SessionImplementor session, Serializable optionalId, org.hibernate.engine.EntityKey[] keys) {
+	private void extractKeysFromResultSet(SessionImplementor session, Serializable optionalId, org.hibernate.engine.spi.EntityKey[] keys) {
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
 		if (keys.length == 0) {
 			//do nothing, this is a collection
 		}
 		else {
-			final org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( optionalId, entityPersisters[0], session.getEntityMode() );
+			final org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( optionalId,  entityPersisters[0] );
 			keys[0] = key;
 		}
 	}
@@ -593,7 +593,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		final PreLoadEvent pre;
 		final PostLoadEvent post;
 		if ( session.isEventSource() ) {
-			pre = new PreLoadEvent( (EventSource) session );
+			pre = new PreLoadEvent( (EventSource ) session );
 			post = new PostLoadEvent( (EventSource) session );
 		}
 		else {
@@ -674,17 +674,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Copied from Loader#getOptionalObjectKey
 	 */
-	private static org.hibernate.engine.EntityKey getOptionalObjectKey(QueryParameters queryParameters, SessionImplementor session) {
+	private static org.hibernate.engine.spi.EntityKey getOptionalObjectKey(QueryParameters queryParameters, SessionImplementor session) {
 		final Object optionalObject = queryParameters.getOptionalObject();
 		final Serializable optionalId = queryParameters.getOptionalId();
 		final String optionalEntityName = queryParameters.getOptionalEntityName();
 
 		if ( optionalObject != null && optionalEntityName != null ) {
-			return new org.hibernate.engine.EntityKey(
-					optionalId,
-					session.getEntityPersister( optionalEntityName, optionalObject ),
-					session.getEntityMode()
-				);
+			return session.generateEntityKey( optionalId, session.getEntityPersister( optionalEntityName, optionalObject ) );
 		}
 		else {
 			return null;
@@ -703,9 +699,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	private Object[] getRow(
 			final Tuple resultset,
 	        final OgmEntityPersister[] persisters,
-	        final org.hibernate.engine.EntityKey[] keys,
+	        final org.hibernate.engine.spi.EntityKey[] keys,
 	        final Object optionalObject,
-	        final org.hibernate.engine.EntityKey optionalObjectKey,
+	        final org.hibernate.engine.spi.EntityKey optionalObjectKey,
 	        final LockMode[] lockModes,
 	        final List hydratedObjects,
 	        final SessionImplementor session)
@@ -726,7 +722,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		for ( int i = 0; i < cols; i++ ) {
 
 			Object object = null;
-			org.hibernate.engine.EntityKey key = keys[i];
+			org.hibernate.engine.spi.EntityKey key = keys[i];
 
 			if ( keys[i] == null ) {
 				//do nothing
@@ -780,12 +776,12 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 			//TODO create an interface for this usage
 	        final OgmEntityPersister persister,
-	        final org.hibernate.engine.EntityKey key,
+	        final org.hibernate.engine.spi.EntityKey key,
 	        final Object object,
 	        final LockMode lockMode,
 	        final SessionImplementor session)
 	throws HibernateException {
-		if ( !persister.isInstance( object, session.getEntityMode() ) ) {
+		if ( !persister.isInstance( object ) ) {
 			throw new WrongClassException(
 					"loaded object was of wrong class " + object.getClass(),
 					key.getIdentifier(),
@@ -822,9 +818,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 	        final Loadable persister,
 	        final String rowIdAlias,
-	        final org.hibernate.engine.EntityKey key,
+	        final org.hibernate.engine.spi.EntityKey key,
 	        final LockMode lockMode,
-	        final org.hibernate.engine.EntityKey optionalObjectKey,
+	        final org.hibernate.engine.spi.EntityKey optionalObjectKey,
 	        final Object optionalObject,
 	        final List hydratedObjects,
 	        final SessionImplementor session)
@@ -899,7 +895,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	        final int i,
 	        final Object object,
 	        final String instanceEntityName,
-	        final org.hibernate.engine.EntityKey key,
+	        final org.hibernate.engine.spi.EntityKey key,
 	        final String rowIdAlias,
 	        final LockMode lockMode,
 	        final Loadable rootPersister,
@@ -932,7 +928,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				lockMode,
 				!eagerPropertyFetch,
 				session
-			);
+		);
 
 		//TODO what to do with that in OGM
 //		//This is not very nice (and quite slow):
@@ -972,7 +968,8 @@ public class OgmLoader implements UniqueEntityLoader {
 						ukName,
 						type.semiResolve( values[index], session, object ),
 						type,
-						session.getEntityMode(), session.getFactory()
+						persister.getEntityMode(),
+						session.getFactory()
 					);
 				session.getPersistenceContext().addEntity( euk, object );
 			}
@@ -1007,7 +1004,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied form Loader#registerNonExists
 	 */
 	private void registerNonExists(
-	        final org.hibernate.engine.EntityKey[] keys,
+	        final org.hibernate.engine.spi.EntityKey[] keys,
 	        final Loadable[] persisters,
 	        final SessionImplementor session) {
 
@@ -1019,7 +1016,7 @@ public class OgmLoader implements UniqueEntityLoader {
 
 				int owner = owners[i];
 				if ( owner > -1 ) {
-					org.hibernate.engine.EntityKey ownerKey = keys[owner];
+					org.hibernate.engine.spi.EntityKey ownerKey = keys[owner];
 					if ( keys[i] == null && ownerKey != null ) {
 
 						final PersistenceContext persistenceContext = session.getPersistenceContext();

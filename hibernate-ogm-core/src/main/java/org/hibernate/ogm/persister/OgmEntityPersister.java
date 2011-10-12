@@ -38,35 +38,35 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
 import org.hibernate.StaleObjectStateException;
-import org.hibernate.cache.CacheKey;
-import org.hibernate.cache.access.EntityRegionAccessStrategy;
-import org.hibernate.cache.entry.CacheEntry;
+import org.hibernate.bytecode.instrumentation.spi.LazyPropertyInitializer;
+import org.hibernate.cache.spi.CacheKey;
+import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
+import org.hibernate.cache.spi.entry.CacheEntry;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.EntityEntry;
-import org.hibernate.engine.LoadQueryInfluencers;
-import org.hibernate.engine.Mapping;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.engine.ValueInclusion;
-import org.hibernate.engine.Versioning;
-import org.hibernate.intercept.LazyPropertyInitializer;
+import org.hibernate.engine.OptimisticLockStyle;
+import org.hibernate.engine.internal.Versioning;
+import org.hibernate.engine.spi.EntityEntry;
+import org.hibernate.engine.spi.LoadQueryInfluencers;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.ValueInclusion;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -77,7 +77,6 @@ import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
-import org.hibernate.util.ArrayHelper;
 
 /**
  * Use a table per concrete class strategy
@@ -100,9 +99,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final GridMetadataManager gridManager;
+    private Object discriminatorValue;
 
 
-	public OgmEntityPersister(
+    public OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final SessionFactoryImplementor factory,
@@ -114,6 +114,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
+        discriminatorValue = persistentClass.getSubclassId();
 		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
 		// SUBCLASSES
@@ -157,7 +158,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 					factory.getSettings().getDefaultSchemaName()
 			) );
 		}
-		subclassSpaces = ArrayHelper.toStringArray(subclassTables);
+		subclassSpaces = ArrayHelper.toStringArray( subclassTables );
 
 		if ( isMultiTable() ) {
 			int idColumnSpan = getIdentifierColumnSpan();
@@ -279,7 +280,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 
 		if ( hasCache() ) {
-			CacheKey cacheKey = new CacheKey(id, getIdentifierType(), getEntityName(), session.getEntityMode(), getFactory() );
+			CacheKey cacheKey = session.generateCacheKey( id, getIdentifierType(), getEntityName() );
 			Object ce = getCacheAccessStrategy().get( cacheKey, session.getTimestamp() );
 			if (ce!=null) {
 				CacheEntry cacheEntry = (CacheEntry) getCacheEntryStructure().destructure(ce, getFactory());
@@ -693,7 +694,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		else {
 			// For the case of dynamic-update="false", or no snapshot, we update all properties
 			//TODO handle lazy
-			propsToUpdate = getPropertyUpdateability( object, session.getEntityMode() );
+			propsToUpdate = getPropertyUpdateability( object );
 		}
 
 		final SessionFactoryImplementor factory = getFactory();
@@ -718,15 +719,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				final EntityMetamodel entityMetamodel = getEntityMetamodel();
 
 				// Write any appropriate versioning conditional parameters
-				if ( useVersion && Versioning.OPTIMISTIC_LOCK_VERSION == entityMetamodel.getOptimisticLockMode() ) {
+				if ( useVersion && entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.VERSION ) {
 					if ( checkVersion( propsToUpdate ) ) {
 						checkVersionAndRaiseSOSE( id, oldVersion, session, resultset );
 					}
 				}
-				else if ( entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION && oldFields != null ) {
+				else if ( isAllOrDirtyOptLocking() && oldFields != null ) {
 					boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
-					boolean[] includeOldField = entityMetamodel.getOptimisticLockMode() == Versioning.OPTIMISTIC_LOCK_ALL ?
-							getPropertyUpdateability() : propsToUpdate;
+					boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
+							? getPropertyUpdateability()
+							: propsToUpdate;
 					//TODO do a diff on the properties value from resultset and the dirty value
 					GridType[] types = gridPropertyTypes;
 					
@@ -745,7 +747,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 									id,
 									oldFields[i],
 									factory,
-									!type.isEqual( oldFields, snapshotValue, EntityMode.POJO, factory )
+									!type.isEqual( oldFields, snapshotValue, factory )
 							);
 
 						}
@@ -757,6 +759,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				gridDialect.updateTuple( resultset, key, entityCache );
 			}
 		}
+	}
+
+	//Copied from AbstractEntityPersister
+	private boolean isAllOrDirtyOptLocking() {
+		EntityMetamodel entityMetamodel = getEntityMetamodel();
+		return entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.DIRTY
+				|| entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL;
 	}
 
 	private void comparePropertyAndRaiseSOSE(Serializable id, Object oldField, SessionFactoryImplementor factory, boolean b) {
@@ -773,7 +782,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Tuple resultset) {
 		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
 		final SessionFactoryImplementor factory = getFactory();
-		if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, EntityMode.POJO, factory ) ) {
+		if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, factory ) ) {
 			if ( factory.getStatistics().isStatisticsEnabled() ) {
 				factory.getStatisticsImplementor()
 						.optimisticFailure( getEntityName() );
@@ -809,6 +818,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private boolean checkVersion(final boolean[] includeProperty) {
         return includeProperty[ getVersionProperty() ] ||
 				getEntityMetamodel().getPropertyUpdateGenerationInclusions()[ getVersionProperty() ] != ValueInclusion.NONE;
+
 	}
 
 	//TODO make AbstractEntityPersister#isModifiableEntity protected instead
@@ -897,14 +907,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int span = getTableSpan();
 		if ( span > 1 ) throw new HibernateException( "Hibernate OGM does not yet support entities spanning multiple tables");
 		final EntityMetamodel entityMetamodel = getEntityMetamodel();
-		boolean isImpliedOptimisticLocking = !entityMetamodel.isVersioned() && entityMetamodel.getOptimisticLockMode() > Versioning.OPTIMISTIC_LOCK_VERSION;
+		boolean isImpliedOptimisticLocking = !entityMetamodel.isVersioned() && isAllOrDirtyOptLocking();
 		Object[] loadedState = null;
 		if ( isImpliedOptimisticLocking ) {
 			// need to treat this as if it where optimistic-lock="all" (dirty does *not* make sense);
 			// first we need to locate the "loaded" state
 			//
 			// Note, it potentially could be a proxy, so doAfterTransactionCompletion the location the safe way...
-			org.hibernate.engine.EntityKey key = new org.hibernate.engine.EntityKey( id, this, session.getEntityMode() );
+			org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( id, this );
 			Object entity = session.getPersistenceContext().getEntity( key );
 			if ( entity != null ) {
 				EntityEntry entry = session.getPersistenceContext().getEntry( entity );
@@ -933,7 +943,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 								resultset, getPropertyColumnNames( i ), session, object
 						);
 						//TODO support other entity modes
-						if ( ! type.isEqual( loadedState[i], snapshotValue, EntityMode.POJO, factory ) ) {
+						if ( ! type.isEqual( loadedState[i], snapshotValue, factory ) ) {
 							if ( factory.getStatistics().isStatisticsEnabled() ) {
 								factory.getStatisticsImplementor()
 										.optimisticFailure( getEntityName() );
@@ -1105,7 +1115,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return IntegerType.INSTANCE;
 	}
 
-	@Override
+    @Override public Object getDiscriminatorValue() {
+        return discriminatorValue;
+    }
+
+    @Override
 	public String getSubclassForDiscriminatorValue(Object value) {
 		return subclassByDiscriminatorValue.get(value);
 	}

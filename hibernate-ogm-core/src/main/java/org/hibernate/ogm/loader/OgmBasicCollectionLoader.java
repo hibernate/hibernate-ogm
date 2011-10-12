@@ -23,7 +23,7 @@ package org.hibernate.ogm.loader;
 import java.io.Serializable;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.type.Type;

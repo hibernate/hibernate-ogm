@@ -38,8 +38,11 @@ import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.ogm.util.impl.JndiHelper;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.util.NamingHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -70,17 +73,17 @@ public class CacheManagerServiceProvider {
 	
 	private EmbeddedCacheManager cacheManager;
 
-	public void start(Properties cfg) {
-		String jndiProperty = cfg.getProperty( CACHE_MANAGER_RESOURCE_PROP );
+	public void start(ServiceRegistry registry, Map<?,?> cfg) {
+		String jndiProperty = (String) cfg.get( CACHE_MANAGER_RESOURCE_PROP );
 		if ( jndiProperty == null ) {
-			String cfgName = cfg.getProperty(
-				INFINISPAN_CONFIGURATION_RESOURCENAME,
-				INFINISPAN_DEFAULT_CONFIG
-					);
-			cacheManager = createCustomCacheManager( cfgName, cfg );
+			String cfgName = (String) cfg.get( INFINISPAN_CONFIGURATION_RESOURCENAME );
+			if ( StringHelper.isEmpty( cfgName ) ) {
+				cfgName = INFINISPAN_DEFAULT_CONFIG;
+			}
+			cacheManager = createCustomCacheManager( cfgName, registry.getService( JtaPlatform.class ) );
 		}
 		else {
-			cacheManager = lookupCacheManager( jndiProperty, cfg );
+			cacheManager = lookupCacheManager( jndiProperty, JndiHelper.extractJndiProperties( cfg ) );
 		}
 		eagerlyInitializeCaches(cacheManager);
 	}
@@ -98,7 +101,7 @@ public class CacheManagerServiceProvider {
 	}
 
 	private EmbeddedCacheManager lookupCacheManager(String jndiName, Properties properties) {
-		Properties jndiProperties = NamingHelper.getJndiProperties( properties );
+		Properties jndiProperties = JndiHelper.extractJndiProperties( properties );
 		Context ctx = null;
 		try {
 			ctx = new InitialContext( jndiProperties );
@@ -121,7 +124,7 @@ public class CacheManagerServiceProvider {
 		}
 	}
 
-	private EmbeddedCacheManager createCustomCacheManager(String cfgName, Properties properties) {
+	private EmbeddedCacheManager createCustomCacheManager(String cfgName, JtaPlatform platform) {
 		try {
 			InfinispanConfiguration configuration = InfinispanConfiguration.newInfinispanConfiguration(
 					cfgName, InfinispanConfiguration.resolveSchemaPath(),
@@ -129,7 +132,7 @@ public class CacheManagerServiceProvider {
 					Thread.currentThread().getContextClassLoader() );
 			GlobalConfiguration globalConfiguration = configuration.parseGlobalConfiguration();
 			Configuration defaultConfiguration = configuration.parseDefaultConfiguration();
-			TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( properties );
+			TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 			final DefaultCacheManager cacheManager = new DefaultCacheManager( globalConfiguration, defaultConfiguration, true );
 			for (Map.Entry<String, Configuration> entry : configuration.parseNamedConfigurations().entrySet()) {
 				Configuration cfg = entry.getValue();

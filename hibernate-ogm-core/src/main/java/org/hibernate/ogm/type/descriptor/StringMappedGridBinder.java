@@ -34,6 +34,7 @@ import org.hibernate.engine.jdbc.NonContextualLobCreator;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
 /**
  * @author Nicolas Helleringer
@@ -52,6 +53,12 @@ public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
 		@Override
 		public LobCreator getLobCreator() {
 			return NonContextualLobCreator.INSTANCE;
+		}
+
+		@Override
+		public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
+			// GridDialect don't remap types yet
+			return sqlTypeDescriptor;
 		}
 	};
 

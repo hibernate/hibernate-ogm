@@ -20,11 +20,8 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.sql.Blob;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +31,7 @@ import org.hibernate.engine.jdbc.NonContextualLobCreator;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
 /**
  * @author Emmanuel Bernard
@@ -52,6 +50,12 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 		@Override
 		public LobCreator getLobCreator() {
 			return NonContextualLobCreator.INSTANCE;
+		}
+
+		@Override
+		public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
+			//OGM dialect don't remap types yet
+			return sqlTypeDescriptor;
 		}
 	};
 

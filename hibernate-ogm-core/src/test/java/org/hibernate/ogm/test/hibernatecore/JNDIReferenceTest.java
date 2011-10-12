@@ -29,7 +29,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.hibernate.testing.junit.FailureExpected;
 
 import static org.fest.assertions.Assertions.assertThat;
 

@@ -21,7 +21,7 @@
 package org.hibernate.ogm.type;
 
 import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
+import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
 

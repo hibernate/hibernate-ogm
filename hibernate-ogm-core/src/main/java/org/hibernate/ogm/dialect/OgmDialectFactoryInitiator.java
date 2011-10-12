@@ -18,28 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.jpa.impl;
+package org.hibernate.ogm.dialect;
 
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
-import org.hibernate.persister.PersisterClassProvider;
-import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
+import java.sql.Connection;
+import java.util.Map;
+
+import org.hibernate.HibernateException;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.service.jdbc.dialect.spi.DialectFactory;
+import org.hibernate.service.spi.BasicServiceInitiator;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Return the Ogm persisters
- *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmPersisterClassProvider implements PersisterClassProvider {
-	public static final OgmPersisterClassProvider INSTANCE = new OgmPersisterClassProvider();
+public class OgmDialectFactoryInitiator implements BasicServiceInitiator<DialectFactory> {
+
 	@Override
-	public Class<? extends EntityPersister> getEntityPersisterClass(String entityName) {
-		return OgmEntityPersister.class;
+	public DialectFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		return new NoopDialectFactory();
 	}
 
 	@Override
-	public Class<? extends CollectionPersister> getCollectionPersisterClass(String collectionPersister) {
-		return OgmCollectionPersister.class;
+	public Class<DialectFactory> getServiceInitiated() {
+		return DialectFactory.class;
+	}
+
+	private static class NoopDialectFactory implements DialectFactory {
+		@Override
+		public Dialect buildDialect(Map configValues, Connection connection) throws HibernateException {
+			return new NoopDialect();
+		}
 	}
 }

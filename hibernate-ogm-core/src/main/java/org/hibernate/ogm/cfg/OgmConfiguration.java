@@ -24,12 +24,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.jdbc.NoopConnectionProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 
 /**
@@ -47,12 +47,7 @@ public class OgmConfiguration extends Configuration {
 	}
 
 	private void resetOgm() {
-		super.setSessionFactoryObserver( new GridMetadataManager() );
-		super.setPersisterClassProvider( OgmPersisterClassProvider.INSTANCE );
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
-
-		super.setProperty( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
-		super.setProperty( Environment.DIALECT, NoopDialect.class.getName() );
 	}
 
 	/*
@@ -62,7 +57,7 @@ public class OgmConfiguration extends Configuration {
 	 */
 	@Override
 	public SessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactory( (SessionFactoryImplementor) super.buildSessionFactory() );
+		return new OgmSessionFactory( (SessionFactoryImplementor ) super.buildSessionFactory() );
 	}
 
 }

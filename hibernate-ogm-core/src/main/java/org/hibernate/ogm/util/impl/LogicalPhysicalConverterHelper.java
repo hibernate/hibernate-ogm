@@ -20,10 +20,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import java.util.HashMap;
-import java.util.Map;
 
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.GridType;

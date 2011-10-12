@@ -26,9 +26,9 @@ import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.EntityKey;
-import org.hibernate.engine.ForeignKeys;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.internal.ForeignKeys;
+import org.hibernate.engine.spi.EntityKey;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
@@ -101,7 +101,7 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 		if ( //uniqueKeyPropertyName == null &&
 				id != null ) {
 			EntityPersister persister = session.getFactory().getEntityPersister( delegate.getAssociatedEntityName() );
-			EntityKey entityKey = new EntityKey( id, persister, session.getEntityMode() );
+			EntityKey entityKey = session.generateEntityKey( id, persister );
 			if ( !session.getPersistenceContext().containsEntity( entityKey ) ) {
 				session.getPersistenceContext().getBatchFetchQueue().addBatchLoadableEntityKey( entityKey );
 			}
@@ -111,7 +111,7 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	//copied from org.hibernate.type.ManyToOne#getIdentifier()
 	protected final Object getIdentifier(Object value, SessionImplementor session) throws HibernateException {
 		//isNotEmbedded copied from EntityType#isNotEmbedded
-		boolean isNotEmbedded = !delegate.isEmbeddedInXML() && session.getEntityMode()== EntityMode.DOM4J;
+		boolean isNotEmbedded = isNotEmbedded( session );
 		if ( isNotEmbedded ) {
 			return value;
 		}
@@ -138,5 +138,9 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 //			return propertyValue;
 			throw new NotYetImplementedException( "@ManyToOne using a non-pk unique key not yet supported by OGM");
 		}
+	}
+
+	protected boolean isNotEmbedded(SessionImplementor session) {
+		return false;
 	}
 }

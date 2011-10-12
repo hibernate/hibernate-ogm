@@ -26,7 +26,7 @@ import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.CustomType;

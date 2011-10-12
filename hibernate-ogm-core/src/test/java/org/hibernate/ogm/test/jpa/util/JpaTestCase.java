@@ -36,9 +36,12 @@ import org.junit.After;
 import org.junit.Before;
 
 import org.hibernate.cfg.Environment;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.test.utils.PackagingRule;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
+import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
+import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -60,8 +63,6 @@ public abstract class JpaTestCase {
 
 	@Before
 	public void createFactory() throws MalformedURLException {
-		transactionManager = getJBossTransactionManager();
-
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
 		//we explicitly list them to avoid scanning
@@ -82,14 +83,15 @@ public abstract class JpaTestCase {
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
 		info.setTransactionType( PersistenceUnitTransactionType.JTA );
 		info.setValidationMode( ValidationMode.AUTO );
-		info.getProperties().setProperty( Environment.TRANSACTION_MANAGER_STRATEGY,
-				JBossTSStandaloneTransactionManagerLookup.class.getName()
+		info.getProperties().setProperty( Environment.JTA_PLATFORM,
+				JBossStandAloneJtaPlatform.class.getName()
 		);
 		refineInfo(info);
 		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory(
 				info,
 				Collections.EMPTY_MAP
 		);
+        transactionManager = extractJBossTransactionManager(factory);
 	}
 
 	//can be overridden by subclasses
@@ -98,12 +100,11 @@ public abstract class JpaTestCase {
 	}
 
 	/**
-	 * Initializes a JBossTS Standalone TransactionManager to not use permanent journals.
-	 * See jbossts-properties.xml for configuration.
+	 * Get JBoss TM out of Hibernate
 	 */
-	private static TransactionManager getJBossTransactionManager() {
-		TransactionManager transactionManager = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
-		return transactionManager;
+	public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
+        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ((HibernateEntityManagerFactory) factory).getSessionFactory();
+        return sessionFactory.getServiceRegistry().getService(JtaPlatform.class).retrieveTransactionManager();
 	}
 
 	@After

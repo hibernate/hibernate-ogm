@@ -24,10 +24,10 @@ import java.util.Arrays;
 
 import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.type.Type;
-import org.hibernate.util.ArrayHelper;
 
 /**
  * @author Emmanuel Bernard
@@ -63,7 +63,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	@Override
 	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 			throws HibernateException {
-		Object[] subvalues = nullSafeGetValues( value, session.getEntityMode() );
+		Object[] subvalues = nullSafeGetValues( value, componentType.getEntityMode() );
 		//TODO in the original componentType begin and loc are different (namely begin only counts settable slots
 		//I don't think that's relevant for us
 		int columnCurrentIndex = 0;

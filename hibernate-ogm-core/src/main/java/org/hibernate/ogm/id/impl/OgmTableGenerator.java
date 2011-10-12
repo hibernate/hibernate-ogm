@@ -25,6 +25,7 @@ package org.hibernate.ogm.id.impl;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,9 +43,7 @@ import org.hibernate.MappingException;
 import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.engine.SessionImplementor;
-import org.hibernate.engine.transaction.IsolatedWork;
-import org.hibernate.engine.transaction.Isolater;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -53,6 +52,9 @@ import org.hibernate.id.enhanced.AccessCallback;
 import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.OptimizerFactory;
 import org.hibernate.id.enhanced.TableGenerator;
+import org.hibernate.internal.util.StringHelper;
+import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -63,8 +65,6 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
-import org.hibernate.util.PropertiesHelper;
-import org.hibernate.util.StringHelper;
 
 /**
  * An enhanced version of table-based id generation.
@@ -319,18 +319,18 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 		// if the increment size is greater than one, we prefer pooled optimization; but we
 		// need to see if the user prefers POOL or POOL_LO...
-		String defaultPooledOptimizerStrategy = PropertiesHelper.getBoolean(
+		String defaultPooledOptimizerStrategy = ConfigurationHelper.getBoolean(
 				Environment.PREFER_POOLED_VALUES_LO, params, false
 		)
 				? OptimizerFactory.POOL_LO
 				: OptimizerFactory.POOL;
 		final String defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.NONE : defaultPooledOptimizerStrategy;
-		final String optimizationStrategy = PropertiesHelper.getString( OPT_PARAM, params, defaultOptimizerStrategy );
+		final String optimizationStrategy = ConfigurationHelper.getString( OPT_PARAM, params, defaultOptimizerStrategy );
 		optimizer = OptimizerFactory.buildOptimizer(
 				optimizationStrategy,
 				identifierType.getReturnedClass(),
 				incrementSize,
-				PropertiesHelper.getInt( INITIAL_PARAM, params, -1 )
+				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
 	}
 
@@ -347,7 +347,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getTableName()
 	 */
 	protected String determineGeneratorTableName(Properties params, Dialect dialect) {
-		String name = PropertiesHelper.getString( TABLE_PARAM, params, DEF_TABLE );
+		String name = ConfigurationHelper.getString( TABLE_PARAM, params, DEF_TABLE );
 		boolean isGivenNameUnqualified = name.indexOf( '.' ) < 0;
 		if ( isGivenNameUnqualified ) {
 			ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
@@ -383,7 +383,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 */
 	protected String determineSegmentColumnName(Properties params, Dialect dialect) {
 		ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
-		String name = PropertiesHelper.getString( SEGMENT_COLUMN_PARAM, params, DEF_SEGMENT_COLUMN );
+		String name = ConfigurationHelper.getString( SEGMENT_COLUMN_PARAM, params, DEF_SEGMENT_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
 
@@ -401,7 +401,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 */
 	protected String determineValueColumnName(Properties params, Dialect dialect) {
 		ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
-		String name = PropertiesHelper.getString( VALUE_COLUMN_PARAM, params, DEF_VALUE_COLUMN );
+		String name = ConfigurationHelper.getString( VALUE_COLUMN_PARAM, params, DEF_VALUE_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
 
@@ -433,7 +433,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @return The default segment value to use.
 	 */
 	protected String determineDefaultSegmentValue(Properties params) {
-		boolean preferSegmentPerEntity = PropertiesHelper.getBoolean( CONFIG_PREFER_SEGMENT_PER_ENTITY, params, false );
+		boolean preferSegmentPerEntity = ConfigurationHelper.getBoolean( CONFIG_PREFER_SEGMENT_PER_ENTITY, params, false );
 		String defaultToUse = preferSegmentPerEntity ? params.getProperty( TABLE ) : DEF_SEGMENT_VALUE;
 		log.info( "explicit segment value for id generator [" + tableName + '.' + segmentColumnName + "] suggested; using default [" + defaultToUse + "]" );
 		return defaultToUse;
@@ -451,15 +451,15 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getSegmentValueLength()
 	 */
 	protected int determineSegmentColumnSize(Properties params) {
-		return PropertiesHelper.getInt( SEGMENT_LENGTH_PARAM, params, DEF_SEGMENT_LENGTH );
+		return ConfigurationHelper.getInt( SEGMENT_LENGTH_PARAM, params, DEF_SEGMENT_LENGTH );
 	}
 
 	protected int determineInitialValue(Properties params) {
-		return PropertiesHelper.getInt( INITIAL_PARAM, params, DEFAULT_INITIAL_VALUE );
+		return ConfigurationHelper.getInt( INITIAL_PARAM, params, DEFAULT_INITIAL_VALUE );
 	}
 
 	protected int determineIncrementSize(Properties params) {
-		return PropertiesHelper.getInt( INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE );
+		return ConfigurationHelper.getInt( INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE );
 	}
 
 	//TODO remove build*Query
@@ -500,13 +500,13 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	//copied and altered from TransactionHelper
 	public Serializable doWorkInIsolationTransaction(final SessionImplementor session)
 			throws HibernateException {
-		class Work implements IsolatedWork {
+		class Work extends AbstractReturningWork<IntegralDataTypeHolder> {
 			private SessionImplementor localSession = session;
-			Serializable generatedValue;
 
-			public void doWork(Connection connection) throws HibernateException {
+			@Override
+			public IntegralDataTypeHolder execute(Connection connection) throws SQLException {
 				try {
-					generatedValue = doWorkInCurrentTransactionIfAny( localSession );
+					return doWorkInCurrentTransactionIfAny( localSession );
 				}
 				catch ( RuntimeException sqle ) {
 					throw new HibernateException( "Could not get or update next value", sqle );
@@ -516,17 +516,11 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		//we want to work out of transaction
 		boolean workInTransaction = false;
 		Work work = new Work();
-		boolean isJta = session.getFactory().getTransactionManager() != null;
-		if ( isJta ) {
-			new Isolater.JtaDelegate( session ).delegateWork( work, workInTransaction );
-		}
-		else {
-			new Isolater.JdbcDelegate( session ).delegateWork( work, workInTransaction );
-		}
-		return work.generatedValue;
+		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork(work, workInTransaction);
+		return generatedValue;
 	}
 
-	public Serializable doWorkInCurrentTransactionIfAny(SessionImplementor session) {
+	public IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
 		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() );
 		defineGridTypes( gridManager );
 		final AdvancedCache<RowKey, Object> identifierCache =

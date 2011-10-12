@@ -43,18 +43,10 @@ import org.hibernate.ejb.HibernatePersistence;
 import org.hibernate.ejb.packaging.PersistenceMetadata;
 import org.hibernate.ejb.packaging.PersistenceXmlLoader;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
-import org.hibernate.ogm.dialect.NoopDialect;
-import org.hibernate.ogm.jdbc.NoopConnectionProvider;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassProvider;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.transaction.infinispan.impl.DummyTransactionManagerLookup;
-import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
-import org.hibernate.util.CollectionHelper;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -66,12 +58,13 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();
 	private HibernatePersistence delegate = new HibernatePersistence();
 	private static Logger LOG = LoggerFactory.make();
+	private static final Map EMPTY_MAP = new HashMap<Object, Object>( 0 );
 
 	@Override
 	public EntityManagerFactory createEntityManagerFactory(String emName, Map map) {
 		try {
 			Map integration = map == null ?
-						CollectionHelper.EMPTY_MAP :
+						EMPTY_MAP :
 						Collections.unmodifiableMap( map );
 			Enumeration<URL> persistenceXml = Thread.currentThread()
 					.getContextClassLoader()
@@ -115,17 +108,9 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	}
 
 	private void enforceOgmConfig(Map<Object,Object> map) {
-		map.put( AvailableSettings.SESSION_FACTORY_OBSERVER, GridMetadataManager.class.getName() );
-		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
-		map.put( Environment.CONNECTION_PROVIDER, NoopConnectionProvider.class.getName() );
+        map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
-		//FIXME use Environment.DEFAULT_TRANSACTION_STRATEGY when 3.6.4 is out
-		map.put( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
-		//FIXME use Environment.DEFAULT_MANAGER_LOOKUP when 3.6.4 is out
-		map.put( "hibernate.transaction.default_manager_lookup_class", JBossTSStandaloneTransactionManagerLookup.class.getName() );
-		map.put( Environment.DIALECT, NoopDialect.class.getName() );
-		map.put( AvailableSettings.PERSISTER_CLASS_PROVIDER, OgmPersisterClassProvider.class.getName() );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 	}

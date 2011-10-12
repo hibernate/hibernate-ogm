@@ -24,7 +24,7 @@ import java.math.BigInteger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.engine.Mapping;
+import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.BigIntegerTypeDescriptor;
 

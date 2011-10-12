@@ -30,9 +30,7 @@ import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.event.EventSource;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 
 /**

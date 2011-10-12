@@ -21,56 +21,57 @@
 package org.hibernate.ogm.test.utils;
 
 import java.io.Serializable;
-import java.lang.annotation.Target;
 
 import org.infinispan.Cache;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.SessionFactoryObserver;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.impl.SessionFactoryImpl;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
+import org.hibernate.service.UnknownServiceException;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class TestHelper {
 	public static Cache getEntityCache(Session session) {
-		final SessionFactoryObserver observer = getObserver( session.getSessionFactory() );
-		return getEntityCache(observer);
+		final GridMetadataManager gridManager = getGridMetadataManager(session.getSessionFactory());
+		return getEntityCache(gridManager);
 	}
 
 	public static Cache getEntityCache(SessionFactory sessionFactory) {
-		final SessionFactoryObserver observer = getObserver( sessionFactory );
-		return getEntityCache(observer);
+		final GridMetadataManager gridManager = getGridMetadataManager(sessionFactory);
+		return getEntityCache(gridManager);
 	}
 
-	private static Cache getEntityCache(SessionFactoryObserver observer) {
-		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
+	private static Cache getEntityCache(GridMetadataManager gridManager) {
+		return gridManager.getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
 	}
 
 	public static Cache getAssociationCache(Session session) {
-		final SessionFactoryObserver observer = getObserver( session.getSessionFactory() );
-		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+		final GridMetadataManager manager = getGridMetadataManager(session.getSessionFactory());
+		return manager.getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
 	}
 
 	public static Cache getAssociationCache(SessionFactory sessionFactory) {
-		final SessionFactoryObserver observer = getObserver( sessionFactory );
-		return getAssociationCache( observer );
+		final GridMetadataManager gridManager = getGridMetadataManager(sessionFactory);
+		return getAssociationCache( gridManager );
 	}
 
-	private static Cache getAssociationCache(SessionFactoryObserver observer) {
-		return ( ( GridMetadataManager ) observer ).getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+	private static Cache getAssociationCache(GridMetadataManager gridManager) {
+		return gridManager.getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
 	}
 
-	private static SessionFactoryObserver getObserver(SessionFactory factory) {
-		final SessionFactoryObserver observer = ( ( SessionFactoryImplementor ) factory ).getFactoryObserver();
-		if (observer == null) {
-			throw new RuntimeException( "Wrong OGM configuration: observer not set" );
+	private static GridMetadataManager getGridMetadataManager(SessionFactory factory) {
+        ServiceRegistryImplementor serviceRegistry = ((SessionFactoryImplementor) factory).getServiceRegistry();
+        try {
+            return serviceRegistry.getService(GridMetadataManager.class);
+        }
+        catch (UnknownServiceException e) {
+        	throw new RuntimeException( "Wrong OGM configuration: observer not set", e );
 		}
-		return observer;
 	}
 
 	@SuppressWarnings("unchecked")
