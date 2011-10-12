@@ -24,8 +24,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
@@ -37,6 +35,8 @@ import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
@@ -44,7 +44,8 @@ import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
 
 class EntityDehydrator {
-	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	private Tuple resultset;
 	private Object[] fields;

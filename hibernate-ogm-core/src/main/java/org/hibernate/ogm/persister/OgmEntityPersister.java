@@ -28,8 +28,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.EntityMode;
@@ -67,6 +65,8 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -85,7 +85,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmEntityPersister extends AbstractEntityPersister implements EntityPersister {
-	private static final Logger log = LoggerFactory.getLogger(OgmEntityPersister.class);
+
+	private static final Log log = LoggerFactory.make();
 
 	//not per se SQL value but a regular grid value
 	private final String discriminatorSQLValue;
@@ -108,7 +109,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			final SessionFactoryImplementor factory,
 			final Mapping mapping) throws HibernateException {
 		super(persistentClass, cacheAccessStrategy, factory);
-		log.trace( "Creating OgmEntityPersister for {}", persistentClass.getClassName() );
+		if ( log.isTraceEnabled() ) {
+			log.tracef( "Creating OgmEntityPersister for $s", persistentClass.getClassName() );
+		}
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
 				factory.getSettings().getDefaultCatalogName(),

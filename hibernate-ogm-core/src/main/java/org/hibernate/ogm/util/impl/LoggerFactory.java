@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import org.slf4j.Logger;
+import org.jboss.logging.Logger;
 
 /**
  * A factory class for class loggers. Allows a creation of loggers after the DRY principle.
@@ -28,9 +28,15 @@ import org.slf4j.Logger;
  * @author Hardy Ferentschik
  */
 public class LoggerFactory {
-	public static Logger make() {
+	public static Log make() {
 		Throwable t = new Throwable();
 		StackTraceElement directCaller = t.getStackTrace()[1];
-		return org.slf4j.LoggerFactory.getLogger( directCaller.getClassName() );
+		return Logger.getMessageLogger( Log.class, directCaller.getClassName() );
+	}
+
+	public static <T> T make(Class<T> logClass) {
+		Throwable t = new Throwable();
+		StackTraceElement directCaller = t.getStackTrace()[1];
+		return Logger.getMessageLogger( logClass, directCaller.getClassName() );
 	}
 }

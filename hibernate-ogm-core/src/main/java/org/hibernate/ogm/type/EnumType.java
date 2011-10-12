@@ -22,12 +22,11 @@ package org.hibernate.ogm.type;
 
 import java.sql.Types;
 
-import org.slf4j.Logger;
-
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.CustomType;
 
@@ -39,7 +38,7 @@ import org.hibernate.type.CustomType;
 //TODO It would probably be better to implement all of this as a subclass of BasicGridType
 public class EnumType extends GridTypeDelegatingToCoreType {
 
-	private static final Logger log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 
 	private org.hibernate.type.EnumType coreEnumType;
 	private final boolean isOrdinal;
@@ -65,11 +64,11 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 			throws HibernateException {
 		final Object object = rs.get( name );
 		if ( object == null ) {
-			log.trace( "found [null] as column [{}]", name );
+			log.tracef( "found [null] as column [$s]", name );
 			return null;
 		}
 		else {
-			log.trace( "found [{}] as column [{}]", object, name );
+			log.tracef( "found [$s] as column [$s]", object, name );
 			if ( object instanceof Integer ) {
 				initEnumValues();
 				int ordinal = ( ( Integer ) object ).intValue();
@@ -124,13 +123,13 @@ public class EnumType extends GridTypeDelegatingToCoreType {
 			throw new NotYetImplementedException( "Multi column property not implemented yet" );
 		}
 		if ( value == null ) {
-			log.trace( "binding [null] to parameter [{}]", names[0] );
+			log.tracef( "binding [null] to parameter [$s]", names[0] );
 		}
 		else {
 			Object endValue = isOrdinal ?
 					Integer.valueOf( ( ( Enum<?> ) value ).ordinal() ) :
 					( ( Enum<?> ) value ).name();
-			log.trace( "binding [{}] to parameter(s) {}", endValue, names[0] );
+			log.tracef( "binding [$s] to parameter(s) $s", endValue, names[0] );
 			resultset.put( names[0], endValue );
 		}
 
