@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
+import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -51,7 +52,8 @@ public class OgmTransactionFactoryInitiator implements BasicServiceInitiator<Tra
 	@SuppressWarnings( {"unchecked"})
 	public TransactionFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
-		if ( strategy == null ) {
+        //Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
+		if ( strategy == null || JdbcTransactionFactory.class.getName().equals(strategy) ) {
             //FIXME convert to JBoss Logging
             log.info("Use default transaction factory (use an TransactionManager exclusively to pilot the transaction)");
 			return new JTATransactionManagerTransactionFactory();
