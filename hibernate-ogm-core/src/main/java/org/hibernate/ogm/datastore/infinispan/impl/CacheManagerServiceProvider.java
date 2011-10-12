@@ -69,7 +69,7 @@ public class CacheManagerServiceProvider {
 	
 	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
 	
-	private static final Log LOG = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 	
 	private EmbeddedCacheManager cacheManager;
 
@@ -109,7 +109,7 @@ public class CacheManagerServiceProvider {
 		}
 		catch ( NamingException ne ) {
 			String msg = "Unable to retrieve CacheManager from JNDI [" + jndiName + "]";
-			LOG.error( msg, ne );
+			log.error( msg, ne );
 			throw new HibernateException( msg );
 		}
 		finally {
@@ -118,7 +118,7 @@ public class CacheManagerServiceProvider {
 					ctx.close();
 				}
 				catch ( NamingException ne ) {
-					LOG.error( "Unable to release initial context", ne );
+					log.error( "Unable to release initial context", ne );
 				}
 			}
 		}

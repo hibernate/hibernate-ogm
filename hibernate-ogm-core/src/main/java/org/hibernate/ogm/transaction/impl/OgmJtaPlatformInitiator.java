@@ -22,11 +22,8 @@ package org.hibernate.ogm.transaction.impl;
 
 import java.util.Map;
 
-import org.jboss.logging.Logger;
-
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
-import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.internal.JtaPlatformInitiator;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
@@ -38,11 +35,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class OgmJtaPlatformInitiator implements BasicServiceInitiator<JtaPlatform> {
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();
-
-	private static final CoreMessageLogger LOG = Logger.getMessageLogger(
-            CoreMessageLogger.class,
-            JtaPlatformInitiator.class.getName()
-    );
 
 	@Override
 	public Class<JtaPlatform> getServiceInitiated() {

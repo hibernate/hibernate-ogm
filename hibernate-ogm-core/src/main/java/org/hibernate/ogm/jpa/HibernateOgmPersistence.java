@@ -56,7 +56,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class HibernateOgmPersistence implements PersistenceProvider {
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();
 	private HibernatePersistence delegate = new HibernatePersistence();
-	private static Log LOG = LoggerFactory.make();
+	private static Log log = LoggerFactory.make();
 	private static final Map EMPTY_MAP = new HashMap<Object, Object>( 0 );
 
 	@Override
@@ -69,7 +69,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					.getContextClassLoader()
 					.getResources( "META-INF/persistence.xml" );
 			if ( ! persistenceXml.hasMoreElements() ) {
-				LOG.persistenceXmlNotFoundInClassPath( emName != null ? emName : "" );
+				log.persistenceXmlNotFoundInClassPath( emName != null ? emName : "" );
 			}
 			while ( persistenceXml.hasMoreElements() ) {
 				URL url = persistenceXml.nextElement();
