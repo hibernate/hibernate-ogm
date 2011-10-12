@@ -122,12 +122,11 @@
 
     <properties>
         <slf4jVersion>1.6.1</slf4jVersion>
-        <infinispanVersion>5.0.0.FINAL</infinispanVersion>
+        <infinispanVersion>5.0.1.FINAL</infinispanVersion>
         <hibernateVersion>4.0.0-SNAPSHOT</hibernateVersion>
-        <hibernateSearchVersion>4.0.0.Alpha2</hibernateSearchVersion>
-        <luceneVersion>3.3.0</luceneVersion>
+        <hibernateSearchVersion>4.0.0.CR1</hibernateSearchVersion>
         <jbossjtaVersion>4.15.3.Final</jbossjtaVersion>
-        <jbossNamingVersion>5.0.6.CR1</jbossNamingVersion>
+        <jbossNamingVersion>7.1.0.Alpha2</jbossNamingVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -168,12 +167,16 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
-                <artifactId>hibernate-search</artifactId>
+                <artifactId>hibernate-search-orm</artifactId>
                 <version>${hibernateSearchVersion}</version>
                 <exclusions>
                     <exclusion>
                         <artifactId>hibernate-search-analyzers</artifactId>
                         <groupId>org.hibernate</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-api</artifactId>
+                        <groupId>org.slf4j</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -181,11 +184,16 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-infinispan</artifactId>
                 <version>${hibernateSearchVersion}</version>
-            </dependency>
-            <dependency>
-                <artifactId>lucene-core</artifactId>
-                <groupId>org.apache.lucene</groupId>
-                <version>${luceneVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>hibernate-search-analyzers</artifactId>
+                        <groupId>org.hibernate</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-api</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
@@ -196,6 +204,12 @@
             
             <!-- Logging -->
             <dependency>
+                <groupId>log4j</groupId>
+                <artifactId>log4j</artifactId>
+                <version>1.2.16</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4jVersion}</version>
@@ -205,7 +219,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>${slf4jVersion}</version>
-                <scope>test</scope>
             </dependency>
         
             <!-- Grids -->
@@ -309,10 +322,6 @@
                         <groupId>jacorb</groupId>
                     </exclusion>
                     <exclusion>
-                        <artifactId>jboss-logging-tools</artifactId>
-                        <groupId>org.jboss.logging</groupId>
-                    </exclusion>
-                    <exclusion>
                         <artifactId>jboss-connector-api_1.5_spec</artifactId>
                         <groupId>org.jboss.spec.javax.resource</groupId>
                     </exclusion>
@@ -355,6 +364,18 @@
                     <exclusion>
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                         <groupId>org.jboss.spec.javax.transaction</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>commons-httpclient</artifactId>
+                        <groupId>commons-httpclient</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-logging-processor</artifactId>
+                        <groupId>org.jboss.logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jboss-logging-generator</artifactId>
+                        <groupId>org.jboss.logging</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
