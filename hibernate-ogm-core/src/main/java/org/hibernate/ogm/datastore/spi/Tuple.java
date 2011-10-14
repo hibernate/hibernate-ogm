@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.ogm.datastore.impl.SetFromCollection;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -76,7 +78,7 @@ public class Tuple {
 	 * Inherently deduplicated operations
 	 */
 	public Set<TupleOperation> getOperations() {
-		return new HashSet<TupleOperation>( currentState.values() );
+		return new SetFromCollection<TupleOperation>( currentState.values() );
 	}
 
 	public TupleSnapshot getSnapshot() {
