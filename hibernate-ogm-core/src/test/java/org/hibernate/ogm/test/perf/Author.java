@@ -75,8 +75,8 @@ public class Author {
 		this.bio = bio;
 	}
 
-	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="seq")
-	@SequenceGenerator(name="seq")
+	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="auth_seq")
+	@SequenceGenerator(name="auth_seq")
 	public int getA_id() {
 		return a_id;
 	}

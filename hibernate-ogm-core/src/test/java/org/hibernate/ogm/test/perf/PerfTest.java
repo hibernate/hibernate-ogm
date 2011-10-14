@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.perf;
 
 import org.hibernate.ogm.test.jpa.util.JpaTestCase;
-import org.junit.Test;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
@@ -50,46 +49,69 @@ public class PerfTest extends JpaTestCase {
 	}
 
 
+
 	public void testSimpleEntityInserts() throws Exception {
 		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
-		for (int j = 0 ; j < 20000 ; j++) {
-			System.out.println("Adding 200 authors");
-			for (int i = 0; i < 200 ; i++) {
-				Author author = new Author();
-				author.setBio("This is a decent size bio made of " + rand.nextDouble() + " stuffs");
-				author.setDob(new Date());
-				author.setFname("Emmanuel " + rand.nextInt());
-				author.setLname("Bernard " + rand.nextInt());
-				author.setMname("" + rand.nextInt(26));
-				em.persist(author);
-			}
-			em.flush();
-			getTransactionManager().commit();
-			em.clear();
-			getTransactionManager().begin();
-			em.joinTransaction();
+		int nbrOfLoop = 10000;
+		System.out.printf("Warming up\n");
+		for (int j = 0 ; j < 200 ; j++) {
+			save200AuthorsAndCommit(em);
 		}
+
+		System.out.printf( "Warm up period done\nSaving %s entities\n", nbrOfLoop);
+		long start = System.nanoTime();
+
+		for (int j = 0 ; j < nbrOfLoop; j++) {
+			save200AuthorsAndCommit(em);
+		}
+		System.out.printf("Saving %s took %sms ie %sns/entry\n", 200*nbrOfLoop, (System.nanoTime() - start) / 1000000, (System.nanoTime() - start)/(200*nbrOfLoop));
 		em.close();
 		getTransactionManager().commit();
 
 		getTransactionManager().begin();
 		em = getFactory().createEntityManager();
-		System.out.println("Reading 100 authors");
-		for (int i = 0 ; i < 100 ; i++) {
-			int primaryKey = rand.nextInt(999) + 1;
+		int nbr_of_reads = 100000;
+		start = System.nanoTime();
+		for (int i = 0 ; i < nbr_of_reads; i++) {
+			int primaryKey = rand.nextInt(nbrOfLoop-1)+1; //start from 1
 			Author author = em.find(Author.class, primaryKey);
-			assertThat(author.getBio()).isNotEmpty();
-			assertThat(author.getA_id()).isEqualTo(primaryKey);
+			if ( author == null ) {
+				System.out.printf("Cannot find author %s, %sth loop\n", primaryKey, i);
+			}
+			else {
+				assertThat(author.getBio()).isNotEmpty();
+				assertThat(author.getA_id()).isEqualTo(primaryKey);
+			}
 		}
+		System.out.printf("Reading %s took %sms ie %sns/entry\n", nbr_of_reads, (System.nanoTime() - start) / 1000000, (System.nanoTime() - start)/(nbr_of_reads));
+
 		em.close();
 		getTransactionManager().commit();
+	}
+
+	private void save200AuthorsAndCommit(EntityManager em) throws Exception {
+		for (int i = 0; i < 200 ; i++) {
+			Author author = new Author();
+			author.setBio("This is a decent size bio made of " + rand.nextDouble() + " stuffs");
+			author.setDob(new Date());
+			author.setFname("Emmanuel " + rand.nextInt());
+			author.setLname("Bernard " + rand.nextInt());
+			author.setMname("" + rand.nextInt(26));
+			em.persist(author);
+		}
+		em.flush();
+		getTransactionManager().commit();
+		em.clear();
+		getTransactionManager().begin();
+		em.joinTransaction();
 	}
 
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class<?>[] {
-				Author.class
+				Author.class,
+				Blog.class
 		};
 	}
 }
