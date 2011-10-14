@@ -73,6 +73,29 @@ public class CRUDTest extends OgmTestCase {
 		session.close();
 	}
 
+	private void performanceLoop() throws Exception {
+		long start = 0;
+		for ( int i = 0; i < Integer.MAX_VALUE; i++ ) {
+			if ( i % 10000 == 0 ) start = System.nanoTime();
+			testSimpleCRUD();
+			if ( i % 10000 == 9999 ) {
+				long elapsed = System.nanoTime() - start;
+				System.out.printf( "%.3E ms for 10000 tests\n", (elapsed) / 1000000f );
+			}
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		CRUDTest test = new CRUDTest();
+		test.setUp();
+		try {
+			test.performanceLoop();
+		}
+		finally {
+			test.tearDown();
+		}
+	}
+
 	public void testGeneratedValue() throws Exception {
 		final Session session = openSession();
 
