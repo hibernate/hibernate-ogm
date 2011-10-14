@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -61,6 +59,8 @@ import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -78,7 +78,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmLoader implements UniqueEntityLoader {
-	private static final Logger log = LoggerFactory.getLogger( OgmLoader.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	private final OgmEntityPersister[] entityPersisters;
 	private final OgmCollectionPersister[] collectionPersisters;
@@ -175,9 +176,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Called by subclasses that initialize collections
 	 */
 	public final void loadCollection(
-	        final SessionImplementor session,
-	        final Serializable id,
-	        final Type type) throws HibernateException {
+		final SessionImplementor session,
+		final Serializable id,
+		final Type type) throws HibernateException {
 
 		if ( log.isDebugEnabled() ) {
 			log.debug(
@@ -194,7 +195,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				true
 			);
 
-		log.debug("done loading collection");
+		log.debug( "done loading collection" );
 
 	}
 
@@ -298,9 +299,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * no elements (hence no rows in the result set).
 	 */
 	private void handleEmptyCollections(
-	        final Serializable[] keys,
-	        final ResultSet resultSetId,
-	        final SessionImplementor session) {
+		final Serializable[] keys,
+		final ResultSet resultSetId,
+		final SessionImplementor session) {
 
 		if ( keys != null ) {
 			// this is a collection initializer, so we must create a collection
@@ -491,13 +492,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Read one collection element from the current row of the JDBC result set
 	 */
 	private void readCollectionElement(
-	        final Object optionalOwner,
-	        final Serializable optionalKey,
-	        final CollectionPersister persister,
-	        final CollectionAliases descriptor,
-	        final ResultSet rs,
-	        final SessionImplementor session)
-	throws HibernateException, SQLException {
+		final Object optionalOwner,
+		final Serializable optionalKey,
+		final CollectionPersister persister,
+		final CollectionAliases descriptor,
+		final ResultSet rs,
+		final SessionImplementor session)
+				throws HibernateException, SQLException {
 
 		final PersistenceContext persistenceContext = session.getPersistenceContext();
 
@@ -697,14 +698,14 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#getRow
 	 */
 	private Object[] getRow(
-			final Tuple resultset,
-	        final OgmEntityPersister[] persisters,
-	        final org.hibernate.engine.spi.EntityKey[] keys,
-	        final Object optionalObject,
-	        final org.hibernate.engine.spi.EntityKey optionalObjectKey,
-	        final LockMode[] lockModes,
-	        final List hydratedObjects,
-	        final SessionImplementor session)
+		final Tuple resultset,
+		final OgmEntityPersister[] persisters,
+		final org.hibernate.engine.spi.EntityKey[] keys,
+		final Object optionalObject,
+		final org.hibernate.engine.spi.EntityKey optionalObjectKey,
+		final LockMode[] lockModes,
+		final List hydratedObjects,
+		final SessionImplementor session)
 	throws HibernateException {
 		if ( keys.length > 1 ) throw new NotYetImplementedException( "Loading involving several entities in one result set is not yet supported in OGM" );
 
@@ -772,14 +773,14 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#instanceAlreadyLoaded
 	 */
 	private void instanceAlreadyLoaded(
-			final Tuple resultset,
-	        final int i,
+		final Tuple resultset,
+		final int i,
 			//TODO create an interface for this usage
-	        final OgmEntityPersister persister,
-	        final org.hibernate.engine.spi.EntityKey key,
-	        final Object object,
-	        final LockMode lockMode,
-	        final SessionImplementor session)
+		final OgmEntityPersister persister,
+		final org.hibernate.engine.spi.EntityKey key,
+		final Object object,
+		final LockMode lockMode,
+		final SessionImplementor session)
 	throws HibernateException {
 		if ( !persister.isInstance( object ) ) {
 			throw new WrongClassException(
@@ -814,16 +815,16 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#instanceNotYetLoaded
 	 */
 	private Object instanceNotYetLoaded(
-	        final Tuple resultset,
-	        final int i,
-	        final Loadable persister,
-	        final String rowIdAlias,
-	        final org.hibernate.engine.spi.EntityKey key,
-	        final LockMode lockMode,
-	        final org.hibernate.engine.spi.EntityKey optionalObjectKey,
-	        final Object optionalObject,
-	        final List hydratedObjects,
-	        final SessionImplementor session)
+		final Tuple resultset,
+		final int i,
+		final Loadable persister,
+		final String rowIdAlias,
+		final org.hibernate.engine.spi.EntityKey key,
+		final LockMode lockMode,
+		final org.hibernate.engine.spi.EntityKey optionalObjectKey,
+		final Object optionalObject,
+		final List hydratedObjects,
+		final SessionImplementor session)
 	throws HibernateException {
 		final String instanceClass = getInstanceClass(
 				resultset,
@@ -873,11 +874,11 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#getInstanceClass
 	 */
 	private String getInstanceClass(
-	        final Tuple resultset,
-	        final int i,
-	        final Loadable persister,
-	        final Serializable id,
-	        final SessionImplementor session)
+		final Tuple resultset,
+		final int i,
+		final Loadable persister,
+		final Serializable id,
+		final SessionImplementor session)
 	throws HibernateException {
 		//We don't have any discriminator so the class is always the one from the persister
 		return persister.getEntityName();
@@ -891,15 +892,15 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * Copied from Loader#loadFromResultSet
 	 */
 	private void loadFromResultSet(
-	        final Tuple resultset,
-	        final int i,
-	        final Object object,
-	        final String instanceEntityName,
-	        final org.hibernate.engine.spi.EntityKey key,
-	        final String rowIdAlias,
-	        final LockMode lockMode,
-	        final Loadable rootPersister,
-	        final SessionImplementor session)
+		final Tuple resultset,
+		final int i,
+		final Object object,
+		final String instanceEntityName,
+		final org.hibernate.engine.spi.EntityKey key,
+		final String rowIdAlias,
+		final LockMode lockMode,
+		final Loadable rootPersister,
+		final SessionImplementor session)
 	throws HibernateException {
 
 		final Serializable id = key.getIdentifier();
@@ -1004,9 +1005,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * copied form Loader#registerNonExists
 	 */
 	private void registerNonExists(
-	        final org.hibernate.engine.spi.EntityKey[] keys,
-	        final Loadable[] persisters,
-	        final SessionImplementor session) {
+		final org.hibernate.engine.spi.EntityKey[] keys,
+		final Loadable[] persisters,
+		final SessionImplementor session) {
 
 		final int[] owners = getOwners();
 		if ( owners != null ) {

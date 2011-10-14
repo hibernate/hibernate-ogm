@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import java.util.Set;
-
 /**
  * Type of operations on the tuple
  *

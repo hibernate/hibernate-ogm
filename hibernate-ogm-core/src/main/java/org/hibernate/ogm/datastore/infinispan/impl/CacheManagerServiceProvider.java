@@ -34,11 +34,11 @@ import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.config.InfinispanConfiguration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.util.impl.JndiHelper;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.service.ServiceRegistry;
@@ -69,7 +69,7 @@ public class CacheManagerServiceProvider {
 	
 	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
 	
-	private static final Logger LOG = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 	
 	private EmbeddedCacheManager cacheManager;
 
@@ -109,7 +109,7 @@ public class CacheManagerServiceProvider {
 		}
 		catch ( NamingException ne ) {
 			String msg = "Unable to retrieve CacheManager from JNDI [" + jndiName + "]";
-			LOG.error( msg, ne );
+			log.error( msg, ne );
 			throw new HibernateException( msg );
 		}
 		finally {
@@ -118,7 +118,7 @@ public class CacheManagerServiceProvider {
 					ctx.close();
 				}
 				catch ( NamingException ne ) {
-					LOG.error( "Unable to release initial context", ne );
+					log.error( "Unable to release initial context", ne );
 				}
 			}
 		}

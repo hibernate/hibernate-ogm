@@ -1,6 +1,6 @@
-/*
+/* 
  * Hibernate, Relational Persistence for Idiomatic Java
- *
+ * 
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,32 +18,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.type.descriptor;
+package org.hibernate.ogm.util.impl;
 
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.type.descriptor.WrapperOptions;
-import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageLogger;
 
 /**
- * Map field to string value and persist it to the grid
- * 
- * @author Nicolas Helleringer
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class StringMappedGridTypeDescriptor implements GridTypeDescriptor {
-	public static final StringMappedGridTypeDescriptor INSTANCE = new StringMappedGridTypeDescriptor();
+@MessageLogger(projectCode = "HOGM")
+public interface Log extends BasicLogger {
 
-	@Override
-	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new StringMappedGridBinder<X>(javaTypeDescriptor, this) {
-			@Override
-			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
-				resultset.put( names[0], javaTypeDescriptor.toString( value) );
-			}
-		};
-	}
+	@LogMessage(level = INFO)
+	@Message(id = 1, value = "Hibernate OGM %1$s")
+	void version(String versionString);
 
-	@Override
-	public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new StringMappedGridExtractor<X>( javaTypeDescriptor, this );
-	}
+	@LogMessage(level = WARN)
+	@Message(id = 2, value = "Could not find any META-INF/persistence.xml file in the classpath. " +
+						"Unable to build Persistence Unit %1$s")
+	void persistenceXmlNotFoundInClassPath(String unitName);
+
+	@LogMessage(level = INFO)
+	@Message(id = 3, value = "Use default transaction factory (use an TransactionManager exclusively to pilot the transaction)")
+	void usingDefaultTransactionFactory();
+
 }

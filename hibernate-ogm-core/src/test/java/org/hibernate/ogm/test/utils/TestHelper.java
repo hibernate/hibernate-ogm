@@ -65,12 +65,12 @@ public class TestHelper {
 	}
 
 	private static GridMetadataManager getGridMetadataManager(SessionFactory factory) {
-        ServiceRegistryImplementor serviceRegistry = ((SessionFactoryImplementor) factory).getServiceRegistry();
-        try {
-            return serviceRegistry.getService(GridMetadataManager.class);
-        }
-        catch (UnknownServiceException e) {
-        	throw new RuntimeException( "Wrong OGM configuration: observer not set", e );
+		ServiceRegistryImplementor serviceRegistry = ( (SessionFactoryImplementor) factory ).getServiceRegistry();
+		try {
+			return serviceRegistry.getService( GridMetadataManager.class );
+		}
+		catch ( UnknownServiceException e ) {
+			throw new RuntimeException( "Wrong OGM configuration: observer not set", e );
 		}
 	}
 

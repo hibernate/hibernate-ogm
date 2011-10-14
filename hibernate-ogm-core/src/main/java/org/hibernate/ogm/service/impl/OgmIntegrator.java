@@ -32,7 +32,6 @@ import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
-import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
@@ -73,8 +72,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );
-        serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
-        serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
-        serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
 	}
 }

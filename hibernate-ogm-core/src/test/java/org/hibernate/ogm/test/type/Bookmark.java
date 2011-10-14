@@ -114,8 +114,8 @@ public class Bookmark {
 	private BookmarkType type;
 
 	@Lob
-    @Basic(fetch= FetchType.EAGER)
-    @Column(name="DS_BLOB")
+	@Basic(fetch = FetchType.EAGER)
+	@Column(name = "DS_BLOB")
 	public byte[] getBlob() { return blob; }
 	public void setBlob(byte[] blob) {  this.blob = blob; }
 	private byte[] blob;

@@ -21,12 +21,8 @@
 package org.hibernate.ogm.transaction.infinispan.impl;
 
 import javax.transaction.Status;
-import javax.transaction.Synchronization;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-import javax.transaction.UserTransaction;
-
-import org.slf4j.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
@@ -38,6 +34,7 @@ import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.JoinStatus;
 import org.hibernate.engine.transaction.spi.LocalStatus;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
@@ -48,7 +45,8 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
  */
 public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
 
-	private final Logger log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
+
 	private boolean begun;
 	private boolean commitFailed;
 	private boolean newTransaction;
@@ -134,7 +132,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		try {
 			if ( isInitiator ) {
 				transactionManager.commit();
-                log.debug("Committed JTA UserTransaction");
+				log.debug( "Committed JTA UserTransaction" );
 			}
 		}
 		catch ( Exception e ) {
@@ -154,9 +152,6 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 	protected void afterAfterCompletion() {
 		// this method is a noop if there is a Synchronization!
 		if ( isDriver ) {
-			if ( !isInitiator ) {
-                //LOG.setManagerLookupClass();
-			}
 			try {
 				transactionCoordinator().afterTransaction( this, transactionManager.getStatus() );
 			}
@@ -178,7 +173,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 				// failed commits automatically rollback the transaction per JTA spec
 				if ( getLocalStatus() != LocalStatus.FAILED_COMMIT  ) {
 					transactionManager.rollback();
-                    log.debug("Rolled back JTA UserTransaction");
+					log.debug( "Rolled back JTA UserTransaction" );
 				}
 			}
 			else {
@@ -192,13 +187,13 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	public void markRollbackOnly() {
-        log.trace("Marking transaction for rollback only");
+		log.trace( "Marking transaction for rollback only" );
 		try {
 			transactionManager.setRollbackOnly();
-            log.debug("set JTA UserTransaction to rollback only");
+			log.debug( "set JTA UserTransaction to rollback only" );
 		}
 		catch (SystemException e) {
-            log.debug("Unable to mark transaction for rollback only", e);
+			log.debug( "Unable to mark transaction for rollback only", e );
 		}
 	}
 

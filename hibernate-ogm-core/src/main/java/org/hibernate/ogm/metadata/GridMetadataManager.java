@@ -24,16 +24,12 @@ import java.util.Map;
 
 import org.infinispan.manager.CacheContainer;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.SessionFactoryObserver;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.Service;
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;

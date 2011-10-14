@@ -20,19 +20,16 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
  * @author Emmanuel Bernard
  */
 public class BasicGridExtractor<J> implements GridValueExtractor<J> {
-	private static final Logger log = LoggerFactory.getLogger( BasicGridExtractor.class );
+	private static final Log log = LoggerFactory.make();
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<J> javaTypeDescriptor;
 
@@ -46,11 +43,13 @@ public class BasicGridExtractor<J> implements GridValueExtractor<J> {
 		@SuppressWarnings( "unchecked" )
 		final J result = (J) resultset.get( name );
 		if ( result == null ) {
-			log.trace( "found [null] as column [{}]", name );
+			log.tracef( "found [null] as column [$s]", name );
 			return null;
 		}
 		else {
-			log.trace( "found [{}] as column [{}]", javaTypeDescriptor.extractLoggableRepresentation( result ), name );
+			if ( log.isTraceEnabled() ) {
+				log.tracef( "found [$s] as column [$s]", javaTypeDescriptor.extractLoggableRepresentation( result ), name );
+			}
 			return result;
 		}
 	}

@@ -96,8 +96,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		session.close();
 	}
 
-    @Test
-    public void testStringMappedTypeSerialisation() throws Exception {
+	@Test
+	public void testStringMappedTypeSerialisation() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 

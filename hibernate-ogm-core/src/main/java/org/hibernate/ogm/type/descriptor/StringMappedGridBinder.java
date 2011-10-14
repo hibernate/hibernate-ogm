@@ -20,18 +20,12 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.jdbc.NonContextualLobCreator;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
@@ -39,8 +33,10 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 /**
  * @author Nicolas Helleringer
  */
-public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
-	private static final Logger log = LoggerFactory.getLogger( StringMappedGridBinder.class );
+public abstract class StringMappedGridBinder<X> implements GridValueBinder<X> {
+
+	private static final Log log = LoggerFactory.make();
+
 	private final JavaTypeDescriptor<X> javaDescriptor;
 	private final GridTypeDescriptor gridDescriptor;
 	private static final WrapperOptions DEFAULT_OPTIONS = new WrapperOptions() {
@@ -71,13 +67,14 @@ public abstract class StringMappedGridBinder<X> implements GridValueBinder<X>{
 	public void bind(Tuple resultset, X value, String[] names) {
 		if ( value == null ) {
 			for ( String name : names ) {
-				log.trace( "binding [null] to parameter [{}]", name );
+				log.tracef( "binding [null] to parameter [$s]", name );
 				resultset.put( name, null );
 			}
 		}
 		else {
-
-			log.trace( "binding [{}] to parameter(s) {}", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
+			if ( log.isTraceEnabled() ) {
+				log.tracef( "binding [$s] to parameter(s) $s", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
+			}
 			doBind( resultset, value, names, DEFAULT_OPTIONS );
 		}
 	}

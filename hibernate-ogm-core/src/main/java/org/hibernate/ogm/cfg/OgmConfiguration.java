@@ -23,14 +23,9 @@ package org.hibernate.ogm.cfg;
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
-import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
-import org.hibernate.ogm.jdbc.NoopConnectionProvider;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
-import org.hibernate.ogm.metadata.GridMetadataManager;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application

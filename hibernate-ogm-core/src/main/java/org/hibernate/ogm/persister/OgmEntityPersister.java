@@ -28,11 +28,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
@@ -67,6 +64,8 @@ import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -85,7 +84,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmEntityPersister extends AbstractEntityPersister implements EntityPersister {
-	private static final Logger log = LoggerFactory.getLogger(OgmEntityPersister.class);
+
+	private static final Log log = LoggerFactory.make();
 
 	//not per se SQL value but a regular grid value
 	private final String discriminatorSQLValue;
@@ -99,22 +99,24 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final GridMetadataManager gridManager;
-    private Object discriminatorValue;
+	private Object discriminatorValue;
 
 
-    public OgmEntityPersister(
+	public OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final SessionFactoryImplementor factory,
 			final Mapping mapping) throws HibernateException {
 		super(persistentClass, cacheAccessStrategy, factory);
-		log.trace( "Creating OgmEntityPersister for {}", persistentClass.getClassName() );
+		if ( log.isTraceEnabled() ) {
+			log.tracef( "Creating OgmEntityPersister for $s", persistentClass.getClassName() );
+		}
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
-        discriminatorValue = persistentClass.getSubclassId();
+		discriminatorValue = persistentClass.getSubclassId();
 		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
 		// SUBCLASSES
@@ -518,13 +520,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	 */
 	public Object[] hydrate(
 			final Tuple resultset,
-	        final Serializable id,
-	        final Object object,
-	        final Loadable rootLoadable,
+			final Serializable id,
+			final Object object,
+			final Loadable rootLoadable,
 			//We probably don't need suffixedColumns, use column names instead
-	        //final String[][] suffixedPropertyColumns,
-	        final boolean allProperties,
-	        final SessionImplementor session) throws HibernateException {
+		//final String[][] suffixedPropertyColumns,
+			final boolean allProperties,
+			final SessionImplementor session) throws HibernateException {
 
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Hydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
@@ -623,10 +625,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	protected Serializable insert(
 			final Object[] fields,
-	        final boolean[] notNull,
-	        String sql,
-	        final Object object,
-	        final SessionImplementor session) throws HibernateException {
+			final boolean[] notNull,
+			String sql,
+			final Object object,
+			final SessionImplementor session) throws HibernateException {
 		throw new HibernateException( "Cannot use a database generator with OGM" );
 	}
 
@@ -643,14 +645,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	public void update(
 			final Serializable id,
-	        final Object[] fields,
-	        final int[] dirtyFields,
-	        final boolean hasDirtyCollection,
-	        final Object[] oldFields,
-	        final Object oldVersion,
-	        final Object object,
-	        final Object rowId,
-	        final SessionImplementor session) throws HibernateException {
+			final Object[] fields,
+			final int[] dirtyFields,
+			final boolean hasDirtyCollection,
+			final Object[] oldFields,
+			final Object oldVersion,
+			final Object object,
+			final Object rowId,
+			final SessionImplementor session) throws HibernateException {
 
 		//note: dirtyFields==null means we had no snapshot, and we couldn't get one using select-before-update
 		//	  oldFields==null just means we had no snapshot to begin with (we might have used select-before-update to get the dirtyFields)
@@ -816,7 +818,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
 	private boolean checkVersion(final boolean[] includeProperty) {
-        return includeProperty[ getVersionProperty() ] ||
+		return includeProperty[ getVersionProperty() ] ||
 				getEntityMetamodel().getPropertyUpdateGenerationInclusions()[ getVersionProperty() ] != ValueInclusion.NONE;
 
 	}
@@ -1115,11 +1117,12 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return IntegerType.INSTANCE;
 	}
 
-    @Override public Object getDiscriminatorValue() {
-        return discriminatorValue;
-    }
+	@Override
+	public Object getDiscriminatorValue() {
+		return discriminatorValue;
+	}
 
-    @Override
+	@Override
 	public String getSubclassForDiscriminatorValue(Object value) {
 		return subclassByDiscriminatorValue.get(value);
 	}

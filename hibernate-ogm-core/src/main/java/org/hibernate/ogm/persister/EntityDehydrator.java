@@ -24,8 +24,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
@@ -37,6 +35,8 @@ import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
@@ -44,7 +44,8 @@ import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
 
 class EntityDehydrator {
-	private static final Logger log = LoggerFactory.getLogger( EntityDehydrator.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	private Tuple resultset;
 	private Object[] fields;
@@ -188,13 +189,13 @@ class EntityDehydrator {
 	}
 
 	private void doAddPropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										  int tableIndex,
-										  int propertyIndex,
-										  Object[] newColumnValue) {
+										int tableIndex,
+										int propertyIndex,
+										Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-		        .associationCache( associationCache )
+				.associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( newColumnValue )
 				.session( session )
@@ -224,12 +225,12 @@ class EntityDehydrator {
 
 
 	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										  int tableIndex,
-										  int propertyIndex,
-										  Object[] oldColumnValue) {
+										int tableIndex,
+										int propertyIndex,
+										Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-		        .associationCache( associationCache )
+			.associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
@@ -253,7 +254,7 @@ class EntityDehydrator {
 	}
 
 	private boolean isEmptyOrAllColumnsNull(Object[] objects) {
-		for (Object object : objects) {
+		for ( Object object : objects ) {
 			if ( object != null ) return false;
 		}
 		return true;

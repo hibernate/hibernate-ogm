@@ -33,8 +33,6 @@ import java.util.Properties;
 
 import org.infinispan.AdvancedCache;
 import org.infinispan.context.Flag;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -51,7 +49,6 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.AccessCallback;
 import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.OptimizerFactory;
-import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
@@ -63,6 +60,8 @@ import org.hibernate.ogm.metadata.GridMetadataManager;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 
@@ -141,7 +140,8 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmTableGenerator implements PersistentIdentifierGenerator, Configurable {
-	private static final Logger log = LoggerFactory.getLogger( TableGenerator.class );
+
+	private static final Log log = LoggerFactory.make();
 
 	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
 

@@ -33,8 +33,6 @@ import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.persistence.spi.ProviderUtil;
 
-import org.slf4j.Logger;
-
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.EJB3DTDEntityResolver;
 import org.hibernate.cfg.Environment;
@@ -46,6 +44,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
@@ -57,7 +56,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class HibernateOgmPersistence implements PersistenceProvider {
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();
 	private HibernatePersistence delegate = new HibernatePersistence();
-	private static Logger LOG = LoggerFactory.make();
+	private static Log log = LoggerFactory.make();
 	private static final Map EMPTY_MAP = new HashMap<Object, Object>( 0 );
 
 	@Override
@@ -70,8 +69,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					.getContextClassLoader()
 					.getResources( "META-INF/persistence.xml" );
 			if ( ! persistenceXml.hasMoreElements() ) {
-				LOG.warn( "Could not find any META-INF/persistence.xml file in the classpath. " +
-						"Unable to build Persistence Unit " + (emName != null ? emName : "") );
+				log.persistenceXmlNotFoundInClassPath( emName != null ? emName : "" );
 			}
 			while ( persistenceXml.hasMoreElements() ) {
 				URL url = persistenceXml.nextElement();
@@ -108,7 +106,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	}
 
 	private void enforceOgmConfig(Map<Object,Object> map) {
-        map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
+		map.put( AvailableSettings.NAMING_STRATEGY, OgmNamingStrategy.class.getName() );
 		//we use a placeholder DS to make sure, Hibernate EntityManager (Ejb3Configuration) does not enforce a different connection provider
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
