@@ -45,7 +45,8 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
  */
 public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
 
-	private final Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
+
 	private boolean begun;
 	private boolean commitFailed;
 	private boolean newTransaction;
