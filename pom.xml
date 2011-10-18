@@ -121,7 +121,7 @@
     </mailingLists>
 
     <properties>
-        <infinispanVersion>5.0.1.FINAL</infinispanVersion>
+        <infinispanVersion>5.1.0-SNAPSHOT</infinispanVersion>
         <hibernateVersion>4.0.0-SNAPSHOT</hibernateVersion>
         <hibernateSearchVersion>4.0.0.CR1</hibernateSearchVersion>
         <jbossjtaVersion>4.15.3.Final</jbossjtaVersion>
