@@ -28,10 +28,10 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public class RowKey implements Serializable {
+public final class RowKey implements Serializable {
 	private final String table;
 	private final String[] columns;
-	//column value types do have to be serializable so RowKey can eb serializable
+	//column value types do have to be serializable so RowKey can be serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 
@@ -46,7 +46,7 @@ public class RowKey implements Serializable {
 		if ( this == o ) {
 			return true;
 		}
-		if ( o == null || getClass() != o.getClass() ) {
+		if ( o == null || RowKey.class != o.getClass() ) {
 			return false;
 		}
 

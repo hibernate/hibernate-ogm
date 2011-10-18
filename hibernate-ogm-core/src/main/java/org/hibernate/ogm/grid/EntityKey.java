@@ -27,7 +27,7 @@ import java.io.Serializable;
  *
  * @author Emmanuel Bernard
  */
-public class EntityKey implements Serializable {
+public final class EntityKey implements Serializable {
 	private final String table;
 	private final Serializable id;
 
@@ -51,7 +51,7 @@ public class EntityKey implements Serializable {
 		if ( this == o ) {
 			return true;
 		}
-		if ( o == null || getClass() != o.getClass() ) {
+		if ( o == null || EntityKey.class != o.getClass() ) {
 			return false;
 		}
 
