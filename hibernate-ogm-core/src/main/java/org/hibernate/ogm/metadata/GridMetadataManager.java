@@ -22,12 +22,16 @@ package org.hibernate.ogm.metadata;
 
 import java.util.Map;
 
+import org.infinispan.Cache;
 import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
+import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -40,19 +44,24 @@ import org.hibernate.service.spi.Stoppable;
  * TODO abstract that to other grids
  *
  * @author Emmanuel Bernard
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
 public class GridMetadataManager implements Service, ServiceRegistryAwareService, Stoppable, Startable {
-	private CacheManagerServiceProvider manager;
+	private final CacheManagerServiceProvider manager;
 	private final TypeTranslator typeTranslator;
-	private GridDialect gridDialect;
+	private final GridDialect gridDialect;
 	private Map<?, ?> configurationValues;
 	private ServiceRegistryImplementor serviceRegistry;
 
+	private Cache<AssociationKey, Map<RowKey, Map<String, Object>>> associationCache;
+	private Cache<EntityKey, Map<String, Object>> entityCache;
+	private Cache<RowKey, Object> identifierCache;
+
 	public GridMetadataManager(Map<?,?> configurationValues) {
 		Version.touch();
-		typeTranslator = new TypeTranslator();
-		gridDialect = new InfinispanDialect();
-		manager = new CacheManagerServiceProvider();
+		this.typeTranslator = new TypeTranslator();
+		this.gridDialect = new InfinispanDialect();
+		this.manager = new CacheManagerServiceProvider();
 		this.configurationValues = configurationValues;
 	}
 
@@ -80,5 +89,20 @@ public class GridMetadataManager implements Service, ServiceRegistryAwareService
 		// no longer needed, get rid of it
 		this.configurationValues = null;
 		this.serviceRegistry = null;
+		this.associationCache = getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+		this.entityCache = getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
+		this.identifierCache = getCacheContainer().getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
+	}
+
+	public Cache<EntityKey, Map<String, Object>> getEntityCache() {
+		return entityCache;
+	}
+
+	public Cache<RowKey, Object> getIdentifierCache() {
+		return identifierCache;
+	}
+
+	public Cache<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache() {
+		return associationCache;
 	}
 }
