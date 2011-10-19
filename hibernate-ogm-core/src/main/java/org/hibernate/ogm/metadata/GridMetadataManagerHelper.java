@@ -23,7 +23,6 @@ package org.hibernate.ogm.metadata;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.infinispan.manager.CacheContainer;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -47,9 +46,7 @@ public class GridMetadataManagerHelper {
 			return service;
 		}
 		else {
-			StringBuilder error = new StringBuilder("Cannot get CacheManager for OGM. ");
-			error.append("OGM Services not configured");
-			throw new HibernateException( error.toString() );
+			throw new HibernateException( "Cannot get CacheManager for OGM. OGM Services not configured" );
 		}
 	}
 
@@ -57,25 +54,22 @@ public class GridMetadataManagerHelper {
 		return getEntityCache( getGridMetadataManager(factory) );
 	}
 
-	public static Cache<EntityKey, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
-		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<EntityKey, Map<String, Object>> cache = cacheContainer.getCache( ENTITY_CACHE );
-		return cache;
-	}
-
-	public static Cache<RowKey, Object> getIdentifierCache(GridMetadataManager manager) {
-		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<RowKey, Object> cache = cacheContainer.getCache( IDENTIFIER_CACHE );
-		return cache;
-	}
-
 	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(SessionFactoryImplementor factory) {
 		return getAssociationCache( getGridMetadataManager( factory ) );
 	}
 
+	public static Cache<EntityKey, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
+		return manager.getEntityCache();
+		// TODO : cleanup this unnecessary indirection
+	}
+
+	public static Cache<RowKey, Object> getIdentifierCache(GridMetadataManager manager) {
+		return manager.getIdentifierCache();
+		// TODO : cleanup this unnecessary indirection
+	}
+
 	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(GridMetadataManager manager) {
-		final CacheContainer cacheContainer = manager.getCacheContainer();
-		final Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache = cacheContainer.getCache( ASSOCIATION_CACHE );
-		return cache;
+		return manager.getAssociationCache();
+		// TODO : cleanup this unnecessary indirection
 	}
 }
