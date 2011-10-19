@@ -20,18 +20,18 @@
  */
 package org.hibernate.ogm.dialect.infinispan;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.infinispan.atomic.FineGrainedAtomicMap;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class InfinispanTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> atomicMap;
+	private final FineGrainedAtomicMap<String, Object> atomicMap;
 
-	public InfinispanTupleSnapshot(Map<String,Object> atomicMap) {
+	public InfinispanTupleSnapshot(FineGrainedAtomicMap<String,Object> atomicMap) {
 		this.atomicMap = atomicMap;
 	}
 	@Override
@@ -49,7 +49,7 @@ public class InfinispanTupleSnapshot implements TupleSnapshot {
 		return atomicMap.keySet();
 	}
 
-	public Map<String, Object> getAtomicMap() {
+	public FineGrainedAtomicMap<String, Object> getAtomicMap() {
 		return atomicMap;
 	}
 }

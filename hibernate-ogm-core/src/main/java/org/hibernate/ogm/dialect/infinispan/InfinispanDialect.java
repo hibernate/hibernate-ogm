@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.infinispan.Cache;
-import org.infinispan.atomic.AtomicMap;
 import org.infinispan.atomic.AtomicMapLookup;
+import org.infinispan.atomic.FineGrainedAtomicMap;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -84,7 +84,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
-		AtomicMap<String,Object> atomicMap = AtomicMapLookup.getAtomicMap( cache, key, false );
+		FineGrainedAtomicMap<String,Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		if (atomicMap == null) {
 			return null;
 		}
@@ -97,7 +97,7 @@ public class InfinispanDialect implements GridDialect {
 	public Tuple createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
-		Map<String,Object> atomicMap =  AtomicMapLookup.getAtomicMap( cache, key, true );
+		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
 	}
 
@@ -128,7 +128,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
-		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getAtomicMap( cache, key, false );
+		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		return atomicMap == null ? null : new Association( new InfinispanAssociationSnapshot( atomicMap ) );
 	}
 
@@ -136,7 +136,7 @@ public class InfinispanDialect implements GridDialect {
 	public Association createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
-		Map<RowKey, Map<String, Object>> atomicMap =  AtomicMapLookup.getAtomicMap( cache, key, true );
+		Map<RowKey, Map<String, Object>> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Association( new InfinispanAssociationSnapshot( atomicMap ) );
 	}
 
