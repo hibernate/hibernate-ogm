@@ -247,7 +247,7 @@
     </itemizedlist>
 
     <para>This gives us several interesting properties. An entity is
-    addressable by a single lookup. All entity types can leave in the same key
+    addressable by a single lookup. All entity types can live in the same key
     name space as they are entirely isolated.</para>
 
     <mediaobject>
