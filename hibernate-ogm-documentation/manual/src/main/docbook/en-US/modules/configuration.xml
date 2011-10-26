@@ -416,7 +416,7 @@ em.close();</programlisting>
 
       <listitem>
         <para><literal>hibernate.show_sql</literal> and
-        <literal>hibermate.format_sql</literal></para>
+        <literal>hibernate.format_sql</literal></para>
       </listitem>
 
       <listitem>
