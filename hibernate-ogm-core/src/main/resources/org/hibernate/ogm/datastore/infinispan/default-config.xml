@@ -32,11 +32,12 @@
 
         <!-- Duplicate domains are allowed so that multiple deployments with default configuration 
             of Hibernate OGM applications work - a better solution would be to use JNDI to share 
-            the CacheManager across applications, or use a custom configuration -->
+            the CacheManager across applications, or use a custom configuration.
+            Only enable if needed - it has a performance impact.
         <globalJmxStatistics
             enabled="true"
             cacheManagerName="HibernateOGM"
-            allowDuplicateDomains="true" />
+            allowDuplicateDomains="true" /> -->
 
         <!-- If the transport is omitted, there is no way to create distributed or clustered 
             caches. There is no added cost to defining a transport but not creating a cache that uses one, 
@@ -64,13 +65,6 @@
 
     <default>
 
-        <locking
-            useLockStriping="false" />
-
-        <!-- Invocation batching is required for some features, including the Lucene Directory -->
-        <invocationBatching
-            enabled="true" />
-
         <!-- This element specifies that the cache is clustered. modes supported: distribution 
             (d), replication (r) or invalidation (i). Don't use invalidation as OGM storage! -->
         <clustering
@@ -96,15 +90,12 @@
             transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup">
         </transaction>
 
-        <jmxStatistics
-            enabled="true" />
-
         <eviction
-            maxEntries="-1"
             strategy="NONE" />
 
         <expiration
-            maxIdle="-1" />
+            wakeUpInterval="-1"
+            reaperEnabled="false" />
 
     </default>
 
