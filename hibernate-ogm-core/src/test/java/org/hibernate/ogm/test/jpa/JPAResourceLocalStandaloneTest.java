@@ -25,6 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.infinispan.Cache;
@@ -63,42 +64,53 @@ public class JPAResourceLocalStandaloneTest {
 
 		packaging.addPackageToClasspath( testPackage );
 
-
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
-		final EntityManager em = emf.createEntityManager();
-		final Cache entityCache = TestHelper.getEntityCache( em.unwrap( Session.class ) );
+		try {
 
-		em.getTransaction().begin();
-		Poem poem = new Poem();
-		poem.setName( "L'albatros" );
-		em.persist( poem );
-		em.getTransaction().commit();
+			final EntityManager em = emf.createEntityManager();
+			try {
 
-		em.clear();
+				final Cache entityCache = TestHelper.getEntityCache( em.unwrap( Session.class ) );
 
-		em.getTransaction().begin();
-		Poem poem2 = new Poem();
-		poem2.setName( "Wazaaaaa" );
-		em.persist( poem2 );
-		em.flush();
-		assertThat( entityCache ).hasSize( 2 );
-		em.getTransaction().rollback();
+				em.getTransaction().begin();
+				Poem poem = new Poem();
+				poem.setName( "L'albatros" );
+				em.persist( poem );
+				em.getTransaction().commit();
 
-		assertThat( entityCache ).hasSize( 1 );
+				em.clear();
 
-		em.getTransaction().begin();
-		poem = em.find( Poem.class, poem.getId() );
-		assertThat( poem ).isNotNull();
-		assertThat( poem.getName() ).isEqualTo( "L'albatros" );
-		em.remove( poem );
-		poem2 = em.find( Poem.class, poem2.getId() );
-		assertThat( poem2 ).isNull();
-		em.getTransaction().commit();
+				em.getTransaction().begin();
+				Poem poem2 = new Poem();
+				poem2.setName( "Wazaaaaa" );
+				em.persist( poem2 );
+				em.flush();
+				assertThat( entityCache ).hasSize( 2 );
+				em.getTransaction().rollback();
 
-		em.close();
+				assertThat( entityCache ).hasSize( 1 );
 
-		emf.close();
+				em.getTransaction().begin();
+				poem = em.find( Poem.class, poem.getId() );
+				assertThat( poem ).isNotNull();
+				assertThat( poem.getName() ).isEqualTo( "L'albatros" );
+				em.remove( poem );
+				poem2 = em.find( Poem.class, poem2.getId() );
+				assertThat( poem2 ).isNull();
+				em.getTransaction().commit();
+
+			}
+			finally {
+				EntityTransaction transaction = em.getTransaction();
+				if ( transaction != null && transaction.isActive() ) {
+					transaction.rollback();
+				}
+				em.close();
+			}
+		}
+		finally {
+			emf.close();
+		}
 	}
 
 
