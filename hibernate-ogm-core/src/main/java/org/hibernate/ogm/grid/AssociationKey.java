@@ -30,7 +30,7 @@ import org.hibernate.annotations.common.AssertionFailure;
  *
  * @author Emmanuel Bernard
  */
-public class AssociationKey implements Serializable {
+public final class AssociationKey implements Serializable {
 	private final String table;
 	private final String[] columnNames;
 	//column value types do have to be serializable so AssociationKey is serializable
@@ -51,7 +51,7 @@ public class AssociationKey implements Serializable {
 		if ( this == o ) {
 			return true;
 		}
-		if ( o == null || getClass() != o.getClass() ) {
+		if ( o == null || AssociationKey.class != o.getClass() ) {
 			return false;
 		}
 
