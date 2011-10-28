@@ -30,10 +30,12 @@ import java.io.Serializable;
 public final class EntityKey implements Serializable {
 	private final String table;
 	private final Serializable id;
+	private final int hashCode;
 
 	public EntityKey(String table, Serializable id) {
 		this.table = table;
 		this.id = id;
+		hashCode = generateHashCode();
 	}
 
 	@Override
@@ -69,6 +71,10 @@ public final class EntityKey implements Serializable {
 
 	@Override
 	public int hashCode() {
+		return hashCode;
+	}
+
+	private int generateHashCode() {
 		int result = table.hashCode();
 		result = 31 * result + ( id != null ? id.hashCode() : 0 );
 		return result;
