@@ -22,12 +22,14 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
+import org.hibernate.service.jndi.spi.JndiService;
+import org.hibernate.service.spi.*;
+import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
 import org.infinispan.config.ConfigurationValidatingVisitor;
 import org.infinispan.config.GlobalConfiguration;
@@ -37,11 +39,9 @@ import org.infinispan.manager.EmbeddedCacheManager;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
-import org.hibernate.ogm.util.impl.JndiHelper;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
-import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
 /**
@@ -52,8 +52,18 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
  * @author Sanne Grinovero
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-//TODO extract an interface for other datastores
-public class CacheManagerServiceProvider {
+public class InfinispanDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
+													ServiceRegistryAwareService, Configurable {
+
+	private JtaPlatform jtaPlatform;
+	private JndiService jndiService;
+	private Map cfg;
+	private Map<String,Cache> caches;
+
+	@Override
+	public Class<? extends GridDialect> getDefaultDialect() {
+		return InfinispanDialect.class;
+	}
 
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
@@ -73,19 +83,30 @@ public class CacheManagerServiceProvider {
 	
 	private EmbeddedCacheManager cacheManager;
 
-	public void start(ServiceRegistry registry, Map<?,?> cfg) {
-		String jndiProperty = (String) cfg.get( CACHE_MANAGER_RESOURCE_PROP );
-		if ( jndiProperty == null ) {
-			String cfgName = (String) cfg.get( INFINISPAN_CONFIGURATION_RESOURCENAME );
-			if ( StringHelper.isEmpty( cfgName ) ) {
-				cfgName = INFINISPAN_DEFAULT_CONFIG;
+	public void start() {
+		try {
+			String jndiProperty = (String) cfg.get( CACHE_MANAGER_RESOURCE_PROP );
+			if ( jndiProperty == null ) {
+				String cfgName = (String) cfg.get( INFINISPAN_CONFIGURATION_RESOURCENAME );
+				if ( StringHelper.isEmpty( cfgName ) ) {
+					cfgName = INFINISPAN_DEFAULT_CONFIG;
+				}
+				log.tracef("Initializing Infinispan from configuration file at %1$s", cfgName);
+				cacheManager = createCustomCacheManager( cfgName, jtaPlatform );
 			}
-			cacheManager = createCustomCacheManager( cfgName, registry.getService( JtaPlatform.class ) );
+			else {
+				log.tracef("Retriving Infinispan from JNDI at %1$s", jndiProperty);
+				cacheManager = (EmbeddedCacheManager) jndiService.locate(jndiProperty);
+			}
 		}
-		else {
-			cacheManager = lookupCacheManager( jndiProperty, JndiHelper.extractJndiProperties( cfg ) );
+		catch (RuntimeException e) {
+			log.unableToInitializeInfinispan(e);
 		}
 		eagerlyInitializeCaches(cacheManager);
+		//clear resources
+		this.jtaPlatform = null;
+		this.jndiService = null;
+		this.cfg = null;
 	}
 
 	/**
@@ -95,33 +116,17 @@ public class CacheManagerServiceProvider {
 	 * @param cacheManager
 	 */
 	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
-		cacheManager.getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
-		cacheManager.getCache( GridMetadataManagerHelper.ENTITY_CACHE );
-		cacheManager.getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
+		caches = new ConcurrentHashMap<String, Cache> (3);
+		putInLocalCache(cacheManager, GridMetadataManagerHelper.ASSOCIATION_CACHE);
+		putInLocalCache( cacheManager, GridMetadataManagerHelper.ENTITY_CACHE );
+		putInLocalCache( cacheManager, GridMetadataManagerHelper.IDENTIFIER_CACHE );
 	}
 
-	private EmbeddedCacheManager lookupCacheManager(String jndiName, Properties properties) {
-		Properties jndiProperties = JndiHelper.extractJndiProperties( properties );
-		Context ctx = null;
-		try {
-			ctx = new InitialContext( jndiProperties );
-			return (EmbeddedCacheManager) ctx.lookup( jndiName );
-		}
-		catch ( NamingException ne ) {
-			String msg = "Unable to retrieve CacheManager from JNDI [" + jndiName + "]";
-			log.error( msg, ne );
-			throw new HibernateException( msg );
-		}
-		finally {
-			if ( ctx != null ) {
-				try {
-					ctx.close();
-				}
-				catch ( NamingException ne ) {
-					log.error( "Unable to release initial context", ne );
-				}
-			}
-		}
+	private void putInLocalCache(EmbeddedCacheManager cacheManager, String cacheName) {
+		caches.put(
+				cacheName,
+				cacheManager.getCache(cacheName)
+		);
 	}
 
 	private EmbeddedCacheManager createCustomCacheManager(String cfgName, JtaPlatform platform) {
@@ -137,7 +142,7 @@ public class CacheManagerServiceProvider {
 			for (Map.Entry<String, Configuration> entry : configuration.parseNamedConfigurations().entrySet()) {
 				Configuration cfg = entry.getValue();
 				if ( transactionManagerLookupDelegator.isValid() ) {
-					cfg.setTransactionManagerLookup( transactionManagerLookupDelegator );
+					cfg.fluent().transactionManagerLookup(transactionManagerLookupDelegator);
 				}
 				cacheManager.defineConfiguration( entry.getKey(), cfg );
 			}
@@ -152,11 +157,17 @@ public class CacheManagerServiceProvider {
 		return null; //actually this line is unreachable
 	}
 
-	public EmbeddedCacheManager getService() {
+	public EmbeddedCacheManager getEmbeddedCacheManager() {
 		return cacheManager;
 	}
 
+	//prefer generic form over specific ones to prepare for flexible cache setting
+	public Cache getCache(String name) {
+		return caches.get(name);
+	}
+
 	public void stop() {
+		//FIXME Ask Sanne, that does not seem correct if retrieved from JNDI
 		if ( cacheManager != null ) {
 			cacheManager.stop();
 		}
@@ -166,5 +177,16 @@ public class CacheManagerServiceProvider {
 		throw new HibernateException(
 				"Could not start Infinispan CacheManager using as configuration file: " + cfgName, e
 		);
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		jtaPlatform = serviceRegistry.getService( JtaPlatform.class );
+		jndiService = serviceRegistry.getService( JndiService.class );
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		cfg = configurationValues;
 	}
 }
