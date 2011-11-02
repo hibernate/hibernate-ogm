@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect;
 
 import java.util.Map;
 
+import org.hibernate.service.Service;
 import org.infinispan.Cache;
 
 import org.hibernate.LockMode;
@@ -38,7 +39,7 @@ import org.hibernate.persister.entity.Lockable;
  *
  * @author Emmanuel Bernard
  */
-public interface GridDialect {
+public interface GridDialect extends Service {
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
 
 	/**

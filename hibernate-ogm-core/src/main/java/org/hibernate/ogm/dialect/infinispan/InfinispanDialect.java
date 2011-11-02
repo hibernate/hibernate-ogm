@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
@@ -51,6 +52,12 @@ import org.hibernate.persister.entity.Lockable;
  * @author Emmanuel Bernard
  */
 public class InfinispanDialect implements GridDialect {
+
+	private final InfinispanDatastoreProvider provider;
+
+	public InfinispanDialect(InfinispanDatastoreProvider provider) {
+		this.provider = provider;
+	}
 
 	/**
 	 * Get a strategy instance which knows how to acquire a database-level lock
