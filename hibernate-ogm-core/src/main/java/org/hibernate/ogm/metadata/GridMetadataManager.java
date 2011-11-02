@@ -20,24 +20,21 @@
  */
 package org.hibernate.ogm.metadata;
 
-import java.util.Map;
-
-import org.infinispan.Cache;
-import org.infinispan.manager.CacheContainer;
-
-import org.hibernate.ogm.cfg.impl.Version;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.Service;
+import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.Startable;
-import org.hibernate.service.spi.Stoppable;
+import org.infinispan.Cache;
+
+import java.util.Map;
 
 /**
  * Start and stop the Infinispan CacheManager with the SearchFactory
@@ -46,63 +43,37 @@ import org.hibernate.service.spi.Stoppable;
  * @author Emmanuel Bernard
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class GridMetadataManager implements Service, ServiceRegistryAwareService, Stoppable, Startable {
-	private final CacheManagerServiceProvider manager;
-	private final TypeTranslator typeTranslator;
-	private final GridDialect gridDialect;
-	private Map<?, ?> configurationValues;
+public class GridMetadataManager implements Service, ServiceRegistryAwareService, Configurable {
+	private TypeTranslator typeTranslator;
 	private ServiceRegistryImplementor serviceRegistry;
+	private DatastoreServices datastoreServices;
+	private InfinispanDatastoreProvider datastoreProvider;
 
-	private Cache<AssociationKey, Map<RowKey, Map<String, Object>>> associationCache;
-	private Cache<EntityKey, Map<String, Object>> entityCache;
-	private Cache<RowKey, Object> identifierCache;
-
-	public GridMetadataManager(Map<?,?> configurationValues) {
-		Version.touch();
-		this.typeTranslator = new TypeTranslator();
-		this.gridDialect = new InfinispanDialect();
-		this.manager = new CacheManagerServiceProvider();
-		this.configurationValues = configurationValues;
-	}
-
-	//TODO abstract to other grids
-	public CacheContainer getCacheContainer() { return manager.getService(); }
-
-	//TODO move to a *Implementor interface
 	public TypeTranslator getTypeTranslator() { return typeTranslator; }
 
-	public GridDialect getGridDialect() { return gridDialect; }
+	public GridDialect getGridDialect() { return datastoreServices.getGridDialect(); }
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
 	}
 
-	@Override
-	public void stop() {
-		manager.stop();
-	}
-
-	@Override
-	public void start() {
-		this.manager.start( serviceRegistry, configurationValues );
-		// no longer needed, get rid of it
-		this.configurationValues = null;
-		this.serviceRegistry = null;
-		this.associationCache = getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
-		this.entityCache = getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
-		this.identifierCache = getCacheContainer().getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
-	}
-
 	public Cache<EntityKey, Map<String, Object>> getEntityCache() {
-		return entityCache;
+		return (Cache<EntityKey, Map<String, Object>>) datastoreProvider.getCache( GridMetadataManagerHelper.ENTITY_CACHE );
 	}
 
 	public Cache<RowKey, Object> getIdentifierCache() {
-		return identifierCache;
+		return (Cache<RowKey, Object>) datastoreProvider.getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
 	}
 
 	public Cache<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache() {
-		return associationCache;
+		return (Cache<AssociationKey, Map<RowKey, Map<String, Object>>>) datastoreProvider.getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+		datastoreServices = serviceRegistry.getService(DatastoreServices.class);
+		datastoreProvider = (InfinispanDatastoreProvider) serviceRegistry.getService(DatastoreProvider.class);
 	}
 }

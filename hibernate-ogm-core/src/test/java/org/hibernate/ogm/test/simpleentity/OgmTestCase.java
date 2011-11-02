@@ -43,7 +43,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheManagerServiceProvider;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextSession;
@@ -334,7 +334,7 @@ public abstract class OgmTestCase extends TestCase {
 			setCfg( new OgmConfiguration() );
 
 			//Grid specific configuration
-			cfg.setProperty( CacheManagerServiceProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
+			cfg.setProperty( InfinispanDatastoreProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
 			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 

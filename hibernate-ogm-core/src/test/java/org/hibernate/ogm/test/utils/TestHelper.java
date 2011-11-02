@@ -28,7 +28,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.service.UnknownServiceException;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -47,12 +46,12 @@ public class TestHelper {
 	}
 
 	private static Cache getEntityCache(GridMetadataManager gridManager) {
-		return gridManager.getCacheContainer().getCache( GridMetadataManagerHelper.ENTITY_CACHE );
+		return gridManager.getEntityCache();
 	}
 
 	public static Cache getAssociationCache(Session session) {
 		final GridMetadataManager manager = getGridMetadataManager(session.getSessionFactory());
-		return manager.getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+		return manager.getAssociationCache();
 	}
 
 	public static Cache getAssociationCache(SessionFactory sessionFactory) {
@@ -61,7 +60,7 @@ public class TestHelper {
 	}
 
 	private static Cache getAssociationCache(GridMetadataManager gridManager) {
-		return gridManager.getCacheContainer().getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
+		return gridManager.getAssociationCache();
 	}
 
 	private static GridMetadataManager getGridMetadataManager(SessionFactory factory) {

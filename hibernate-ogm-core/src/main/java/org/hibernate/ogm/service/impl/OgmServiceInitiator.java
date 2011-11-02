@@ -32,7 +32,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 public class OgmServiceInitiator implements BasicServiceInitiator<GridMetadataManager> {
 	@Override
 	public GridMetadataManager initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridMetadataManager(configurationValues);
+		return new GridMetadataManager();
 	}
 
 	@Override
