@@ -26,7 +26,11 @@ import java.util.Map;
 
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.*;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationOperation;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleOperation;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
@@ -47,7 +51,10 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
 import org.infinispan.context.Flag;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
+
 
 /**
  * @author Emmanuel Bernard

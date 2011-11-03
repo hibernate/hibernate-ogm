@@ -20,11 +20,8 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Map;
-
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.service.Service;
-import org.infinispan.Cache;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;

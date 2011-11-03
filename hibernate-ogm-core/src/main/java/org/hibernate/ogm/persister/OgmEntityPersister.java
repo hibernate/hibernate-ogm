@@ -113,7 +113,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.tracef( "Creating OgmEntityPersister for $s", persistentClass.getClassName() );
 		}
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-		this.gridDialect = serviceRegistry.getService(DatastoreServices.class).getGridDialect();
+		this.gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
 
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
@@ -385,8 +385,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int propertyIndex = getPropertyIndex( propertyName );
 		//find the ids per unique property name
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.tableName(getTableName())
-				.gridDialect(gridDialect)
+				.tableName( getTableName() )
+				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
@@ -799,17 +799,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			Serializable id,
 			SessionImplementor session) {
 		new EntityDehydrator()
-				.fields(fields)
-				.gridPropertyTypes(gridPropertyTypes)
-				.gridIdentifierType(gridIdentifierType)
-				.id(id)
-				.includeColumns(includeColumns)
-				.includeProperties(includeProperties)
-				.persister(this)
-				.resultset(resultset)
-				.session(session)
-				.tableIndex(tableIndex)
-				.gridDialect(gridDialect)
+				.fields( fields )
+				.gridPropertyTypes( gridPropertyTypes )
+				.gridIdentifierType( gridIdentifierType )
+				.id( id )
+				.includeColumns( includeColumns )
+				.includeProperties( includeProperties )
+				.persister( this )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.gridDialect( gridDialect )
 				.dehydrate();
 	}
 

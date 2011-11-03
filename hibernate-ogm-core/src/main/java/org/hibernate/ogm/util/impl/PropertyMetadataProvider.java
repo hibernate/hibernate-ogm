@@ -101,17 +101,16 @@ public class PropertyMetadataProvider {
 	}
 
 	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = gridDialect
-				.createTupleAssociation(getCollectionMetadataKey(), rowKey);
+		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey);
 		getCollectionMetadata().put( rowKey, associationTuple);
 		return associationTuple;
 	}
 
 	public Association getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation(getCollectionMetadataKey());
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
 			if (collectionMetadata == null) {
-				collectionMetadata = gridDialect.createAssociation(getCollectionMetadataKey());
+				collectionMetadata = gridDialect.createAssociation( getCollectionMetadataKey() );
 			}
 		}
 		return collectionMetadata;
@@ -119,18 +118,18 @@ public class PropertyMetadataProvider {
 
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation(getCollectionMetadataKey());
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
 		}
 		return collectionMetadata;
 	}
 
 	public void flushToCache() {
 		if ( getCollectionMetadata().isEmpty() ) {
-			gridDialect.removeAssociation(getCollectionMetadataKey());
+			gridDialect.removeAssociation( getCollectionMetadataKey() );
 			collectionMetadata = null;
 		}
 		else {
-			gridDialect.updateAssociation(getCollectionMetadata(), getCollectionMetadataKey());
+			gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
 		}
 	}
 }

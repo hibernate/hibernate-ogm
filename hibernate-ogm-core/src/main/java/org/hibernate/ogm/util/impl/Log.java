@@ -25,10 +25,11 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.GridDialect;
-import org.jboss.logging.*;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageLogger;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
