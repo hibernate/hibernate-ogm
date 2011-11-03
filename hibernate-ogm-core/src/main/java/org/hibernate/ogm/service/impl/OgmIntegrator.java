@@ -72,7 +72,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 	@Override
 	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-		serviceRegistryBuilder.addInitiator( new OgmServiceInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );

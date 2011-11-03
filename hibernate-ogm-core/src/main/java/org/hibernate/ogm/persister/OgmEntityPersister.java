@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.infinispan.Cache;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -61,8 +60,6 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.loader.OgmLoader;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -388,8 +385,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int propertyIndex = getPropertyIndex( propertyName );
 		//find the ids per unique property name
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.tableName( getTableName() )
-				.gridDialect( gridDialect )
+				.tableName(getTableName())
+				.gridDialect(gridDialect)
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
@@ -637,7 +634,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	@Override
 	protected LockingStrategy generateLocker(LockMode lockMode) {
-		return gridDialect.getLockingStrategy( this, lockMode );
+		return gridDialect.getLockingStrategy(this, lockMode);
 	}
 
 
@@ -802,16 +799,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			Serializable id,
 			SessionImplementor session) {
 		new EntityDehydrator()
-				.fields( fields )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
-				.id( id )
-				.includeColumns( includeColumns )
-				.includeProperties( includeProperties )
-				.persister( this )
-				.resultset( resultset )
-				.session( session )
-				.tableIndex( tableIndex )
+				.fields(fields)
+				.gridPropertyTypes(gridPropertyTypes)
+				.gridIdentifierType(gridIdentifierType)
+				.id(id)
+				.includeColumns(includeColumns)
+				.includeProperties(includeProperties)
+				.persister(this)
+				.resultset(resultset)
+				.session(session)
+				.tableIndex(tableIndex)
 				.gridDialect(gridDialect)
 				.dehydrate();
 	}
@@ -840,7 +837,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 		final int span = getTableSpan();
 		//insert operations are always dynamic in OGM
-		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
+		boolean[] propertiesToInsert = getPropertiesToInsert(fields);
 		for ( int j = 0; j < span; j++ ) {
 			if ( isInverseTable( j ) ) {
 				return;
@@ -885,7 +882,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple( key );
+			resultset = gridDialect.createTuple(key);
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -972,7 +969,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			new EntityDehydrator()
 				.gridDialect(gridDialect)
-				.gridPropertyTypes( gridPropertyTypes )
+				.gridPropertyTypes(gridPropertyTypes)
 				.gridIdentifierType( gridIdentifierType )
 				.id( id )
 				.persister( this )

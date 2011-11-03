@@ -27,14 +27,13 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.infinispan.AdvancedCache;
-import org.infinispan.context.Flag;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -58,8 +57,6 @@ import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
 import org.hibernate.ogm.util.impl.Log;
@@ -191,6 +188,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	private long accessCount = 0;
 	private volatile GridType identifierValueGridType;
 	private GridType segmentGridType = StringType.INSTANCE;
+	private volatile GridDialect gridDialect;
 
 	/**
 	 * {@inheritDoc}
@@ -419,7 +417,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getSegmentValue()
 	 */
 	protected String determineSegmentValue(Properties params) {
-		String segmentValue = params.getProperty( SEGMENT_VALUE_PARAM );
+		String segmentValue = params.getProperty(SEGMENT_VALUE_PARAM);
 		if ( StringHelper.isEmpty( segmentValue ) ) {
 			segmentValue = determineDefaultSegmentValue( params );
 		}
@@ -461,7 +459,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	}
 
 	protected int determineIncrementSize(Properties params) {
-		return ConfigurationHelper.getInt( INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE );
+		return ConfigurationHelper.getInt(INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE);
 	}
 
 	//TODO remove build*Query
@@ -523,11 +521,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	}
 
 	public IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
-		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() );
 		defineGridTypes( session );
-		final AdvancedCache<RowKey, Object> identifierCache =
-				GridMetadataManagerHelper.getIdentifierCache( gridManager ).getAdvancedCache();
-		final Map<String, Object> tuple = new HashMap<String, Object>( 1 );
 		final Object segmentColumnValue = nullSafeSet(
 				segmentGridType, segmentValue, segmentColumnName, session
 		);
@@ -536,48 +530,21 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				new String[] { segmentColumnName },
 				new Object[] { segmentColumnValue }
 		);
+
+		GridDialect dialect = getDialect(session);
 		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
-
-		boolean done = false;
-		do {
-			//read value
-			//skip locking proposed by Sanne
-			Object valueFromDb = identifierCache.withFlags( Flag.SKIP_LOCKING ).get( key );
-			if ( valueFromDb == null ) {
-				//if not there, insert initial value
-				value.initialize( initialValue );
-				valueFromDb = nullSafeSet( identifierValueGridType, value.makeValue().longValue(), valueColumnName, session );
-				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
-				//check in case somebody has inserted it behind our back
-				if ( oldValue != null ) {
-					value.initialize( ( (Number) oldValue ).longValue() );
-					valueFromDb = oldValue;
-				}
-			}
-			else {
-				//read the value from the table
-				value.initialize( ( ( Number ) valueFromDb ).longValue() );
-			}
-
-			//update value
-			final IntegralDataTypeHolder updateValue = value.copy();
-			//increment value
-			if ( optimizer.applyIncrementSizeToSourceValues() ) {
-				updateValue.add( incrementSize );
-			}
-			else {
-				updateValue.increment();
-			}
-			final Object newValueFromDb = nullSafeSet(
-					identifierValueGridType, updateValue.makeValue().longValue(), valueColumnName, session
-			);
-			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
-		}
-		while ( !done );
+		dialect.nextValue(key, value, optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1, initialValue);
 
 		accessCount++;
 
 		return value;
+	}
+
+	private GridDialect getDialect(SessionImplementor session) {
+		if (gridDialect == null) {
+			gridDialect = session.getFactory().getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
+		}
+		return gridDialect;
 	}
 
 	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {

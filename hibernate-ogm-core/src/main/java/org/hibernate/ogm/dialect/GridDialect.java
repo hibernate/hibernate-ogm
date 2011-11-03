@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect;
 
 import java.util.Map;
 
+import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.service.Service;
 import org.infinispan.Cache;
 
@@ -83,4 +84,11 @@ public interface GridDialect extends Service {
 	void removeAssociation(AssociationKey key);
 
 	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
+
+	/**
+	 * Update value with the guaranteed next value with the defined increment
+	 *
+	 * Especially experimental
+	 */
+	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 }

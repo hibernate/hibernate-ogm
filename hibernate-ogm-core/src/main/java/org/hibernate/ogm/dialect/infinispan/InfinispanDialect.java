@@ -24,8 +24,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.*;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
@@ -43,6 +45,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
+import org.infinispan.context.Flag;
 
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
 
@@ -197,5 +200,41 @@ public class InfinispanDialect implements GridDialect {
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+	}
+
+	@Override
+	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		final AdvancedCache<RowKey, Object> identifierCache = provider.getCache(IDENTIFIER_STORE).getAdvancedCache();
+		boolean done = false;
+		do {
+			//read value
+			//skip locking proposed by Sanne
+			Object valueFromDb = identifierCache.withFlags( Flag.SKIP_LOCKING ).get( key );
+			if ( valueFromDb == null ) {
+				//if not there, insert initial value
+				value.initialize( initialValue );
+				//TODO should we use GridTypes here?
+				valueFromDb = new Long( value.makeValue().longValue() );
+				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
+				//check in case somebody has inserted it behind our back
+				if ( oldValue != null ) {
+					value.initialize( ( (Number) oldValue ).longValue() );
+					valueFromDb = oldValue;
+				}
+			}
+			else {
+				//read the value from the table
+				value.initialize( ( ( Number ) valueFromDb ).longValue() );
+			}
+
+			//update value
+			final IntegralDataTypeHolder updateValue = value.copy();
+			//increment value
+			updateValue.add( increment );
+			//TODO should we use GridTypes here?
+			final Object newValueFromDb = updateValue.makeValue().longValue();
+			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
+		}
+		while ( !done );
 	}
 }
