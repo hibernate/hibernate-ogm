@@ -35,9 +35,8 @@ import java.util.Map;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class GridDialectFactoryImpl implements GridDialectFactory {
-	//FIXME should it be hibernate.ogm.datastore.grid_dialect ?
-	public static final String GRID_DIALECT = "hibernate.ogm.grid_dialect";
-	public static final Log log = LoggerFactory.make();
+
+	private static final Log log = LoggerFactory.make();
 
 	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
 		Object value = configurationValues.get(GRID_DIALECT);
