@@ -59,6 +59,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	private JndiService jndiService;
 	private Map cfg;
 	private Map<String,Cache> caches;
+	private boolean isCacheProvided;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -93,10 +94,12 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 				}
 				log.tracef("Initializing Infinispan from configuration file at %1$s", cfgName);
 				cacheManager = createCustomCacheManager( cfgName, jtaPlatform );
+				isCacheProvided = false;
 			}
 			else {
 				log.tracef("Retriving Infinispan from JNDI at %1$s", jndiProperty);
 				cacheManager = (EmbeddedCacheManager) jndiService.locate(jndiProperty);
+				isCacheProvided = true;
 			}
 		}
 		catch (RuntimeException e) {
@@ -167,8 +170,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	}
 
 	public void stop() {
-		//FIXME Ask Sanne, that does not seem correct if retrieved from JNDI
-		if ( cacheManager != null ) {
+		if ( !isCacheProvided && cacheManager != null ) {
 			cacheManager.stop();
 		}
 	}
