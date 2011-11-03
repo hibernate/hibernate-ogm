@@ -23,6 +23,7 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.hibernate.ogm.dialect.GridDialect;
 import org.infinispan.Cache;
 
 import org.hibernate.engine.spi.SessionImplementor;
@@ -61,6 +62,7 @@ class EntityDehydrator {
 	private boolean removePropertyMetadata = true;
 	private GridType gridIdentifierType;
 	private GridMetadataManager gridManager;
+	private GridDialect gridDialect;
 
 	// fluent methods populating data
 
@@ -116,6 +118,11 @@ class EntityDehydrator {
 
 	public EntityDehydrator gridManager(GridMetadataManager gridManager) {
 		this.gridManager = gridManager;
+		return this;
+	}
+
+	public EntityDehydrator gridDialect(GridDialect gridDialect) {
+		this.gridDialect = gridDialect;
 		return this;
 	}
 
@@ -195,6 +202,7 @@ class EntityDehydrator {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
+				.gridDialect(gridDialect)
 				.associationCache( associationCache )
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( newColumnValue )
@@ -230,7 +238,8 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-			.associationCache( associationCache )
+				.gridDialect(gridDialect)
+				.associationCache(associationCache)
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( oldColumnValue )
 				.session( session )

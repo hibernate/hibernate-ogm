@@ -49,9 +49,9 @@ public class GridMetadataManager implements Service, ServiceRegistryAwareService
 	private DatastoreServices datastoreServices;
 	private InfinispanDatastoreProvider datastoreProvider;
 
-	public TypeTranslator getTypeTranslator() { return typeTranslator; }
+	//public TypeTranslator getTypeTranslator() { return typeTranslator; }
 
-	public GridDialect getGridDialect() { return datastoreServices.getGridDialect(); }
+	//public GridDialect getGridDialect() { return datastoreServices.getGridDialect(); }
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {

@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.infinispan.AdvancedCache;
 import org.infinispan.context.Flag;
 
@@ -522,7 +524,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	public IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
 		GridMetadataManager gridManager = GridMetadataManagerHelper.getGridMetadataManager( session.getFactory() );
-		defineGridTypes( gridManager );
+		defineGridTypes( session );
 		final AdvancedCache<RowKey, Object> identifierCache =
 				GridMetadataManagerHelper.getIdentifierCache( gridManager ).getAdvancedCache();
 		final Map<String, Object> tuple = new HashMap<String, Object>( 1 );
@@ -584,9 +586,10 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return tuple.get( columnName );
 	}
 
-	private void defineGridTypes(GridMetadataManager gridManager) {
+	private void defineGridTypes(SessionImplementor session) {
 		if ( identifierValueGridType == null ) {
-			identifierValueGridType = gridManager.getTypeTranslator().getType( new LongType() );
+			ServiceRegistryImplementor registry = session.getFactory().getServiceRegistry();
+			identifierValueGridType = registry.getService(TypeTranslator.class).getType(new LongType());
 		}
 	}
 

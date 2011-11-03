@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.infinispan.Cache;
 
 import org.hibernate.HibernateException;
@@ -87,6 +89,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private final SessionFactoryImplementor factory;
 	private LockMode[] defaultLockModes;
 	private final CollectionAliases[] collectionAliases;
+	private final GridDialect gridDialect;
 
 	/**
 	 * Load a collection
@@ -99,6 +102,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.collectionPersisters = collectionPersisters;
 		this.factory = collectionPersisters[0].getFactory();
 		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
+		this.gridDialect = this.factory.getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
 
 		//NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
@@ -120,6 +124,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.collectionPersisters = new OgmCollectionPersister[] {};
 		this.factory = entityPersisters[0].getFactory();
 		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
+		this.gridDialect = this.factory.getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
 
 		//NONE, because its the requested lock mode, not the actual! 
 		final int fromSize = 1;
@@ -405,7 +410,7 @@ public class OgmLoader implements UniqueEntityLoader {
 					.entityPersister( getEntityPersisters()[0] )
 					.id( id )
 					.getKey();
-			Tuple entry = gridManager.getGridDialect().getTuple( key, entityCache );
+			Tuple entry = gridDialect.getTuple(key, entityCache);
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}
@@ -418,7 +423,8 @@ public class OgmLoader implements UniqueEntityLoader {
 			final CollectionPhysicalModel persister = (CollectionPhysicalModel) getCollectionPersisters()[0];
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridManager( gridManager )
-				.tableName( persister.getTableName() )
+				.gridDialect( gridDialect )
+				.tableName(persister.getTableName())
 				.key( id )
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
