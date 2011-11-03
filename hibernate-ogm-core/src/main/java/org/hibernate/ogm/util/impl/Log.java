@@ -25,6 +25,8 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.jboss.logging.*;
 
@@ -79,4 +81,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 14, value = "%1$s has no constructor accepting DatasourceProvider")
 	HibernateException gridDialectHasNoProperConstrutor(Class<?> dialectClass);
+
+	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
+	HibernateException unexpectedDatastoreProvider(Class<?> found, Class<?> expected);
 }

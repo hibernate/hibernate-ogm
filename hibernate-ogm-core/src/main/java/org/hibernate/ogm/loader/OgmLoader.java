@@ -405,12 +405,11 @@ public class OgmLoader implements UniqueEntityLoader {
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
-			final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 			final EntityKey key = new EntityKeyBuilder()
 					.entityPersister( getEntityPersisters()[0] )
 					.id( id )
 					.getKey();
-			Tuple entry = gridDialect.getTuple(key, entityCache);
+			Tuple entry = gridDialect.getTuple(key);
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}

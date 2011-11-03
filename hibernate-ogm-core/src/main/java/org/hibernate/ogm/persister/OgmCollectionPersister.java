@@ -581,10 +581,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.entityPersister( ( OgmEntityPersister ) getElementPersister() )
 					.id( entityId )
 					.getKey();
-			final Cache<EntityKey,Map<String,Object>> entityCache = GridMetadataManagerHelper.getEntityCache(
-					gridManager
-			);
-			final Tuple entityTuple = gridDialect.getTuple( entityKey, entityCache );
+			final Tuple entityTuple = gridDialect.getTuple( entityKey );
 			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if (entityTuple == null) {
 				return;
@@ -608,7 +605,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.updateTuple( entityTuple, entityKey, entityCache ); //update cache
+			gridDialect.updateTuple( entityTuple, entityKey ); //update cache
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();

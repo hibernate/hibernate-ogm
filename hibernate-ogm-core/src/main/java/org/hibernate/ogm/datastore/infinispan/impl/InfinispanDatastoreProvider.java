@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.service.jndi.spi.JndiService;
@@ -117,9 +118,9 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	 */
 	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
 		caches = new ConcurrentHashMap<String, Cache> (3);
-		putInLocalCache(cacheManager, GridMetadataManagerHelper.ASSOCIATION_CACHE);
-		putInLocalCache( cacheManager, GridMetadataManagerHelper.ENTITY_CACHE );
-		putInLocalCache( cacheManager, GridMetadataManagerHelper.IDENTIFIER_CACHE );
+		putInLocalCache(cacheManager, DefaultDatastoreNames.ASSOCIATION_STORE);
+		putInLocalCache(cacheManager, DefaultDatastoreNames.ENTITY_STORE);
+		putInLocalCache(cacheManager, DefaultDatastoreNames.IDENTIFIER_STORE);
 	}
 
 	private void putInLocalCache(EmbeddedCacheManager cacheManager, String cacheName) {
