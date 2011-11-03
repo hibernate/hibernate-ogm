@@ -20,16 +20,6 @@
  */
 package org.hibernate.ogm.persister;
 
-import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.service.ServiceRegistry;
-import org.infinispan.Cache;
-
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -44,6 +34,7 @@ import org.hibernate.engine.spi.SubselectFetch;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -53,8 +44,6 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
@@ -64,8 +53,14 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
+
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
 
 /**
  * CollectionPersister storing the collection in a grid 
@@ -80,7 +75,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType elementGridType;
 	private final GridType indexGridType;
 	private final GridType identifierGridType;
-	private final GridMetadataManager gridManager;
 	private final boolean isInverse;
 	private final boolean oneToMany;
 	private final GridType gridTypeOfAssociatedId;
@@ -91,7 +85,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			throws MappingException, CacheException {
 		super( collection, cacheAccessStrategy, cfg, factory );
 		ServiceRegistry registry = factory.getServiceRegistry();
-		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
 		final TypeTranslator typeTranslator = registry.getService(TypeTranslator.class);
 		this.gridDialect = registry.getService(DatastoreServices.class).getGridDialect();
 		keyGridType = typeTranslator.getType( getKeyType() );
@@ -227,8 +220,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		int i = 0;
 		Iterator entries = collection.entries( this );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( key )
 				.keyColumnNames( getKeyColumnNames() )
@@ -389,11 +381,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.key( key )
-				.tableName( getTableName() )
-				.session( session )
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
+				.key(key)
+				.tableName(getTableName())
+				.session(session)
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.keyGridType( getKeyGridType() )
 				.keyColumnNames( getKeyColumnNames() );
@@ -418,8 +409,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
@@ -473,9 +463,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
-				.tableName( getTableName() )
+				.gridDialect(gridDialect)
+				.tableName(getTableName())
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -526,8 +515,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
@@ -611,8 +599,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, elementColumnNames);
 			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
-					.gridManager( gridManager )
-					.gridDialect( gridDialect )
+					.gridDialect(gridDialect)
 					.keyColumnNames( elementColumnNames )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
@@ -661,8 +648,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// Remove all the old entries
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.gridDialect( gridDialect )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )

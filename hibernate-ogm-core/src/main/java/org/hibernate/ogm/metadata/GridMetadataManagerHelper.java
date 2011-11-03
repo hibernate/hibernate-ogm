@@ -35,8 +35,6 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Emmanuel Bernard
  */
 public class GridMetadataManagerHelper {
-	public static final String ENTITY_CACHE = "ENTITIES";
-	public static final String ASSOCIATION_CACHE = "ASSOCIATIONS";
 	public static final String IDENTIFIER_CACHE = "IDENTIFIERS";
 
 	public static GridMetadataManager getGridMetadataManager(SessionFactoryImplementor factory) {
@@ -50,26 +48,8 @@ public class GridMetadataManagerHelper {
 		}
 	}
 
-	public static Cache<EntityKey, Map<String, Object>> getEntityCache(SessionFactoryImplementor factory) {
-		return getEntityCache( getGridMetadataManager(factory) );
-	}
-
-	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(SessionFactoryImplementor factory) {
-		return getAssociationCache( getGridMetadataManager( factory ) );
-	}
-
-	public static Cache<EntityKey, Map<String, Object>> getEntityCache(GridMetadataManager manager) {
-		return manager.getEntityCache();
-		// TODO : cleanup this unnecessary indirection
-	}
-
 	public static Cache<RowKey, Object> getIdentifierCache(GridMetadataManager manager) {
 		return manager.getIdentifierCache();
-		// TODO : cleanup this unnecessary indirection
-	}
-
-	public static Cache<AssociationKey, Map<RowKey,Map<String,Object>>> getAssociationCache(GridMetadataManager manager) {
-		return manager.getAssociationCache();
 		// TODO : cleanup this unnecessary indirection
 	}
 }

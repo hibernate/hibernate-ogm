@@ -20,57 +20,42 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import java.io.Serializable;
-
-import org.infinispan.Cache;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.service.UnknownServiceException;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.infinispan.Cache;
+
+import java.io.Serializable;
+
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class TestHelper {
 	public static Cache getEntityCache(Session session) {
-		final GridMetadataManager gridManager = getGridMetadataManager(session.getSessionFactory());
-		return getEntityCache(gridManager);
+		return getEntityCache( session.getSessionFactory() );
 	}
 
 	public static Cache getEntityCache(SessionFactory sessionFactory) {
-		final GridMetadataManager gridManager = getGridMetadataManager(sessionFactory);
-		return getEntityCache(gridManager);
+		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
+		return castProvider.getCache(ENTITY_STORE);
 	}
 
-	private static Cache getEntityCache(GridMetadataManager gridManager) {
-		return gridManager.getEntityCache();
-	}
-
-	public static Cache getAssociationCache(Session session) {
-		final GridMetadataManager manager = getGridMetadataManager(session.getSessionFactory());
-		return manager.getAssociationCache();
+	private static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
+		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
+		if ( ! (InfinispanDatastoreProvider.class.isInstance(provider) ) ) {
+			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
+		}
+		return InfinispanDatastoreProvider.class.cast(provider);
 	}
 
 	public static Cache getAssociationCache(SessionFactory sessionFactory) {
-		final GridMetadataManager gridManager = getGridMetadataManager(sessionFactory);
-		return getAssociationCache( gridManager );
-	}
-
-	private static Cache getAssociationCache(GridMetadataManager gridManager) {
-		return gridManager.getAssociationCache();
-	}
-
-	private static GridMetadataManager getGridMetadataManager(SessionFactory factory) {
-		ServiceRegistryImplementor serviceRegistry = ( (SessionFactoryImplementor) factory ).getServiceRegistry();
-		try {
-			return serviceRegistry.getService( GridMetadataManager.class );
-		}
-		catch ( UnknownServiceException e ) {
-			throw new RuntimeException( "Wrong OGM configuration: observer not set", e );
-		}
+		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
+		return castProvider.getCache(ASSOCIATION_STORE);
 	}
 
 	@SuppressWarnings("unchecked")

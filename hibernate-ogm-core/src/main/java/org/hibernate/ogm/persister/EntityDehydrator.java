@@ -20,21 +20,13 @@
  */
 package org.hibernate.ogm.persister;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.hibernate.ogm.dialect.GridDialect;
-import org.infinispan.Cache;
-
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -43,6 +35,8 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
+
+import java.io.Serializable;
 
 class EntityDehydrator {
 
@@ -61,7 +55,6 @@ class EntityDehydrator {
 	private boolean dehydrate = true;
 	private boolean removePropertyMetadata = true;
 	private GridType gridIdentifierType;
-	private GridMetadataManager gridManager;
 	private GridDialect gridDialect;
 
 	// fluent methods populating data
@@ -116,11 +109,6 @@ class EntityDehydrator {
 		return this;
 	}
 
-	public EntityDehydrator gridManager(GridMetadataManager gridManager) {
-		this.gridManager = gridManager;
-		return this;
-	}
-
 	public EntityDehydrator gridDialect(GridDialect gridDialect) {
 		this.gridDialect = gridDialect;
 		return this;
@@ -142,8 +130,6 @@ class EntityDehydrator {
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		final boolean[] uniqueness = persister.getPropertyUniqueness();
 		final Type[] propertyTypes = persister.getPropertyTypes();
-		final Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache =
-				GridMetadataManagerHelper.getAssociationCache( session.getFactory() );
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
 				final Type propertyType = propertyTypes[propertyIndex];
@@ -158,7 +144,6 @@ class EntityDehydrator {
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
 						doRemovePropertyMetadata(
-								associationCache,
 								tableIndex,
 								propertyIndex,
 								oldColumnValues);
@@ -185,7 +170,6 @@ class EntityDehydrator {
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
 						doAddPropertyMetadata(
-								associationCache,
 								tableIndex,
 								propertyIndex,
 								newColumnValues);
@@ -195,13 +179,11 @@ class EntityDehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										int tableIndex,
+	private void doAddPropertyMetadata(int tableIndex,
 										int propertyIndex,
 										Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
 				.gridDialect(gridDialect)
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( newColumnValue )
@@ -231,12 +213,10 @@ class EntityDehydrator {
 
 
 
-	private void doRemovePropertyMetadata(Cache<AssociationKey, Map<RowKey,Map<String,Object>>> associationCache,
-										int tableIndex,
+	private void doRemovePropertyMetadata(int tableIndex,
 										int propertyIndex,
 										Object[] oldColumnValue) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
 				.gridDialect(gridDialect)
 				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
 				.keyColumnValues( oldColumnValue )

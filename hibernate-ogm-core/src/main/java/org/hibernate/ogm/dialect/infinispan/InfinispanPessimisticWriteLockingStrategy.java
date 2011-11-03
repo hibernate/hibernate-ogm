@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.infinispan.AdvancedCache;
@@ -36,6 +37,8 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.persister.entity.Lockable;
+
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
 
 /**
  * @author Emmanuel Bernard
@@ -54,7 +57,7 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
-		AdvancedCache advCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() ).getAdvancedCache();
+		AdvancedCache advCache = getProvider(session).getCache(ENTITY_STORE).getAdvancedCache();
 		advCache.lock( new EntityKeyBuilder()
 				.tableName( lockable.getRootTableName() )
 				.id( id )

@@ -58,17 +58,11 @@ public class GridMetadataManager implements Service, ServiceRegistryAwareService
 		this.serviceRegistry = serviceRegistry;
 	}
 
-	public Cache<EntityKey, Map<String, Object>> getEntityCache() {
-		return (Cache<EntityKey, Map<String, Object>>) datastoreProvider.getCache( GridMetadataManagerHelper.ENTITY_CACHE );
-	}
 
 	public Cache<RowKey, Object> getIdentifierCache() {
 		return (Cache<RowKey, Object>) datastoreProvider.getCache( GridMetadataManagerHelper.IDENTIFIER_CACHE );
 	}
 
-	public Cache<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache() {
-		return (Cache<AssociationKey, Map<RowKey, Map<String, Object>>>) datastoreProvider.getCache( GridMetadataManagerHelper.ASSOCIATION_CACHE );
-	}
 
 	@Override
 	public void configure(Map configurationValues) {

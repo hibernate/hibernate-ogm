@@ -100,7 +100,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
-	private final GridMetadataManager gridManager;
 	private Object discriminatorValue;
 
 	//service references
@@ -211,7 +210,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 		//Grid related metadata
 		TypeTranslator typeTranslator = serviceRegistry.getService(TypeTranslator.class);
-		gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
 		final Type[] types = getPropertyTypes();
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
@@ -391,7 +389,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		//find the ids per unique property name
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.tableName( getTableName() )
-				.gridManager( gridManager )
 				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
@@ -815,7 +812,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridManager(gridManager)
 				.gridDialect(gridDialect)
 				.dehydrate();
 	}
@@ -975,7 +971,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			new EntityDehydrator()
-				.gridManager( gridManager )
 				.gridDialect(gridDialect)
 				.gridPropertyTypes( gridPropertyTypes )
 				.gridIdentifierType( gridIdentifierType )
