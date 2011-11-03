@@ -22,6 +22,10 @@ package org.hibernate.ogm.dialect.infinispan;
 
 import java.io.Serializable;
 
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.infinispan.AdvancedCache;
 
 import org.hibernate.JDBCException;
@@ -29,9 +33,10 @@ import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.persister.entity.Lockable;
+
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
 
 /**
  * @author Emmanuel Bernard
@@ -39,6 +44,8 @@ import org.hibernate.persister.entity.Lockable;
 public class InfinispanPessimisticWriteLockingStrategy implements LockingStrategy {
 	private final LockMode lockMode;
 	private final Lockable lockable;
+	private volatile InfinispanDatastoreProvider provider;
+	private static final Log log = LoggerFactory.make();
 
 	public InfinispanPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockMode = lockMode;
@@ -48,12 +55,25 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
-		AdvancedCache advCache = GridMetadataManagerHelper.getEntityCache( session.getFactory() ).getAdvancedCache();
+		AdvancedCache advCache = getProvider(session).getCache(ENTITY_STORE).getAdvancedCache();
 		advCache.lock( new EntityKeyBuilder()
 				.tableName( lockable.getRootTableName() )
 				.id( id )
 				.getKey()
 		);
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
+	}
+
+	private InfinispanDatastoreProvider getProvider(SessionImplementor session) {
+		if ( provider == null ) {
+			DatastoreProvider service = session.getFactory().getServiceRegistry().getService(DatastoreProvider.class);
+			if ( service instanceof InfinispanDatastoreProvider ) {
+				provider = InfinispanDatastoreProvider.class.cast(service);
+			}
+			else {
+				log.unexpectedDatastoreProvider(service.getClass(), InfinispanDatastoreProvider.class);
+			}
+		}
+		return provider;
 	}
 }

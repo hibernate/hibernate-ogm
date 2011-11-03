@@ -39,7 +39,7 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	private final TypeTranslator typeTranslator;
 	private final org.hibernate.type.ManyToOneType delegate;
 
-	ManyToOneType(org.hibernate.type.ManyToOneType type, TypeTranslator typeTranslator) {
+	public ManyToOneType(org.hibernate.type.ManyToOneType type, TypeTranslator typeTranslator) {
 		super( type );
 		this.delegate = type;
 		this.typeTranslator = typeTranslator;

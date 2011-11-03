@@ -20,14 +20,6 @@
  */
 package org.hibernate.ogm.persister;
 
-import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.infinispan.Cache;
-
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -42,6 +34,7 @@ import org.hibernate.engine.spi.SubselectFetch;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -51,8 +44,6 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
@@ -62,8 +53,14 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.pretty.MessageHelper;
+import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
+
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
 
 /**
  * CollectionPersister storing the collection in a grid 
@@ -78,17 +75,18 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType elementGridType;
 	private final GridType indexGridType;
 	private final GridType identifierGridType;
-	private final GridMetadataManager gridManager;
 	private final boolean isInverse;
 	private final boolean oneToMany;
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
+	private final GridDialect gridDialect;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
 		super( collection, cacheAccessStrategy, cfg, factory );
-		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
-		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
+		ServiceRegistry registry = factory.getServiceRegistry();
+		final TypeTranslator typeTranslator = registry.getService(TypeTranslator.class);
+		this.gridDialect = registry.getService(DatastoreServices.class).getGridDialect();
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );
 		indexGridType = typeTranslator.getType( getIndexType() );
@@ -222,7 +220,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		int i = 0;
 		Iterator entries = collection.entries( this );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( key )
 				.keyColumnNames( getKeyColumnNames() )
@@ -383,10 +381,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.key( key )
-				.tableName( getTableName() )
-				.session( session )
-				.gridManager( gridManager )
+				.key(key)
+				.tableName(getTableName())
+				.session(session)
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.keyGridType( getKeyGridType() )
 				.keyColumnNames( getKeyColumnNames() );
@@ -411,7 +409,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
@@ -465,8 +463,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.tableName( getTableName() )
+				.gridDialect(gridDialect)
+				.tableName(getTableName())
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
@@ -517,7 +515,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
@@ -571,11 +569,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.entityPersister( ( OgmEntityPersister ) getElementPersister() )
 					.id( entityId )
 					.getKey();
-			final Cache<EntityKey,Map<String,Object>> entityCache = GridMetadataManagerHelper.getEntityCache(
-					gridManager
-			);
-			final GridDialect gridDialect = gridManager.getGridDialect();
-			final Tuple entityTuple = gridDialect.getTuple( entityKey, entityCache );
+			final Tuple entityTuple = gridDialect.getTuple( entityKey );
 			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if (entityTuple == null) {
 				return;
@@ -599,13 +593,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.updateTuple( entityTuple, entityKey, entityCache ); //update cache
+			gridDialect.updateTuple( entityTuple, entityKey ); //update cache
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, elementColumnNames);
 			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
-					.gridManager( gridManager )
+					.gridDialect(gridDialect)
 					.keyColumnNames( elementColumnNames )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
@@ -654,7 +648,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// Remove all the old entries
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
+				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )

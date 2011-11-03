@@ -20,25 +20,18 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import java.util.Map;
-
-import org.infinispan.Cache;
-
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 
 /**
  * @author Emmanuel Bernard
  */
 public class PropertyMetadataProvider {
-	private GridMetadataManager gridManager;
-	private Cache<AssociationKey, Map<RowKey,Map<String, Object>>> associationCache;
 	private String tableName;
 	private String[] keyColumnNames;
 	private GridType keyGridType;
@@ -47,20 +40,16 @@ public class PropertyMetadataProvider {
 	private AssociationKey collectionMetadataKey;
 	private Association collectionMetadata;
 	private Object[] columnValues;
+	private GridDialect gridDialect;
 
 	//fluent methods for populating data
 
-	public PropertyMetadataProvider gridManager(GridMetadataManager gridManager) {
-		this.gridManager = gridManager;
+	public PropertyMetadataProvider gridDialect(GridDialect gridDialect) {
+		this.gridDialect = gridDialect;
 		return this;
 	}
 
 	//optional: data retrieved from gridManager if not set up
-	public PropertyMetadataProvider associationCache(Cache<AssociationKey, Map<RowKey,Map<String, Object>>> associationCache) {
-		this.associationCache = associationCache;
-		return this;
-	}
-
 	public PropertyMetadataProvider tableName(String tableName) {
 		this.tableName = tableName;
 		return this;
@@ -94,13 +83,6 @@ public class PropertyMetadataProvider {
 
 	//action methods
 
-	private Cache<AssociationKey, Map<RowKey,Map<String, Object>>> getAssociationCache() {
-		if ( associationCache == null) {
-			associationCache = GridMetadataManagerHelper.getAssociationCache( gridManager );
-		}
-		return associationCache;
-	}
-
 	private AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			final Object[] columnValues = getKeyColumnValues();
@@ -119,17 +101,16 @@ public class PropertyMetadataProvider {
 	}
 
 	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = gridManager.getGridDialect()
-				.createTupleAssociation( getCollectionMetadataKey(), rowKey, associationCache );
+		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey);
 		getCollectionMetadata().put( rowKey, associationTuple);
 		return associationTuple;
 	}
 
 	public Association getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
 			if (collectionMetadata == null) {
-				collectionMetadata = gridManager.getGridDialect().createAssociation( getCollectionMetadataKey(), getAssociationCache() );
+				collectionMetadata = gridDialect.createAssociation( getCollectionMetadataKey() );
 			}
 		}
 		return collectionMetadata;
@@ -137,18 +118,18 @@ public class PropertyMetadataProvider {
 
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridManager.getGridDialect().getAssociation( getCollectionMetadataKey(), getAssociationCache() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
 		}
 		return collectionMetadata;
 	}
 
 	public void flushToCache() {
 		if ( getCollectionMetadata().isEmpty() ) {
-			gridManager.getGridDialect().removeAssociation( getCollectionMetadataKey(), getAssociationCache() );
+			gridDialect.removeAssociation( getCollectionMetadataKey() );
 			collectionMetadata = null;
 		}
 		else {
-			gridManager.getGridDialect().updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationCache() );
+			gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
 		}
 	}
 }

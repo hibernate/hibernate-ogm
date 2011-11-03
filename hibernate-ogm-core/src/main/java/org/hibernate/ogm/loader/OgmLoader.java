@@ -20,15 +20,6 @@
  */
 package org.hibernate.ogm.loader;
 
-import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.infinispan.Cache;
-
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
@@ -37,24 +28,20 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.internal.TwoPhaseLoad;
-import org.hibernate.engine.spi.EntityUniqueKey;
-import org.hibernate.engine.spi.PersistenceContext;
-import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.*;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.event.spi.PostLoadEvent;
 import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
@@ -72,6 +59,12 @@ import org.hibernate.type.AssociationType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Load an entity from the Grid
  *
@@ -83,10 +76,10 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	private final OgmEntityPersister[] entityPersisters;
 	private final OgmCollectionPersister[] collectionPersisters;
-	private final GridMetadataManager gridManager;
 	private final SessionFactoryImplementor factory;
 	private LockMode[] defaultLockModes;
 	private final CollectionAliases[] collectionAliases;
+	private final GridDialect gridDialect;
 
 	/**
 	 * Load a collection
@@ -98,7 +91,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.entityPersisters = new OgmEntityPersister[] {};
 		this.collectionPersisters = collectionPersisters;
 		this.factory = collectionPersisters[0].getFactory();
-		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
+		this.gridDialect = this.factory.getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
 
 		//NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
@@ -119,7 +112,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.entityPersisters = entityPersisters;
 		this.collectionPersisters = new OgmCollectionPersister[] {};
 		this.factory = entityPersisters[0].getFactory();
-		this.gridManager = GridMetadataManagerHelper.getGridMetadataManager( this.factory );
+		this.gridDialect = this.factory.getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
 
 		//NONE, because its the requested lock mode, not the actual! 
 		final int fromSize = 1;
@@ -400,12 +393,11 @@ public class OgmLoader implements UniqueEntityLoader {
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
-			final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 			final EntityKey key = new EntityKeyBuilder()
 					.entityPersister( getEntityPersisters()[0] )
 					.id( id )
 					.getKey();
-			Tuple entry = gridManager.getGridDialect().getTuple( key, entityCache );
+			Tuple entry = gridDialect.getTuple(key);
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}
@@ -417,8 +409,8 @@ public class OgmLoader implements UniqueEntityLoader {
 			}
 			final CollectionPhysicalModel persister = (CollectionPhysicalModel) getCollectionPersisters()[0];
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridManager( gridManager )
-				.tableName( persister.getTableName() )
+				.gridDialect(gridDialect)
+				.tableName(persister.getTableName())
 				.key( id )
 				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )

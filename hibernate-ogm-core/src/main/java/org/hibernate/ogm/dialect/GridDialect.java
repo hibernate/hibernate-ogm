@@ -20,9 +20,8 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Map;
-
-import org.infinispan.Cache;
+import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.service.Service;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -38,48 +37,55 @@ import org.hibernate.persister.entity.Lockable;
  *
  * @author Emmanuel Bernard
  */
-public interface GridDialect {
+public interface GridDialect extends Service {
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
 
 	/**
-	 * Return the tuple for a given key in a given cache or null if not present
+	 * Return the tuple for a given key or null if not present
 	 */
-	Tuple getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	Tuple getTuple(EntityKey key);
 	/**
-	 * Return a new tuple for a given key in a given cache
+	 * Return a new tuple for a given key
 	 * Only used if the tuple is not present
 	 */
-	Tuple createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	Tuple createTuple(EntityKey key);
 	/**
-	 * Update the tuple for a given key in a given cache or null if not present
+	 * Update the tuple for a given key or null if not present
 	 */
-	void updateTuple(Tuple tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	void updateTuple(Tuple tuple, EntityKey key);
 
 	/**
-	 * Remove the tuple for a given key in a given cache
+	 * Remove the tuple for a given key
 	 */
-	void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache);
+	void removeTuple(EntityKey key);
 
 	/**
 	 * Return the list of tuples corresponding to a given association
 	 */
-	Association getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	Association getAssociation(AssociationKey key);
 
 	/**
 	 * Create an empty container for the list of tuples corresponding to a given association
 	 * Only used if the association data is not present
 	 */
-	Association createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	Association createAssociation(AssociationKey key);
 
 	/**
 	 * Update a given list of tuples corresponding to a given association
 	 */
-	void updateAssociation(Association association, AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	void updateAssociation(Association association, AssociationKey key);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
 	 */
-	void removeAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey,Map<String,Object>>> cache);
+	void removeAssociation(AssociationKey key);
 
-	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache);
+	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
+
+	/**
+	 * Update value with the guaranteed next value with the defined increment
+	 *
+	 * Especially experimental
+	 */
+	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 }

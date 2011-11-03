@@ -18,25 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
+package org.hibernate.ogm.datastore.impl;
 
-import java.util.Map;
-
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.service.Service;
 
 /**
+ * Provide datastore related services. At the moment only access to
+ * {@link org.hibernate.ogm.dialect.GridDialect}
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmServiceInitiator implements BasicServiceInitiator<GridMetadataManager> {
-	@Override
-	public GridMetadataManager initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridMetadataManager(configurationValues);
-	}
-
-	@Override
-	public Class<GridMetadataManager> getServiceInitiated() {
-		return GridMetadataManager.class;
-	}
+public interface DatastoreServices extends Service {
+	/**
+	 * Return the GridDialect
+	 */
+	GridDialect getGridDialect();
 }

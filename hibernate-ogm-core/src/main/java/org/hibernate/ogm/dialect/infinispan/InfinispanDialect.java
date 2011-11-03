@@ -24,6 +24,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationOperation;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleOperation;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
@@ -36,21 +44,28 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
-import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationOperation;
-import org.hibernate.ogm.datastore.spi.TupleOperation;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
+import org.infinispan.context.Flag;
+
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
+
 
 /**
  * @author Emmanuel Bernard
  */
 public class InfinispanDialect implements GridDialect {
+
+	private final InfinispanDatastoreProvider provider;
+
+	public InfinispanDialect(InfinispanDatastoreProvider provider) {
+		this.provider = provider;
+	}
 
 	/**
 	 * Get a strategy instance which knows how to acquire a database-level lock
@@ -83,7 +98,8 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+	public Tuple getTuple(EntityKey key) {
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		FineGrainedAtomicMap<String,Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		if (atomicMap == null) {
 			return null;
@@ -94,15 +110,17 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+	public Tuple createTuple(EntityKey key) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+	public void updateTuple(Tuple tuple, EntityKey key) {
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		applyTupleOpsOnMap( tuple, atomicMap );
 	}
@@ -122,26 +140,29 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key, Cache<EntityKey, Map<String, Object>> cache) {
+	public void removeTuple(EntityKey key) {
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	public Association getAssociation(AssociationKey key) {
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		return atomicMap == null ? null : new Association( new InfinispanAssociationSnapshot( atomicMap ) );
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	public Association createAssociation(AssociationKey key) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		Map<RowKey, Map<String, Object>> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Association( new InfinispanAssociationSnapshot( atomicMap ) );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	public void updateAssociation(Association association, AssociationKey key) {
 		Map<RowKey, Map<String, Object>> atomicMap = ( (InfinispanAssociationSnapshot) association.getSnapshot() ).getAtomicMap();
 		for( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
@@ -178,12 +199,49 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	public void removeAssociation(AssociationKey key) {
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey, Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+	}
+
+	@Override
+	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		final AdvancedCache<RowKey, Object> identifierCache = provider.getCache(IDENTIFIER_STORE).getAdvancedCache();
+		boolean done = false;
+		do {
+			//read value
+			//skip locking proposed by Sanne
+			Object valueFromDb = identifierCache.withFlags( Flag.SKIP_LOCKING ).get( key );
+			if ( valueFromDb == null ) {
+				//if not there, insert initial value
+				value.initialize( initialValue );
+				//TODO should we use GridTypes here?
+				valueFromDb = new Long( value.makeValue().longValue() );
+				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
+				//check in case somebody has inserted it behind our back
+				if ( oldValue != null ) {
+					value.initialize( ( (Number) oldValue ).longValue() );
+					valueFromDb = oldValue;
+				}
+			}
+			else {
+				//read the value from the table
+				value.initialize( ( ( Number ) valueFromDb ).longValue() );
+			}
+
+			//update value
+			final IntegralDataTypeHolder updateValue = value.copy();
+			//increment value
+			updateValue.add( increment );
+			//TODO should we use GridTypes here?
+			final Object newValueFromDb = updateValue.makeValue().longValue();
+			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
+		}
+		while ( !done );
 	}
 }

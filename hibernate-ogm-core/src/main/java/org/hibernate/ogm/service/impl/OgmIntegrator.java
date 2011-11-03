@@ -27,11 +27,15 @@ import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.cfg.impl.Version;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
 import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
+import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
 import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
+import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
 import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
@@ -68,12 +72,15 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 	@Override
 	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-		serviceRegistryBuilder.addInitiator( new OgmServiceInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
 		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );
 		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( DatastoreProviderInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( DatastoreServicesInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( GridDialectFactoryInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
 	}
 }

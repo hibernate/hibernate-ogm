@@ -31,7 +31,7 @@ public class OneToOneType extends GridTypeDelegatingToCoreType implements GridTy
 	private final TypeTranslator typeTranslator;
 	private final org.hibernate.type.OneToOneType delegate;
 
-	OneToOneType(org.hibernate.type.OneToOneType type, TypeTranslator typeTranslator) {
+	public OneToOneType(org.hibernate.type.OneToOneType type, TypeTranslator typeTranslator) {
 		super( type );
 		this.delegate = type;
 		this.typeTranslator = typeTranslator;

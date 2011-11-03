@@ -27,7 +27,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.infinispan.Cache;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -59,8 +60,6 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.loader.OgmLoader;
-import org.hibernate.ogm.metadata.GridMetadataManager;
-import org.hibernate.ogm.metadata.GridMetadataManagerHelper;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -98,8 +97,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
-	private final GridMetadataManager gridManager;
 	private Object discriminatorValue;
+
+	//service references
+	private final GridDialect gridDialect;
 
 
 	public OgmEntityPersister(
@@ -111,6 +112,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Creating OgmEntityPersister for $s", persistentClass.getClassName() );
 		}
+		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+		this.gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
+
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
 				factory.getSettings().getDefaultCatalogName(),
@@ -202,8 +206,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		initPropertyPaths(mapping);
 
 		//Grid related metadata
-		gridManager = GridMetadataManagerHelper.getGridMetadataManager( factory );
-		final TypeTranslator typeTranslator = gridManager.getTypeTranslator();
+		TypeTranslator typeTranslator = serviceRegistry.getService(TypeTranslator.class);
 		final Type[] types = getPropertyTypes();
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
@@ -236,9 +239,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			log.trace( "Getting current persistent state for: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
 
-		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		//snapshot is a Map in the end
-		final Tuple resultset = getResultsetById( id, cache );
+		final Tuple resultset = getResultsetById(id);
 
 		//if there is no resulting row, return null
 		if ( resultset == null || resultset.getSnapshot().isEmpty() ) {
@@ -256,9 +258,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
-	private Tuple getResultsetById(Serializable id, Cache<EntityKey, Map<String, Object>> cache) {
+	private Tuple getResultsetById(Serializable id) {
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id( id ).getKey();
-		final Tuple resultset = gridManager.getGridDialect().getTuple(key,cache);
+		final Tuple resultset = gridDialect.getTuple(key);
 		return resultset;
 	}
 
@@ -327,8 +329,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Cache<EntityKey, Map<String,Object>> cache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final Tuple resultset = getResultsetById( id, cache );
+		final Tuple resultset = getResultsetById( id );
 
 		if (resultset == null) {
 			return null;
@@ -359,18 +360,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			);
 		}
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		/*
 		 * We get the value from the grid and compare the version values before putting the next version in
 		 * Contrary to the database version, there is 
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-		final GridDialect gridDialect = gridManager.getGridDialect();
-		final Tuple resultset = gridDialect.getTuple( key, entityCache );
+		final Tuple resultset = gridDialect.getTuple( key );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.updateTuple( resultset, key, entityCache );
+		gridDialect.updateTuple( resultset, key );
 		return nextVersion;
 	}
 
@@ -387,7 +386,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		//find the ids per unique property name
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.tableName( getTableName() )
-				.gridManager( gridManager )
+				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
@@ -635,7 +634,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	@Override
 	protected LockingStrategy generateLocker(LockMode lockMode) {
-		return gridManager.getGridDialect().getLockingStrategy( this, lockMode );
+		return gridDialect.getLockingStrategy(this, lockMode);
 	}
 
 
@@ -707,16 +706,14 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final GridDialect gridDialect = gridManager.getGridDialect();
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-				Tuple resultset = gridDialect.getTuple( key, entityCache );
+				Tuple resultset = gridDialect.getTuple( key );
 				final boolean useVersion = j == 0 && isVersioned();
 
-				resultset = createNewResultSetIfNull( key, entityCache, resultset, id, session );
+				resultset = createNewResultSetIfNull( key, resultset, id, session );
 
 				final EntityMetamodel entityMetamodel = getEntityMetamodel();
 
@@ -758,7 +755,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 				//dehydrate
 				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				gridDialect.updateTuple( resultset, key, entityCache );
+				gridDialect.updateTuple( resultset, key );
 			}
 		}
 	}
@@ -812,7 +809,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridManager(gridManager)
+				.gridDialect( gridDialect )
 				.dehydrate();
 	}
 
@@ -840,9 +837,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 		final int span = getTableSpan();
 		//insert operations are always dynamic in OGM
-		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
-		final GridDialect gridDialect = gridManager.getGridDialect();
+		boolean[] propertiesToInsert = getPropertiesToInsert(fields);
 		for ( int j = 0; j < span; j++ ) {
 			if ( isInverseTable( j ) ) {
 				return;
@@ -862,7 +857,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 
 			final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-			Tuple resultset = gridDialect.getTuple( key, entityCache );
+			Tuple resultset = gridDialect.getTuple( key );
 			// add the discriminator
 			if ( j == 0 ) {
 				if (resultset != null) {
@@ -873,22 +868,21 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 			}
 
-			resultset = createNewResultSetIfNull( key, entityCache, resultset, id, session );
+			resultset = createNewResultSetIfNull( key, resultset, id, session );
 
 			//dehydrate
 			dehydrate(resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
-			gridDialect.updateTuple( resultset, key, entityCache );
+			gridDialect.updateTuple( resultset, key );
 		}
 	}
 
 	private Tuple createNewResultSetIfNull(
 			EntityKey key,
-			Cache<EntityKey, Map<String, Object>> entityCache,
 			Tuple resultset,
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridManager.getGridDialect().createTuple( key, entityCache );
+			resultset = gridDialect.createTuple(key);
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -924,10 +918,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final Cache<EntityKey, Map<String, Object>> entityCache = GridMetadataManagerHelper.getEntityCache( gridManager );
 		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
-		final GridDialect gridDialect = gridManager.getGridDialect();
-		final Tuple resultset = gridDialect.getTuple( key, entityCache );
+		final Tuple resultset = gridDialect.getTuple( key );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements
@@ -976,8 +968,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
 			new EntityDehydrator()
-				.gridManager( gridManager )
-				.gridPropertyTypes( gridPropertyTypes )
+				.gridDialect(gridDialect)
+				.gridPropertyTypes(gridPropertyTypes)
 				.gridIdentifierType( gridIdentifierType )
 				.id( id )
 				.persister( this )
@@ -987,7 +979,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.onlyRemovePropertyMetadata()
 				.dehydrate();
 
-			gridDialect.removeTuple( key, entityCache );
+			gridDialect.removeTuple( key );
 		}
 
 	}

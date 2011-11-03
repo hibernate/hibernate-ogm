@@ -30,7 +30,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 public class CollectionType extends GridTypeDelegatingToCoreType {
 	private final org.hibernate.type.CollectionType delegate;
 
-	CollectionType(org.hibernate.type.CollectionType type) {
+	public CollectionType(org.hibernate.type.CollectionType type) {
 		super( type );
 		this.delegate = type;
 	}
