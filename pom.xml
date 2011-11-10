@@ -560,7 +560,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-source 1.6 -target 1.6</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
                         </execution>
                         <!-- Run annotation processors on src/test/java sources -->
@@ -574,7 +574,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-source 1.6 -target 1.6</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
                         </execution>
                     </executions>
