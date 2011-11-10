@@ -37,6 +37,7 @@ import java.sql.Statement;
 import java.sql.Struct;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * @author Emmanuel Bernard
@@ -265,6 +266,26 @@ public class NoopConnection implements Connection {
 	@Override
 	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
 		return null;
+	}
+
+	public void setSchema(String schema) throws SQLException {
+		//To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public String getSchema() throws SQLException {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public void abort(Executor executor) throws SQLException {
+		//To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+		//To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public int getNetworkTimeout() throws SQLException {
+		return 0;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override

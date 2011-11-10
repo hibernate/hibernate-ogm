@@ -1032,4 +1032,12 @@ public class TupleAsMapResultSet implements ResultSet {
 	public void updateNClob(String columnLabel, Reader reader) throws SQLException {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
+
+	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	}
 }
