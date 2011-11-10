@@ -23,6 +23,8 @@ package org.hibernate.ogm.test.jpa.util;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 /**
@@ -57,6 +59,10 @@ public class NoopDatasource implements DataSource {
 	@Override
 	public int getLoginTimeout() throws SQLException {
 		return 0;  //To change body of implemented methods use File | Settings | File Templates.
+	}
+
+	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override
