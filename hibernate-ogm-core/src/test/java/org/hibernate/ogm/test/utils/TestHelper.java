@@ -25,22 +25,44 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.grid.EntityKey;
 import org.infinispan.Cache;
 
 import java.io.Serializable;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
 
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public class TestHelper {
-	public static Cache getEntityCache(Session session) {
+
+	public static int entityCacheSize(EntityManager em) {
+		return entityCacheSize( em.unwrap( Session.class ) );
+	}
+
+	public static int entityCacheSize(Session session) {
+		return entityCacheSize( session.getSessionFactory() );
+	}
+
+	public static int entityCacheSize(SessionFactory sessionFactory) {
+		return getEntityCache( sessionFactory ).size();
+	}
+
+	private static Cache getEntityCache(Session session) {
 		return getEntityCache( session.getSessionFactory() );
 	}
 
-	public static Cache getEntityCache(SessionFactory sessionFactory) {
+	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+		return (Map) getEntityCache( sessionFactory ).get( key );
+	}
+
+	private static Cache getEntityCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getCache(ENTITY_STORE);
 	}

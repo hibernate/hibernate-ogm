@@ -28,7 +28,6 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
-import org.infinispan.Cache;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -37,9 +36,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.hibernate.Session;
 import org.hibernate.ogm.test.utils.PackagingRule;
-import org.hibernate.ogm.test.utils.TestHelper;
+
+import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -70,8 +69,6 @@ public class JPAResourceLocalStandaloneTest {
 			final EntityManager em = emf.createEntityManager();
 			try {
 
-				final Cache entityCache = TestHelper.getEntityCache( em.unwrap( Session.class ) );
-
 				em.getTransaction().begin();
 				Poem poem = new Poem();
 				poem.setName( "L'albatros" );
@@ -85,10 +82,10 @@ public class JPAResourceLocalStandaloneTest {
 				poem2.setName( "Wazaaaaa" );
 				em.persist( poem2 );
 				em.flush();
-				assertThat( entityCache ).hasSize( 2 );
+				assertThat( entityCacheSize( em ) ).isEqualTo( 2 );
 				em.getTransaction().rollback();
 
-				assertThat( entityCache ).hasSize( 1 );
+				assertThat( entityCacheSize( em ) ).isEqualTo( 1 );
 
 				em.getTransaction().begin();
 				poem = em.find( Poem.class, poem.getId() );
