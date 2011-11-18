@@ -54,10 +54,6 @@ public class TestHelper {
 		return getEntityCache( sessionFactory ).size();
 	}
 
-	private static Cache getEntityCache(Session session) {
-		return getEntityCache( session.getSessionFactory() );
-	}
-
 	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return (Map) getEntityCache( sessionFactory ).get( key );
 	}
@@ -75,7 +71,11 @@ public class TestHelper {
 		return InfinispanDatastoreProvider.class.cast(provider);
 	}
 
-	public static Cache getAssociationCache(SessionFactory sessionFactory) {
+	public static int associationCacheSize(SessionFactory sessionFactory) {
+		return getAssociationCache( sessionFactory ).size();
+	}
+
+	private static Cache getAssociationCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getCache(ASSOCIATION_STORE);
 	}

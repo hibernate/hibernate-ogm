@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.ogm.grid.EntityKey;
-import org.infinispan.Cache;
 import org.junit.Test;
 
 import org.hibernate.Session;
