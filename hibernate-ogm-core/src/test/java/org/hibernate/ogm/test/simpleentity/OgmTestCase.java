@@ -59,7 +59,7 @@ import org.hibernate.testing.SkipForDialect;
  * This class is a mix of SearchTestCase from HSearch 4 and OgmTestCase from the Core 3.6 days
  * It could get some love to clean this mess
  *
- * @author Emmnauel Bernand
+ * @author Emmanuel Bernard
  * @author Hardy Ferentschik
  */
 public abstract class OgmTestCase extends TestCase {
