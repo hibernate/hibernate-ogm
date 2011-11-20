@@ -42,7 +42,14 @@ public class TestHelper {
 	}
 
 	private static DataStoreSpecificTestHelper createStoreSpecificHelper() {
-		return new InfinispanTestHelper();
+		String helperClassName = System.getProperty( "ogm-testhelper-implementation", "org.hibernate.ogm.test.utils.InfinispanTestHelper" );
+		try {
+			return (DataStoreSpecificTestHelper) Class.forName( helperClassName ).newInstance();
+		}
+		catch ( Exception e ) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static int entityCacheSize(Session session) {
