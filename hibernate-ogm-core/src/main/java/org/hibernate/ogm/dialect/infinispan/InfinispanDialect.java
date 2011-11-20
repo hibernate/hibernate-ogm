@@ -94,6 +94,7 @@ public class InfinispanDialect implements GridDialect {
 		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
+		//TODO should we throw an unsupportedOperation for "Select" locking strategy?
 		return new SelectLockingStrategy( lockable, lockMode );
 	}
 
@@ -111,7 +112,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
+		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
