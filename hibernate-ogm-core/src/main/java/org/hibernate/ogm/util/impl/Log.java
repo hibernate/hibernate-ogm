@@ -48,7 +48,7 @@ public interface Log extends BasicLogger {
 	void persistenceXmlNotFoundInClassPath(String unitName);
 
 	@LogMessage(level = INFO)
-	@Message(id = 3, value = "Use default transaction factory (use an TransactionManager exclusively to pilot the transaction)")
+	@Message(id = 3, value = "Use default transaction factory (use a TransactionManager exclusively to pilot the transaction)")
 	void usingDefaultTransactionFactory();
 
 	@Message(id = 4, value = "Unable to find or initialize Infinispan CacheManager")
@@ -66,7 +66,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 8, value = "DatastoreManager class [%1$s] cannot be found in classpath")
 	HibernateException datastoreClassCannotBeFound(String className);
 
-	@Message(id = 9, value = DatastoreProviderInitiator.DATASTORE_PROVIDER + " has not be defined and not DatastoreManager can be guessed")
+	@Message(id = 9, value = DatastoreProviderInitiator.DATASTORE_PROVIDER + " has not been defined and no DatastoreManager could be guessed")
 	HibernateException noDatastoreConfigured();
 
 	@Message(id = 10, value = "GridDialect class [%1$s] cannot be found in classpath")
