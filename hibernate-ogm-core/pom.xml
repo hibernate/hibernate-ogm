@@ -206,6 +206,6 @@
         </profile>
      </profiles>
     <properties>
-        <ogm-testhelper-implementation>org.hibernate.ogm.test.utils.InfinispanTestHelper</ogm-testhelper-implementation>
+        <ogm-testhelper-implementation>org.hibernate.ogm.test.utils.HashMapTestHelper</ogm-testhelper-implementation>
     </properties>
 </project>

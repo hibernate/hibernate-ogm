@@ -1,5 +1,6 @@
 package org.hibernate.ogm.datastore.impl.mapbased;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -138,6 +139,22 @@ public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, 
 		AtomicInteger valueProposal = new AtomicInteger( initialValue );
 		AtomicInteger previous = sequencesStorage.putIfAbsent( key, valueProposal );
 		return previous == null ? initialValue : previous.addAndGet( increment );
+	}
+
+	/**
+	 * Meant to execute assertions in tests only
+	 * @return a read-only view of the map containing the entities
+	 */
+	public Map getEntityMap() {
+		return Collections.unmodifiableMap( entitiesKeyValueStorage );
+	}
+
+	/**
+	 * Meant to execute assertions in tests only
+	 * @return a read-only view of the map containing the relations between entities
+	 */
+	public Map getAssociationsMap() {
+		return Collections.unmodifiableMap( associationsKeyValueStorage );
 	}
 
 }

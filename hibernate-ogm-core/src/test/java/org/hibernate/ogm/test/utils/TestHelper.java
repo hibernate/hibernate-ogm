@@ -30,6 +30,9 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 /**
+ *
+ * Run tests with -Dogm-testhelper-implementation=org.hibernate.ogm.test.utils.HashMapTestHelper
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
