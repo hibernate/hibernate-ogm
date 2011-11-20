@@ -59,33 +59,13 @@
             <artifactId>hibernate-search-orm</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-lucene-directory</artifactId>
-            <optional>true</optional>
-        </dependency>
-        
+
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-testing</artifactId>
             <!-- <scope>test</scope> TODO fix this -->
         </dependency>
-<!--        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency> -->
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
             <groupId>javassist</groupId>
