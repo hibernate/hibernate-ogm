@@ -334,7 +334,7 @@ public abstract class OgmTestCase extends TestCase {
 			setCfg( new OgmConfiguration() );
 
 			//Grid specific configuration
-			cfg.setProperty( InfinispanDatastoreProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
+			cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-local.xml" );
 			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 
