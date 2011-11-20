@@ -29,6 +29,9 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
+import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -75,7 +78,7 @@ public class HashMapDialect implements GridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new MapTupleSnapshot( entityMap ) );
+			return new Tuple( new MapBasedTupleSnapshot( entityMap ) );
 		}
 	}
 
@@ -83,55 +86,52 @@ public class HashMapDialect implements GridDialect {
 	public Tuple createTuple(EntityKey key) {
 		HashMap<String,Object> tuple = new HashMap<String,Object>();
 		provider.putEntity( key, tuple );
-		return new Tuple( new MapTupleSnapshot( tuple ) );
+		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		// TODO Auto-generated method stub
-		
+		Map<String,Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		// TODO Auto-generated method stub
-		
+		provider.removeEntityTuple( key );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		// TODO Auto-generated method stub
-		return null;
+		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
+		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		// TODO Auto-generated method stub
-		return null;
+		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String,Object>>();
+		provider.putAssociation( key, associationMap );
+		return new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		// TODO Auto-generated method stub
-		
+		MapHelpers.updateAssociation( association, key );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		// TODO Auto-generated method stub
-		
+		provider.removeAssociation( key );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		// TODO Auto-generated method stub
-		return null;
+		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		// TODO Auto-generated method stub
-		
+		int nextValue = provider.getSharedAtomicInteger( key, initialValue, increment );
+		value.initialize( nextValue );
 	}
 
 }

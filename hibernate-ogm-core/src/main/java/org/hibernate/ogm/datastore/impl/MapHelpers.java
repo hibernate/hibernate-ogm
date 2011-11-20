@@ -20,10 +20,18 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.impl.mapbased.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
@@ -43,6 +51,42 @@ public final class MapHelpers {
 					break;
 				case REMOVE:
 					map.remove( action.getColumn() );
+					break;
+			}
+		}
+	}
+
+	public static Map<String, Object> tupleToMap(Tuple tuple) {
+		if (tuple == null) {
+			return null;
+		}
+		Map<String, Object> snapshot;
+		TupleSnapshot snapshotInstance = tuple.getSnapshot();
+		if ( snapshotInstance == EmptyTupleSnapshot.SINGLETON ) {
+			//new assoc tuples are made of EmptyTupleSnapshot
+			snapshot = Collections.EMPTY_MAP;
+		}
+		else {
+			//loaded assoc tuples are made of MapBasedTupleSnapshot
+			snapshot = ( ( MapBasedTupleSnapshot) snapshotInstance ).getMap();
+		}
+		Map<String, Object> map = new HashMap<String, Object>( snapshot );
+		MapHelpers.applyTupleOpsOnMap( tuple, map );
+		return map;
+	}
+
+	public static void updateAssociation(Association association, AssociationKey key) {
+		Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
+		for( AssociationOperation action : association.getOperations() ) {
+			switch ( action.getType() ) {
+				case CLEAR:
+					atomicMap.clear();
+				case PUT_NULL:
+				case PUT:
+					atomicMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
+					break;
+				case REMOVE:
+					atomicMap.remove( action.getKey() );
 					break;
 			}
 		}

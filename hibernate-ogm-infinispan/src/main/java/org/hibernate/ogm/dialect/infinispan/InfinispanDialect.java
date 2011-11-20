@@ -38,6 +38,7 @@ import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
+import org.hibernate.ogm.datastore.impl.mapbased.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -119,7 +120,6 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}
@@ -134,7 +134,7 @@ public class InfinispanDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key) {
 		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
-		return atomicMap == null ? null : new Association( new InfinispanAssociationSnapshot( atomicMap ) );
+		return atomicMap == null ? null : new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
 
 	@Override
@@ -143,44 +143,12 @@ public class InfinispanDialect implements GridDialect {
 		//should we improve?
 		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		Map<RowKey, Map<String, Object>> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
-		return new Association( new InfinispanAssociationSnapshot( atomicMap ) );
+		return new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		Map<RowKey, Map<String, Object>> atomicMap = ( (InfinispanAssociationSnapshot) association.getSnapshot() ).getAtomicMap();
-		for( AssociationOperation action : association.getOperations() ) {
-			switch ( action.getType() ) {
-				case CLEAR:
-					atomicMap.clear();
-				case PUT_NULL:
-				case PUT:
-					atomicMap.put( action.getKey(), tupleToMap( action.getValue() ) );
-					break;
-				case REMOVE:
-					atomicMap.remove( action.getKey() );
-					break;
-			}
-		}
-	}
-
-	public static Map<String, Object> tupleToMap(Tuple tuple) {
-		if (tuple == null) {
-			return null;
-		}
-		Map<String, Object> snapshot;
-		TupleSnapshot snapshotInstance = tuple.getSnapshot();
-		if ( snapshotInstance == EmptyTupleSnapshot.SINGLETON ) {
-			//new assoc tuples are made of EmptyTupleSnapshot
-			snapshot = Collections.EMPTY_MAP;
-		}
-		else {
-			//loaded assoc tuples are made of MapBasedTupleSnapshot
-			snapshot = ( ( MapBasedTupleSnapshot) snapshotInstance ).getMap();
-		}
-		Map<String, Object> map = new HashMap<String, Object>( snapshot );
-		MapHelpers.applyTupleOpsOnMap( tuple, map );
-		return map;
+		MapHelpers.updateAssociation( association, key );
 	}
 
 	@Override
