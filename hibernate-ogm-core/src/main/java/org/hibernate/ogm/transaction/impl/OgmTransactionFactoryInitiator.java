@@ -26,7 +26,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
-import org.hibernate.ogm.transaction.infinispan.impl.JTATransactionManagerTransactionFactory;
+import org.hibernate.ogm.transaction.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.BasicServiceInitiator;
