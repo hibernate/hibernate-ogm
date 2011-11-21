@@ -137,13 +137,16 @@
                              Disable the JGroups message bundling feature
                           to speed tests and avoid FLUSH issue
                            -->
-                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false -Dogm-testhelper-implementation=${ogm-testhelper-implementation}</argLine>
+                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false -Dogm-testhelper-implementation=org.hibernate.ogm.test.utils.InfinispanTestHelper</argLine>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.bsc.maven</groupId>
                 <artifactId>maven-processor-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -159,7 +162,4 @@
             </properties>
         </profile>
      </profiles>
-    <properties>
-        <ogm-testhelper-implementation>org.hibernate.ogm.test.utils.InfinispanTestHelper</ogm-testhelper-implementation>
-    </properties>
 </project>
