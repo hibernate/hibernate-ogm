@@ -41,6 +41,7 @@
 
     <modules>
         <module>hibernate-ogm-core</module>
+        <module>hibernate-ogm-infinispan</module>
     </modules>
 
     <issueManagement>
