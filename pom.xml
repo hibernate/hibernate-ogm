@@ -203,7 +203,14 @@
                 <version>${hibernateVersion}</version>
                 <scope>test</scope>
             </dependency>
-            
+            <dependency>
+                <groupId>org.hibernate.ogm</groupId>
+                <artifactId>hibernate-ogm-core</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+
             <!-- Logging -->
             <dependency>
                 <groupId>log4j</groupId>
