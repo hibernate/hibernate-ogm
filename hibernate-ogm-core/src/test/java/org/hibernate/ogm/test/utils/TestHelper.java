@@ -45,7 +45,7 @@ public class TestHelper {
 	}
 
 	private static DataStoreSpecificTestHelper createStoreSpecificHelper() {
-		String helperClassName = System.getProperty( "ogm-testhelper-implementation", "org.hibernate.ogm.test.utils.InfinispanTestHelper" );
+		String helperClassName = System.getProperty( "ogm-testhelper-implementation", "org.hibernate.ogm.test.utils.HashMapTestHelper" );
 		try {
 			return (DataStoreSpecificTestHelper) Class.forName( helperClassName ).newInstance();
 		}
@@ -69,6 +69,10 @@ public class TestHelper {
 
 	public static int associationCacheSize(SessionFactory sessionFactory) {
 		return helper.associationCacheSize( sessionFactory );
+	}
+
+	public static boolean backendSupportsTransactions() {
+		return helper.backendSupportsTransactions();
 	}
 
 	@SuppressWarnings("unchecked")

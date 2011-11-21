@@ -70,4 +70,9 @@ public class InfinispanTestHelper implements DataStoreSpecificTestHelper {
 		return castProvider.getCache(ASSOCIATION_STORE);
 	}
 
+	@Override
+	public boolean backendSupportsTransactions() {
+		return true;
+	}
+
 }

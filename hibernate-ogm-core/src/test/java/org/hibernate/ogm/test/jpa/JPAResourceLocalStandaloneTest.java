@@ -37,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.test.utils.RequiresTransactionalCapabilitiesRule;
 
 import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
@@ -47,6 +48,9 @@ public class JPAResourceLocalStandaloneTest {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule();
+
+	@Rule
+	public RequiresTransactionalCapabilitiesRule transactions = new RequiresTransactionalCapabilitiesRule();
 
 	@Test
 	public void testJTAStandalone() throws Exception {

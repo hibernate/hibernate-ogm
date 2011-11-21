@@ -20,39 +20,29 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import java.util.Map;
+import org.junit.rules.MethodRule;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.Statement;
 
-import org.hibernate.SessionFactory;
-import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public interface DataStoreSpecificTestHelper {
+public class RequiresTransactionalCapabilitiesRule implements MethodRule {
 
-	/**
-	 * @param sessionFactory
-	 * @return
-	 */
-	int entityCacheSize(SessionFactory sessionFactory);
-
-	/**
-	 * @param sessionFactory
-	 * @return
-	 */
-	int associationCacheSize(SessionFactory sessionFactory);
-
-	/**
-	 * @param sessionFactory
-	 * @param key
-	 * @return
-	 */
-	Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key);
-
-	/**
-	 * Returning false will disable some tests!
-	 * @return true if the datastore is expected to commit/rollback properly
-	 */
-	boolean backendSupportsTransactions();
+	public Statement apply(final Statement base, FrameworkMethod method,
+			Object target) {
+		return new Statement() {
+			@Override
+			public void evaluate() throws Throwable {
+				if ( TestHelper.backendSupportsTransactions() ) {
+					base.evaluate();
+				}
+				else {
+					
+				}
+			}
+		};
+	}
 
 }

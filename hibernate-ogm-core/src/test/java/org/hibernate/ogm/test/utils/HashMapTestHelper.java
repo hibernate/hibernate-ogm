@@ -69,4 +69,9 @@ public class HashMapTestHelper implements DataStoreSpecificTestHelper {
 		return castProvider.getAssociationsMap();
 	}
 
+	@Override
+	public boolean backendSupportsTransactions() {
+		return false;
+	}
+
 }
