@@ -1,4 +1,4 @@
-package org.hibernate.ogm.datastore.impl.mapbased;
+package org.hibernate.ogm.datastore.mapbased.impl;
 
 import java.util.Collections;
 import java.util.HashSet;

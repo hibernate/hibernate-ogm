@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl.mapbased;
+package org.hibernate.ogm.datastore.mapbased.impl;
 
 import java.io.Serializable;
 
@@ -27,26 +27,52 @@ import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockingStrategy implements LockingStrategy {
+public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
-	public MapPessimisticReadLockingStrategy(Lockable lockable, LockMode lockMode) {
-		super( lockable, lockMode );
+	private volatile MapBasedDatastoreProvider provider;
+	protected final Lockable lockable;
+	protected final LockMode lockMode;
+
+	private static final Log log = LoggerFactory.make();
+
+	public MapPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
+		this.lockable = lockable;
+		this.lockMode = lockMode;
 	}
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapBasedDatastoreProvider dataStore = getProvider( session );
-		dataStore.readLock( new EntityKeyBuilder()
+		dataStore.writeLock( new EntityKeyBuilder()
 				.tableName( lockable.getRootTableName() )
 				.id( id )
 				.getKey(),
 				timeout
 		);
+		// FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
+		// (Comment by Emmanuel)
 	}
+
+	protected final MapBasedDatastoreProvider getProvider(SessionImplementor session) {
+		if ( provider == null ) {
+			DatastoreProvider service = session.getFactory().getServiceRegistry().getService(DatastoreProvider.class);
+			if ( service instanceof MapBasedDatastoreProvider ) {
+				provider = (MapBasedDatastoreProvider) service;
+			}
+			else {
+				log.unexpectedDatastoreProvider(service.getClass(), MapBasedDatastoreProvider.class);
+			}
+		}
+		return provider;
+	}
+
 }

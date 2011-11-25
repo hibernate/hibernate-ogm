@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.impl.mapbased.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
