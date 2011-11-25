@@ -97,7 +97,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 				isCacheProvided = false;
 			}
 			else {
-				log.tracef("Retriving Infinispan from JNDI at %1$s", jndiProperty);
+				log.tracef("Retrieving Infinispan from JNDI at %1$s", jndiProperty);
 				cacheManager = (EmbeddedCacheManager) jndiService.locate(jndiProperty);
 				isCacheProvided = true;
 			}
