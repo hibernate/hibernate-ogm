@@ -24,8 +24,6 @@ import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.LockMode;
@@ -33,17 +31,13 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
-import org.hibernate.dialect.lock.SelectLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.impl.mapbased.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -93,8 +87,7 @@ public class InfinispanDialect implements GridDialect {
 		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		//TODO should we throw an unsupportedOperation for "Select" locking strategy?
-		return new SelectLockingStrategy( lockable, lockMode );
+		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Infinispan GridDialect" );
 	}
 
 	@Override
