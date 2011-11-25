@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -85,4 +86,12 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
 	HibernateException unexpectedDatastoreProvider(Class<?> found, Class<?> expected);
+
+	@LogMessage(level = INFO)
+	@Message(id = 16, value = "NoSQL Datastore provider: %1$s")
+	void useDatastoreProvider(String datastoreProviderClass);
+
+	@LogMessage(level = INFO)
+	@Message(id = 17, value = "Grid Dialect: %1$s")
+	void useGridDialect(String gridDialectClass);
 }
