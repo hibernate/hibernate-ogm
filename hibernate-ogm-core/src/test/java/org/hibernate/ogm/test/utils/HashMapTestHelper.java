@@ -33,7 +33,7 @@ import org.hibernate.ogm.grid.RowKey;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class HashMapTestHelper implements TestGridDialect {
+public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {

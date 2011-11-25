@@ -26,31 +26,37 @@ import org.hibernate.SessionFactory;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
+ * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
+ * so each GridDialect implementor should also implement a TestGridDialect, and list it by classname into
+ * {@code org.hibernate.ogm.test.utils.TestHelper#knownTestDialects }.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public interface TestGridDialect {
+public interface TestableGridDialect {
 
 	/**
 	 * @param sessionFactory
-	 * @return
+	 * @return the number of elements stored in the entity "cache"
 	 */
 	int entityCacheSize(SessionFactory sessionFactory);
 
 	/**
 	 * @param sessionFactory
-	 * @return
+	 * @return the number of elements stored in the association "cache"
 	 */
 	int associationCacheSize(SessionFactory sessionFactory);
 
 	/**
+	 * Loads a specific entity tuple directly from the data store by entity key
 	 * @param sessionFactory
 	 * @param key
-	 * @return
+	 * @return the loaded tuple, or null of nothing was found
 	 */
 	Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key);
 
 	/**
-	 * Returning false will disable some tests!
+	 * Returning false will disable all tests which verify transaction isolation or rollback capabilities.
+	 * No "production" datastore should return false unless its limitation is properly documented.
 	 * @return true if the datastore is expected to commit/rollback properly
 	 */
 	boolean backendSupportsTransactions();

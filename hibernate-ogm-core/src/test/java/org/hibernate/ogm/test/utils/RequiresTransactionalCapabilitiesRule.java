@@ -20,18 +20,24 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
 
-
 /**
+ * Use this test Rule to skip tests when the configured GridDialect doesn't
+ * support transactions: if rollback capabilities are required or different
+ * transactions should be isolated.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
 public class RequiresTransactionalCapabilitiesRule implements MethodRule {
 
-	public Statement apply(final Statement base, FrameworkMethod method,
-			Object target) {
+	private static final Log log = LoggerFactory.make();
+
+	public Statement apply(final Statement base, final FrameworkMethod method, final Object target) {
 		return new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
@@ -39,7 +45,7 @@ public class RequiresTransactionalCapabilitiesRule implements MethodRule {
 					base.evaluate();
 				}
 				else {
-					
+					log.info( "Skipping test " + method.getName() + " as the current GridDialect doesn't support transactions" );
 				}
 			}
 		};

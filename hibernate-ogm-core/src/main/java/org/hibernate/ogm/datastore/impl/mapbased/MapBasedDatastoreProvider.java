@@ -25,7 +25,12 @@ import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
 /**
- * 
+ * This is an example a DatastoreProvider, implementing only the basic interface needed by Hibernate OGM.
+ *
+ * It does not support transactions, nor clustering nor it has monitoring or capabilities to offload the
+ * contents to other storage. Most important, it must be considered that different sessions won't be isolated
+ * unless they avoid flushing.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
 public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
@@ -53,13 +58,13 @@ public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, 
 
 	@Override
 	public void stop() {
-		// TODO log
 		entitiesKeyValueStorage.clear();
+		log.debug( "Stopped and cleared MapBasedDatastoreProvider" );
 	}
 
 	@Override
 	public void start() {
-		// TODO log
+		log.debug( "MapBasedDatastoreProvider started" );
 	}
 
 	/**

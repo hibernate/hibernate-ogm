@@ -23,6 +23,8 @@ package org.hibernate.ogm.test.utils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -31,27 +33,47 @@ import javax.persistence.EntityManager;
 
 /**
  *
- * Run tests with -Dogm-testhelper-implementation=org.hibernate.ogm.test.utils.HashMapTestHelper
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public class TestHelper {
 
-	private static final TestGridDialect helper = createStoreSpecificHelper();
+	private static final String[] knownTestDialects = new String[] {
+		//Add more TestGridDialect(s) here as needed
+		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
+		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
+	};
+
+	private static final Log log = LoggerFactory.make();
+	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
 	public static int entityCacheSize(EntityManager em) {
 		return entityCacheSize( em.unwrap( Session.class ) );
 	}
 
-	private static TestGridDialect createStoreSpecificHelper() {
-		String helperClassName = System.getProperty( "ogm-testhelper-implementation", "org.hibernate.ogm.test.utils.HashMapTestHelper" );
-		try {
-			return (TestGridDialect) Class.forName( helperClassName ).newInstance();
+	private static TestableGridDialect createStoreSpecificHelper() {
+		for ( String className : knownTestDialects ) {
+			Class<?> classForName = null;
+			try {
+				classForName = Class.forName( className );
+			}
+			catch (ClassNotFoundException e) {
+				//ignore this: we're searching for the only valid option
+			}
+			if ( classForName != null ) {
+				try {
+					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
+					log.debugf( "Using TestGridDialect %s", classForName );
+					return attempt;
+				}
+				catch ( Exception e ) {
+					//but other errors are not expected:
+					log.errorf( e, "Could not load TestGridDialect by name %s", className );
+				}
+			}
 		}
-		catch ( Exception e ) {
-			e.printStackTrace();
-		}
+		log.fatal( "Could not load any TestGridDialect implementation!" );
 		return null;
 	}
 

@@ -101,7 +101,6 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                    <forkMode>once</forkMode>
-                    <argLine>-Dogm-testhelper-implementation=org.hibernate.ogm.test.utils.HashMapTestHelper</argLine>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>

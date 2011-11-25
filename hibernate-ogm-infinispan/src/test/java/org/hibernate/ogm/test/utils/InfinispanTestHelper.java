@@ -35,7 +35,7 @@ import org.infinispan.Cache;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class InfinispanTestHelper implements TestGridDialect {
+public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {
