@@ -1,6 +1,6 @@
-/*
+/* 
  * Hibernate, Relational Persistence for Idiomatic Java
- *
+ * 
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.infinispan;
+package org.hibernate.ogm.datastore.mapbased.impl;
 
 import java.util.Map;
 import java.util.Set;
@@ -30,36 +30,39 @@ import org.hibernate.ogm.grid.RowKey;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class InfinispanAssociationSnapshot implements AssociationSnapshot {
-	private Map<RowKey, Map<String, Object>> atomicMap;
+public class MapAssociationSnapshot implements AssociationSnapshot {
 
-	public InfinispanAssociationSnapshot(Map<RowKey, Map<String, Object>> atomicMap) {
-		this.atomicMap = atomicMap;
+	private final Map<RowKey, Map<String, Object>> associationMap;
+
+	public MapAssociationSnapshot(Map<RowKey, Map<String, Object>> associationMap) {
+		this.associationMap = associationMap;
 	}
 
 	@Override
 	public Tuple get(RowKey column) {
-		Map<String, Object> rawResult = atomicMap.get( column );
+		Map<String, Object> rawResult = associationMap.get( column );
 		return rawResult != null ? new Tuple( new MapBasedTupleSnapshot( rawResult ) ) : null;
 	}
 
 	@Override
 	public boolean containsKey(RowKey column) {
-		return atomicMap.containsKey( column );
+		return associationMap.containsKey( column );
 	}
 
 	@Override
 	public int size() {
-		return atomicMap.size();
+		return associationMap.size();
 	}
 
 	@Override
 	public Set<RowKey> getRowKeys() {
-		return atomicMap.keySet();
+		return associationMap.keySet();
 	}
 
-	public Map<RowKey, Map<String, Object>> getAtomicMap() {
-		return atomicMap;
+	public Map<RowKey, Map<String, Object>> getUnderlyingMap() {
+		return associationMap;
 	}
+
 }

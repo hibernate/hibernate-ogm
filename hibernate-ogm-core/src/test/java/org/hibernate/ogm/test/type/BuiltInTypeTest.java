@@ -29,14 +29,13 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.hibernate.ogm.grid.EntityKey;
-import org.infinispan.Cache;
 import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
-import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
+import static org.hibernate.ogm.test.utils.TestHelper.extractEntityTuple;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -119,12 +118,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b = ( Bookmark ) session.get( Bookmark.class, b.getId() );
 
 		//Check directly in the cache the values stored
-		final Cache entityCache = getEntityCache( sessions );
-
 		EntityKey key = new EntityKey( "Bookmark", "42" );
-
-
-		Map<String, String> entity = ( Map<String, String> ) entityCache.get( key );
+		Map<String, String> entity = ( Map<String, String> ) extractEntityTuple( sessions, key );
 
 		assertEquals( entity.get( "visits_count" ), "444" );
 		assertEquals( entity.get( "serialNumber" ), serialNumber.toString() );

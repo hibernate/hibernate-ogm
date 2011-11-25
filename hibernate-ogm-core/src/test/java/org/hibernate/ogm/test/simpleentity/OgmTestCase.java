@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.simpleentity;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
-import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
+import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -43,7 +43,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextSession;
@@ -59,7 +58,7 @@ import org.hibernate.testing.SkipForDialect;
  * This class is a mix of SearchTestCase from HSearch 4 and OgmTestCase from the Core 3.6 days
  * It could get some love to clean this mess
  *
- * @author Emmnauel Bernand
+ * @author Emmanuel Bernard
  * @author Hardy Ferentschik
  */
 public abstract class OgmTestCase extends TestCase {
@@ -334,7 +333,7 @@ public abstract class OgmTestCase extends TestCase {
 			setCfg( new OgmConfiguration() );
 
 			//Grid specific configuration
-			cfg.setProperty( InfinispanDatastoreProvider.INFINISPAN_CONFIGURATION_RESOURCENAME, "infinispan-local.xml" );
+			cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-local.xml" );
 			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 
@@ -408,7 +407,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	public void checkCleanCache() {
-		assertThat(getEntityCache( sessions )).as("Entity cache should be empty").hasSize( 0 );
-		assertThat(getAssociationCache( sessions )).as("Association cache should be empty").hasSize( 0 );
+		assertThat(entityCacheSize( sessions )).as("Entity cache should be empty").isEqualTo( 0 );
+		assertThat(associationCacheSize( sessions )).as("Association cache should be empty").isEqualTo( 0 );
 	}
 }

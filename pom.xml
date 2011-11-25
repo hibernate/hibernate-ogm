@@ -41,6 +41,7 @@
 
     <modules>
         <module>hibernate-ogm-core</module>
+        <module>hibernate-ogm-infinispan</module>
     </modules>
 
     <issueManagement>
@@ -121,13 +122,13 @@
     </mailingLists>
 
     <properties>
-        <infinispanVersion>5.1.0.BETA3</infinispanVersion>
+        <infinispanVersion>5.1.0.BETA5</infinispanVersion>
         <hibernateVersion>4.0.0-SNAPSHOT</hibernateVersion>
         <hibernateSearchVersion>4.0.0.CR1</hibernateSearchVersion>
         <jbossjtaVersion>4.15.3.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Alpha2</jbossNamingVersion>
-        <jbossLoggingVersion>3.1.0.Beta3</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>1.0.0.CR3</jbossLoggingProcessorVersion>
+        <jbossLoggingVersion>3.1.0.CR1</jbossLoggingVersion>
+        <jbossLoggingProcessorVersion>1.0.0.CR5</jbossLoggingProcessorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -202,7 +203,14 @@
                 <version>${hibernateVersion}</version>
                 <scope>test</scope>
             </dependency>
-            
+            <dependency>
+                <groupId>org.hibernate.ogm</groupId>
+                <artifactId>hibernate-ogm-core</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+
             <!-- Logging -->
             <dependency>
                 <groupId>log4j</groupId>
@@ -663,6 +671,32 @@
                     <artifactId>maven-help-plugin</artifactId>
                     <version>2.1.1</version>
                 </plugin>
+                <!-- Unpack test from hibernate-ogm-core to re-run them on each other module database integration -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>2.1</version>
+                    <executions>
+                        <execution>
+                            <id>unpack</id>
+                            <phase>process-test-classes</phase>
+                            <goals>
+                                <goal>unpack</goal>
+                            </goals>
+                            <configuration>
+                                <artifactItems>
+                                    <artifactItem>
+                                        <groupId>org.hibernate.ogm</groupId>
+                                        <artifactId>hibernate-ogm-core</artifactId>
+                                        <version>${project.version}</version>
+                                        <type>test-jar</type>
+                                        <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                                    </artifactItem>
+                                </artifactItems>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
                 <plugin>
                     <!-- This plugin's configuration is used in m2e only. -->
                     <groupId>org.eclipse.m2e</groupId>
@@ -678,6 +712,19 @@
                                         <versionRange>[1.0.2,)</versionRange>
                                         <goals>
                                             <goal>bytecode</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-dependency-plugin</artifactId>
+                                        <versionRange>[2.1,)</versionRange>
+                                        <goals>
+                                            <goal>unpack</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>

@@ -22,40 +22,79 @@ package org.hibernate.ogm.test.utils;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.infinispan.Cache;
+import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Map;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+import javax.persistence.EntityManager;
 
 /**
+ *
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public class TestHelper {
-	public static Cache getEntityCache(Session session) {
-		return getEntityCache( session.getSessionFactory() );
+
+	private static final String[] knownTestDialects = new String[] {
+		//Add more TestGridDialect(s) here as needed
+		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
+		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
+	};
+
+	private static final Log log = LoggerFactory.make();
+	private static final TestableGridDialect helper = createStoreSpecificHelper();
+
+	public static int entityCacheSize(EntityManager em) {
+		return entityCacheSize( em.unwrap( Session.class ) );
 	}
 
-	public static Cache getEntityCache(SessionFactory sessionFactory) {
-		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
-		return castProvider.getCache(ENTITY_STORE);
-	}
-
-	private static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
-		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
-		if ( ! (InfinispanDatastoreProvider.class.isInstance(provider) ) ) {
-			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
+	private static TestableGridDialect createStoreSpecificHelper() {
+		for ( String className : knownTestDialects ) {
+			Class<?> classForName = null;
+			try {
+				classForName = Class.forName( className );
+			}
+			catch (ClassNotFoundException e) {
+				//ignore this: we're searching for the only valid option
+			}
+			if ( classForName != null ) {
+				try {
+					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
+					log.debugf( "Using TestGridDialect %s", classForName );
+					return attempt;
+				}
+				catch ( Exception e ) {
+					//but other errors are not expected:
+					log.errorf( e, "Could not load TestGridDialect by name %s", className );
+				}
+			}
 		}
-		return InfinispanDatastoreProvider.class.cast(provider);
+		log.fatal( "Could not load any TestGridDialect implementation!" );
+		return null;
 	}
 
-	public static Cache getAssociationCache(SessionFactory sessionFactory) {
-		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
-		return castProvider.getCache(ASSOCIATION_STORE);
+	public static int entityCacheSize(Session session) {
+		return entityCacheSize( session.getSessionFactory() );
+	}
+
+	public static int entityCacheSize(SessionFactory sessionFactory) {
+		return helper.entityCacheSize( sessionFactory );
+	}
+
+	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+		return helper.extractEntityTuple( sessionFactory, key );
+	}
+
+	public static int associationCacheSize(SessionFactory sessionFactory) {
+		return helper.associationCacheSize( sessionFactory );
+	}
+
+	public static boolean backendSupportsTransactions() {
+		return helper.backendSupportsTransactions();
 	}
 
 	@SuppressWarnings("unchecked")

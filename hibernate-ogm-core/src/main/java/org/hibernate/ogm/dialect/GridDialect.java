@@ -38,17 +38,20 @@ import org.hibernate.persister.entity.Lockable;
  * @author Emmanuel Bernard
  */
 public interface GridDialect extends Service {
+
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
 
 	/**
 	 * Return the tuple for a given key or null if not present
 	 */
 	Tuple getTuple(EntityKey key);
+
 	/**
 	 * Return a new tuple for a given key
 	 * Only used if the tuple is not present
 	 */
 	Tuple createTuple(EntityKey key);
+
 	/**
 	 * Update the tuple for a given key or null if not present
 	 */
@@ -88,4 +91,5 @@ public interface GridDialect extends Service {
 	 * Especially experimental
 	 */
 	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
+
 }

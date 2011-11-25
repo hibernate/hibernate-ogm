@@ -16,6 +16,7 @@ atlassian-ide-plugin.xml
 # Eclipse specific files/directories
 .classpath
 .project
+.factorypath
 .settings
 .externalToolBuilders
 
@@ -27,3 +28,9 @@ target/
 
 #custom scripts
 *.sh
+
+#test output
+test-output/
+transaction.log
+infinispan.log
+

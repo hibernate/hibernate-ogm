@@ -20,16 +20,14 @@
  */
 package org.hibernate.ogm.test.associations.manytoone;
 
-import org.infinispan.Cache;
-
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.get;
-import static org.hibernate.ogm.test.utils.TestHelper.getAssociationCache;
-import static org.hibernate.ogm.test.utils.TestHelper.getEntityCache;
+import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
 /**
  * @author Emmanuel Bernard
@@ -47,11 +45,11 @@ public class ManyToOneTest extends OgmTestCase {
 		emmanuel.setMemberOf( jug );
 		session.persist( emmanuel );
 		session.flush();
-		assertThat(getEntityCache( sessions )).hasSize( 2 );
-		assertThat(getAssociationCache( sessions )).hasSize( 1 );
+		assertThat(entityCacheSize( sessions )).isEqualTo( 2 );
+		assertThat(associationCacheSize( sessions )).isEqualTo( 1 );
 		transaction.commit();
-		assertThat(getEntityCache( sessions )).hasSize( 2 );
-		assertThat(getAssociationCache( sessions )).hasSize( 1 );
+		assertThat(entityCacheSize( sessions )).isEqualTo( 2 );
+		assertThat(associationCacheSize( sessions )).isEqualTo( 1 );
 
 		session.clear();
 
@@ -61,8 +59,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( emmanuel );
 		session.delete( jug );
 		transaction.commit();
-		assertThat(getEntityCache( sessions )).hasSize( 0 );
-		assertThat(getAssociationCache( sessions )).hasSize( 0 );
+		assertThat(entityCacheSize( sessions )).isEqualTo( 0 );
+		assertThat(associationCacheSize( sessions )).isEqualTo( 0 );
 
 		session.close();
 
@@ -121,7 +119,6 @@ public class ManyToOneTest extends OgmTestCase {
 		hoegaarden.setBrewery( hoeBrewery );
 		session.persist( hoeBrewery );
 		tx.commit();
-		final Cache entityCache = getEntityCache( sessions );
 		session.clear();
 
 		tx = session.beginTransaction();
