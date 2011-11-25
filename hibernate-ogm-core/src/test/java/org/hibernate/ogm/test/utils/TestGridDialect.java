@@ -28,7 +28,7 @@ import org.hibernate.ogm.grid.EntityKey;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public interface DataStoreSpecificTestHelper {
+public interface TestGridDialect {
 
 	/**
 	 * @param sessionFactory

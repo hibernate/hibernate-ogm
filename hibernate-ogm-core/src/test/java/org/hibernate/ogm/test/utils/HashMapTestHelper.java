@@ -34,7 +34,7 @@ import org.hibernate.ogm.grid.EntityKey;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class HashMapTestHelper implements DataStoreSpecificTestHelper {
+public class HashMapTestHelper implements TestGridDialect {
 
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {

@@ -38,16 +38,16 @@ import javax.persistence.EntityManager;
  */
 public class TestHelper {
 
-	private static final DataStoreSpecificTestHelper helper = createStoreSpecificHelper();
+	private static final TestGridDialect helper = createStoreSpecificHelper();
 
 	public static int entityCacheSize(EntityManager em) {
 		return entityCacheSize( em.unwrap( Session.class ) );
 	}
 
-	private static DataStoreSpecificTestHelper createStoreSpecificHelper() {
+	private static TestGridDialect createStoreSpecificHelper() {
 		String helperClassName = System.getProperty( "ogm-testhelper-implementation", "org.hibernate.ogm.test.utils.HashMapTestHelper" );
 		try {
-			return (DataStoreSpecificTestHelper) Class.forName( helperClassName ).newInstance();
+			return (TestGridDialect) Class.forName( helperClassName ).newInstance();
 		}
 		catch ( Exception e ) {
 			e.printStackTrace();
