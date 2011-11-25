@@ -77,7 +77,9 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			if ( injector == null ) {
 				log.gridDialectHasNoProperConstrutor(dialectClass);
 			}
-			return (GridDialect) injector.newInstance( registry.getService(DatastoreProvider.class) );
+			GridDialect gridDialect = (GridDialect) injector.newInstance(registry.getService(DatastoreProvider.class));
+			log.useGridDialect( gridDialect.getClass().getName() );
+			return gridDialect;
 		} catch (Exception e) {
 			throw log.cannotInstantiateGridDialect(dialectClass, e);
 		}

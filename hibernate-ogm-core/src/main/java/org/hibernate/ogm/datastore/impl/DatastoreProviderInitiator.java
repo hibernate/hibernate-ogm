@@ -61,7 +61,7 @@ public class DatastoreProviderInitiator implements BasicServiceInitiator<Datasto
 				throw log.notADatastoreManager( managerClass.getName() );
 			}
 			try {
-				return (DatastoreProvider) managerClass.newInstance();
+				return logAndReturn((DatastoreProvider) managerClass.newInstance());
 			}
 			catch (Exception e) {
 				throw log.unableToInstantiateDatastoreManager(managerClass.getName(), e);
@@ -69,14 +69,19 @@ public class DatastoreProviderInitiator implements BasicServiceInitiator<Datasto
 		}
 
 		if (managerProperty instanceof DatastoreProvider) {
-			return (DatastoreProvider) managerProperty;
+			return logAndReturn((DatastoreProvider) managerProperty);
 		}
 		else if ( managerProperty == null ) {
-			return guessDatastoreProvider( registry.getService(ClassLoaderService.class) );
+			return logAndReturn(guessDatastoreProvider(registry.getService(ClassLoaderService.class)));
 		}
 		else {
 			throw log.unknownDatastoreManagerType( managerProperty.getClass().getName() );
 		}
+	}
+
+	private DatastoreProvider logAndReturn(DatastoreProvider datastoreProvider) {
+		log.useDatastoreProvider( datastoreProvider.getClass().getName() );
+		return datastoreProvider;
 	}
 
 	private DatastoreProvider guessDatastoreProvider(ClassLoaderService service) {
