@@ -47,7 +47,7 @@ public interface TestGridDialect {
 	 * @param key
 	 * @return
 	 */
-	Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key);
+	Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key);
 
 	/**
 	 * Returning false will disable some tests!

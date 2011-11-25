@@ -145,7 +145,7 @@ public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, 
 	 * Meant to execute assertions in tests only
 	 * @return a read-only view of the map containing the entities
 	 */
-	public Map getEntityMap() {
+	public Map<EntityKey,Map<String, Object>> getEntityMap() {
 		return Collections.unmodifiableMap( entitiesKeyValueStorage );
 	}
 
@@ -153,7 +153,7 @@ public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, 
 	 * Meant to execute assertions in tests only
 	 * @return a read-only view of the map containing the relations between entities
 	 */
-	public Map getAssociationsMap() {
+	public Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationsMap() {
 		return Collections.unmodifiableMap( associationsKeyValueStorage );
 	}
 

@@ -20,16 +20,15 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
-
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.mapbased.MapBasedDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
@@ -47,24 +46,24 @@ public class HashMapTestHelper implements TestGridDialect {
 	}
 
 	@Override
-	public Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return (Map) getEntityMap( sessionFactory ).get( key );
+	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+		return getEntityMap( sessionFactory ).get( key );
 	}
 
-	private static Map getEntityMap(SessionFactory sessionFactory) {
+	private static Map<EntityKey,Map<String, Object>> getEntityMap(SessionFactory sessionFactory) {
 		MapBasedDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getEntityMap();
 	}
 
 	private static MapBasedDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( ! (MapBasedDatastoreProvider.class.isInstance(provider) ) ) {
+		if ( !( MapBasedDatastoreProvider.class.isInstance( provider ) ) ) {
 			throw new RuntimeException("Not testing with MapBasedDatastoreProvider, cannot extract underlying map");
 		}
 		return MapBasedDatastoreProvider.class.cast(provider);
 	}
 
-	private static Map getAssociationCache(SessionFactory sessionFactory) {
+	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(SessionFactory sessionFactory) {
 		MapBasedDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getAssociationsMap();
 	}
