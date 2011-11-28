@@ -565,10 +565,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			//update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
-			final EntityKey entityKey = new EntityKeyBuilder()
-					.entityPersister( ( OgmEntityPersister ) getElementPersister() )
-					.id( entityId )
-					.getKey();
+			final EntityKey entityKey = EntityKeyBuilder.fromPersisterId( ( OgmEntityPersister ) getElementPersister(), entityId );
 			final Tuple entityTuple = gridDialect.getTuple( entityKey );
 			//the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if (entityTuple == null) {

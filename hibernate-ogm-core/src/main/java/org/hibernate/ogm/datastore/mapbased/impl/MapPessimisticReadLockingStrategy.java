@@ -42,11 +42,6 @@ public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockin
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapBasedDatastoreProvider dataStore = getProvider( session );
-		dataStore.readLock( new EntityKeyBuilder()
-				.tableName( lockable.getRootTableName() )
-				.id( id )
-				.getKey(),
-				timeout
-		);
+		dataStore.readLock( EntityKeyBuilder.fromTableNameId( lockable.getRootTableName(), id ), timeout );
 	}
 }
