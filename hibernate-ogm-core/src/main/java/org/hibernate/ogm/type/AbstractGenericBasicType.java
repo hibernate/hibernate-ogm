@@ -25,12 +25,9 @@ import java.util.Map;
 
 import org.dom4j.Node;
 
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -42,7 +39,6 @@ import org.hibernate.type.XmlRepresentableType;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.MutabilityPlan;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
 /**
  * Not a public API
@@ -226,26 +222,7 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	private final T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
-		// todo : have SessionImplementor extend WrapperOptions
-		final WrapperOptions options = new WrapperOptions() {
-			public boolean useStreamForLobBinding() {
-				return Environment.useStreamsForBinary();
-			}
-
-			public LobCreator getLobCreator() {
-				return Hibernate.getLobCreator( session );
-			}
-
-			@Override
-			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
-				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
-						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
-						: sqlTypeDescriptor;
-				return remapped == null ? sqlTypeDescriptor : remapped;
-			}
-		};
-
-		return nullSafeGet( rs, name, options );
+		return nullSafeGet( rs, name, (WrapperOptions) null );
 	}
 
 	protected final T nullSafeGet(Tuple rs, String name, WrapperOptions options) {
@@ -263,26 +240,7 @@ public abstract class AbstractGenericBasicType<T>
 			Object value,
 			String[] names,
 			final SessionImplementor session)  {
-		// todo : have SessionImplementor extend WrapperOptions
-		final WrapperOptions options = new WrapperOptions() {
-			public boolean useStreamForLobBinding() {
-				return Environment.useStreamsForBinary();
-			}
-
-			public LobCreator getLobCreator() {
-				return Hibernate.getLobCreator( session );
-			}
-
-			@Override
-			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
-				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
-						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
-						: sqlTypeDescriptor;
-				return remapped == null ? sqlTypeDescriptor : remapped;
-			}
-		};
-
-		nullSafeSet( rs, value, names, options );
+		nullSafeSet( rs, value, names, (WrapperOptions) null );
 	}
 
 	@SuppressWarnings({ "unchecked" })
