@@ -29,13 +29,16 @@ import org.hibernate.annotations.common.AssertionFailure;
  * Represents the key used to link a property value and the id of it's owning entity
  *
  * @author Emmanuel Bernard
+ * @author Sanne Grinovero
  */
 public final class AssociationKey implements Serializable {
+
 	private final String table;
 	private final String[] columnNames;
 	//column value types do have to be serializable so AssociationKey is serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
+	private final int hashCode;
 
 	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length != columnValues.length ) {
@@ -44,6 +47,7 @@ public final class AssociationKey implements Serializable {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.columnValues = columnValues;
+		this.hashCode = table.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
 
 	@Override
@@ -57,14 +61,16 @@ public final class AssociationKey implements Serializable {
 
 		AssociationKey that = ( AssociationKey ) o;
 
+		// order of comparison matters on performance:
+		if ( !table.equals( that.table ) ) {
+			return false;
+		}
+
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
 			return false;
 		}
 		if ( !Arrays.equals( columnNames, that.columnNames ) ) {
-			return false;
-		}
-		if ( !table.equals( that.table ) ) {
 			return false;
 		}
 
@@ -73,10 +79,7 @@ public final class AssociationKey implements Serializable {
 
 	@Override
 	public int hashCode() {
-		int result = table.hashCode();
-		result = 31 * result + Arrays.hashCode( columnNames );
-		result = 31 * result + Arrays.hashCode( columnValues );
-		return result;
+		return hashCode;
 	}
 
 	@Override
