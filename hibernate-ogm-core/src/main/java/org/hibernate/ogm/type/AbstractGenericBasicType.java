@@ -33,6 +33,8 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.GridValueBinder;
+import org.hibernate.ogm.type.descriptor.GridValueExtractor;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.StringRepresentableType;
 import org.hibernate.type.XmlRepresentableType;
@@ -55,10 +57,14 @@ public abstract class AbstractGenericBasicType<T>
 
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<T> javaTypeDescriptor;
+	private final GridValueExtractor<T> typeExtractor;
+	private final GridValueBinder<T> typeBinder;
 
 	public AbstractGenericBasicType(GridTypeDescriptor gridTypeDescriptor, JavaTypeDescriptor<T> javaTypeDescriptor) {
 		this.gridTypeDescriptor = gridTypeDescriptor;
 		this.javaTypeDescriptor = javaTypeDescriptor;
+		this.typeExtractor = gridTypeDescriptor.getExtractor( javaTypeDescriptor );
+		this.typeBinder = gridTypeDescriptor.getBinder( javaTypeDescriptor );
 	}
 
 	public T fromString(String string) {
@@ -226,7 +232,7 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	protected final T nullSafeGet(Tuple rs, String name, WrapperOptions options) {
-		return gridTypeDescriptor.getExtractor( javaTypeDescriptor ).extract( rs, name );
+		return typeExtractor.extract( rs, name );
 	}
 
 //	public Object get(Map<String,Object> rs, String name, SessionImplementor session) throws HibernateException, SQLException {
@@ -245,7 +251,7 @@ public abstract class AbstractGenericBasicType<T>
 
 	@SuppressWarnings({ "unchecked" })
 	protected final void nullSafeSet(Tuple rs, Object value, String[] names, WrapperOptions options) {
-		gridTypeDescriptor.getBinder( javaTypeDescriptor ).bind( rs, (T) value, names );
+		typeBinder.bind( rs, (T) value, names );
 	}
 
 	@Override
