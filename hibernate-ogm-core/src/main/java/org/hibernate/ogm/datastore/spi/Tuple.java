@@ -66,7 +66,9 @@ public class Tuple {
 		if ( value == null ) {
 			currentState.put( column, new TupleOperation( column, null, PUT_NULL ) );
 		}
-		currentState.put( column, new TupleOperation( column, value, PUT ) );
+		else {
+			currentState.put( column, new TupleOperation( column, value, PUT ) );
+		}
 	}
 
 	public void remove(String column) {
