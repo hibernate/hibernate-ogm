@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.datastore.impl.SetFromCollection;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,16 +41,21 @@ import static org.hibernate.ogm.datastore.spi.TupleOperationType.*;
  * reproduce them to the datastore. The list of changes is computed based off the snapshot.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero  <sanne@hibernate.org>
  */
 public class Tuple {
-	private final Map<String, TupleOperation> currentState = new HashMap<String, TupleOperation>();
+
 	private final TupleSnapshot snapshot;
+	private Map<String, TupleOperation> currentState = null; //lazy initialize the Map as it costs quite some memory
 
 	public Tuple(TupleSnapshot snapshot) {
 		this.snapshot = snapshot;
 	}
 
 	public Object get(String column) {
+		if ( currentState == null ) {
+			return snapshot.get( column );
+		}
 		TupleOperation result = currentState.get( column );
 		if ( result == null ) {
 			return snapshot.get( column );
@@ -63,6 +69,9 @@ public class Tuple {
 	}
 
 	public void put(String column, Object value) {
+		if ( currentState == null ) {
+			currentState = new HashMap<String, TupleOperation>();
+		}
 		if ( value == null ) {
 			currentState.put( column, new TupleOperation( column, null, PUT_NULL ) );
 		}
@@ -72,6 +81,9 @@ public class Tuple {
 	}
 
 	public void remove(String column) {
+		if ( currentState == null ) {
+			currentState = new HashMap<String, TupleOperation>();
+		}
 		currentState.put( column, new TupleOperation( column, null, REMOVE ) );
 	}
 
@@ -80,7 +92,12 @@ public class Tuple {
 	 * Inherently deduplicated operations
 	 */
 	public Set<TupleOperation> getOperations() {
-		return new SetFromCollection<TupleOperation>( currentState.values() );
+		if ( currentState == null ) {
+			return Collections.emptySet();
+		}
+		else {
+			return new SetFromCollection<TupleOperation>( currentState.values() );
+		}
 	}
 
 	public TupleSnapshot getSnapshot() {
@@ -88,6 +105,9 @@ public class Tuple {
 	}
 
 	public Set<String> getColumnNames() {
+		if ( currentState == null ) {
+			return snapshot.getColumnNames();
+		}
 		Set<String> columnNames = new HashSet<String>( snapshot.getColumnNames() );
 		for ( TupleOperation op : currentState.values() ) {
 			switch ( op.getType() ) {
