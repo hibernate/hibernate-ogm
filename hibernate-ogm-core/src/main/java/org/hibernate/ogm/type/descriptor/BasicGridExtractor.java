@@ -28,8 +28,10 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 /**
  * @author Emmanuel Bernard
  */
-public class BasicGridExtractor<J> implements GridValueExtractor<J> {
+public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
+
 	private static final Log log = LoggerFactory.make();
+
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<J> javaTypeDescriptor;
 
@@ -39,7 +41,7 @@ public class BasicGridExtractor<J> implements GridValueExtractor<J> {
 	}
 
 	@Override
-	public J extract(Tuple resultset, String name) {
+	public J extract(final Tuple resultset, final String name) {
 		@SuppressWarnings( "unchecked" )
 		final J result = (J) resultset.get( name );
 		if ( result == null ) {

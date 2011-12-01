@@ -29,16 +29,19 @@ import java.util.Arrays;
  * @author Emmanuel Bernard
  */
 public final class RowKey implements Serializable {
+
 	private final String table;
 	private final String[] columns;
 	//column value types do have to be serializable so RowKey can be serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
+	private final int hashCode;
 
 	public RowKey(String table, String[] columns, Object[] columnValues) {
 		this.table = table;
 		this.columns = columns;
 		this.columnValues = columnValues;
+		this.hashCode = generateHashCode();
 	}
 
 	@Override
@@ -51,6 +54,10 @@ public final class RowKey implements Serializable {
 		}
 
 		RowKey that = ( RowKey ) o;
+		
+		if ( !table.equals( that.table ) ) {
+			return false;
+		}
 
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
@@ -59,19 +66,18 @@ public final class RowKey implements Serializable {
 		if ( !Arrays.equals( columns, that.columns ) ) {
 			return false;
 		}
-		if ( !table.equals( that.table ) ) {
-			return false;
-		}
 
 		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		int result = table.hashCode();
-		result = 31 * result + Arrays.hashCode( columns );
-		result = 31 * result + Arrays.hashCode( columnValues );
-		return result;
+		return hashCode;
+	}
+
+	private int generateHashCode() {
+		final int result = table.hashCode();
+		return 31 * result + Arrays.hashCode( columnValues );
 	}
 
 	@Override

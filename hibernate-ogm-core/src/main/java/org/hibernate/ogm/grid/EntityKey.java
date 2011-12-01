@@ -28,6 +28,7 @@ import java.io.Serializable;
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
+
 	private final String table;
 	private final Serializable id;
 	private final int hashCode;
@@ -35,7 +36,7 @@ public final class EntityKey implements Serializable {
 	public EntityKey(String table, Serializable id) {
 		this.table = table;
 		this.id = id;
-		hashCode = generateHashCode();
+		this.hashCode = generateHashCode();
 	}
 
 	@Override
@@ -75,8 +76,12 @@ public final class EntityKey implements Serializable {
 	}
 
 	private int generateHashCode() {
-		int result = table.hashCode();
-		result = 31 * result + ( id != null ? id.hashCode() : 0 );
-		return result;
+		final int result = table.hashCode();
+		if ( id == null ) {
+			return result;
+		}
+		else {
+			return result * 31 + id.hashCode();
+		}
 	}
 }
