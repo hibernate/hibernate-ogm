@@ -259,7 +259,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	}
 
 	private Tuple getResultsetById(Serializable id) {
-		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id( id ).getKey();
+		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
 		final Tuple resultset = gridDialect.getTuple(key);
 		return resultset;
 	}
@@ -365,7 +365,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 * Contrary to the database version, there is 
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
-		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
+		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
 		final Tuple resultset = gridDialect.getTuple( key );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
@@ -709,7 +709,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
-				final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
+				final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
 				Tuple resultset = gridDialect.getTuple( key );
 				final boolean useVersion = j == 0 && isVersioned();
 
@@ -856,7 +856,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
+			final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
 			Tuple resultset = gridDialect.getTuple( key );
 			// add the discriminator
 			if ( j == 0 ) {
@@ -918,7 +918,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final EntityKey key = new EntityKeyBuilder().entityPersister( this ).id(id).getKey();
+		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
 		final Tuple resultset = gridDialect.getTuple( key );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {

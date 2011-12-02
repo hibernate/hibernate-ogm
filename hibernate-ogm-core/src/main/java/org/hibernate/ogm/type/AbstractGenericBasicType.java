@@ -25,24 +25,22 @@ import java.util.Map;
 
 import org.dom4j.Node;
 
-import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
-import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.NotYetImplementedException;
-import org.hibernate.engine.jdbc.LobCreator;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.GridValueBinder;
+import org.hibernate.ogm.type.descriptor.GridValueExtractor;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.StringRepresentableType;
 import org.hibernate.type.XmlRepresentableType;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.MutabilityPlan;
-import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 
 /**
  * Not a public API
@@ -59,10 +57,14 @@ public abstract class AbstractGenericBasicType<T>
 
 	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<T> javaTypeDescriptor;
+	private final GridValueExtractor<T> typeExtractor;
+	private final GridValueBinder<T> typeBinder;
 
 	public AbstractGenericBasicType(GridTypeDescriptor gridTypeDescriptor, JavaTypeDescriptor<T> javaTypeDescriptor) {
 		this.gridTypeDescriptor = gridTypeDescriptor;
 		this.javaTypeDescriptor = javaTypeDescriptor;
+		this.typeExtractor = gridTypeDescriptor.getExtractor( javaTypeDescriptor );
+		this.typeBinder = gridTypeDescriptor.getBinder( javaTypeDescriptor );
 	}
 
 	public T fromString(String string) {
@@ -226,30 +228,11 @@ public abstract class AbstractGenericBasicType<T>
 	}
 
 	private final T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
-		// todo : have SessionImplementor extend WrapperOptions
-		final WrapperOptions options = new WrapperOptions() {
-			public boolean useStreamForLobBinding() {
-				return Environment.useStreamsForBinary();
-			}
-
-			public LobCreator getLobCreator() {
-				return Hibernate.getLobCreator( session );
-			}
-
-			@Override
-			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
-				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
-						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
-						: sqlTypeDescriptor;
-				return remapped == null ? sqlTypeDescriptor : remapped;
-			}
-		};
-
-		return nullSafeGet( rs, name, options );
+		return nullSafeGet( rs, name, (WrapperOptions) null );
 	}
 
 	protected final T nullSafeGet(Tuple rs, String name, WrapperOptions options) {
-		return gridTypeDescriptor.getExtractor( javaTypeDescriptor ).extract( rs, name );
+		return typeExtractor.extract( rs, name );
 	}
 
 //	public Object get(Map<String,Object> rs, String name, SessionImplementor session) throws HibernateException, SQLException {
@@ -263,31 +246,12 @@ public abstract class AbstractGenericBasicType<T>
 			Object value,
 			String[] names,
 			final SessionImplementor session)  {
-		// todo : have SessionImplementor extend WrapperOptions
-		final WrapperOptions options = new WrapperOptions() {
-			public boolean useStreamForLobBinding() {
-				return Environment.useStreamsForBinary();
-			}
-
-			public LobCreator getLobCreator() {
-				return Hibernate.getLobCreator( session );
-			}
-
-			@Override
-			public SqlTypeDescriptor remapSqlTypeDescriptor(SqlTypeDescriptor sqlTypeDescriptor) {
-				final SqlTypeDescriptor remapped = sqlTypeDescriptor.canBeRemapped()
-						? session.getFactory().getDialect().remapSqlTypeDescriptor( sqlTypeDescriptor )
-						: sqlTypeDescriptor;
-				return remapped == null ? sqlTypeDescriptor : remapped;
-			}
-		};
-
-		nullSafeSet( rs, value, names, options );
+		nullSafeSet( rs, value, names, (WrapperOptions) null );
 	}
 
 	@SuppressWarnings({ "unchecked" })
 	protected final void nullSafeSet(Tuple rs, Object value, String[] names, WrapperOptions options) {
-		gridTypeDescriptor.getBinder( javaTypeDescriptor ).bind( rs, (T) value, names );
+		typeBinder.bind( rs, (T) value, names );
 	}
 
 	@Override

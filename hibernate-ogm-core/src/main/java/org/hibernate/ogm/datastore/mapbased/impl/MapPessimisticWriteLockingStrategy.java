@@ -52,12 +52,7 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapBasedDatastoreProvider dataStore = getProvider( session );
-		dataStore.writeLock( new EntityKeyBuilder()
-				.tableName( lockable.getRootTableName() )
-				.id( id )
-				.getKey(),
-				timeout
-		);
+		dataStore.writeLock( EntityKeyBuilder.fromTableNameId( lockable.getRootTableName(), id ), timeout );
 		// FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 		// (Comment by Emmanuel)
 	}

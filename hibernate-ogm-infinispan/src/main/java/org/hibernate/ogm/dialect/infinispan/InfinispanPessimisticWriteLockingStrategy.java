@@ -56,11 +56,7 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
 		AdvancedCache advCache = getProvider(session).getCache(ENTITY_STORE).getAdvancedCache();
-		advCache.lock( new EntityKeyBuilder()
-				.tableName( lockable.getRootTableName() )
-				.id( id )
-				.getKey()
-		);
+		advCache.lock( EntityKeyBuilder.fromTableNameId( lockable.getRootTableName(), id ) );
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 

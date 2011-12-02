@@ -27,31 +27,17 @@ import org.hibernate.ogm.grid.EntityKey;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class EntityKeyBuilder {
-	private OgmEntityPersister persister;
-	private Serializable id;
-	private String tableName;
+final public class EntityKeyBuilder {
 
-	public EntityKeyBuilder entityPersister(OgmEntityPersister persister) {
-		this.persister = persister;
-		return this;
+	private EntityKeyBuilder() {
 	}
 
-	//alternative to entityPersister
-	public EntityKeyBuilder tableName(String tableName) {
-		this.tableName = tableName;
-		return this;
+	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
+		return new EntityKey( persister.getTableName(), id );
 	}
 
-	public EntityKeyBuilder id(Serializable id) {
-		this.id = id;
-		return this;
+	public static EntityKey fromTableNameId(final String tableName, final Serializable id) {
+		return new EntityKey( tableName, id );
 	}
 
-	public EntityKey getKey() {
-		return new EntityKey(
-				tableName != null ? tableName : persister.getTableName(),
-				id
-		);
-	}
 }
