@@ -1,0 +1,11 @@
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="http://www.ehcache.org/ehcache.xsd" maxBytesLocalHeap="75%">
+
+    <diskStore path="java.io.tmpdir"/>
+
+    <defaultCache
+            eternal="true"
+            overflowToDisk="true"
+            maxEntriesLocalDisk="10000000"
+            />
+</ehcache>
