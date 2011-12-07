@@ -55,7 +55,7 @@ public class EhcacheDialect implements GridDialect {
 		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Infinispan GridDialect" );
+		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Ehcache GridDialect" );
 	}
 
 	@Override

@@ -40,7 +40,7 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	private static EhcacheDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
 		if ( ! (EhcacheDatastoreProvider.class.isInstance(provider) ) ) {
-			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
+			throw new RuntimeException("Not testing with Ehcache, cannot extract underlying cache");
 		}
 		return EhcacheDatastoreProvider.class.cast(provider);
 	}
