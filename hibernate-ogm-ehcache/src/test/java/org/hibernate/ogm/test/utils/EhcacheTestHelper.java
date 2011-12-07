@@ -50,7 +50,10 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		return castProvider.getCacheManager().getCache(ASSOCIATION_STORE);
 	}
 
-
+    /**
+     * todo - we _are_ transactional. Turn this on. We could turn on XA or Local. Local will be faster. We will pick this up from the cache config.
+     * @return
+     */
 	@Override
 	public boolean backendSupportsTransactions() {
 		return false;
