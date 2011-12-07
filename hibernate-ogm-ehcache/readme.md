@@ -6,6 +6,10 @@ About
 
     This is the Ehcache provider.
 
+Status
+------
+
+1. Tests passing
 
 
 Anticipated Features
