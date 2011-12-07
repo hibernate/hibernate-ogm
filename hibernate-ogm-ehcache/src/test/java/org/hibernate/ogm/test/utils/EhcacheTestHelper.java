@@ -2,8 +2,16 @@ package org.hibernate.ogm.test.utils;
 
 import java.util.Map;
 
+import net.sf.ehcache.Cache;
+
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
+
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 
 /**
  * @author Alex Snaps
@@ -11,21 +19,40 @@ import org.hibernate.ogm.grid.EntityKey;
 public class EhcacheTestHelper implements TestableGridDialect {
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {
-		return 0;  //To change body of implemented methods use File | Settings | File Templates.
+		return getEntityCache( sessionFactory ).getSize();
 	}
 
 	@Override
 	public int associationCacheSize(SessionFactory sessionFactory) {
-		return 0;  //To change body of implemented methods use File | Settings | File Templates.
+		return getAssociationCache( sessionFactory ).getSize();
 	}
 
 	@Override
-	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+	public Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+		return (Map) getEntityCache( sessionFactory ).get( key ).getValue();
 	}
+
+	private static Cache getEntityCache(SessionFactory sessionFactory) {
+		EhcacheDatastoreProvider castProvider = getProvider(sessionFactory);
+		return castProvider.getCacheManager().getCache(ENTITY_STORE);
+	}
+
+	private static EhcacheDatastoreProvider getProvider(SessionFactory sessionFactory) {
+		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
+		if ( ! (EhcacheDatastoreProvider.class.isInstance(provider) ) ) {
+			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
+		}
+		return EhcacheDatastoreProvider.class.cast(provider);
+	}
+
+	private static Cache getAssociationCache(SessionFactory sessionFactory) {
+		EhcacheDatastoreProvider castProvider = getProvider(sessionFactory);
+		return castProvider.getCacheManager().getCache(ASSOCIATION_STORE);
+	}
+
 
 	@Override
 	public boolean backendSupportsTransactions() {
-		return false;  //To change body of implemented methods use File | Settings | File Templates.
+		return false;
 	}
 }
