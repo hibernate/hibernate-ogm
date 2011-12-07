@@ -41,6 +41,7 @@ public class TestHelper {
 
 	private static final String[] knownTestDialects = new String[] {
 		//Add more TestGridDialect(s) here as needed
+		"org.hibernate.ogm.test.utils.EhcacheTestHelper",
 		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
 		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
 	};
