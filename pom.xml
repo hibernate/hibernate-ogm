@@ -124,13 +124,13 @@
 
     <properties>
         <ehcacheVersion>2.5.0</ehcacheVersion>
-        <infinispanVersion>5.1.0.CR4</infinispanVersion>
+        <infinispanVersion>5.1.1.FINAL</infinispanVersion>
         <hibernateVersion>4.0.1.Final</hibernateVersion>
-        <hibernateSearchVersion>4.1.0.Alpha1</hibernateSearchVersion>
+        <hibernateSearchVersion>4.1.0.Beta2</hibernateSearchVersion>
         <jbossjtaVersion>4.16.0.Final</jbossjtaVersion>
-        <jbossNamingVersion>7.1.0.Alpha2</jbossNamingVersion>
-        <jbossLoggingVersion>3.1.0.CR1</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>1.0.0.CR5</jbossLoggingProcessorVersion>
+        <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
+        <jbossLoggingVersion>3.1.0.GA</jbossLoggingVersion>
+        <jbossLoggingProcessorVersion>1.0.0.Final</jbossLoggingProcessorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -146,9 +146,9 @@
         <dependencies>
             <!-- standards APIs -->
             <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>jta</artifactId>
-                <version>1.1</version>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                <version>1.0.0.Final</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
