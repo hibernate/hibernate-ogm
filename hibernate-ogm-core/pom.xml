@@ -1,34 +1,23 @@
 <?xml version="1.0"?>
-<!--
-  ~ Hibernate, Relational Persistence for Idiomatic Java
-  ~
-  ~ Copyright (c) 2010-2011, Red Hat, Inc. and/or its affiliates or third-party contributors as
-  ~ indicated by the @author tags or express copyright attribution
-  ~ statements applied by the authors.  All third-party contributions are
-  ~ distributed under license by Red Hat, Inc.
-  ~
-  ~ This copyrighted material is made available to anyone wishing to use, modify,
-  ~ copy, or redistribute it subject to the terms and conditions of the GNU
-  ~ Lesser General Public License, as published by the Free Software Foundation.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
-  ~ for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public License
-  ~ along with this distribution; if not, write to:
-  ~ Free Software Foundation, Inc.
-  ~ 51 Franklin Street, Fifth Floor
-  ~ Boston, MA  02110-1301  USA
-  -->
+<!-- ~ Hibernate, Relational Persistence for Idiomatic Java ~ ~ Copyright 
+    (c) 2010-2011, Red Hat, Inc. and/or its affiliates or third-party contributors 
+    as ~ indicated by the @author tags or express copyright attribution ~ statements 
+    applied by the authors. All third-party contributions are ~ distributed under 
+    license by Red Hat, Inc. ~ ~ This copyrighted material is made available 
+    to anyone wishing to use, modify, ~ copy, or redistribute it subject to the 
+    terms and conditions of the GNU ~ Lesser General Public License, as published 
+    by the Free Software Foundation. ~ ~ This program is distributed in the hope 
+    that it will be useful, ~ but WITHOUT ANY WARRANTY; without even the implied 
+    warranty of MERCHANTABILITY ~ or FITNESS FOR A PARTICULAR PURPOSE. See the 
+    GNU Lesser General Public License ~ for more details. ~ ~ You should have 
+    received a copy of the GNU Lesser General Public License ~ along with this 
+    distribution; if not, write to: ~ Free Software Foundation, Inc. ~ 51 Franklin 
+    Street, Fifth Floor ~ Boston, MA 02110-1301 USA -->
 
-<!--
-    @author Steve Ebersole
-    @author Hardy Ferentschik
-    @author Emmanuel Bernard <emmanuel@hibernate.org>
--->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!-- @author Steve Ebersole @author Hardy Ferentschik @author Emmanuel Bernard 
+    <emmanuel@hibernate.org> -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -38,7 +27,7 @@
         <version>4.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>hibernate-ogm-core</artifactId>
     <packaging>jar</packaging>
 
@@ -46,6 +35,80 @@
     <description>Persist data in a grid rather than a relational database</description>
 
     <dependencies>
+        <!-- voldemort -->
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>
+            voldemort
+        </groupId>
+            <artifactId>voldemort-core</artifactId>
+            <version>0.90.1</version>
+        </dependency>
+        <dependency>
+            <groupId>
+            voldemort
+        </groupId>
+            <artifactId>voldemort-contrib</artifactId>
+            <version>0.90.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.collections</groupId>
+            <artifactId>google-collections</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mortbay.jetty</groupId>
+            <artifactId>jetty</artifactId>
+            <version>6.1H.22</version>
+        </dependency>
+        <dependency>
+            <groupId>velocity</groupId>
+            <artifactId>velocity</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sleepycat</groupId>
+            <artifactId>je</artifactId>
+            <version>4.0.92</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-lgpl</artifactId>
+            <version>1.9.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jdom</groupId>
+            <artifactId>jdom</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>2.4.1</version>
+        </dependency>
+        <!-- end -->
+        <!-- common dependencies -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.1</version>
+        </dependency>
+        <!-- end -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
@@ -100,7 +163,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                   <forkMode>once</forkMode>
+                    <forkMode>once</forkMode>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>
@@ -181,5 +244,5 @@
                 <skipUnitTests>false</skipUnitTests>
             </properties>
         </profile>
-     </profiles>
+    </profiles>
 </project>

@@ -21,67 +21,115 @@
 package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
 
-	private final String table;
-	private final Serializable id;
-	private final int hashCode;
+    private final String table;
+    private final Serializable id;
+    private final int hashCode;
+    private final String entityName;
+    private final Map<String, String> columnMap;
 
-	public EntityKey(String table, Serializable id) {
-		this.table = table;
-		this.id = id;
-		this.hashCode = generateHashCode();
-	}
+    public EntityKey(String table, Serializable id) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = "";
+        this.columnMap = Collections.EMPTY_MAP;
+    }
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append( "Key" );
-		sb.append( "{table=" ).append( table );
-		sb.append( ", id=" ).append( id );
-		sb.append( '}' );
-		return sb.toString();
-	}
+    public EntityKey(String table, Serializable id, String entityName, Map<String, String> columnMap) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = entityName;
+        this.columnMap = columnMap;
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
-			return true;
-		}
-		if ( o == null || EntityKey.class != o.getClass() ) {
-			return false;
-		}
+    public final Serializable getId() {
+        return this.id;
+    }
 
-		EntityKey key = ( EntityKey ) o;
+    public final String getEntityName() {
+        return this.entityName;
+    }
 
-		if ( id != null ? !id.equals( key.id ) : key.id != null ) {
-			return false;
-		}
-		if ( !table.equals( key.table ) ) {
-			return false;
-		}
+    /**
+     * Gets entity key as Map containing id and table name.
+     * 
+     * @return Map containing id and table name.
+     */
+    public Map<String, String> getEntityKeyAsMap() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put( "id", this.id.toString() );
+        map.put( "table", this.table );
+        return Collections.unmodifiableMap( map );
+    }
 
-		return true;
-	}
+    /**
+     * Gets table name.
+     * 
+     * @return Table name.
+     */
+    public String getTableName() {
+        return this.table;
+    }
 
-	@Override
-	public int hashCode() {
-		return hashCode;
-	}
+    public String getColumnName(String fieldName) {
+        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
+    }
 
-	private int generateHashCode() {
-		final int result = table.hashCode();
-		if ( id == null ) {
-			return result;
-		}
-		else {
-			return result * 31 + id.hashCode();
-		}
-	}
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "Key" );
+        sb.append( "{table=" ).append( table );
+        sb.append( ", id=" ).append( id );
+        sb.append( '}' );
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) {
+            return true;
+        }
+        if ( o == null || EntityKey.class != o.getClass() ) {
+            return false;
+        }
+
+        EntityKey key = (EntityKey) o;
+
+        if ( id != null ? !id.equals( key.id ) : key.id != null ) {
+            return false;
+        }
+        if ( !table.equals( key.table ) ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
+
+    private int generateHashCode() {
+        final int result = table.hashCode();
+        if ( id == null ) {
+            return result;
+        }
+        else {
+            return result * 31 + id.hashCode();
+        }
+    }
 }

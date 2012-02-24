@@ -22,73 +22,103 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents the key used to represent a row
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class RowKey implements Serializable {
 
-	private final String table;
-	private final String[] columns;
-	//column value types do have to be serializable so RowKey can be serializable
-	//should it be a Serializable[] type? It seems to be more pain than anything else
-	private final Object[] columnValues;
-	private final int hashCode;
+    private final String table;
+    private final String[] columns;
+    // column value types do have to be serializable so RowKey can be serializable
+    // should it be a Serializable[] type? It seems to be more pain than anything else
+    private final Object[] columnValues;
+    private final int hashCode;
 
-	public RowKey(String table, String[] columns, Object[] columnValues) {
-		this.table = table;
-		this.columns = columns;
-		this.columnValues = columnValues;
-		this.hashCode = generateHashCode();
-	}
+    public RowKey(String table, String[] columns, Object[] columnValues) {
+        this.table = table;
+        this.columns = columns;
+        this.columnValues = columnValues;
+        this.hashCode = generateHashCode();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
-			return true;
-		}
-		if ( o == null || RowKey.class != o.getClass() ) {
-			return false;
-		}
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) {
+            return true;
+        }
+        if ( o == null || RowKey.class != o.getClass() ) {
+            return false;
+        }
 
-		RowKey that = ( RowKey ) o;
-		
-		if ( !table.equals( that.table ) ) {
-			return false;
-		}
+        RowKey that = (RowKey) o;
 
-		// Probably incorrect - comparing Object[] arrays with Arrays.equals
-		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
-			return false;
-		}
-		if ( !Arrays.equals( columns, that.columns ) ) {
-			return false;
-		}
+        if ( !table.equals( that.table ) ) {
+            return false;
+        }
 
-		return true;
-	}
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        if ( !Arrays.equals( columnValues, that.columnValues ) ) {
+            return false;
+        }
+        if ( !Arrays.equals( columns, that.columns ) ) {
+            return false;
+        }
 
-	@Override
-	public int hashCode() {
-		return hashCode;
-	}
+        return true;
+    }
 
-	private int generateHashCode() {
-		final int result = table.hashCode();
-		return 31 * result + Arrays.hashCode( columnValues );
-	}
+    /**
+     * Gets table name that this owns.
+     * 
+     * @return Table name.
+     */
+    public String getTable() {
+        return this.table;
+    }
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append( "RowKey" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
-		sb.append( ", columnValues=" )
-				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
-		sb.append( '}' );
-		return sb.toString();
-	}
+    /**
+     * Gets row key as Map object containing owning columns.
+     * 
+     * @return Row key as Map representation.
+     */
+    public Map<String, Object> getRowKeyAsMap() {
+
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        if ( this.columns != null && this.columnValues != null ) {
+            for ( int i = 0; i < this.columns.length; i++ ) {
+                map.put( this.columns[i], this.columnValues[i] );
+            }
+        }
+        map.put( "table", this.table );
+        return Collections.unmodifiableMap( map );
+    }
+
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
+
+    private int generateHashCode() {
+        final int result = table.hashCode();
+        return 31 * result + Arrays.hashCode( columnValues );
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append( "RowKey" );
+        sb.append( "{table='" ).append( table ).append( '\'' );
+        sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
+        sb.append( ", columnValues=" )
+                .append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
+        sb.append( '}' );
+        return sb.toString();
+    }
 }
