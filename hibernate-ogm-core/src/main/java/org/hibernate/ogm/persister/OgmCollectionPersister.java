@@ -167,6 +167,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister
         final Tuple keyTuple = resultset.getTuple();
         Object obj = indexGridType
                 .nullSafeGet(keyTuple, aliases, session, null);
+        
         /**
          * for some reason, indexGridType.nullSafeGet returns Double even though
          * indexGridType is type of IntegerType. As a result it throws
