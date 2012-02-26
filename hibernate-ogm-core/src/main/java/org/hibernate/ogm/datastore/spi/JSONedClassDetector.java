@@ -69,7 +69,7 @@ public class JSONedClassDetector {
 		}
 
 		public Class getEachClass() {
-			return this.cls;
+			return cls;
 		}
 	}
 

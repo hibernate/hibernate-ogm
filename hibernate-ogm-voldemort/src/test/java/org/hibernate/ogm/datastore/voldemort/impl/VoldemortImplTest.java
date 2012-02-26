@@ -31,7 +31,7 @@ public class VoldemortImplTest extends OgmTestBase {
 
 	@Before
 	public void setUp() {
-		this.setUpServer();
+		setUpServer();
 		provider = new VoldemortDatastoreProvider();
 		provider.start();
 		provider.setFlushToDb( true );
@@ -86,6 +86,6 @@ public class VoldemortImplTest extends OgmTestBase {
 
 	@After
 	public void tearDown() {
-		this.stopServer();
+		stopServer();
 	}
 }

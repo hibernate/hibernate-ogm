@@ -53,11 +53,11 @@ public abstract class AbstractDatastoreProvider implements DatastoreProvider, St
 		}
 
 		public String getName() {
-			return this.name;
+			return name;
 		}
 
 		public String getPropPath() {
-			return this.propPath;
+			return propPath;
 		}
 	}
 
@@ -74,7 +74,7 @@ public abstract class AbstractDatastoreProvider implements DatastoreProvider, St
 		map.put( RequiredProp.DIALECT.getName(), RequiredProp.DIALECT.getPropPath() );
 		map.put( RequiredProp.PROVIDER_URL.getName(),
 				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
-		map.putAll( this.getSpecificSettings() );
+		map.putAll( getSpecificSettings() );
 		return Collections.unmodifiableMap( map );
 	}
 
@@ -92,18 +92,18 @@ public abstract class AbstractDatastoreProvider implements DatastoreProvider, St
 	 * @return True if all the required properties are set, false otherwise.
 	 */
 	protected boolean checkRequiredSettings() {
-		this.requiredProperties = this.getRequiredPropertyValues();
+		requiredProperties = getRequiredPropertyValues();
 
-		if ( this.requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
-				&& this.requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
-				&& this.requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
+		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
+				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
+				&& requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
 			return true;
 		}
 		return false;
 	}
 
 	protected Map<String, String> getRequiredProperties() {
-		return this.requiredProperties;
+		return requiredProperties;
 	}
 
 	/**
@@ -124,22 +124,22 @@ public abstract class AbstractDatastoreProvider implements DatastoreProvider, St
 			return ctor.newInstance( paramString );
 		}
 		catch ( SecurityException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 		catch ( NoSuchMethodException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 		catch ( IllegalArgumentException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 		catch ( InstantiationException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 		catch ( IllegalAccessException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 		catch ( InvocationTargetException e ) {
-			this.throwHibernateExceptionFrom( e );
+			throwHibernateExceptionFrom( e );
 		}
 
 		return null;

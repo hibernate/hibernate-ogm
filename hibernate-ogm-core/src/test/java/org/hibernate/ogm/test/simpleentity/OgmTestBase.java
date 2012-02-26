@@ -16,16 +16,16 @@ public abstract class OgmTestBase extends TestCase {
 	private ServerAware server = null;
 
 	private void startServer() {
-		if (this.server == null) {
+		if (server == null) {
 			throw new RuntimeException(
 					"OGMTestBase.server is not set correctly. Please set it before running test cases");
 		}
-		this.server.start();
+		server.start();
 	}
 
 	protected void stopServer() {
-		this.server.stop();
-		this.server = null;
+		server.stop();
+		server = null;
 	}
 
 	protected void setUpServer() {
@@ -35,15 +35,15 @@ public abstract class OgmTestBase extends TestCase {
 		log.info("provider: " + provider);
 		if (provider
 				.equals("org.hibernate.ogm.datastore.voldemort.impl.VoldemortDatastoreProvider")) {
-			this.server = new EmbeddedVoldemort();
+			server = new EmbeddedVoldemort();
 		} else {
-			this.server = new NoopServer();
+			server = new NoopServer();
 		}
 
 		this.startServer();
 	}
 
 	protected ServerAware getServer() {
-		return this.server;
+		return server;
 	}
 }

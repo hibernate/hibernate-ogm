@@ -21,7 +21,7 @@ public class VoldemortDialectTest extends OgmTestBase {
 
 	@Before
 	public void setUp() {
-		this.setUpServer();
+		setUpServer();
 		final VoldemortDatastoreProvider p = new VoldemortDatastoreProvider();
 		p.start();
 		dialect = new VoldemortDialect( p );
@@ -54,6 +54,6 @@ public class VoldemortDialectTest extends OgmTestBase {
 
 	@After
 	public void tearDown() {
-		this.stopServer();
+		stopServer();
 	}
 }

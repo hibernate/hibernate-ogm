@@ -97,9 +97,9 @@ public final class AssociationKey implements Serializable {
 
         Map<String, Object> map = new HashMap<String, Object>();
         for ( int i = 0; i < columnNames.length; i++ ) {
-            map.put( this.columnNames[i], this.columnValues[i] );
+            map.put( columnNames[i], columnValues[i] );
         }
-        map.put( "table", this.table );
+        map.put( "table", table );
         return Collections.unmodifiableMap( map );
     }
 
@@ -109,7 +109,7 @@ public final class AssociationKey implements Serializable {
      * @return int Number of clumns.
      */
     public int getColumnSize() {
-        return this.columnNames.length;
+        return columnNames.length;
     }
 
     @Override

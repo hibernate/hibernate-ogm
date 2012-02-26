@@ -109,8 +109,8 @@ public class WrapperClassDetector {
 	public <S extends Object, D extends Class, R extends Object> R castWrapperClassFrom(
 			S sourceObject, D destClass) {
 
-		if (this.isWrapperClass(sourceObject.getClass())
-				&& this.isWrapperClass(destClass)) {
+		if (isWrapperClass(sourceObject.getClass())
+				&& isWrapperClass(destClass)) {
 
 			try {
 				R destCls = (R) destClass.getDeclaredConstructor(String.class)

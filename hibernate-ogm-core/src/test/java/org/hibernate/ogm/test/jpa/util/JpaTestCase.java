@@ -64,7 +64,7 @@ public abstract class JpaTestCase extends OgmTestBase {
 
     @Before
     public void setUp() throws MalformedURLException {
-        this.setUpServer();
+        setUpServer();
         GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
         info.setClassLoader( Thread.currentThread().getContextClassLoader() );
         // we explicitly list them to avoid scanning
@@ -92,7 +92,7 @@ public abstract class JpaTestCase extends OgmTestBase {
     }
 
     public void createFactory() throws MalformedURLException {
-        this.setUpServer();
+        setUpServer();
         GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
         info.setClassLoader( Thread.currentThread().getContextClassLoader() );
         // we explicitly list them to avoid scanning
@@ -137,13 +137,13 @@ public abstract class JpaTestCase extends OgmTestBase {
     public void tearDown() {
         factory.close();
         factory = null;
-        this.stopServer();
+        stopServer();
     }
 
     public void closeFactory() {
         factory.close();
         factory = null;
-        this.stopServer();
+        stopServer();
     }
 
 }

@@ -79,7 +79,7 @@ public final class RowKey implements Serializable {
      * @return Table name.
      */
     public String getTable() {
-        return this.table;
+        return table;
     }
 
     /**
@@ -91,12 +91,12 @@ public final class RowKey implements Serializable {
 
         Map<String, Object> map = new HashMap<String, Object>();
 
-        if ( this.columns != null && this.columnValues != null ) {
-            for ( int i = 0; i < this.columns.length; i++ ) {
-                map.put( this.columns[i], this.columnValues[i] );
+        if ( columns != null && columnValues != null ) {
+            for ( int i = 0; i < columns.length; i++ ) {
+                map.put( columns[i], columnValues[i] );
             }
         }
-        map.put( "table", this.table );
+        map.put( "table", table );
         return Collections.unmodifiableMap( map );
     }
 

@@ -67,10 +67,9 @@ public abstract class OgmTestCase extends OgmTestBase {
 
 	protected static Configuration cfg;
 	private static Class<?> lastTestClass;
-
 	@Before
 	public void setUp() throws Exception {
-		this.setUpServer();
+		setUpServer();
 		if ( cfg == null || lastTestClass != getClass() ) {
 			buildConfiguration();
 			lastTestClass = getClass();
@@ -95,7 +94,7 @@ public abstract class OgmTestCase extends OgmTestBase {
 	@After
 	public void tearDown() throws Exception {
 		// runSchemaDrop();
-		this.stopServer();
+		stopServer();
 		handleUnclosedResources();
 		closeResources();
 

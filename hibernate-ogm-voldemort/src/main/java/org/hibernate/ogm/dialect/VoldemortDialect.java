@@ -83,7 +83,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		Map<String, Object> entityMap = this.provider.getEntityTuple(key);
+		Map<String, Object> entityMap = provider.getEntityTuple(key);
 		if (entityMap == null) {
 			return null;
 		}
@@ -116,7 +116,7 @@ public class VoldemortDialect implements GridDialect {
 		Map<String, Object> entityRecord = ((MapBasedTupleSnapshot) tuple
 				.getSnapshot()).getMap();
 		MapHelpers.applyTupleOpsOnMap(tuple, entityRecord);
-		this.provider.putEntity(key, tuple.getSnapShotAsMap());
+		provider.putEntity(key, tuple.getSnapShotAsMap());
 	}
 
 	/*
@@ -128,7 +128,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeTuple(EntityKey key) {
-		this.provider.removeEntityTuple(key);
+		provider.removeEntityTuple(key);
 
 	}
 
@@ -141,7 +141,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		Map<RowKey, Map<String, Object>> associationMap = this.provider
+		Map<RowKey, Map<String, Object>> associationMap = provider
 				.getAssociation(key);
 		return associationMap == null ? null : new Association(
 				new MapAssociationSnapshot(associationMap));
@@ -170,7 +170,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
 		MapHelpers.updateAssociation(association, key);
-		this.provider.putAssociation(key, association.getAssociationAsMap());
+		provider.putAssociation(key, association.getAssociationAsMap());
 	}
 
 	/*
@@ -182,7 +182,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		this.provider.removeAssociation(key);
+		provider.removeAssociation(key);
 
 	}
 
@@ -209,7 +209,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value,
 			int increment, int initialValue) {
-		this.provider.setNextValue(key, value, increment, initialValue);
+		provider.setNextValue(key, value, increment, initialValue);
 	}
 
 }

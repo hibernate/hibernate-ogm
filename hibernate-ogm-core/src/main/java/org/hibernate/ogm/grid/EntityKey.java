@@ -55,11 +55,11 @@ public final class EntityKey implements Serializable {
     }
 
     public final Serializable getId() {
-        return this.id;
+        return id;
     }
 
     public final String getEntityName() {
-        return this.entityName;
+        return entityName;
     }
 
     /**
@@ -69,8 +69,8 @@ public final class EntityKey implements Serializable {
      */
     public Map<String, String> getEntityKeyAsMap() {
         Map<String, String> map = new HashMap<String, String>();
-        map.put( "id", this.id.toString() );
-        map.put( "table", this.table );
+        map.put( "id", id.toString() );
+        map.put( "table", table );
         return Collections.unmodifiableMap( map );
     }
 
@@ -80,11 +80,11 @@ public final class EntityKey implements Serializable {
      * @return Table name.
      */
     public String getTableName() {
-        return this.table;
+        return table;
     }
 
     public String getColumnName(String fieldName) {
-        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
+        return columnMap.get( fieldName ) == null ? fieldName : columnMap.get( fieldName );
     }
 
     @Override

@@ -20,8 +20,8 @@ public class TestUpdateAction extends VoldemortUpdateAction {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void update(StoreClient client) {
-		log.info( "dummy " + this.getClass().getCanonicalName() + ".update() was called with key: " + this.getKey()
-				+ " value: " + this.getValue() );
+		log.info( "dummy " + this.getClass().getCanonicalName() + ".update() was called with key: " + getKey()
+				+ " value: " + getValue() );
 
 	}
 

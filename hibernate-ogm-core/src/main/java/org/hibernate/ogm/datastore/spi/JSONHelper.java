@@ -50,7 +50,7 @@ public class JSONHelper {
 	 * @return JSON representation of the specified object.
 	 */
 	public String toJSON(Object obj) {
-		return this.gson.toJson( obj );
+		return gson.toJson( obj );
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class JSONHelper {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object fromJSON(String json, Class cls) {
-		return this.gson.fromJson( json, cls );
+		return gson.fromJson( json, cls );
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class JSONHelper {
 		Map<String, String> jsonedMap = new HashMap<String, String>();
 		for ( Iterator itr = map.keySet().iterator(); itr.hasNext(); ) {
 			Object k = itr.next();
-			jsonedMap.put( this.toJSON( k ), this.toJSON( map.get( k ) ) );
+			jsonedMap.put( toJSON( k ), toJSON( map.get( k ) ) );
 		}
 
 		return jsonedMap;
@@ -100,13 +100,13 @@ public class JSONHelper {
 	public void getObjectFromJsonOn(Field field, String columnName, Map<String, Object> map) {
 
 		if ( field.getType().isArray() ) {
-			map.put( columnName, this.fromJSON( (String) map.get( columnName ), field.getType() ) );
+			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
 		}
-		else if ( this.classDetector.isWrapperClass( field.getType() ) ) {
-			map.put( columnName, this.classDetector.castWrapperClassFrom( map.get( columnName ), field.getType() ) );
+		else if ( classDetector.isWrapperClass( field.getType() ) ) {
+			map.put( columnName, classDetector.castWrapperClassFrom( map.get( columnName ), field.getType() ) );
 		}
-		else if ( this.jsonDetector.isAssignable( field.getType() ) ) {
-			map.put( columnName, this.fromJSON( (String) map.get( columnName ), field.getType() ) );
+		else if ( jsonDetector.isAssignable( field.getType() ) ) {
+			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
 		}
 	}
 }
