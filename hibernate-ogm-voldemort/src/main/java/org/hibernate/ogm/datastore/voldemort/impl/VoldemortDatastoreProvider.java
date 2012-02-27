@@ -919,6 +919,21 @@ public class VoldemortDatastoreProvider extends
 	public void setNextValue(RowKey key, IntegralDataTypeHolder value,
 			int increment, int initialValue) {
 
+		/**
+		 * TODO To implement VoldemortDatastoreProvider.setNextValue() method, I
+		 * was confused a little bit. I originally referenced other datastore
+		 * and implemented it, but on VoldemortDialectTest.testIsThreadSafe()
+		 * which tests concurrency on the method, [my original
+		 * implementation](https://gist.github
+		 * .com/1903794#file_original+set_next_value%28%29) ran poorly because
+		 * it required an exclusive lock. And then I modified the method and got
+		 * the current implementation. However, it doesn't quite reduce the
+		 * number of accesses to the underlying datastore as I wanted, but
+		 * allows concurrency. As a result, I put a flag to store the next value
+		 * on the datastore or not. I'm not quite sure if this is the right
+		 * implementation or not.
+		 */
+
 		List<Integer> l = new LinkedList<Integer>();
 		l.add(initialValue);
 		if (nextValues.putIfAbsent(key, l) == null) {

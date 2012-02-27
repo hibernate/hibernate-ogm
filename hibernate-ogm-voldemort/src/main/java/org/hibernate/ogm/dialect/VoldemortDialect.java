@@ -66,10 +66,14 @@ public class VoldemortDialect implements GridDialect {
 			LockMode lockMode) {
 
 		/**
-		 * TODO Voldemort itself doesn't expose Lock objects, so for right now
-		 * simple throws an exception here. However, need to confirm if this is
-		 * the right implementation.
+		 * TODO To implement GridDialect.getLockingStrategy() method, the
+		 * returned object whose type is LockingStratey represents locks on
+		 * underlying datatore according to the javadoc. How should we implement
+		 * this method when the underlying datastore doesn't explicitly expose
+		 * locks as objects ? Looks like that Infinispan exposes some lock
+		 * objects, so they are instantiated and returned from the method.
 		 */
+
 		throw new HibernateException("Lock " + lockMode
 				+ " is not supported on Voldemort.");
 	}
