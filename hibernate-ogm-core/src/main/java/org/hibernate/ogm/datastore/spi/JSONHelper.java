@@ -23,8 +23,10 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.JSONedClassDetector;
+import org.hibernate.ogm.grid.EntityKey;
 
 import com.google.gson.Gson;
 
@@ -37,7 +39,13 @@ public class JSONHelper {
 	private final JSONedClassDetector jsonDetector;
 	private final Gson gson = new Gson();
 
-	public JSONHelper(WrapperClassDetector classDetector, JSONedClassDetector jsonDetector) {
+	public JSONHelper() {
+		this.classDetector = new WrapperClassDetector();
+		this.jsonDetector = new JSONedClassDetector();
+	}
+
+	public JSONHelper(WrapperClassDetector classDetector,
+			JSONedClassDetector jsonDetector) {
 		this.classDetector = classDetector;
 		this.jsonDetector = jsonDetector;
 	}
@@ -50,7 +58,7 @@ public class JSONHelper {
 	 * @return JSON representation of the specified object.
 	 */
 	public String toJSON(Object obj) {
-		return gson.toJson( obj );
+		return gson.toJson(obj);
 	}
 
 	/**
@@ -65,7 +73,7 @@ public class JSONHelper {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object fromJSON(String json, Class cls) {
-		return gson.fromJson( json, cls );
+		return gson.fromJson(json, cls);
 	}
 
 	/**
@@ -78,9 +86,9 @@ public class JSONHelper {
 	@SuppressWarnings("rawtypes")
 	public Map<String, String> convertKeyAndValueToJsonOn(Map map) {
 		Map<String, String> jsonedMap = new HashMap<String, String>();
-		for ( Iterator itr = map.keySet().iterator(); itr.hasNext(); ) {
+		for (Iterator itr = map.keySet().iterator(); itr.hasNext();) {
 			Object k = itr.next();
-			jsonedMap.put( toJSON( k ), toJSON( map.get( k ) ) );
+			jsonedMap.put(toJSON(k), toJSON(map.get(k)));
 		}
 
 		return jsonedMap;
@@ -97,16 +105,72 @@ public class JSONHelper {
 	 * @param map
 	 *            Stores entity objects.
 	 */
-	public void getObjectFromJsonOn(Field field, String columnName, Map<String, Object> map) {
+	public void getObjectFromJsonOn(Field field, String columnName,
+			Map<String, Object> map) {
 
-		if ( field.getType().isArray() ) {
-			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
+		if (field.getType().isArray()) {
+			map.put(columnName,
+					fromJSON((String) map.get(columnName), field.getType()));
+		} else if (classDetector.isWrapperClass(field.getType())) {
+			map.put(columnName, classDetector.castWrapperClassFrom(
+					map.get(columnName), field.getType()));
+		} else if (jsonDetector.isAssignable(field.getType())) {
+			map.put(columnName,
+					fromJSON((String) map.get(columnName), field.getType()));
 		}
-		else if ( classDetector.isWrapperClass( field.getType() ) ) {
-			map.put( columnName, classDetector.castWrapperClassFrom( map.get( columnName ), field.getType() ) );
+	}
+
+	/**
+	 * Converts the value for the column as JSON format.
+	 * 
+	 * @param columnNames
+	 *            All the columnNames in the entity object.
+	 * @return Newly created Map storing JSON format when required.
+	 * @throws ClassNotFoundException
+	 */
+	public Map<String, Object> convertJsonAsNeededOn(Set<String> columnNames,
+			TupleSnapshot snapshot) {
+
+		Map<String, Object> map = new HashMap<String, Object>();
+
+		for (String columnName : columnNames) {
+			if (snapshot.get(columnName) == null) {
+				map.put(columnName, null);
+			} else if (snapshot.get(columnName).getClass().isArray()) {
+				map.put(columnName, toJSON(snapshot.get(columnName)));
+			} else if (jsonDetector.isAssignable(snapshot.get(columnName)
+					.getClass())) {
+				map.put(columnName, toJSON(snapshot.get(columnName)));
+			} else {
+				map.put(columnName, snapshot.get(columnName));
+			}
 		}
-		else if ( jsonDetector.isAssignable( field.getType() ) ) {
-			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
+		return map;
+	}
+
+	/**
+	 * Converts Json to object representation for the return value from the
+	 * datastore when needed.
+	 * 
+	 * @param key
+	 *            Used to retrieve the corresponding value.
+	 * @param tuple
+	 *            Contains key value pairs from the datastore.
+	 * @return Retrieved key value pairs with JSON modification when needed.
+	 */
+	public Map<String, Object> convertFromJsonOn(EntityKey key,
+			Map<String, Object> tuple, Field[] fields) {
+
+		for (Field field : fields) {
+			String columnName = key.getColumnName(field.getName());
+
+			if (tuple.get(columnName) != null) {
+				getObjectFromJsonOn(field, columnName, tuple);
+			} else {
+				tuple.put(columnName, null);
+			}
 		}
+
+		return tuple;
 	}
 }

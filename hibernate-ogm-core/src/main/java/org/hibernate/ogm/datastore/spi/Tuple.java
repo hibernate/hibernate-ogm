@@ -56,9 +56,7 @@ public class Tuple {
 																// the Map as it
 																// costs quite
 																// some memory
-	private final JSONedClassDetector jsonedDetector = new JSONedClassDetector();
-	private final JSONHelper jsonHelper = new JSONHelper(
-			new WrapperClassDetector(), jsonedDetector);
+	private final JSONHelper jsonHelper = new JSONHelper();
 
 	public Tuple(TupleSnapshot snapshot) {
 		this.snapshot = snapshot;
@@ -164,33 +162,6 @@ public class Tuple {
 			return Collections.EMPTY_MAP;
 		}
 
-		return this.putJSONedValueAsNeeded(columnNames);
-	}
-
-	/**
-	 * Changes the value for the column as JSON format.
-	 * 
-	 * @param columnNames
-	 *            All the columnNames in the entity object.
-	 * @return Newly created Map storing JSON format when required.
-	 * @throws ClassNotFoundException
-	 */
-	private Map<String, Object> putJSONedValueAsNeeded(Set<String> columnNames) {
-
-		Map<String, Object> map = new HashMap<String, Object>();
-
-		for (String columnName : columnNames) {
-			if (snapshot.get(columnName) == null) {
-				map.put(columnName, null);
-			} else if (snapshot.get(columnName).getClass().isArray()) {
-				map.put(columnName, jsonHelper.toJSON(snapshot.get(columnName)));
-			} else if (this.jsonedDetector.isAssignable(snapshot
-					.get(columnName).getClass())) {
-				map.put(columnName, jsonHelper.toJSON(snapshot.get(columnName)));
-			} else {
-				map.put(columnName, snapshot.get(columnName));
-			}
-		}
-		return map;
+		return jsonHelper.convertJsonAsNeededOn(columnNames, snapshot);
 	}
 }

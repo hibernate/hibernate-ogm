@@ -41,10 +41,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Environment;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.ogm.datastore.spi.AbstractDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.JSONHelper;
-import org.hibernate.ogm.datastore.spi.JSONedClassDetector;
-import org.hibernate.ogm.datastore.spi.WrapperClassDetector;
+import org.hibernate.ogm.datastore.spi.AbstractJsonAwareDatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.VoldemortDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -61,20 +58,18 @@ import voldemort.client.StoreClientFactory;
 import voldemort.client.UpdateAction;
 import voldemort.versioning.Versioned;
 
-import com.google.gson.Gson;
-
 /**
  * 
  * @author Seiya Kawashima <skawashima@uchicago.edu>
  * 
  */
-public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
+public class VoldemortDatastoreProvider extends
+		AbstractJsonAwareDatastoreProvider {
 
 	private static final Log log = LoggerFactory.make();
 	private StoreClientFactory clientFactory;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final ConcurrentMap<String, Set<Serializable>> tableIds = new ConcurrentHashMap<String, Set<Serializable>>();
-	private final Gson gson = new Gson();
 	private final Set<AssociationKey> associationKeys = Collections
 			.synchronizedSet(new HashSet<AssociationKey>());
 	private StoreClient dataClient;
@@ -85,8 +80,6 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 	private boolean flushToDb = false;
 	private int maxTries;
 	private VoldemortUpdateAction updateAction;
-	private final JSONHelper jsonHelper = new JSONHelper(
-			new WrapperClassDetector(), new JSONedClassDetector());
 
 	private static enum VoldemortProp {
 
@@ -337,8 +330,9 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 			return null;
 		}
 
-		return convertFromJson(key,
-				(Map<String, Object>) createReturnObjectFrom(v, Map.class));
+		return getJsonHelper().convertFromJsonOn(key,
+				(Map<String, Object>) createReturnObjectFrom(v, Map.class),
+				getDeclaredFieldsFrom(key.getEntityName()));
 	}
 
 	/**
@@ -431,32 +425,6 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 		}
 
 		return rtnValue;
-	}
-
-	/**
-	 * Converts Json to object representation for the return value from the
-	 * datastore when needed.
-	 * 
-	 * @param key
-	 *            Used to retrieve the corresponding value.
-	 * @param tuple
-	 *            Contains key value pairs from the datastore.
-	 * @return Retrieved key value pairs with JSON modification when needed.
-	 */
-	private Map<String, Object> convertFromJson(EntityKey key,
-			Map<String, Object> tuple) {
-
-		for (Field field : getDeclaredFieldsFrom(key.getEntityName())) {
-			String columnName = key.getColumnName(field.getName());
-
-			if (tuple.get(columnName) != null) {
-				jsonHelper.getObjectFromJsonOn(field, columnName, tuple);
-			} else {
-				tuple.put(columnName, null);
-			}
-		}
-
-		return tuple;
 	}
 
 	/**
@@ -885,14 +853,15 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 	private Map<RowKey, Map<String, Object>> createAssociationFrom(
 			String jsonedAssociation) {
 
-		Map associationMap = (Map) jsonHelper.fromJSON(jsonedAssociation,
+		Map associationMap = (Map) getJsonHelper().fromJSON(jsonedAssociation,
 				Map.class);
 
 		Map<RowKey, Map<String, Object>> association = new HashMap<RowKey, Map<String, Object>>();
 		for (Iterator itr = associationMap.keySet().iterator(); itr.hasNext();) {
 			String key = (String) itr.next();
-			RowKey rowKey = (RowKey) jsonHelper.fromJSON(key, RowKey.class);
-			Map<String, Object> val = (Map<String, Object>) jsonHelper
+			RowKey rowKey = (RowKey) getJsonHelper()
+					.fromJSON(key, RowKey.class);
+			Map<String, Object> val = (Map<String, Object>) getJsonHelper()
 					.fromJSON((String) associationMap.get(key), Map.class);
 			association.put(rowKey, val);
 		}
@@ -911,8 +880,8 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 	@SuppressWarnings("rawtypes")
 	private Versioned getAssociationFrom(AssociationKey key) {
 
-		return getValue(getVoldemortAssociationStoreName(),
-				jsonHelper.toJSON(key.getAssociationKeyAsMap()), true);
+		return getValue(getVoldemortAssociationStoreName(), getJsonHelper()
+				.toJSON(key.getAssociationKeyAsMap()), true);
 	}
 
 	/**
@@ -927,9 +896,12 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 			Map<RowKey, Map<String, Object>> associationMap) {
 
 		associationKeys.add(key);
-		putValue(getVoldemortAssociationStoreName(), jsonHelper.toJSON(key
-				.getAssociationKeyAsMap()), jsonHelper.toJSON(jsonHelper
-				.convertKeyAndValueToJsonOn(associationMap)), true, true);
+		putValue(
+				getVoldemortAssociationStoreName(),
+				getJsonHelper().toJSON(key.getAssociationKeyAsMap()),
+				getJsonHelper().toJSON(
+						getJsonHelper().convertKeyAndValueToJsonOn(
+								associationMap)), true, true);
 	}
 
 	/**
@@ -941,7 +913,7 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 	public void removeAssociation(AssociationKey key) {
 		associationKeys.remove(key);
 		deleteValue(getVoldemortAssociationStoreName(),
-				jsonHelper.toJSON(key.getAssociationKeyAsMap()), true);
+				getJsonHelper().toJSON(key.getAssociationKeyAsMap()), true);
 	}
 
 	public void setNextValue(RowKey key, IntegralDataTypeHolder value,
@@ -960,9 +932,9 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 				// .getVoldemortSequenceStoreName(), toJSON(key
 				// .getRowKeyAsMap()), nextSequence, true, false));
 
-				putValue(getVoldemortSequenceStoreName(),
-						jsonHelper.toJSON(key.getRowKeyAsMap()), nextSequence,
-						true, false);
+				putValue(getVoldemortSequenceStoreName(), getJsonHelper()
+						.toJSON(key.getRowKeyAsMap()), nextSequence, true,
+						false);
 			}
 		} else {
 			List<Integer> list = nextValues.get(key);
@@ -981,7 +953,7 @@ public class VoldemortDatastoreProvider extends AbstractDatastoreProvider {
 				if (flushToDb) {
 					if (notContained) {
 						putValue(getVoldemortSequenceStoreName(),
-								jsonHelper.toJSON(key.getRowKeyAsMap()),
+								getJsonHelper().toJSON(key.getRowKeyAsMap()),
 								nextSequence, true, false);
 					}
 				}
