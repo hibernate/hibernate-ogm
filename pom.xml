@@ -43,6 +43,7 @@
         <module>hibernate-ogm-core</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
+        <module>hibernate-ogm-cassandra</module>
     </modules>
 
     <issueManagement>
