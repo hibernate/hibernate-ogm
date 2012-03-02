@@ -1,3 +1,4 @@
+
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
