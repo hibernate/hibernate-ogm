@@ -34,12 +34,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
+import java.sql.Statement;
 import java.util.Map;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 //FIXME use a connection pool for Cassandra's connections
+//FIXME receive URL and keyspace configuration from the configuration
 public class CassandraDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
 	private Connection connection;
@@ -61,7 +63,6 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override
@@ -82,7 +83,9 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 					.append(keyspace)
 					.append(" WITH strategy_class = 'SimpleStrategy'")
 					.append(" AND strategy_options:replication_factor = 1;");
-			connection.createStatement().execute(statement.toString());
+			Statement sqlStatement = connection.createStatement();
+			sqlStatement.execute(statement.toString());
+			sqlStatement.close();
 		}
 		catch (SQLSyntaxErrorException e) {
 			if (!e.getMessage().startsWith("Keyspace names must be case-insensitively unique")) {
@@ -92,6 +95,46 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 		catch (Exception e) {
 			throw new HibernateException("Unable create the keyspace " + keyspace, e);
+		}
+
+		executeStatement("USE " + keyspace + ";", "Unable to switch to keyspace " + keyspace);
+
+		//FIXME today we put everything in the same table because Emmanuel does not know how to get the SessionFactory in a service...
+		//FIXME In the end some kind of "lazy" table creation probably makes sense with and ping pong between the datastore and the dialect
+		StringBuilder statement = new StringBuilder()
+					.append("CREATE TABLE ")
+					.append("GenericTable (")
+					.append("key blob PRIMARY KEY);");
+		//FIXME find a way to bind the key type to the cassandra type: blob sucks from a user PoV
+		try {
+			executeStatement(statement.toString(), "Unable create table GenericTable");
+		}
+		catch (HibernateException e) {
+			if (e.getCause() instanceof SQLSyntaxErrorException) {
+				SQLSyntaxErrorException ee = (SQLSyntaxErrorException) e.getCause();
+				String message = ee.getMessage();
+				if ( message.contains("already exists in") ) {
+					//we are good
+				}
+				else {
+					throw e;
+				}
+			}
+			else {
+				throw e;
+			}
+		}
+	}
+
+
+	private void executeStatement(String statement, String error) {
+		try {
+			Statement sqlStatement = connection.createStatement();
+			sqlStatement.execute(statement);
+			sqlStatement.close();
+		}
+		catch (Exception e) {
+			throw new HibernateException(error, e);
 		}
 	}
 
@@ -104,5 +147,9 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 				//FIXME log a warning
 			}
 		}
+	}
+
+	public Connection getConnection() {
+		return connection;
 	}
 }
