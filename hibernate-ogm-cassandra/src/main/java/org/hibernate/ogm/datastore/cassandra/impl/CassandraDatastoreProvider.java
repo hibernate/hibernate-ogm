@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.cassandra.impl;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.cassandra.CassandraCQL2Dialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
 import org.hibernate.service.spi.Configurable;
@@ -58,7 +59,7 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return null;
+		return CassandraCQL2Dialect.class;
 	}
 
 	@Override
