@@ -60,7 +60,7 @@ public class OgmJdbcServicesInitiator implements BasicServiceInitiator<JdbcServi
 
 		@Override
 		public void configure(Map configurationValues) {
-			configurationValues.put( "hibernate.temp.use_jdbc_metadata_defaults", false );
+			configurationValues.put( "hibernate.temp.use_jdbc_metadata_defaults", Boolean.FALSE );
 			delegate.configure( configurationValues );
 		}
 

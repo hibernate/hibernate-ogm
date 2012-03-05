@@ -185,7 +185,7 @@ public class InfinispanDialect implements GridDialect {
 			//increment value
 			updateValue.add( increment );
 			//TODO should we use GridTypes here?
-			final Object newValueFromDb = updateValue.makeValue().longValue();
+			final Object newValueFromDb = updateValue.makeValue();
 			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
 		}
 		while ( !done );
