@@ -159,12 +159,11 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 			cacheManager.start();
 			return cacheManager;
 		} catch (RuntimeException re) {
-			raiseConfigurationError(re, cfgName);
+			throw raiseConfigurationError( re, cfgName );
 		}
 		catch (IOException e) {
-			raiseConfigurationError(e, cfgName);
+			throw raiseConfigurationError( e, cfgName );
 		}
-		return null; //actually this line is unreachable
 	}
 
 	public EmbeddedCacheManager getEmbeddedCacheManager() {
@@ -182,8 +181,8 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		}
 	}
 
-	private void raiseConfigurationError(Exception e, String cfgName) {
-		throw new HibernateException(
+	private HibernateException raiseConfigurationError(Exception e, String cfgName) {
+		return new HibernateException(
 				"Could not start Infinispan CacheManager using as configuration file: " + cfgName, e
 		);
 	}
