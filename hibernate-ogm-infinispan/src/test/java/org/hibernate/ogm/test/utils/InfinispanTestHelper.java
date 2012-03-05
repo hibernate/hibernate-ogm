@@ -57,7 +57,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		return castProvider.getCache(ENTITY_STORE);
 	}
 
-	private static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
 		if ( ! (InfinispanDatastoreProvider.class.isInstance(provider) ) ) {
 			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
