@@ -21,28 +21,31 @@
 package org.hibernate.ogm.datastore.infinispan.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
-import org.hibernate.service.jndi.spi.JndiService;
-import org.hibernate.service.spi.*;
-import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
-import org.infinispan.config.ConfigurationValidatingVisitor;
-import org.infinispan.config.GlobalConfiguration;
-import org.infinispan.config.InfinispanConfiguration;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
-
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
+import org.hibernate.service.jndi.spi.JndiService;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
+import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.service.spi.Startable;
+import org.hibernate.service.spi.Stoppable;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.util.FileLookupFactory;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
@@ -140,24 +143,31 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	}
 
 	private EmbeddedCacheManager createCustomCacheManager(String cfgName, JtaPlatform platform) {
+		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 		try {
-			InfinispanConfiguration configuration = InfinispanConfiguration.newInfinispanConfiguration(
-					cfgName, InfinispanConfiguration.resolveSchemaPath(),
-					new ConfigurationValidatingVisitor(),
-					Thread.currentThread().getContextClassLoader() );
-			GlobalConfiguration globalConfiguration = configuration.parseGlobalConfiguration();
-			Configuration defaultConfiguration = configuration.parseDefaultConfiguration();
-			TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
-			final DefaultCacheManager cacheManager = new DefaultCacheManager( globalConfiguration, defaultConfiguration, true );
-			for (Map.Entry<String, Configuration> entry : configuration.parseNamedConfigurations().entrySet()) {
-				Configuration cfg = entry.getValue();
-				if ( transactionManagerLookupDelegator.isValid() ) {
-					cfg.fluent().transactionManagerLookup(transactionManagerLookupDelegator);
+			InputStream configurationFile = FileLookupFactory.newInstance().lookupFileStrict( cfgName, contextClassLoader );
+			try {
+				cacheManager = new DefaultCacheManager( configurationFile, false );
+				// override the named cache configuration defined in the configuration file to
+				// inject the platform TransactionManager
+				for (String cacheName : cacheManager.getCacheNames() ) {
+					Configuration originalCfg = cacheManager.getCacheConfiguration( cacheName );
+					Configuration newCfg = new ConfigurationBuilder()
+						.read( originalCfg )
+							.transaction()
+								.transactionManagerLookup( transactionManagerLookupDelegator )
+						.build();
+					cacheManager.defineConfiguration( cacheName, newCfg );
 				}
-				cacheManager.defineConfiguration( entry.getKey(), cfg );
+				cacheManager.start();
+				return cacheManager;
 			}
-			cacheManager.start();
-			return cacheManager;
+			finally {
+				if ( configurationFile != null ) {
+					configurationFile.close();
+				}
+			}
 		} catch (RuntimeException re) {
 			throw raiseConfigurationError( re, cfgName );
 		}
