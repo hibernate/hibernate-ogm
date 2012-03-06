@@ -56,7 +56,7 @@ public class WrongConfigurationBootTest {
 			Throwable cause = he.getCause();
 			assertTrue( cause.getMessage().contains( "Could not start Infinispan CacheManager using as configuration file: does-not-exist-configuration-file.xml" ) );
 			Throwable originalCause = cause.getCause();
-			assertTrue( originalCause.getMessage().contains( "File does-not-exist-configuration-file.xml could not be found, either on the classpath or on the file system!" ) );
+			assertTrue( originalCause.getMessage().contains( "does-not-exist-configuration-file.xml" ) );
 			assertEquals( FileNotFoundException.class, originalCause.getClass() );
 		}
 	}
