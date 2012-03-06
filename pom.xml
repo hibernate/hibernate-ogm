@@ -124,10 +124,10 @@
 
     <properties>
         <ehcacheVersion>2.5.0</ehcacheVersion>
-        <infinispanVersion>5.1.1.FINAL</infinispanVersion>
+        <infinispanVersion>5.1.2.FINAL</infinispanVersion>
         <hibernateVersion>4.0.1.Final</hibernateVersion>
-        <hibernateSearchVersion>4.1.0.Beta2</hibernateSearchVersion>
-        <jbossjtaVersion>4.16.0.Final</jbossjtaVersion>
+        <hibernateSearchVersion>4.1.0.CR1</hibernateSearchVersion>
+        <jbossjtaVersion>4.16.2.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.0.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.0.Final</jbossLoggingProcessorVersion>
