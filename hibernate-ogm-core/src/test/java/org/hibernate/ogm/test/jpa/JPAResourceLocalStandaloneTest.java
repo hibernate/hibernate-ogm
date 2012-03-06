@@ -62,7 +62,7 @@ public class JPAResourceLocalStandaloneTest {
 		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
 		archive.addAsResource( "persistencexml/jpajtastandalone-resourcelocal.xml", path );
 
-		File testPackage = new File( packaging.getTargetDir(), fileName );
+		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 
 		packaging.addPackageToClasspath( testPackage );

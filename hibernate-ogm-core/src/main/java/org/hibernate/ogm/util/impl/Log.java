@@ -25,7 +25,6 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;

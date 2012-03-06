@@ -60,6 +60,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	private Map cfg;
 	private Map<String,Cache> caches;
 	private boolean isCacheProvided;
+	private boolean started = false;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -85,6 +86,11 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	private EmbeddedCacheManager cacheManager;
 
 	public void start() {
+		if ( started ) {
+			// ServiceRegistry might invoke start multiple times, but always from the same initialization thread.
+			//TODO remove the start flag: no longer needed after HHH-7147
+			return;
+		}
 		try {
 			String jndiProperty = (String) cfg.get( CACHE_MANAGER_RESOURCE_PROP );
 			if ( jndiProperty == null ) {
@@ -103,13 +109,14 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 			}
 		}
 		catch (RuntimeException e) {
-			log.unableToInitializeInfinispan(e);
+			throw log.unableToInitializeInfinispan( e );
 		}
 		eagerlyInitializeCaches(cacheManager);
 		//clear resources
 		this.jtaPlatform = null;
 		this.jndiService = null;
 		this.cfg = null;
+		this.started = true;
 	}
 
 	/**
@@ -152,12 +159,11 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 			cacheManager.start();
 			return cacheManager;
 		} catch (RuntimeException re) {
-			raiseConfigurationError(re, cfgName);
+			throw raiseConfigurationError( re, cfgName );
 		}
 		catch (IOException e) {
-			raiseConfigurationError(e, cfgName);
+			throw raiseConfigurationError( e, cfgName );
 		}
-		return null; //actually this line is unreachable
 	}
 
 	public EmbeddedCacheManager getEmbeddedCacheManager() {
@@ -175,8 +181,8 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		}
 	}
 
-	private void raiseConfigurationError(Exception e, String cfgName) {
-		throw new HibernateException(
+	private HibernateException raiseConfigurationError(Exception e, String cfgName) {
+		return new HibernateException(
 				"Could not start Infinispan CacheManager using as configuration file: " + cfgName, e
 		);
 	}

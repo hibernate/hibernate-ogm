@@ -93,7 +93,6 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	 *
 	 * Copied from ManyToOne#scheduleBatchLoadIfNeeded
 	 */
-	@SuppressWarnings({ "JavaDoc" })
 	private void scheduleBatchLoadIfNeeded(Serializable id, SessionImplementor session) throws MappingException {
 		//cannot batch fetch by unique key (property-ref associations)
 		//FIXME support non-pk unique id
