@@ -94,9 +94,9 @@ public final class EntityKey implements Serializable {
 	private int generateHashCode() {
 		// Note we don't hash on the column names as the hash will discriminate enough
 		// with values and Arrays.hashCode is nto cheap
+
 		int result = table.hashCode();
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
-
 }
