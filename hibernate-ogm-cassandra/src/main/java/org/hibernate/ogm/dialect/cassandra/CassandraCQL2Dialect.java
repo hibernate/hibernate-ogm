@@ -72,7 +72,7 @@ public class CassandraCQL2Dialect implements GridDialect {
 		//NOTE: SELECT ''..'' returns all columns except the key
 		StringBuilder query = new StringBuilder("SELECT * ")
 				.append("FROM ").append(table)
-				.append("WHERE ").append(idColumnName)
+				.append(" WHERE ").append(idColumnName)
 				.append("=?");
 
 		ResultSet resultSet;
