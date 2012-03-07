@@ -21,21 +21,16 @@
 package org.hibernate.ogm.datastore.cassandra.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.cassandra.CassandraCQL2Dialect;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.cassandra.CassandraCQL2Dialect;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
-import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.Startable;
-import org.hibernate.service.spi.Stoppable;
+import org.hibernate.service.spi.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.SQLSyntaxErrorException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Map;
 
 /**
@@ -44,113 +39,138 @@ import java.util.Map;
 //FIXME use a connection pool for Cassandra's connections
 //FIXME receive URL and keyspace configuration from the configuration
 public class CassandraDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
-		ServiceRegistryAwareService, Configurable {
-	private Connection connection;
-	private String url = "jdbc:cassandra://localhost:9160";
-	private String keyspace;
+        ServiceRegistryAwareService, Configurable {
+    public static final String CASSANDRA_CONFIGURATION_KEYSPACENAME = "hibernate.ogm.cassandra.configuration_keyspacename";
 
-	public CassandraDatastoreProvider() {
-		ClassLoaderHelper.classForName("org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver");
-	}
-	@Override
-	public void configure(Map configurationValues) {
-		keyspace = "Keyspace1";
-	}
+    public static final String CASSANDRA_CONFIGURATION_URL = "hibernate.ogm.cassandra.configuration_url";
+    public static final String CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE = "jdbc:cassandra://localhost:9160";
 
-	@Override
-	public Class<? extends GridDialect> getDefaultDialect() {
-		return CassandraCQL2Dialect.class;
-	}
+    public static final String CASSANDRA_CONFIGURATION_MODE = AvailableSettings.HBM2DDL_AUTO;
+    public static final String CASSANDRA_CONFIGURATION_MODE_DEFAULT_VALUE = "validate";
 
-	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-	}
+    private Connection connection;
+    private String url;
+    private String keyspace;
+    private String configurationMode;
 
-	@Override
-	public void start() {
-		try {
-			connection = DriverManager.getConnection(url);
+    private static final Log log = LoggerFactory.make();
 
-		}
-		catch (Exception e) {
-			throw new HibernateException("Unable to connect to Cassandra server " + url, e);
-		}
+    public CassandraDatastoreProvider() {
+        ClassLoaderHelper.classForName("org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver");
+    }
 
-		//in dev mode, use simple keyspace generation
-		//FIXME disable for prod??
-		try {
-			StringBuilder statement = new StringBuilder()
-					.append("CREATE KEYSPACE ")
-					.append(keyspace)
-					.append(" WITH strategy_class = 'SimpleStrategy'")
-					.append(" AND strategy_options:replication_factor = 1;");
-			Statement sqlStatement = connection.createStatement();
-			sqlStatement.execute(statement.toString());
-			sqlStatement.close();
-		}
-		catch (SQLSyntaxErrorException e) {
-			if (!e.getMessage().startsWith("Keyspace names must be case-insensitively unique")) {
-				throw new HibernateException("Unable create the keyspace " + keyspace, e);
-			}
-			//else the keyspace is already created
-		}
-		catch (Exception e) {
-			throw new HibernateException("Unable create the keyspace " + keyspace, e);
-		}
+    @Override
+    public void configure(Map configurationValues) {
+        if (configurationValues == null) {
+            throw new IllegalArgumentException("invalid configuration file: should not be null");
+        }
+        keyspace = (String) configurationValues.get(CASSANDRA_CONFIGURATION_KEYSPACENAME);
+        url = (String) configurationValues.get(CASSANDRA_CONFIGURATION_URL);
+        configurationMode = (String) configurationValues.get(CASSANDRA_CONFIGURATION_MODE);
 
-		executeStatement("USE " + keyspace + ";", "Unable to switch to keyspace " + keyspace);
+        if (url == null) {
+            url = CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE;
+        }
 
-		//FIXME today we put everything in the same table because Emmanuel does not know how to get the SessionFactory in a service...
-		//FIXME In the end some kind of "lazy" table creation probably makes sense with and ping pong between the datastore and the dialect
-		StringBuilder statement = new StringBuilder()
-					.append("CREATE TABLE ")
-					.append("GenericTable (")
-					.append("key blob PRIMARY KEY);");
-		//FIXME find a way to bind the key type to the cassandra type: blob sucks from a user PoV
-		try {
-			executeStatement(statement.toString(), "Unable create table GenericTable");
-		}
-		catch (HibernateException e) {
-			if (e.getCause() instanceof SQLSyntaxErrorException) {
-				SQLSyntaxErrorException ee = (SQLSyntaxErrorException) e.getCause();
-				String message = ee.getMessage();
-				if ( message.contains("already exists in") ) {
-					//we are good
-				}
-				else {
-					throw e;
-				}
-			}
-			else {
-				throw e;
-			}
-		}
-	}
+        if (configurationMode == null) {
+            configurationMode = CASSANDRA_CONFIGURATION_MODE_DEFAULT_VALUE;
+        }
+
+        if (keyspace == null) {
+            throw new HibernateException("Unable to get keyspace value from configuration on key " + CASSANDRA_CONFIGURATION_KEYSPACENAME);
+        }
+    }
+
+    @Override
+    public Class<? extends GridDialect> getDefaultDialect() {
+        return CassandraCQL2Dialect.class;
+    }
+
+    @Override
+    public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+    }
+
+    @Override
+    public void start() {
+        try {
+            connection = DriverManager.getConnection(url);
+        } catch (Exception e) {
+            throw new HibernateException("Unable to connect to Cassandra server " + url, e);
+        }
+
+        try {
+            createKeyspaceIfNeeded();
+        } catch (SQLSyntaxErrorException e) {
+            if (!e.getMessage().startsWith("Keyspace names must be case-insensitively unique")) {
+                throw new HibernateException("Unable create the keyspace " + keyspace, e);
+            }
+            //else the keyspace is already created
+        } catch (Exception e) {
+            throw new HibernateException("Unable create the keyspace " + keyspace, e);
+        }
+
+        executeStatement("USE " + keyspace + ";", "Unable to switch to keyspace " + keyspace);
+
+        //FIXME today we put everything in the same table because Emmanuel does not know how to get the SessionFactory in a service...
+        //FIXME In the end some kind of "lazy" table creation probably makes sense with and ping pong between the datastore and the dialect
+        StringBuilder statement = new StringBuilder()
+                .append("CREATE TABLE ")
+                .append("GenericTable (")
+                .append("key blob PRIMARY KEY);");
+        //FIXME find a way to bind the key type to the cassandra type: blob sucks from a user PoV
+        try {
+            executeStatement(statement.toString(), "Unable create table GenericTable");
+        } catch (HibernateException e) {
+            if (e.getCause() instanceof SQLSyntaxErrorException) {
+                SQLSyntaxErrorException ee = (SQLSyntaxErrorException) e.getCause();
+                String message = ee.getMessage();
+                if (message.contains("already exists in")) {
+                    //we are good
+                } else {
+                    throw e;
+                }
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private void createKeyspaceIfNeeded() throws SQLException {
+        if ("create-drop".equals(configurationMode)) {
+            StringBuilder statement = new StringBuilder()
+                    .append("CREATE KEYSPACE ")
+                    .append(keyspace)
+                    .append(" WITH strategy_class = 'SimpleStrategy'")
+                    .append(" AND strategy_options:replication_factor = 1;");
+            Statement sqlStatement = connection.createStatement();
+            sqlStatement.execute(statement.toString());
+            sqlStatement.close();
+        }
+    }
 
 
-	private void executeStatement(String statement, String error) {
-		try {
-			Statement sqlStatement = connection.createStatement();
-			sqlStatement.execute(statement);
-			sqlStatement.close();
-		}
-		catch (Exception e) {
-			throw new HibernateException(error, e);
-		}
-	}
+    private void executeStatement(String statement, String error) {
+        try {
+            Statement sqlStatement = connection.createStatement();
+            sqlStatement.execute(statement);
+            sqlStatement.close();
+        } catch (Exception e) {
+            throw new HibernateException(error, e);
+        }
+    }
 
-	@Override
-	public void stop() {
-		if (connection != null) {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				//FIXME log a warning
-			}
-		}
-	}
+    @Override
+    public void stop() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                //FIXME log a warning
+            }
+        }
+    }
 
-	public Connection getConnection() {
-		return connection;
-	}
+    public Connection getConnection() {
+        return connection;
+    }
 }

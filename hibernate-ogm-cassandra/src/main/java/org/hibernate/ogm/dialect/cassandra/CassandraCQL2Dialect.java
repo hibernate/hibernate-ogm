@@ -51,137 +51,137 @@ import java.util.List;
  */
 public class CassandraCQL2Dialect implements GridDialect {
 
-	private final CassandraDatastoreProvider provider;
+    private final CassandraDatastoreProvider provider;
 
-	public CassandraCQL2Dialect(CassandraDatastoreProvider provider) {
-		this.provider = provider;
-	}
+    public CassandraCQL2Dialect(CassandraDatastoreProvider provider) {
+        this.provider = provider;
+    }
 
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		//Cassandra essentially has no workable lock strategy unless you use external tools like
-		// ZooKeeper or any kind of lock keeper
-		// FIXME find a way to reflect that in the implementation
-		return null;
-	}
+    @Override
+    public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
+        //Cassandra essentially has no workable lock strategy unless you use external tools like
+        // ZooKeeper or any kind of lock keeper
+        // FIXME find a way to reflect that in the implementation
+        return null;
+    }
 
-	@Override
-	public Tuple getTuple(EntityKey key) {
-		String table = "GenericTable"; // FIXME with key.getTable();
-		String idColumnName = "key"; //FIXME extract from key but not present today
-		//NOTE: SELECT ''..'' returns all columns except the key
-		StringBuilder query = new StringBuilder("SELECT * ")
-				.append("FROM ").append(table)
-				.append("WHERE ").append(idColumnName)
-				.append("=?");
+    @Override
+    public Tuple getTuple(EntityKey key) {
+        String table = "GenericTable"; // FIXME with key.getTable();
+        String idColumnName = "key"; //FIXME extract from key but not present today
+        //NOTE: SELECT ''..'' returns all columns except the key
+        StringBuilder query = new StringBuilder("SELECT * ")
+                .append("FROM ").append(table)
+                .append("WHERE ").append(idColumnName)
+                .append("=?");
 
-		ResultSet resultSet;
-		try {
-			PreparedStatement statement = provider.getConnection().prepareStatement(query.toString());
-			statement.setBytes(1, SerializationHelper.toByteArray(key.getId()));
-			statement.execute(query.toString());
-			//FIXME close statement when done with resultset: Cassandra's driver is cool with that though
-			statement.close();
-			resultSet = statement.getResultSet();
+        ResultSet resultSet;
+        try {
+            PreparedStatement statement = provider.getConnection().prepareStatement(query.toString());
+            statement.setBytes(1, SerializationHelper.toByteArray(key.getId()));
+            statement.execute(query.toString());
+            //FIXME close statement when done with resultset: Cassandra's driver is cool with that though
+            statement.close();
+            resultSet = statement.getResultSet();
 
-		} catch (SQLException e) {
-			throw new HibernateException("Cannot execute select query in cassandra", e);
-		}
-		try {
-			boolean next = resultSet.next();
-			if (next == false) {
-				return null;
-			} else {
-				return new Tuple(new ResultSetTupleSnapshot(resultSet));
-			}
-		} catch (SQLException e) {
-			throw new HibernateException("Error while reading resultset", e);
-		}
-	}
+        } catch (SQLException e) {
+            throw new HibernateException("Cannot execute select query in cassandra", e);
+        }
+        try {
+            boolean next = resultSet.next();
+            if (next == false) {
+                return null;
+            } else {
+                return new Tuple(new ResultSetTupleSnapshot(resultSet));
+            }
+        } catch (SQLException e) {
+            throw new HibernateException("Error while reading resultset", e);
+        }
+    }
 
-	@Override
-	public Tuple createTuple(EntityKey key) {
-		return new Tuple(new MapBasedTupleSnapshot(new HashMap<String, Object>()));
-	}
+    @Override
+    public Tuple createTuple(EntityKey key) {
+        return new Tuple(new MapBasedTupleSnapshot(new HashMap<String, Object>()));
+    }
 
-	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
-		String table = "GenericTable"; // FIXME with key.getTable();
-		String idColumnName = "key"; //FIXME extract from key but not present today
-		//NOTE: SELECT ''..'' returns all columns except the key
-		StringBuilder query = new StringBuilder();
-		query.append("BEGIN BATCH;");
-		List<TupleOperation> updateOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
-		List<TupleOperation> deleteOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
+    @Override
+    public void updateTuple(Tuple tuple, EntityKey key) {
+        String table = "GenericTable"; // FIXME with key.getTable();
+        String idColumnName = "key"; //FIXME extract from key but not present today
+        //NOTE: SELECT ''..'' returns all columns except the key
+        StringBuilder query = new StringBuilder();
+        query.append("BEGIN BATCH;");
+        List<TupleOperation> updateOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
+        List<TupleOperation> deleteOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
 
-		for (TupleOperation op : tuple.getOperations()) {
-			switch (op.getType()) {
-				case PUT:
-					updateOps.add(op);
-					break;
-				case REMOVE:
-				case PUT_NULL:
-					deleteOps.add(op);
-					break;
-				default:
-					throw new HibernateException("TupleOperation not supported: " + op.getType());
-			}
-			if (updateOps.size() > 0) {
-				query.append("UPDATE ").append(table).append(" SET ")
-						// column=?
-						//TODO Finish this column=?
-						.append("WHERE ").append(idColumnName)
-						.append("=?");
-			}
-			if (deleteOps.size() > 0) {
-				query.append("DELETE ")
-						// column
-						//TODO Finish this column
-						.append(" FROM ").append(table)
-						.append(" WHERE ").append(idColumnName)
-						.append("=?");
-			}
-		}
-		//TODO apply parameters
+        for (TupleOperation op : tuple.getOperations()) {
+            switch (op.getType()) {
+                case PUT:
+                    updateOps.add(op);
+                    break;
+                case REMOVE:
+                case PUT_NULL:
+                    deleteOps.add(op);
+                    break;
+                default:
+                    throw new HibernateException("TupleOperation not supported: " + op.getType());
+            }
+            if (updateOps.size() > 0) {
+                query.append("UPDATE ").append(table).append(" SET ")
+                        // column=?
+                        //TODO Finish this column=?
+                        .append("WHERE ").append(idColumnName)
+                        .append("=?");
+            }
+            if (deleteOps.size() > 0) {
+                query.append("DELETE ")
+                        // column
+                        //TODO Finish this column
+                        .append(" FROM ").append(table)
+                        .append(" WHERE ").append(idColumnName)
+                        .append("=?");
+            }
+        }
+        //TODO apply parameters
 
-		//TODO execute query
+        //TODO execute query
 
-		query.append("APPLY BATCH;");
+        query.append("APPLY BATCH;");
 
-	}
+    }
 
-	@Override
-	public void removeTuple(EntityKey key) {
-		//To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public void removeTuple(EntityKey key) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public Association getAssociation(AssociationKey key) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public Association getAssociation(AssociationKey key) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public Association createAssociation(AssociationKey key) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public Association createAssociation(AssociationKey key) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
-		//To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public void updateAssociation(Association association, AssociationKey key) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public void removeAssociation(AssociationKey key) {
-		//To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public void removeAssociation(AssociationKey key) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 
-	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		//To change body of implemented methods use File | Settings | File Templates.
-	}
+    @Override
+    public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
