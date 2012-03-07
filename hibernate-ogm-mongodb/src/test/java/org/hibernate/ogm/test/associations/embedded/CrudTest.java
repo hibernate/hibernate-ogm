@@ -9,6 +9,7 @@ import javax.persistence.EntityTransaction;
 
 import org.hibernate.ogm.test.Utils;
 
+import org.hibernate.ogm.test.Utils;
 import org.hibernate.ogm.test.associations.embedded.entities.EmbeddedObject;
 import org.hibernate.ogm.test.associations.embedded.entities.EmbeddedSecondLvl;
 import org.hibernate.ogm.test.associations.embedded.entities.Root;
@@ -75,6 +76,7 @@ public class CrudTest {
 	public void updateFirstLevelTest() {
 		String beforeUpdateValue = "rootValue";
 		String id = this.createDefaultObject( beforeUpdateValue, "embValue", 100, "second" );
+
 		EntityManager em = Utils.getEM();
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
@@ -96,6 +98,7 @@ public class CrudTest {
 	public void updateSecondLevelTest() {
 		String beforeUpdateValue = "embValue";
 		int beforeIntValue = 100;
+
 		String id = this.createDefaultObject( "rootValue", beforeUpdateValue, beforeIntValue, "second" );
 
 		EntityManager em = Utils.getEM();
