@@ -70,38 +70,38 @@ public class CassandraCQL2Dialect implements GridDialect {
 		String table = "GenericTable"; // FIXME with key.getTable();
 		String idColumnName = "key"; //FIXME extract from key but not present today
 		//NOTE: SELECT ''..'' returns all columns except the key
-		StringBuilder query = new StringBuilder("SELECT * ")
-				.append("FROM ").append(table)
-				.append("WHERE ").append(idColumnName)
-				.append("=?");
+		StringBuilder query = new StringBuilder( "SELECT * " )
+				.append( "FROM " ).append( table )
+				.append( " WHERE " ).append( idColumnName )
+				.append( "=?" );
 
 		ResultSet resultSet;
 		try {
-			PreparedStatement statement = provider.getConnection().prepareStatement(query.toString());
-			statement.setBytes(1, SerializationHelper.toByteArray(key.getId()));
-			statement.execute(query.toString());
+			PreparedStatement statement = provider.getConnection().prepareStatement( query.toString() );
+			statement.setBytes( 1, SerializationHelper.toByteArray( key.getId() ) );
+			statement.execute( query.toString() );
 			//FIXME close statement when done with resultset: Cassandra's driver is cool with that though
 			statement.close();
 			resultSet = statement.getResultSet();
 
-		} catch (SQLException e) {
-			throw new HibernateException("Cannot execute select query in cassandra", e);
+		} catch ( SQLException e ) {
+			throw new HibernateException( "Cannot execute select query in cassandra", e );
 		}
 		try {
 			boolean next = resultSet.next();
-			if (next == false) {
+			if ( next == false ) {
 				return null;
 			} else {
-				return new Tuple(new ResultSetTupleSnapshot(resultSet));
+				return new Tuple( new ResultSetTupleSnapshot( resultSet ) );
 			}
-		} catch (SQLException e) {
-			throw new HibernateException("Error while reading resultset", e);
+		} catch ( SQLException e ) {
+			throw new HibernateException( "Error while reading resultset", e );
 		}
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		return new Tuple(new MapBasedTupleSnapshot(new HashMap<String, Object>()));
+		return new Tuple( new MapBasedTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	@Override
@@ -110,43 +110,43 @@ public class CassandraCQL2Dialect implements GridDialect {
 		String idColumnName = "key"; //FIXME extract from key but not present today
 		//NOTE: SELECT ''..'' returns all columns except the key
 		StringBuilder query = new StringBuilder();
-		query.append("BEGIN BATCH;");
-		List<TupleOperation> updateOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
-		List<TupleOperation> deleteOps = new ArrayList<TupleOperation>(tuple.getOperations().size());
+		query.append( "BEGIN BATCH;" );
+		List<TupleOperation> updateOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
+		List<TupleOperation> deleteOps = new ArrayList<TupleOperation>( tuple.getOperations().size() );
 
-		for (TupleOperation op : tuple.getOperations()) {
-			switch (op.getType()) {
+		for ( TupleOperation op : tuple.getOperations() ) {
+			switch ( op.getType() ) {
 				case PUT:
-					updateOps.add(op);
+					updateOps.add( op );
 					break;
 				case REMOVE:
 				case PUT_NULL:
-					deleteOps.add(op);
+					deleteOps.add( op );
 					break;
 				default:
-					throw new HibernateException("TupleOperation not supported: " + op.getType());
+					throw new HibernateException( "TupleOperation not supported: " + op.getType() );
 			}
-			if (updateOps.size() > 0) {
-				query.append("UPDATE ").append(table).append(" SET ")
+			if ( updateOps.size() > 0 ) {
+				query.append( "UPDATE " ).append( table ).append( " SET " )
 						// column=?
 						//TODO Finish this column=?
-						.append("WHERE ").append(idColumnName)
-						.append("=?");
+						.append( "WHERE " ).append( idColumnName )
+						.append( "=?" );
 			}
-			if (deleteOps.size() > 0) {
-				query.append("DELETE ")
+			if ( deleteOps.size() > 0 ) {
+				query.append( "DELETE " )
 						// column
 						//TODO Finish this column
-						.append(" FROM ").append(table)
-						.append(" WHERE ").append(idColumnName)
-						.append("=?");
+						.append( " FROM " ).append( table )
+						.append( " WHERE " ).append( idColumnName )
+						.append( "=?" );
 			}
 		}
 		//TODO apply parameters
 
 		//TODO execute query
 
-		query.append("APPLY BATCH;");
+		query.append( "APPLY BATCH;" );
 
 	}
 

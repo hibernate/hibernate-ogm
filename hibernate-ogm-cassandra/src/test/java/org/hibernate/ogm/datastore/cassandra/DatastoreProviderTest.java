@@ -23,14 +23,51 @@ package org.hibernate.ogm.datastore.cassandra;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreProviderTest {
-	@Test
-	public void testConnectionAndDeconnection() {
+
+	@Test( expected = IllegalArgumentException.class )
+	public void getConfigurationShouldThrowExceptionOnInvalidSetting() {
 		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-		provider.configure(null);
+		provider.configure( null );
+	}
+
+	@Test
+	public void defaultUrlValueShouldSuccessOnConfiguration() {
+		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+
+		Map configuration = new HashMap();
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
+		provider.configure( configuration );
+	}
+
+	@Test
+	public void startAndStopShouldSuccessOnRightConfiguration() {
+		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+
+		Map configuration = new HashMap();
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE );
+		provider.configure( configuration );
+		provider.start();
+		provider.stop();
+	}
+
+
+	@Test
+	public void startAndStopShouldCreateKeyspaces() {
+		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+
+		Map configuration = new HashMap();
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE );
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_HBM2DDL_AUTO, "create-drop" );
+		provider.configure( configuration );
 		provider.start();
 		provider.stop();
 	}
