@@ -2,6 +2,7 @@ package org.hibernate.ogm.test.associations.embedded.entities;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -19,6 +20,7 @@ public class Root implements Serializable {
 	@Id
 	@GeneratedValue(generator = "system-uuid")
 	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(name = "_id")
 	private String id;
 
 	private String rootValue;
@@ -27,13 +29,11 @@ public class Root implements Serializable {
 		super();
 	}
 
-	
 	public Root(String rootValue, EmbeddedObject embeddedObject) {
 		this();
 		this.embeddedObject = embeddedObject;
 		this.rootValue = rootValue;
 	}
-
 
 	public EmbeddedObject getEmbeddedObject() {
 		return embeddedObject;
