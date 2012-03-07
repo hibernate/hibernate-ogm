@@ -5,10 +5,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
 
+import org.hibernate.ogm.test.Utils;
 import org.hibernate.ogm.test.associations.embedded.entities.EmbeddedObject;
 import org.hibernate.ogm.test.associations.embedded.entities.EmbeddedSecondLvl;
 import org.hibernate.ogm.test.associations.embedded.entities.Root;
@@ -16,14 +15,9 @@ import org.junit.Test;
 
 public class CrudTest {
 
-	private EntityManager getEM() {
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory("mongoPU");
-		return emf.createEntityManager();
-	}
-
 	@Test
 	public void persistTest() {
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 
 		String rootValue = "Root object";
 		String embValue = "First Embedded";
@@ -48,7 +42,7 @@ public class CrudTest {
 	}
 
 	private String createDefaultObject(String rootValue, String embValue, int embIntValue, String secondValue) {
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 		EmbeddedSecondLvl esl = new EmbeddedSecondLvl(secondValue);
 		EmbeddedObject emb = new EmbeddedObject(embValue, embIntValue, esl);
 		Root root = new Root(rootValue, emb);
@@ -65,7 +59,7 @@ public class CrudTest {
 
 	@Test
 	public void deleteTest() {
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
 		String id = this.createDefaultObject("rootValue", "embValue", 100, "second");
@@ -80,7 +74,7 @@ public class CrudTest {
 	public void updateFirstLevelTest() {
 		String beforeUpdateValue = "rootValue";
 		String id = this.createDefaultObject(beforeUpdateValue, "embValue", 100, "second");
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
 		Root root = em.find(Root.class, id);
@@ -102,7 +96,7 @@ public class CrudTest {
 		String beforeUpdateValue = "embValue";
 		int beforeIntValue = 100;
 		String id = this.createDefaultObject("rootValue", beforeUpdateValue, beforeIntValue, "second");
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
 		Root root = em.find(Root.class, id);
@@ -128,7 +122,7 @@ public class CrudTest {
 	public void updateThirdLevelTest(){
 		String beforeUpdateValue = "thirdBefore";
 		String id = this.createDefaultObject("rootValue", "secondLevel", 10, beforeUpdateValue);
-		EntityManager em = this.getEM();
+		EntityManager em = Utils.getEM();
 		EntityTransaction tx = em.getTransaction();
 		tx.begin();
 		Root root = em.find(Root.class, id);
