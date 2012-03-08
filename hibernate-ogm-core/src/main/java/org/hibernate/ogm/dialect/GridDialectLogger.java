@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
  * It is only used when this class's logger level is set to Trace
  *
  * @author Sebastien Lorber (<i>lorber.sebastien@gmail.com</i>)
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @see org.hibernate.ogm.dialect.impl.GridDialectFactoryImpl#buildGridDialect(java.util.Map, org.hibernate.service.ServiceRegistry)
  */
 public class GridDialectLogger implements GridDialect {
@@ -48,7 +49,7 @@ public class GridDialectLogger implements GridDialect {
 
 	public GridDialectLogger(GridDialect gridDialect) {
 		if ( gridDialect == null ) {
-			throw new IllegalArgumentException("GridDialect should never be null");
+			throw new IllegalArgumentException( "GridDialect should never be null" );
 		}
 		this.gridDialect = gridDialect;
 	}
@@ -64,77 +65,79 @@ public class GridDialectLogger implements GridDialect {
 
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		return gridDialect.getLockingStrategy(lockable, lockMode);
+		return gridDialect.getLockingStrategy( lockable, lockMode );
 	}
 
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		log.tracef("Reading Tuple with key %1$s from datastore", key);
-		return gridDialect.getTuple(key);
+		log.tracef( "Reading Tuple with key %1$s from datastore", key );
+		return gridDialect.getTuple( key );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		log.tracef("Build Tuple object with key %1$s (does not trigger access to the datastore)", key);
-		return gridDialect.createTuple(key);
+		log.tracef( "Build Tuple object with key %1$s (does not trigger access to the datastore)", key );
+		return gridDialect.createTuple( key );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
 		if ( tuple.getSnapshot().isEmpty() ) {
-			log.tracef("Creating Tuple with key %1$s in datastore", key);
+			log.tracef( "Creating Tuple with key %1$s in datastore", key );
+		} else {
+			log.tracef( "Updating Tuple with key %1$s in datastore", key );
 		}
-		else {
-			log.tracef("Updating Tuple with key %1$s in datastore", key);
-		}
-		gridDialect.updateTuple(tuple, key);
+		gridDialect.updateTuple( tuple, key );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		log.tracef("Removing Tuple with key %1$s from datastore", key);
-		gridDialect.removeTuple(key);
+		log.tracef( "Removing Tuple with key %1$s from datastore", key );
+		gridDialect.removeTuple( key );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		log.tracef("Reading association with key %1$s from datastore", key);
-		return gridDialect.getAssociation(key);
+		log.tracef( "Reading association with key %1$s from datastore", key );
+		return gridDialect.getAssociation( key );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		log.tracef("Build association object with key %1$s (does not trigger access to the datastore)", key);
-		return gridDialect.createAssociation(key);
+		log.tracef( "Build association object with key %1$s (does not trigger access to the datastore)", key );
+		return gridDialect.createAssociation( key );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
 		if ( association.getSnapshot().size() == 0 ) {
-			log.tracef("Creating association with key %1$s in datastore", key);
+			log.tracef( "Creating association with key %1$s in datastore", key );
+		} else {
+			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
-		else {
-			log.tracef("Updating association with key %1$s in datastore", key);
-		}
-		gridDialect.updateAssociation(association, key);
+		gridDialect.updateAssociation( association, key );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		log.tracef("Removing association with key %1$s from datastore", key);
-		gridDialect.removeAssociation(key);
+		log.tracef( "Removing association with key %1$s from datastore", key );
+		gridDialect.removeAssociation( key );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		log.tracef("Build Tuple object for row key entry %1$s in association %2$s (does not trigger access to the datastore)", rowKey, associationKey);
-		return gridDialect.createTupleAssociation(associationKey, rowKey);
+		log.tracef(
+				"Build Tuple object for row key entry %1$s in association %2$s (does not trigger access to the datastore)",
+				rowKey,
+				associationKey
+		);
+		return gridDialect.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		log.tracef("Extracting next value from key %1$s", key);
-		gridDialect.nextValue(key, value, increment, initialValue);
+		log.tracef( "Extracting next value from key %1$s", key );
+		gridDialect.nextValue( key, value, increment, initialValue );
 	}
 
 }
