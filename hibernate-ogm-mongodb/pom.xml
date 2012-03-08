@@ -8,6 +8,9 @@
 	</parent>
 	<artifactId>hibernate-ogm-mongodb</artifactId>
 
+	<name>Hibernate OGM MongoDB integration</name>
+	<description>Persist data in MongoDB system</description>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -36,17 +39,17 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>		
-		 <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-testing</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>		
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-testing</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.ogm</groupId>
+			<artifactId>hibernate-ogm-core</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
