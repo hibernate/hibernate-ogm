@@ -23,15 +23,52 @@ package org.hibernate.ogm.datastore.cassandra;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreProviderTest {
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getConfigurationShouldThrowExceptionOnInvalidSetting() {
+        CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+        provider.configure(null);
+    }
+
 	@Test
-	public void testConnectionAndDeconnection() {
+	public void defaultUrlValueShouldSuccessOnConfiguration() {
 		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-		provider.configure(null);
+        
+         Map configuration = new HashMap();
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_KEYSPACENAME, "keyspace1");
+		provider.configure(configuration);
+	}
+
+    @Test
+    public void startAndStopShouldSuccessOnRightConfiguration() {
+        CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+
+        Map configuration = new HashMap();
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_KEYSPACENAME, "keyspace1");
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE);
+        provider.configure(configuration);
 		provider.start();
 		provider.stop();
-	}
+    }
+
+
+    @Test
+    public void startAndStopShouldCreateKeyspaces() {
+        CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
+
+        Map configuration = new HashMap();
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_KEYSPACENAME, "keyspace1");
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE);
+        configuration.put(CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_MODE, "create-drop");
+        provider.configure(configuration);
+        provider.start();
+        provider.stop();
+    }
 }
