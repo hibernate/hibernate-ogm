@@ -47,7 +47,7 @@ public class GridDialectLogger implements GridDialect {
 	private final GridDialect gridDialect; // the real wrapped grid dialect
 
 	public GridDialectLogger(GridDialect gridDialect) {
-		if (gridDialect == null) {
+		if ( gridDialect == null ) {
 			throw new IllegalArgumentException("GridDialect should never be null");
 		}
 		this.gridDialect = gridDialect;
@@ -58,7 +58,7 @@ public class GridDialectLogger implements GridDialect {
 	 *
 	 * @return boolean
 	 */
-	public static boolean isActive() {
+	public static boolean activationNeeded() {
 		return log.isTraceEnabled();
 	}
 

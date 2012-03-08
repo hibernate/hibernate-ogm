@@ -79,7 +79,7 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			}
 			GridDialect gridDialect = (GridDialect) injector.newInstance(registry.getService(DatastoreProvider.class));
 			log.useGridDialect( gridDialect.getClass().getName() );
-			if (GridDialectLogger.isActive()) {
+			if (GridDialectLogger.activationNeeded()) {
 				gridDialect = new GridDialectLogger(gridDialect);
 				log.info("Grid dialect logs are active");
 			} else {
