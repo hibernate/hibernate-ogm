@@ -76,26 +76,21 @@ public class CassandraCQL2Dialect implements GridDialect {
 				.append("=?");
 
 		ResultSet resultSet;
+		boolean next;
 		try {
 			PreparedStatement statement = provider.getConnection().prepareStatement(query.toString());
 			statement.setBytes(1, SerializationHelper.toByteArray(key.getId()));
-			statement.execute(query.toString());
-			//FIXME close statement when done with resultset: Cassandra's driver is cool with that though
-			statement.close();
+			statement.execute();
 			resultSet = statement.getResultSet();
-
+			next = resultSet.next();
+			statement.close();
 		} catch (SQLException e) {
 			throw new HibernateException("Cannot execute select query in cassandra", e);
 		}
-		try {
-			boolean next = resultSet.next();
-			if (next == false) {
-				return null;
-			} else {
-				return new Tuple(new ResultSetTupleSnapshot(resultSet));
-			}
-		} catch (SQLException e) {
-			throw new HibernateException("Error while reading resultset", e);
+		if (next == false) { //FIXME Cassandra CQL/JDBC driver return a pseudo row even if the entity does not exists
+			return null;
+		} else {
+			return new Tuple(new ResultSetTupleSnapshot(resultSet));
 		}
 	}
 
