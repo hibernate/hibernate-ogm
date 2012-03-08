@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.impl;
 
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.ServiceRegistry;
@@ -78,6 +79,12 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			}
 			GridDialect gridDialect = (GridDialect) injector.newInstance(registry.getService(DatastoreProvider.class));
 			log.useGridDialect( gridDialect.getClass().getName() );
+			if (GridDialectLogger.activationNeeded()) {
+				gridDialect = new GridDialectLogger(gridDialect);
+				log.info("Grid dialect logs are active");
+			} else {
+				log.info("Grid dialect logs are disabled");
+			}
 			return gridDialect;
 		} catch (Exception e) {
 			throw log.cannotInstantiateGridDialect(dialectClass, e);
