@@ -28,9 +28,10 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
+import org.jboss.logging.Logger;
 
 /**
  * A wrapper dialect that logs the calls performed on the real dialect.
@@ -41,7 +42,7 @@ import org.hibernate.persister.entity.Lockable;
  */
 public class GridDialectLogger implements GridDialect {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log log = Logger.getMessageLogger( Log.class, CoreLogCategories.DATASTORE_ACCESS.toString() );
 
 	private final GridDialect gridDialect; // the real wrapped grid dialect
 
