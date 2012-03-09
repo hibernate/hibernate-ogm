@@ -18,38 +18,45 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
 
-import java.util.Map;
-import java.util.Set;
+package org.hibernate.ogm.type.cassandra;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.PrimitiveByteArrayType;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 
 /**
+ * Represents an integer
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class BlobType extends AbstractGenericBasicType<byte[]> {
+	final public static BlobType INSTANCE = new BlobType();
 
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	public BlobType() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, PrimitiveByteArrayTypeDescriptor.INSTANCE );
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 
 	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
+	public String getName() {
+		return "blob";
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	@Override
+	public String toString(byte[] value) {
+		return super.toString( value );    //To change body of overridden methods use File | Settings | File Templates.
+	}
+
+	@Override
+	public byte[] fromString(String string) {
+		return super.fromString( string );    //To change body of overridden methods use File | Settings | File Templates.
 	}
 }

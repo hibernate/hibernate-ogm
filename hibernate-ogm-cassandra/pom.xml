@@ -2,25 +2,25 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~ Copyright (c) 2010-2011, Red Hat, Inc. and/or its affiliates or third-party contributors as
-  ~ indicated by the @author tags or express copyright attribution
-  ~ statements applied by the authors.  All third-party contributions are
-  ~ distributed under license by Red Hat, Inc.
+  ~  Copyright (c) 2010-2012, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~  indicated by the @author tags or express copyright attribution
+  ~  statements applied by the authors.  All third-party contributions are
+  ~  distributed under license by Red Hat, Inc.
   ~
-  ~ This copyrighted material is made available to anyone wishing to use, modify,
-  ~ copy, or redistribute it subject to the terms and conditions of the GNU
-  ~ Lesser General Public License, as published by the Free Software Foundation.
+  ~  This copyrighted material is made available to anyone wishing to use, modify,
+  ~  copy, or redistribute it subject to the terms and conditions of the GNU
+  ~  Lesser General Public License, as published by the Free Software Foundation.
   ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
-  ~ for more details.
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+  ~  for more details.
   ~
-  ~ You should have received a copy of the GNU Lesser General Public License
-  ~ along with this distribution; if not, write to:
-  ~ Free Software Foundation, Inc.
-  ~ 51 Franklin Street, Fifth Floor
-  ~ Boston, MA  02110-1301  USA
+  ~  You should have received a copy of the GNU Lesser General Public License
+  ~  along with this distribution; if not, write to:
+  ~  Free Software Foundation, Inc.
+  ~  51 Franklin Street, Fifth Floor
+  ~  Boston, MA  02110-1301  USA
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -47,36 +47,15 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
-            <optional>true</optional>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache-extras.cassandra-jdbc</groupId>
-            <artifactId>cassandra-jdbc</artifactId>
-            <version>1.0.5-SNAPSHOT</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-lucene-directory</artifactId>
-            <optional>true</optional>
-        </dependency>
-        
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -86,17 +65,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <!-- this is optional on core :( and needed for testing -->
-        <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -114,18 +82,6 @@
             <artifactId>log4j</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Cassandra driver issue with SLF4J deps -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -138,26 +94,15 @@
                     <excludes>
                         <!-- Skip a long-running test of a prototype class -->
                         <exclude>**/ClusteredConcurrentTimestampRegionTestCase.java</exclude>
+
+                        <exclude>**/associations/collection/types/*Test.java</exclude>
+                        <exclude>**/associations/collection/unidirectional/*Test.java</exclude>
+                        <exclude>**/associations/manytoone/ManyToOneTest#testBidirectionalManyToOneRegular</exclude>
+                        <exclude>**/associations/manytoone/ManyToOneTest.java</exclude>
+                        <exclude>**/associations/onetoone/*Test.java</exclude>
+                        <exclude>**/perf/*Test.java</exclude>
+                        <exclude>**/id/*Test.java</exclude>
                     </excludes>
-                     <!-- 
-                          java.net.preferIPv4Stack :
-                             There are problems with multicast and IPv6 on some
-                          OS/JDK combos, so we tell Java to use IPv4. If you
-                          have problems with multicast when running the tests
-                          you can try setting this to 'false', although typically
-                          that won't be helpful.
-                          
-                          jgroups.ping.timeout=500 :
-                             Tell JGroups to only wait a short time for PING 
-                          responses before determining coordinator. Speeds cluster
-                          formation during integration tests. (This is too
-                          low a value for a real system; only use for tests.)
-                          
-                          jgroups.udp.enable_bundling=false :
-                             Disable the JGroups message bundling feature
-                          to speed tests and avoid FLUSH issue
-                           -->
-                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false</argLine>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>
@@ -170,16 +115,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-     </profiles>
 </project>

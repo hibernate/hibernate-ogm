@@ -20,55 +20,75 @@
  */
 package org.hibernate.ogm.datastore.cassandra;
 
+import org.hibernate.HibernateException;
+import org.hibernate.cfg.Environment;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
+
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreProviderTest {
+	
+	Map<String, String> settings;
+	CassandraDatastoreProvider provider;
+
+	@Before
+	public void setup() {
+		this.provider = new CassandraDatastoreProvider();
+		this.settings = new HashMap<String, String>();
+
+		Properties properties = Environment.getProperties();
+		
+		for (String key : properties.stringPropertyNames()) {
+			this.settings.put( key, properties.getProperty( key ) );
+		}
+	}
 
 	@Test( expected = IllegalArgumentException.class )
 	public void getConfigurationShouldThrowExceptionOnInvalidSetting() {
-		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-		provider.configure( null );
+		this.provider.configure( null );
 	}
 
 	@Test
 	public void defaultUrlValueShouldSuccessOnConfiguration() {
-		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-
-		Map configuration = new HashMap();
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
-		provider.configure( configuration );
+		this.settings.remove( "hibernate.ogm.cassandra.url" );
+		this.provider.configure( this.settings );
 	}
 
 	@Test
-	public void startAndStopShouldSuccessOnRightConfiguration() {
-		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-
-		Map configuration = new HashMap();
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, "jdbc:cassandra://localhost:9160" );
-		provider.configure( configuration );
-		provider.start();
-		provider.stop();
+	public void setupShouldSuccessOnRightConfiguration() {
+		this.provider.configure( this.settings );
 	}
 
+	@Test(expected = HibernateException.class)
+	public void startShouldFailWhenKeyspaceIsNotCreated() {
+		this.settings.remove( OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA );
+		this.provider.configure( this.settings );
+		this.provider.start();
+	}
+
+	@Test(expected = HibernateException.class)
+	public void startShouldFailOnWrongGenerateConfigurationIfKeyspaceDoesNotExist() {
+		this.settings.put( OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA,
+						   "wrong-value" );
+		this.provider.configure( this.settings );
+		this.provider.start();
+	}
 
 	@Test
 	public void startAndStopShouldCreateKeyspaces() {
-		CassandraDatastoreProvider provider = new CassandraDatastoreProvider();
-
-		Map configuration = new HashMap();
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, "jdbc:cassandra://localhost:9160" );
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_HBM2DDL_AUTO, "create-drop" );
-		provider.configure( configuration );
-		provider.start();
-		provider.stop();
+		this.settings.put( OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA,
+						   OgmConfiguration.GenerateSchemaValue.CREATE_DROP.getValue() );
+		this.provider.configure( this.settings );
+		this.provider.start();
+		this.provider.stop();
 	}
 }

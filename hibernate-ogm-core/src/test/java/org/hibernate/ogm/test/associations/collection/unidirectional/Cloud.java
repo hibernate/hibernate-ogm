@@ -22,6 +22,7 @@ package org.hibernate.ogm.test.associations.collection.unidirectional;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -41,6 +42,8 @@ public class Cloud {
 	public void setId(String id) {  this.id = id; }
 	private String id;
 
+	// cassandra makes the type name a keyword
+	@Column(name = "cloud_type")
 	public String getType() { return type; }
 	public void setType(String type) {  this.type = type; }
 	private String type;

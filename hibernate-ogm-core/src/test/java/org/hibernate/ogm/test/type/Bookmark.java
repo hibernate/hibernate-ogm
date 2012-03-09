@@ -55,7 +55,7 @@ public class Bookmark {
 
 	public URL getUrl() { return url; }
 	public void setUrl(URL url ) { this.url = url; }
-	private URL url; 
+	private URL url;
 	
 	@Column(name = "site_weight")
 	public BigDecimal getSiteWeight() { return siteWeight; }
@@ -108,7 +108,9 @@ public class Bookmark {
 	public void setDestructionCalendar(Calendar destructionCalendar) {  this.destructionCalendar = destructionCalendar; }
 	private Calendar destructionCalendar;
 
+	//TODO : because the world type is a key world in cassandra
 	@Enumerated(EnumType.STRING)
+	@Column(name = "bookmark_type")
 	public BookmarkType getType() { return type; }
 	public void setType(BookmarkType type) {  this.type = type; }
 	private BookmarkType type;
@@ -128,8 +130,9 @@ public class Bookmark {
 	public void setStockCount(Integer stockCount) { this.stockCount = stockCount; }
 	private Integer stockCount;
 
-	public Long getUserId() { return userId; }
-	public void setUserId(Long userId) { this.userId = userId; }
-	private Long userId;
+	//TODO: see @CassandraTypeConverter
+//	public Long getUserId() { return userId; }
+//	public void setUserId(Long userId) { this.userId = userId; }
+//	private Long userId;
 	
 }

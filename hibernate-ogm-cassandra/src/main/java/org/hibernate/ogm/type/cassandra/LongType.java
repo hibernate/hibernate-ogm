@@ -18,38 +18,38 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
+package org.hibernate.ogm.type.cassandra;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * Represents a Long type
+ * 
+ * @author Emmanuel Bernard
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class LongType extends AbstractGenericBasicType<Long> {
+	public static final LongType INSTANCE = new LongType();
 
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	public LongType() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, LongTypeDescriptor.INSTANCE );
 	}
 
-	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
+	public String getName() {
+		//TODO : bigint into cassandra is it ok for a long?
+		return "bigint";
 	}
 
 	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
+	public String[] getRegistrationKeys() {
+		return new String[] { getName(), long.class.getName(), Long.class.getName() };
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 }

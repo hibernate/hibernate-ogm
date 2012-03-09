@@ -42,7 +42,6 @@
         <module>hibernate-ogm-infinispan</module>
         <module>hibernate-ogm-integrationtest</module>
         <module>hibernate-ogm-modules</module>
-        <module>hibernate-ogm-cassandra</module>
     </modules>
 
     <prerequisites>
@@ -892,6 +891,12 @@
             </activation>
             <modules>
                 <module>hibernate-ogm-mongodb</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>cassandra</id>
+            <modules>
+                <module>hibernate-ogm-cassandra</module>
             </modules>
         </profile>
     </profiles>

@@ -18,38 +18,44 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
 
-import java.util.Map;
-import java.util.Set;
+package org.hibernate.ogm.type.cassandra;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import java.util.UUID;
+
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.LongTypeDescriptor;
+import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * For {@link java.util.Calendar} objects use a String representation for MongoDB.
+ *
+ * @author Oliver Carr ocarr@redhat.com
+ *
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class UUIDType extends AbstractGenericBasicType<UUID> {
 
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	public static final UUIDType INSTANCE = new UUIDType();
+
+	public UUIDType() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, UUIDTypeDescriptor.INSTANCE );
 	}
 
-	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
+	public String getName() {
+		return "uuid";
 	}
 
 	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
+	public String[] getRegistrationKeys() {
+		return new String[] { getName(), long.class.getName(), Long.class.getName() };
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
+
 }

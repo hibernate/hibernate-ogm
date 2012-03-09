@@ -247,6 +247,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return gridIdentifierType;
 	}
 
+	public GridType[] getGridPropertyTypes() {
+		return gridPropertyTypes;
+	}
+
 	/**
 	 * This snapshot is meant to be used when updating data.
 	 */
