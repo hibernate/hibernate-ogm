@@ -52,7 +52,7 @@ public class DatastoreProviderTest {
 
 		Map configuration = new HashMap();
 		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE );
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, "jdbc:cassandra://localhost:9160" );
 		provider.configure( configuration );
 		provider.start();
 		provider.stop();
@@ -65,7 +65,7 @@ public class DatastoreProviderTest {
 
 		Map configuration = new HashMap();
 		configuration.put( CassandraDatastoreProvider.CASSANDRA_KEYSPACE, "keyspace1" );
-		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, CassandraDatastoreProvider.CASSANDRA_CONFIGURATION_URL_DEFAULT_VALUE );
+		configuration.put( CassandraDatastoreProvider.CASSANDRA_URL, "jdbc:cassandra://localhost:9160" );
 		configuration.put( CassandraDatastoreProvider.CASSANDRA_HBM2DDL_AUTO, "create-drop" );
 		provider.configure( configuration );
 		provider.start();

@@ -108,8 +108,9 @@ public abstract class OgmTestCase extends TestCase {
 
 	protected abstract Class<?>[] getAnnotatedClasses();
 
+	//For OGM this is likely generally false (ORM sets this to true
 	protected boolean recreateSchema() {
-		return true;
+		return false;
 	}
 
 	protected String[] getAnnotatedPackages() {
