@@ -1,6 +1,6 @@
-/*
+/* 
  * Hibernate, Relational Persistence for Idiomatic Java
- *
+ * 
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,36 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.cassandra.jdbc;
+package org.hibernate.ogm.type;
 
-import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
-import org.hibernate.search.util.impl.ClassLoaderHelper;
-import org.junit.Test;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
+import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * For Cassandra persist a {@link BigDecimal} as a {@link String}.
+ *
+ * @author Khanh Tuong Maudoux
  */
+public class StringBigDecimal extends AbstractGenericBasicType  {
 
-public class JdbcDriverTest {
-	@Test
-	public void testJdbcDriver() throws Exception {
-		Connection connection;
-		String url = "jdbc:cassandra://localhost:9160";
+	public static final StringBigDecimal INSTANCE = new StringBigDecimal();
 
-		Class.forName( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
-
-//		ClassLoaderHelper.classForName("org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver");
-		try {
-			connection = DriverManager.getConnection(url);
-			connection.close();
-		} catch (SQLException e) {
-			throw new HibernateException("Unable to connect to Cassandra server " + url, e);
-		}
-
+	public StringBigDecimal() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, BigDecimalTypeDescriptor.INSTANCE );
 	}
+
+	@Override
+	public String getName() {
+		return "string_bigdecimal";
+	}
+
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
+	}
+
 }

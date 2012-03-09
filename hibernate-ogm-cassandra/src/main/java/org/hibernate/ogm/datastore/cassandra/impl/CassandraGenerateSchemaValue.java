@@ -18,36 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.cassandra.jdbc;
-
-import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
-import org.hibernate.search.util.impl.ClassLoaderHelper;
-import org.junit.Test;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+package org.hibernate.ogm.datastore.cassandra.impl;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Khanh Tuong Maudoux
  */
+public enum CassandraGenerateSchemaValue {
+	DEFAULT("default"),
+	CREATE_DROP("create-drop"),
+	CREATE("create");
+	
+	private final String value;
 
-public class JdbcDriverTest {
-	@Test
-	public void testJdbcDriver() throws Exception {
-		Connection connection;
-		String url = "jdbc:cassandra://localhost:9160";
 
-		Class.forName( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
+	private CassandraGenerateSchemaValue(String value) {
+		this.value = value;
+	}
 
-//		ClassLoaderHelper.classForName("org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver");
-		try {
-			connection = DriverManager.getConnection(url);
-			connection.close();
-		} catch (SQLException e) {
-			throw new HibernateException("Unable to connect to Cassandra server " + url, e);
-		}
-
+	public String getValue() {
+		return this.value;
+	}
+	
+	public static boolean isValid(String value) {
+		return DEFAULT.getValue().equals( value ) || CREATE.getValue().equals( value ) || CREATE_DROP.getValue().equals( value );
 	}
 }

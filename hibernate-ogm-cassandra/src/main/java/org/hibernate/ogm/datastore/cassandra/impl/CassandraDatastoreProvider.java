@@ -21,24 +21,29 @@
 package org.hibernate.ogm.datastore.cassandra.impl;
 
 import org.hibernate.HibernateException;
-import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.mapping.Column;
+import org.hibernate.mapping.SimpleValue;
+import org.hibernate.mapping.Table;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.StartStoppable;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.cassandra.CassandraCQL2Dialect;
+import org.hibernate.ogm.dialect.cassandra.CassandraCQL3Dialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.search.util.impl.ClassLoaderHelper;
 import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.Startable;
-import org.hibernate.service.spi.Stoppable;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,19 +52,17 @@ import java.util.Map;
  * @author Khanh Tuong Maudoux
  */
 //FIXME use a connection pool for Cassandra's connections
-public class CassandraDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
-		ServiceRegistryAwareService, Configurable {
+public class CassandraDatastoreProvider implements DatastoreProvider, StartStoppable, Configurable {
 	public static final String CASSANDRA_KEYSPACE = "hibernate.ogm.cassandra.default_keyspace";
 
 	public static final String CASSANDRA_URL = "hibernate.ogm.cassandra.url";
-
-	public static final String CASSANDRA_HBM2DDL_AUTO = AvailableSettings.HBM2DDL_AUTO;
-	public static final String CASSANDRA_HBM2DDL_AUTO_DEFAULT = "validate";
 
 	private Connection connection;
 	private String url;
 	private String keyspace;
 	private String configurationMode;
+
+	private Map<String, Table> metaDataCache = new HashMap<String, Table>( );
 
 	private static final Log log = LoggerFactory.make();
 
@@ -72,6 +75,10 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 	}
 
+	public String getKeyspace() {
+		return keyspace;
+	}
+
 	@Override
 	public void configure(Map configurationValues) {
 		if ( configurationValues == null ) {
@@ -79,10 +86,11 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 		keyspace = (String) configurationValues.get( CASSANDRA_KEYSPACE );
 		url = (String) configurationValues.get( CASSANDRA_URL );
-		configurationMode = (String) configurationValues.get( CASSANDRA_HBM2DDL_AUTO );
+		configurationMode = (String) configurationValues.get( OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA );
 
-		if ( configurationMode == null ) {
-			configurationMode = CASSANDRA_HBM2DDL_AUTO_DEFAULT;
+		if ( !OgmConfiguration.GenerateSchemaValue.isValid( configurationMode ) ) {
+			log.unexpectedConfiguration(OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA, OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA_DEFAULT.getValue());
+			configurationMode = OgmConfiguration.HIBERNATE_OGM_GENERATE_SCHEMA_DEFAULT.getValue();
 		}
 
 		if ( keyspace == null ) {
@@ -92,52 +100,23 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return CassandraCQL2Dialect.class;
+		return CassandraCQL3Dialect.class;
 	}
 
-	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-	}
-
-	@Override
 	public void start() {
 		try {
 			connection = DriverManager.getConnection( url );
 		} catch ( Exception e ) {
 			throw new HibernateException( "Unable to connect to Cassandra server " + url, e );
 		}
-
 		createKeyspaceIfNeeded();
 
 		executeStatement( "USE " + keyspace + ";", "Unable to switch to keyspace " + keyspace );
-
-		//FIXME today we put everything in the same table because Emmanuel does not know how to get the SessionFactory in a service...
-		//FIXME In the end some kind of "lazy" table creation probably makes sense with and ping pong between the datastore and the dialect
-		StringBuilder statement = new StringBuilder()
-				.append( "CREATE COLUMNFAMILY " )
-				.append( "GenericTable (" )
-				.append( "key blob PRIMARY KEY);" );
-		//FIXME find a way to bind the key type to the cassandra type: blob sucks from a user PoV
-		try {
-			executeStatement( statement.toString(), "Unable create table GenericTable" );
-		} catch ( HibernateException e ) {
-			if ( e.getCause() instanceof SQLSyntaxErrorException ) {
-				SQLSyntaxErrorException ee = (SQLSyntaxErrorException) e.getCause();
-				String message = ee.getMessage();
-				if ( message.contains( "already exists in" ) ) {
-					//we are good
-				} else {
-					throw e;
-				}
-			} else {
-				throw e;
-			}
-		}
 	}
 
 	private void createKeyspaceIfNeeded() {
-		if ( "create-drop".equals( configurationMode )
-				|| "create".equals( configurationMode ) ) {
+		if ( OgmConfiguration.GenerateSchemaValue.CREATE_DROP.getValue().equals( configurationMode )
+				|| OgmConfiguration.GenerateSchemaValue.CREATE.getValue().equals( configurationMode ) ) {
 			try {
 				StringBuilder statement = new StringBuilder()
 						.append( "CREATE KEYSPACE " )
@@ -158,8 +137,58 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 	}
 
+	private void createColumnFamilyIfNeeded(String entityName, List<Column> primaryKeyName, List<Column> columns, String error) {
+		if ( OgmConfiguration.GenerateSchemaValue.CREATE_DROP.getValue().equals( configurationMode )
+				|| OgmConfiguration.GenerateSchemaValue.CREATE.getValue().equals( configurationMode ) ) {
+
+			assert(primaryKeyName != null);
+
+			StringBuilder query = new StringBuilder(  );
+
+			query.append( "CREATE TABLE " )
+					.append( entityName )
+					.append( " (" );
+			for (Column column : columns) {
+				String columnType = ((SimpleValue) column.getValue()).getTypeName();
+				String innerType = CassandraTypeMapper.INSTANCE.mapper.get( columnType );
+				String tmpInnerType = (innerType == null || innerType.equals( "byte" ) || innerType.equals( "bigint" ) || innerType
+						.equals( "uuid" ) || innerType.equals( "calendar_date" ) || innerType.equals( "date" ) || innerType
+						.equals( "long" ) || innerType.equals( "decimal" )) ? "varchar" : innerType;
+
+				query.append( column.getName() ).append( " " ).append( tmpInnerType ).append( ", " );
+			}
+			query.append( "PRIMARY KEY (" );
+			      String prefix = "";
+			for (Column key : primaryKeyName) {
+				query.append( prefix );
+				prefix = ",";
+				query.append( key.getName() );
+			}
+			query.append( "));" );
+
+			try {
+				executeStatement( query.toString(), error );
+			}
+			catch (HibernateException e) {
+				if ( e.getCause() instanceof SQLSyntaxErrorException ) {
+					SQLSyntaxErrorException ee = (SQLSyntaxErrorException) e.getCause();
+					String message = ee.getMessage();
+					if ( message.contains( "already exists in" ) || message.contains( "already existing column" )) {
+						//we are good
+					}
+					else {
+						throw e;
+					}
+				}
+				else {
+					throw e;
+				}
+			}
+		}
+	}
+
 	private void dropKeyspaceIfNeeded() {
-		if ( "create-drop".equals( configurationMode ) ) {
+		if ( OgmConfiguration.GenerateSchemaValue.CREATE_DROP.getValue().equals( configurationMode ) ) {
 			try {
 				StringBuilder statement = new StringBuilder()
 						.append( "DROP KEYSPACE " )
@@ -176,13 +205,45 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 	}
 
-	private void executeStatement(String statement, String error) {
+	public void executeStatement(String statement, String error) {
 		try {
 			Statement sqlStatement = connection.createStatement();
 			sqlStatement.execute( statement );
 			sqlStatement.close();
 		} catch ( Exception e ) {
 			throw new HibernateException( error, e );
+		}
+	}
+
+	@Override
+	public void start(Configuration configuration, SessionFactoryImplementor sessionFactoryImplementor) {
+		start();
+
+		Iterator<Table> tables = configuration.getTableMappings();
+		while ( tables.hasNext() ) {
+			Table table = tables.next();
+
+			this.metaDataCache.put( table.getName(), table );
+
+			List<Column> primaryKeys = new ArrayList<Column>();
+			if ( table.isPhysicalTable() ) {
+				if ( table.hasPrimaryKey() ) {
+					primaryKeys = table.getPrimaryKey().getColumns();
+				}
+				List<Column> columns = new ArrayList<Column>();
+				Iterator<Column> columnsIt = (Iterator<Column>) table.getColumnIterator();
+
+				while ( columnsIt.hasNext() ) {
+					columns.add( columnsIt.next() );
+				}
+
+				createColumnFamilyIfNeeded(
+						table.getName(),
+						primaryKeys,
+						columns,
+						"Unable create table " + table.getName()
+				);
+			}
 		}
 	}
 
@@ -200,5 +261,9 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 
 	public Connection getConnection() {
 		return connection;
+	}
+
+	public Map<String, Table> getMetaDataCache() {
+		return metaDataCache;
 	}
 }

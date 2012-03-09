@@ -18,36 +18,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.cassandra.jdbc;
+package org.hibernate.ogm.datastore.cassandra;
 
-import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.cassandra.impl.CassandraDatastoreProvider;
-import org.hibernate.search.util.impl.ClassLoaderHelper;
+import java.util.Properties;
+
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.test.utils.CassandraTestHelper;
+
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Khanh Tuong Maudoux
  */
+public class ConfigurationBootTest {
 
-public class JdbcDriverTest {
+	Properties properties;
+
+	@Before
+	public void setup() {
+		this.properties = Environment.getProperties();
+	}
+
 	@Test
-	public void testJdbcDriver() throws Exception {
-		Connection connection;
-		String url = "jdbc:cassandra://localhost:9160";
+	@Ignore
+	public void testSimpleCassandraInitialization() {
+		tryBoot();
+	}
 
-		Class.forName( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
-
-//		ClassLoaderHelper.classForName("org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver");
-		try {
-			connection = DriverManager.getConnection(url);
-			connection.close();
-		} catch (SQLException e) {
-			throw new HibernateException("Unable to connect to Cassandra server " + url, e);
+	private void tryBoot() {
+		Configuration cfg = new OgmConfiguration();
+		cfg.setProperties( properties );
+		SessionFactory sessionFactory = cfg.buildSessionFactory();
+		if ( sessionFactory != null ) {
+			try {
+				// trigger service initialization, and also verifies it actually uses Cassandra:
+				CassandraTestHelper.getProvider( sessionFactory );
+			}
+			finally {
+				sessionFactory.close();
+			}
 		}
-
 	}
 }

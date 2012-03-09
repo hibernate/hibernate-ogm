@@ -63,7 +63,10 @@
         <dependency>
             <groupId>org.apache-extras.cassandra-jdbc</groupId>
             <artifactId>cassandra-jdbc</artifactId>
-            <version>1.0.5-SNAPSHOT</version>
+            <!--<version>1.0.5-SNAPSHOT</version>-->
+            <!--<version>1.1-dev-SNAPSHOT</version>-->
+            <!--<version>1.1.0</version>-->
+            <version>1.1.1</version>
         </dependency>
 
 
@@ -138,26 +141,12 @@
                     <excludes>
                         <!-- Skip a long-running test of a prototype class -->
                         <exclude>**/ClusteredConcurrentTimestampRegionTestCase.java</exclude>
+
+                        <exclude>**/associations/**/*Test.java</exclude>
+                        <exclude>**/embeddable/*Test.java</exclude>
+                        <exclude>**/perf/*Test.java</exclude>
+                        <exclude>**/id/*Test.java</exclude>
                     </excludes>
-                     <!-- 
-                          java.net.preferIPv4Stack :
-                             There are problems with multicast and IPv6 on some
-                          OS/JDK combos, so we tell Java to use IPv4. If you
-                          have problems with multicast when running the tests
-                          you can try setting this to 'false', although typically
-                          that won't be helpful.
-                          
-                          jgroups.ping.timeout=500 :
-                             Tell JGroups to only wait a short time for PING 
-                          responses before determining coordinator. Speeds cluster
-                          formation during integration tests. (This is too
-                          low a value for a real system; only use for tests.)
-                          
-                          jgroups.udp.enable_bundling=false :
-                             Disable the JGroups message bundling feature
-                          to speed tests and avoid FLUSH issue
-                           -->
-                    <argLine>-Djgroups.bind_addr=${jgroups.bind_addr} -Dhibernate.test.validatefailureexpected=true -Djava.net.preferIPv4Stack=true -Djgroups.ping.timeout=500 -Djgroups.ping.num_initial_members=1 -Djgroups.udp.enable_bundling=false</argLine>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>

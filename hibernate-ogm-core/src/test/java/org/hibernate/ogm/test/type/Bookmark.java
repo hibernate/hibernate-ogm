@@ -109,6 +109,8 @@ public class Bookmark {
 	private Calendar destructionCalendar;
 
 	@Enumerated(EnumType.STRING)
+	//TODO : because the world type is a key world in cassandra
+	@Column(name = "bookmark_type")
 	public BookmarkType getType() { return type; }
 	public void setType(BookmarkType type) {  this.type = type; }
 	private BookmarkType type;

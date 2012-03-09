@@ -21,13 +21,15 @@
 package org.hibernate.ogm.dialect.cassandra.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.cassandra.impl.CassandraTypeMapper;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,8 +39,10 @@ import java.util.Set;
 public class ResultSetTupleSnapshot implements TupleSnapshot {
 	private final ResultSet resultSet;
 	private Map<String,Integer> columnNames = new HashMap<String,Integer>();
+	private Table table;
 
-	public ResultSetTupleSnapshot(ResultSet resultSet) {
+	public ResultSetTupleSnapshot(ResultSet resultSet, Table tableMetadata) {
+		this.table = tableMetadata;
 		this.resultSet = resultSet;
 		try {
 			ResultSetMetaData metaData = resultSet.getMetaData();
@@ -53,11 +57,47 @@ public class ResultSetTupleSnapshot implements TupleSnapshot {
 	}
 	@Override
 	public Object get(String column) {
-		Integer index = columnNames.get(column);
+		//because, by default, cassandra manages column name in lowercase
+		Integer index = columnNames.get(column.toLowerCase());
+		String type = CassandraTypeMapper.INSTANCE.getType( table, column );
+
 		try {
-			return index == null ? null : resultSet.getObject(index);
+			if ("blob".equalsIgnoreCase( type )) {
+				return index == null ? null : resultSet.getBytes(index) ;
+			}
+			else if ( "int".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getInt( index ) ;
+			}
+			else if ( "byte".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getByte( index ) ;
+			}
+			else if ( "boolean".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getBoolean( index ) ;
+			}
+			else if ( "float".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getFloat( index ) ;
+			}
+			else if ( "bigint".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getString( index ) ;
+			}
+			else if ( "calendar_date".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getObject( index ) ;
+			}
+			else if ( "date".equalsIgnoreCase( type ) || ( "timestamp".equalsIgnoreCase( type )) || ( "time".equalsIgnoreCase( type )) ) {
+				return index == null ? null : resultSet.getString( index ) ;
+			}
+			else if ( "decimal".equalsIgnoreCase( type ) ) {
+				return index == null ? null : BigDecimal.valueOf( resultSet.getDouble( index ) ) ;
+			}
+			else if ( "long".equalsIgnoreCase( type ) ) {
+				return index == null ? null : resultSet.getLong( index ) ;
+			}
+			else {
+				return index == null ? null : resultSet.getString( index ) ;
+			}
+
 		} catch (SQLException e) {
-			throw new HibernateException("Unable to read resultset column" + column, e);
+			throw new HibernateException("Unable to read resultset column " + column, e);
 		}
 	}
 

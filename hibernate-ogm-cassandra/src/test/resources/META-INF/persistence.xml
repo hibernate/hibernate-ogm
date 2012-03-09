@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <!--<persistence-unit name="hibernate-ogm-test" transaction-type="JTA">-->
+    <persistence-unit name="hibernate-ogm-test" transaction-type="RESOURCE_LOCAL">
+        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+
+    </persistence-unit>
+</persistence>
