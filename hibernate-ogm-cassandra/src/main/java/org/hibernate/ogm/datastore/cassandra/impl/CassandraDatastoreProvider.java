@@ -144,7 +144,7 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 				sqlStatement.close();
 			} catch ( SQLSyntaxErrorException e ) {
 				if ( !e.getMessage().startsWith( "Keyspace names must be case-insensitively unique" ) ) {
-					throw new HibernateException( "Unable create the keyspace " + keyspace, e );
+					throw new HibernateException( "Unable to create the keyspace " + keyspace, e );
 				}
 				//else the keyspace is already created
 			} catch ( Exception e ) {
@@ -153,6 +153,23 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 		}
 	}
 
+	private void dropKeyspaceIfNeeded() {
+		if ( "create-drop".equals( configurationMode ) ) {
+			try {
+				StringBuilder statement = new StringBuilder()
+						.append( "DROP KEYSPACE " )
+						.append( keyspace )
+						.append( ";" );
+				Statement sqlStatement = connection.createStatement();
+				sqlStatement.execute( statement.toString() );
+				sqlStatement.close();
+			} catch ( SQLException e ) {
+				if ( !e.getMessage().startsWith( "Keyspace names must be case-insensitively unique" ) ) {
+					throw new HibernateException( "Unable to drop the keyspace " + keyspace, e );
+				}
+			}
+		}
+	}
 
 	private void executeStatement(String statement, String error) {
 		try {
@@ -168,6 +185,7 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 	public void stop() {
 		if ( connection != null ) {
 			try {
+				dropKeyspaceIfNeeded();
 				connection.close();
 			} catch ( SQLException e ) {
 				//FIXME log a warning
