@@ -45,23 +45,8 @@ public class OgmDialectFactoryInitiator implements BasicServiceInitiator<Dialect
 	}
 
 	private static class NoopDialectFactory implements DialectFactory {
-
-		@SuppressWarnings("unchecked")
 		@Override
 		public Dialect buildDialect(Map configValues, Connection connection) throws HibernateException {
-			if (configValues.containsKey("hibernate.dialect")) {
-				Class<? extends Dialect> cl;
-				try {
-					cl = (Class<? extends Dialect>) Class.forName(configValues.get("hibernate.dialect").toString());
-					return cl.newInstance();
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				} catch (InstantiationException e) {
-					e.printStackTrace();
-				} catch (IllegalAccessException e) {
-					e.printStackTrace();
-				}
-			}
 			return new NoopDialect();
 		}
 	}
