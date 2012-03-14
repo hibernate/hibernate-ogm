@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class EmptyTupleSnapshot implements TupleSnapshot {
+public final class EmptyTupleSnapshot implements TupleSnapshot {
 	public static final TupleSnapshot SINGLETON = new EmptyTupleSnapshot();
 
 	private EmptyTupleSnapshot() {}

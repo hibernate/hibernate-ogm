@@ -28,7 +28,7 @@ import org.infinispan.atomic.FineGrainedAtomicMap;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class InfinispanTupleSnapshot implements TupleSnapshot {
+public final class InfinispanTupleSnapshot implements TupleSnapshot {
 	private final FineGrainedAtomicMap<String, Object> atomicMap;
 
 	public InfinispanTupleSnapshot(FineGrainedAtomicMap<String,Object> atomicMap) {

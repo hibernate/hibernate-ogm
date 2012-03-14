@@ -32,7 +32,7 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class MapAssociationSnapshot implements AssociationSnapshot {
+public final class MapAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, Map<String, Object>> associationMap;
 

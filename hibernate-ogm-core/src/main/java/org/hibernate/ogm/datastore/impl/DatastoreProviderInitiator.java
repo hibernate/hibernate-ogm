@@ -37,7 +37,8 @@ import java.util.Map;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class DatastoreProviderInitiator extends OptionalServiceInitiator<DatastoreProvider> {
+public final class DatastoreProviderInitiator extends OptionalServiceInitiator<DatastoreProvider> {
+
 	public static final String DATASTORE_PROVIDER = "hibernate.ogm.datastore.provider";
 	private static final Log log = LoggerFactory.make();
 

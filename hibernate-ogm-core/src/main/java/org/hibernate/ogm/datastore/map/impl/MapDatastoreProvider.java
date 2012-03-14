@@ -33,7 +33,7 @@ import org.hibernate.service.spi.Stoppable;
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
+public final class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
 
 	private static final Log log = LoggerFactory.make();
 
