@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MapTupleSnapshot implements TupleSnapshot {
+public final class MapTupleSnapshot implements TupleSnapshot {
 	private final Map<String, Object> map;
 
 	public MapTupleSnapshot(Map<String, Object> map) {

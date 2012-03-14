@@ -29,7 +29,8 @@ import java.util.Map;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class DatastoreServicesInitiator extends OptionalServiceInitiator<DatastoreServices> {
+public final class DatastoreServicesInitiator extends OptionalServiceInitiator<DatastoreServices> {
+
 	public static final DatastoreServicesInitiator INSTANCE = new DatastoreServicesInitiator();
 
 	@Override

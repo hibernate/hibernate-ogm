@@ -35,7 +35,7 @@ import org.hibernate.persister.entity.Lockable;
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockingStrategy implements LockingStrategy {
+public final class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
 	public MapPessimisticReadLockingStrategy(Lockable lockable, LockMode lockMode) {
 		super( lockable, lockMode );

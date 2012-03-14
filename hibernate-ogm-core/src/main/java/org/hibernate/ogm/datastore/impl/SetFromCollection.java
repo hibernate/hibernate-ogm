@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class SetFromCollection<E> implements Set<E> {
+public final class SetFromCollection<E> implements Set<E> {
 	private Collection delegate;
 
 	public SetFromCollection(Collection delegate) {

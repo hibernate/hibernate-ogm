@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class DatastoreServicesImpl implements DatastoreServices, ServiceRegistryAwareService, Configurable {
+public final class DatastoreServicesImpl implements DatastoreServices, ServiceRegistryAwareService, Configurable {
 
 	private ServiceRegistryImplementor serviceRegistry;
 	private GridDialect gridDialect;
