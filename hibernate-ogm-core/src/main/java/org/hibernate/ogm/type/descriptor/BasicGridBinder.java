@@ -67,13 +67,13 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 	public void bind(Tuple resultset, X value, String[] names) {
 		if ( value == null ) {
 			for ( String name : names ) {
-				log.tracef( "binding [null] to parameter [$s]", name );
+				log.tracef( "binding [null] to parameter [%1$s]", name );
 				resultset.put( name, null );
 			}
 		}
 		else {
 			if ( log.isTraceEnabled() ) {
-				log.tracef( "binding [$s] to parameter(s) $s", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
+				log.tracef( "binding [%2$s] to parameter(s) %1$s", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
 			}
 			doBind( resultset, value, names, DEFAULT_OPTIONS );
 		}
