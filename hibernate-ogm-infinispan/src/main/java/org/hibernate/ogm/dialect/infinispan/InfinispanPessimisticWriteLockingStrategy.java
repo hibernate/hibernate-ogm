@@ -24,6 +24,9 @@ import java.io.Serializable;
 
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.infinispan.AdvancedCache;
@@ -39,24 +42,33 @@ import org.hibernate.persister.entity.Lockable;
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
 
 /**
- * @author Emmanuel Bernard
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class InfinispanPessimisticWriteLockingStrategy implements LockingStrategy {
 	private final LockMode lockMode;
 	private final Lockable lockable;
 	private volatile InfinispanDatastoreProvider provider;
 	private static final Log log = LoggerFactory.make();
+	protected final GridType identifierGridType;
 
 	public InfinispanPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockMode = lockMode;
 		this.lockable = lockable;
+		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
+		this.identifierGridType = typeTranslator.getType(lockable.getIdentifierType());
 	}
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
 		AdvancedCache advCache = getProvider(session).getCache(ENTITY_STORE).getAdvancedCache();
-		advCache.lock( EntityKeyBuilder.fromTableNameId( lockable.getRootTableName(), id ) );
+		EntityKey key = EntityKeyBuilder.fromData(
+				lockable.getRootTableName(),
+				lockable.getRootTableIdentifierColumnNames(),
+				identifierGridType,
+				id,
+				session );
+		advCache.lock( key );
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 
