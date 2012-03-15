@@ -50,6 +50,18 @@ public final class AssociationKey implements Serializable {
 		this.hashCode = table.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
 
+	public String getTable() {
+		return table;
+	}
+
+	public String[] getColumnNames() {
+		return columnNames;
+	}
+
+	public Object[] getColumnValues() {
+		return columnValues;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
