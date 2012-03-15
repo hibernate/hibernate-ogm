@@ -20,37 +20,31 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
-import org.hibernate.dialect.lock.OptimisticLockingStrategy;
-import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.util.Hash;
 
 /**
- * @author Guillaume Scheibel
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBDialect implements GridDialect {
-
+	private static final Log log = LoggerFactory.make();
 	private final MongoDBDatastoreProvider provider;
 	private DB currentDB;
 
@@ -64,176 +58,105 @@ public class MongoDBDialect implements GridDialect {
 		this.provider = null;
 	}
 
-	/**
-	 * Get a strategy instance which knows how to acquire a database-level lock
-	 * of the specified mode for this dialect.
-	 * 
-	 * @param lockable
-	 *            The persister for the entity to be locked.
-	 * @param lockMode
-	 *            The type of lock to be acquired.
-	 * @return The appropriate locking strategy.
-	 * @since 3.2
-	 */
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		if (lockMode == LockMode.PESSIMISTIC_FORCE_INCREMENT) {
-			return new PessimisticForceIncrementLockingStrategy(lockable, lockMode);
-		}
-		// else if ( lockMode==LockMode.PESSIMISTIC_WRITE ) {
-		// return new InfinispanPessimisticWriteLockingStrategy( lockable,
-		// lockMode );
-		// }
-		// else if ( lockMode==LockMode.PESSIMISTIC_READ ) {
-		// //TODO find a more efficient pessimistic read
-		// return new InfinispanPessimisticWriteLockingStrategy( lockable,
-		// lockMode );
-		// }
-		else if (lockMode == LockMode.OPTIMISTIC) {
-			return new OptimisticLockingStrategy(lockable, lockMode);
-		} else if (lockMode == LockMode.OPTIMISTIC_FORCE_INCREMENT) {
-			return new OptimisticForceIncrementLockingStrategy(lockable, lockMode);
-		}
-		throw new UnsupportedOperationException("LockMode " + lockMode + " is not supported by the Infinispan GridDialect");
+		throw new UnsupportedOperationException( "LockMode " + lockMode
+				+ " is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		DBObject found = this.getObject(key);
-		return this.getObject(key) != null ? new Tuple(new MongoDBTupleSnapshot(found)) : null;
+		DBObject found = this.getObject( key );
+		return this.getObject( key ) != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = new BasicDBObject("_id", key.getId().toString());
-		DBCollection collection = this.getCollection(key);
-		collection.save(toSave);
-		return new Tuple(new MongoDBTupleSnapshot(toSave));
+		DBObject toSave = new BasicDBObject( "_id", key.getId().toString() );
+		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
 
 	}
 
 	private DBObject getObject(EntityKey key) {
-		DBCollection collection = this.getCollection(key);
-		DBObject searchObject = new BasicDBObject("_id", key.getId().toString());
-		return collection.findOne(searchObject);
+		DBCollection collection = this.getCollection( key );
+		DBObject searchObject = new BasicDBObject( "_id", key.getId().toString() );
+		return collection.findOne( searchObject );
 	}
 
 	private DBCollection getCollection(EntityKey key) {
-		return this.currentDB.getCollection(key.getTable());
+		return this.currentDB.getCollection( key.getTable() );
 	}
 
-	public Map<String, Object> buildFieldGraph(String[] remainingSubFields, Object value, Map<String, Object> currentGraph) {
-		if (remainingSubFields.length == 1) {
-			currentGraph.put(remainingSubFields[0], value);
-		} else {
-			String[] subFields = Arrays.copyOfRange(remainingSubFields, 1, remainingSubFields.length);
-			Map<String, Object> subGraph = null;
-			if (currentGraph.containsKey(remainingSubFields[0])) {
-				Object current = currentGraph.get(remainingSubFields[0]);
-				if (!(current instanceof Map)) {
-					Map<String, Object> subMap = new HashMap<String, Object>();
-					subMap.put(subFields[0], current);
-				} else {
-					subGraph = (Map<String, Object>) current;
-				}
-			} else {
-				subGraph = new HashMap<String, Object>();
-			}
-			currentGraph.put(remainingSubFields[0], this.buildFieldGraph(subFields, value, subGraph));
-		}
-
-		return currentGraph;
+	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
+		return query.get( operator ) != null ? (BasicDBObject) query.get( operator ) : new BasicDBObject();
 	}
 
-	public Map<String, Object> buildFieldsMap(Tuple tuple) {
-		Map<String, Object> fields = new HashMap<String, Object>();
-		for (String column : tuple.getColumnNames()) {
-			String[] fieldNames = column.split("\\.");
-			this.buildFieldGraph(fieldNames, tuple.get(column), fields);
-		}
-		return fields;
+	private void addSubQuery(String operator, BasicDBObject query, String column, Object value) {
+		BasicDBObject subQuery = this.getSubQuery( operator, query );
+		query.append( operator, subQuery.append( column, value ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		DBObject toUpdate = this.getObject(key);
-		toUpdate.putAll(this.buildFieldsMap(tuple));
-		this.getCollection(key).save(toUpdate);
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+
+		BasicDBObject updater = new BasicDBObject();
+		for ( TupleOperation operation : tuple.getOperations() ) {
+			String column = operation.getColumn();
+			if ( !column.contains( "_id" ) ) {
+				switch ( operation.getType() ) {
+				case PUT_NULL:
+				case PUT:
+					this.addSubQuery( "$set", updater, column, operation.getValue() );
+					break;
+				case REMOVE:
+					this.addSubQuery( "$unset", updater, column, 1 );
+					break;
+				}
+			}
+		}
+		this.getCollection( key ).update( snapshot.getDbObject(), updater, true, false );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		DBCollection collection = this.getCollection(key);
-		DBObject toDelete = this.getObject(key);
-		if (toDelete != null) {
-			collection.remove(toDelete);
-		} else {
-			throw new HibernateException("Unable to find " + key + " for removing");
+		DBCollection collection = this.getCollection( key );
+		DBObject toDelete = this.getObject( key );
+		if ( toDelete != null ) {
+			collection.remove( toDelete );
+		}
+		else {
+			log.tracef( "Unable to remove %1$s (object not found)", key.getId().toString() );
 		}
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException("getAssociation");
+		throw new UnsupportedOperationException( "getAssociation is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException("createAssociation");
+		throw new UnsupportedOperationException( "createAssociation is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		throw new UnsupportedOperationException("updateAssociation");
+		throw new UnsupportedOperationException( "updateAssociation is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException("removeAssociation");
+		throw new UnsupportedOperationException( "removeAssociation is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		throw new UnsupportedOperationException("createTupleAssociation");
+		throw new UnsupportedOperationException( "createTupleAssociation is not supported by the MongoDB GridDialect" );
 	}
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		// final AdvancedCache<RowKey, Object> identifierCache =
-		// provider.getCache(IDENTIFIER_STORE).getAdvancedCache();
-		// boolean done = false;
-		// do {
-		// //read value
-		// //skip locking proposed by Sanne
-		// Object valueFromDb = identifierCache.withFlags( Flag.SKIP_LOCKING
-		// ).get( key );
-		// if ( valueFromDb == null ) {
-		// //if not there, insert initial value
-		// value.initialize( initialValue );
-		// //TODO should we use GridTypes here?
-		// valueFromDb = new Long( value.makeValue().longValue() );
-		// final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb
-		// );
-		// //check in case somebody has inserted it behind our back
-		// if ( oldValue != null ) {
-		// value.initialize( ( (Number) oldValue ).longValue() );
-		// valueFromDb = oldValue;
-		// }
-		// }
-		// else {
-		// //read the value from the table
-		// value.initialize( ( ( Number ) valueFromDb ).longValue() );
-		// }
-		//
-		// //update value
-		// final IntegralDataTypeHolder updateValue = value.copy();
-		// //increment value
-		// updateValue.add( increment );
-		// //TODO should we use GridTypes here?
-		// final Object newValueFromDb = updateValue.makeValue().longValue();
-		// done = identifierCache.replace( key, valueFromDb, newValueFromDb );
-		// }
-		// while ( !done );
-		throw new UnsupportedOperationException("nextValue");
+		throw new UnsupportedOperationException( "nextValue is not supported by the MongoDB GridDialect" );
 	}
 }
