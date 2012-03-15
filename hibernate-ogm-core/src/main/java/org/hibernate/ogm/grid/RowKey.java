@@ -44,6 +44,18 @@ public final class RowKey implements Serializable {
 		this.hashCode = generateHashCode();
 	}
 
+	public String getTable() {
+		return table;
+	}
+
+	public String[] getColumnNames() {
+		return columnNames;
+	}
+
+	public Object[] getColumnValues() {
+		return columnValues;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
