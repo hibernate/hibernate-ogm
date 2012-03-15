@@ -42,6 +42,18 @@ public final class EntityKey implements Serializable {
 		this.hashCode = generateHashCode();
 	}
 
+	public String getTable() {
+		return table;
+	}
+
+	public Object[] getColumnValues() {
+		return columnValues;
+	}
+
+	public String[] getColumnNames() {
+		return columnNames;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
