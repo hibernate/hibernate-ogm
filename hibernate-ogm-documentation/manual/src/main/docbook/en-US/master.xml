@@ -42,36 +42,30 @@
 
     <mediaobject>
       <imageobject role="fo">
-        <imagedata align="center" fileref="hibernate_ogm_600px.png" />
+        <imagedata align="center" fileref="hibernate_ogm_600px.png"/>
       </imageobject>
 
       <imageobject role="html">
-        <imagedata depth="3cm" fileref="hibernate_ogm_600px.png" />
+        <imagedata depth="3cm" fileref="hibernate_ogm_600px.png"/>
       </imageobject>
     </mediaobject>
   </bookinfo>
 
-  <toc></toc>
+  <toc/>
 
   <preface id="preface">
     <title>Preface</title>
 
     <para>Hibernate Object/Grid Mapper (OGM) is a persistence engine providing
     Java Persistence (JPA) support for NoSQL storage solutions. It reuses
-    Hibernate Core's object life cycle management and (de)hydration engine but
-    persists entities into a key/value store instead of a relational database.
-    It reuses the Java Persistence Query Language (JP-QL) as an interface to
-    querying stored data.</para>
+    Hibernate ORM's object life cycle management and (de)hydration engine but
+    persists entities into a NoSQL store (key/value, document, column-oriented
+    etc) instead of a relational database. It reuses the Java Persistence
+    Query Language (JP-QL) as an interface to querying stored data.</para>
 
-    <para>Hibernate OGM is developed specifically with Infinispan - an open
-    source distributed in-memory key/value store - in mind, but the longer
-    term goal is to abstract Hibernate OGM to work with any NoSQL store, not
-    just key/value stores, similar to the way Hibernate Core works with any
-    SQL-based relational database, regardless of specific SQL dialect.</para>
-
-    <para>If you wish to help with this abstraction effort or with Hibernate
-    OGM in general, please refer to <xref
-    linkend="ogm-howtocontribute" />.</para>
+    <para>The project is still very young and many things are on the roadmap
+    (more NoSQL, query, denormalization engine, etc). If you wish to help,
+    please check <xref linkend="ogm-howtocontribute"/>.</para>
 
     <para>Hibernate OGM is released under the LGPL open source license.</para>
 
@@ -93,7 +87,7 @@
         </listitem>
       </itemizedlist>
 
-      <para>Check <xref linkend="ogm-howtocontribute-contribute" /> on how to
+      <para>Check <xref linkend="ogm-howtocontribute-contribute"/> on how to
       contact us.</para>
     </warning>
 
@@ -105,6 +99,11 @@
       <itemizedlist>
         <listitem>
           <para>offer a familiar environment for NoSQL stores</para>
+        </listitem>
+
+        <listitem>
+          <para>move model denormalization from a manual imperative work to a
+          declarative approach handled by the engine</para>
         </listitem>
 
         <listitem>
@@ -146,12 +145,12 @@
       <mediaobject>
         <imageobject role="html">
           <imagedata align="center" fileref="images/nosql.png" format="PNG"
-                     role="html" />
+                     role="html"/>
         </imageobject>
 
         <imageobject role="fo">
           <imagedata align="center" depth="" fileref="images/nosql.png"
-                     format="PNG" role="fo" scalefit="1" width="12cm" />
+                     format="PNG" role="fo" scalefit="1" width="12cm"/>
         </imageobject>
 
         <caption><para>Various NoSQL families</para></caption>
@@ -162,12 +161,13 @@
       are different from one product to the others.</para>
 
       <para>Hibernate OGM is not expected to the the Rosetta stone used to
-      interact with all NoSQL solution in all use cases. But for people
-      modeling their data as a domain model, it provides distinctive
-      advantages over raw APIs and has the benefit of providing an API and
-      semantic quite known to Java developers. Reusing the same programmatic
-      model and trying different (No)SQL engines will hopefully help people to
-      explore alternative datastores.</para>
+      interact with <emphasis>all</emphasis> NoSQL solution in
+      <emphasis>all</emphasis> use cases. But for people modeling their data
+      as a domain model, it provides distinctive advantages over raw APIs and
+      has the benefit of providing an API and semantic quite known to Java
+      developers. Reusing the same programmatic model and trying different
+      (No)SQL engines will hopefully help people to explore alternative
+      datastores.</para>
 
       <para>Hibernate OGM also aims at helping people scale traditional
       relational databases by providing a NoSQL front-end and keeping the same
@@ -182,7 +182,8 @@
 
       <itemizedlist>
         <listitem>
-          <para>store data in Infinispan's datagrid</para>
+          <para>store data in key/value stores (Infinispan's datagrid and
+          EHCache)</para>
         </listitem>
 
         <listitem>
@@ -215,7 +216,7 @@
         </listitem>
 
         <listitem>
-          <para>JPA and native Hibernate Core API support</para>
+          <para>JPA and native Hibernate ORM API support</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -227,8 +228,8 @@
 
       <itemizedlist>
         <listitem>
-          <para>need to scale your data store up and down rapidly (via
-          Infinispan's capability)</para>
+          <para>need to scale your data store up and down rapidly (via the
+          underlying NoSQL datastore capability)</para>
         </listitem>
 
         <listitem>
@@ -237,12 +238,13 @@
         </listitem>
 
         <listitem>
-          <para>explore the best tool for the use case while keeping your
-          development familiar</para>
+          <para>explore the best tool for the use case while using a familiar
+          programming model</para>
         </listitem>
 
         <listitem>
-          <para>use a familiar JPA front end to Infinispan's datagrid</para>
+          <para>use a familiar JPA front end to datagrids (in particular
+          Infinispan)</para>
         </listitem>
 
         <listitem>
@@ -257,23 +259,23 @@
   </preface>
 
   <xi:include href="modules/how-to-contribute.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/getting-started.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/architecture.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/mapping.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/query.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/infinispan.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </book>

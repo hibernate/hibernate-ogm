@@ -80,7 +80,7 @@
         <listitem>
           <para>there is no JDBC setting except sometimes a
           <literal>jta-data-source</literal> (check <xref
-          linkend="ogm-configuration-environments-javaee" /> for more
+          linkend="ogm-configuration-environments-javaee"/> for more
           info)</para>
         </listitem>
 
@@ -98,10 +98,10 @@
 
       <para>It is possible to configure how to connect to Infinispan, see
       <xref
-      linkend="ogm-configuration-optionsogm-configuration-options" />.</para>
+      linkend="ogm-configuration-optionsogm-configuration-options"/>.</para>
 
       <para>From there, simply bootstrap JPA the way you are used to with
-      Hibernate Core:</para>
+      Hibernate ORM:</para>
 
       <itemizedlist>
         <listitem>
@@ -123,13 +123,14 @@
     </section>
 
     <section>
-      <title>Using Hibernate Core native APIs</title>
+      <title>Using Hibernate ORM native APIs</title>
 
       <para>If you want to bootstrap Hibernate OGM using the native Hibernate
-      APIs, you can use the class <classname>org.hibernate.ogm.cfg.OgmConfiguration</classname>.</para>
+      APIs, you can use the class
+      <classname>org.hibernate.ogm.cfg.OgmConfiguration</classname>.</para>
 
       <example>
-        <title>Bootstrap Hibernate OGM with Hibernate Core native APIs</title>
+        <title>Bootstrap Hibernate OGM with Hibernate ORM native APIs</title>
 
         <programlisting language="JAVA" role="JAVA">Configuration cfg = new OgmConfiguration();
 
@@ -161,13 +162,13 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
           <para>you need to set the right transaction strategy and the right
           transaction manager lookup strategy if you use a JTA based
           transaction strategy (see <xref
-          linkend="ogm-configuration-environments" />)</para>
+          linkend="ogm-configuration-environments"/>)</para>
         </listitem>
       </itemizedlist>
 
       <para>It is possible to configure how to connect to Infinispan, see
       <xref
-      linkend="ogm-configuration-optionsogm-configuration-options" />.</para>
+      linkend="ogm-configuration-optionsogm-configuration-options"/>.</para>
     </section>
   </section>
 
@@ -175,7 +176,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
     <title>Environments</title>
 
     <para>Hibernate OGM runs in various environments, pretty much what you are
-    used to with Hibernate Core. There are however environments where it works
+    used to with Hibernate ORM. There are however environments where it works
     better and has been more thoroughly tested.</para>
 
     <section id="ogm-configuration-environments-javaee">
@@ -202,7 +203,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       to <literal>JTA</literal> and the transaction factory will be set for
       you.</para>
 
-      <para>If you use Hibernate Core native APIs only, then set
+      <para>If you use Hibernate ORM native APIs only, then set
       <literal>hibernate.transaction.factory_class</literal> to either:</para>
 
       <itemizedlist>
@@ -224,7 +225,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       contain the fully qualified class name of the lookup implementation. The
       list of available values are listed in <ulink
       url="http://docs.jboss.org/hibernate/stable/core/reference/en-US/html_single/#configuration-optional-transactionstrategy">Hibernate
-      Core's configuration section</ulink>. For example, in JBoss AS, use
+      ORM's configuration section</ulink>. For example, in JBoss AS, use
       <literal>org.hibernate.transaction.JBossTransactionManagerLookup</literal>.</para>
 
       <para>In your <filename>persistence.xml</filename>, you also need to
@@ -296,7 +297,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         <listitem>
           <para>or <literal>hibernate.transaction.factory_class</literal> to
           <literal>org.hibernate.transaction.JTATransactionFactory</literal>
-          if you only use Hibernate Core native APIs</para>
+          if you only use Hibernate ORM native APIs</para>
         </listitem>
 
         <listitem>
@@ -374,10 +375,10 @@ em.close();</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="ogm-configuration-optionsogm-configuration-options">
     <title id="ogm-configuration-options">Configuration options</title>
 
-    <para>Most options from Hibernate Core and Hibernate Search are applicable
+    <para>Most options from Hibernate ORM and Hibernate Search are applicable
     to Hibernate OGM. You can pass them as you are used to do either in your
     <filename>persistence.xml</filename> file, your
     <filename>hibernate.cfg.xml</filename> file or programmatically.</para>

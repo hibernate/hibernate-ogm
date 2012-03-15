@@ -49,16 +49,18 @@
 
   <para>Hibernate OGM is published in the JBoss hosted Maven repositories.
   Adjust your <filename>~/.m2/settings.xml</filename> file according to the
-  guidelines found <ulink url="???">here</ulink>.</para>
+  guidelines found <ulink
+  url="http://community.jboss.org/wiki/MavenGettingStarted-Users">on this
+  webpage</ulink>.</para>
 
   <para>Add
-  <literal>org.hibernate.ogm:hibernate-ogm-core:3.0.0-SNAPSHOT</literal> to
+  <literal>org.hibernate.ogm:hibernate-ogm-core:4.0.0-SNAPSHOT</literal> to
   your project dependencies.</para>
 
   <programlisting language="XML" role="XML">&lt;dependency&gt;
   &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
   &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-  &lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
+  &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
 &lt;/dependency&gt;</programlisting>
 
   <para>Transitively, Hibernate OGM depends on JPA 2.0: we will use these APIs
@@ -116,7 +118,17 @@ public class Breed {
     &lt;dependency&gt;
         &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
         &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-        &lt;version&gt;3.0.0-SNAPSHOT&lt;/version&gt;
+        &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
+        &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.infinispan&lt;/groupId&gt;
+        &lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
+        &lt;version&gt;5.1.2.FINAL&lt;/version&gt;
     &lt;/dependency&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;javassist&lt;/groupId&gt;
@@ -139,7 +151,7 @@ public class Breed {
     &lt;dependency&gt;
         &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
         &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-        &lt;version&gt;4.15.0.Final&lt;/version&gt;
+        &lt;version&gt;4.16.2.Final&lt;/version&gt;
     &lt;/dependency&gt;
 &lt;/dependencies&gt;</programlisting>
 
@@ -156,8 +168,8 @@ public class Breed {
         &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
-            &lt;property name="hibernate.transaction.manager_lookup_class"
-                      value="org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup" /&gt;
+            &lt;property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/&gt;
         &lt;/properties&gt;
     &lt;/persistence-unit&gt;
 &lt;/persistence&gt;</programlisting>
@@ -165,10 +177,9 @@ public class Breed {
   <para>Let's now persist a set of entities and retrieve them.</para>
 
   <programlisting language="JAVA" role="JAVA">//accessing JBoss's Transaction can be done differently but this one works nicely
-TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
-   .getTransactionManager( null );
+TransactionManager tm = new JBossStandAloneJtaPlatform().getTransactionManager();
 
-//build the EntityManagerFactory as you would build in in Hibernate Core
+//build the EntityManagerFactory as you would build in in Hibernate ORM
 EntityManagerFactory emf = Persistence.createEntityManagerFactory(
     "org.hibernate.ogm.tutorial.jpa");
 

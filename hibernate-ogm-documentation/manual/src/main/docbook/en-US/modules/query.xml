@@ -35,11 +35,11 @@
   <classname>EntityManager</classname> with a
   <classname>FullTextSession</classname> or
   <classname>FullTextEntityManager</classname> like you would do with
-  Hibernate Core (via the static methods hosted on
+  Hibernate ORM (via the static methods hosted on
   <classname>Search</classname>).</para>
 
   <para>The same configurations options available in Hibernate Search when
-  using Hibernate Core are also relevant.</para>
+  using Hibernate ORM are also relevant.</para>
 
   <para>Of course, make sure to add the necessary Hibernate Search mapping
   annotations on your domain model to properly index your entities.</para>

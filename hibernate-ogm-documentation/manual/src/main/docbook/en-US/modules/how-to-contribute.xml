@@ -91,6 +91,11 @@
       <listitem>
         <para>fix bug or contribute new features</para>
       </listitem>
+
+      <listitem>
+        <para>propose and code a datastore dialect for your favorite NoSQL
+        engine</para>
+      </listitem>
     </itemizedlist>
 
     <para>Hibernate OGM's code is available on GitHub at <ulink
@@ -111,20 +116,22 @@ cd hibernate-ogm</programlisting>
       <para>Run maven</para>
 
       <programlisting>#build project
-mvn clean install</programlisting>
+mvn clean install -s settings-example.xml</programlisting>
 
       <note>
         <para>Note that Hibernate OGM uses artifacts from the Maven repository
-        hosted by JBoss. Make sure to adjust your
+        hosted by JBoss. Make sure to either use the <code>-s
+        settings-example.xml</code> option or adjust your
         <filename>~/.m2/settings.xml</filename> according to the descriptions
         available <ulink
-        url="http://community.jboss.org/wiki/MavenGettingStarted-Users">here</ulink>.</para>
+        url="http://community.jboss.org/wiki/MavenGettingStarted-Users">on
+        this page</ulink>.</para>
       </note>
 
       <para>To build the documentation, set the buildDocs property to
       true.</para>
 
-      <programlisting>mvn clean install -DbuildDocs=true</programlisting>
+      <programlisting>mvn clean install -DbuildDocs=true -s settings-example.xml</programlisting>
 
       <remark>If you just want to build the documentation, run it from the
       <filename>hibernate-ogm-documentation/manual</filename>
@@ -135,9 +142,9 @@ mvn clean install</programlisting>
       <title>How to contribute code effectively</title>
 
       <para>The best way to share code is to fork Hibernate OGM repository on
-      GitHub, create a branch and open a pull request when you are ready. Make sure
-      to rebase your pull request on the latest version in master before offering
-      it.</para>
+      GitHub, create a branch and open a pull request when you are ready. Make
+      sure to rebase your pull request on the latest version of the master
+      branch before offering it.</para>
 
       <para>Here are a couple of approaches the team follows:</para>
 
