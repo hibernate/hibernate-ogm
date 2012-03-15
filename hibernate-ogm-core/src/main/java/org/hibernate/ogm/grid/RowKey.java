@@ -31,17 +31,29 @@ import java.util.Arrays;
 public final class RowKey implements Serializable {
 
 	private final String table;
-	private final String[] columns;
+	private final String[] columnNames;
 	//column value types do have to be serializable so RowKey can be serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 	private final int hashCode;
 
-	public RowKey(String table, String[] columns, Object[] columnValues) {
+	public RowKey(String table, String[] columnNames, Object[] columnValues) {
 		this.table = table;
-		this.columns = columns;
+		this.columnNames = columnNames;
 		this.columnValues = columnValues;
 		this.hashCode = generateHashCode();
+	}
+
+	public String getTable() {
+		return table;
+	}
+
+	public String[] getColumnNames() {
+		return columnNames;
+	}
+
+	public Object[] getColumnValues() {
+		return columnValues;
 	}
 
 	@Override
@@ -63,7 +75,7 @@ public final class RowKey implements Serializable {
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
 			return false;
 		}
-		if ( !Arrays.equals( columns, that.columns ) ) {
+		if ( !Arrays.equals( columnNames, that.columnNames ) ) {
 			return false;
 		}
 
@@ -85,7 +97,7 @@ public final class RowKey implements Serializable {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "RowKey" );
 		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columns=" ).append( columns == null ? "null" : Arrays.asList( columns ).toString() );
+		sb.append( ", columns=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
 		sb.append( ", columnValues=" )
 				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );

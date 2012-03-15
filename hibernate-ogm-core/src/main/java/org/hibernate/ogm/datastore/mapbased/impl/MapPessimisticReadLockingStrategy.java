@@ -27,11 +27,13 @@ import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.persister.entity.Lockable;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
@@ -42,6 +44,12 @@ public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockin
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapBasedDatastoreProvider dataStore = getProvider( session );
-		dataStore.readLock( EntityKeyBuilder.fromTableNameId( lockable.getRootTableName(), id ), timeout );
+		EntityKey key = EntityKeyBuilder.fromData(
+				lockable.getRootTableName(),
+				lockable.getRootTableIdentifierColumnNames(),
+				identifierGridType,
+				id,
+				session );
+		dataStore.readLock( key, timeout );
 	}
 }

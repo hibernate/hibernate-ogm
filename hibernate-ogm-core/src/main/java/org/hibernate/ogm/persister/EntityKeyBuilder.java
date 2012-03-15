@@ -22,7 +22,11 @@ package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
 
+import org.hibernate.Session;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -32,12 +36,33 @@ final public class EntityKeyBuilder {
 	private EntityKeyBuilder() {
 	}
 
-	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
-		return new EntityKey( persister.getTableName(), id );
+	//static method because the builder pattern version was showing up during profiling
+	public static EntityKey fromPersister(
+			final OgmEntityPersister persister,
+			final Serializable id,
+			SessionImplementor session) {
+		return fromData(
+				persister.getTableName(),
+				persister.getIdentifierColumnNames(),
+				persister.getGridIdentifierType(),
+				id,
+				session );
 	}
 
-	public static EntityKey fromTableNameId(final String tableName, final Serializable id) {
-		return new EntityKey( tableName, id );
+	//static method because the builder pattern version was showing up during profiling
+	public static EntityKey fromData(
+			String tableName,
+			String[] identifierColumnNames,
+			GridType identifierGridType,
+			final Serializable id,
+			SessionImplementor session) {
+		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				id,
+				identifierGridType,
+				identifierColumnNames,
+				session
+		);
+		return new EntityKey( tableName, identifierColumnNames, values );
 	}
 
 }

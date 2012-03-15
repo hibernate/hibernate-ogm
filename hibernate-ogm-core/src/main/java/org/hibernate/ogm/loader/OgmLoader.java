@@ -393,7 +393,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
-			final EntityKey key = EntityKeyBuilder.fromPersisterId( getEntityPersisters()[0], id );
+			final EntityKey key = EntityKeyBuilder.fromPersister( getEntityPersisters()[0], id, session );
 			Tuple entry = gridDialect.getTuple(key);
 			if ( entry != null ) {
 				resultset.addTuple( entry );

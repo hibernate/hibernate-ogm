@@ -118,7 +118,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b = ( Bookmark ) session.get( Bookmark.class, b.getId() );
 
 		//Check directly in the cache the values stored
-		EntityKey key = new EntityKey( "Bookmark", "42" );
+		EntityKey key = new EntityKey( "Bookmark", new String[] {"id"}, new Object[] {"42"} );
 		Map<String, String> entity = ( Map<String, String> ) extractEntityTuple( sessions, key );
 
 		assertEquals( entity.get( "visits_count" ), "444" );

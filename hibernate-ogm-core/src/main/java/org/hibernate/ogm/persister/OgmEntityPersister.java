@@ -240,7 +240,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 
 		//snapshot is a Map in the end
-		final Tuple resultset = getResultsetById(id);
+		final Tuple resultset = getResultsetById( id, session );
 
 		//if there is no resulting row, return null
 		if ( resultset == null || resultset.getSnapshot().isEmpty() ) {
@@ -258,8 +258,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		return values;
 	}
 
-	private Tuple getResultsetById(Serializable id) {
-		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
+	private Tuple getResultsetById(Serializable id, SessionImplementor session) {
+		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 		final Tuple resultset = gridDialect.getTuple(key);
 		return resultset;
 	}
@@ -329,7 +329,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Getting version: " + MessageHelper.infoString( this, id, getFactory() ) );
 		}
-		final Tuple resultset = getResultsetById( id );
+		final Tuple resultset = getResultsetById( id, session );
 
 		if (resultset == null) {
 			return null;
@@ -365,7 +365,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 * Contrary to the database version, there is 
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
-		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
+		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 		final Tuple resultset = gridDialect.getTuple( key );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
@@ -709,7 +709,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
-				final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
+				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 				Tuple resultset = gridDialect.getTuple( key );
 				final boolean useVersion = j == 0 && isVersioned();
 
@@ -856,7 +856,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				}
 			}
 
-			final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
+			final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 			Tuple resultset = gridDialect.getTuple( key );
 			// add the discriminator
 			if ( j == 0 ) {
@@ -918,7 +918,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 
-		final EntityKey key = EntityKeyBuilder.fromPersisterId( this, id );
+		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 		final Tuple resultset = gridDialect.getTuple( key );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
