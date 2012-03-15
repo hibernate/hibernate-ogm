@@ -44,12 +44,13 @@ import com.mongodb.MongoException;
 /**
  * Provides access to MongoDB system
  * 
- * @author Guillaume Scheibel
+ * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
-public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService, Configurable {
+public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService,
+		Configurable {
 
 	private static final Log log = LoggerFactory.make();
-	private static final String DATABASENAMEPRO_STRING = "hibernate.ogm.mongodb.database";
+	private static final String MONGODB_DATABASE = "hibernate.ogm.mongodb.database";
 	private static final String DEFAULT_HOST = "127.0.0.1";
 	private static final int DEFAULT_PORT = 27017;
 	private static final long serialVersionUID = 1L;
@@ -60,12 +61,20 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	private Mongo mongo;
 
 	public DB getDatabase() {
-		String dbName = this.cfg.get(DATABASENAMEPRO_STRING).toString();
-		log.debug("Retrieve database: " + dbName);
-		if (!this.mongo.getDatabaseNames().contains(dbName)) {
-			throw new HibernateException("The database called " + dbName + " doesn't exist, check the " + DATABASENAMEPRO_STRING + " property");
+		Object dbNameObject = this.cfg.get( MONGODB_DATABASE );
+		if ( dbNameObject == null ) {
+			throw new HibernateException( "The property " + MONGODB_DATABASE
+					+ " has not been set into the configration file" );
 		}
-		return this.mongo.getDB(dbName);
+		else {
+			String dbName = (String) dbNameObject;
+			log.tracef( "Retrieve database %1$s", dbName );
+			if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
+				throw new HibernateException( "The database called " + dbName + " doesn't exist, check the "
+						+ MONGODB_DATABASE + " property" );
+			}
+			return this.mongo.getDB( dbName );
+		}
 	}
 
 	@Override
@@ -80,31 +89,32 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		jtaPlatform = serviceRegistry.getService(JtaPlatform.class);
-		jndiService = serviceRegistry.getService(JndiService.class);
+		jtaPlatform = serviceRegistry.getService( JtaPlatform.class );
+		jndiService = serviceRegistry.getService( JndiService.class );
 	}
 
 	public void start() {
-		log.info("Starting mongodb connection");
+		log.info( "Opening connection to MongoDB instance" );
 		try {
-			Object cfgHost = this.cfg.get("hibernate.ogm.mongo.host");
+			Object cfgHost = this.cfg.get( "hibernate.ogm.mongo.host" );
 			String host = cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
 
-			Object cfgPort = this.cfg.get("hibernate.ogm.mongo.port");
-			int port = cfgPort != null ? Integer.valueOf(cfgPort.toString()).intValue() : DEFAULT_PORT;
+			Object cfgPort = this.cfg.get( "hibernate.ogm.mongo.port" );
+			int port = cfgPort != null ? Integer.valueOf( cfgPort.toString() ).intValue() : DEFAULT_PORT;
 
-			log.debug("Opening connection to: " + host + ":" + String.valueOf(port));
-			this.mongo = new Mongo(host, port);
-		} catch (UnknownHostException e) {
-			throw new HibernateException(e);
-		} catch (MongoException e) {
-			throw new HibernateException(e);
+			log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
+			this.mongo = new Mongo( host, port );
+		}
+		catch ( UnknownHostException e ) {
+			throw new HibernateException( "The database host cannot be resolved", e );
+		}
+		catch ( MongoException e ) {
+			throw new HibernateException( e.getMessage(), e );
 		}
 	}
 
-
 	public void stop() {
-		log.info("Stopping mongodb connection");
+		log.info( "Closing connection to MongoDB instance" );
 		this.mongo.close();
 	}
 }
