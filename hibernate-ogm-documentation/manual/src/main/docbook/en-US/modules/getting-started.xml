@@ -168,7 +168,7 @@ public class Breed {
 TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup()
    .getTransactionManager( null );
 
-//build the EntityManagerFactory as you would build in in Hibernate Core
+//build the EntityManagerFactory as you would build in in Hibernate ORM
 EntityManagerFactory emf = Persistence.createEntityManagerFactory(
     "org.hibernate.ogm.tutorial.jpa");
 

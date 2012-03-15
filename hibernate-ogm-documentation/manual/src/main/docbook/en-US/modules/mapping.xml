@@ -50,21 +50,21 @@
     <classname>@Table</classname>, <classname>@Column</classname>,
     <classname>@Enumarated</classname>, <classname>@Temporal</classname>,
     <classname>@Cacheable</classname> and the like will work as expected. If
-    you want an example, check out <xref linkend="ogm-gettingstarted" /> or
-    the documentation of Hibernate Core. Let's concentrate of the features
-    that differ or are simply not supported by Hibernate OGM.</para>
+    you want an example, check out <xref linkend="ogm-gettingstarted"/> or the
+    documentation of Hibernate ORM. Let's concentrate of the features that
+    differ or are simply not supported by Hibernate OGM.</para>
 
     <para>The various inheritance strategies are not supported by Hibernate
     OGM, only the table per concrete class strategy is used. This is not so
     much a limitation but rather an acknowledgment of the dynamic nature of
     NoSQL schemas. If you feel the need to support other strategies, let us
-    know (see <xref linkend="ogm-howtocontribute-contribute" />). Simply do
-    not use <classname>@Inheritance</classname> nor
+    know (see <xref linkend="ogm-howtocontribute-contribute"/>). Simply do not
+    use <classname>@Inheritance</classname> nor
     <classname>@DiscriminatorColumn</classname>.</para>
 
     <para>Secondary tables are not supported by Hibernate OGM at the moment.
     If you have needs for this feature, let us know (see <xref
-    linkend="ogm-howtocontribute-contribute" />).</para>
+    linkend="ogm-howtocontribute-contribute"/>).</para>
 
     <para>All SQL related constructs as well as HQL centered mapping are not
     supported in Hibernate OGM. Here is a list of feature that will not
@@ -82,7 +82,7 @@
 
     <para>All standard JPA id generators are supported: IDENTITY, SEQUENCE,
     TABLE and AUTO. If you need support for additional generators, let us know
-    (see <xref linkend="ogm-howtocontribute-contribute" />). We recommend you
+    (see <xref linkend="ogm-howtocontribute-contribute"/>). We recommend you
     use a UUID based generator as this type of generator allows maximum
     scalability to the underlying data grid as no cluster-wide counter is
     necessary.</para>
@@ -204,7 +204,7 @@ public class Breed {
     <classname>Map</classname>, <classname>List</classname>). The way
     Hibernate OGM stores association information is however quite different
     than the traditional RDBMS representation. Check <xref
-    linkend="ogm-architecture-datapersisted" /> for more information.</para>
+    linkend="ogm-architecture-datapersisted"/> for more information.</para>
 
     <para>Keep in mind that collections with many entries won't perform very
     well in Hibernate OGM (at least today) as all of the association

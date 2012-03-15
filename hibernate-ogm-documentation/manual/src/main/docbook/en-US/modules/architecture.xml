@@ -61,7 +61,7 @@
 
     <itemizedlist>
       <listitem>
-        <para>Hibernate Core for JPA support</para>
+        <para>Hibernate ORM for JPA support</para>
       </listitem>
 
       <listitem>
@@ -85,33 +85,33 @@
     <mediaobject>
       <imageobject role="html">
         <imagedata align="center" fileref="images/architecture-components.png"
-                   format="PNG" role="html" />
+                   format="PNG" role="html"/>
       </imageobject>
 
       <imageobject role="fo">
         <imagedata align="center" depth=""
                    fileref="images/architecture-components.png" format="PNG"
-                   role="fo" scalefit="1" width="12cm" />
+                   role="fo" scalefit="1" width="12cm"/>
       </imageobject>
 
       <caption><para>General architecture</para></caption>
     </mediaobject>
 
-    <para>Hibernate OGM reuses as much as possible from the Hibernate Core
+    <para>Hibernate OGM reuses as much as possible from the Hibernate ORM
     infrastructure. There is no need to rewrite an entirely new JPA engine.
     The <classname>Persister</classname>s and the
-    <classname>Loader</classname>s (two interfaces used by Hibernate Core)
-    have been rewritten to persist data using Infinispan instead of JDBC.
-    These implementations are the core of Hibernate OGM. We will see in <xref
-    linkend="ogm-architecture-datapersisted" /> how the data is structured.
+    <classname>Loader</classname>s (two interfaces used by Hibernate ORM) have
+    been rewritten to persist data using Infinispan instead of JDBC. These
+    implementations are the core of Hibernate OGM. We will see in <xref
+    linkend="ogm-architecture-datapersisted"/> how the data is structured.
     Other than that, all the Create/Read/Update/Delete (CRUD) operations are
-    implemented by Hibernate Core.</para>
+    implemented by Hibernate ORM.</para>
 
     <para>To implement JP-QL queries, Hibernate OGM converts the JP-QL string
     into an Hibernate Search query. This query is then executed against the
     Lucene indexes stored in Infinispan and return the list of matching
     entities. Hibernate Search also listens to entity changes thanks to
-    Hibernate Core events and update the Lucene indexes accordingly.</para>
+    Hibernate ORM events and update the Lucene indexes accordingly.</para>
 
     <note>
       <para>Complex JP-QL queries esp with collection joins will require
@@ -123,7 +123,7 @@
     is to deploy it on a Java EE container. Alternatively, you can use a
     standalone JTA <classname>TransactionManager</classname>. We do explain
     how to in <xref
-    linkend="ogm-configuration-environments-standalonejta" />.</para>
+    linkend="ogm-configuration-environments-standalonejta"/>.</para>
 
     <para>Let's now see how and in which structure data is persisted in the
     NoSQL data store.</para>
@@ -253,18 +253,18 @@
     <mediaobject>
       <imageobject role="html">
         <imagedata align="center" fileref="images/data-entity.png"
-                   format="PNG" role="html" />
+                   format="PNG" role="html"/>
       </imageobject>
 
       <imageobject role="fo">
         <imagedata align="center" depth="" fileref="images/data-entity.png"
-                   format="PNG" role="fo" scalefit="1" width="12cm" />
+                   format="PNG" role="fo" scalefit="1" width="12cm"/>
       </imageobject>
 
       <caption><para>Storing entities</para></caption>
     </mediaobject>
 
-    <para></para>
+    <para/>
 
     <para>Associations are also stored as tuple as well or more specifically
     as a set of tuples. Hibernate OGM stores the information necessary to
@@ -298,13 +298,13 @@
     <mediaobject>
       <imageobject role="html">
         <imagedata align="center" fileref="images/data-association.png"
-                   format="PNG" role="html" />
+                   format="PNG" role="html"/>
       </imageobject>
 
       <imageobject role="fo">
         <imagedata align="center" depth=""
                    fileref="images/data-association.png" format="PNG"
-                   role="fo" scalefit="1" width="12cm" />
+                   role="fo" scalefit="1" width="12cm"/>
       </imageobject>
 
       <caption><para>Storing associations</para></caption>

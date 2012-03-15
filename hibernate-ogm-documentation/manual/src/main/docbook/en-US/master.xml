@@ -42,23 +42,23 @@
 
     <mediaobject>
       <imageobject role="fo">
-        <imagedata align="center" fileref="hibernate_ogm_600px.png" />
+        <imagedata align="center" fileref="hibernate_ogm_600px.png"/>
       </imageobject>
 
       <imageobject role="html">
-        <imagedata depth="3cm" fileref="hibernate_ogm_600px.png" />
+        <imagedata depth="3cm" fileref="hibernate_ogm_600px.png"/>
       </imageobject>
     </mediaobject>
   </bookinfo>
 
-  <toc></toc>
+  <toc/>
 
   <preface id="preface">
     <title>Preface</title>
 
     <para>Hibernate Object/Grid Mapper (OGM) is a persistence engine providing
     Java Persistence (JPA) support for NoSQL storage solutions. It reuses
-    Hibernate Core's object life cycle management and (de)hydration engine but
+    Hibernate ORM's object life cycle management and (de)hydration engine but
     persists entities into a key/value store instead of a relational database.
     It reuses the Java Persistence Query Language (JP-QL) as an interface to
     querying stored data.</para>
@@ -66,12 +66,12 @@
     <para>Hibernate OGM is developed specifically with Infinispan - an open
     source distributed in-memory key/value store - in mind, but the longer
     term goal is to abstract Hibernate OGM to work with any NoSQL store, not
-    just key/value stores, similar to the way Hibernate Core works with any
+    just key/value stores, similar to the way Hibernate ORM works with any
     SQL-based relational database, regardless of specific SQL dialect.</para>
 
     <para>If you wish to help with this abstraction effort or with Hibernate
     OGM in general, please refer to <xref
-    linkend="ogm-howtocontribute" />.</para>
+    linkend="ogm-howtocontribute"/>.</para>
 
     <para>Hibernate OGM is released under the LGPL open source license.</para>
 
@@ -93,7 +93,7 @@
         </listitem>
       </itemizedlist>
 
-      <para>Check <xref linkend="ogm-howtocontribute-contribute" /> on how to
+      <para>Check <xref linkend="ogm-howtocontribute-contribute"/> on how to
       contact us.</para>
     </warning>
 
@@ -146,12 +146,12 @@
       <mediaobject>
         <imageobject role="html">
           <imagedata align="center" fileref="images/nosql.png" format="PNG"
-                     role="html" />
+                     role="html"/>
         </imageobject>
 
         <imageobject role="fo">
           <imagedata align="center" depth="" fileref="images/nosql.png"
-                     format="PNG" role="fo" scalefit="1" width="12cm" />
+                     format="PNG" role="fo" scalefit="1" width="12cm"/>
         </imageobject>
 
         <caption><para>Various NoSQL families</para></caption>
@@ -215,7 +215,7 @@
         </listitem>
 
         <listitem>
-          <para>JPA and native Hibernate Core API support</para>
+          <para>JPA and native Hibernate ORM API support</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -257,23 +257,23 @@
   </preface>
 
   <xi:include href="modules/how-to-contribute.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/getting-started.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/architecture.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/configuration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/mapping.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/query.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/infinispan.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </book>
