@@ -109,7 +109,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			throw new HibernateException( "The database host cannot be resolved", e );
 		}
 		catch ( MongoException e ) {
-			throw new HibernateException( e.getMessage(), e );
+			throw new HibernateException( "Cannot open the MongoDB connection", e );
 		}
 	}
 
