@@ -54,13 +54,13 @@
   webpage</ulink>.</para>
 
   <para>Add
-  <literal>org.hibernate.ogm:hibernate-ogm-core:4.0.0-SNAPSHOT</literal> to
+  <literal>org.hibernate.ogm:hibernate-ogm-core:&version;</literal> to
   your project dependencies.</para>
 
   <programlisting language="XML" role="XML">&lt;dependency&gt;
   &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
   &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-  &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
+  &lt;version&gt;&version;&lt;/version&gt;
 &lt;/dependency&gt;</programlisting>
 
   <para>Transitively, Hibernate OGM depends on JPA 2.0: we will use these APIs
@@ -118,40 +118,17 @@ public class Breed {
     &lt;dependency&gt;
         &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
         &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-        &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
-    &lt;/dependency&gt;
-    &lt;dependency&gt;
-        &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
-        &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-        &lt;version&gt;4.0.0-SNAPSHOT&lt;/version&gt;
+        &lt;version&gt;&version;&lt;/version&gt;
     &lt;/dependency&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.infinispan&lt;/groupId&gt;
         &lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
-        &lt;version&gt;5.1.2.FINAL&lt;/version&gt;
-    &lt;/dependency&gt;
-    &lt;dependency&gt;
-        &lt;groupId&gt;javassist&lt;/groupId&gt;
-        &lt;artifactId&gt;javassist&lt;/artifactId&gt;
-        &lt;version&gt;3.12.1.GA&lt;/version&gt;
-        &lt;scope&gt;compile&lt;/scope&gt;
-    &lt;/dependency&gt;
-    &lt;dependency&gt;
-        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
-        &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
-        &lt;version&gt;1.6.1&lt;/version&gt;
-        &lt;scope&gt;compile&lt;/scope&gt;
-    &lt;/dependency&gt;
-    &lt;dependency&gt;
-        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
-        &lt;artifactId&gt;slf4j-api&lt;/artifactId&gt;
-        &lt;version&gt;1.6.1&lt;/version&gt;
-        &lt;scope&gt;compile&lt;/scope&gt;
+        &lt;version&gt;&infinispanVersion;&lt;/version&gt;
     &lt;/dependency&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
         &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-        &lt;version&gt;4.16.2.Final&lt;/version&gt;
+        &lt;version&gt;&jbossjtaVersion;&lt;/version&gt;
     &lt;/dependency&gt;
 &lt;/dependencies&gt;</programlisting>
 
