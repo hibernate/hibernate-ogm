@@ -36,6 +36,7 @@ import com.mongodb.DBObject;
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	private DBObject dbObject;
+	public static final String EMBEDDED_FIELDNAME_SEPARATOR = "\\.";
 
 	public MongoDBTupleSnapshot(DBObject dbObject) {
 		super();
@@ -45,8 +46,8 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Object get(String column) {
 		if ( column.contains( "." ) ) {
-			String[] fields = column.split( "\\." );
-			return this.getObject( this.dbObject.toMap(), fields );
+			String[] fields = column.split( EMBEDDED_FIELDNAME_SEPARATOR );
+			return this.getObject( this.dbObject.toMap(), fields, 0 );
 		}
 		else {
 			return this.dbObject.get( column );
@@ -62,15 +63,19 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		return dbObject;
 	}
 
-	private Object getObject(Map<?, ?> fields, String[] remainingFields) {
-		if ( remainingFields.length == 1 ) {
-			return fields.get( remainingFields[0] );
+	/*
+	 * The internal structure of a DBOject is like a tree.
+	 * Each embedded object is a new branch represented by a Map.
+	 * This method browse recursivily all nodes and return at the end the leaf value
+	 */
+	private Object getObject(Map<?, ?> fields, String[] remainingFields, int startIndex) {
+		if ( startIndex == remainingFields.length - 1 ) {
+			return fields.get( remainingFields[startIndex] );
 		}
 		else {
-			Map<?, ?> subMap = (Map<?, ?>) fields.get( remainingFields[0] );
+			Map<?, ?> subMap = (Map<?, ?>) fields.get( remainingFields[startIndex] );
 			if ( subMap != null ) {
-				String[] nextFields = Arrays.copyOfRange( remainingFields, 1, remainingFields.length );
-				return this.getObject( subMap, nextFields );
+				return this.getObject( subMap, remainingFields, ++startIndex );
 			}
 			else {
 				return null;
