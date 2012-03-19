@@ -7,7 +7,7 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.ogm.examples.gettingstarted.domain.Breed;
 import org.hibernate.ogm.examples.gettingstarted.domain.Dog;
-import org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup;
+import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ public class DogBreedRunner {
 	public static void main(String[] args) {
 		
 		//accessing JBoss's Transaction can be done differently but this one works nicely
-		TransactionManager tm = new JBossTSStandaloneTransactionManagerLookup().getTransactionManager( null );
+		TransactionManager tm = new JBossStandAloneJtaPlatform().getTransactionManager();
 
 		//build the EntityManagerFactory as you would build in in Hibernate Core
 		EntityManagerFactory emf = Persistence.createEntityManagerFactory("org.hibernate.ogm.tutorial.jpa");

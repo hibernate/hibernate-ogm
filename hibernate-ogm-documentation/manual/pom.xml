@@ -19,10 +19,6 @@
   ~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
   ~ MA  02110-1301, USA.
   -->
-<!--
-@author Steve Ebersole
-@author Emmanuel Bernard <emmanuel@hibernate.org>
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -116,6 +112,20 @@
                         <docbookVersion>1.72.0</docbookVersion>
                         <localeSeparator>-</localeSeparator>
                     </options>
+                    <injections>
+                        <injection>
+                            <name>hibernateVersion</name>
+                            <value>${hibernateVersion}</value>
+                        </injection>
+                        <injection>
+                            <name>infinispanVersion</name>
+                            <value>${infinispanVersion}</value>
+                        </injection>
+                        <injection>
+                            <name>jbossjtaVersion</name>
+                            <value>${jbossjtaVersion}</value>
+                        </injection>
+                    </injections>
                     <profiling>
                         <enabled>true</enabled>
                     </profiling>

@@ -9,8 +9,8 @@
 		<!-- Use Hibernate OGM provider: configuration will be transparent -->
 		<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
-            <property name="hibernate.transaction.manager_lookup_class"
-                      value="org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup"/>
+            <property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
         </properties>
 	</persistence-unit>
 </persistence>

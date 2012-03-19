@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>org.jboss.jbossts</groupId>
 			<artifactId>jbossjta</artifactId>
-			<version>4.15.0.Final</version>
+			<version>4.16.2.Final</version>
 		</dependency>
 	</dependencies>
 </project>
