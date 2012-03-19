@@ -127,7 +127,9 @@ public class MongoDBDialect implements GridDialect {
 			collection.remove( toDelete );
 		}
 		else {
-			log.tracef( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
+			if ( log.isTraceEnabled() ) {
+				log.tracef( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
+			}
 		}
 	}
 

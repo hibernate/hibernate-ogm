@@ -21,7 +21,6 @@
 
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 

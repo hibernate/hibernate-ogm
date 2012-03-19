@@ -39,7 +39,6 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
 import com.mongodb.Mongo;
-import com.mongodb.MongoException;
 
 /**
  * Provides access to MongoDB system
@@ -68,7 +67,9 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		}
 		else {
 			String dbName = (String) dbNameObject;
-			log.tracef( "Retrieve database %1$s", dbName );
+			if ( log.isTraceEnabled() ) {
+				log.tracef( "Retrieve database %1$s", dbName );
+			}
 			if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
 				throw new HibernateException( "The database called " + dbName + " doesn't exist, check the "
 						+ MONGODB_DATABASE + " property" );
@@ -107,7 +108,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 						int temporaryPort = Integer.valueOf( cfgPort.toString() ).intValue();
 						if ( temporaryPort < 1 || temporaryPort > 65535 ) {
 							throw new HibernateException(
-									"The value set for the hibernate.ogm.mongo.port must be between 1 and 65535" );
+									"The value set for the hibernate.ogm.mongo.port property must be between 1 and 65535" );
 						}
 						port = temporaryPort;
 					}
@@ -115,15 +116,17 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 						throw new HibernateException( "The value set for the hibernate.ogm.mongo.port is not a number" );
 					}
 				}
-				log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
+				if ( log.isTraceEnabled() ) {
+					log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
+				}
 				this.mongo = new Mongo( host, port );
 				this.isCacheProvided = true;
 			}
 			catch ( UnknownHostException e ) {
 				throw new HibernateException( "The database host cannot be resolved", e );
 			}
-			catch ( MongoException e ) {
-				throw new HibernateException( "Cannot open the MongoDB connection", e );
+			catch ( RuntimeException e ) {
+				log.unableToInitializeMongoDB( e );
 			}
 		}
 	}
