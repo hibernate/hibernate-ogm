@@ -45,6 +45,7 @@ import com.mongodb.DBObject;
  */
 public class MongoDBDialect implements GridDialect {
 	private static final Log log = LoggerFactory.make();
+	public static final String ID_FIELDNAME = "_id";
 	private final MongoDBDatastoreProvider provider;
 	private DB currentDB;
 
@@ -72,14 +73,14 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = new BasicDBObject( "_id", key.getColumnValues()[0] );
+		DBObject toSave = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
 		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
 
 	}
 
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = new BasicDBObject( "_id", key.getColumnValues()[0] );
+		DBObject searchObject = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
 		return collection.findOne( searchObject );
 	}
 
@@ -103,7 +104,7 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.contains( "_id" ) ) {
+			if ( !column.contains( ID_FIELDNAME ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
