@@ -29,6 +29,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
 
 import com.mongodb.BasicDBObject;
@@ -55,7 +56,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	private int countAssociationOnCollection(DBCollection collection) {
-		DBCursor cursor = collection.find( new BasicDBObject(), new BasicDBObject( "_id", 0 ) );
+		DBCursor cursor = collection.find( new BasicDBObject(), new BasicDBObject( MongoDBDialect.ID_FIELDNAME, 0 ) );
 		Iterator<DBObject> it = cursor.iterator();
 		int count = 0;
 		while ( it.hasNext() ) {
@@ -94,7 +95,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		DBObject finder = new BasicDBObject( "_id", key.getColumnValues()[0] );
+		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
 		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
 		return result.toMap();
 	}
