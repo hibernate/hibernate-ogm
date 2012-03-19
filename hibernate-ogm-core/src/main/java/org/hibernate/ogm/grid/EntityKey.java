@@ -25,7 +25,7 @@ import java.util.Arrays;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
@@ -60,22 +60,28 @@ public final class EntityKey implements Serializable {
 		sb.append( "EntityKey" );
 		sb.append( "{table='" ).append( table ).append( '\'' );
 		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
+		sb.append( ", columnValues=" )
+				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
 		return sb.toString();
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if ( this == o ) return true;
-		if ( o == null || EntityKey.class != o.getClass() ) return false;
+		if ( this == o )
+			return true;
+		if ( o == null || EntityKey.class != o.getClass() )
+			return false;
 
 		EntityKey entityKey = (EntityKey) o;
 
-		//values are more discriminatory, test first
-		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) return false;
-		if ( !Arrays.equals( columnNames, entityKey.columnNames ) ) return false;
-		if ( !table.equals( entityKey.table ) ) return false;
+		// values are more discriminatory, test first
+		if ( !Arrays.equals( columnValues, entityKey.columnValues ) )
+			return false;
+		if ( !Arrays.equals( columnNames, entityKey.columnNames ) )
+			return false;
+		if ( !table.equals( entityKey.table ) )
+			return false;
 
 		return true;
 	}
@@ -86,8 +92,9 @@ public final class EntityKey implements Serializable {
 	}
 
 	private int generateHashCode() {
-		//Note we don't hash on the column names as the hash will discriminate enough
-		//with values and Arrays.hashCode is nto cheap
+		// Note we don't hash on the column names as the hash will discriminate enough
+		// with values and Arrays.hashCode is nto cheap
+
 		int result = table.hashCode();
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
