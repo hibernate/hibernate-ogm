@@ -94,22 +94,37 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	public void start() {
-		log.info( "Opening connection to MongoDB instance" );
-		try {
-			Object cfgHost = this.cfg.get( "hibernate.ogm.mongo.host" );
-			String host = cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
+		if ( !isCacheProvided ) {
+			log.info( "Opening connection to MongoDB instance" );
+			try {
+				Object cfgHost = this.cfg.get( "hibernate.ogm.mongo.host" );
+				String host = cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
 
-			Object cfgPort = this.cfg.get( "hibernate.ogm.mongo.port" );
-			int port = cfgPort != null ? Integer.valueOf( cfgPort.toString() ).intValue() : DEFAULT_PORT;
-
-			log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
-			this.mongo = new Mongo( host, port );
-		}
-		catch ( UnknownHostException e ) {
-			throw new HibernateException( "The database host cannot be resolved", e );
-		}
-		catch ( MongoException e ) {
-			throw new HibernateException( "Cannot open the MongoDB connection", e );
+				int port = DEFAULT_PORT;
+				Object cfgPort = this.cfg.get( "hibernate.ogm.mongo.port" );
+				if ( cfgPort != null ) {
+					try {
+						int temporaryPort = Integer.valueOf( cfgPort.toString() ).intValue();
+						if ( temporaryPort < 1 || temporaryPort > 65535 ) {
+							throw new HibernateException(
+									"The value set for the hibernate.ogm.mongo.port must be between 1 and 65535" );
+						}
+						port = temporaryPort;
+					}
+					catch ( NumberFormatException e ) {
+						throw new HibernateException( "The value set for the hibernate.ogm.mongo.port is not a number" );
+					}
+				}
+				log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
+				this.mongo = new Mongo( host, port );
+				this.isCacheProvided = true;
+			}
+			catch ( UnknownHostException e ) {
+				throw new HibernateException( "The database host cannot be resolved", e );
+			}
+			catch ( MongoException e ) {
+				throw new HibernateException( "Cannot open the MongoDB connection", e );
+			}
 		}
 	}
 
