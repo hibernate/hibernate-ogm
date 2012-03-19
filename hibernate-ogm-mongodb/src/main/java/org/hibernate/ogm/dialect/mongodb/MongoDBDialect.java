@@ -72,14 +72,14 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = new BasicDBObject( "_id", key.getId().toString() );
+		DBObject toSave = new BasicDBObject( "_id", key.getColumnValues()[0] );
 		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
 
 	}
 
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = new BasicDBObject( "_id", key.getId().toString() );
+		DBObject searchObject = new BasicDBObject( "_id", key.getColumnValues()[0] );
 		return collection.findOne( searchObject );
 	}
 
@@ -126,7 +126,7 @@ public class MongoDBDialect implements GridDialect {
 			collection.remove( toDelete );
 		}
 		else {
-			log.tracef( "Unable to remove %1$s (object not found)", key.getId().toString() );
+			log.tracef( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
 		}
 	}
 

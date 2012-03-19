@@ -73,7 +73,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		DBObject finder = new BasicDBObject( "_id", key.getId() );
+		DBObject finder = new BasicDBObject( "_id", key.getColumnValues()[0] );
 		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
 		return result.toMap();
 	}
