@@ -110,8 +110,10 @@ public abstract class JpaTestCase {
 
 	@After
 	public void closeFactory() {
-		factory.close();
-		factory = null;
+		if ( factory != null ) {
+			factory.close();
+			factory = null;
+		}
 	}
 
 }
