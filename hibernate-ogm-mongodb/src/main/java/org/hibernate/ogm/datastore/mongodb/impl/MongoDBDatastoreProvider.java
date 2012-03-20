@@ -23,17 +23,13 @@ package org.hibernate.ogm.datastore.mongodb.impl;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.service.jndi.spi.JndiService;
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.logging.mongodb.impl.Log;
+import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
@@ -45,38 +41,14 @@ import com.mongodb.Mongo;
  * 
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
-public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService,
-		Configurable {
+public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable {
 
-	private static final Log log = LoggerFactory.make();
-	private static final String MONGODB_DATABASE = "hibernate.ogm.mongodb.database";
-	private static final String DEFAULT_HOST = "127.0.0.1";
-	private static final int DEFAULT_PORT = 27017;
-	private static final long serialVersionUID = 1L;
+	private static final Log log = LoggerFactory.getLogger();
+
 	private Map<?, ?> cfg;
-	private boolean isCacheProvided;
-	private JndiService jndiService;
-	private JtaPlatform jtaPlatform;
+	private boolean isCacheStarted;
 	private Mongo mongo;
-
-	public DB getDatabase() {
-		Object dbNameObject = this.cfg.get( MONGODB_DATABASE );
-		if ( dbNameObject == null ) {
-			throw new HibernateException( "The property " + MONGODB_DATABASE
-					+ " has not been set into the configuration file" );
-		}
-		else {
-			String dbName = (String) dbNameObject;
-			if ( log.isTraceEnabled() ) {
-				log.tracef( "Retrieve database %1$s", dbName );
-			}
-			if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
-				throw new HibernateException( "The database called " + dbName + " doesn't exist, check the "
-						+ MONGODB_DATABASE + " property" );
-			}
-			return this.mongo.getDB( dbName );
-		}
-	}
+	private DB mongoDb;
 
 	@Override
 	public void configure(Map configurationValues) {
@@ -89,50 +61,64 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		jtaPlatform = serviceRegistry.getService( JtaPlatform.class );
-		jndiService = serviceRegistry.getService( JndiService.class );
-	}
-
 	public void start() {
-		if ( !isCacheProvided ) {
-			log.info( "Opening connection to MongoDB instance" );
+		if ( !isCacheStarted ) {
+			Object cfgHost = this.cfg.get( Environment.MONGODB_HOST );
+			String host = cfgHost != null ? cfgHost.toString() : Environment.MONGODB_DEFAULT_HOST;
 			try {
-				Object cfgHost = this.cfg.get( "hibernate.ogm.mongo.host" );
-				String host = cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
-
-				int port = DEFAULT_PORT;
-				Object cfgPort = this.cfg.get( "hibernate.ogm.mongo.port" );
+				final int port;
+				Object cfgPort = this.cfg.get( Environment.MONGODB_PORT );
 				if ( cfgPort != null ) {
 					try {
 						int temporaryPort = Integer.valueOf( cfgPort.toString() ).intValue();
 						if ( temporaryPort < 1 || temporaryPort > 65535 ) {
-							throw new HibernateException(
-									"The value set for the hibernate.ogm.mongo.port property must be between 1 and 65535" );
+							throw log.mongoPortIllegalValue();
 						}
 						port = temporaryPort;
 					}
 					catch ( NumberFormatException e ) {
-						throw new HibernateException( "The value set for the hibernate.ogm.mongo.port is not a number" );
+						throw log.mongoPortIllegalValue();
 					}
 				}
-				if ( log.isTraceEnabled() ) {
-					log.tracef( "Opening connection to: %1$s : %1$s", host, String.valueOf( port ) );
+				else {
+					port = Environment.MONGODB_DEFAULT_PORT;
 				}
+				log.connectingToMongo( host, port );
 				this.mongo = new Mongo( host, port );
-				this.isCacheProvided = true;
+				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
-				throw new HibernateException( "The database host cannot be resolved", e );
+				throw log.mongoOnUnknownHost( host );
 			}
 			catch ( RuntimeException e ) {
-				log.unableToInitializeMongoDB( e );
+				throw log.unableToInitializeMongoDB( e );
 			}
+			mongoDb = extractDatabase();
 		}
 	}
 
+	@Override
 	public void stop() {
-		log.info( "Closing connection to MongoDB instance" );
+		log.disconnectingFromMongo();
 		this.mongo.close();
 	}
+
+	public DB getDatabase() {
+		return mongoDb;
+	}
+
+
+	private DB extractDatabase() {
+		Object dbNameObject = this.cfg.get( Environment.MONGODB_DATABASE );
+		if ( dbNameObject == null ) {
+			throw log.mongoDbNameMissing();
+		}
+		String dbName = (String) dbNameObject;
+		log.connectingToMongoDatabase( dbName );
+		if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
+			log.creatingDatabase( dbName );
+		}
+		return this.mongo.getDB( dbName );
+	}
+
 }

@@ -34,11 +34,10 @@ import com.mongodb.DBObject;
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
-	private DBObject dbObject;
+	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	public MongoDBTupleSnapshot(DBObject dbObject) {
-		super();
 		this.dbObject = dbObject;
 	}
 

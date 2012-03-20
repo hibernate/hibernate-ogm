@@ -93,7 +93,5 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
 	void useGridDialect(String gridDialectClass);
-	
-	@Message(id = 18, value = "Unable to find or initialize a connection to the MongoDB server")
-	HibernateException unableToInitializeMongoDB(@Cause RuntimeException e);
+
 }

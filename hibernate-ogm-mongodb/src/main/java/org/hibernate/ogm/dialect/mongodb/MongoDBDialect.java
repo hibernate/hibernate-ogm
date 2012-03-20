@@ -31,8 +31,8 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.ogm.logging.mongodb.impl.Log;
+import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
 
 import com.mongodb.BasicDBObject;
@@ -44,19 +44,16 @@ import com.mongodb.DBObject;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBDialect implements GridDialect {
-	private static final Log log = LoggerFactory.make();
+
+	private static final Log log = LoggerFactory.getLogger();
 	public static final String ID_FIELDNAME = "_id";
+
 	private final MongoDBDatastoreProvider provider;
-	private DB currentDB;
+	private final DB currentDB;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
 		this.currentDB = this.provider.getDatabase();
-	}
-
-	public MongoDBDialect() {
-		super();
-		this.provider = null;
 	}
 
 	@Override
@@ -126,8 +123,8 @@ public class MongoDBDialect implements GridDialect {
 			collection.remove( toDelete );
 		}
 		else {
-			if ( log.isTraceEnabled() ) {
-				log.tracef( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
+			if ( log.isDebugEnabled() ) {
+				log.debugf( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
 			}
 		}
 	}
