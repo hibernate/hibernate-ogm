@@ -61,7 +61,7 @@ public class JPAStandaloneTest extends JpaTestCase {
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 
 		packaging.addPackageToClasspath( testPackage );
-
+		closeFactory();
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 
 		TransactionManager transactionManager = extractJBossTransactionManager( emf );

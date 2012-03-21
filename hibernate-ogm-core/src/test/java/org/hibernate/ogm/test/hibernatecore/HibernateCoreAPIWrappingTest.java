@@ -58,7 +58,7 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
 		buildArchive();
-
+		closeFactory();
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
@@ -96,7 +96,7 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 	@Test
 	public void testJNDIReference() throws Exception {
 		buildArchive();
-
+		closeFactory();
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
