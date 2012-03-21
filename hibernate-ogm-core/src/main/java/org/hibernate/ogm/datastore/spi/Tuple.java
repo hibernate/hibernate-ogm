@@ -56,43 +56,44 @@ public class Tuple {
 																// the Map as it
 																// costs quite
 																// some memory
-	private final JSONHelper jsonHelper = new JSONHelper();
 
 	public Tuple(TupleSnapshot snapshot) {
 		this.snapshot = snapshot;
 	}
 
 	public Object get(String column) {
-		if (currentState == null) {
-			return snapshot.get(column);
+		if ( currentState == null ) {
+			return snapshot.get( column );
 		}
-		TupleOperation result = currentState.get(column);
-		if (result == null) {
-			return snapshot.get(column);
-		} else if (result.getType() == PUT_NULL || result.getType() == REMOVE) {
+		TupleOperation result = currentState.get( column );
+		if ( result == null ) {
+			return snapshot.get( column );
+		}
+		else if ( result.getType() == PUT_NULL || result.getType() == REMOVE ) {
 			return null;
-		} else {
+		}
+		else {
 			return result.getValue();
 		}
 	}
 
 	public void put(String column, Object value) {
-		if (currentState == null) {
+		if ( currentState == null ) {
 			currentState = new HashMap<String, TupleOperation>();
 		}
-		if (value == null) {
-			currentState
-					.put(column, new TupleOperation(column, null, PUT_NULL));
-		} else {
-			currentState.put(column, new TupleOperation(column, value, PUT));
+		if ( value == null ) {
+			currentState.put( column, new TupleOperation( column, null, PUT_NULL ) );
+		}
+		else {
+			currentState.put( column, new TupleOperation( column, value, PUT ) );
 		}
 	}
 
 	public void remove(String column) {
-		if (currentState == null) {
+		if ( currentState == null ) {
 			currentState = new HashMap<String, TupleOperation>();
 		}
-		currentState.put(column, new TupleOperation(column, null, REMOVE));
+		currentState.put( column, new TupleOperation( column, null, REMOVE ) );
 	}
 
 	/**
@@ -100,10 +101,11 @@ public class Tuple {
 	 * operations
 	 */
 	public Set<TupleOperation> getOperations() {
-		if (currentState == null) {
+		if ( currentState == null ) {
 			return Collections.emptySet();
-		} else {
-			return new SetFromCollection<TupleOperation>(currentState.values());
+		}
+		else {
+			return new SetFromCollection<TupleOperation>( currentState.values() );
 		}
 	}
 
@@ -112,18 +114,18 @@ public class Tuple {
 	}
 
 	public Set<String> getColumnNames() {
-		if (currentState == null) {
+		if ( currentState == null ) {
 			return snapshot.getColumnNames();
 		}
-		Set<String> columnNames = new HashSet<String>(snapshot.getColumnNames());
-		for (TupleOperation op : currentState.values()) {
-			switch (op.getType()) {
+		Set<String> columnNames = new HashSet<String>( snapshot.getColumnNames() );
+		for ( TupleOperation op : currentState.values() ) {
+			switch ( op.getType() ) {
 			case PUT:
 			case PUT_NULL:
-				columnNames.add(op.getColumn());
+				columnNames.add( op.getColumn() );
 				break;
 			case REMOVE:
-				columnNames.remove(op.getColumn());
+				columnNames.remove( op.getColumn() );
 				break;
 			}
 		}
@@ -139,29 +141,24 @@ public class Tuple {
 	public Set<Object> getColumnValues() {
 
 		Set<String> columnNames = getColumnNames();
-		if (currentState == null || columnNames.isEmpty() == true) {
+		if ( currentState == null || columnNames.isEmpty() == true ) {
 			return Collections.EMPTY_SET;
 		}
 
 		Set<Object> columnValues = new HashSet<Object>();
-		for (String columnName : columnNames) {
-			columnValues.add(currentState.get(columnName));
+		for ( String columnName : columnNames ) {
+			columnValues.add( currentState.get( columnName ) );
 		}
 
-		return Collections.unmodifiableSet(columnValues);
+		return Collections.unmodifiableSet( columnValues );
 	}
 
 	/**
-	 * Gets snapshot as Map.
+	 * Gets the current State.
 	 * 
-	 * @return Map<String,Object> All the column name and value pairs as Map.
+	 * @return Map<String, TupleOperation> Current state.
 	 */
-	public Map<String, Object> getSnapShotAsMap() {
-		Set<String> columnNames = getColumnNames();
-		if (currentState == null || columnNames.isEmpty() == true) {
-			return Collections.EMPTY_MAP;
-		}
-
-		return jsonHelper.convertJsonAsNeededOn(columnNames, snapshot);
+	public Map<String, TupleOperation> getCurrentState() {
+		return currentState;
 	}
 }

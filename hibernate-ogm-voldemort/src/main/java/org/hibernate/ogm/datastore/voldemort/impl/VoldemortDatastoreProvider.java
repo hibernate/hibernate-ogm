@@ -18,8 +18,10 @@
  */
 package org.hibernate.ogm.datastore.voldemort.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
@@ -34,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.commons.lang.ClassUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -41,21 +44,26 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Environment;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.ogm.datastore.spi.AbstractJsonAwareDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.VoldemortDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.helper.JSONHelper;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.spi.Startable;
+import org.hibernate.service.spi.Stoppable;
 
 import voldemort.client.ClientConfig;
 import voldemort.client.SocketStoreClientFactory;
 import voldemort.client.StoreClient;
 import voldemort.client.StoreClientFactory;
 import voldemort.client.UpdateAction;
+import voldemort.server.VoldemortConfig;
+import voldemort.server.VoldemortServer;
 import voldemort.versioning.Versioned;
 
 /**
@@ -63,15 +71,13 @@ import voldemort.versioning.Versioned;
  * @author Seiya Kawashima <skawashima@uchicago.edu>
  * 
  */
-public class VoldemortDatastoreProvider extends
-		AbstractJsonAwareDatastoreProvider {
+public class VoldemortDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
 
 	private static final Log log = LoggerFactory.make();
 	private StoreClientFactory clientFactory;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final ConcurrentMap<String, Set<Serializable>> tableIds = new ConcurrentHashMap<String, Set<Serializable>>();
-	private final Set<AssociationKey> associationKeys = Collections
-			.synchronizedSet(new HashSet<AssociationKey>());
+	private final Set<AssociationKey> associationKeys = Collections.synchronizedSet( new HashSet<AssociationKey>() );
 	private StoreClient dataClient;
 	private StoreClient associationClient;
 	private StoreClient sequenceClient;
@@ -80,21 +86,125 @@ public class VoldemortDatastoreProvider extends
 	private boolean flushToDb = false;
 	private int maxTries;
 	private VoldemortUpdateAction updateAction;
+	private final JSONHelper jsonHelper = new JSONHelper();
+	private Map<String, String> requiredProperties;
+	private VoldemortServer embeddedServer;
+
+	private static enum RequiredProp {
+
+		PROVIDER("provider", "hibernate.ogm.datastore.provider"), DIALECT("dialect", "hibernate.dialect"), PROVIDER_URL(
+				"provider_url", "hibernate.ogm.datastore.provider_url");
+
+		private String name;
+		private String propPath;
+
+		RequiredProp(String name, String propPath) {
+			this.name = name;
+			this.propPath = propPath;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getPropPath() {
+			return propPath;
+		}
+	}
+
+	/**
+	 * Gets the common required property values among other datastore provider
+	 * and the datastore specific property values.
+	 * 
+	 * @return Key value pairs storing the properties.
+	 */
+	private Map<String, String> getRequiredPropertyValues() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put( RequiredProp.PROVIDER.getName(),
+				Environment.getProperties().getProperty( RequiredProp.PROVIDER.getPropPath() ) );
+		map.put( RequiredProp.DIALECT.getName(), RequiredProp.DIALECT.getPropPath() );
+		map.put( RequiredProp.PROVIDER_URL.getName(),
+				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
+		map.putAll( getSpecificSettings() );
+		return Collections.unmodifiableMap( map );
+	}
+
+	/**
+	 * Checks required property settings for Voldemort on hibernate.properties.
+	 * 
+	 * @return True if all the required properties are set, false otherwise.
+	 */
+	protected boolean checkRequiredSettings() {
+		requiredProperties = getRequiredPropertyValues();
+
+		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
+				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
+				&& requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Creates a wrapper object using the specified primitive class and string
+	 * value. This method calls a constructor with string parameter.
+	 * 
+	 * @param prmitiveClass
+	 *            Class used to find the corresponding wrapper class.
+	 * @param paramString
+	 *            Set in the wrapper class constructor.
+	 * @return Wrapper class object or null.
+	 */
+	protected Object createWrapperClassObjFrom(Class prmitiveClass, String paramString) {
+		Class wrapperClass = ClassUtils.primitiveToWrapper( prmitiveClass );
+		Constructor ctor;
+		try {
+			ctor = wrapperClass.getDeclaredConstructor( String.class );
+			return ctor.newInstance( paramString );
+		}
+		catch ( SecurityException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( NoSuchMethodException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IllegalArgumentException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( InstantiationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IllegalAccessException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( InvocationTargetException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Converts the specified exception to HibernateException and rethrows it.
+	 * 
+	 * @param <T>
+	 * @param exception
+	 *            Exception to be rethrown as HibernateException.
+	 */
+	protected <T extends Throwable> void throwHibernateExceptionFrom(T exception) {
+		throw new HibernateException( exception.getCause() );
+	}
 
 	private static enum VoldemortProp {
 
 		ASSOCIATION("HibernateOGM-Association", "voldemort_association_store",
-				"hibernate.ogm.datastore.voldemort_association_store"), DATA(
-				"HibernateOGM", "voldemort_store",
-				"hibernate.ogm.datastore.voldemort_store"), SEQUENCE(
-				"HibernateOGM-Sequence", "voldemort_sequence_store",
-				"hibernate.ogm.datastore.voldemort_sequence_store"), FLUSH_SEQUENCE_TO_DB(
-				"FlushSequence", "FlushSequence",
-				"hibernate.ogm.datastore.voldemort_flush_sequence_to_db"), MAX_TRIES(
-				"MaxTries", "MaxTries",
-				"hibernate.ogm.datastore.voldemort_max_tries"), UPDATE_ACTION(
-				"UpdateAction", "UpdateAction",
-				"hibernate.ogm.datastore.voldemort_update_action");
+				"hibernate.ogm.datastore.voldemort_association_store"), DATA("HibernateOGM", "voldemort_store",
+				"hibernate.ogm.datastore.voldemort_store"), SEQUENCE("HibernateOGM-Sequence",
+				"voldemort_sequence_store", "hibernate.ogm.datastore.voldemort_sequence_store"), FLUSH_SEQUENCE_TO_DB(
+				"FlushSequence", "FlushSequence", "hibernate.ogm.datastore.voldemort_flush_sequence_to_db"), MAX_TRIES(
+				"MaxTries", "MaxTries", "hibernate.ogm.datastore.voldemort_max_tries"), UPDATE_ACTION("UpdateAction",
+				"UpdateAction", "hibernate.ogm.datastore.voldemort_update_action"), DEBUG_DATASTORE_LOCATION(
+				"DebugDatastoreLocation", "DebugDatastoreLocation", "hibernate.ogm.datastore.provider_debug_location");
 
 		private String name;
 		private String alias;
@@ -148,6 +258,10 @@ public class VoldemortDatastoreProvider extends
 		return VoldemortDialect.class;
 	}
 
+	public JSONHelper getJsonHelper() {
+		return jsonHelper;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -155,12 +269,44 @@ public class VoldemortDatastoreProvider extends
 	 */
 	@Override
 	public void stop() {
-		log.info("stopping Voldemort");
+		log.info( "stopping Voldemort embeddedServer: " + embeddedServer );
 		tableIds.clear();
+		associationKeys.clear();
+		nextValues.clear();
 
-		if (clientFactory != null) {
+		if ( clientFactory != null ) {
 			clientFactory.close();
 		}
+
+		if ( embeddedServer != null ) {
+			log.info( "come to stop Voldemort" );
+			embeddedServer.stop();
+			removeAllEntries();
+		}
+	}
+
+	/**
+	 * Assumes that Voldemort is used for testing since it's started as an embedded datastore.
+	 * Removes data from the specified embedded location.
+	 * TODO would be better to remove all the entries using VoldemrotDialect or VoldemortDatastore since they cache
+	 * all the entries.
+	 */
+	private void removeAllEntries() {
+		deleteDirectories( new File( requiredProperties.get( VoldemortProp.DEBUG_DATASTORE_LOCATION.getAlias() )
+				+ File.separator + "data" ) );
+	}
+
+	public boolean deleteDirectories(File directory) {
+		if ( directory.isDirectory() ) {
+			for ( String subDirectory : directory.list() ) {
+				boolean done = deleteDirectories( new File( directory, subDirectory ) );
+				if ( !done ) {
+					return false;
+				}
+			}
+
+		}
+		return directory.delete();
 	}
 
 	/*
@@ -170,19 +316,66 @@ public class VoldemortDatastoreProvider extends
 	 */
 	@Override
 	public void start() {
-		try {
-			if (!checkRequiredSettings()) {
-				throw new HibernateException(
-						"Please configure Voldemort on hibernate.properties correctly.");
-			}
+		// try {
+		if ( !checkRequiredSettings() ) {
+			throw new HibernateException( "Please configure Voldemort on hibernate.properties correctly." );
+		}
 
-			setClientFactory();
-			setVoldemortClients();
-			setFlushToDBFlag();
-			setMaxTries();
-			setUpdateAction();
-		} catch (Throwable ex) {
-			stop();
+		startVoldemortServer();
+		setClientFactory();
+		setVoldemortClients();
+		setFlushToDBFlag();
+		setMaxTries();
+		setUpdateAction();
+		// }
+		// catch ( Throwable ex ) {
+		// stop();
+		// }
+	}
+
+	/**
+	 * Starts Voldemort server.
+	 */
+	private void startVoldemortServer() {
+
+		String embeddedLocation = getEmbeddedLocation();
+		if ( embeddedLocation.equals( "" ) ) {
+			log.info( "Voldemort standalone server should be started by the user" );
+		}
+		else {
+			startEmbeddedServer( embeddedLocation );
+		}
+	}
+
+	/**
+	 * Gets the location of configuration file for embedded Voldemort datastore from hibernate.properties.
+	 * 
+	 * @return Location if it exists and non-empty string otherwise empty string.
+	 */
+	private String getEmbeddedLocation() {
+		String embeddedLocation = requiredProperties.get( VoldemortProp.DEBUG_DATASTORE_LOCATION.getAlias() );
+		if ( embeddedLocation == null || embeddedLocation.equals( "" ) ) {
+			return "";
+		}
+
+		return embeddedLocation;
+	}
+
+	/**
+	 * Starts Voldemort as Embedded datastore.
+	 * 
+	 * @param embeddedLocation
+	 *            Location of the configuration file for Voldemort embedded datastore.
+	 */
+	private void startEmbeddedServer(String embeddedLocation) {
+
+		if ( embeddedServer == null ) {
+			log.info( "Voldemort embedded server starting ..." );
+			embeddedServer = new VoldemortServer( VoldemortConfig.loadFromVoldemortHome( embeddedLocation ) );
+			embeddedServer.start();
+		}
+		else {
+			log.info( "Voldemort embedded serevr is already started" );
 		}
 	}
 
@@ -190,9 +383,8 @@ public class VoldemortDatastoreProvider extends
 	 * Sets clientFactory property.
 	 */
 	private void setClientFactory() {
-		clientFactory = new SocketStoreClientFactory(
-				new ClientConfig().setBootstrapUrls(this
-						.getRequiredProperties().get("provider_url")));
+		clientFactory = new SocketStoreClientFactory( new ClientConfig().setBootstrapUrls( requiredProperties
+				.get( "provider_url" ) ) );
 	}
 
 	/**
@@ -200,11 +392,9 @@ public class VoldemortDatastoreProvider extends
 	 * and sequence store.
 	 */
 	private void setVoldemortClients() {
-		dataClient = clientFactory.getStoreClient(getVoldemortStoreName());
-		sequenceClient = clientFactory
-				.getStoreClient(getVoldemortSequenceStoreName());
-		associationClient = clientFactory
-				.getStoreClient(getVoldemortAssociationStoreName());
+		dataClient = clientFactory.getStoreClient( getVoldemortStoreName() );
+		sequenceClient = clientFactory.getStoreClient( getVoldemortSequenceStoreName() );
+		associationClient = clientFactory.getStoreClient( getVoldemortAssociationStoreName() );
 	}
 
 	/**
@@ -212,15 +402,12 @@ public class VoldemortDatastoreProvider extends
 	 * default value is true.
 	 */
 	private void setFlushToDBFlag() {
-		String flushToDbProp = getRequiredProperties().get(
-				VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias());
-		log.info("flushToDbProp: "
-				+ getRequiredProperties().get(
-						VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias()));
-		flushToDb = flushToDbProp == null || flushToDbProp.equals("")
-				|| flushToDbProp.equals("true") ? true : false;
+		String flushToDbProp = requiredProperties.get( VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias() );
+		log.info( "flushToDbProp: " + requiredProperties.get( VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias() ) );
+		flushToDb = flushToDbProp == null || flushToDbProp.equals( "" ) || flushToDbProp.equals( "true" ) ? true
+				: false;
 
-		log.info("set flush sequence to db flag as " + flushToDb);
+		log.info( "set flush sequence to db flag as " + flushToDb );
 	}
 
 	/**
@@ -232,29 +419,21 @@ public class VoldemortDatastoreProvider extends
 	protected Map<String, String> getSpecificSettings() {
 
 		Map<String, String> specificSettings = new HashMap<String, String>();
-		specificSettings.put(VoldemortProp.DATA.getAlias(), Environment
-				.getProperties().getProperty(VoldemortProp.DATA.getPropPath()));
-		specificSettings.put(
-				VoldemortProp.ASSOCIATION.getAlias(),
-				Environment.getProperties().getProperty(
-						VoldemortProp.ASSOCIATION.getPropPath()));
-		specificSettings.put(
-				VoldemortProp.SEQUENCE.getAlias(),
-				Environment.getProperties().getProperty(
-						VoldemortProp.SEQUENCE.getPropPath()));
-		specificSettings.put(
-				VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias(),
-				Environment.getProperties().getProperty(
-						VoldemortProp.FLUSH_SEQUENCE_TO_DB.getPropPath()));
-		specificSettings.put(
-				VoldemortProp.MAX_TRIES.getAlias(),
-				Environment.getProperties().getProperty(
-						VoldemortProp.MAX_TRIES.getPropPath()));
-		specificSettings.put(
-				VoldemortProp.UPDATE_ACTION.getAlias(),
-				Environment.getProperties().getProperty(
-						VoldemortProp.UPDATE_ACTION.getPropPath()));
-		return Collections.unmodifiableMap(specificSettings);
+		specificSettings.put( VoldemortProp.DATA.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.DATA.getPropPath() ) );
+		specificSettings.put( VoldemortProp.ASSOCIATION.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.ASSOCIATION.getPropPath() ) );
+		specificSettings.put( VoldemortProp.SEQUENCE.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.SEQUENCE.getPropPath() ) );
+		specificSettings.put( VoldemortProp.FLUSH_SEQUENCE_TO_DB.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.FLUSH_SEQUENCE_TO_DB.getPropPath() ) );
+		specificSettings.put( VoldemortProp.MAX_TRIES.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.MAX_TRIES.getPropPath() ) );
+		specificSettings.put( VoldemortProp.UPDATE_ACTION.getAlias(),
+				Environment.getProperties().getProperty( VoldemortProp.UPDATE_ACTION.getPropPath() ) );
+		specificSettings.put( VoldemortProp.DEBUG_DATASTORE_LOCATION.getAlias(), Environment.getProperties()
+				.getProperty( VoldemortProp.DEBUG_DATASTORE_LOCATION.getPropPath() ) );
+		return Collections.unmodifiableMap( specificSettings );
 	}
 
 	/**
@@ -263,13 +442,12 @@ public class VoldemortDatastoreProvider extends
 	 * http://project-voldemort.com/javadoc/all/index.html?overview-summary.html
 	 */
 	private void setMaxTries() {
-		String mTries = this.getRequiredProperties().get(
-				VoldemortProp.MAX_TRIES.getAlias());
-		log.info("max tries: " + mTries);
-		maxTries = mTries == null || mTries.equals("")
-				|| Integer.parseInt(mTries) <= 0 ? 3 : Integer.parseInt(mTries);
+		String mTries = requiredProperties.get( VoldemortProp.MAX_TRIES.getAlias() );
+		log.info( "max tries: " + mTries );
+		maxTries = mTries == null || mTries.equals( "" ) || Integer.parseInt( mTries ) <= 0 ? 3 : Integer
+				.parseInt( mTries );
 
-		log.info("set max tries as " + maxTries);
+		log.info( "set max tries as " + maxTries );
 	}
 
 	/**
@@ -279,25 +457,26 @@ public class VoldemortDatastoreProvider extends
 	 */
 	@SuppressWarnings("rawtypes")
 	private void setUpdateAction() {
-		String uAction = getRequiredProperties().get(
-				VoldemortProp.UPDATE_ACTION.getAlias());
-		log.info("update action: " + uAction);
+		String uAction = requiredProperties.get( VoldemortProp.UPDATE_ACTION.getAlias() );
+		log.info( "update action: " + uAction );
 
-		if (uAction != null && !uAction.equals("")) {
+		if ( uAction != null && !uAction.equals( "" ) ) {
 			try {
-				updateAction = (VoldemortUpdateAction) Class.forName(uAction)
-						.newInstance();
-			} catch (InstantiationException e) {
+				updateAction = (VoldemortUpdateAction) Class.forName( uAction ).newInstance();
+			}
+			catch ( InstantiationException e ) {
 				e.printStackTrace();
-				throwHibernateExceptionFrom(e);
-			} catch (IllegalAccessException e) {
-				throwHibernateExceptionFrom(e);
-			} catch (ClassNotFoundException e) {
-				throwHibernateExceptionFrom(e);
+				throwHibernateExceptionFrom( e );
+			}
+			catch ( IllegalAccessException e ) {
+				throwHibernateExceptionFrom( e );
+			}
+			catch ( ClassNotFoundException e ) {
+				throwHibernateExceptionFrom( e );
 			}
 		}
 
-		log.info("set updateAction as " + updateAction);
+		log.info( "set updateAction as " + updateAction );
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -323,16 +502,14 @@ public class VoldemortDatastoreProvider extends
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Map<String, Object> getEntityTuple(EntityKey key) {
-		Versioned v = getValue(getVoldemortStoreName(),
-				key.getEntityKeyAsMap(), false);
+		Versioned v = getValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), false );
 
-		if (v == null) {
+		if ( v == null ) {
 			return null;
 		}
 
-		return getJsonHelper().convertFromJsonOn(key,
-				(Map<String, Object>) createReturnObjectFrom(v, Map.class),
-				getDeclaredFieldsFrom(key.getEntityName()));
+		return jsonHelper.convertFromJsonOn( key, (Map<String, Object>) createReturnObjectFrom( v, Map.class ),
+				getDeclaredFieldsFrom( key.getEntityName() ) );
 	}
 
 	/**
@@ -351,16 +528,19 @@ public class VoldemortDatastoreProvider extends
 	public Versioned getValue(String storeName, Object key, boolean keyByteArray) {
 
 		Versioned v = null;
-		if (keyByteArray) {
-			v = getValueWithByteKey(key, storeName);
-		} else {
+		if ( keyByteArray ) {
+			v = getValueWithByteKey( key, storeName );
+		}
+		else {
 
-			if (storeName.equals(getVoldemortStoreName())) {
-				v = dataClient.get(key);
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				v = sequenceClient.get(key);
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				v = associationClient.get(key);
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				v = dataClient.get( key );
+			}
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				v = sequenceClient.get( key );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				v = associationClient.get( key );
 			}
 		}
 
@@ -381,20 +561,24 @@ public class VoldemortDatastoreProvider extends
 
 		Versioned v = null;
 		try {
-			if (storeName.equals(getVoldemortStoreName())) {
-				return dataClient.get(mapper.writeValueAsBytes(key));
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				return sequenceClient.get(mapper.writeValueAsBytes(key));
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				return dataClient.get( mapper.writeValueAsBytes( key ) );
+			}
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				return sequenceClient.get( mapper.writeValueAsBytes( key ) );
 			}
 
-			v = associationClient.get(mapper.writeValueAsBytes(key));
+			v = associationClient.get( mapper.writeValueAsBytes( key ) );
 
-		} catch (JsonGenerationException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+		}
+		catch ( JsonGenerationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return v;
@@ -414,14 +598,16 @@ public class VoldemortDatastoreProvider extends
 
 		Object rtnValue = null;
 		try {
-			rtnValue = mapper.readValue((byte[]) v.getValue(), 0,
-					((byte[]) v.getValue()).length, cls);
-		} catch (JsonParseException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+			rtnValue = mapper.readValue( (byte[]) v.getValue(), 0, ( (byte[]) v.getValue() ).length, cls );
+		}
+		catch ( JsonParseException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return rtnValue;
@@ -438,11 +624,13 @@ public class VoldemortDatastoreProvider extends
 
 		Field[] fields = null;
 		try {
-			fields = Class.forName(className).getDeclaredFields();
-		} catch (SecurityException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (ClassNotFoundException e) {
-			throwHibernateExceptionFrom(e);
+			fields = Class.forName( className ).getDeclaredFields();
+		}
+		catch ( SecurityException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( ClassNotFoundException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return fields;
@@ -459,8 +647,8 @@ public class VoldemortDatastoreProvider extends
 	 */
 	public boolean putEntity(EntityKey key, Map<String, Object> tuple) {
 
-		addEntryToIdTable(key);
-		return writeEntityTupleFrom(key, tuple);
+		addEntryToIdTable( key );
+		return writeEntityTupleFrom( key, tuple );
 	}
 
 	/**
@@ -472,10 +660,8 @@ public class VoldemortDatastoreProvider extends
 	 *            Value to be stored for the corresponding key.
 	 * @return True if put is successful, false otherwise.
 	 */
-	private boolean writeEntityTupleFrom(EntityKey key,
-			Map<String, Object> tuple) {
-		return putValue(getVoldemortStoreName(), key.getEntityKeyAsMap(),
-				tuple, false, true);
+	private boolean writeEntityTupleFrom(EntityKey key, Map<String, Object> tuple) {
+		return putValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), tuple, false, true );
 	}
 
 	/**
@@ -495,24 +681,28 @@ public class VoldemortDatastoreProvider extends
 	 *            otherwise.
 	 * @return True if put is successful, false otherwise.
 	 */
-	public boolean putValue(String storeName, Object key, Object value,
-			boolean keyByteArray, boolean valueByteArray) {
+	public boolean putValue(String storeName, Object key, Object value, boolean keyByteArray, boolean valueByteArray) {
 
 		boolean b = false;
 
-		if (keyByteArray && valueByteArray) {
-			b = putByteArrayKeyAndByteArrayValue(key, value, storeName);
-		} else if (keyByteArray && !valueByteArray) {
-			b = putByteArrayKeyAndValue(key, value, storeName);
-		} else if (!keyByteArray && valueByteArray) {
-			b = putKeyAndByteArrayValue(key, value, storeName);
-		} else if (!keyByteArray && !valueByteArray) {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = putWithApplyUpdate(dataClient, key, value);
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = putWithApplyUpdate(sequenceClient, key, value);
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = putWithApplyUpdate(associationClient, key, value);
+		if ( keyByteArray && valueByteArray ) {
+			b = putByteArrayKeyAndByteArrayValue( key, value, storeName );
+		}
+		else if ( keyByteArray && !valueByteArray ) {
+			b = putByteArrayKeyAndValue( key, value, storeName );
+		}
+		else if ( !keyByteArray && valueByteArray ) {
+			b = putKeyAndByteArrayValue( key, value, storeName );
+		}
+		else if ( !keyByteArray && !valueByteArray ) {
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = putWithApplyUpdate( dataClient, key, value );
+			}
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = putWithApplyUpdate( sequenceClient, key, value );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = putWithApplyUpdate( associationClient, key, value );
 			}
 		}
 
@@ -530,29 +720,31 @@ public class VoldemortDatastoreProvider extends
 	 *            Store to be used to store the pair.
 	 * @return True if put is successful, false otherwise.
 	 */
-	private boolean putByteArrayKeyAndByteArrayValue(Object key, Object value,
-			String storeName) {
+	private boolean putByteArrayKeyAndByteArrayValue(Object key, Object value, String storeName) {
 
 		boolean b = false;
 		try {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = putWithApplyUpdate(dataClient, key, value);
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = putWithApplyUpdate(sequenceClient,
-						mapper.writeValueAsBytes(key),
-						mapper.writeValueAsBytes(value));
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = putWithApplyUpdate(associationClient,
-						mapper.writeValueAsBytes(key),
-						mapper.writeValueAsBytes(value));
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = putWithApplyUpdate( dataClient, key, value );
+			}
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = putWithApplyUpdate( sequenceClient, mapper.writeValueAsBytes( key ),
+						mapper.writeValueAsBytes( value ) );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = putWithApplyUpdate( associationClient, mapper.writeValueAsBytes( key ),
+						mapper.writeValueAsBytes( value ) );
 			}
 
-		} catch (JsonGenerationException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+		}
+		catch ( JsonGenerationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return b;
@@ -569,27 +761,28 @@ public class VoldemortDatastoreProvider extends
 	 *            Store to be used to store the pair.
 	 * @return True if put is successful, false otherwise.
 	 */
-	private boolean putByteArrayKeyAndValue(Object key, Object value,
-			String storeName) {
+	private boolean putByteArrayKeyAndValue(Object key, Object value, String storeName) {
 
 		boolean b = false;
 		try {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = putWithApplyUpdate(dataClient,
-						mapper.writeValueAsBytes(key), value);
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = putWithApplyUpdate(sequenceClient,
-						mapper.writeValueAsBytes(key), value);
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = putWithApplyUpdate(associationClient,
-						mapper.writeValueAsBytes(key), value);
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = putWithApplyUpdate( dataClient, mapper.writeValueAsBytes( key ), value );
 			}
-		} catch (JsonGenerationException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = putWithApplyUpdate( sequenceClient, mapper.writeValueAsBytes( key ), value );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = putWithApplyUpdate( associationClient, mapper.writeValueAsBytes( key ), value );
+			}
+		}
+		catch ( JsonGenerationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return b;
@@ -606,73 +799,75 @@ public class VoldemortDatastoreProvider extends
 	 *            Store to be used to store the pair.
 	 * @return True if put is successful, false otherwise.
 	 */
-	private boolean putKeyAndByteArrayValue(Object key, Object value,
-			String storeName) {
+	private boolean putKeyAndByteArrayValue(Object key, Object value, String storeName) {
 
 		boolean b = false;
 		try {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = putWithApplyUpdate(dataClient, key,
-						mapper.writeValueAsBytes(value));
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = putWithApplyUpdate(sequenceClient, key,
-						mapper.writeValueAsBytes(value));
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = putWithApplyUpdate(associationClient, key,
-						mapper.writeValueAsBytes(value));
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = putWithApplyUpdate( dataClient, key, mapper.writeValueAsBytes( value ) );
 			}
-		} catch (JsonGenerationException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = putWithApplyUpdate( sequenceClient, key, mapper.writeValueAsBytes( value ) );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = putWithApplyUpdate( associationClient, key, mapper.writeValueAsBytes( value ) );
+			}
+		}
+		catch ( JsonGenerationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return b;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private boolean putWithApplyUpdate(StoreClient client, final Object key,
-			final Object value) {
+	private boolean putWithApplyUpdate(StoreClient client, final Object key, final Object value) {
 
-		if (updateAction == null) {
-			return client.applyUpdate(new UpdateAction() {
+		if ( updateAction == null ) {
+			return client.applyUpdate( new UpdateAction() {
 				@Override
 				public void update(StoreClient storeClient) {
-					storeClient.put(key, value);
+					storeClient.put( key, value );
 				}
-			}, maxTries);
+			}, maxTries );
 		}
 
 		// return client.applyUpdate( updateAction, maxTries );
-		return callApplyUpdateWith(client, key, value);
+		return callApplyUpdateWith( client, key, value );
 	}
 
 	@SuppressWarnings("rawtypes")
-	private boolean callApplyUpdateWith(StoreClient client, Object key,
-			Object value) {
+	private boolean callApplyUpdateWith(StoreClient client, Object key, Object value) {
 
 		try {
-			VoldemortUpdateAction.class.getDeclaredMethod(
-					Setter.SET_KEY.getName(), Object.class).invoke(
-					updateAction, key);
-			VoldemortUpdateAction.class.getDeclaredMethod(
-					Setter.SET_VALUE.getName(), Object.class).invoke(
-					updateAction, value);
-		} catch (IllegalArgumentException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (SecurityException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IllegalAccessException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (InvocationTargetException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (NoSuchMethodException e) {
-			throwHibernateExceptionFrom(e);
+			VoldemortUpdateAction.class.getDeclaredMethod( Setter.SET_KEY.getName(), Object.class ).invoke(
+					updateAction, key );
+			VoldemortUpdateAction.class.getDeclaredMethod( Setter.SET_VALUE.getName(), Object.class ).invoke(
+					updateAction, value );
+		}
+		catch ( IllegalArgumentException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( SecurityException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IllegalAccessException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( InvocationTargetException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( NoSuchMethodException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
-		return client.applyUpdate(updateAction, maxTries);
+		return client.applyUpdate( updateAction, maxTries );
 	}
 
 	/**
@@ -684,14 +879,15 @@ public class VoldemortDatastoreProvider extends
 	private void addEntryToIdTable(EntityKey key) {
 
 		Serializable rtnId = null;
-		tableIds.get(key.getTableName());
+		tableIds.get( key.getTableName() );
 
-		if (tableIds.get(key.getTableName()) == null) {
+		if ( tableIds.get( key.getTableName() ) == null ) {
 			Set<Serializable> set = new HashSet<Serializable>();
-			set.add(key.getId());
-			rtnId = (Serializable) tableIds.put(key.getTableName(), set);
-		} else {
-			tableIds.get(key.getTableName()).add(key.getId());
+			set.add( key.getId() );
+			rtnId = (Serializable) tableIds.put( key.getTableName(), set );
+		}
+		else {
+			tableIds.get( key.getTableName() ).add( key.getId() );
 		}
 
 		// showAllTableIds();
@@ -705,17 +901,17 @@ public class VoldemortDatastoreProvider extends
 		StringBuilder stringBuilder = new StringBuilder();
 		Set<Entry<String, Set<Serializable>>> entries = tableIds.entrySet();
 		boolean found = false;
-		for (Iterator<Entry<String, Set<Serializable>>> itr = entries
-				.iterator(); itr.hasNext();) {
+		for ( Iterator<Entry<String, Set<Serializable>>> itr = entries.iterator(); itr.hasNext(); ) {
 			Entry<String, Set<Serializable>> entry = itr.next();
-			generateAllTableIdsMessage(entry, stringBuilder);
+			generateAllTableIdsMessage( entry, stringBuilder );
 			found = true;
 		}
 
-		if (found) {
-			log.info(stringBuilder);
-		} else {
-			log.info("currently there are no ids stored");
+		if ( found ) {
+			log.info( stringBuilder );
+		}
+		else {
+			log.info( "currently there are no ids stored" );
 		}
 	}
 
@@ -728,17 +924,15 @@ public class VoldemortDatastoreProvider extends
 	 * @param stringBuilder
 	 *            Used to build the message.
 	 */
-	private void generateAllTableIdsMessage(
-			Entry<String, Set<Serializable>> entry, StringBuilder stringBuilder) {
+	private void generateAllTableIdsMessage(Entry<String, Set<Serializable>> entry, StringBuilder stringBuilder) {
 
-		stringBuilder.append("table name: " + entry.getKey() + "\n");
-		if (entry.getValue().isEmpty()) {
-			stringBuilder.append("\tall the ids on table, " + entry.getKey()
-					+ " are already deleted.\n");
-		} else {
-			for (Iterator<Serializable> itr = entry.getValue().iterator(); itr
-					.hasNext();) {
-				stringBuilder.append("\tid: " + itr.next() + "\n");
+		stringBuilder.append( "table name: " + entry.getKey() + "\n" );
+		if ( entry.getValue().isEmpty() ) {
+			stringBuilder.append( "\tall the ids on table, " + entry.getKey() + " are already deleted.\n" );
+		}
+		else {
+			for ( Iterator<Serializable> itr = entry.getValue().iterator(); itr.hasNext(); ) {
+				stringBuilder.append( "\tid: " + itr.next() + "\n" );
 			}
 		}
 	}
@@ -750,8 +944,8 @@ public class VoldemortDatastoreProvider extends
 	 *            Used to remove the entry.
 	 */
 	public void removeEntityTuple(EntityKey key) {
-		removeEntryFromIdTable(key);
-		deleteValue(getVoldemortStoreName(), key.getEntityKeyAsMap(), false);
+		removeEntryFromIdTable( key );
+		deleteValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), false );
 	}
 
 	/**
@@ -767,20 +961,22 @@ public class VoldemortDatastoreProvider extends
 	 * @return True if delete is successful, false otherwise.
 	 */
 	@SuppressWarnings("unchecked")
-	public boolean deleteValue(String storeName, Object key,
-			boolean keyByteArray) {
+	public boolean deleteValue(String storeName, Object key, boolean keyByteArray) {
 
 		boolean b = false;
 
-		if (keyByteArray) {
-			b = deleteWithByteArrayKey(key, storeName);
-		} else {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = dataClient.delete(key);
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = sequenceClient.delete(key);
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = associationClient.delete(key);
+		if ( keyByteArray ) {
+			b = deleteWithByteArrayKey( key, storeName );
+		}
+		else {
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = dataClient.delete( key );
+			}
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = sequenceClient.delete( key );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = associationClient.delete( key );
 			}
 		}
 
@@ -801,19 +997,24 @@ public class VoldemortDatastoreProvider extends
 
 		boolean b = false;
 		try {
-			if (storeName.equals(getVoldemortStoreName())) {
-				b = dataClient.delete(mapper.writeValueAsBytes(key));
-			} else if (storeName.equals(getVoldemortSequenceStoreName())) {
-				b = sequenceClient.delete(mapper.writeValueAsBytes(key));
-			} else if (storeName.equals(getVoldemortAssociationStoreName())) {
-				b = associationClient.delete(mapper.writeValueAsBytes(key));
+			if ( storeName.equals( getVoldemortStoreName() ) ) {
+				b = dataClient.delete( mapper.writeValueAsBytes( key ) );
 			}
-		} catch (JsonGenerationException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (JsonMappingException e) {
-			throwHibernateExceptionFrom(e);
-		} catch (IOException e) {
-			throwHibernateExceptionFrom(e);
+			else if ( storeName.equals( getVoldemortSequenceStoreName() ) ) {
+				b = sequenceClient.delete( mapper.writeValueAsBytes( key ) );
+			}
+			else if ( storeName.equals( getVoldemortAssociationStoreName() ) ) {
+				b = associationClient.delete( mapper.writeValueAsBytes( key ) );
+			}
+		}
+		catch ( JsonGenerationException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( JsonMappingException e ) {
+			throwHibernateExceptionFrom( e );
+		}
+		catch ( IOException e ) {
+			throwHibernateExceptionFrom( e );
 		}
 
 		return b;
@@ -826,20 +1027,19 @@ public class VoldemortDatastoreProvider extends
 	 *            Entity key to be removed.
 	 */
 	private void removeEntryFromIdTable(EntityKey key) {
-		tableIds.get(key.getTableName()).remove(key.getId());
+		tableIds.get( key.getTableName() ).remove( key.getId() );
 	}
 
 	@SuppressWarnings("rawtypes")
 	public Map<RowKey, Map<String, Object>> getAssociation(AssociationKey key) {
 
-		Versioned v = getAssociationFrom(key);
+		Versioned v = getAssociationFrom( key );
 
-		if (v == null) {
+		if ( v == null ) {
 			return null;
 		}
 
-		return createAssociationFrom((String) createReturnObjectFrom(v,
-				String.class));
+		return createAssociationFrom( (String) createReturnObjectFrom( v, String.class ) );
 	}
 
 	/**
@@ -850,20 +1050,17 @@ public class VoldemortDatastoreProvider extends
 	 * @return Association based on the specified string.
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private Map<RowKey, Map<String, Object>> createAssociationFrom(
-			String jsonedAssociation) {
+	private Map<RowKey, Map<String, Object>> createAssociationFrom(String jsonedAssociation) {
 
-		Map associationMap = (Map) getJsonHelper().fromJSON(jsonedAssociation,
-				Map.class);
+		Map associationMap = (Map) jsonHelper.fromJSON( jsonedAssociation, Map.class );
 
 		Map<RowKey, Map<String, Object>> association = new HashMap<RowKey, Map<String, Object>>();
-		for (Iterator itr = associationMap.keySet().iterator(); itr.hasNext();) {
+		for ( Iterator itr = associationMap.keySet().iterator(); itr.hasNext(); ) {
 			String key = (String) itr.next();
-			RowKey rowKey = (RowKey) getJsonHelper()
-					.fromJSON(key, RowKey.class);
-			Map<String, Object> val = (Map<String, Object>) getJsonHelper()
-					.fromJSON((String) associationMap.get(key), Map.class);
-			association.put(rowKey, val);
+			RowKey rowKey = (RowKey) jsonHelper.fromJSON( key, RowKey.class );
+			Map<String, Object> val = (Map<String, Object>) jsonHelper.fromJSON( (String) associationMap.get( key ),
+					Map.class );
+			association.put( rowKey, val );
 		}
 
 		return association;
@@ -880,8 +1077,7 @@ public class VoldemortDatastoreProvider extends
 	@SuppressWarnings("rawtypes")
 	private Versioned getAssociationFrom(AssociationKey key) {
 
-		return getValue(getVoldemortAssociationStoreName(), getJsonHelper()
-				.toJSON(key.getAssociationKeyAsMap()), true);
+		return getValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ), true );
 	}
 
 	/**
@@ -892,16 +1088,11 @@ public class VoldemortDatastoreProvider extends
 	 * @param associationMap
 	 *            Map representing the association.
 	 */
-	public void putAssociation(AssociationKey key,
-			Map<RowKey, Map<String, Object>> associationMap) {
+	public void putAssociation(AssociationKey key, Map<RowKey, Map<String, Object>> associationMap) {
 
-		associationKeys.add(key);
-		putValue(
-				getVoldemortAssociationStoreName(),
-				getJsonHelper().toJSON(key.getAssociationKeyAsMap()),
-				getJsonHelper().toJSON(
-						getJsonHelper().convertKeyAndValueToJsonOn(
-								associationMap)), true, true);
+		associationKeys.add( key );
+		putValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ),
+				jsonHelper.toJSON( jsonHelper.convertKeyAndValueToJsonOn( associationMap ) ), true, true );
 	}
 
 	/**
@@ -911,13 +1102,11 @@ public class VoldemortDatastoreProvider extends
 	 *            Used to remove the association.
 	 */
 	public void removeAssociation(AssociationKey key) {
-		associationKeys.remove(key);
-		deleteValue(getVoldemortAssociationStoreName(),
-				getJsonHelper().toJSON(key.getAssociationKeyAsMap()), true);
+		associationKeys.remove( key );
+		deleteValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ), true );
 	}
 
-	public void setNextValue(RowKey key, IntegralDataTypeHolder value,
-			int increment, int initialValue) {
+	public void setNextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 
 		/**
 		 * TODO To implement VoldemortDatastoreProvider.setNextValue() method, I
@@ -935,41 +1124,38 @@ public class VoldemortDatastoreProvider extends
 		 */
 
 		List<Integer> l = new LinkedList<Integer>();
-		l.add(initialValue);
-		if (nextValues.putIfAbsent(key, l) == null) {
+		l.add( initialValue );
+		if ( nextValues.putIfAbsent( key, l ) == null ) {
 			Map<String, Integer> nextSequence = new HashMap<String, Integer>();
-			nextSequence.put(VoldemortDatastoreProvider.SEQUENCE_LABEL,
-					initialValue);
-			value.initialize(initialValue);
+			nextSequence.put( VoldemortDatastoreProvider.SEQUENCE_LABEL, initialValue );
+			value.initialize( initialValue );
 
-			if (flushToDb) {
+			if ( flushToDb ) {
 				// taskQueue.offer(new PutSequenceRunnable(this, this
 				// .getVoldemortSequenceStoreName(), toJSON(key
 				// .getRowKeyAsMap()), nextSequence, true, false));
 
-				putValue(getVoldemortSequenceStoreName(), getJsonHelper()
-						.toJSON(key.getRowKeyAsMap()), nextSequence, true,
-						false);
+				putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( key.getRowKeyAsMap() ), nextSequence,
+						true, false );
 			}
-		} else {
-			List<Integer> list = nextValues.get(key);
-			synchronized (list) {
+		}
+		else {
+			List<Integer> list = nextValues.get( key );
+			synchronized ( list ) {
 				boolean notContained = false;
-				int candidate = list.get(list.size() - 1) + increment;
-				if (!list.contains(candidate)) {
-					nextValues.get(key).add(candidate);
+				int candidate = list.get( list.size() - 1 ) + increment;
+				if ( !list.contains( candidate ) ) {
+					nextValues.get( key ).add( candidate );
 					notContained = true;
 				}
-				value.initialize(candidate);
+				value.initialize( candidate );
 				Map<String, Integer> nextSequence = new HashMap<String, Integer>();
-				nextSequence.put(VoldemortDatastoreProvider.SEQUENCE_LABEL,
-						candidate);
+				nextSequence.put( VoldemortDatastoreProvider.SEQUENCE_LABEL, candidate );
 
-				if (flushToDb) {
-					if (notContained) {
-						putValue(getVoldemortSequenceStoreName(),
-								getJsonHelper().toJSON(key.getRowKeyAsMap()),
-								nextSequence, true, false);
+				if ( flushToDb ) {
+					if ( notContained ) {
+						putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( key.getRowKeyAsMap() ),
+								nextSequence, true, false );
 					}
 				}
 			}
@@ -985,10 +1171,9 @@ public class VoldemortDatastoreProvider extends
 	public Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationsMap() {
 
 		Map<AssociationKey, Map<RowKey, Map<String, Object>>> associations = new HashMap<AssociationKey, Map<RowKey, Map<String, Object>>>();
-		synchronized (associationKeys) {
-			for (AssociationKey associationKey : associationKeys) {
-				associations
-						.put(associationKey, getAssociation(associationKey));
+		synchronized ( associationKeys ) {
+			for ( AssociationKey associationKey : associationKeys ) {
+				associations.put( associationKey, getAssociation( associationKey ) );
 			}
 		}
 
@@ -1005,19 +1190,14 @@ public class VoldemortDatastoreProvider extends
 
 		Map<EntityKey, Map<String, Object>> map = new HashMap<EntityKey, Map<String, Object>>();
 		Set<Entry<String, Set<Serializable>>> entries = tableIds.entrySet();
-		for (Iterator<Entry<String, Set<Serializable>>> itr = entries
-				.iterator(); itr.hasNext();) {
+		for ( Iterator<Entry<String, Set<Serializable>>> itr = entries.iterator(); itr.hasNext(); ) {
 			Entry<String, Set<Serializable>> entry = itr.next();
-			for (Iterator<Serializable> itr2 = entry.getValue().iterator(); itr2
-					.hasNext();) {
+			for ( Iterator<Serializable> itr2 = entry.getValue().iterator(); itr2.hasNext(); ) {
 				Serializable id = itr2.next();
-				EntityKey entityKey = new EntityKey(
-						entry.getKey(),
-						id,
+				EntityKey entityKey = new EntityKey( entry.getKey(), id,
 						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),
-						EntityKeyBuilder
-								.getColumnMap(EntityKeyBuilder.DEBUG_OGM_PERSISTER));
-				map.put(entityKey, getEntityTuple(entityKey));
+						EntityKeyBuilder.getColumnMap( EntityKeyBuilder.DEBUG_OGM_PERSISTER ) );
+				map.put( entityKey, getEntityTuple( entityKey ) );
 			}
 		}
 
@@ -1030,10 +1210,9 @@ public class VoldemortDatastoreProvider extends
 	 * @return Sequence store name specified on hibernate.properties.
 	 */
 	public String getVoldemortSequenceStoreName() {
-		String sequenceStoreName = getRequiredProperties().get(
-				VoldemortProp.SEQUENCE.getAlias());
-		return sequenceStoreName == null || sequenceStoreName.equals("") ? VoldemortProp.SEQUENCE
-				.getName() : sequenceStoreName;
+		String sequenceStoreName = requiredProperties.get( VoldemortProp.SEQUENCE.getAlias() );
+		return sequenceStoreName == null || sequenceStoreName.equals( "" ) ? VoldemortProp.SEQUENCE.getName()
+				: sequenceStoreName;
 	}
 
 	/**
@@ -1043,10 +1222,8 @@ public class VoldemortDatastoreProvider extends
 	 */
 	public String getVoldemortStoreName() {
 
-		String storeName = getRequiredProperties().get(
-				VoldemortProp.DATA.getAlias());
-		return storeName == null || storeName.equals("") ? VoldemortProp.DATA
-				.getName() : storeName;
+		String storeName = requiredProperties.get( VoldemortProp.DATA.getAlias() );
+		return storeName == null || storeName.equals( "" ) ? VoldemortProp.DATA.getName() : storeName;
 	}
 
 	/**
@@ -1056,9 +1233,8 @@ public class VoldemortDatastoreProvider extends
 	 */
 	public String getVoldemortAssociationStoreName() {
 
-		String associationStoreName = getRequiredProperties().get(
-				VoldemortProp.ASSOCIATION.getAlias());
-		return associationStoreName == null || associationStoreName.equals("") ? VoldemortProp.ASSOCIATION
-				.getName() : associationStoreName;
+		String associationStoreName = requiredProperties.get( VoldemortProp.ASSOCIATION.getAlias() );
+		return associationStoreName == null || associationStoreName.equals( "" ) ? VoldemortProp.ASSOCIATION.getName()
+				: associationStoreName;
 	}
 }

@@ -19,8 +19,10 @@
 
 package org.hibernate.ogm.dialect;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -62,8 +64,7 @@ public class VoldemortDialect implements GridDialect {
 	 * .persister.entity.Lockable, org.hibernate.LockMode)
 	 */
 	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable,
-			LockMode lockMode) {
+	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
 
 		/**
 		 * TODO To implement GridDialect.getLockingStrategy() method, the
@@ -74,8 +75,7 @@ public class VoldemortDialect implements GridDialect {
 		 * objects, so they are instantiated and returned from the method.
 		 */
 
-		throw new HibernateException("Lock " + lockMode
-				+ " is not supported on Voldemort.");
+		throw new HibernateException( "Lock " + lockMode + " is not supported on Voldemort." );
 	}
 
 	/*
@@ -87,12 +87,12 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		Map<String, Object> entityMap = provider.getEntityTuple(key);
-		if (entityMap == null) {
+		Map<String, Object> entityMap = provider.getEntityTuple( key );
+		if ( entityMap == null ) {
 			return null;
 		}
 
-		return new Tuple(new MapBasedTupleSnapshot(entityMap));
+		return new Tuple( new MapBasedTupleSnapshot( entityMap ) );
 	}
 
 	/*
@@ -105,7 +105,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		HashMap<String, Object> tuple = new HashMap<String, Object>();
-		return new Tuple(new MapBasedTupleSnapshot(tuple));
+		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
 	}
 
 	/*
@@ -117,10 +117,23 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Map<String, Object> entityRecord = ((MapBasedTupleSnapshot) tuple
-				.getSnapshot()).getMap();
-		MapHelpers.applyTupleOpsOnMap(tuple, entityRecord);
-		provider.putEntity(key, tuple.getSnapShotAsMap());
+		Map<String, Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+		provider.putEntity( key, getSnapShotAsJsonMap( tuple ) );
+	}
+
+	/**
+	 * Gets snapshot as Map.
+	 * 
+	 * @return Map<String,Object> All the column name and value pairs as Map.
+	 */
+	public Map<String, Object> getSnapShotAsJsonMap(Tuple tuple) {
+		Set<String> columnNames = tuple.getColumnNames();
+		if ( tuple.getCurrentState() == null || columnNames.isEmpty() == true ) {
+			return Collections.EMPTY_MAP;
+		}
+
+		return provider.getJsonHelper().convertJsonAsNeededOn( columnNames, tuple.getSnapshot() );
 	}
 
 	/*
@@ -132,7 +145,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeTuple(EntityKey key) {
-		provider.removeEntityTuple(key);
+		provider.removeEntityTuple( key );
 
 	}
 
@@ -145,10 +158,8 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		Map<RowKey, Map<String, Object>> associationMap = provider
-				.getAssociation(key);
-		return associationMap == null ? null : new Association(
-				new MapAssociationSnapshot(associationMap));
+		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
+		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	/*
@@ -161,7 +172,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key) {
 		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String, Object>>();
-		return new Association(new MapAssociationSnapshot(associationMap));
+		return new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	/*
@@ -173,8 +184,8 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		MapHelpers.updateAssociation(association, key);
-		provider.putAssociation(key, association.getAssociationAsMap());
+		MapHelpers.updateAssociation( association, key );
+		provider.putAssociation( key, association.getAssociationAsMap() );
 	}
 
 	/*
@@ -186,7 +197,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		provider.removeAssociation(key);
+		provider.removeAssociation( key );
 
 	}
 
@@ -198,9 +209,8 @@ public class VoldemortDialect implements GridDialect {
 	 * .ogm.grid.AssociationKey, org.hibernate.ogm.grid.RowKey)
 	 */
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey,
-			RowKey rowKey) {
-		return new Tuple(EmptyTupleSnapshot.SINGLETON);
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
 
 	/*
@@ -211,9 +221,8 @@ public class VoldemortDialect implements GridDialect {
 	 * .RowKey, org.hibernate.id.IntegralDataTypeHolder, int, int)
 	 */
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value,
-			int increment, int initialValue) {
-		provider.setNextValue(key, value, increment, initialValue);
+	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		provider.setNextValue( key, value, increment, initialValue );
 	}
 
 }

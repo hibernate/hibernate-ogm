@@ -39,7 +39,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.test.simpleentity.OgmTestBase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
@@ -47,104 +46,67 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class JpaTestCase extends OgmTestBase {
+public abstract class JpaTestCase {
 
-    private EntityManagerFactory factory;
-    private TransactionManager transactionManager;
+	private EntityManagerFactory factory;
+	private TransactionManager transactionManager;
 
-    public EntityManagerFactory getFactory() {
-        return factory;
-    }
+	public EntityManagerFactory getFactory() {
+		return factory;
+	}
 
-    public abstract Class<?>[] getEntities();
+	public abstract Class<?>[] getEntities();
 
-    public TransactionManager getTransactionManager() throws Exception {
-        return transactionManager;
-    }
+	public TransactionManager getTransactionManager() throws Exception {
+		return transactionManager;
+	}
 
-    @Before
-    public void setUp() throws MalformedURLException {
-        setUpServer();
-        GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
-        info.setClassLoader( Thread.currentThread().getContextClassLoader() );
-        // we explicitly list them to avoid scanning
-        info.setExcludeUnlistedClasses( true );
-        info.setJtaDataSource( new NoopDatasource() );
-        List<String> classNames = new ArrayList<String>();
-        for ( Class<?> clazz : getEntities() ) {
-            classNames.add( clazz.getName() );
-        }
-        info.setManagedClassNames( classNames );
-        info.setNonJtaDataSource( null );
-        info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
-        info.setPersistenceUnitName( "default" );
-        final URL persistenceUnitRootUrl = PackagingRule.getTargetDir().toURI().toURL();
-        info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
-        info.setPersistenceXMLSchemaVersion( "2.0" );
-        info.setProperties( new Properties() );
-        info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
-        info.setTransactionType( PersistenceUnitTransactionType.JTA );
-        info.setValidationMode( ValidationMode.AUTO );
-        info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
-        refineInfo( info );
-        factory = new HibernateOgmPersistence().createContainerEntityManagerFactory( info, Collections.EMPTY_MAP );
-        transactionManager = extractJBossTransactionManager( factory );
-    }
+	@Before
+	public void createFactory() throws MalformedURLException {
+		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
+		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
+		// we explicitly list them to avoid scanning
+		info.setExcludeUnlistedClasses( true );
+		info.setJtaDataSource( new NoopDatasource() );
+		List<String> classNames = new ArrayList<String>();
+		for ( Class<?> clazz : getEntities() ) {
+			classNames.add( clazz.getName() );
+		}
+		info.setManagedClassNames( classNames );
+		info.setNonJtaDataSource( null );
+		info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
+		info.setPersistenceUnitName( "default" );
+		final URL persistenceUnitRootUrl = PackagingRule.getTargetDir().toURI().toURL();
+		info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
+		info.setPersistenceXMLSchemaVersion( "2.0" );
+		info.setProperties( new Properties() );
+		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
+		info.setTransactionType( PersistenceUnitTransactionType.JTA );
+		info.setValidationMode( ValidationMode.AUTO );
+		info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
+		refineInfo( info );
+		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory( info, Collections.EMPTY_MAP );
+		transactionManager = extractJBossTransactionManager( factory );
+	}
 
-    public void createFactory() throws MalformedURLException {
-        setUpServer();
-        GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
-        info.setClassLoader( Thread.currentThread().getContextClassLoader() );
-        // we explicitly list them to avoid scanning
-        info.setExcludeUnlistedClasses( true );
-        info.setJtaDataSource( new NoopDatasource() );
-        List<String> classNames = new ArrayList<String>();
-        for ( Class<?> clazz : getEntities() ) {
-            classNames.add( clazz.getName() );
-        }
-        info.setManagedClassNames( classNames );
-        info.setNonJtaDataSource( null );
-        info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
-        info.setPersistenceUnitName( "default" );
-        final URL persistenceUnitRootUrl = PackagingRule.getTargetDir().toURI().toURL();
-        info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
-        info.setPersistenceXMLSchemaVersion( "2.0" );
-        info.setProperties( new Properties() );
-        info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
-        info.setTransactionType( PersistenceUnitTransactionType.JTA );
-        info.setValidationMode( ValidationMode.AUTO );
-        info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
-        refineInfo( info );
-        factory = new HibernateOgmPersistence().createContainerEntityManagerFactory( info, Collections.EMPTY_MAP );
-        transactionManager = extractJBossTransactionManager( factory );
-    }
+	// can be overridden by subclasses
+	protected void refineInfo(GetterPersistenceUnitInfo info) {
 
-    // can be overridden by subclasses
-    protected void refineInfo(GetterPersistenceUnitInfo info) {
+	}
 
-    }
+	/**
+	 * Get JBoss TM out of Hibernate
+	 */
+	public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
+				.getSessionFactory();
+		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
+	}
 
-    /**
-     * Get JBoss TM out of Hibernate
-     */
-    public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-        SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
-                .getSessionFactory();
-        return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
-    }
-
-    @After
-    public void tearDown() {
-        factory.close();
-        factory = null;
-        stopServer();
-    }
-
-    public void closeFactory() {
-        factory.close();
-        factory = null;
-        stopServer();
-    }
+	@After
+	public void closeFactory() {
+		factory.close();
+		factory = null;
+	}
 
 }
-

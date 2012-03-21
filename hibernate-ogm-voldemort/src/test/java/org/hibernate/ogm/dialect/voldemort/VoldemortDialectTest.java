@@ -1,28 +1,24 @@
 package org.hibernate.ogm.dialect.voldemort;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.datastore.voldemort.impl.VoldemortDatastoreProvider;
 import org.hibernate.ogm.dialect.VoldemortDialect;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.test.simpleentity.OgmTestBase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mortbay.log.Log;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
-public class VoldemortDialectTest extends OgmTestBase {
+public class VoldemortDialectTest {
 	private static final int LOOPS = 2500;
 	private static final int THREADS = 10;
-
+	final VoldemortDatastoreProvider p = new VoldemortDatastoreProvider();
 	private VoldemortDialect dialect;
 
 	@Before
 	public void setUp() {
-		setUpServer();
-		final VoldemortDatastoreProvider p = new VoldemortDatastoreProvider();
 		p.start();
 		dialect = new VoldemortDialect( p );
 	}
@@ -54,6 +50,6 @@ public class VoldemortDialectTest extends OgmTestBase {
 
 	@After
 	public void tearDown() {
-		stopServer();
+		p.stop();
 	}
 }
