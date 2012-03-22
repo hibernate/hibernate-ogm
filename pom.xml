@@ -126,7 +126,6 @@
 
     <properties>
         <ehcacheVersion>2.5.0</ehcacheVersion>
-<<<<<<< HEAD
         <infinispanVersion>5.1.2.FINAL</infinispanVersion>
         <hibernateVersion>4.0.1.Final</hibernateVersion>
         <hibernateSearchVersion>4.1.0.CR1</hibernateSearchVersion>

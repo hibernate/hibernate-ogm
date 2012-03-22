@@ -30,6 +30,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import junit.framework.TestCase;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -59,7 +61,7 @@ import org.junit.Before;
  * @author Emmanuel Bernard
  * @author Hardy Ferentschik
  */
-public abstract class OgmTestCase extends OgmTestBase {
+public abstract class OgmTestCase extends TestCase {
 
 	private static final Log log = LoggerFactory.make();
 	protected static SessionFactory sessions;
@@ -70,7 +72,6 @@ public abstract class OgmTestCase extends OgmTestBase {
 
 	@Before
 	public void setUp() throws Exception {
-		this.setUpServer();
 		if ( cfg == null || lastTestClass != getClass() ) {
 			buildConfiguration();
 			lastTestClass = getClass();
@@ -95,7 +96,6 @@ public abstract class OgmTestCase extends OgmTestBase {
 	@After
 	public void tearDown() throws Exception {
 		// runSchemaDrop();
-		this.stopServer();
 		handleUnclosedResources();
 		closeResources();
 

@@ -32,6 +32,8 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.TransactionManager;
 
+import junit.framework.TestCase;
+
 import org.junit.After;
 import org.junit.Before;
 
@@ -39,7 +41,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.test.simpleentity.OgmTestBase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
@@ -47,7 +48,7 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class JpaTestCase extends OgmTestBase {
+public abstract class JpaTestCase extends TestCase {
 
     private EntityManagerFactory factory;
     private TransactionManager transactionManager;
@@ -64,7 +65,6 @@ public abstract class JpaTestCase extends OgmTestBase {
 
     @Before
     public void setUp() throws MalformedURLException {
-        this.setUpServer();
         GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
         info.setClassLoader( Thread.currentThread().getContextClassLoader() );
         // we explicitly list them to avoid scanning
@@ -92,7 +92,6 @@ public abstract class JpaTestCase extends OgmTestBase {
     }
 
     public void createFactory() throws MalformedURLException {
-        this.setUpServer();
         GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
         info.setClassLoader( Thread.currentThread().getContextClassLoader() );
         // we explicitly list them to avoid scanning
@@ -134,16 +133,11 @@ public abstract class JpaTestCase extends OgmTestBase {
     }
 
     @After
-    public void tearDown() {
-        factory.close();
-        factory = null;
-        this.stopServer();
-    }
-
     public void closeFactory() {
-        factory.close();
-        factory = null;
-        this.stopServer();
+    	if(factory != null){
+    		factory.close();
+    		factory = null;
+    	}
     }
 
 }

@@ -34,8 +34,6 @@ import org.hibernate.ogm.datastore.impl.SetFromCollection;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
-import com.google.gson.Gson;
-
 /**
  * Represents a Tuple (think of it as a row)
  * 
@@ -58,8 +56,6 @@ public class Tuple {
                                                                 // the Map as it
                                                                 // costs quite
                                                                 // some memory
-    private final Gson gson = new Gson();
-    private final JSONedClassDetector jsonedDetector = new JSONedClassDetector();
 
     public Tuple(TupleSnapshot snapshot) {
         this.snapshot = snapshot;
@@ -157,46 +153,13 @@ public class Tuple {
         return Collections.unmodifiableSet( columnValues );
     }
 
-    /**
-     * Gets snapshot as Map.
-     * 
-     * @return Map<String,Object> All the column name and value pairs as Map.
-     */
-    public Map<String, Object> getSnapShotAsMap() {
-        Set<String> columnNames = getColumnNames();
-        if ( currentState == null || columnNames.isEmpty() == true ) {
-            return Collections.EMPTY_MAP;
-        }
+	/**
+	 * Gets the current State.
+	 * 
+	 * @return Map<String, TupleOperation> Current state.
+	 */
+	public Map<String, TupleOperation> getCurrentState() {
+		return currentState;
+	}
 
-        return this.putJSONedValueAsNeeded( columnNames );
-    }
-
-    /**
-     * Changes the value for the column as JSON format.
-     * 
-     * @param columnNames
-     *            All the columnNames in the entity object.
-     * @return Newly created Map storing JSON format when required.
-     * @throws ClassNotFoundException
-     */
-    private Map<String, Object> putJSONedValueAsNeeded(Set<String> columnNames) {
-
-        Map<String, Object> map = new HashMap<String, Object>();
-
-        for ( String columnName : columnNames ) {
-            if ( snapshot.get( columnName ) == null ) {
-                map.put( columnName, null );
-            }
-            else if ( snapshot.get( columnName ).getClass().isArray() ) {
-                map.put( columnName, this.gson.toJson( snapshot.get( columnName ) ) );
-            }
-            else if ( this.jsonedDetector.isAssignable( snapshot.get( columnName ).getClass() ) ) {
-                map.put( columnName, this.gson.toJson( snapshot.get( columnName ) ) );
-            }
-            else {
-                map.put( columnName, snapshot.get( columnName ) );
-            }
-        }
-        return map;
-    }
 }
