@@ -148,9 +148,9 @@
         <dependencies>
             <!-- standards APIs -->
             <dependency>
-                <groupId>javax.transaction</groupId>
-                <artifactId>jta</artifactId>
-                <version>1.1</version>
+                <groupId>org.jboss.spec.javax.transaction</groupId>
+                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+                <version>1.0.0.Final</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -595,7 +595,7 @@
                             <phase>generate-sources</phase>
                             <configuration>
                                 <processors>
-                                    <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
+                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
                                 <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
@@ -609,7 +609,7 @@
                             <phase>generate-test-sources</phase>
                             <configuration>
                                 <processors>
-                                    <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
+                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
                                 <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
@@ -783,7 +783,7 @@
     </build>
 
     <repositories>
-		
+
 		<!--
         To build Hibernate OGM you have to add the JBoss Maven repository to your settings.xml
         See also http://community.jboss.org/wiki/OverviewofHibernateOGM
