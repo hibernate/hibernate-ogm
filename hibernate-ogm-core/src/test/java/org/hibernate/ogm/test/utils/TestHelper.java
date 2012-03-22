@@ -32,74 +32,80 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 /**
- *
- *
+ * 
+ * 
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public class TestHelper {
 
-	private static final String[] knownTestDialects = new String[] {
-		//Add more TestGridDialect(s) here as needed
-		"org.hibernate.ogm.test.utils.EhcacheTestHelper",
-		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
-		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
-	};
+    private static final String[] knownTestDialects = new String[] {
+            // Add more TestGridDialect(s) here as needed
+            "org.hibernate.ogm.test.utils.VoldemortTestHelper",
+            "org.hibernate.ogm.test.utils.EhcacheTestHelper",
+            "org.hibernate.ogm.test.utils.InfinispanTestHelper",
+            "org.hibernate.ogm.test.utils.HashMapTestHelper" // This should
+                                                                // always be the
+                                                                // last element
+                                                                // or it will be
+                                                                // loaded
+    };
 
-	private static final Log log = LoggerFactory.make();
-	private static final TestableGridDialect helper = createStoreSpecificHelper();
+    private static final Log log = LoggerFactory.make();
+    private static final TestableGridDialect helper = createStoreSpecificHelper();
 
-	public static int entityCacheSize(EntityManager em) {
-		return entityCacheSize( em.unwrap( Session.class ) );
-	}
+    public static int entityCacheSize(EntityManager em) {
+        return entityCacheSize(em.unwrap(Session.class));
+    }
 
-	private static TestableGridDialect createStoreSpecificHelper() {
-		for ( String className : knownTestDialects ) {
-			Class<?> classForName = null;
-			try {
-				classForName = Class.forName( className );
-			}
-			catch (ClassNotFoundException e) {
-				//ignore this: we're searching for the only valid option
-			}
-			if ( classForName != null ) {
-				try {
-					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
-					log.debugf( "Using TestGridDialect %s", classForName );
-					return attempt;
-				}
-				catch ( Exception e ) {
-					//but other errors are not expected:
-					log.errorf( e, "Could not load TestGridDialect by name %s", className );
-				}
-			}
-		}
-		log.fatal( "Could not load any TestGridDialect implementation!" );
-		return null;
-	}
+    private static TestableGridDialect createStoreSpecificHelper() {
+        for (String className : knownTestDialects) {
+            Class<?> classForName = null;
+            try {
+                classForName = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                // ignore this: we're searching for the only valid option
+            }
+            if (classForName != null) {
+                try {
+                    TestableGridDialect attempt = (TestableGridDialect) classForName
+                            .newInstance();
+                    log.debugf("Using TestGridDialect %s", classForName);
+                    return attempt;
+                } catch (Exception e) {
+                    // but other errors are not expected:
+                    log.errorf(e, "Could not load TestGridDialect by name %s",
+                            className);
+                }
+            }
+        }
+        log.fatal("Could not load any TestGridDialect implementation!");
+        return null;
+    }
 
-	public static int entityCacheSize(Session session) {
-		return entityCacheSize( session.getSessionFactory() );
-	}
+    public static int entityCacheSize(Session session) {
+        return entityCacheSize(session.getSessionFactory());
+    }
 
-	public static int entityCacheSize(SessionFactory sessionFactory) {
-		return helper.entityCacheSize( sessionFactory );
-	}
+    public static int entityCacheSize(SessionFactory sessionFactory) {
+        return helper.entityCacheSize(sessionFactory);
+    }
 
-	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return helper.extractEntityTuple( sessionFactory, key );
-	}
+    public static Map extractEntityTuple(SessionFactory sessionFactory,
+            EntityKey key) {
+        return helper.extractEntityTuple(sessionFactory, key);
+    }
 
-	public static int associationCacheSize(SessionFactory sessionFactory) {
-		return helper.associationCacheSize( sessionFactory );
-	}
+    public static int associationCacheSize(SessionFactory sessionFactory) {
+        return helper.associationCacheSize(sessionFactory);
+    }
 
-	public static boolean backendSupportsTransactions() {
-		return helper.backendSupportsTransactions();
-	}
+    public static boolean backendSupportsTransactions() {
+        return helper.backendSupportsTransactions();
+    }
 
-	@SuppressWarnings("unchecked")
-	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-		return (T) session.get(clazz, id);
-	}
+    @SuppressWarnings("unchecked")
+    public static <T> T get(Session session, Class<T> clazz, Serializable id) {
+        return (T) session.get(clazz, id);
+    }
 }

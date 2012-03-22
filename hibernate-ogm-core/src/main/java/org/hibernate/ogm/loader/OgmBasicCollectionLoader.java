@@ -32,17 +32,17 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard
  */
 public class OgmBasicCollectionLoader extends OgmLoader implements CollectionInitializer {
-	public OgmBasicCollectionLoader(OgmCollectionPersister collectionPersister) {
-		super( new OgmCollectionPersister[] { collectionPersister } );
-	}
+    public OgmBasicCollectionLoader(OgmCollectionPersister collectionPersister) {
+        super( new OgmCollectionPersister[] { collectionPersister } );
+    }
 
-	@Override
-	public void initialize(Serializable id, SessionImplementor session)
-	throws HibernateException {
-		loadCollection( session, id, getKeyType() );
-	}
+    @Override
+    public void initialize(Serializable id, SessionImplementor session)
+    throws HibernateException {
+        loadCollection( session, id, getKeyType() );
+    }
 
-	protected Type getKeyType() {
-		return getCollectionPersisters()[0].getKeyType();
-	}
+    protected Type getKeyType() {
+        return getCollectionPersisters()[0].getKeyType();
+    }
 }

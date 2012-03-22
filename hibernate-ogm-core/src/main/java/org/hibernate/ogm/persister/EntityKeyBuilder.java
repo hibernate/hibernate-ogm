@@ -21,6 +21,9 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -32,6 +35,8 @@ import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 final public class EntityKeyBuilder {
+
+	public static OgmEntityPersister DEBUG_OGM_PERSISTER;
 
 	private EntityKeyBuilder() {
 	}
@@ -47,6 +52,12 @@ final public class EntityKeyBuilder {
 				persister.getGridIdentifierType(),
 				id,
 				session );
+
+	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
+
+		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
+		return new EntityKey( persister.getTableName(), id, persister.getEntityName(),
+				EntityKeyBuilder.getColumnMap( persister ) );
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -65,4 +76,24 @@ final public class EntityKeyBuilder {
 		return new EntityKey( tableName, identifierColumnNames, values );
 	}
 
+	/**
+	 * Once the tests are done, change the scope to private. This method is
+	 * necessarily called by VoldemortDatastoreProvider.getEntityMap().
+	 * 
+	 * @param persister
+	 * @return
+	 */
+	public static Map<String, String> getColumnMap(OgmEntityPersister persister) {
+		Map<String, String> map = new HashMap<String, String>();
+
+		for ( String propName : persister.getPropertyNames() ) {
+
+			String columnName = persister.getPropertyColumnNames( propName )[0];
+			if ( !propName.equals( columnName ) ) {
+				map.put( propName, columnName );
+			}
+		}
+
+		return Collections.unmodifiableMap( map );
+	}
 }

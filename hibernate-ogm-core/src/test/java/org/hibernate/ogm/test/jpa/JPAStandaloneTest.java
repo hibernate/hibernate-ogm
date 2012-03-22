@@ -36,13 +36,13 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Rule;
 import org.junit.Test;
-
+import org.hibernate.ogm.test.jpa.util.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class JPAStandaloneTest {
+public class JPAStandaloneTest extends JpaTestCase {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule();
@@ -87,5 +87,15 @@ public class JPAStandaloneTest {
 		emf.close();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see org.hibernate.ogm.test.jpa.util.JpaTestCase#getEntities()
+	 */
+	@Override
+	public Class<?>[] getEntities() {
+		// TODO Auto-generated method stub
+		return new Class[] { Poem.class };
+	}
 
 }
