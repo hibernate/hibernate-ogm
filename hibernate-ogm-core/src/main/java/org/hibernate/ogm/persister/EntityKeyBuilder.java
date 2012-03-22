@@ -52,7 +52,8 @@ final public class EntityKeyBuilder {
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
-				session );
+				session,
+				persister);
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -68,12 +69,32 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 		);
-		return new EntityKey( tableName, identifierColumnNames, values );
+		return new EntityKey( tableName, id, "", identifierColumnNames, values );
+	}
+	
+	/**
+	 * TODO Current solution is mixed with the latest EntityKeyBuilder code and the previous code. To not mix them,
+	 * need to change the way to create EntityKey and to use EntityKeyBuilder.getColumnMap() method. There was a line comment
+	 * about this point, will reply to the comment soon.
+	 */
+	public static EntityKey fromData(
+			String tableName,
+			String[] identifierColumnNames,
+			GridType identifierGridType,
+			final Serializable id,
+			SessionImplementor session,
+			final OgmEntityPersister persister) {
+		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				id,
+				identifierGridType,
+				identifierColumnNames,
+				session
+		);
+		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values, EntityKeyBuilder.getColumnMap( persister ) );
 	}
 
 	/**
-	 * Once the tests are done, change the scope to private. This method is
-	 * necessarily called by VoldemortDatastoreProvider.getEntityMap().
+	 * Checks if the property name is different from the columnName. If so, store the property name column name pair.
 	 * 
 	 * @param persister
 	 * @return

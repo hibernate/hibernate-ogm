@@ -41,21 +41,28 @@ public final class EntityKey implements Serializable {
 	private final Map<String,String> columnMap;
 	private final Serializable id;
 
-	public EntityKey(String tableName, String[] columnNames, Object[] values) {
+	/**
+	 * TODO Use the latest EntityKey constructor if possible. The way to declare the constructors is from my previous pull request.
+	 * And is mixed with the constructor from the master and from my previous one. To not do so, need to change EntityKeyBuilder implementation 
+	 * accordingly.
+	 */
+	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values) {
 		this.table = tableName;
 		this.columnNames = columnNames;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
-		this.entityName = "";
+		this.entityName = entityName;
 		this.columnMap = Collections.EMPTY_MAP;
-		this.id = "";
+		this.id = id;
 	}
 
-	public EntityKey(String tableName,Serializable id,String entityName,Map<String,String> columnMap){
+	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values, Map<String,String> columnMap){
 		this.table = tableName;
 		this.id = id;
 		this.hashCode = generateHashCode();
 		this.entityName = entityName;
+		this.columnNames = columnNames;
+		this.columnValues = values;
 		this.columnMap = columnMap;
 	}
 

@@ -63,7 +63,7 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 
 		packaging.addPackageToClasspath( testPackage );
-
+		closeFactory();
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 

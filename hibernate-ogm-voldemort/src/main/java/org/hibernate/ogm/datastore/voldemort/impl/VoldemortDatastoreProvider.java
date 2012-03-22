@@ -279,7 +279,6 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		}
 
 		if ( embeddedServer != null ) {
-			log.info( "come to stop Voldemort" );
 			embeddedServer.stop();
 			removeAllEntries();
 		}
@@ -1195,12 +1194,13 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 			for ( Iterator<Serializable> itr2 = entry.getValue().iterator(); itr2.hasNext(); ) {
 				Serializable id = itr2.next();
 				EntityKey entityKey = new EntityKey( entry.getKey(), id,
-						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),
+						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(),new Object[]{id},
 						EntityKeyBuilder.getColumnMap( EntityKeyBuilder.DEBUG_OGM_PERSISTER ) );
 				map.put( entityKey, getEntityTuple( entityKey ) );
 			}
 		}
-
+		
+		log.info( "map is: " + map );
 		return map;
 	}
 

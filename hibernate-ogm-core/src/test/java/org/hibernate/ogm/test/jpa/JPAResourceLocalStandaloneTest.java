@@ -66,7 +66,7 @@ public class JPAResourceLocalStandaloneTest {
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 
 		packaging.addPackageToClasspath( testPackage );
-
+		
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		try {
 
