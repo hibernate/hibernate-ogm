@@ -46,18 +46,13 @@ final public class EntityKeyBuilder {
 			final OgmEntityPersister persister,
 			final Serializable id,
 			SessionImplementor session) {
+		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
 		return fromData(
 				persister.getTableName(),
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
 				session );
-
-	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
-
-		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
-		return new EntityKey( persister.getTableName(), id, persister.getEntityName(),
-				EntityKeyBuilder.getColumnMap( persister ) );
 	}
 
 	//static method because the builder pattern version was showing up during profiling

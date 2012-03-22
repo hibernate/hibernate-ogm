@@ -51,17 +51,6 @@ public final class EntityKey implements Serializable {
 		this.id = "";
 	}
 
-	/**
-	 * TODO After rebasing, EntityKey constructors have different parameters. Need to follow the way and also change other code effected by this change.
-	 */ 
-	public EntityKey(String tableName,Serializable id){
-		this.table = tableName;
-		this.hashCode = generateHashCode();
-		this.entityName = "";
-		this.columnMap = Collections.EMPTY_MAP;
-		this.id = id;
-	}
-
 	public EntityKey(String tableName,Serializable id,String entityName,Map<String,String> columnMap){
 		this.table = tableName;
 		this.id = id;
@@ -139,18 +128,6 @@ public final class EntityKey implements Serializable {
         map.put( "id", this.id.toString() );
         map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
-    }
-
-    /**
-     * Gets table name.
-     * 
-     * @return Table name.
-     */
-    public String getTableName() {
-		/**
-		 * TODO After rebasing, this method got duplicated with getTable(). Need to delete this method.
-		 */ 
-        return this.table;
     }
 
     public String getColumnName(String fieldName) {
