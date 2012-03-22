@@ -1,6 +1,7 @@
 package org.hibernate.ogm.datastore.voldemort.impl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
@@ -10,7 +11,6 @@ import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.dialect.VoldemortDialect;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.test.simpleentity.OgmTestBase;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.After;
@@ -21,7 +21,7 @@ import voldemort.versioning.Versioned;
 
 import com.google.gson.Gson;
 
-public class VoldemortImplTest extends OgmTestBase {
+public class VoldemortImplTest {
 	private static final Log log = LoggerFactory.make();
 	private static final int LOOPS = 200;
 	private static final int THREADS = 10;
@@ -31,7 +31,6 @@ public class VoldemortImplTest extends OgmTestBase {
 
 	@Before
 	public void setUp() {
-		this.setUpServer();
 		provider = new VoldemortDatastoreProvider();
 		provider.start();
 		provider.setFlushToDb( true );
@@ -86,6 +85,6 @@ public class VoldemortImplTest extends OgmTestBase {
 
 	@After
 	public void tearDown() {
-		this.stopServer();
+		provider.stop();
 	}
 }
