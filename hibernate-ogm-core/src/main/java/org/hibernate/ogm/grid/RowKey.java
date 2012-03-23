@@ -61,23 +61,24 @@ public final class RowKey implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if ( this == o ) {
+		if (this == o) {
 			return true;
 		}
-		if ( o == null || RowKey.class != o.getClass() ) {
+		if (o == null || RowKey.class != o.getClass()) {
 			return false;
 		}
 
-		RowKey that = ( RowKey ) o;
-		
-		if ( !table.equals( that.table ) ) {
+		RowKey that = (RowKey) o;
+
+		if (!table.equals(that.table)) {
 			return false;
 		}
 
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
-		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
+		if (!Arrays.equals(columnValues, that.columnValues)) {
 			return false;
 		}
+
 		if ( !Arrays.equals( columnNames, that.columnNames ) ) {
 			return false;
 		}
@@ -92,7 +93,7 @@ public final class RowKey implements Serializable {
 
 	private int generateHashCode() {
 		final int result = table.hashCode();
-		return 31 * result + Arrays.hashCode( columnValues );
+		return 31 * result + Arrays.hashCode(columnValues);
 	}
 
 	@Override

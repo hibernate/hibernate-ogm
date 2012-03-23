@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
@@ -121,10 +121,6 @@ public final class EntityKey implements Serializable {
         return this.id;
     }
 
-    public final String getEntityName() {
-        return this.entityName;
-    }
-
     /**
      * Gets entity key as Map containing id and table name.
      * 
@@ -136,8 +132,12 @@ public final class EntityKey implements Serializable {
         map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
     }
+    
+    public String getEntityName(){
+    	return entityName;
+    }
 
     public String getColumnName(String fieldName) {
-        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
+        return columnMap.get( fieldName ) == null ? fieldName : columnMap.get( fieldName );
     }
 }

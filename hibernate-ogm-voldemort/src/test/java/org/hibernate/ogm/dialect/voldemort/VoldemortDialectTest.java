@@ -1,5 +1,7 @@
 package org.hibernate.ogm.dialect.voldemort;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.datastore.voldemort.impl.VoldemortDatastoreProvider;
 import org.hibernate.ogm.dialect.VoldemortDialect;
@@ -7,9 +9,6 @@ import org.hibernate.ogm.grid.RowKey;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class VoldemortDialectTest {
 	private static final int LOOPS = 2500;

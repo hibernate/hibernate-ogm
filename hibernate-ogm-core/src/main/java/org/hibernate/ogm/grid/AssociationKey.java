@@ -29,8 +29,9 @@ import java.util.Map;
 import org.hibernate.annotations.common.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
- *
+ * Represents the key used to link a property value and the id of it's owning
+ * entity
+ * 
  * @author Emmanuel Bernard
  * @author Sanne Grinovero
  */
@@ -119,9 +120,10 @@ public final class AssociationKey implements Serializable {
 
         Map<String, Object> map = new HashMap<String, Object>();
         for ( int i = 0; i < columnNames.length; i++ ) {
-            map.put( this.columnNames[i], this.columnValues[i] );
+            map.put( columnNames[i], columnValues[i] );
         }
-        map.put( "table", this.table );
+
+        map.put( "table", table );
         return Collections.unmodifiableMap( map );
     }
 
@@ -131,6 +133,6 @@ public final class AssociationKey implements Serializable {
      * @return int Number of clumns.
      */
     public int getColumnSize() {
-        return this.columnNames.length;
+        return columnNames.length;
     }
 }

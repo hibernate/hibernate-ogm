@@ -161,5 +161,4 @@ public class Tuple {
 	public Map<String, TupleOperation> getCurrentState() {
 		return currentState;
 	}
-
 }

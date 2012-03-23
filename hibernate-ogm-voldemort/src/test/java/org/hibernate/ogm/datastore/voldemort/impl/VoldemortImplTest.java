@@ -2,20 +2,18 @@ package org.hibernate.ogm.datastore.voldemort.impl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertThat;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.dialect.VoldemortDialect;
-import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 
 import voldemort.versioning.Versioned;
 

@@ -139,6 +139,5 @@ public abstract class JpaTestCase extends TestCase {
     		factory = null;
     	}
     }
-
 }
 

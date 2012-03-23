@@ -67,10 +67,14 @@ public class VoldemortDialect implements GridDialect {
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
 
 		/**
-		 * TODO Voldemort itself doesn't expose Lock objects, so for right now
-		 * simple throws an exception here. However, need to confirm if this is
-		 * the right implementation.
+		 * TODO To implement GridDialect.getLockingStrategy() method, the
+		 * returned object whose type is LockingStratey represents locks on
+		 * underlying datatore according to the javadoc. How should we implement
+		 * this method when the underlying datastore doesn't explicitly expose
+		 * locks as objects ? Looks like that Infinispan exposes some lock
+		 * objects, so they are instantiated and returned from the method.
 		 */
+
 		throw new HibernateException( "Lock " + lockMode + " is not supported on Voldemort." );
 	}
 
@@ -83,7 +87,8 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		Map<String, Object> entityMap = this.provider.getEntityTuple( key );
+		Map<String, Object> entityMap = provider.getEntityTuple( key );
+
 		if ( entityMap == null ) {
 			return null;
 		}
@@ -115,7 +120,7 @@ public class VoldemortDialect implements GridDialect {
 	public void updateTuple(Tuple tuple, EntityKey key) {
 		Map<String, Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
-		this.provider.putEntity( key, getSnapShotAsJsonMap( tuple ) );
+		provider.putEntity( key, getSnapShotAsJsonMap( tuple ) );
 	}
 
 	/**
@@ -141,8 +146,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeTuple(EntityKey key) {
-		this.provider.removeEntityTuple( key );
-
+		provider.removeEntityTuple( key );
 	}
 
 	/*
@@ -154,7 +158,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		Map<RowKey, Map<String, Object>> associationMap = this.provider.getAssociation( key );
+		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
 		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
@@ -181,7 +185,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
 		MapHelpers.updateAssociation( association, key );
-		this.provider.putAssociation( key, association.getAssociationAsMap() );
+		provider.putAssociation( key, association.getAssociationAsMap() );
 	}
 
 	/*
@@ -193,8 +197,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		this.provider.removeAssociation( key );
-
+		provider.removeAssociation( key );
 	}
 
 	/*
@@ -218,7 +221,6 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		this.provider.setNextValue( key, value, increment, initialValue );
+		provider.setNextValue( key, value, increment, initialValue );
 	}
-
 }

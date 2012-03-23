@@ -315,21 +315,21 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	@Override
 	public void start() {
-		// try {
-		if ( !checkRequiredSettings() ) {
-			throw new HibernateException( "Please configure Voldemort on hibernate.properties correctly." );
-		}
+		try {
+			if ( !checkRequiredSettings() ) {
+				throw new HibernateException( "Please configure Voldemort on hibernate.properties correctly." );
+			}
 
-		startVoldemortServer();
-		setClientFactory();
-		setVoldemortClients();
-		setFlushToDBFlag();
-		setMaxTries();
-		setUpdateAction();
-		// }
-		// catch ( Throwable ex ) {
-		// stop();
-		// }
+			startVoldemortServer();
+			setClientFactory();
+			setVoldemortClients();
+			setFlushToDBFlag();
+			setMaxTries();
+			setUpdateAction();
+		}
+		catch ( Throwable ex ) {
+			stop();
+		}
 	}
 
 	/**
@@ -1199,8 +1199,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 				map.put( entityKey, getEntityTuple( entityKey ) );
 			}
 		}
-		
-		log.info( "map is: " + map );
+
 		return map;
 	}
 

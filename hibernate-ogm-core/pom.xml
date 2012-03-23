@@ -32,7 +32,7 @@
         <version>4.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
+    
     <artifactId>hibernate-ogm-core</artifactId>
     <packaging>jar</packaging>
 
@@ -94,7 +94,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <forkMode>once</forkMode>
+                   <forkMode>once</forkMode>
                     <skipExec>${skipUnitTests}</skipExec>
                 </configuration>
             </plugin>
@@ -175,5 +175,5 @@
                 <skipUnitTests>false</skipUnitTests>
             </properties>
         </profile>
-    </profiles>
+     </profiles>
 </project>

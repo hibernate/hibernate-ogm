@@ -783,8 +783,7 @@
     </build>
 
     <repositories>
-
-		<!--
+        <!--
         To build Hibernate OGM you have to add the JBoss Maven repository to your settings.xml
         See also http://community.jboss.org/wiki/OverviewofHibernateOGM
         -->

@@ -65,6 +65,7 @@ import java.util.Iterator;
 
 /**
  * CollectionPersister storing the collection in a grid
+<<<<<<< HEAD
  *
  * @author Emmanuel Bernard
  */
