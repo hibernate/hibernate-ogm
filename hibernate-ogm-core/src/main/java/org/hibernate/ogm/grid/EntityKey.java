@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Entity key
- * 
+ *
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
