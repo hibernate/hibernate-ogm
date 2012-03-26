@@ -58,6 +58,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 		Version.touch();
 		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+		sessionFactory.addObserver( new DatastoreProviderToSessionFactoryObserverAdaptor(configuration, serviceRegistry) );
 	}
 
 	@Override
