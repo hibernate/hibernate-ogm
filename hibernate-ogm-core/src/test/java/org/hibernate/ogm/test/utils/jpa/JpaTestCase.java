@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.jpa.util;
+package org.hibernate.ogm.test.utils.jpa;
 
 import java.net.MalformedURLException;
 import java.net.URL;

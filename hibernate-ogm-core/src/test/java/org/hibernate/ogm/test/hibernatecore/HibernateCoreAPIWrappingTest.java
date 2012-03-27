@@ -42,7 +42,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.test.jpa.Poem;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 
 import static org.fest.assertions.Assertions.assertThat;
