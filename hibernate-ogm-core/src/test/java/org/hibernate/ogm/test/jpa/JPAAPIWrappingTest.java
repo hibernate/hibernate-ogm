@@ -38,7 +38,7 @@ import org.junit.Test;
 
 import org.hibernate.ogm.jpa.impl.OgmEntityManager;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 
 /**
