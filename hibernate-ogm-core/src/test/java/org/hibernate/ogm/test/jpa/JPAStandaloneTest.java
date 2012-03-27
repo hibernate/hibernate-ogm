@@ -21,7 +21,7 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.jpa.util.JpaTestCase.extractJBossTransactionManager;
+import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

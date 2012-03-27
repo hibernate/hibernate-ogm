@@ -30,7 +30,7 @@ import javax.persistence.Persistence;
 
 import org.hibernate.ogm.jpa.impl.OgmEntityManager;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
