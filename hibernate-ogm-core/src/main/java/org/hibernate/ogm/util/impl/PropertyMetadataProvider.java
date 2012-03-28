@@ -25,8 +25,15 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationType;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.persister.EntityKeyBuilder;
+import org.hibernate.ogm.persister.OgmCollectionPersister;
+import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
+
+import java.io.Serializable;
 
 /**
  * @author Emmanuel Bernard
@@ -41,6 +48,7 @@ public class PropertyMetadataProvider {
 	private Association collectionMetadata;
 	private Object[] columnValues;
 	private GridDialect gridDialect;
+	private OgmCollectionPersister collectionPersister;
 
 	//fluent methods for populating data
 
@@ -87,6 +95,19 @@ public class PropertyMetadataProvider {
 		if ( collectionMetadataKey == null ) {
 			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
+			if (collectionPersister != null) {
+				collectionMetadataKey.setCollectionRole( collectionPersister.getRole() );
+				EntityKey entityKey = EntityKeyBuilder.fromPersister(
+						(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
+						(Serializable) key,
+						session
+				);
+				collectionMetadataKey.setOwnerEntityKey( entityKey );
+				//TODO add information on the collection type, set, map, bag, list etc
+
+				AssociationType type = collectionPersister.getElementType().isEntityType() ? AssociationType.ASSOCIATION : AssociationType.EMBEDDED;
+				collectionMetadataKey.setAssociationType( type );
+			}
 		}
 		return collectionMetadataKey;
 	}
@@ -131,5 +152,10 @@ public class PropertyMetadataProvider {
 		else {
 			gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
 		}
+	}
+
+	public PropertyMetadataProvider collectionPersister(OgmCollectionPersister collectionPersister) {
+		this.collectionPersister = collectionPersister;
+		return this;
 	}
 }
