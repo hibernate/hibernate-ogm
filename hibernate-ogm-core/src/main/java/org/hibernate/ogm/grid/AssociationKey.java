@@ -40,6 +40,11 @@ public final class AssociationKey implements Serializable {
 	private final Object[] columnValues;
 	private final int hashCode;
 
+	//role and entity key are not part of the object identity
+	private transient String role;
+	private transient EntityKey entityKey;
+	private transient AssociationType associationType;
+
 	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
@@ -60,6 +65,28 @@ public final class AssociationKey implements Serializable {
 
 	public Object[] getColumnValues() {
 		return columnValues;
+	}
+
+	/**
+	 * Association role. May be null but is typically filled for collection of embeddable.
+	 */
+	public String getRole() {
+		return role;
+	}
+
+	/**
+	 * Owning entity key. May be null but is typically filled for collection of embeddable.
+	 */
+	public EntityKey getEntityKey() {
+		return entityKey;
+	}
+
+	/**
+	 * Describe the type of association. May be null but is typically filled for collection of embeddable.
+	 * @return
+	 */
+	public AssociationType getAssociationType() {
+		return associationType;
 	}
 
 	@Override
@@ -105,5 +132,17 @@ public final class AssociationKey implements Serializable {
 
 		sb.append( "\n}" );
 		return sb.toString();
+	}
+
+	public void setCollectionRole(String role) {
+		this.role = role;
+	}
+
+	public void setOwnerEntityKey(EntityKey entityKey) {
+		this.entityKey = entityKey;
+	}
+
+	public void setAssociationType(AssociationType type) {
+		this.associationType = type;
 	}
 }
