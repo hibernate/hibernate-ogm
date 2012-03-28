@@ -64,7 +64,12 @@ public class CassandraDatastoreProvider implements DatastoreProvider, Startable,
 	private static final Log log = LoggerFactory.make();
 
 	public CassandraDatastoreProvider() {
-		ClassLoaderHelper.classForName( "org.apache.cassandra.cql.jdbc.CassandraDriver", CassandraDatastoreProvider.class, "Cassandra Driver" );
+		try {
+			Class.forName( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
+		}
+		catch (ClassNotFoundException e) {
+			log.unableToLoadDriver("org.apache.cassandra.cql.jdbc.CassandraDriver") ;
+		}
 	}
 
 	@Override
