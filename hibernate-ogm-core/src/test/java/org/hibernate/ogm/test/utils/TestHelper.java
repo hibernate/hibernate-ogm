@@ -102,4 +102,16 @@ public class TestHelper {
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
 		return (T) session.get(clazz, id);
 	}
+	
+	public static void dropSchemaAndDatabase(Session session) {
+		if ( session != null ) {
+			dropSchemaAndDatabase( session.getSessionFactory() );
+		}
+	}
+
+	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		if ( sessionFactory != null ) {
+			helper.dropSchemaAndDatabase( sessionFactory );
+		}
+	}
 }

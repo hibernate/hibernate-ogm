@@ -73,4 +73,9 @@ public class HashMapTestHelper implements TestableGridDialect {
 		return false;
 	}
 
+	@Override
+	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		//Nothing to do
+	}
+
 }

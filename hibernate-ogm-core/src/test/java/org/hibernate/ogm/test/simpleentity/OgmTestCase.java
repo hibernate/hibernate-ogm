@@ -23,6 +23,7 @@ package org.hibernate.ogm.test.simpleentity;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
 import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -95,8 +96,9 @@ public abstract class OgmTestCase extends TestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		//runSchemaDrop();
+		runSchemaDrop();
 		handleUnclosedResources();
+		
 		closeResources();
 
 		if ( sessions != null ) {
@@ -320,9 +322,8 @@ public abstract class OgmTestCase extends TestCase {
 
 	}
 
-	//FIXME clear cache when this happens
 	protected void runSchemaDrop() {
-		
+		dropSchemaAndDatabase( session );
 	}
 
 	protected void buildConfiguration() throws Exception {
