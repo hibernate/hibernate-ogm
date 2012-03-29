@@ -58,8 +58,8 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	}
 
 	private static EhcacheDatastoreProvider getProvider(SessionFactory sessionFactory) {
-		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry()
-				.getService( DatastoreProvider.class );
+		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
+				DatastoreProvider.class );
 		if ( !( EhcacheDatastoreProvider.class.isInstance( provider ) ) ) {
 			throw new RuntimeException( "Not testing with Ehcache, cannot extract underlying cache" );
 		}
@@ -74,11 +74,14 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	/**
 	 * TODO - EHCache _is_ transactional. Turn this on. We could turn on XA or Local.
 	 * Local will be faster. We will pick this up from the cache config.
-	 *
+	 * 
 	 * @return
 	 */
 	@Override
 	public boolean backendSupportsTransactions() {
 		return false;
 	}
+
+	@Override
+	public void cleanUp(SessionFactory sessionFactory) {}
 }

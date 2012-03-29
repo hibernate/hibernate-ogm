@@ -61,4 +61,6 @@ public interface TestableGridDialect {
 	 */
 	boolean backendSupportsTransactions();
 
+	void cleanUp(SessionFactory sessionFactory);
+
 }

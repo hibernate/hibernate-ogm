@@ -73,4 +73,7 @@ public class HashMapTestHelper implements TestableGridDialect {
 		return false;
 	}
 
+	@Override
+	public void cleanUp(SessionFactory session) {}
+
 }
