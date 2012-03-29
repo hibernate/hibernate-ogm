@@ -32,18 +32,20 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 
 /**
- *
- *
+ * 
+ * 
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class TestHelper {
 
 	private static final String[] knownTestDialects = new String[] {
-		//Add more TestGridDialect(s) here as needed
-		"org.hibernate.ogm.test.utils.EhcacheTestHelper",
-		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
-		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
+			// Add more TestGridDialect(s) here as needed
+			"org.hibernate.ogm.test.utils.EhcacheTestHelper", 
+			"org.hibernate.ogm.test.utils.InfinispanTestHelper",
+			"org.hibernate.ogm.test.utils.MongoDBTestHelper", 
+			"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
 	};
 
 	private static final Log log = LoggerFactory.make();
@@ -59,8 +61,8 @@ public class TestHelper {
 			try {
 				classForName = Class.forName( className );
 			}
-			catch (ClassNotFoundException e) {
-				//ignore this: we're searching for the only valid option
+			catch ( ClassNotFoundException e ) {
+				// ignore this: we're searching for the only valid option
 			}
 			if ( classForName != null ) {
 				try {
@@ -69,7 +71,7 @@ public class TestHelper {
 					return attempt;
 				}
 				catch ( Exception e ) {
-					//but other errors are not expected:
+					// but other errors are not expected:
 					log.errorf( e, "Could not load TestGridDialect by name %s", className );
 				}
 			}
@@ -90,6 +92,14 @@ public class TestHelper {
 		return helper.extractEntityTuple( sessionFactory, key );
 	}
 
+	public static void cleanUp(SessionFactory sessionFactory) {
+		helper.cleanUp( sessionFactory );
+	}
+
+	public static void cleanUp(Session session) {
+		cleanUp( session.getSessionFactory() );
+	}
+
 	public static int associationCacheSize(SessionFactory sessionFactory) {
 		return helper.associationCacheSize( sessionFactory );
 	}
@@ -100,6 +110,6 @@ public class TestHelper {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-		return (T) session.get(clazz, id);
+		return (T) session.get( clazz, id );
 	}
 }
