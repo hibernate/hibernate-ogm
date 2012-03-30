@@ -61,6 +61,12 @@ public interface TestableGridDialect {
 	 */
 	boolean backendSupportsTransactions();
 
+	/**
+	 * Used to clean all the stored data up. The cleaning can be by droping the database and/or the schema.
+	 * Each system implementation can so define its own way to delete all data inserted by the test suite
+	 * and remove the schema if that applies. 
+	 * @param sessionFactory
+	 */
 	void dropSchemaAndDatabase(SessionFactory sessionFactory);
 
 }
