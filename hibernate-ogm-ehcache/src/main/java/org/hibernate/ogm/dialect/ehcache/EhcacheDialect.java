@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.ehcache;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
@@ -44,7 +45,9 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 /**
  * @author Alex Snaps
@@ -161,6 +164,11 @@ public class EhcacheDialect implements GridDialect {
 		else {
 			value.initialize( initialValue );
 		}
+	}
+
+	@Override
+	public GridType overrideType(Type type) {
+		return null;
 	}
 
 	private Cache getIdentifierCache() {

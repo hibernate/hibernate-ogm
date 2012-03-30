@@ -20,10 +20,8 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.BigDecimalType;
 import org.hibernate.ogm.type.BigIntegerType;
 import org.hibernate.ogm.type.BooleanType;
@@ -67,9 +65,12 @@ import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
-import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
+import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.usertype.UserType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Emmanuel Bernard
@@ -77,8 +78,11 @@ import org.hibernate.usertype.UserType;
  */
 public class TypeTranslatorImpl implements TypeTranslator {
 	private final Map<JavaTypeDescriptor, GridType> typeConverter;
+	private final GridDialect dialect;
 
-	public TypeTranslatorImpl() {
+	public TypeTranslatorImpl(GridDialect dialect) {
+		this.dialect = dialect;
+
 		typeConverter = new HashMap<JavaTypeDescriptor, GridType>();
 		typeConverter.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		typeConverter.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
@@ -102,6 +106,13 @@ public class TypeTranslatorImpl implements TypeTranslator {
 	@Override public GridType getType(Type type) {
 		if ( type == null ) {
 			return null;
+		}
+
+		//TODO should we cache results? It seems an actual HashMap might be slower but it makes it more robust
+		//     against badly written dialects
+		GridType dialectType = dialect.overrideType( type );
+		if ( dialectType != null ) {
+			return dialectType;
 		}
 		else if ( type instanceof AbstractStandardBasicType ) {
 			AbstractStandardBasicType exposedType = (AbstractStandardBasicType) type;
