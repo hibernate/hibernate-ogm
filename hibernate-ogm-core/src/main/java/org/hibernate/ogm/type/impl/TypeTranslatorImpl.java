@@ -20,10 +20,6 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.BigDecimalType;
@@ -49,8 +45,6 @@ import org.hibernate.ogm.type.TimestampType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.type.UUIDType;
 import org.hibernate.ogm.type.UrlType;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
@@ -71,20 +65,24 @@ import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
-import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
+import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.usertype.UserType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Emmanuel Bernard
  * @author Nicolas Helleringer
  */
 public class TypeTranslatorImpl implements TypeTranslator {
-	private static final Log log = LoggerFactory.make();
 	private final Map<JavaTypeDescriptor, GridType> typeConverter;
-	private final Map<Class<?>, GridType> dialectTypes;
+	private final GridDialect dialect;
 
 	public TypeTranslatorImpl(GridDialect dialect) {
+		this.dialect = dialect;
+
 		typeConverter = new HashMap<JavaTypeDescriptor, GridType>();
 		typeConverter.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		typeConverter.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
@@ -103,20 +101,6 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		typeConverter.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
 		typeConverter.put( PrimitiveByteArrayTypeDescriptor.INSTANCE, PrimitiveByteArrayType.INSTANCE );
 		typeConverter.put( UUIDTypeDescriptor.INSTANCE, UUIDType.INSTANCE );
-
-		//We don't want to expose dialects to the notion of JavaTypeDescriptor
-		//use the type's return class to match
-		//only one type per class is allowed
-		dialectTypes = new HashMap<Class<?>, GridType>();
-		Set<GridType> types = dialect.getOverriddenGridTypes();
-		if ( types != null ) {
-			for ( GridType type : types ) {
-				GridType put = dialectTypes.put( type.getReturnedClass(), type );
-				if (put != null) {
-					log.dialectMustHaveOneGridTypePerClass( type.getReturnedClass() );
-				}
-			}
-		}
 	}
 
 	@Override public GridType getType(Type type) {
@@ -124,7 +108,9 @@ public class TypeTranslatorImpl implements TypeTranslator {
 			return null;
 		}
 
-		GridType dialectType = dialectTypes.get( type.getReturnedClass() );
+		//TODO should we cache results? It seems an actual HashMap might be slower but it makes it more robust
+		//     against badly written dialects
+		GridType dialectType = dialect.overrideType( type );
 		if ( dialectType != null ) {
 			return dialectType;
 		}
