@@ -75,4 +75,9 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		return true;
 	}
 
+	@Override
+	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		//Nothing to do
+	}
+
 }
