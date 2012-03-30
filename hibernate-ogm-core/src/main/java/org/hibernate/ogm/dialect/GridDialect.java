@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect;
 
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.service.Service;
 
 import org.hibernate.LockMode;
@@ -31,6 +32,8 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
+
+import java.util.Set;
 
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation
@@ -92,4 +95,11 @@ public interface GridDialect extends Service {
 	 */
 	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 
+	/**
+	 * Provide the list of grid types overridden by the dialect.
+	 * Only one {@code GridType} per returned class is allowed.
+	 *
+	 * If no grid type is oerridden, return null
+	 */
+	Set<GridType> getOverriddenGridTypes();
 }

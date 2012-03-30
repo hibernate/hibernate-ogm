@@ -25,6 +25,7 @@ import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -42,6 +43,7 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
@@ -189,5 +191,10 @@ public class InfinispanDialect implements GridDialect {
 			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
 		}
 		while ( !done );
+	}
+
+	@Override
+	public Set<GridType> getOverriddenGridTypes() {
+		return null;
 	}
 }
