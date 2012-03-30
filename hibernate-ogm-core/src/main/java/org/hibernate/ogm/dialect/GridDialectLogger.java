@@ -32,6 +32,7 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
 import java.util.Set;
@@ -144,8 +145,8 @@ public class GridDialectLogger implements GridDialect {
 	}
 
 	@Override
-	public Set<GridType> getOverriddenGridTypes() {
-		return gridDialect.getOverriddenGridTypes();
+	public GridType overrideType(Type type) {
+		return gridDialect.overrideType( type );
 	}
 
 }
