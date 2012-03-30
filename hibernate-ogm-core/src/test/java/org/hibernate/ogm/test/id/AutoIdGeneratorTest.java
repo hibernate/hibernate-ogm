@@ -24,7 +24,7 @@ import javax.persistence.EntityManager;
 
 import org.junit.Test;
 
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
 

@@ -390,6 +390,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
+				//does not set .collectionPersister as it does not make sense here for an entity
 				.session( session );
 		final Association ids = metadataProvider.getCollectionMetadata();
 

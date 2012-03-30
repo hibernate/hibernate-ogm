@@ -225,6 +225,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( key )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.session( session );
 
 		while ( entries.hasNext() ) {
@@ -387,6 +388,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.keyColumnNames( getKeyColumnNames() );
 
 		final Association collectionMetadata = metadataProvider.getCollectionMetadataOrNull();
@@ -414,6 +416,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.session( session );
 
 			//delete all the deleted entries
@@ -468,6 +471,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.session( session );
 
 			//insert all the new entries
@@ -520,6 +524,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.session( session );
 
 			//create all the new entries
@@ -600,6 +605,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.keyColumnNames( elementColumnNames )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
+					.collectionPersister(this)
 					.tableName( getTableName() );
 
 			//TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
@@ -650,6 +656,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister(this)
 				.session( session );
 
 			//shortcut to avoid loop if we can

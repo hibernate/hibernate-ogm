@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.test.perf;
 
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 
 import javax.persistence.EntityManager;
 import java.util.Date;
