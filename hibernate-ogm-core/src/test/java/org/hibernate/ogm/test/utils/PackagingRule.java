@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.rules.ExternalResource;
-import org.junit.rules.MethodRule;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -39,7 +38,7 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Hardy Ferentschik
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class PackagingRule extends ExternalResource implements MethodRule {
+public class PackagingRule extends ExternalResource {
 	protected static ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 	protected static ClassLoader bundleClassLoader;
 	protected static File targetDir;
