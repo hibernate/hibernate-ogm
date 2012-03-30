@@ -32,6 +32,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 import java.util.Set;
 
@@ -96,10 +97,12 @@ public interface GridDialect extends Service {
 	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 
 	/**
-	 * Provide the list of grid types overridden by the dialect.
-	 * Only one {@code GridType} per returned class is allowed.
+	 * Let the dialect override types if required to customize them to the datastore.
+	 * Returns the GridType instance to use to bind the given {@code type} or null if not overridden.
 	 *
-	 * If no grid type is oerridden, return null
+	 * Most types should not be overridden and thus return null
+	 *
+	 * Experimental: this API might change in the future
 	 */
-	Set<GridType> getOverriddenGridTypes();
+	GridType overrideType(Type type);
 }

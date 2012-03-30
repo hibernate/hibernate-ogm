@@ -45,6 +45,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
@@ -194,7 +195,8 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Set<GridType> getOverriddenGridTypes() {
+	public GridType overrideType(Type type) {
 		return null;
 	}
+
 }
