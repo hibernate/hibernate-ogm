@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.type.impl;
 
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -34,7 +36,8 @@ public class TypeTranslatorInitiator implements BasicServiceInitiator<TypeTransl
 
 	@Override
 	public TypeTranslator initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new TypeTranslatorImpl();
+		GridDialect dialect = registry.getService( DatastoreServices.class ).getGridDialect();
+		return new TypeTranslatorImpl(dialect);
 	}
 
 	@Override
