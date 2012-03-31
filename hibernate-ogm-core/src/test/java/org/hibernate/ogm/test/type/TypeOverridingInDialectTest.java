@@ -20,52 +20,37 @@
  */
 package org.hibernate.ogm.test.type;
 
-import org.hibernate.ogm.test.utils.PackagingRule;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
+
+import java.util.Date;
+import java.util.UUID;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.RollbackException;
 import javax.transaction.TransactionManager;
-import java.io.File;
-import java.util.Date;
-import java.util.UUID;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
+import org.hibernate.ogm.test.utils.PackagingRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class TypeOverridingInDialectTest {
+
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-customdialect.xml",
+			Poem.class,
+			OverridingTypeDialect.class,
+			ExplodingType.class,
+			TypeOverridingInDialectTest.class
+		);
 
 	@Test
 	public void testOverriddenTypeInDialect() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Poem.class );
-		archive.addClass( OverridingTypeDialect.class );
-		archive.addClass( ExplodingType.class );
-		archive.addClass( TypeOverridingInDialectTest.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone-customdialect.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 
 		TransactionManager transactionManager = extractJBossTransactionManager( emf );
