@@ -20,23 +20,19 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
-import org.hibernate.ogm.test.jpa.Poem;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.rules.ExternalResource;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * test case useful when one want to write a test relying on an archive (like a JPA archive)
@@ -97,9 +93,8 @@ public class PackagingRule extends ExternalResource {
 
 	@Override
 	public void before() throws MalformedURLException {
-		addPackageToClasspath( testPackage );
-		// add the bundle class loader in order for ShrinkWrap to build the test package
-		Thread.currentThread().setContextClassLoader( bundleClassLoader );
+		URLClassLoader classLoader = new URLClassLoader( new URL[]{ testPackage.toURL() }, originalClassLoader );
+		Thread.currentThread().setContextClassLoader( classLoader );
 	}
 
 	@Override
@@ -108,23 +103,4 @@ public class PackagingRule extends ExternalResource {
 		Thread.currentThread().setContextClassLoader( originalClassLoader );
 	}
 
-	public void addPackageToClasspath(File... files) throws MalformedURLException {
-		List<URL> urlList = new ArrayList<URL>();
-		for ( File file : files ) {
-			urlList.add( file.toURL() );
-		}
-		URLClassLoader classLoader = new URLClassLoader(
-				urlList.toArray( new URL[urlList.size()] ), originalClassLoader
-		);
-		Thread.currentThread().setContextClassLoader( classLoader );
-	}
-
-	public void addPackageToClasspath(URL... urls) throws MalformedURLException {
-		List<URL> urlList = new ArrayList<URL>();
-		urlList.addAll( Arrays.asList( urls ) );
-		URLClassLoader classLoader = new URLClassLoader(
-				urlList.toArray( new URL[urlList.size()] ), originalClassLoader
-		);
-		Thread.currentThread().setContextClassLoader( classLoader );
-	}
 }
