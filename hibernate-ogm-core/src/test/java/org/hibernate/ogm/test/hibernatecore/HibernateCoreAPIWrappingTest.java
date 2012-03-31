@@ -20,20 +20,12 @@
  */
 package org.hibernate.ogm.test.hibernatecore;
 
-import java.io.File;
-import java.net.MalformedURLException;
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.naming.Reference;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -44,8 +36,8 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.test.jpa.Poem;
 import org.hibernate.ogm.test.jpa.util.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -53,12 +45,10 @@ import static org.fest.assertions.Assertions.assertThat;
 public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Contact.class );
 
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
-		buildArchive();
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
@@ -78,25 +68,8 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		emf.close();
 	}
 
-	private void buildArchive() throws MalformedURLException {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Contact.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-	}
-
 	@Test
 	public void testJNDIReference() throws Exception {
-		buildArchive();
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
