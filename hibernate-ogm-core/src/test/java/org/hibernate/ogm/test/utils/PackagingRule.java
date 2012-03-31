@@ -28,6 +28,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.ogm.test.jpa.Poem;
+import org.jboss.shrinkwrap.api.ArchivePath;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.rules.ExternalResource;
 
 import static org.fest.assertions.Assertions.assertThat;
@@ -37,11 +43,18 @@ import static org.fest.assertions.Assertions.assertThat;
  *
  * @author Hardy Ferentschik
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero
  */
 public class PackagingRule extends ExternalResource {
+
+	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
+
 	protected static ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 	protected static ClassLoader bundleClassLoader;
 	protected static File targetDir;
+
+	private final JavaArchive archive;
+	private final File testPackage;
 
 	public static File getTargetDir() {
 		return targetDir;
@@ -73,8 +86,18 @@ public class PackagingRule extends ExternalResource {
 		targetDir.mkdirs();
 	}
 
+	public PackagingRule(String persistenceConfResource, Class<?>... entities) {
+		archive = ShrinkWrap.create( JavaArchive.class, "jtastandalone.jar" );
+		archive.addClasses( entities );
+		archive.addAsManifestResource( persistenceConfResource, persistencePath );
+
+		testPackage = new File( PackagingRule.getTargetDir(), "jtastandalone.jar" );
+		archive.as( ZipExporter.class ).exportTo( testPackage, true );
+	}
+
 	@Override
-	public void before() {
+	public void before() throws MalformedURLException {
+		addPackageToClasspath( testPackage );
 		// add the bundle class loader in order for ShrinkWrap to build the test package
 		Thread.currentThread().setContextClassLoader( bundleClassLoader );
 	}

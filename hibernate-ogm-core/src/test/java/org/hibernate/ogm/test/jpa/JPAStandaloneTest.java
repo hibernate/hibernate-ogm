@@ -23,21 +23,14 @@ package org.hibernate.ogm.test.jpa;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.jpa.util.JpaTestCase.extractJBossTransactionManager;
 
-import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.hibernate.ogm.test.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
-
-import org.hibernate.ogm.test.utils.PackagingRule;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -45,22 +38,10 @@ import org.hibernate.ogm.test.utils.PackagingRule;
 public class JPAStandaloneTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
 
 	@Test
 	public void testJTAStandalone() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Poem.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 

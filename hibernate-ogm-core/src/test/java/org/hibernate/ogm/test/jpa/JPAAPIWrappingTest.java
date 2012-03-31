@@ -22,24 +22,18 @@ package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.io.File;
 import java.util.HashMap;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
 
 import org.hibernate.ogm.jpa.impl.OgmEntityManager;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.test.jpa.util.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -47,23 +41,10 @@ import org.hibernate.ogm.test.utils.PackagingRule;
 public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
 
 	@Test
 	public void testWrappedStandalone() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Poem.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 
