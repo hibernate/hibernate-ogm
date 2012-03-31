@@ -101,6 +101,7 @@ public class PackagingRule extends ExternalResource {
 	public void after() {
 		// reset the classloader
 		Thread.currentThread().setContextClassLoader( originalClassLoader );
+		testPackage.delete();
 	}
 
 }
