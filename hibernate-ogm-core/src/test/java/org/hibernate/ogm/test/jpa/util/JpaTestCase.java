@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.test.jpa.util;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -39,7 +40,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
@@ -76,7 +76,7 @@ public abstract class JpaTestCase {
 		info.setNonJtaDataSource( null );
 		info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
 		info.setPersistenceUnitName( "default" );
-		final URL persistenceUnitRootUrl = PackagingRule.getTargetDir().toURI().toURL();
+		final URL persistenceUnitRootUrl = new File("").toURL();
 		info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
 		info.setPersistenceXMLSchemaVersion( "2.0" );
 		info.setProperties( new Properties() );

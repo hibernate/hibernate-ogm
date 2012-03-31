@@ -20,10 +20,8 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import java.io.File;
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -32,7 +30,7 @@ import org.jboss.shrinkwrap.api.ArchivePaths;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.rules.ExternalResource;
+import org.junit.rules.TemporaryFolder;
 
 /**
  * test case useful when one want to write a test relying on an archive (like a JPA archive)
@@ -41,7 +39,7 @@ import org.junit.rules.ExternalResource;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero
  */
-public class PackagingRule extends ExternalResource {
+public class PackagingRule extends TemporaryFolder {
 
 	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
 
@@ -52,47 +50,22 @@ public class PackagingRule extends ExternalResource {
 	private final JavaArchive archive;
 	private final File testPackage;
 
-	public static File getTargetDir() {
-		return targetDir;
-	}
-
-	static {
-		// get a URL reference to something we now is part of the classpath (us)
-		URL myUrl = originalClassLoader.getResource(
-				PackagingRule.class.getName().replace( '.', '/' ) + ".class"
-		);
-		File myPath = new File( myUrl.getFile() );
-		// navigate back to '/target'
-		targetDir = myPath
-				.getParentFile()  // target/classes/org/hibernate/ogm/test/utils
-				.getParentFile()  // target/classes/org/hibernate/ejb/test
-				.getParentFile()  // target/classes/org/hibernate/ejb
-				.getParentFile()  // target/classes/org/hibernate
-				.getParentFile()  // target/classes/org
-				.getParentFile()  // target/classes/
-				.getParentFile(); // target
-		File testPackagesDir = new File( targetDir, "bundles" );
-		try {
-			bundleClassLoader = new URLClassLoader( new URL[] { testPackagesDir.toURL() }, originalClassLoader );
-		}
-		catch ( MalformedURLException e ) {
-			assertThat( true ).as( "Unable to build custom class loader" ).isFalse();
-		}
-		targetDir = new File( targetDir, "packages" );
-		targetDir.mkdirs();
-	}
-
 	public PackagingRule(String persistenceConfResource, Class<?>... entities) {
 		archive = ShrinkWrap.create( JavaArchive.class, "jtastandalone.jar" );
 		archive.addClasses( entities );
 		archive.addAsManifestResource( persistenceConfResource, persistencePath );
-
-		testPackage = new File( PackagingRule.getTargetDir(), "jtastandalone.jar" );
+		try {
+			testPackage = newFile();
+		}
+		catch ( IOException e ) {
+			throw new RuntimeException( e );
+		}
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
 	}
 
 	@Override
-	public void before() throws MalformedURLException {
+	public void before() throws Throwable {
+		super.before();
 		URLClassLoader classLoader = new URLClassLoader( new URL[]{ testPackage.toURL() }, originalClassLoader );
 		Thread.currentThread().setContextClassLoader( classLoader );
 	}
@@ -101,7 +74,7 @@ public class PackagingRule extends ExternalResource {
 	public void after() {
 		// reset the classloader
 		Thread.currentThread().setContextClassLoader( originalClassLoader );
-		testPackage.delete();
+		super.after();
 	}
 
 }
