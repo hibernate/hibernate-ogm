@@ -114,4 +114,9 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return MongoDBDatastoreProvider.class.cast( provider );
 	}
 
+	@Override
+	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		// Implement me
+	}
+
 }
