@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -52,6 +53,7 @@ public class MongoDBDialect implements GridDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 	public static final String ID_FIELDNAME = "_id";
+	public static final String SEQUENCE_VALUE = "sequence_value";
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -161,7 +163,39 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		throw new UnsupportedOperationException( "nextValue is not supported by the MongoDB GridDialect" );
+		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );
+		DBObject query = new BasicDBObject();
+		int size = key.getColumnNames().length;
+		//all columns should match to find the value
+		for ( int index = 0; index < size; index++ ) {
+			query.put( key.getColumnNames()[index], key.getColumnValues()[index] );
+		}
+		BasicDBObject update = new BasicDBObject();
+		//FIXME should "value" bue hardcoded?
+		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
+		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, increment );
+		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
+		Object idFromDB;
+		idFromDB = result == null ? null : result.get( SEQUENCE_VALUE );
+		if ( idFromDB == null ) {
+			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
+			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
+			BasicDBObject updateForInitial = new BasicDBObject();
+			this.addSubQuery( "$inc", updateForInitial, SEQUENCE_VALUE, initialValue );
+			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
+			idFromDB = initialValue; //first time we ask this value
+		}
+		else {
+			idFromDB = result.get( SEQUENCE_VALUE );
+		}
+		if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
+			Number id = (Number) idFromDB;
+			//idFromDB is the one used and the BD contains the next available value to use
+			value.initialize( id.longValue() );
+		}
+		else {
+			throw new HibernateException( "Cannot increment a non numeric field" );
+		}
 	}
 
 	@Override
