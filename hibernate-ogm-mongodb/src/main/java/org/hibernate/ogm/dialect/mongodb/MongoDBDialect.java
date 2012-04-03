@@ -33,7 +33,12 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.type.ByteStringType;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -157,5 +162,16 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		throw new UnsupportedOperationException( "nextValue is not supported by the MongoDB GridDialect" );
+	}
+
+	@Override
+	public GridType overrideType(Type type) {
+                // Override handling of calendar types 
+		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
+			return StringCalendarDateType.INSTANCE;
+		} else if ( type == StandardBasicTypes.BYTE ) {
+			return ByteStringType.INSTANCE;
+		}
+		return null;  // all other types handled as in hibernate-ogm-core
 	}
 }
