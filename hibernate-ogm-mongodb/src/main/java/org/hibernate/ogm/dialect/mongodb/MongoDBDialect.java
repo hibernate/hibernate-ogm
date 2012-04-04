@@ -35,6 +35,9 @@ import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.ogm.type.ByteStringType;
+import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 import com.mongodb.BasicDBObject;
@@ -163,7 +166,13 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public GridType overrideType(Type type) {
-		// TODO Implement me
-		return null;
+		// Override handling of calendar types
+		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
+			return StringCalendarDateType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.BYTE ) {
+			return ByteStringType.INSTANCE;
+		}
+		return null; // all other types handled as in hibernate-ogm-core
 	}
 }
