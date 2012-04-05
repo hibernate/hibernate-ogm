@@ -49,4 +49,15 @@ public class TupleOperation {
 	public TupleOperationType getType() {
 		return type;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append( "TupleOperation" );
+		sb.append( "{type=" ).append( type ).append( '\'' );
+		sb.append( ", column='" ).append( column ).append( '\'' );
+		sb.append( ", value=" ).append( value );
+		sb.append( '}' );
+		return sb.toString();
+	}
 }
