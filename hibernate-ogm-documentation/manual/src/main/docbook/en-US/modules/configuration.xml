@@ -448,6 +448,37 @@ em.close();</programlisting>
   </section>
 
   <section>
+    <title>Configuring MongoDB</title>
+
+    <para>There are just three configuration properties:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>
+          <literal>hibernate.ogm.mongodb.database</literal>
+          to set with which database Hibernate-OGM will work with
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          <literal>hibernate.ogm.mongodb.port</literal>
+          to set which port will be used for the connection.
+          The default value is 27017
+        </para>
+      </listitem>
+
+      <listitem>
+        <para>
+          <literal>hibernate.ogm.mongodb.host</literal>
+          to set which hostname will be used for the connection.
+          The default value is 'localhost' (127.0.0.1)
+        </para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Configuring Hibernate Search</title>
 
     <para>All Hibernate Search options apply when you use Hibernate OGM. Here
