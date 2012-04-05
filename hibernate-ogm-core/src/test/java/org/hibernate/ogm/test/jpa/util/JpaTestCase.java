@@ -32,7 +32,6 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.TransactionManager;
 
-import junit.framework.TestCase;
 
 import org.junit.After;
 import org.junit.Before;
@@ -48,7 +47,7 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class JpaTestCase extends TestCase {
+public abstract class JpaTestCase {
 
     private EntityManagerFactory factory;
     private TransactionManager transactionManager;
