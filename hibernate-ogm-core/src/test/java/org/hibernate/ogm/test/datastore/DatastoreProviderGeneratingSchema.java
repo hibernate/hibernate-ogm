@@ -35,7 +35,9 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 import java.util.Iterator;
 
@@ -136,6 +138,12 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		@Override
 		public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 			//To change body of implemented methods use File | Settings | File Templates.
+		}
+
+		@Override
+		public GridType overrideType(Type type) {
+			// No types to override
+			return null;
 		}
 	}
 }

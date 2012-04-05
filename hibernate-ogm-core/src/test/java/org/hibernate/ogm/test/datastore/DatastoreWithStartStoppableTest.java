@@ -20,20 +20,14 @@
  */
 package org.hibernate.ogm.test.datastore;
 
-import org.hibernate.ogm.test.utils.PackagingRule;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.fest.assertions.Assertions.assertThat;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import java.io.File;
 
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.ogm.test.utils.PackagingRule;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * Test that DatastoreProvider implementing StartStoppable are properly receiving
@@ -42,24 +36,12 @@ import static org.fest.assertions.Assertions.assertThat;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreWithStartStoppableTest {
+
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-datastoreobserver.xml", Noise.class );
 
 	@Test
 	public void testObserver() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Noise.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone-datastoreobserver.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-
 		try {
 			final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-datastoreobserver" );
 		}
