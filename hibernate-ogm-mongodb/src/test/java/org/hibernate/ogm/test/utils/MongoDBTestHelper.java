@@ -24,6 +24,7 @@ package org.hibernate.ogm.test.utils;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -37,12 +38,16 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.hibernate.ogm.logging.mongodb.impl.Log;
+import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 /**
  * 
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBTestHelper implements TestableGridDialect {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {
@@ -116,7 +121,12 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		// Implement me
+		MongoDBDatastoreProvider provider = getProvider( sessionFactory );
+		try {
+			provider.getDatabase().dropDatabase();
+		}
+		catch ( MongoException ex ) {
+			throw log.unableToDropDatabase( ex, provider.getDatabase().getName() );
+		}
 	}
-
 }
