@@ -1,4 +1,4 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
  * 
  * JBoss, Home of Professional Open Source
@@ -22,6 +22,7 @@ package org.hibernate.ogm.logging.mongodb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
+import com.mongodb.MongoException;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.jboss.logging.Cause;
@@ -63,4 +64,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1208, value = "The configuration property '" + Environment.MONGODB_DATABASE + "' was not set. Can't connect to MongoDB.")
 	HibernateException mongoDbNameMissing();
 
+	@Message(id = 1209, value = "The database named [%s] cannot be dropped")
+	HibernateException unableToDropDatabase(@Cause MongoException e, String databaseName);
 }

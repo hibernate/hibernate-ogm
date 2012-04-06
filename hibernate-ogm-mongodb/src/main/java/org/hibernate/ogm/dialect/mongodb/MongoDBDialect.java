@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import com.mongodb.DBCursor;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -161,7 +163,22 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		throw new UnsupportedOperationException( "nextValue is not supported by the MongoDB GridDialect" );
+		DBCollection currentCollection = this.currentDB.getCollection( (String) key.getColumnValues()[0] );
+		DBCursor cursor = currentCollection.find().sort( new BasicDBObject( ID_FIELDNAME, -1 ) ).limit( 1 );
+		if ( cursor.count() > 0 ) {
+			DBObject maxOjbect = cursor.next();
+			Object idFromDB = maxOjbect.get( ID_FIELDNAME );
+			if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
+				Long id = (Long) idFromDB;
+				value.initialize( id.longValue() + increment );
+			}
+			else {
+				throw new HibernateException( "Cannot increment a non numeric field" );
+			}
+		}
+		else {
+			value.initialize( initialValue );
+		}
 	}
 
 	@Override
