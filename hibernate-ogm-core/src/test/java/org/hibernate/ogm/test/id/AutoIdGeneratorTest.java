@@ -42,7 +42,8 @@ public class AutoIdGeneratorTest extends JpaTestCase {
 		DistributedRevisionControl git = new DistributedRevisionControl();
 		git.setName( "Git" );
 		em.persist( git );
-
+		em.flush();
+		
 		DistributedRevisionControl bzr = new DistributedRevisionControl();
 		bzr.setName( "Bazaar" );
 		em.persist( bzr );

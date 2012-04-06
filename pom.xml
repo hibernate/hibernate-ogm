@@ -2,7 +2,7 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~  Copyright (c) 2010-2011, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~  Copyright (c) 2010-2012, Red Hat, Inc. and/or its affiliates or third-party contributors as
   ~  indicated by the @author tags or express copyright attribution
   ~  statements applied by the authors.  All third-party contributions are
   ~  distributed under license by Red Hat, Inc.
@@ -40,6 +40,7 @@
         <module>hibernate-ogm-core</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
+        <module>hibernate-ogm-mongodb</module>
     </modules>
 
     <prerequisites>
@@ -126,6 +127,7 @@
     <properties>
         <ehcacheVersion>2.5.0</ehcacheVersion>
         <infinispanVersion>5.1.2.FINAL</infinispanVersion>
+        <mongodbVersion>2.7.2</mongodbVersion>
         <hibernateVersion>4.0.1.Final</hibernateVersion>
         <hibernateSearchVersion>4.1.0.CR1</hibernateSearchVersion>
         <jbossjtaVersion>4.16.2.Final</jbossjtaVersion>
@@ -226,13 +228,17 @@
                 <artifactId>jboss-logging</artifactId>
                 <version>${jbossLoggingVersion}</version>
             </dependency>
-        
-            <!-- Grids -->
+
+            <!-- NoSQL databases -->
+
+            <!-- EHCache -->
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache-core</artifactId>
                 <version>${ehcacheVersion}</version>
             </dependency>
+
+            <!-- Infinispan -->
             <dependency>
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-core</artifactId>
@@ -242,6 +248,13 @@
                 <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-lucene-directory</artifactId>
                 <version>${infinispanVersion}</version>
+            </dependency>
+
+            <!-- MongoDB -->
+            <dependency>
+                <groupId>org.mongodb</groupId>
+                <artifactId>mongo-java-driver</artifactId>
+                <version>${mongodbVersion}</version>
             </dependency>
 
             <!-- utils -->
@@ -816,5 +829,5 @@
             </modules>
         </profile>
     </profiles>
-
 </project>
+
