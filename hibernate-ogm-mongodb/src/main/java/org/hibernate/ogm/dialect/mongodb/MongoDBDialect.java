@@ -37,7 +37,6 @@ import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.ogm.type.ByteStringType;
-import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 

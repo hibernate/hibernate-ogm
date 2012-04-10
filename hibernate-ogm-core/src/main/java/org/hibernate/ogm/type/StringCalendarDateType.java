@@ -24,9 +24,8 @@ import java.util.Calendar;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.OgmCalendarDateTypeDescriptor;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
-import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 
 /**
  * For {@link Calendar} objects use a String representation for MongoDB.
@@ -39,7 +38,7 @@ public class StringCalendarDateType extends AbstractGenericBasicType<Calendar> {
 	public static final StringCalendarDateType INSTANCE = new StringCalendarDateType();
 
 	public StringCalendarDateType() {
-		super( StringMappedGridTypeDescriptor.INSTANCE, CalendarDateTypeDescriptor.INSTANCE );
+		super( StringMappedGridTypeDescriptor.INSTANCE, OgmCalendarDateTypeDescriptor.INSTANCE );
 	}
 
 	@Override
