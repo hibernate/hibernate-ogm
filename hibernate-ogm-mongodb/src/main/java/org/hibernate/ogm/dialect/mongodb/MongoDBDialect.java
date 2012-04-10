@@ -35,6 +35,7 @@ import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.LongStringType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
@@ -171,6 +172,8 @@ public class MongoDBDialect implements GridDialect {
 			return StringCalendarDateType.INSTANCE;
 		} else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
+		} else if ( type == StandardBasicTypes.LONG ) {
+			return LongStringType.INSTANCE;
 		}
 		return null;  // all other types handled as in hibernate-ogm-core
 	}
