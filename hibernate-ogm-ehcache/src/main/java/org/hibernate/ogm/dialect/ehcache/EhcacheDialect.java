@@ -22,7 +22,6 @@ package org.hibernate.ogm.dialect.ehcache;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
