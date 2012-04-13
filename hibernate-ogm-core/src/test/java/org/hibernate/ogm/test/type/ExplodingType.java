@@ -27,7 +27,6 @@ import org.hibernate.ogm.type.AbstractGenericBasicType;
 import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
 import org.hibernate.ogm.type.descriptor.GridValueBinder;
 import org.hibernate.ogm.type.descriptor.GridValueExtractor;
-import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 
