@@ -110,7 +110,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			final Mapping mapping) throws HibernateException {
 		super(persistentClass, cacheAccessStrategy, factory);
 		if ( log.isTraceEnabled() ) {
-			log.tracef( "Creating OgmEntityPersister for $s", persistentClass.getClassName() );
+			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
 		}
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		this.gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
