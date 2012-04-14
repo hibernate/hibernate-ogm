@@ -33,8 +33,6 @@ import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
-import org.hibernate.ogm.test.jpa.Poem;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +40,7 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class HibernateCoreAPIWrappingTest extends JpaTestCase {
+public class HibernateCoreAPIWrappingTest {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Contact.class );
@@ -86,10 +84,4 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		emf.close();
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] {
-				Poem.class
-		};
-	}
 }
