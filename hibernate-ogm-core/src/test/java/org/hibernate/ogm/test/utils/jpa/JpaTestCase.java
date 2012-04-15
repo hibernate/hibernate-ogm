@@ -27,14 +27,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.TransactionManager;
-
-import org.junit.After;
-import org.junit.Before;
 
 import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
@@ -42,9 +40,12 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
+import org.junit.After;
+import org.junit.Before;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public abstract class JpaTestCase {
 
@@ -106,6 +107,21 @@ public abstract class JpaTestCase {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
 				.getSessionFactory();
 		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
+	}
+
+	/**
+	 * We need to make sure failing tests cleanup their association with the transaction manager
+	 * so that they don't affect subsequent tests.
+	 * @param operationSuccessull when false, use rollback instead
+	 * @throws Exception
+	 */
+	protected final void commitOrRollback(boolean operationSuccessull) throws Exception {
+		if ( operationSuccessull ) {
+			getTransactionManager().commit();
+		}
+		else {
+			getTransactionManager().rollback();
+		}
 	}
 
 	@After
