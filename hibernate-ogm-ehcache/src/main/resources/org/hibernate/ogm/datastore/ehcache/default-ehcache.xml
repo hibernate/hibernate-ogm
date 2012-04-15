@@ -21,6 +21,7 @@
   -->
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="http://www.ehcache.org/ehcache.xsd"
+         updateCheck="false" monitoring="autodetect" dynamicConfig="false"
          maxBytesLocalHeap="75%" name="hibernate-ogm-datastore">
 
     <diskStore path="java.io.tmpdir"/>
