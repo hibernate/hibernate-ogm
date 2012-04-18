@@ -20,11 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.RowKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -35,8 +31,8 @@ import com.mongodb.DBObject;
 public class MongoHelpers {
 	
 	public static DBObject associationKeyToObject(AssociationKey key) {
-		DBObject obj = new BasicDBObject();
-		Map<String,Object> fieldMap = new HashMap<String,Object>();
+		DBObject obj = new BasicDBObject(3);
+		DBObject fieldMap = new BasicDBObject(key.getColumnNames().length);
 
 		int i = 0;
 		Object[] columnValues = key.getColumnValues();

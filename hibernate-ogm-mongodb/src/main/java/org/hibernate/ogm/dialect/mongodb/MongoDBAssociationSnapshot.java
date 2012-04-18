@@ -107,4 +107,13 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	public DBObject getDBObject() {
 		return this.assoc;
 	}
+	
+    @Override
+    public String toString() {
+    	final StringBuilder sb = new StringBuilder();
+    	sb.append( "MongoDBAssociationSnapshot(");
+    	sb.append(map.size());
+    	sb.append(" RowKey entries).");
+    	return sb.toString();
+    }
 }
