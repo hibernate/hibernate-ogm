@@ -131,7 +131,7 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( ID_FIELDNAME ) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( "."+ID_FIELDNAME ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -180,7 +180,7 @@ public class MongoDBDialect implements GridDialect {
 		DBCollection associations = getCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( key );
 		
-		assoc.put( ROWS_FIELDNAME, new ArrayList<Map<String, Object>>() );
+		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
 		
 		return new Association( new MongoDBAssociationSnapshot( assoc ) );
