@@ -55,7 +55,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		DB db = provider.getDatabase();
 		int count = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			count += db.getCollection( collectionName ).count();
+			if (!collectionName.startsWith("system.")) {
+				DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", false) );
+				count += db.getCollection( collectionName ).find( query ).count();
+			}
 		}
 		return count;
 	}
@@ -92,11 +95,12 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		DB db = provider.getDatabase();
 		int generalCount = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			generalCount += this.countAssociationOnCollection( db.getCollection( collectionName ) );
+			DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
+			generalCount += db.getCollection( collectionName ).find( query ).count();
 		}
 		return generalCount;
 	}
-
+	
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );

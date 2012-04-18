@@ -20,12 +20,18 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Map;
+
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -54,6 +60,12 @@ public class MongoDBDialect implements GridDialect {
 	private static final Log log = LoggerFactory.getLogger();
 	public static final String ID_FIELDNAME = "_id";
 	public static final String SEQUENCE_VALUE = "sequence_value";
+	public static final String ASSOCIATIONS_FIELDNAME = "associations";
+	public static final String TUPLE_FIELDNAME = "tuple";
+	public static final String COLUMNS_FIELDNAME = "columns";
+	public static final String ROWS_FIELDNAME = "rows";
+	public static final String TABLE_FIELDNAME = "table";
+
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -87,8 +99,20 @@ public class MongoDBDialect implements GridDialect {
 		return collection.findOne( searchObject );
 	}
 
+	private DBCollection getCollection(String table) {
+		return this.currentDB.getCollection( table );
+	}
+
 	private DBCollection getCollection(EntityKey key) {
-		return this.currentDB.getCollection( key.getTable() );
+		return getCollection( key.getTable() );
+	}
+	
+	private DBCollection getCollection(AssociationKey key) {
+		return getCollection( key.getTable() );
+	}
+
+	private DBCollection getCollection(RowKey key) {
+		return getCollection( key.getTable() );
 	}
 
 	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
@@ -107,7 +131,7 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.contains( ID_FIELDNAME ) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( ID_FIELDNAME ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -136,31 +160,110 @@ public class MongoDBDialect implements GridDialect {
 		}
 	}
 
+	private DBObject findAssociation(AssociationKey key) {
+		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( key );
+		return this.getCollection( key ).findOne( associationKeyObject );
+	}
+
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException( "getAssociation is not supported by the MongoDB GridDialect" );
+		final DBObject result = findAssociation( key );
+		if (result == null) {
+			return null;
+		} else {
+			return new Association( new MongoDBAssociationSnapshot( result ) );
+		}
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException( "createAssociation is not supported by the MongoDB GridDialect" );
+		DBCollection associations = getCollection( key );
+		DBObject assoc = MongoHelpers.associationKeyToObject( key );
+		
+		assoc.put( ROWS_FIELDNAME, new ArrayList<Map<String, Object>>() );
+		associations.insert( assoc );
+		
+		return new Association( new MongoDBAssociationSnapshot( assoc ) );
 	}
+	
+	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey)
+	{ 
+		DBObject pull = new BasicDBObject( ROWS_FIELDNAME,  snapshot.getRowKeyDBObject( rowKey ) );
+		return new BasicDBObject("$pull", pull );
+	}
+	
+	private static DBObject createBaseRowKey(RowKey rowKey) {
+		DBObject row = new BasicDBObject();
+		DBObject rowColumnMap = new BasicDBObject();
+		Object[] columnValues = rowKey.getColumnValues();
 
+		int i = 0;
+		for ( String rowKeyColumnName : rowKey.getColumnNames() )
+			rowColumnMap.put( rowKeyColumnName, columnValues[i++] );
+
+		row.put( TABLE_FIELDNAME, rowKey.getTable() );
+		row.put( COLUMNS_FIELDNAME, rowColumnMap );
+		
+		return row;
+	}
+	
+	private static DBObject putAssociationRowKey(RowKey rowKey, Tuple value) {
+		DBObject row = createBaseRowKey(rowKey);
+		DBObject rowTupleMap = new BasicDBObject();
+		
+		for ( String valueKeyName : value.getColumnNames() )
+			rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
+
+		row.put( TUPLE_FIELDNAME, rowTupleMap );
+
+		return new BasicDBObject( "$push", new BasicDBObject( ROWS_FIELDNAME, row ) );
+	}
+	
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		throw new UnsupportedOperationException( "updateAssociation is not supported by the MongoDB GridDialect" );
+		DBCollection collection = getCollection( key );
+		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot)association.getSnapshot();
+		DBObject query = assocSnapshot.getQueryObject();
+		
+		for ( AssociationOperation action : association.getOperations() ) {
+			RowKey rowKey = action.getKey();
+			Tuple rowValue = action.getValue();
+
+			DBObject update = null;
+
+			switch ( action.getType() ) {
+			case CLEAR:
+				update = new BasicDBObject("$set", new BasicDBObject( 
+						ROWS_FIELDNAME, Collections.EMPTY_LIST ) );
+				break;
+			case PUT_NULL:
+			case PUT:
+				update = putAssociationRowKey( rowKey, rowValue );
+				break;
+			case REMOVE:
+				update = removeAssociationRowKey( assocSnapshot, rowKey );
+				break;
+			}
+
+			if (update != null)
+				collection.update( query, update, true, false );
+		}
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		throw new UnsupportedOperationException( "removeAssociation is not supported by the MongoDB GridDialect" );
+		DBCollection collection = getCollection( key );
+		DBObject query = MongoHelpers.associationKeyToObject( key );
+		
+		int nAffected = collection.remove( query ).getN();
+		log.removedAssociation( nAffected );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		throw new UnsupportedOperationException( "createTupleAssociation is not supported by the MongoDB GridDialect" );
+		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
-
+	
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );

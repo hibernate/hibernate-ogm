@@ -26,14 +26,16 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.logging.mongodb.impl.Log;
+import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 import com.mongodb.DBObject;
 
-/**
+/**g
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
-
+	//private static final Log log = LoggerFactory.getLogger();
 	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 

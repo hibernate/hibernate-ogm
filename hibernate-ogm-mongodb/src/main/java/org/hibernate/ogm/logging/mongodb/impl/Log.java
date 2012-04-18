@@ -21,6 +21,7 @@
 package org.hibernate.ogm.logging.mongodb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.TRACE;
 
 import com.mongodb.MongoException;
 import org.hibernate.HibernateException;
@@ -66,4 +67,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1209, value = "The database named [%s] cannot be dropped")
 	HibernateException unableToDropDatabase(@Cause MongoException e, String databaseName);
+	
+	@LogMessage(level = TRACE)
+	@Message(id = 1210, value = "Removed [%d] associations")
+	void removedAssociation(int nAffected);
 }
