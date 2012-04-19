@@ -92,7 +92,11 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 						final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
 								emName, protectiveCopy
 						);
-						return new OgmEntityManagerFactory( coreEMF );
+						if ( coreEMF != null ) {
+							//delegate might return null to refuse the configuration
+							//(like when the configuration file is not defining the expected persistent unit)
+							return new OgmEntityManagerFactory( coreEMF );
+						}
 					}
 				}
 			}
@@ -131,12 +135,14 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					),
 					protectiveCopy
 			);
-			return new OgmEntityManagerFactory( coreEMF );
+			if ( coreEMF != null ) {
+				//delegate might return null to refuse the configuration
+				//(like when the configuration file is not defining the expected persistent unit)
+				return new OgmEntityManagerFactory( coreEMF );
+			}
 		}
-		else {
-			//not the right provider
-			return null;
-		}
+		//not the right provider
+		return null;
 	}
 
 	@Override
