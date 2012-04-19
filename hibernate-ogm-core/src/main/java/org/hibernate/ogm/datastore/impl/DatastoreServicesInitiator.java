@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -28,12 +29,17 @@ import java.util.Map;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class DatastoreServicesInitiator implements BasicServiceInitiator<DatastoreServices> {
+public class DatastoreServicesInitiator extends OptionalServiceInitiator<DatastoreServices> {
 	public static final DatastoreServicesInitiator INSTANCE = new DatastoreServicesInitiator();
 
 	@Override
-	public DatastoreServices initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected DatastoreServices buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new DatastoreServicesImpl();
+	}
+
+	@Override
+	protected BasicServiceInitiator<DatastoreServices> backupInitiator() {
+		return null;
 	}
 
 	@Override

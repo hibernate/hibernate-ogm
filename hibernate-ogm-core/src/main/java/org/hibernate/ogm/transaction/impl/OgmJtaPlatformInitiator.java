@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.internal.JtaPlatformInitiator;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
@@ -33,7 +34,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmJtaPlatformInitiator implements BasicServiceInitiator<JtaPlatform> {
+public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatform> {
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();
 
 	@Override
@@ -42,11 +43,16 @@ public class OgmJtaPlatformInitiator implements BasicServiceInitiator<JtaPlatfor
 	}
 
 	@Override
-	public JtaPlatform initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected JtaPlatform buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		if ( ! hasExplicitPlatform( configurationValues ) ) {
 			return new JBossStandAloneJtaPlatform();
 		}
 		return JtaPlatformInitiator.INSTANCE.initiateService(configurationValues, registry);
+	}
+
+	@Override
+	protected BasicServiceInitiator<JtaPlatform> backupInitiator() {
+		return JtaPlatformInitiator.INSTANCE;
 	}
 
 	private boolean hasExplicitPlatform(Map configVales) {

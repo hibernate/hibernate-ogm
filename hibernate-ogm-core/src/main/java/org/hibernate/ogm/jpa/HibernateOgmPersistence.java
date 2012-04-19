@@ -40,10 +40,12 @@ import org.hibernate.ejb.AvailableSettings;
 import org.hibernate.ejb.HibernatePersistence;
 import org.hibernate.ejb.packaging.PersistenceMetadata;
 import org.hibernate.ejb.packaging.PersistenceXmlLoader;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.service.impl.OgmIntegrator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -80,7 +82,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 						PersistenceUnitTransactionType.RESOURCE_LOCAL
 				);
 				for ( PersistenceMetadata metadata : metadataFiles ) {
-					if ( metadata.getProvider() == null || IMPLEMENTATION_NAME.equalsIgnoreCase(
+					//if the provider is not set, don't use it as people might want to use Hibernate ORM
+					if ( IMPLEMENTATION_NAME.equalsIgnoreCase(
 							metadata.getProvider()
 					) ) {
 						//correct provider
@@ -111,6 +114,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
+		map.put( OgmConfiguration.OGM_ON, "true" );
 	}
 
 	@Override

@@ -20,16 +20,19 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
-import java.util.Map;
-
+import org.hibernate.ogm.service.impl.ConfigurationService;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.persister.internal.PersisterClassResolverInitiator;
 import org.hibernate.persister.spi.PersisterClassResolver;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+import java.util.Map;
+
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmPersisterClassResolverInitiator implements BasicServiceInitiator<PersisterClassResolver> {
+public class OgmPersisterClassResolverInitiator extends OptionalServiceInitiator<PersisterClassResolver> {
 	public static final OgmPersisterClassResolverInitiator INSTANCE = new OgmPersisterClassResolverInitiator();
 
 	@Override
@@ -38,8 +41,12 @@ public class OgmPersisterClassResolverInitiator implements BasicServiceInitiator
 	}
 
 	@Override
-	@SuppressWarnings( {"unchecked"})
-	public PersisterClassResolver initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected PersisterClassResolver buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new OgmPersisterClassResolver();
+	}
+
+	@Override
+	protected BasicServiceInitiator<PersisterClassResolver> backupInitiator() {
+		return PersisterClassResolverInitiator.INSTANCE;
 	}
 }

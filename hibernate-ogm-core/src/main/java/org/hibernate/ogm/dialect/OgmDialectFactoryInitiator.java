@@ -25,6 +25,8 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.service.jdbc.dialect.internal.DialectFactoryInitiator;
 import org.hibernate.service.jdbc.dialect.spi.DialectFactory;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -32,11 +34,18 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmDialectFactoryInitiator implements BasicServiceInitiator<DialectFactory> {
+public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<DialectFactory> {
+
+	public static OgmDialectFactoryInitiator INSTANCE = new OgmDialectFactoryInitiator();
 
 	@Override
-	public DialectFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected DialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new NoopDialectFactory();
+	}
+
+	@Override
+	protected BasicServiceInitiator<DialectFactory> backupInitiator() {
+		return DialectFactoryInitiator.INSTANCE;
 	}
 
 	@Override

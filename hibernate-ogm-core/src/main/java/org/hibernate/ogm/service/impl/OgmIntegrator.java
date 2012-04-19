@@ -25,6 +25,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -56,6 +57,9 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
 	@Override
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( ! serviceRegistry.getService( ConfigurationService.class ).isOgmOn() ) {
+			return;
+		}
 		Version.touch();
 		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		sessionFactory.addObserver( new DatastoreProviderToSessionFactoryObserverAdaptor(configuration, serviceRegistry) );
@@ -64,7 +68,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	@Override
 	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 		Version.touch();
-		//TODO implement for 4.1
 	}
 
 	@Override
@@ -73,9 +76,10 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 	@Override
 	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
-		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
-		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );
+		serviceRegistryBuilder.addInitiator( ConfigurationServiceInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
 		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
