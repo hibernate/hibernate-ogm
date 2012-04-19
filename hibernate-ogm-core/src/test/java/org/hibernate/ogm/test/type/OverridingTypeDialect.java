@@ -26,8 +26,6 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 /**

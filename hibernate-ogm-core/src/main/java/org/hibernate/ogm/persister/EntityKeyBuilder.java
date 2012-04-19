@@ -22,7 +22,6 @@ package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
 
-import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.type.GridType;

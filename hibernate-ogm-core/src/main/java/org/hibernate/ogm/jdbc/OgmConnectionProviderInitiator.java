@@ -22,11 +22,7 @@ package org.hibernate.ogm.jdbc;
 
 import java.util.Map;
 
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
-import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.persister.internal.PersisterClassResolverInitiator;
-import org.hibernate.persister.spi.PersisterClassResolver;
 import org.hibernate.service.jdbc.connections.internal.ConnectionProviderInitiator;
 import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.spi.BasicServiceInitiator;

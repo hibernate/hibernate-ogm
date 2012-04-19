@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
-import org.hibernate.ogm.service.impl.ConfigurationService;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.persister.internal.PersisterClassResolverInitiator;
 import org.hibernate.persister.spi.PersisterClassResolver;

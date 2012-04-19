@@ -26,7 +26,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.StartStoppable;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**

@@ -25,7 +25,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
@@ -50,7 +49,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
  * - replace DialectFactory
  * - replace (if not provided by the user) NamingStrategy
  *
- * Also enfore an OGM NamingStrategy
+ * Also enforce an OGM NamingStrategy
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */

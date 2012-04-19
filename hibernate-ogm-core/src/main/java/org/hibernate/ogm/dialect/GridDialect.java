@@ -34,8 +34,6 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
-import java.util.Set;
-
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation
  *

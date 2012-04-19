@@ -35,8 +35,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
-import java.util.Set;
-
 /**
  * A wrapper dialect that logs the calls performed on the real dialect.
  * It is only used when this class's logger level is set to Trace

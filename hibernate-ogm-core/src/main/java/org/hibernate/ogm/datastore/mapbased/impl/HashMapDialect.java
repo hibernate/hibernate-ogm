@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.mapbased.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
