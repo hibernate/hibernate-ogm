@@ -55,9 +55,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		DB db = provider.getDatabase();
 		int count = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			if (!collectionName.startsWith("system.")) {
-				DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", false) );
-				count += db.getCollection( collectionName ).find( query ).count();
+			if ( !collectionName.startsWith( "system." ) && !collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
+				//DBObject query = new BasicDBObject( "table" , new BasicDBObject( "$exists", false) );
+				//count += db.getCollection( collectionName ).find( query ).count();
+				count += db.getCollection( collectionName ).count();
 			}
 		}
 		return count;
@@ -95,8 +96,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		DB db = provider.getDatabase();
 		int generalCount = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
-			generalCount += db.getCollection( collectionName ).find( query ).count();
+			//DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
+			//generalCount += db.getCollection( collectionName ).find( query ).count();
+			if (collectionName.startsWith(MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX))
+				generalCount += db.getCollection( collectionName ).count();
 		}
 		return generalCount;
 	}
