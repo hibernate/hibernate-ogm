@@ -65,7 +65,7 @@ public class MongoDBDialect implements GridDialect {
 	public static final String COLUMNS_FIELDNAME = "columns";
 	public static final String ROWS_FIELDNAME = "rows";
 	public static final String TABLE_FIELDNAME = "table";
-
+	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -106,15 +106,11 @@ public class MongoDBDialect implements GridDialect {
 	private DBCollection getCollection(EntityKey key) {
 		return getCollection( key.getTable() );
 	}
+
+	private DBCollection getAssociationCollection(AssociationKey key) {
+		return getCollection( ASSOCIATIONS_COLLECTION_PREFIX+key.getTable() );
+	}
 	
-	private DBCollection getCollection(AssociationKey key) {
-		return getCollection( key.getTable() );
-	}
-
-	private DBCollection getCollection(RowKey key) {
-		return getCollection( key.getTable() );
-	}
-
 	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
 		return query.get( operator ) != null ? (BasicDBObject) query.get( operator ) : new BasicDBObject();
 	}
@@ -162,7 +158,7 @@ public class MongoDBDialect implements GridDialect {
 
 	private DBObject findAssociation(AssociationKey key) {
 		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( key );
-		return this.getCollection( key ).findOne( associationKeyObject );
+		return this.getAssociationCollection( key ).findOne( associationKeyObject );
 	}
 
 	@Override
@@ -177,7 +173,7 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		DBCollection associations = getCollection( key );
+		DBCollection associations = getAssociationCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( key );
 		
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
@@ -221,7 +217,7 @@ public class MongoDBDialect implements GridDialect {
 	
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		DBCollection collection = getCollection( key );
+		DBCollection collection = getAssociationCollection( key );
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot)association.getSnapshot();
 		DBObject query = assocSnapshot.getQueryObject();
 		
@@ -252,7 +248,7 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		DBCollection collection = getCollection( key );
+		DBCollection collection = getAssociationCollection( key );
 		DBObject query = MongoHelpers.associationKeyToObject( key );
 		
 		int nAffected = collection.remove( query ).getN();
