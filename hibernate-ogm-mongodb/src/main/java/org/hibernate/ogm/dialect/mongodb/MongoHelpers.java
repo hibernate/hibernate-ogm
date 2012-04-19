@@ -31,17 +31,16 @@ import com.mongodb.DBObject;
 public class MongoHelpers {
 	
 	public static DBObject associationKeyToObject(AssociationKey key) {
-		DBObject obj = new BasicDBObject(3);
-		DBObject fieldMap = new BasicDBObject(key.getColumnNames().length);
-
-		int i = 0;
 		Object[] columnValues = key.getColumnValues();
-		for (String name : key.getColumnNames())
-			fieldMap.put(name, columnValues[i++]);
+		DBObject columns = new BasicDBObject(columnValues.length);
+		DBObject obj = new BasicDBObject(1);
 
-		obj.put(MongoDBDialect.ASSOCIATIONS_FIELDNAME, fieldMap);
-		obj.put(MongoDBDialect.TABLE_FIELDNAME, key.getTable());
+		int i = 0;		
+		for (String name : key.getColumnNames())
+			columns.put(name, columnValues[i++]);
 		
+		obj.put(MongoDBDialect.COLUMNS_FIELDNAME, columns);
+
 		return obj;
 	}
 	
