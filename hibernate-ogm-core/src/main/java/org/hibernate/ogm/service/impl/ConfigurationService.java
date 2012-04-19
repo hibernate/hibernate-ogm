@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,32 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.impl;
+package org.hibernate.ogm.service.impl;
 
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.service.Service;
 
 import java.util.Map;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactoryImpl> {
-	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
+public class ConfigurationService implements Service {
+	private final boolean isOn;
 
-	@Override
-	public GridDialectFactoryImpl buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridDialectFactoryImpl();
+	public ConfigurationService(Map config) {
+		Object option = config.get( OgmConfiguration.OGM_ON );
+		isOn = option != null && "true".equalsIgnoreCase( option.toString() );
 	}
-
-	@Override
-	protected BasicServiceInitiator<GridDialectFactoryImpl> backupInitiator() {
-		return null;
-	}
-
-	@Override
-	public Class<GridDialectFactoryImpl> getServiceInitiated() {
-		return GridDialectFactoryImpl.class;
+	public boolean isOgmOn() {
+		return isOn;
 	}
 }

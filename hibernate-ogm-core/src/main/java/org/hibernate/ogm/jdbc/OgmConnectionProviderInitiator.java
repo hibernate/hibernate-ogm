@@ -22,6 +22,12 @@ package org.hibernate.ogm.jdbc;
 
 import java.util.Map;
 
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
+import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.persister.internal.PersisterClassResolverInitiator;
+import org.hibernate.persister.spi.PersisterClassResolver;
+import org.hibernate.service.jdbc.connections.internal.ConnectionProviderInitiator;
 import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -29,14 +35,21 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmConnectionProviderInitiator implements BasicServiceInitiator<ConnectionProvider> {
-	@Override
-	public ConnectionProvider initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new NoopConnectionProvider();
-	}
+public class OgmConnectionProviderInitiator extends OptionalServiceInitiator<ConnectionProvider> {
+	public static OgmConnectionProviderInitiator INSTANCE = new OgmConnectionProviderInitiator();
 
 	@Override
 	public Class<ConnectionProvider> getServiceInitiated() {
 		return ConnectionProvider.class;
+	}
+
+	@Override
+	protected ConnectionProvider buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+		return new NoopConnectionProvider();
+	}
+
+	@Override
+	protected BasicServiceInitiator<ConnectionProvider> backupInitiator() {
+		return ConnectionProviderInitiator.INSTANCE;
 	}
 }
