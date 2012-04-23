@@ -98,7 +98,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		for ( String collectionName : db.getCollectionNames() ) {
 			//DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
 			//generalCount += db.getCollection( collectionName ).find( query ).count();
-			if (collectionName.startsWith(MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX))
+			if ( collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
 				generalCount += db.getCollection( collectionName ).count();
 		}
 		return generalCount;

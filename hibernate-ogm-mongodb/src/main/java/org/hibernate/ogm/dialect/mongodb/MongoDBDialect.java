@@ -20,9 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -108,7 +106,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBCollection getAssociationCollection(AssociationKey key) {
-		return getCollection( ASSOCIATIONS_COLLECTION_PREFIX+key.getTable() );
+		return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
 	}
 	
 	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
@@ -127,7 +125,7 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( "."+ID_FIELDNAME ) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( "." + ID_FIELDNAME ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -164,7 +162,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Association getAssociation(AssociationKey key) {
 		final DBObject result = findAssociation( key );
-		if (result == null) {
+		if ( result == null ) {
 			return null;
 		} else {
 			return new Association( new MongoDBAssociationSnapshot( result ) );
@@ -181,13 +179,13 @@ public class MongoDBDialect implements GridDialect {
 		
 		return new Association( new MongoDBAssociationSnapshot( assoc ) );
 	}
-	
+
 	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey)
 	{ 
 		DBObject pull = new BasicDBObject( ROWS_FIELDNAME,  snapshot.getRowKeyDBObject( rowKey ) );
-		return new BasicDBObject("$pull", pull );
+		return new BasicDBObject( "$pull", pull );
 	}
-	
+
 	private static DBObject createBaseRowKey(RowKey rowKey) {
 		DBObject row = new BasicDBObject();
 		DBObject rowColumnMap = new BasicDBObject();
@@ -202,7 +200,7 @@ public class MongoDBDialect implements GridDialect {
 		
 		return row;
 	}
-	
+
 	private static DBObject putAssociationRowKey(RowKey rowKey, Tuple value) {
 		DBObject row = createBaseRowKey(rowKey);
 		DBObject rowTupleMap = new BasicDBObject();
@@ -214,7 +212,7 @@ public class MongoDBDialect implements GridDialect {
 
 		return new BasicDBObject( "$push", new BasicDBObject( ROWS_FIELDNAME, row ) );
 	}
-	
+
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
 		DBCollection collection = getAssociationCollection( key );
@@ -229,7 +227,7 @@ public class MongoDBDialect implements GridDialect {
 
 			switch ( action.getType() ) {
 			case CLEAR:
-				update = new BasicDBObject("$set", new BasicDBObject( 
+				update = new BasicDBObject( "$set", new BasicDBObject(
 						ROWS_FIELDNAME, Collections.EMPTY_LIST ) );
 				break;
 			case PUT_NULL:
@@ -241,7 +239,7 @@ public class MongoDBDialect implements GridDialect {
 				break;
 			}
 
-			if (update != null)
+			if ( update != null )
 				collection.update( query, update, true, false );
 		}
 	}
@@ -259,7 +257,7 @@ public class MongoDBDialect implements GridDialect {
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
-	
+
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );
@@ -270,7 +268,7 @@ public class MongoDBDialect implements GridDialect {
 			query.put( key.getColumnNames()[index], key.getColumnValues()[index] );
 		}
 		BasicDBObject update = new BasicDBObject();
-		//FIXME should "value" bue hardcoded?
+		//FIXME should "value" be hardcoded?
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
 		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, increment );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );

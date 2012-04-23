@@ -67,7 +67,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1209, value = "The database named [%s] cannot be dropped")
 	HibernateException unableToDropDatabase(@Cause MongoException e, String databaseName);
-	
+
 	@LogMessage(level = TRACE)
 	@Message(id = 1210, value = "Removed [%d] associations")
 	void removedAssociation(int nAffected);
