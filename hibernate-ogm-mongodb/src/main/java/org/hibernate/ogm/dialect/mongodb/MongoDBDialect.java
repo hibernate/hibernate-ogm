@@ -56,6 +56,8 @@ import com.mongodb.DBObject;
 public class MongoDBDialect implements GridDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
+	private static final Integer ONE = Integer.valueOf( 1 );
+
 	public static final String ID_FIELDNAME = "_id";
 	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ASSOCIATIONS_FIELDNAME = "associations";
@@ -132,7 +134,7 @@ public class MongoDBDialect implements GridDialect {
 					this.addSubQuery( "$set", updater, column, operation.getValue() );
 					break;
 				case REMOVE:
-					this.addSubQuery( "$unset", updater, column, 1 );
+					this.addSubQuery( "$unset", updater, column, ONE );
 					break;
 				}
 			}
@@ -270,7 +272,8 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject update = new BasicDBObject();
 		//FIXME should "value" be hardcoded?
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
-		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, increment );
+		Integer incrementObject = increment == 1 ? ONE : Integer.valueOf( increment );
+		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, incrementObject );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
 		Object idFromDB;
 		idFromDB = result == null ? null : result.get( SEQUENCE_VALUE );
