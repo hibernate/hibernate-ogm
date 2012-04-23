@@ -29,19 +29,20 @@ import com.mongodb.DBObject;
  * @author Alan Fitton <alan at eth0.org.uk>
  */
 public class MongoHelpers {
-	
+
 	public static DBObject associationKeyToObject(AssociationKey key) {
 		Object[] columnValues = key.getColumnValues();
-		DBObject columns = new BasicDBObject(columnValues.length);
-		DBObject obj = new BasicDBObject(1);
+		DBObject columns = new BasicDBObject( columnValues.length );
 
-		int i = 0;		
-		for (String name : key.getColumnNames())
-			columns.put(name, columnValues[i++]);
-		
-		obj.put(MongoDBDialect.COLUMNS_FIELDNAME, columns);
+		int i = 0;
+		for ( String name : key.getColumnNames() ) {
+			columns.put( name, columnValues[i++] );
+		}
+
+		DBObject obj = new BasicDBObject( 1 );
+		obj.put( MongoDBDialect.COLUMNS_FIELDNAME, columns );
 
 		return obj;
 	}
-	
+
 }

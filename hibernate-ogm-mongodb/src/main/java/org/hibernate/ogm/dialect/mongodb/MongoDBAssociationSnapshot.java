@@ -38,9 +38,10 @@ import com.mongodb.DBObject;
  * @author Alan Fitton <alan at eth0.org.uk>
  */
 public class MongoDBAssociationSnapshot implements AssociationSnapshot {
-	private Map<RowKey, DBObject> map;
-	private DBObject assoc;
-	
+
+	private final Map<RowKey, DBObject> map;
+	private final DBObject assoc;
+
 	public MongoDBAssociationSnapshot(DBObject assoc) {
 		this.assoc = assoc;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
@@ -62,20 +63,20 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 			this.map.put( rowKey, row );
 		}
 	}
-	
+
 	@Override
 	public Tuple get(RowKey column) {
 		DBObject row = this.map.get( column );
 		DBObject dbTuple = (DBObject)row.get( MongoDBDialect.TUPLE_FIELDNAME );
 		return new Tuple( new MongoDBTupleSnapshot( dbTuple ) );
 	}
-	
+
 	public DBObject getQueryObject() {
 		DBObject query = new BasicDBObject();
 		query.put( MongoDBDialect.ID_FIELDNAME, assoc.get( MongoDBDialect.ID_FIELDNAME ) );
 		return query;
 	}
-	
+
 	@Override
 	public boolean containsKey(RowKey column) {
 		return map.containsKey( column );
@@ -89,31 +90,31 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	public Map<RowKey, DBObject> getAssembledMap() {
 		return map;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Collection<DBObject> getRows() {
 		return (Collection<DBObject>)assoc.get( MongoDBDialect.ROWS_FIELDNAME );
 	}
-	
+
 	public DBObject getRowKeyDBObject(RowKey rowKey) {
 		return map.get( rowKey );
 	}
-	
+
 	@Override
 	public Set<RowKey> getRowKeys() {
 		return map.keySet();
 	}
-	
+
 	public DBObject getDBObject() {
 		return this.assoc;
 	}
-	
-    @Override
-    public String toString() {
-    	final StringBuilder sb = new StringBuilder();
-    	sb.append( "MongoDBAssociationSnapshot(");
-    	sb.append(map.size());
-    	sb.append(" RowKey entries).");
-    	return sb.toString();
-    }
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append( "MongoDBAssociationSnapshot(" );
+		sb.append( map.size() );
+		sb.append( " RowKey entries)." );
+		return sb.toString();
+	}
 }
