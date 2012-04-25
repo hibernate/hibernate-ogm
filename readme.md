@@ -1,6 +1,6 @@
 # Hibernate OGM
 
-Version: 3.0.0.Alpha2
+Version: 4.0.0-SNAPSHOT
 
 ## Description
 
