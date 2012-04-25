@@ -28,7 +28,9 @@ import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
@@ -93,13 +95,21 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public int associationCacheSize(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		AssociationStorage assocStorage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
 		int generalCount = 0;
-		for ( String collectionName : db.getCollectionNames() ) {
-			//DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
-			//generalCount += db.getCollection( collectionName ).find( query ).count();
-			if ( collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
-				generalCount += db.getCollection( collectionName ).count();
+		if ( assocStorage == AssociationStorage.GLOBAL ) {
+			generalCount += (int) db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count();
+		} else {
+			for ( String collectionName : db.getCollectionNames() ) {
+				if ( assocStorage == AssociationStorage.PREFIXED
+						&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
+					generalCount += db.getCollection( collectionName ).count();
+				} else if ( assocStorage == AssociationStorage.ENTITY ) {
+					DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
+					generalCount += db.getCollection( collectionName ).find( query ).count();					
+				}
+			}
 		}
 		return generalCount;
 	}
