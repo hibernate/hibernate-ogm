@@ -38,6 +38,11 @@ public interface Environment {
 	public static final String MONGODB_PORT = "hibernate.ogm.mongodb.port";
 
 	/**
+	 * Run the driver in safe mode (use WriteConcern.SAFE for all operations)
+	 */
+	public static final String MONGODB_SAFE = "hibernate.ogm.mongodb.safe";
+	
+	/**
 	 * The hostname of the MongoDB instance.
 	 */
 	public static final String MONGODB_HOST = "hibernate.ogm.mongodb.host";
@@ -53,5 +58,10 @@ public interface Environment {
 	* property is not set, we'll try this port.
 	*/
 	public static final int MONGODB_DEFAULT_PORT = 27017;
+	
+	/**
+	 * The default value used to configure the safe mode {@link MONGODB_SAFE}
+	 */
+	public static final boolean MONGODB_DEFAULT_SAFE = false;
 
 }
