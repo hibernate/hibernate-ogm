@@ -28,6 +28,7 @@ import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
@@ -42,12 +43,24 @@ import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 /**
- * 
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Sanne Grinovero <sanne@hibernate.org>
  */
 public class MongoDBTestHelper implements TestableGridDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
+
+	static {
+		//To run these tests we expect these environment variables to be set
+		String mongoHostName = System.getenv( "MONGODB_HOSTNAME" );
+		if ( mongoHostName != null ) {
+			System.getProperties().setProperty( Environment.MONGODB_HOST, mongoHostName );
+		}
+		String mongoPort = System.getenv( "MONGODB_PORT" );
+		if ( mongoPort != null ) {
+			System.getProperties().setProperty( Environment.MONGODB_PORT, mongoPort );
+		}
+	}
 
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {
