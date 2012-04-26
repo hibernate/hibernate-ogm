@@ -35,6 +35,8 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
 import com.mongodb.Mongo;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 
 /**
  * Provides access to MongoDB system
@@ -83,8 +85,20 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 				else {
 					port = Environment.MONGODB_DEFAULT_PORT;
 				}
+
+				Object cfgSafe = this.cfg.get( Environment.MONGODB_SAFE );
+				final boolean safe = cfgSafe != null ? Boolean.parseBoolean( cfgSafe.toString() )
+						: Environment.MONGODB_DEFAULT_SAFE;
+				MongoOptions options = new MongoOptions();
+				options.safe = safe;
+				if ( safe ) {
+					log.useSafe();
+				}
 				log.connectingToMongo( host, port );
-				this.mongo = new Mongo( host, port );
+
+				ServerAddress serverAddress = new ServerAddress( host, port );
+
+				this.mongo = new Mongo( serverAddress, options );
 				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {

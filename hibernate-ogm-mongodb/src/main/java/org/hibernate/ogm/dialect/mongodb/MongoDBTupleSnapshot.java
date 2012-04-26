@@ -35,7 +35,7 @@ import com.mongodb.DBObject;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
-
+	
 	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
