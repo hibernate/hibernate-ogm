@@ -38,6 +38,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
+import org.hibernate.ogm.test.utils.BaseOGMTest;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
@@ -47,7 +48,7 @@ import org.junit.Before;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
-public abstract class JpaTestCase {
+public abstract class JpaTestCase extends BaseOGMTest {
 
 	private EntityManagerFactory factory;
 	private TransactionManager transactionManager;

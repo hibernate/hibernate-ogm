@@ -104,4 +104,8 @@ public class TestHelper {
 			helper.dropSchemaAndDatabase( sessionFactory );
 		}
 	}
+
+	public static void initializeHelpers() {
+		// just to make sure helper is initialized
+	}
 }

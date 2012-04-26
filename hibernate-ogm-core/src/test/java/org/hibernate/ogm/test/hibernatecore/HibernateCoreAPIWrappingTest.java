@@ -33,6 +33,7 @@ import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
+import org.hibernate.ogm.test.utils.BaseOGMTest;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,7 +41,7 @@ import org.junit.Test;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class HibernateCoreAPIWrappingTest {
+public class HibernateCoreAPIWrappingTest extends BaseOGMTest {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Contact.class );

@@ -65,6 +65,10 @@ import org.hibernate.testing.FailureExpected;
  */
 public abstract class OgmTestCase extends TestCase {
 
+	static {
+		TestHelper.initializeHelpers();
+	}
+
 	private static final Log log = LoggerFactory.make();
 	protected static SessionFactory sessions;
 	private Session session;
