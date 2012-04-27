@@ -29,6 +29,7 @@ import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -43,7 +44,7 @@ public class JPAStandaloneTest {
 	@Test
 	public void testJTAStandalone() throws Exception {
 
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 
 		TransactionManager transactionManager = extractJBossTransactionManager( emf );
 

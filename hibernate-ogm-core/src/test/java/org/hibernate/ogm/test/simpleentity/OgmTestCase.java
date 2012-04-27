@@ -30,6 +30,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 import junit.framework.TestCase;
 import org.junit.After;
@@ -335,6 +336,11 @@ public abstract class OgmTestCase extends TestCase {
 			//Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
+			for( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+				cfg.setProperty( entry.getKey(), entry.getValue() );
+			}
+
 			configure( cfg );
 			if ( recreateSchema() ) {
 				cfg.setProperty( Environment.HBM2DDL_AUTO, "none" );
@@ -349,6 +355,7 @@ public abstract class OgmTestCase extends TestCase {
 				InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( xmlFile );
 				getCfg().addInputStream( is );
 			}
+
 			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */ ) );
 		}
 		catch ( Exception e ) {
