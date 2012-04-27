@@ -30,6 +30,7 @@ import javax.persistence.Persistence;
 
 import org.hibernate.ogm.jpa.impl.OgmEntityManager;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.junit.Rule;
@@ -45,7 +46,7 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Test
 	public void testWrappedStandalone() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 
 		EntityManager em = emf.createEntityManager();
