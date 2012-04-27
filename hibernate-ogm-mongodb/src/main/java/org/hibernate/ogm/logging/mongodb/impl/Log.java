@@ -48,8 +48,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1203, value = "Unable to find or initialize a connection to the MongoDB server")
 	HibernateException unableToInitializeMongoDB(@Cause RuntimeException e);
 
-	@Message(id = 1204, value = "The value set for the configuration property '" + Environment.MONGODB_PORT + "' must be a number between 1 and 65535")
-	HibernateException mongoPortIllegalValue();
+	@Message(id = 1204, value = "The value set for the configuration property '" + Environment.MONGODB_PORT + "' must be a number between 1 and 65535. Found '[%s]'.")
+	HibernateException mongoPortIllegalValue(String value);
 
 	@Message(id = 1205, value = "Could not resolve MongoDB hostname [%s]")
 	HibernateException mongoOnUnknownHost(String hostname);

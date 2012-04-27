@@ -72,12 +72,12 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					try {
 						int temporaryPort = Integer.valueOf( cfgPort.toString() ).intValue();
 						if ( temporaryPort < 1 || temporaryPort > 65535 ) {
-							throw log.mongoPortIllegalValue();
+							throw log.mongoPortIllegalValue( cfgPort.toString() );
 						}
 						port = temporaryPort;
 					}
 					catch ( NumberFormatException e ) {
-						throw log.mongoPortIllegalValue();
+						throw log.mongoPortIllegalValue( cfgPort.toString() );
 					}
 				}
 				else {
