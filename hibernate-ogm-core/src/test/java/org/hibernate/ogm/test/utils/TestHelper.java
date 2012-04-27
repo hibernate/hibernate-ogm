@@ -27,6 +27,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -39,13 +40,6 @@ import javax.persistence.EntityManager;
  */
 public class TestHelper {
 
-	private static final String[] knownTestDialects = new String[] {
-		//Add more TestGridDialect(s) here as needed
-		"org.hibernate.ogm.test.utils.EhcacheTestHelper",
-		"org.hibernate.ogm.test.utils.InfinispanTestHelper",
-		"org.hibernate.ogm.test.utils.HashMapTestHelper" // This should always be the last element or it will be loaded
-	};
-
 	private static final Log log = LoggerFactory.make();
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
@@ -54,14 +48,8 @@ public class TestHelper {
 	}
 
 	private static TestableGridDialect createStoreSpecificHelper() {
-		for ( String className : knownTestDialects ) {
-			Class<?> classForName = null;
-			try {
-				classForName = Class.forName( className );
-			}
-			catch (ClassNotFoundException e) {
-				//ignore this: we're searching for the only valid option
-			}
+		for ( GridDialectType gridType : GridDialectType.values() ) {
+			Class<?> classForName = gridType.loadTestableGridDialectClass();
 			if ( classForName != null ) {
 				try {
 					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
@@ -70,12 +58,15 @@ public class TestHelper {
 				}
 				catch ( Exception e ) {
 					//but other errors are not expected:
-					log.errorf( e, "Could not load TestGridDialect by name %s", className );
+					log.errorf( e, "Could not load TestGridDialect by name from %s", gridType );
 				}
 			}
 		}
-		log.fatal( "Could not load any TestGridDialect implementation!" );
-		return null;
+		return new org.hibernate.ogm.test.utils.HashMapTestHelper();
+	}
+
+	public static GridDialectType getCurrentDialectType() {
+		return GridDialectType.valueFromHelperClass( helper.getClass() );
 	}
 
 	public static int entityCacheSize(Session session) {
@@ -113,5 +104,14 @@ public class TestHelper {
 		if ( sessionFactory != null ) {
 			helper.dropSchemaAndDatabase( sessionFactory );
 		}
+	}
+
+	public static Map<String, String> getEnvironmentProperties() {
+		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+		return environmentProperties == null ? new HashMap<String,String>(0) : environmentProperties;
+	}
+
+	public static void initializeHelpers() {
+		// just to make sure helper is initialized
 	}
 }

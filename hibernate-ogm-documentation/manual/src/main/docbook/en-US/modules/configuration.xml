@@ -448,6 +448,33 @@ em.close();</programlisting>
   </section>
 
   <section>
+    <title>Configuring MongoDB</title>
+
+    <para>To use Hibernate OGM with MongoDB there are four properties to configure:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><literal>hibernate.ogm.datastore.provider</literal> to set
+        to <literal>org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider</literal></para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.ogm.mongodb.host</literal> which is the hostname of the mongodb instance.
+        The default value is <literal>127.0.0.1</literal></para>
+      </listitem>
+      
+      <listitem>
+        <para><literal>hibernate.ogm.mongodb.port</literal> which is the port used by the mongodb instance.
+        The default value is <literal>27017</literal></para>
+      </listitem>
+      
+      <listitem>
+        <para><literal>hibernate.ogm.mongodb.database</literal> which is the database to connect to</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Configuring Hibernate Search</title>
 
     <para>All Hibernate Search options apply when you use Hibernate OGM. Here
@@ -456,4 +483,6 @@ em.close();</programlisting>
 
     <para>TODO explain how to store your indexes on Infinispan</para>
   </section>
+
 </chapter>
+

@@ -30,6 +30,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 import junit.framework.TestCase;
 import org.junit.After;
@@ -41,9 +42,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.annotations.common.util.StringHelper;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextSession;
@@ -51,7 +54,6 @@ import org.hibernate.search.Search;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.testing.FailureExpected;
-import org.hibernate.testing.SkipForDialect;
 
 /**
  * A base class for all OGM tests.
@@ -63,6 +65,10 @@ import org.hibernate.testing.SkipForDialect;
  * @author Hardy Ferentschik
  */
 public abstract class OgmTestCase extends TestCase {
+
+	static {
+		TestHelper.initializeHelpers();
+	}
 
 	private static final Log log = LoggerFactory.make();
 	protected static SessionFactory sessions;
@@ -139,20 +145,16 @@ public abstract class OgmTestCase extends TestCase {
 		log.warn( builder.toString() );
 	}
 
-	protected Skip buildSkip(Dialect dialect, String comment, String jiraKey) {
+	protected Skip buildSkip(GridDialectType dialect, String comment) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append( "skipping database-specific test [" );
 		buffer.append( fullTestName() );
 		buffer.append( "] for dialect [" );
-		buffer.append( dialect.getClass().getName() );
+		buffer.append( dialect.name() );
 		buffer.append( ']' );
 
 		if ( StringHelper.isNotEmpty(comment) ) {
 			buffer.append( "; " ).append( comment );
-		}
-
-		if ( StringHelper.isNotEmpty( jiraKey ) ) {
-			buffer.append( " (" ).append( jiraKey ).append( ')' );
 		}
 
 		return new Skip( buffer.toString(), null );
@@ -169,20 +171,12 @@ public abstract class OgmTestCase extends TestCase {
 		return annotation;
 	}
 
-	protected final Skip determineSkipByDialect(Dialect dialect, Method runMethod) throws Exception {
-		// skips have precedence, so check them first
-		SkipForDialect skipForDialectAnn = locateAnnotation( SkipForDialect.class, runMethod );
+	protected final Skip determineSkipByGridDialect(Method runMethod) throws Exception {
+		SkipByGridDialect skipForDialectAnn = locateAnnotation( SkipByGridDialect.class, runMethod );
 		if ( skipForDialectAnn != null ) {
-			for ( Class<? extends Dialect> dialectClass : skipForDialectAnn.value() ) {
-				if ( skipForDialectAnn.strictMatching() ) {
-					if ( dialectClass.equals( dialect.getClass() ) ) {
-						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
-					}
-				}
-				else {
-					if ( dialectClass.isInstance( dialect ) ) {
-						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
-					}
+			for ( GridDialectType gridDialectType : skipForDialectAnn.value() ) {
+				if ( gridDialectType.equals( TestHelper.getCurrentDialectType() ) ) {
+					return buildSkip( gridDialectType, skipForDialectAnn.comment() );
 				}
 			}
 		}
@@ -244,7 +238,7 @@ public abstract class OgmTestCase extends TestCase {
 	public void runBare() throws Throwable {
 		Method runMethod = findTestMethod();
 
-		final Skip skip = determineSkipByDialect( Dialect.getDialect(), runMethod );
+		final Skip skip = determineSkipByGridDialect( runMethod );
 		if ( skip != null ) {
 			reportSkip( skip );
 			return;
@@ -342,6 +336,11 @@ public abstract class OgmTestCase extends TestCase {
 			//Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
+			for( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+				cfg.setProperty( entry.getKey(), entry.getValue() );
+			}
+
 			configure( cfg );
 			if ( recreateSchema() ) {
 				cfg.setProperty( Environment.HBM2DDL_AUTO, "none" );
@@ -356,6 +355,8 @@ public abstract class OgmTestCase extends TestCase {
 				InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( xmlFile );
 				getCfg().addInputStream( is );
 			}
+
+			System.err.println( "***** OGMTestCase System " + System.getProperty( "hibernate.ogm.mongodb.host" ) + " | Environment " + Environment.getProperties().getProperty( "hibernate.ogm.mongodb.host" ) );
 			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */ ) );
 		}
 		catch ( Exception e ) {

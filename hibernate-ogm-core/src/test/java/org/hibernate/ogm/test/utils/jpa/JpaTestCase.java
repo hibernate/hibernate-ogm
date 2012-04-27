@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.EntityManagerFactory;
@@ -38,6 +39,8 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
+import org.hibernate.ogm.test.utils.BaseOGMTest;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
@@ -47,7 +50,7 @@ import org.junit.Before;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
-public abstract class JpaTestCase {
+public abstract class JpaTestCase extends BaseOGMTest {
 
 	private EntityManagerFactory factory;
 	private TransactionManager transactionManager;
@@ -87,7 +90,10 @@ public abstract class JpaTestCase {
 		info.getProperties().setProperty( Environment.JTA_PLATFORM,
 				JBossStandAloneJtaPlatform.class.getName()
 		);
-		refineInfo(info);
+		for ( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+			info.getProperties().setProperty( entry.getKey(), entry.getValue() );
+		}
+		refineInfo( info );
 		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory(
 				info,
 				Collections.EMPTY_MAP
