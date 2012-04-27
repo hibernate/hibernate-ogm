@@ -22,6 +22,10 @@
                     <excludes>
                         <exclude>**/associations/**/*Test.java</exclude>
                     </excludes>
+                    <environmentVariables>
+                        <MONGODB_HOSTNAME>${env.MONGODB_HOSTNAME}</MONGODB_HOSTNAME>
+                        <MONGODB_PORT>${env.MONGODB_PORT}</MONGODB_PORT>
+                    </environmentVariables>
                     <forkMode>once</forkMode>
                 </configuration>
             </plugin>
