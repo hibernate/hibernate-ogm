@@ -86,4 +86,9 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		//Nothing to do
 	}
+
+	@Override
+	public Map<String, String> getEnvironmentProperties() {
+		return null;
+	}
 }

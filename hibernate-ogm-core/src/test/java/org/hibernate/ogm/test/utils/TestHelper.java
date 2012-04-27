@@ -27,6 +27,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -103,6 +104,11 @@ public class TestHelper {
 		if ( sessionFactory != null ) {
 			helper.dropSchemaAndDatabase( sessionFactory );
 		}
+	}
+
+	public static Map<String, String> getEnvironmentProperties() {
+		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+		return environmentProperties == null ? new HashMap<String,String>(0) : environmentProperties;
 	}
 
 	public static void initializeHelpers() {

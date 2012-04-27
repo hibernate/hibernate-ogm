@@ -21,6 +21,7 @@
 
 package org.hibernate.ogm.test.utils;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -51,15 +52,20 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	private static final Log log = LoggerFactory.getLogger();
 
 	static {
-		//To run these tests we expect these environment variables to be set
+		// Read host and port from environment variable
+		// Maven's surefire plugin set it to the string 'null'
 		String mongoHostName = System.getenv( "MONGODB_HOSTNAME" );
-		if ( mongoHostName != null ) {
+		if ( isNotNull( mongoHostName ) ) {
 			System.getProperties().setProperty( Environment.MONGODB_HOST, mongoHostName );
 		}
 		String mongoPort = System.getenv( "MONGODB_PORT" );
-		if ( mongoPort != null ) {
+		if ( isNotNull( mongoPort ) ) {
 			System.getProperties().setProperty( Environment.MONGODB_PORT, mongoPort );
 		}
+	}
+
+	private static boolean isNotNull(String mongoHostName) {
+		return mongoHostName != null && mongoHostName.length() > 0 && ! "null".equals( mongoHostName );
 	}
 
 	@Override
@@ -148,5 +154,20 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		catch ( MongoException ex ) {
 			throw log.unableToDropDatabase( ex, provider.getDatabase().getName() );
 		}
+	}
+
+	@Override
+	public Map<String, String> getEnvironmentProperties() {
+		//read variables from the System properties set in the static initializer
+		Map<String,String> envProps = new HashMap<String, String>(2);
+		String host = System.getProperties().getProperty( Environment.MONGODB_HOST );
+		if ( host != null && host.length() > 0 ) {
+			envProps.put( Environment.MONGODB_HOST, host );
+		}
+		String port = System.getProperties().getProperty( Environment.MONGODB_PORT );
+		if ( port != null && port.length() > 0 ) {
+			envProps.put( Environment.MONGODB_PORT, port );
+		}
+		return envProps;
 	}
 }

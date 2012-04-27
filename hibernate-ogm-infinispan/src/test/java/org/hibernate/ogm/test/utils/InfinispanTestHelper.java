@@ -80,4 +80,9 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		//Nothing to do
 	}
 
+	@Override
+	public Map<String, String> getEnvironmentProperties() {
+		return null;
+	}
+
 }
