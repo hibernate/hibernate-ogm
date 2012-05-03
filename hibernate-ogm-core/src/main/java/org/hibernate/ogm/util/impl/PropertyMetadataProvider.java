@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationType;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
@@ -105,8 +105,8 @@ public class PropertyMetadataProvider {
 				collectionMetadataKey.setOwnerEntityKey( entityKey );
 				//TODO add information on the collection type, set, map, bag, list etc
 
-				AssociationType type = collectionPersister.getElementType().isEntityType() ? AssociationType.ASSOCIATION : AssociationType.EMBEDDED;
-				collectionMetadataKey.setAssociationType( type );
+				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED;
+				collectionMetadataKey.setAssociationKind( type );
 			}
 		}
 		return collectionMetadataKey;

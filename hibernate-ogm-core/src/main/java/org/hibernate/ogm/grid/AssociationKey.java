@@ -43,7 +43,7 @@ public final class AssociationKey implements Serializable {
 	//role and entity key are not part of the object identity
 	private transient String collectionRole;
 	private transient EntityKey entityKey;
-	private transient AssociationType associationType;
+	private transient AssociationKind associationKind;
 
 	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length != columnValues.length ) {
@@ -85,8 +85,8 @@ public final class AssociationKey implements Serializable {
 	 * Describe the type of association. May be null but is typically filled for collection of embeddable.
 	 * @return
 	 */
-	public AssociationType getAssociationType() {
-		return associationType;
+	public AssociationKind getAssociationKind() {
+		return associationKind;
 	}
 
 	@Override
@@ -142,7 +142,7 @@ public final class AssociationKey implements Serializable {
 		this.entityKey = entityKey;
 	}
 
-	public void setAssociationType(AssociationType type) {
-		this.associationType = type;
+	public void setAssociationKind(AssociationKind kind) {
+		this.associationKind = kind;
 	}
 }

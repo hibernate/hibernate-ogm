@@ -21,10 +21,10 @@
 package org.hibernate.ogm.grid;
 
 /**
- * Association type
+ * Association kind
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public enum AssociationType {
+public enum AssociationKind {
 	ASSOCIATION,
 	EMBEDDED,
 	OTHER
