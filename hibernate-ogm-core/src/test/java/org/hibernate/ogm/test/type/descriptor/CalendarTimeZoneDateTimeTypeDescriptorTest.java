@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.hibernate.ogm.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +36,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(value = Parameterized.class)
-public class CalendarTimeZoneDateTimeTypeDescriptorTest extends OgmTestCase {
+public class CalendarTimeZoneDateTimeTypeDescriptorTest {
 
 	private Calendar one;
 	
@@ -79,11 +78,5 @@ public class CalendarTimeZoneDateTimeTypeDescriptorTest extends OgmTestCase {
 		
 		assertThat(calendarTimeZoneDateTimeTypeDescriptor.areEqual(one, another)).isEqualTo(exceptedEquality);
 	}
-	
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Calendar.class
-		};
-	}
+
 }
