@@ -39,7 +39,7 @@ public class LongStringType extends AbstractGenericBasicType<Long> {
 
 	@Override
 	public String getName() {
-		return "sec";
+		return "long";
 	}
 
 	@Override
