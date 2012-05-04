@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
 import javax.persistence.EntityManager;
@@ -89,6 +90,7 @@ public class JPAResourceLocalStandaloneTest {
 			}
 		}
 		finally {
+			dropSchemaAndDatabase( emf );
 			emf.close();
 		}
 	}

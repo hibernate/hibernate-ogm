@@ -46,6 +46,8 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
 import org.junit.Before;
 
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
@@ -133,8 +135,14 @@ public abstract class JpaTestCase extends BaseOGMTest {
 	@After
 	public void closeFactory() {
 		if ( factory != null ) {
-			factory.close();
-			factory = null;
+			if ( factory.isOpen() ) {
+				dropSchemaAndDatabase( factory );
+				factory.close();
+				factory = null;
+			}
+			else {
+				factory = null;
+			}
 		}
 	}
 

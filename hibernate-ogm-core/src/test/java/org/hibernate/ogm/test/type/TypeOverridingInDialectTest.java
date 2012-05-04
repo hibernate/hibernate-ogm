@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.type;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import java.util.Date;
@@ -77,6 +78,7 @@ public class TypeOverridingInDialectTest {
 				//we try
 			}
 			em.close();
+			dropSchemaAndDatabase( emf );
 			emf.close();
 		}
 	}

@@ -22,6 +22,7 @@ package org.hibernate.ogm.test.utils;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -100,6 +102,10 @@ public class TestHelper {
 		}
 	}
 
+	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
+		dropSchemaAndDatabase( ( ( HibernateEntityManagerFactory) emf ).getSessionFactory() );
+	}
+
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
 		//if the factory is closed, we don't have access to the service registry
 		if ( sessionFactory != null && ! sessionFactory.isClosed() ) {
@@ -107,7 +113,7 @@ public class TestHelper {
 				helper.dropSchemaAndDatabase( sessionFactory );
 			}
 			catch ( Exception e ) {
-				log.warn( "Exception while dropping scheme and database in test", e );
+				log.warn( "Exception while dropping schema and database in test", e );
 			}
 		}
 	}

@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import javax.persistence.EntityManager;
@@ -66,6 +67,7 @@ public class JPAStandaloneTest {
 
 		em.close();
 
+		dropSchemaAndDatabase( emf );
 		emf.close();
 	}
 
