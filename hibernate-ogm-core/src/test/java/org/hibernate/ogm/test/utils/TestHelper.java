@@ -101,8 +101,14 @@ public class TestHelper {
 	}
 
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		if ( sessionFactory != null ) {
-			helper.dropSchemaAndDatabase( sessionFactory );
+		//if the factory is closed, we don't have access to the service registry
+		if ( sessionFactory != null && ! sessionFactory.isClosed() ) {
+			try {
+				helper.dropSchemaAndDatabase( sessionFactory );
+			}
+			catch ( Exception e ) {
+				log.warn( "Exception while dropping scheme and database in test", e );
+			}
 		}
 	}
 
