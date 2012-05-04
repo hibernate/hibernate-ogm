@@ -22,6 +22,7 @@ package org.hibernate.ogm.test.utils;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -98,6 +100,10 @@ public class TestHelper {
 		if ( session != null ) {
 			dropSchemaAndDatabase( session.getSessionFactory() );
 		}
+	}
+
+	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
+		dropSchemaAndDatabase( ( ( HibernateEntityManagerFactory) emf ).getSessionFactory() );
 	}
 
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
