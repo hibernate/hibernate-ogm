@@ -107,7 +107,7 @@ public class TestHelper {
 				helper.dropSchemaAndDatabase( sessionFactory );
 			}
 			catch ( Exception e ) {
-				log.warn( "Exception while dropping scheme and database in test", e );
+				log.warn( "Exception while dropping schema and database in test", e );
 			}
 		}
 	}
