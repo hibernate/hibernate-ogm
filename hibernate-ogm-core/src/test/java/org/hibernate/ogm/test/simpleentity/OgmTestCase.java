@@ -102,15 +102,8 @@ public abstract class OgmTestCase extends TestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		runSchemaDrop();
 		handleUnclosedResources();
-		
 		closeResources();
-
-		if ( sessions != null ) {
-			sessions.close();
-			sessions = null;
-		}
 	}
 
 	protected abstract Class<?>[] getAnnotatedClasses();
@@ -321,9 +314,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected void buildConfiguration() throws Exception {
-		if ( getSessions() != null ) {
-			getSessions().close();
-		}
+		closeSessionFactory();
 		try {
 			setCfg( new OgmConfiguration() );
 
@@ -378,9 +369,19 @@ public abstract class OgmTestCase extends TestCase {
 		else {
 			session = null;
 		}
-		if ( sessions != null && !sessions.isClosed() ) {
-			sessions.close();
-			sessions = null;
+		closeSessionFactory();
+	}
+
+	private void closeSessionFactory() {
+		if ( sessions != null ) {
+			if ( !sessions.isClosed() ) {
+				dropSchemaAndDatabase( sessions );
+				sessions.close();
+				sessions = null;
+			}
+			else {
+				sessions = null;
+			}
 		}
 	}
 
@@ -398,10 +399,7 @@ public abstract class OgmTestCase extends TestCase {
 		catch ( Exception ignore ) {
 		}
 		try {
-			if ( sessions != null ) {
-				sessions.close();
-				sessions = null;
-			}
+			closeSessionFactory();
 		}
 		catch ( Exception ignore ) {
 		}
