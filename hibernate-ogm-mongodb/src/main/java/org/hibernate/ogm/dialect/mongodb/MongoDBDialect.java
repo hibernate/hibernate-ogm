@@ -27,7 +27,9 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
+import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -108,9 +110,16 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBCollection getAssociationCollection(AssociationKey key) {
-		return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
+		switch ( provider.getAssociationStorage() ) {
+		case ENTITY:
+			return getCollection( key.getTable() );
+		case GLOBAL:
+			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
+		default:
+			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
+		}
 	}
-	
+
 	private BasicDBObject getSubQuery(String operator, BasicDBObject query) {
 		return query.get( operator ) != null ? (BasicDBObject) query.get( operator ) : new BasicDBObject();
 	}
@@ -157,7 +166,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBObject findAssociation(AssociationKey key) {
-		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( key );
+		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
 		return this.getAssociationCollection( key ).findOne( associationKeyObject );
 	}
 
@@ -174,7 +183,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key) {
 		DBCollection associations = getAssociationCollection( key );
-		DBObject assoc = MongoHelpers.associationKeyToObject( key );
+		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
 		
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
@@ -249,7 +258,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key) {
 		DBCollection collection = getAssociationCollection( key );
-		DBObject query = MongoHelpers.associationKeyToObject( key );
+		DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
 		
 		int nAffected = collection.remove( query ).getN();
 		log.removedAssociation( nAffected );

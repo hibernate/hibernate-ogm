@@ -31,6 +31,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
@@ -71,12 +72,27 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public int entityCacheSize(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		AssociationStorage storage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
 		int count = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			if ( !collectionName.startsWith( "system." ) && !collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
-				//DBObject query = new BasicDBObject( "table" , new BasicDBObject( "$exists", false) );
-				//count += db.getCollection( collectionName ).find( query ).count();
+			if ( collectionName.startsWith( "system." ) )
+				continue;
+
+			if ( storage == AssociationStorage.GLOBAL
+					&& collectionName.equals( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ) )
+				continue;
+
+			if ( storage == AssociationStorage.PREFIXED
+					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
+				continue;
+
+			if ( storage == AssociationStorage.ENTITY ) {
+				DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
+						false ) );
+				count += db.getCollection( collectionName ).find( query ).count();
+			}
+			else {
 				count += db.getCollection( collectionName ).count();
 			}
 		}
@@ -112,17 +128,29 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public int associationCacheSize(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		AssociationStorage assocStorage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
-		int generalCount = 0;
-		for ( String collectionName : db.getCollectionNames() ) {
-			//DBObject query = new BasicDBObject("table", new BasicDBObject( "$exists", true) );
-			//generalCount += db.getCollection( collectionName ).find( query ).count();
-			if ( collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
-				generalCount += db.getCollection( collectionName ).count();
+
+		if ( assocStorage == AssociationStorage.GLOBAL ) {
+			return (int) db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count();
 		}
-		return generalCount;
+		else {
+			int count = 0;
+			for ( String collectionName : db.getCollectionNames() ) {
+				if ( assocStorage == AssociationStorage.PREFIXED
+						&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
+					count += db.getCollection( collectionName ).count();
+				}
+				else if ( assocStorage == AssociationStorage.ENTITY ) {
+					DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
+							true ) );
+					count += db.getCollection( collectionName ).find( query ).count();
+				}
+			}
+			return count;
+		}
 	}
-	
+
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
