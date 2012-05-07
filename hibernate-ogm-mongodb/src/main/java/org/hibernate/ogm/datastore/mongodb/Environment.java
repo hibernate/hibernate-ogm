@@ -64,4 +64,13 @@ public interface Environment {
 	 */
 	public static final boolean MONGODB_DEFAULT_SAFE = false;
 
+	/**
+	 * Where to store associations.
+	 */
+
+	public static final String MONGODB_ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
+	public static final String ASSOC_STORE_GLOBAL = "global";
+	public static final String ASSOC_STORE_ENTITY = "entity";
+	public static final String ASSOC_STORE_PREFIXED = "prefixed";
+	public static final String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
 }

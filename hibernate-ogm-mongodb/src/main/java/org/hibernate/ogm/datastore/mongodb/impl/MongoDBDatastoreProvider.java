@@ -51,10 +51,30 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	private boolean isCacheStarted;
 	private Mongo mongo;
 	private DB mongoDb;
+	private AssociationStorage assocStorage;
+
+	public enum AssociationStorage {
+		GLOBAL, ENTITY, PREFIXED
+	}
 
 	@Override
 	public void configure(Map configurationValues) {
 		cfg = configurationValues;
+		
+		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
+		if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( Environment.ASSOC_STORE_GLOBAL ) ) {
+			assocStorage = AssociationStorage.GLOBAL;
+		}
+		else if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( Environment.ASSOC_STORE_ENTITY ) ) {
+			assocStorage = AssociationStorage.ENTITY;
+		}
+		else {
+			assocStorage = AssociationStorage.PREFIXED;
+		}
+	}
+
+	public AssociationStorage getAssociationStorage() {
+		return assocStorage;
 	}
 
 	@Override
