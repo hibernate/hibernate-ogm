@@ -22,10 +22,13 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
@@ -34,12 +37,44 @@ public final class EntityKey implements Serializable {
 	private final int hashCode;
 	private String[] columnNames;
 	private Object[] columnValues;
+    private final String entityName;
+    private final Map<String, String> columnMap;
+    private final Serializable id;
 
 	public EntityKey(String tableName, String[] columnNames, Object[] values) {
 		this.table = tableName;
 		this.columnNames = columnNames;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
+		this.id = null;
+        this.entityName = "";
+        this.columnMap = Collections.EMPTY_MAP;
+	}
+	
+    public EntityKey(String table, Serializable id) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = "";
+        this.columnMap = Collections.EMPTY_MAP;
+    }
+	
+    public EntityKey(String table, Serializable id, String entityName, Map<String, String> columnMap) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = entityName;
+        this.columnMap = columnMap;
+    }
+    
+	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values, Map<String,String> columnMap){
+		this.table = tableName;
+		this.id = id;
+		this.hashCode = generateHashCode();
+		this.entityName = entityName;
+		this.columnNames = columnNames;
+		this.columnValues = values;
+		this.columnMap = columnMap;
 	}
 
 	public String getTable() {
@@ -92,4 +127,28 @@ public final class EntityKey implements Serializable {
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
+	
+    public final Serializable getId() {
+        return this.id;
+    }
+
+    public final String getEntityName() {
+        return this.entityName;
+    }
+
+    /**
+     * Gets entity key as Map containing id and table name.
+     * 
+     * @return Map containing id and table name.
+     */
+    public Map<String, String> getEntityKeyAsMap() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put( "id", this.id.toString() );
+        map.put( "table", this.table );
+        return Collections.unmodifiableMap( map );
+    }
+
+    public String getColumnName(String fieldName) {
+        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
+    }
 }

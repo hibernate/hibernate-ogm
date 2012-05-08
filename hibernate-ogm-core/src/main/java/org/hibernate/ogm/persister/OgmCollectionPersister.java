@@ -58,13 +58,14 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Iterator;
 
 /**
- * CollectionPersister storing the collection in a grid 
- *
+ * CollectionPersister storing the collection in a grid
+ * 
  * @author Emmanuel Bernard
  */
 public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {
@@ -150,9 +151,32 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	public Object readIndex(ResultSet rs, String[] aliases, SessionImplementor session)
 			throws HibernateException, SQLException {
-		final TupleAsMapResultSet resultset = rs.unwrap( TupleAsMapResultSet.class );
-		final Tuple keyTuple = resultset.getTuple();
-		return indexGridType.nullSafeGet( keyTuple, aliases, session, null );
+		final TupleAsMapResultSet resultset = rs
+                .unwrap(TupleAsMapResultSet.class);
+        final Tuple keyTuple = resultset.getTuple();
+        Object obj = indexGridType
+                .nullSafeGet(keyTuple, aliases, session, null);
+        /**
+         * for some reason, indexGridType.nullSafeGet returns Double even though
+         * indexGridType is type of IntegerType. As a result it throws
+         * java.lang.ClassCastException: java.lang.Double cannot be cast to
+         * java.lang.Integer.
+         */
+        Object res = null;
+        try {
+            res = obj.getClass().getDeclaredMethod("intValue").invoke(obj);
+        } catch (IllegalArgumentException e) {
+            throw new HibernateException(e);
+        } catch (SecurityException e) {
+            throw new HibernateException(e);
+        } catch (IllegalAccessException e) {
+            throw new HibernateException(e);
+        } catch (InvocationTargetException e) {
+            throw new HibernateException(e);
+        } catch (NoSuchMethodException e) {
+            return obj;
+        }
+        return res;
 	}
 
 	@Override

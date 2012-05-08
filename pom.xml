@@ -38,6 +38,7 @@
 
     <modules>
         <module>hibernate-ogm-core</module>
+        <module>hibernate-ogm-voldemort</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
     </modules>
@@ -148,9 +149,9 @@
         <dependencies>
             <!-- standards APIs -->
             <dependency>
-                <groupId>org.jboss.spec.javax.transaction</groupId>
-                <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-                <version>1.0.0.Final</version>
+                <groupId>javax.transaction</groupId>
+                <artifactId>jta</artifactId>
+                <version>1.1</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -606,7 +607,7 @@
                             <phase>generate-sources</phase>
                             <configuration>
                                 <processors>
-                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
+                                    <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
                                 </processors>
                                 <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
@@ -620,7 +621,7 @@
                             <phase>generate-test-sources</phase>
                             <configuration>
                                 <processors>
-                                    <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
+                                    <processor>org.jboss.logging.generator.apt.LoggingToolsProcessor</processor>
                                 </processors>
                                 <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
                             </configuration>
@@ -795,8 +796,10 @@
 
     <repositories>
         <!--
-        To build Hibernate OGM you have to add the JBoss Maven repository to your settings.xml
-        See also http://community.jboss.org/wiki/OverviewofHibernateOGM
+        <repository>
+            <id>JBoss repository</id>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
         -->
     </repositories>
 

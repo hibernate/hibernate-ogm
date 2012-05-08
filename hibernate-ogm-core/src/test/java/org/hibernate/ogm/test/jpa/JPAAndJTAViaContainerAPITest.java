@@ -34,7 +34,7 @@ import static org.fest.assertions.Assertions.assertThat;
  */
 public class JPAAndJTAViaContainerAPITest extends JpaTestCase {
 	@Test
-	public void doTest() throws Exception {
+	public void testJPAAndJTAViaContainer() throws Exception {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 		Poem poem = new Poem();

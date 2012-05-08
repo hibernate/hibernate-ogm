@@ -57,10 +57,10 @@ import org.hibernate.testing.FailureExpected;
 
 /**
  * A base class for all OGM tests.
- *
+ * 
  * This class is a mix of SearchTestCase from HSearch 4 and OgmTestCase from the Core 3.6 days
  * It could get some love to clean this mess
- *
+ * 
  * @author Emmanuel Bernard
  * @author Hardy Ferentschik
  */
@@ -86,7 +86,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected String[] getXmlFiles() {
-		return new String[] { };
+		return new String[] {};
 	}
 
 	protected static void setCfg(Configuration cfg) {
@@ -113,7 +113,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected String[] getAnnotatedPackages() {
-		return new String[] { };
+		return new String[] {};
 	}
 
 	protected SearchFactoryImplementor getSearchFactoryImpl() {
@@ -146,7 +146,7 @@ public abstract class OgmTestCase extends TestCase {
 		buffer.append( dialect.name() );
 		buffer.append( ']' );
 
-		if ( StringHelper.isNotEmpty(comment) ) {
+		if ( StringHelper.isNotEmpty( comment ) ) {
 			buffer.append( "; " ).append( comment );
 		}
 
@@ -201,8 +201,8 @@ public abstract class OgmTestCase extends TestCase {
 			throw t;
 		}
 		catch ( Throwable t ) {
-			if ( t instanceof InvocationTargetException) {
-				t = ( ( InvocationTargetException ) t ).getTargetException();
+			if ( t instanceof InvocationTargetException ) {
+				t = ( (InvocationTargetException) t ).getTargetException();
 			}
 			if ( t instanceof IllegalAccessException ) {
 				t.fillInStackTrace();
@@ -216,9 +216,7 @@ public abstract class OgmTestCase extends TestCase {
 				else {
 					builder.append( "ignoring @FailureExpected test" );
 				}
-				builder.append( " (" )
-						.append( failureExpected.jiraKey() )
-						.append( ")" );
+				builder.append( " (" ).append( failureExpected.jiraKey() ).append( ")" );
 				log.warn( builder.toString(), t );
 			}
 			else {
@@ -246,7 +244,7 @@ public abstract class OgmTestCase extends TestCase {
 		}
 	}
 
-		public String fullTestName() {
+	public String fullTestName() {
 		return this.getClass().getName() + "#" + this.getName();
 	}
 
@@ -260,7 +258,7 @@ public abstract class OgmTestCase extends TestCase {
 		catch ( NoSuchMethodException e ) {
 			fail( "Method \"" + fName + "\" not found" );
 		}
-		if ( !Modifier.isPublic(runMethod.getModifiers()) ) {
+		if ( !Modifier.isPublic( runMethod.getModifiers() ) ) {
 			fail( "Method \"" + fName + "\" should be public" );
 		}
 		return runMethod;
@@ -271,9 +269,6 @@ public abstract class OgmTestCase extends TestCase {
 			super( "Test marked as @FailureExpected, but did not fail!" );
 		}
 	}
-
-
-
 
 	public Session openSession() throws HibernateException {
 		rebuildSessionFactory();
@@ -304,7 +299,7 @@ public abstract class OgmTestCase extends TestCase {
 		return (SessionFactoryImplementor) getSessions();
 	}
 
-	//FIXME clear cache when this happens
+	// FIXME clear cache when this happens
 	protected void runSchemaGeneration() {
 
 	}
@@ -318,13 +313,14 @@ public abstract class OgmTestCase extends TestCase {
 		try {
 			setCfg( new OgmConfiguration() );
 
-			//Grid specific configuration
+			// Grid specific configuration
 			cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-local.xml" );
-			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
-			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
+			// cfg.setProperty( "hibernate.transaction.default_factory_class",
+			// JTATransactionManagerTransactionFactory.class.getName() );
+			// cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY,
+			// JBossTSStandaloneTransactionManagerLookup.class.getName() );
 
-
-			//Other configurations
+			// Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
@@ -406,7 +402,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	public void checkCleanCache() {
-		assertThat(entityCacheSize( sessions )).as("Entity cache should be empty").isEqualTo( 0 );
-		assertThat(associationCacheSize( sessions )).as("Association cache should be empty").isEqualTo( 0 );
+		assertThat( entityCacheSize( sessions ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
+		assertThat( associationCacheSize( sessions ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 }

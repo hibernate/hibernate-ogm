@@ -22,12 +22,16 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.annotations.common.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
- *
+ * Represents the key used to link a property value and the id of it's owning
+ * entity
+ * 
  * @author Emmanuel Bernard
  * @author Sanne Grinovero
  */
@@ -145,4 +149,28 @@ public final class AssociationKey implements Serializable {
 	public void setAssociationKind(AssociationKind kind) {
 		this.associationKind = kind;
 	}
+
+    /**
+     * Gets association key as Map object containing owning columns.
+     * 
+     * @return Association key as Map representation.
+     */
+    public Map<String, Object> getAssociationKeyAsMap() {
+
+        Map<String, Object> map = new HashMap<String, Object>();
+        for ( int i = 0; i < columnNames.length; i++ ) {
+            map.put( this.columnNames[i], this.columnValues[i] );
+        }
+        map.put( "table", this.table );
+        return Collections.unmodifiableMap( map );
+    }
+
+    /**
+     * Gets the size of columns.
+     * 
+     * @return int Number of clumns.
+     */
+    public int getColumnSize() {
+        return this.columnNames.length;
+    }
 }
