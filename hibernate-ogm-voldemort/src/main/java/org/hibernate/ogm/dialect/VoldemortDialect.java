@@ -40,9 +40,11 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 /**
  * @author Seiya Kawashima <skawashima@uchicago.edu>
@@ -222,5 +224,14 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		provider.setNextValue( key, value, increment, initialValue );
+	}
+
+	/* (non-Javadoc)
+	 * @see org.hibernate.ogm.dialect.GridDialect#overrideType(org.hibernate.type.Type)
+	 */
+	@Override
+	public GridType overrideType(Type type) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -39,11 +39,11 @@ public abstract class VoldemortUpdateAction extends UpdateAction {
 	}
 
 	public Object getKey() {
-		return key;
+		return this.key;
 	}
 
 	public Object getValue() {
-		return value;
+		return this.value;
 	}
 
 	public void setKey(Object key) {

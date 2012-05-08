@@ -21,6 +21,7 @@
 package org.hibernate.ogm.datastore.impl;
 
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
@@ -35,14 +36,14 @@ import java.util.Map;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class DatastoreProviderInitiator implements BasicServiceInitiator<DatastoreProvider> {
+public class DatastoreProviderInitiator extends OptionalServiceInitiator<DatastoreProvider> {
 	public static final String DATASTORE_PROVIDER = "hibernate.ogm.datastore.provider";
 	private static final Log log = LoggerFactory.make();
 
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
 	@Override
-	public DatastoreProvider initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	public DatastoreProvider buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		Object managerProperty = configurationValues.get(DATASTORE_PROVIDER);
 		Class<?> managerClass = null;
 		if ( managerProperty instanceof String ) {
@@ -77,6 +78,11 @@ public class DatastoreProviderInitiator implements BasicServiceInitiator<Datasto
 		else {
 			throw log.unknownDatastoreManagerType( managerProperty.getClass().getName() );
 		}
+	}
+
+	@Override
+	protected BasicServiceInitiator<DatastoreProvider> backupInitiator() {
+		return null;
 	}
 
 	private DatastoreProvider logAndReturn(DatastoreProvider datastoreProvider) {

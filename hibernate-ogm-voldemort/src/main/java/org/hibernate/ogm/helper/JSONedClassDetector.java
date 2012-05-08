@@ -77,3 +77,4 @@ public class JSONedClassDetector {
 		return JSONedClasses.canBeAssignableFrom( cls );
 	}
 }
+

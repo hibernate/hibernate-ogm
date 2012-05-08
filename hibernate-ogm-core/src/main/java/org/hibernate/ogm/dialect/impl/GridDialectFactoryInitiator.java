@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -28,12 +29,17 @@ import java.util.Map;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class GridDialectFactoryInitiator implements BasicServiceInitiator<GridDialectFactoryImpl> {
+public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactoryImpl> {
 	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
 
 	@Override
-	public GridDialectFactoryImpl initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	public GridDialectFactoryImpl buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new GridDialectFactoryImpl();
+	}
+
+	@Override
+	protected BasicServiceInitiator<GridDialectFactoryImpl> backupInitiator() {
+		return null;
 	}
 
 	@Override

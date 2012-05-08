@@ -69,12 +69,15 @@ public final class RowKey implements Serializable {
 		}
 
 		RowKey that = ( RowKey ) o;
-
+		
 		if ( !table.equals( that.table ) ) {
 			return false;
 		}
 
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
+		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
+			return false;
+		}
 		if ( !Arrays.equals( columnNames, that.columnNames ) ) {
 			return false;
 		}
@@ -113,12 +116,12 @@ public final class RowKey implements Serializable {
 
         Map<String, Object> map = new HashMap<String, Object>();
 
-        if ( columnNames != null && columnValues != null ) {
-            for ( int i = 0; i < columnNames.length; i++ ) {
-                map.put( columnNames[i], columnValues[i] );
+        if ( this.columnNames != null && this.columnValues != null ) {
+            for ( int i = 0; i < this.columnNames.length; i++ ) {
+                map.put( this.columnNames[i], this.columnValues[i] );
             }
         }
-        map.put( "table", table );
+        map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
     }
 }

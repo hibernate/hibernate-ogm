@@ -21,48 +21,31 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.jpa.util.JpaTestCase.extractJBossTransactionManager;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
-import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.transaction.TransactionManager;
 
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
-import org.hibernate.ogm.test.utils.PackagingRule;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class JPAStandaloneTest extends JpaTestCase {
+public class JPAStandaloneTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
 
 	@Test
 	public void testJTAStandalone() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
 
-		archive.addClass( Poem.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-		closeFactory();
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 
 		TransactionManager transactionManager = extractJBossTransactionManager( emf );
 
@@ -84,18 +67,9 @@ public class JPAStandaloneTest extends JpaTestCase {
 
 		em.close();
 
+		dropSchemaAndDatabase( emf );
 		emf.close();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.hibernate.ogm.test.jpa.util.JpaTestCase#getEntities()
-	 */
-	@Override
-	public Class<?>[] getEntities() {
-		// TODO Auto-generated method stub
-		return new Class[] { Poem.class };
-	}
-
+	
 }

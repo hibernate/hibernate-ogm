@@ -73,16 +73,16 @@ public class Association {
 
     public Map<RowKey, Map<String, Object>> getAssociationAsMap() {
 
-        Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) getSnapshot() ).getUnderlyingMap();
+        Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) this.getSnapshot() ).getUnderlyingMap();
 
-        for ( AssociationOperation action : getOperations() ) {
+        for ( AssociationOperation action : this.getOperations() ) {
             switch ( action.getType() ) {
             case CLEAR:
                 atomicMap.clear();
             case PUT_NULL:
             case PUT:
                 atomicMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
-                put( action.getKey(), action.getValue() );
+                this.put( action.getKey(), action.getValue() );
                 break;
             case REMOVE:
                 atomicMap.remove( action.getKey() );

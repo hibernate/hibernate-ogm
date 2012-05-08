@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.type.GridType;
@@ -46,14 +45,19 @@ final public class EntityKeyBuilder {
 			final OgmEntityPersister persister,
 			final Serializable id,
 			SessionImplementor session) {
-		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
 		return fromData(
 				persister.getTableName(),
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
-				session,
-				persister);
+				session );
+	}
+
+	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
+
+		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
+		return new EntityKey( persister.getTableName(), id, persister.getEntityName(),
+				EntityKeyBuilder.getColumnMap( persister ) );
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -69,32 +73,12 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 		);
-		return new EntityKey( tableName, id, "", identifierColumnNames, values );
-	}
-	
-	/**
-	 * TODO Current solution is mixed with the latest EntityKeyBuilder code and the previous code. To not mix them,
-	 * need to change the way to create EntityKey and to use EntityKeyBuilder.getColumnMap() method. There was a line comment
-	 * about this point, will reply to the comment soon.
-	 */
-	public static EntityKey fromData(
-			String tableName,
-			String[] identifierColumnNames,
-			GridType identifierGridType,
-			final Serializable id,
-			SessionImplementor session,
-			final OgmEntityPersister persister) {
-		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
-				id,
-				identifierGridType,
-				identifierColumnNames,
-				session
-		);
-		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values, EntityKeyBuilder.getColumnMap( persister ) );
+		return new EntityKey( tableName, identifierColumnNames, values );
 	}
 
 	/**
-	 * Checks if the property name is different from the columnName. If so, store the property name column name pair.
+	 * Once the tests are done, change the scope to private. This method is
+	 * necessarily called by VoldemortDatastoreProvider.getEntityMap().
 	 * 
 	 * @param persister
 	 * @return

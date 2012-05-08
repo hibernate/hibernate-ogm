@@ -40,6 +40,7 @@ import org.hibernate.ejb.AvailableSettings;
 import org.hibernate.ejb.HibernatePersistence;
 import org.hibernate.ejb.packaging.PersistenceMetadata;
 import org.hibernate.ejb.packaging.PersistenceXmlLoader;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
@@ -80,7 +81,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 						PersistenceUnitTransactionType.RESOURCE_LOCAL
 				);
 				for ( PersistenceMetadata metadata : metadataFiles ) {
-					if ( metadata.getProvider() == null || IMPLEMENTATION_NAME.equalsIgnoreCase(
+					//if the provider is not set, don't use it as people might want to use Hibernate ORM
+					if ( IMPLEMENTATION_NAME.equalsIgnoreCase(
 							metadata.getProvider()
 					) ) {
 						//correct provider
@@ -90,7 +92,11 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 						final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
 								emName, protectiveCopy
 						);
-						return new OgmEntityManagerFactory( coreEMF );
+						if ( coreEMF != null ) {
+							//delegate might return null to refuse the configuration
+							//(like when the configuration file is not defining the expected persistent unit)
+							return new OgmEntityManagerFactory( coreEMF );
+						}
 					}
 				}
 			}
@@ -111,6 +117,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( Environment.DATASOURCE, "---PlaceHolderDSForOGM---" );
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
+		map.put( OgmConfiguration.OGM_ON, "true" );
 	}
 
 	@Override
@@ -128,12 +135,14 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					),
 					protectiveCopy
 			);
-			return new OgmEntityManagerFactory( coreEMF );
+			if ( coreEMF != null ) {
+				//delegate might return null to refuse the configuration
+				//(like when the configuration file is not defining the expected persistent unit)
+				return new OgmEntityManagerFactory( coreEMF );
+			}
 		}
-		else {
-			//not the right provider
-			return null;
-		}
+		//not the right provider
+		return null;
 	}
 
 	@Override

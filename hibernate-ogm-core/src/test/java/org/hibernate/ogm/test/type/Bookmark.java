@@ -123,4 +123,13 @@ public class Bookmark {
 	public UUID getSerialNumber() { return serialNumber; }
 	public void setSerialNumber(UUID serialNumber) { this.serialNumber = serialNumber; }
 	private UUID serialNumber;
+	
+	public Integer getStockCount() { return stockCount; }
+	public void setStockCount(Integer stockCount) { this.stockCount = stockCount; }
+	private Integer stockCount;
+
+	public Long getUserId() { return userId; }
+	public void setUserId(Long userId) { this.userId = userId; }
+	private Long userId;
+	
 }

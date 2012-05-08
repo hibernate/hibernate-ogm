@@ -36,6 +36,8 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
  */
 public class OgmConfiguration extends Configuration {
 
+	public static final String OGM_ON = "hibernate.ogm._activate";
+
 	public OgmConfiguration() {
 		super();
 		resetOgm();
@@ -43,6 +45,7 @@ public class OgmConfiguration extends Configuration {
 
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+		setProperty( OGM_ON, "true" );
 	}
 
 	/*

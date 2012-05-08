@@ -20,48 +20,59 @@
  */
 package org.hibernate.ogm.test.id;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.junit.Test;
-
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
 public class IdentityIdGeneratorTest extends JpaTestCase {
+
 	@Test
 	public void testIdentityGenerator() throws Exception {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 		Animal jungleKing = new Animal();
-		jungleKing.setName( "Lion" );
-		jungleKing.setSpecies( "Mammal" );
-		em.persist( jungleKing );
-
 		Animal fish = new Animal();
-		fish.setName( "Shark" );
-		fish.setSpecies( "Tiger Shark" );
-		em.persist( fish );
-		getTransactionManager().commit();
+		boolean ok = false;
+		try {
+			jungleKing.setName( "Lion" );
+			jungleKing.setSpecies( "Mammal" );
+			em.persist( jungleKing );
 
+			fish.setName( "Shark" );
+			fish.setSpecies( "Tiger Shark" );
+			em.persist( fish );
+			ok = true;
+		}
+		finally {
+			commitOrRollback( ok );
+		}
 		em.clear();
 
 		getTransactionManager().begin();
-		Animal animal = em.find( Animal.class, jungleKing.getId() );
-		assertThat( animal ).isNotNull();
-		assertThat( animal.getId() ).isEqualTo( 1 );
-		assertThat( animal.getName() ).isEqualTo( "Lion" );
-		em.remove( animal );
+		ok = false;
+		try {
+			Animal animal = em.find( Animal.class, jungleKing.getId() );
+			assertThat( animal ).isNotNull();
+			assertThat( animal.getId() ).isEqualTo( 1 );
+			assertThat( animal.getName() ).isEqualTo( "Lion" );
+			em.remove( animal );
 
-		animal = em.find( Animal.class, fish.getId() );
-		assertThat( animal ).isNotNull();
-		assertThat( animal.getId() ).isEqualTo( 2 );
-		assertThat( animal.getName() ).isEqualTo( "Shark" );
-		em.remove( animal );
-		getTransactionManager().commit();
+			animal = em.find( Animal.class, fish.getId() );
+			assertThat( animal ).isNotNull();
+			assertThat( animal.getId() ).isEqualTo( 2 );
+			assertThat( animal.getName() ).isEqualTo( "Shark" );
+			em.remove( animal );
+			ok = true;
+		}
+		finally {
+			commitOrRollback( ok );
+		}
 		em.close();
 	}
 

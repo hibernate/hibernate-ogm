@@ -29,7 +29,8 @@ import java.util.Map;
 import org.hibernate.annotations.common.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
+ * Represents the key used to link a property value and the id of it's owning
+ * entity
  * 
  * @author Emmanuel Bernard
  * @author Sanne Grinovero
@@ -42,6 +43,11 @@ public final class AssociationKey implements Serializable {
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 	private final int hashCode;
+
+	//role and entity key are not part of the object identity
+	private transient String collectionRole;
+	private transient EntityKey entityKey;
+	private transient AssociationKind associationKind;
 
 	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length != columnValues.length ) {
@@ -63,6 +69,28 @@ public final class AssociationKey implements Serializable {
 
 	public Object[] getColumnValues() {
 		return columnValues;
+	}
+
+	/**
+	 * Association role. May be null but is typically filled for collection of embeddable.
+	 */
+	public String getCollectionRole() {
+		return collectionRole;
+	}
+
+	/**
+	 * Owning entity key. May be null but is typically filled for collection of embeddable.
+	 */
+	public EntityKey getEntityKey() {
+		return entityKey;
+	}
+
+	/**
+	 * Describe the type of association. May be null but is typically filled for collection of embeddable.
+	 * @return
+	 */
+	public AssociationKind getAssociationKind() {
+		return associationKind;
 	}
 
 	@Override
@@ -110,6 +138,18 @@ public final class AssociationKey implements Serializable {
 		return sb.toString();
 	}
 
+	public void setCollectionRole(String role) {
+		this.collectionRole = role;
+	}
+
+	public void setOwnerEntityKey(EntityKey entityKey) {
+		this.entityKey = entityKey;
+	}
+
+	public void setAssociationKind(AssociationKind kind) {
+		this.associationKind = kind;
+	}
+
     /**
      * Gets association key as Map object containing owning columns.
      * 
@@ -119,10 +159,9 @@ public final class AssociationKey implements Serializable {
 
         Map<String, Object> map = new HashMap<String, Object>();
         for ( int i = 0; i < columnNames.length; i++ ) {
-            map.put( columnNames[i], columnValues[i] );
+            map.put( this.columnNames[i], this.columnValues[i] );
         }
-
-        map.put( "table", table );
+        map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
     }
 
@@ -132,6 +171,6 @@ public final class AssociationKey implements Serializable {
      * @return int Number of clumns.
      */
     public int getColumnSize() {
-        return columnNames.length;
+        return this.columnNames.length;
     }
 }

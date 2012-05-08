@@ -65,7 +65,7 @@ import java.util.Iterator;
 
 /**
  * CollectionPersister storing the collection in a grid
- *
+ * 
  * @author Emmanuel Bernard
  */
 public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {
@@ -151,12 +151,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	public Object readIndex(ResultSet rs, String[] aliases, SessionImplementor session)
 			throws HibernateException, SQLException {
-	 final TupleAsMapResultSet resultset = rs
+		final TupleAsMapResultSet resultset = rs
                 .unwrap(TupleAsMapResultSet.class);
         final Tuple keyTuple = resultset.getTuple();
         Object obj = indexGridType
                 .nullSafeGet(keyTuple, aliases, session, null);
-        
         /**
          * for some reason, indexGridType.nullSafeGet returns Double even though
          * indexGridType is type of IntegerType. As a result it throws
@@ -250,6 +249,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( key )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.session( session );
 
 		while ( entries.hasNext() ) {
@@ -412,6 +412,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.gridDialect(gridDialect)
 				.tableName( getTableName() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.keyColumnNames( getKeyColumnNames() );
 
 		final Association collectionMetadata = metadataProvider.getCollectionMetadataOrNull();
@@ -439,6 +440,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.session( session );
 
 			//delete all the deleted entries
@@ -493,6 +495,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.session( session );
 
 			//insert all the new entries
@@ -545,6 +548,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.session( session );
 
 			//create all the new entries
@@ -625,6 +629,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.keyColumnNames( elementColumnNames )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
+					.collectionPersister( this )
 					.tableName( getTableName() );
 
 			//TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
@@ -675,6 +680,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyColumnNames( getKeyColumnNames() )
 				.keyGridType( getKeyGridType() )
+				.collectionPersister( this )
 				.session( session );
 
 			//shortcut to avoid loop if we can

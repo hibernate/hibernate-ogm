@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect;
 
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.service.Service;
 
 import org.hibernate.LockMode;
@@ -31,6 +32,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation
@@ -92,4 +94,13 @@ public interface GridDialect extends Service {
 	 */
 	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 
+	/**
+	 * Let the dialect override types if required to customize them to the datastore.
+	 * Returns the GridType instance to use to bind the given {@code type} or null if not overridden.
+	 *
+	 * Most types should not be overridden and thus return null
+	 *
+	 * Experimental: this API might change in the future
+	 */
+	GridType overrideType(Type type);
 }

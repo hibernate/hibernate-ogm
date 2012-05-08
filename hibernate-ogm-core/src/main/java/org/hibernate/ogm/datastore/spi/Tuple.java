@@ -152,7 +152,7 @@ public class Tuple {
 
         return Collections.unmodifiableSet( columnValues );
     }
-
+    
 	/**
 	 * Gets the current State.
 	 * 

@@ -28,7 +28,7 @@ import java.util.Map;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
@@ -37,25 +37,36 @@ public final class EntityKey implements Serializable {
 	private final int hashCode;
 	private String[] columnNames;
 	private Object[] columnValues;
-	private final String entityName;
-	private final Map<String,String> columnMap;
-	private final Serializable id;
+    private final String entityName;
+    private final Map<String, String> columnMap;
+    private final Serializable id;
 
-	/**
-	 * TODO Use the latest EntityKey constructor if possible. The way to declare the constructors is from my previous pull request.
-	 * And is mixed with the constructor from the master and from my previous one. To not do so, need to change EntityKeyBuilder implementation 
-	 * accordingly.
-	 */
-	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values) {
+	public EntityKey(String tableName, String[] columnNames, Object[] values) {
 		this.table = tableName;
 		this.columnNames = columnNames;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
-		this.entityName = entityName;
-		this.columnMap = Collections.EMPTY_MAP;
-		this.id = id;
+		this.id = null;
+        this.entityName = "";
+        this.columnMap = Collections.EMPTY_MAP;
 	}
-
+	
+    public EntityKey(String table, Serializable id) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = "";
+        this.columnMap = Collections.EMPTY_MAP;
+    }
+	
+    public EntityKey(String table, Serializable id, String entityName, Map<String, String> columnMap) {
+        this.table = table;
+        this.id = id;
+        this.hashCode = generateHashCode();
+        this.entityName = entityName;
+        this.columnMap = columnMap;
+    }
+    
 	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values, Map<String,String> columnMap){
 		this.table = tableName;
 		this.id = id;
@@ -116,9 +127,13 @@ public final class EntityKey implements Serializable {
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
-
+	
     public final Serializable getId() {
         return this.id;
+    }
+
+    public final String getEntityName() {
+        return this.entityName;
     }
 
     /**
@@ -132,12 +147,8 @@ public final class EntityKey implements Serializable {
         map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
     }
-    
-    public String getEntityName(){
-    	return entityName;
-    }
 
     public String getColumnName(String fieldName) {
-        return columnMap.get( fieldName ) == null ? fieldName : columnMap.get( fieldName );
+        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
     }
 }

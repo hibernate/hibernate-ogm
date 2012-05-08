@@ -49,21 +49,24 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
  * - replace DialectFactory
  * - replace (if not provided by the user) NamingStrategy
  *
- * Also enfore an OGM NamingStrategy
+ * Also enforce an OGM NamingStrategy
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
 	@Override
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		if ( ! serviceRegistry.getService( ConfigurationService.class ).isOgmOn() ) {
+			return;
+		}
 		Version.touch();
 		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+		sessionFactory.addObserver( new DatastoreProviderToSessionFactoryObserverAdaptor(configuration, serviceRegistry) );
 	}
 
 	@Override
 	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 		Version.touch();
-		//TODO implement for 4.1
 	}
 
 	@Override
@@ -72,9 +75,10 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 	@Override
 	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
-		serviceRegistryBuilder.addInitiator( new OgmPersisterClassResolverInitiator() );
-		serviceRegistryBuilder.addInitiator( new OgmConnectionProviderInitiator() );
-		serviceRegistryBuilder.addInitiator( new OgmDialectFactoryInitiator() );
+		serviceRegistryBuilder.addInitiator( ConfigurationServiceInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
 		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );

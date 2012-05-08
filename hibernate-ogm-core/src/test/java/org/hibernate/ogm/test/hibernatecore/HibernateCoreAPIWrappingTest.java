@@ -20,20 +20,12 @@
  */
 package org.hibernate.ogm.test.hibernatecore;
 
-import java.io.File;
-import java.net.MalformedURLException;
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.naming.Reference;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -41,25 +33,23 @@ import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
-import org.hibernate.ogm.test.jpa.Poem;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.BaseOGMTest;
 import org.hibernate.ogm.test.utils.PackagingRule;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class HibernateCoreAPIWrappingTest extends JpaTestCase {
+public class HibernateCoreAPIWrappingTest extends BaseOGMTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Contact.class );
 
 	@Test
 	public void testWrappedFromEntityManagerAPI() throws Exception {
-		buildArchive();
-		closeFactory();
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
@@ -78,26 +68,9 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		emf.close();
 	}
 
-	private void buildArchive() throws MalformedURLException {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Contact.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-	}
-
 	@Test
 	public void testJNDIReference() throws Exception {
-		buildArchive();
-		closeFactory();
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
 		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactory.class.getName() );
@@ -113,10 +86,4 @@ public class HibernateCoreAPIWrappingTest extends JpaTestCase {
 		emf.close();
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] {
-				Poem.class
-		};
-	}
 }

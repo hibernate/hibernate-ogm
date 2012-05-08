@@ -38,7 +38,9 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
@@ -132,6 +134,11 @@ public class HashMapDialect implements GridDialect {
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		int nextValue = provider.getSharedAtomicInteger( key, initialValue, increment );
 		value.initialize( nextValue );
+	}
+
+	@Override
+	public GridType overrideType(Type type) {
+		return null;
 	}
 
 }

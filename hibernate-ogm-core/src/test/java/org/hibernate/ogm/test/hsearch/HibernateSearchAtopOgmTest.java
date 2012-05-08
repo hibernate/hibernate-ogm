@@ -28,8 +28,8 @@ import org.apache.lucene.search.Query;
 import org.junit.Test;
 
 import org.hibernate.Session;
-import org.hibernate.ogm.test.jpa.util.GetterPersistenceUnitInfo;
-import org.hibernate.ogm.test.jpa.util.JpaTestCase;
+import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;

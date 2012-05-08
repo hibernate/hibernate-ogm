@@ -22,14 +22,17 @@ package org.hibernate.ogm.test.utils;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  * 
@@ -39,49 +42,34 @@ import javax.persistence.EntityManager;
  */
 public class TestHelper {
 
-    private static final String[] knownTestDialects = new String[] {
-            // Add more TestGridDialect(s) here as needed
-            "org.hibernate.ogm.test.utils.VoldemortTestHelper",
-            "org.hibernate.ogm.test.utils.EhcacheTestHelper",
-            "org.hibernate.ogm.test.utils.InfinispanTestHelper",
-            "org.hibernate.ogm.test.utils.HashMapTestHelper" // This should
-                                                                // always be the
-                                                                // last element
-                                                                // or it will be
-                                                                // loaded
-    };
-
-    private static final Log log = LoggerFactory.make();
-    private static final TestableGridDialect helper = createStoreSpecificHelper();
+	private static final Log log = LoggerFactory.make();
+	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
     public static int entityCacheSize(EntityManager em) {
         return entityCacheSize(em.unwrap(Session.class));
     }
 
-    private static TestableGridDialect createStoreSpecificHelper() {
-        for (String className : knownTestDialects) {
-            Class<?> classForName = null;
-            try {
-                classForName = Class.forName(className);
-            } catch (ClassNotFoundException e) {
-                // ignore this: we're searching for the only valid option
-            }
-            if (classForName != null) {
-                try {
-                    TestableGridDialect attempt = (TestableGridDialect) classForName
-                            .newInstance();
-                    log.debugf("Using TestGridDialect %s", classForName);
-                    return attempt;
-                } catch (Exception e) {
-                    // but other errors are not expected:
-                    log.errorf(e, "Could not load TestGridDialect by name %s",
-                            className);
-                }
-            }
-        }
-        log.fatal("Could not load any TestGridDialect implementation!");
-        return null;
-    }
+	private static TestableGridDialect createStoreSpecificHelper() {
+		for ( GridDialectType gridType : GridDialectType.values() ) {
+			Class<?> classForName = gridType.loadTestableGridDialectClass();
+			if ( classForName != null ) {
+				try {
+					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
+					log.debugf( "Using TestGridDialect %s", classForName );
+					return attempt;
+				}
+				catch ( Exception e ) {
+					//but other errors are not expected:
+					log.errorf( e, "Could not load TestGridDialect by name from %s", gridType );
+				}
+			}
+		}
+		return new org.hibernate.ogm.test.utils.HashMapTestHelper();
+	}
+
+	public static GridDialectType getCurrentDialectType() {
+		return GridDialectType.valueFromHelperClass( helper.getClass() );
+	}
 
     public static int entityCacheSize(Session session) {
         return entityCacheSize(session.getSessionFactory());
@@ -104,8 +92,39 @@ public class TestHelper {
         return helper.backendSupportsTransactions();
     }
 
-    @SuppressWarnings("unchecked")
-    public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-        return (T) session.get(clazz, id);
-    }
+	@SuppressWarnings("unchecked")
+	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
+		return (T) session.get(clazz, id);
+	}
+	
+	public static void dropSchemaAndDatabase(Session session) {
+		if ( session != null ) {
+			dropSchemaAndDatabase( session.getSessionFactory() );
+		}
+	}
+
+	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
+		dropSchemaAndDatabase( ( ( HibernateEntityManagerFactory) emf ).getSessionFactory() );
+	}
+
+	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		//if the factory is closed, we don't have access to the service registry
+		if ( sessionFactory != null && ! sessionFactory.isClosed() ) {
+			try {
+				helper.dropSchemaAndDatabase( sessionFactory );
+			}
+			catch ( Exception e ) {
+				log.warn( "Exception while dropping schema and database in test", e );
+			}
+		}
+	}
+
+	public static Map<String, String> getEnvironmentProperties() {
+		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
+		return environmentProperties == null ? new HashMap<String,String>(0) : environmentProperties;
+	}
+
+	public static void initializeHelpers() {
+		// just to make sure helper is initialized
+	}
 }

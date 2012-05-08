@@ -21,25 +21,18 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 
-import java.io.File;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Rule;
-import org.junit.Test;
-
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.RequiresTransactionalCapabilitiesRule;
-
-import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import org.junit.Rule;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -47,26 +40,13 @@ import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
 public class JPAResourceLocalStandaloneTest {
 
 	@Rule
-	public PackagingRule packaging = new PackagingRule();
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-resourcelocal.xml", Poem.class );
 
 	@Rule
 	public RequiresTransactionalCapabilitiesRule transactions = new RequiresTransactionalCapabilitiesRule();
 
 	@Test
 	public void testJTAStandalone() throws Exception {
-		String fileName = "jtastandalone.jar";
-		JavaArchive archive = ShrinkWrap.create( JavaArchive.class, fileName );
-
-		archive.addClass( Poem.class );
-
-		ArchivePath path = ArchivePaths.create( "META-INF/persistence.xml" );
-		archive.addAsResource( "persistencexml/jpajtastandalone-resourcelocal.xml", path );
-
-		File testPackage = new File( PackagingRule.getTargetDir(), fileName );
-		archive.as( ZipExporter.class ).exportTo( testPackage, true );
-
-		packaging.addPackageToClasspath( testPackage );
-		
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
 		try {
 
@@ -110,6 +90,7 @@ public class JPAResourceLocalStandaloneTest {
 			}
 		}
 		finally {
+			dropSchemaAndDatabase( emf );
 			emf.close();
 		}
 	}

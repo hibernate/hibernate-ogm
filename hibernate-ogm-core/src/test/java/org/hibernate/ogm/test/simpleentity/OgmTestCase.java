@@ -23,14 +23,18 @@ package org.hibernate.ogm.test.simpleentity;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
 import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 
 import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -38,9 +42,11 @@ import org.hibernate.SessionFactory;
 import org.hibernate.annotations.common.util.StringHelper;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextSession;
@@ -48,9 +54,6 @@ import org.hibernate.search.Search;
 import org.hibernate.search.SearchFactory;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.testing.FailureExpected;
-import org.hibernate.testing.SkipForDialect;
-import org.junit.After;
-import org.junit.Before;
 
 /**
  * A base class for all OGM tests.
@@ -62,6 +65,10 @@ import org.junit.Before;
  * @author Hardy Ferentschik
  */
 public abstract class OgmTestCase extends TestCase {
+
+	static {
+		TestHelper.initializeHelpers();
+	}
 
 	private static final Log log = LoggerFactory.make();
 	protected static SessionFactory sessions;
@@ -95,14 +102,8 @@ public abstract class OgmTestCase extends TestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		// runSchemaDrop();
 		handleUnclosedResources();
 		closeResources();
-
-		if ( sessions != null ) {
-			sessions.close();
-			sessions = null;
-		}
 	}
 
 	protected abstract Class<?>[] getAnnotatedClasses();
@@ -137,20 +138,16 @@ public abstract class OgmTestCase extends TestCase {
 		log.warn( builder.toString() );
 	}
 
-	protected Skip buildSkip(Dialect dialect, String comment, String jiraKey) {
+	protected Skip buildSkip(GridDialectType dialect, String comment) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append( "skipping database-specific test [" );
 		buffer.append( fullTestName() );
 		buffer.append( "] for dialect [" );
-		buffer.append( dialect.getClass().getName() );
+		buffer.append( dialect.name() );
 		buffer.append( ']' );
 
 		if ( StringHelper.isNotEmpty( comment ) ) {
 			buffer.append( "; " ).append( comment );
-		}
-
-		if ( StringHelper.isNotEmpty( jiraKey ) ) {
-			buffer.append( " (" ).append( jiraKey ).append( ')' );
 		}
 
 		return new Skip( buffer.toString(), null );
@@ -167,20 +164,12 @@ public abstract class OgmTestCase extends TestCase {
 		return annotation;
 	}
 
-	protected final Skip determineSkipByDialect(Dialect dialect, Method runMethod) throws Exception {
-		// skips have precedence, so check them first
-		SkipForDialect skipForDialectAnn = locateAnnotation( SkipForDialect.class, runMethod );
+	protected final Skip determineSkipByGridDialect(Method runMethod) throws Exception {
+		SkipByGridDialect skipForDialectAnn = locateAnnotation( SkipByGridDialect.class, runMethod );
 		if ( skipForDialectAnn != null ) {
-			for ( Class<? extends Dialect> dialectClass : skipForDialectAnn.value() ) {
-				if ( skipForDialectAnn.strictMatching() ) {
-					if ( dialectClass.equals( dialect.getClass() ) ) {
-						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
-					}
-				}
-				else {
-					if ( dialectClass.isInstance( dialect ) ) {
-						return buildSkip( dialect, skipForDialectAnn.comment(), skipForDialectAnn.jiraKey() );
-					}
+			for ( GridDialectType gridDialectType : skipForDialectAnn.value() ) {
+				if ( gridDialectType.equals( TestHelper.getCurrentDialectType() ) ) {
+					return buildSkip( gridDialectType, skipForDialectAnn.comment() );
 				}
 			}
 		}
@@ -240,7 +229,7 @@ public abstract class OgmTestCase extends TestCase {
 	public void runBare() throws Throwable {
 		Method runMethod = findTestMethod();
 
-		final Skip skip = determineSkipByDialect( Dialect.getDialect(), runMethod );
+		final Skip skip = determineSkipByGridDialect( runMethod );
 		if ( skip != null ) {
 			reportSkip( skip );
 			return;
@@ -315,15 +304,12 @@ public abstract class OgmTestCase extends TestCase {
 
 	}
 
-	// FIXME clear cache when this happens
 	protected void runSchemaDrop() {
-
+		dropSchemaAndDatabase( session );
 	}
 
 	protected void buildConfiguration() throws Exception {
-		if ( getSessions() != null ) {
-			getSessions().close();
-		}
+		closeSessionFactory();
 		try {
 			setCfg( new OgmConfiguration() );
 
@@ -337,6 +323,11 @@ public abstract class OgmTestCase extends TestCase {
 			// Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
+			for( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+				cfg.setProperty( entry.getKey(), entry.getValue() );
+			}
+
 			configure( cfg );
 			if ( recreateSchema() ) {
 				cfg.setProperty( Environment.HBM2DDL_AUTO, "none" );
@@ -351,7 +342,8 @@ public abstract class OgmTestCase extends TestCase {
 				InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream( xmlFile );
 				getCfg().addInputStream( is );
 			}
-			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */) );
+
+			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */ ) );
 		}
 		catch ( Exception e ) {
 			e.printStackTrace();
@@ -373,9 +365,19 @@ public abstract class OgmTestCase extends TestCase {
 		else {
 			session = null;
 		}
-		if ( sessions != null && !sessions.isClosed() ) {
-			sessions.close();
-			sessions = null;
+		closeSessionFactory();
+	}
+
+	private void closeSessionFactory() {
+		if ( sessions != null ) {
+			if ( !sessions.isClosed() ) {
+				dropSchemaAndDatabase( sessions );
+				sessions.close();
+				sessions = null;
+			}
+			else {
+				sessions = null;
+			}
 		}
 	}
 
@@ -393,10 +395,7 @@ public abstract class OgmTestCase extends TestCase {
 		catch ( Exception ignore ) {
 		}
 		try {
-			if ( sessions != null ) {
-				sessions.close();
-				sessions = null;
-			}
+			closeSessionFactory();
 		}
 		catch ( Exception ignore ) {
 		}

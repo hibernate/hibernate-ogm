@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.type.impl;
 
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -29,12 +32,18 @@ import java.util.Map;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class TypeTranslatorInitiator implements BasicServiceInitiator<TypeTranslator> {
+public class TypeTranslatorInitiator extends OptionalServiceInitiator<TypeTranslator> {
 	public static final TypeTranslatorInitiator INSTANCE = new TypeTranslatorInitiator();
 
 	@Override
-	public TypeTranslator initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new TypeTranslatorImpl();
+	public TypeTranslator buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+		GridDialect dialect = registry.getService( DatastoreServices.class ).getGridDialect();
+		return new TypeTranslatorImpl(dialect);
+	}
+
+	@Override
+	protected BasicServiceInitiator<TypeTranslator> backupInitiator() {
+		return null;
 	}
 
 	@Override

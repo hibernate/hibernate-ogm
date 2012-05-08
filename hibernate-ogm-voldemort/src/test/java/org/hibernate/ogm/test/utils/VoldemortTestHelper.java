@@ -56,4 +56,22 @@ public class VoldemortTestHelper implements TestableGridDialect {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.hibernate.ogm.test.utils.TestableGridDialect#dropSchemaAndDatabase(org.hibernate.SessionFactory)
+	 */
+	@Override
+	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.hibernate.ogm.test.utils.TestableGridDialect#getEnvironmentProperties()
+	 */
+	@Override
+	public Map<String, String> getEnvironmentProperties() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
