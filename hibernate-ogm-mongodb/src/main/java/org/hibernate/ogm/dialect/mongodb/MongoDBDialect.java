@@ -24,6 +24,7 @@ import java.util.Collections;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
@@ -114,8 +115,10 @@ public class MongoDBDialect implements GridDialect {
 			return getCollection( key.getTable() );
 		case GLOBAL_COLLECTION:
 			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
-		default:
+		case COLLECTION:
 			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
+		default:
+			throw new AssertionFailure( "Unknown AssociationStorage: " + provider.getAssociationStorage() );
 		}
 	}
 
