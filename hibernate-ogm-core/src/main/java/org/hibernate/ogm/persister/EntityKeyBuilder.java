@@ -45,19 +45,14 @@ final public class EntityKeyBuilder {
 			final OgmEntityPersister persister,
 			final Serializable id,
 			SessionImplementor session) {
+		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
 		return fromData(
 				persister.getTableName(),
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
-				session );
-	}
-
-	public static EntityKey fromPersisterId(final OgmEntityPersister persister, final Serializable id) {
-
-		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
-		return new EntityKey( persister.getTableName(), id, persister.getEntityName(),
-				EntityKeyBuilder.getColumnMap( persister ) );
+				session,
+				persister);
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -73,8 +68,25 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 		);
-		return new EntityKey( tableName, identifierColumnNames, values );
+		return new EntityKey( tableName,id, "" , identifierColumnNames, values );
 	}
+	
+	public static EntityKey fromData(
+			String tableName,
+			String[] identifierColumnNames,
+			GridType identifierGridType,
+			final Serializable id,
+			SessionImplementor session,
+			final OgmEntityPersister persister) {
+		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				id,
+				identifierGridType,
+				identifierColumnNames,
+				session
+				);
+		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values, EntityKeyBuilder.getColumnMap( persister ) );
+	}
+
 
 	/**
 	 * Once the tests are done, change the scope to private. This method is
