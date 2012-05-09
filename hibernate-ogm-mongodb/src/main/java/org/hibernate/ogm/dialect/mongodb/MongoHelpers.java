@@ -44,8 +44,9 @@ public class MongoHelpers {
 		DBObject obj = new BasicDBObject( 1 );
 		obj.put( MongoDBDialect.COLUMNS_FIELDNAME, columns );
 		
-		if (storage == AssociationStorage.GLOBAL_COLLECTION)
+		if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
 			obj.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
+		}
 
 		return obj;
 	}
