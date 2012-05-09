@@ -29,7 +29,6 @@ import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -111,9 +110,9 @@ public class MongoDBDialect implements GridDialect {
 
 	private DBCollection getAssociationCollection(AssociationKey key) {
 		switch ( provider.getAssociationStorage() ) {
-		case ENTITY:
+		case IN_ENTITY:
 			return getCollection( key.getTable() );
-		case GLOBAL:
+		case GLOBAL_COLLECTION:
 			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
 		default:
 			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );

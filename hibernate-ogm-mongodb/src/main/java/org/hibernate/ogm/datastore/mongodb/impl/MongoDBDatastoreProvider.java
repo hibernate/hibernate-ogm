@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.impl;
 import java.net.UnknownHostException;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -51,30 +52,26 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	private boolean isCacheStarted;
 	private Mongo mongo;
 	private DB mongoDb;
-	private AssociationStorage assocStorage;
-
-	public enum AssociationStorage {
-		GLOBAL, ENTITY, PREFIXED
-	}
+	private AssociationStorage associationStorage;
 
 	@Override
 	public void configure(Map configurationValues) {
 		cfg = configurationValues;
 		
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
-		if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( Environment.ASSOC_STORE_GLOBAL ) ) {
-			assocStorage = AssociationStorage.GLOBAL;
+		if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( AssociationStorage.GLOBAL_COLLECTION.name() ) ) {
+			associationStorage = AssociationStorage.GLOBAL_COLLECTION;
 		}
-		else if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( Environment.ASSOC_STORE_ENTITY ) ) {
-			assocStorage = AssociationStorage.ENTITY;
+		else if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( AssociationStorage.IN_ENTITY.name() ) ) {
+			associationStorage = AssociationStorage.IN_ENTITY;
 		}
 		else {
-			assocStorage = AssociationStorage.PREFIXED;
+			associationStorage = AssociationStorage.COLLECTION;
 		}
 	}
 
 	public AssociationStorage getAssociationStorage() {
-		return assocStorage;
+		return associationStorage;
 	}
 
 	@Override
