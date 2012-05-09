@@ -18,36 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.mongodb;
-
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.grid.AssociationKey;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
+package org.hibernate.ogm.datastore.mongodb;
 
 /**
+ * Defines the various association storage strategies
+ *
  * @author Alan Fitton <alan at eth0.org.uk>
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MongoHelpers {
-
-	public static DBObject associationKeyToObject(AssociationStorage storage,
-			AssociationKey key) {
-		Object[] columnValues = key.getColumnValues();
-		DBObject columns = new BasicDBObject( columnValues.length );
-
-		int i = 0;
-		for ( String name : key.getColumnNames() ) {
-			columns.put( name, columnValues[i++] );
-		}
-
-		DBObject obj = new BasicDBObject( 1 );
-		obj.put( MongoDBDialect.COLUMNS_FIELDNAME, columns );
-		
-		if (storage == AssociationStorage.GLOBAL_COLLECTION)
-			obj.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
-
-		return obj;
-	}
-
+public enum AssociationStorage {
+	/**
+	 * Store the association info in a unique MongoDB collection for all associations
+	 */
+	GLOBAL_COLLECTION,
+	/**
+	 * Store the association info in the owning entity document
+	 */
+	IN_ENTITY,
+	/**
+	 * Store the association in a dedicated MongoDB collection per association
+	 */
+	COLLECTION
 }

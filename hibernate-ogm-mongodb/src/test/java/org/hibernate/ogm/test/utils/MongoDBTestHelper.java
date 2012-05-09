@@ -29,9 +29,9 @@ import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
@@ -79,15 +79,15 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			if ( collectionName.startsWith( "system." ) )
 				continue;
 
-			if ( storage == AssociationStorage.GLOBAL
+			if ( storage == AssociationStorage.GLOBAL_COLLECTION
 					&& collectionName.equals( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ) )
 				continue;
 
-			if ( storage == AssociationStorage.PREFIXED
+			if ( storage == AssociationStorage.COLLECTION
 					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
 				continue;
 
-			if ( storage == AssociationStorage.ENTITY ) {
+			if ( storage == AssociationStorage.IN_ENTITY ) {
 				DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
 						false ) );
 				count += db.getCollection( collectionName ).find( query ).count();
@@ -131,17 +131,17 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		AssociationStorage assocStorage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
 
-		if ( assocStorage == AssociationStorage.GLOBAL ) {
+		if ( assocStorage == AssociationStorage.GLOBAL_COLLECTION ) {
 			return (int) db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count();
 		}
 		else {
 			int count = 0;
 			for ( String collectionName : db.getCollectionNames() ) {
-				if ( assocStorage == AssociationStorage.PREFIXED
+				if ( assocStorage == AssociationStorage.COLLECTION
 						&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
 					count += db.getCollection( collectionName ).count();
 				}
-				else if ( assocStorage == AssociationStorage.ENTITY ) {
+				else if ( assocStorage == AssociationStorage.IN_ENTITY ) {
 					DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
 							true ) );
 					count += db.getCollection( collectionName ).find( query ).count();
