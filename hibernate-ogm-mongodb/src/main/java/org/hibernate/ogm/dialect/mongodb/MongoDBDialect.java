@@ -83,7 +83,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key) {
 		DBObject found = this.getObject( key );
-		return this.getObject( key ) != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
+		return found != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
 	}
 
 	@Override
