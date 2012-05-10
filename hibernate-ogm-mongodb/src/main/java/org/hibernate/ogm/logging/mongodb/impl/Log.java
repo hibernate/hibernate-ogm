@@ -71,4 +71,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = TRACE)
 	@Message(id = 1210, value = "Removed [%d] associations")
 	void removedAssociation(int nAffected);
+
+	@LogMessage(level = INFO)
+	@Message(id = 1211, value = "The configuration property '" + Environment.MONGODB_SAFE + "' is set to %b")
+	void useSafe( boolean safe );
 }
