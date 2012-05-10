@@ -107,6 +107,7 @@ public class PropertyMetadataProvider {
 
 				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED;
 				collectionMetadataKey.setAssociationKind( type );
+				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
 		}
 		return collectionMetadataKey;

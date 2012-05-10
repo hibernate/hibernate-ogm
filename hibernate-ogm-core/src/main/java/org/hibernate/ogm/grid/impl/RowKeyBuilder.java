@@ -74,4 +74,8 @@ public class RowKeyBuilder {
 		this.tuple = tuple;
 		return this;
 	}
+
+	public String[] getColumnNames() {
+		return columnNames.toArray( new String[ columnNames.size() ] );
+	}
 }

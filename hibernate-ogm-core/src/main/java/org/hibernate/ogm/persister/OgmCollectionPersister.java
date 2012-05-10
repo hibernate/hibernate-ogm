@@ -321,6 +321,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return builder;
 	}
 
+	public String[] getRowKeyColumnNames() {
+		return initializeRowKeyBuilder().getColumnNames();
+	}
+
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
