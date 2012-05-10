@@ -25,6 +25,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import org.hibernate.ogm.grid.AssociationKind;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -51,4 +52,7 @@ public class MongoHelpers {
 		return obj;
 	}
 
+	public static boolean isEmbedded(AssociationKey key) {
+		return key.getAssociationKind() == AssociationKind.EMBEDDED;
+	}
 }
