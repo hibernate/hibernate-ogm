@@ -87,13 +87,15 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 				}
 
 				Object cfgSafe = this.cfg.get( Environment.MONGODB_SAFE );
-				final boolean safe = cfgSafe != null ? Boolean.parseBoolean( cfgSafe.toString() )
-						: Environment.MONGODB_DEFAULT_SAFE;
+				boolean safe = Environment.MONGODB_DEFAULT_SAFE;
+				if ( cfgSafe != null ) {
+					safe = Boolean.parseBoolean( cfgSafe.toString() );
+				}
+
 				MongoOptions options = new MongoOptions();
 				options.safe = safe;
-				if ( safe ) {
-					log.useSafe();
-				}
+				log.useSafe( safe );
+
 				log.connectingToMongo( host, port );
 
 				ServerAddress serverAddress = new ServerAddress( host, port );
@@ -120,7 +122,6 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	public DB getDatabase() {
 		return mongoDb;
 	}
-
 
 	private DB extractDatabase() {
 		Object dbNameObject = this.cfg.get( Environment.MONGODB_DATABASE );
