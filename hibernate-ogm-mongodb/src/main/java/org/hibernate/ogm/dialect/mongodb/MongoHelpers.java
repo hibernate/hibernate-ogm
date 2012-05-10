@@ -36,8 +36,7 @@ import java.util.Collections;
  */
 public class MongoHelpers {
 
-	public static DBObject associationKeyToObject(AssociationStorage storage,
-			AssociationKey key) {
+	public static DBObject associationKeyToObject(AssociationStorage storage, AssociationKey key) {
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
 
@@ -46,7 +45,7 @@ public class MongoHelpers {
 			columns.put( name, columnValues[i++] );
 		}
 
-		if ( isEmbedded( key ) ) {
+		if ( isEmbeddedInEntity( key, storage ) ) {
 			return columns;
 		}
 		else {
@@ -60,8 +59,9 @@ public class MongoHelpers {
 		}
 	}
 
-	public static boolean isEmbedded(AssociationKey key) {
-		return key != null && key.getAssociationKind() == AssociationKind.EMBEDDED;
+	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorage storage) {
+		return ( key != null && key.getAssociationKind() == AssociationKind.EMBEDDED )
+				|| storage == AssociationStorage.IN_ENTITY;
 	}
 
 	//only for embedded
