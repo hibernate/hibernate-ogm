@@ -269,30 +269,25 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private RowKeyAndTuple createAndPutTupleforInsert(Serializable key, PersistentCollection collection,
 													  PropertyMetadataProvider metadataProvider,
 													  SessionImplementor session, int i, Object entry) {
-		RowKeyBuilder rowKeyBuilder = new RowKeyBuilder()
-				.tableName( getTableName() );
+		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
 			identifierGridType.nullSafeSet( tuple, identifier, names, session  );
-			rowKeyBuilder.addColumns( names );
 		}
 		getKeyGridType().nullSafeSet( tuple, key, getKeyColumnNames(), session );
-		rowKeyBuilder.addColumns( getKeyColumnNames() );
 		//No need to write to where as we don't do where clauses in OGM :)
 		if ( hasIndex ) {
 			Object index = collection.getIndex( entry, i, this );
 			indexGridType.nullSafeSet(
 					tuple, incrementIndexByBase( index ), getIndexColumnNames(), session
 			);
-			rowKeyBuilder.addColumns( getIndexColumnNames() );
 		}
 		else {
 			//use element as tuple key
 			final Object element = collection.getElement( entry );
 			getElementGridType().nullSafeSet( tuple, element, getElementColumnNames(), session );
-			rowKeyBuilder.addColumns( getElementColumnNames() );
 
 		}
 		RowKeyAndTuple result = new RowKeyAndTuple();
@@ -310,26 +305,38 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		Tuple tuple;
 	}
 
+	//Centralize the RowKey column setting logic as the values settings are slightly different between insert / update and delete
+	public RowKeyBuilder initializeRowKeyBuilder() {
+		RowKeyBuilder builder = new RowKeyBuilder().tableName( getTableName() );
+		if ( hasIdentifier ) {
+			builder.addColumns( getIdentifierColumnName() );
+		} else {
+			builder.addColumns( getKeyColumnNames() );
+			if ( !isOneToMany() && hasIndex && !indexContainsFormula ) {   //!isOneToMany() present in delete not in update
+				builder.addColumns( getIndexColumnNames() );
+			} else {
+				builder.addColumns( getElementColumnNames() );
+			}
+		}
+		return builder;
+	}
+
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
-		RowKeyBuilder rowKeyBuilder = new RowKeyBuilder()
-				.tableName( getTableName() );
+		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
 			identifierGridType.nullSafeSet( tuple, identifier, names, session  );
-			rowKeyBuilder.addColumns( names );
 		}
 		else {
 			getKeyGridType().nullSafeSet( tuple, key, getKeyColumnNames(), session );
-			rowKeyBuilder.addColumns(  getKeyColumnNames() );
 			//No need to write to where as we don't do where clauses in OGM :)
-			if ( hasIndex && !indexContainsFormula ) {
+			if ( !isOneToMany() && hasIndex && !indexContainsFormula ) {
 				Object index = collection.getIndex( entry, i, this );
 				indexGridType.nullSafeSet(
 						tuple, incrementIndexByBase( index ), getIndexColumnNames(), session
 				);
-				rowKeyBuilder.addColumns( getIndexColumnNames() );
 			}
 			else {
 				final Object snapshotElement = collection.getSnapshotElement( entry, i );
@@ -337,32 +344,27 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					throw new AssertionFailure("cannot use a formula-based element in the where condition");
 				}
 				getElementGridType().nullSafeSet( tuple, snapshotElement, getElementColumnNames(), session );
-				rowKeyBuilder.addColumns( getIndexColumnNames() );
 			}
 		}
 		return rowKeyBuilder.values( tuple ).build();
 	}
 
 	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
-		RowKeyBuilder rowKeyBuilder = new RowKeyBuilder()
-				.tableName( getTableName() );
+		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
 			String[] names = { getIdentifierColumnName() };
 			identifierGridType.nullSafeSet( tuple, identifier, names, session );
-			rowKeyBuilder.addColumns( names );
 		}
 		else {
 			getKeyGridType().nullSafeSet( tuple, key, getKeyColumnNames(), session );
-			rowKeyBuilder.addColumns( getKeyColumnNames() );
 			//No need to write to where as we don't do where clauses in OGM :)
 			if ( findByIndex ) {
 				Object index = entry;
 				indexGridType.nullSafeSet(
 						tuple, incrementIndexByBase( index ), getIndexColumnNames(), session
 				);
-				rowKeyBuilder.addColumns( getIdentifierColumnName() );
 			}
 			else {
 				final Object snapshotElement = entry;
@@ -370,7 +372,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					throw new AssertionFailure("cannot use a formula-based element in the where condition");
 				}
 				getElementGridType().nullSafeSet( tuple, snapshotElement, getElementColumnNames(), session );
-				rowKeyBuilder.addColumns( getElementColumnNames() );
 			}
 		}
 		rowKeyBuilder.values( tuple );
