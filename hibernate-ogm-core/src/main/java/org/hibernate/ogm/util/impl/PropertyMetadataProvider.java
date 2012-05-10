@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -33,8 +34,10 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.ogm.type.ManyToOneType;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * @author Emmanuel Bernard
@@ -50,6 +53,8 @@ public class PropertyMetadataProvider {
 	private Object[] columnValues;
 	private GridDialect gridDialect;
 	private OgmCollectionPersister collectionPersister;
+	private GridType gridPropertyType;
+	private OgmEntityPersister persister;
 
 	//fluent methods for populating data
 
@@ -110,6 +115,29 @@ public class PropertyMetadataProvider {
 				collectionMetadataKey.setAssociationKind( type );
 				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
+			else if ( gridPropertyType != null ) {
+				if ( gridPropertyType instanceof ManyToOneType ) {
+					String entityName = ( ( ManyToOneType ) gridPropertyType ).getReturnedClass().getName();
+					String proeprtyName = "foo" ; //( ( ManyToOneType ) gridPropertyType ).getReferencedPropertyName();
+					SessionFactoryImplementor factory = session.getFactory();
+//					EntityPersister entityPersister = factory.getEntityPersister( entityName );
+//					entityPersister.getEntityMetamodel()
+					Set<String> collectionRolesByEntityParticipant = factory.getCollectionRolesByEntityParticipant( persister.getEntityName() );
+					if ( collectionRolesByEntityParticipant == null || collectionRolesByEntityParticipant.size() == 0 ) {
+						System.out.println( "******* Not participating in  collection " + persister.getEntityName() );
+					}
+					else {
+						System.out.println( "******* Participating in  collection " + persister.getEntityName() );
+					}
+
+				}
+				else {
+					System.out.println( "*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0] + ":" + gridPropertyType.getClass() );
+				}
+			}
+			else {
+				System.out.println("*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0]);
+			}
 		}
 		return collectionMetadataKey;
 	}
@@ -164,6 +192,16 @@ public class PropertyMetadataProvider {
 
 	public PropertyMetadataProvider collectionPersister(OgmCollectionPersister collectionPersister) {
 		this.collectionPersister = collectionPersister;
+		return this;
+	}
+
+	public PropertyMetadataProvider gridPropertyType(GridType gridPropertyType) {
+		this.gridPropertyType = gridPropertyType;
+		return this;
+	}
+
+	public PropertyMetadataProvider persister(OgmEntityPersister persister) {
+		this.persister = persister;
 		return this;
 	}
 }

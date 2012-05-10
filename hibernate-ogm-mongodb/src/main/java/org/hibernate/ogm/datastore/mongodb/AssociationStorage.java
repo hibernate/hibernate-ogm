@@ -34,5 +34,9 @@ public enum AssociationStorage {
 	/**
 	 * Store the association in a dedicated MongoDB collection per association
 	 */
-	COLLECTION
+	COLLECTION,
+	/**
+	 * Store association information from within the entity
+	 */
+	IN_ENTITY
 }

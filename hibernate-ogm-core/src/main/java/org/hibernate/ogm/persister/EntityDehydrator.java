@@ -189,7 +189,9 @@ class EntityDehydrator {
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) );
+				.tableName( persister.getTableName( tableIndex ) )
+				.gridPropertyType( gridPropertyTypes[propertyIndex] )
+				.persister(persister);
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
