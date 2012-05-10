@@ -44,6 +44,7 @@ public final class AssociationKey implements Serializable {
 	private transient String collectionRole;
 	private transient EntityKey entityKey;
 	private transient AssociationKind associationKind;
+	private transient String[] rowKeyColumnNames;
 
 	public AssociationKey(String table, String[] columnNames, Object[] columnValues) {
 		if ( columnNames.length != columnValues.length ) {
@@ -87,6 +88,14 @@ public final class AssociationKey implements Serializable {
 	 */
 	public AssociationKind getAssociationKind() {
 		return associationKind;
+	}
+
+	public String[] getRowKeyColumnNames() {
+		return rowKeyColumnNames;
+	}
+
+	public void setRowKeyColumnNames(String[] rowKeyColumnNames) {
+		this.rowKeyColumnNames = rowKeyColumnNames;
 	}
 
 	@Override
