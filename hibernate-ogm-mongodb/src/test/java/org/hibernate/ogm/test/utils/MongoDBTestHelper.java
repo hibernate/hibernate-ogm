@@ -87,14 +87,8 @@ public class MongoDBTestHelper implements TestableGridDialect {
 					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
 				continue;
 
-			if ( storage == AssociationStorage.IN_ENTITY ) {
-				DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
-						false ) );
-				count += db.getCollection( collectionName ).find( query ).count();
-			}
-			else {
-				count += db.getCollection( collectionName ).count();
-			}
+
+			count += db.getCollection( collectionName ).count();
 		}
 		return count;
 	}
@@ -140,11 +134,6 @@ public class MongoDBTestHelper implements TestableGridDialect {
 				if ( assocStorage == AssociationStorage.COLLECTION
 						&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
 					count += db.getCollection( collectionName ).count();
-				}
-				else if ( assocStorage == AssociationStorage.IN_ENTITY ) {
-					DBObject query = new BasicDBObject( MongoDBDialect.COLUMNS_FIELDNAME, new BasicDBObject( "$exists",
-							true ) );
-					count += db.getCollection( collectionName ).find( query ).count();
 				}
 			}
 			return count;

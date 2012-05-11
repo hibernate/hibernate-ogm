@@ -115,8 +115,6 @@ public class MongoDBDialect implements GridDialect {
 
 	private DBCollection getAssociationCollection(AssociationKey key) {
 		switch ( provider.getAssociationStorage() ) {
-		case IN_ENTITY:
-			return getCollection( key.getTable() );
 		case GLOBAL_COLLECTION:
 			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
 		case COLLECTION:
