@@ -62,9 +62,6 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( AssociationStorage.GLOBAL_COLLECTION.name() ) ) {
 			associationStorage = AssociationStorage.GLOBAL_COLLECTION;
 		}
-		else if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( AssociationStorage.IN_ENTITY.name() ) ) {
-			associationStorage = AssociationStorage.IN_ENTITY;
-		}
 		else {
 			associationStorage = AssociationStorage.COLLECTION;
 		}

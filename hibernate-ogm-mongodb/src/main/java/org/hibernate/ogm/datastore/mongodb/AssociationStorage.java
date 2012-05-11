@@ -32,10 +32,6 @@ public enum AssociationStorage {
 	 */
 	GLOBAL_COLLECTION,
 	/**
-	 * Store the association info in the owning entity document
-	 */
-	IN_ENTITY,
-	/**
 	 * Store the association in a dedicated MongoDB collection per association
 	 */
 	COLLECTION
