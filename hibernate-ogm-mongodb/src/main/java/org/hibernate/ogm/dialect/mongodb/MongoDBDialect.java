@@ -36,7 +36,6 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
@@ -53,6 +52,8 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**
@@ -170,6 +171,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 	}
 
+	//not for embedded
 	private DBObject findAssociation(AssociationKey key) {
 		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
 		return this.getAssociationCollection( key ).findOne( associationKeyObject );
@@ -179,9 +181,8 @@ public class MongoDBDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key) {
 		if ( isEmbedded( key ) ) {
 			DBObject entity = getObject( key.getEntityKey() );
-			DBObject association = getAssociationFieldOrNull( key, entity );
-			if ( association != null ) {
-				return new Association( new MongoDBAssociationSnapshot( association ) );
+			if ( getAssociationFieldOrNull( key, entity ) != null ) {
+				return new Association( new MongoDBAssociationSnapshot( entity, key ) );
 			}
 			else {
 				return null;
@@ -191,17 +192,8 @@ public class MongoDBDialect implements GridDialect {
 		if ( result == null ) {
 			return null;
 		} else {
-			return new Association( new MongoDBAssociationSnapshot( result ) );
+			return new Association( new MongoDBAssociationSnapshot( result, key ) );
 		}
-	}
-
-	private DBObject getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = key.getCollectionRole().split( "\\." );
-		DBObject field = entity;
-		for (String node : path) {
-			field = field != null ? (DBObject) field.get( node ) : null;
-		}
-		return field;
 	}
 
 	@Override
@@ -213,22 +205,22 @@ public class MongoDBDialect implements GridDialect {
 				insert = true;
 				entity = new BasicDBObject( ID_FIELDNAME, key.getEntityKey().getColumnValues()[0] );
 			}
-			DBObject association = getAssociationFieldOrNull( key, entity );
-			if ( association == null ) {
-				association = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-				association.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
+			if ( getAssociationFieldOrNull( key, entity ) == null ) {
 				if ( insert ) {
-					entity.put( key.getCollectionRole(), association );
+					//adding assoc before insert
+					addEmptyAssociationField( key, entity );
 					getCollection( key.getEntityKey() ).insert( entity );
 				}
 				else {
 					BasicDBObject updater = new BasicDBObject();
-					this.addSubQuery( "$set", updater, key.getCollectionRole(), association );
+					this.addSubQuery( "$set", updater, key.getCollectionRole(),  Collections.EMPTY_LIST );
 					//TODO use entity filter with only the ids
 					this.getCollection( key.getEntityKey() ).update( entity, updater, true, false );
+					//adding assoc after update because the query takes the whole object today
+					addEmptyAssociationField( key, entity );
 				}
 			}
-			return new Association( new MongoDBAssociationSnapshot( association ) );
+			return new Association( new MongoDBAssociationSnapshot( entity, key ) );
 		}
 		DBCollection associations = getAssociationCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
@@ -236,24 +228,15 @@ public class MongoDBDialect implements GridDialect {
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
 		
-		return new Association( new MongoDBAssociationSnapshot( assoc ) );
+		return new Association( new MongoDBAssociationSnapshot( assoc, key ) );
 	}
 
-	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey, String prefix) {
-		DBObject pull = new BasicDBObject( getPrefixedField( ROWS_FIELDNAME, prefix ),  snapshot.getRowKeyDBObject( rowKey ) );
+	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey, String associationField) {
+		DBObject pull = new BasicDBObject( associationField,  snapshot.getRowKeyDBObject( rowKey ) );
 		return new BasicDBObject( "$pull", pull );
 	}
 
-	private String getPrefixedField(String name, String prefix) {
-		if ( prefix != null && ! prefix.isEmpty() ) {
-			return new StringBuilder(prefix).append( "." ).append( name ).toString();
-		}
-		else {
-			return name;
-		}
-	}
-
-
+	//non embedded only
 	private static DBObject createBaseRowKey(RowKey rowKey) {
 		DBObject row = new BasicDBObject();
 		DBObject rowColumnMap = new BasicDBObject();
@@ -265,23 +248,24 @@ public class MongoDBDialect implements GridDialect {
 
 		row.put( TABLE_FIELDNAME, rowKey.getTable() );
 		row.put( COLUMNS_FIELDNAME, rowColumnMap );
-		
+
 		return row;
 	}
 
-	private DBObject putAssociationRowKey(RowKey rowKey, Tuple value, String prefix) {
-		DBObject row = createBaseRowKey(rowKey);
+	private DBObject putAssociationRowKey(RowKey rowKey, Tuple value, String associationField, AssociationKey associationKey) {
 		DBObject rowTupleMap = new BasicDBObject();
-		
-		for ( String valueKeyName : value.getColumnNames() )
+		for ( String valueKeyName : value.getColumnNames() ) {
 			rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
-
-		row.put( TUPLE_FIELDNAME, rowTupleMap );
-
-		return new BasicDBObject( "$push", new BasicDBObject(
-				getPrefixedField( ROWS_FIELDNAME, prefix ),
-				row )
-		);
+		}
+		DBObject row;
+		if ( isEmbedded( associationKey ) ) {
+			row = rowTupleMap;
+		}
+		else {
+			row = createBaseRowKey(rowKey);
+			row.put( TUPLE_FIELDNAME, rowTupleMap );
+		}
+		return new BasicDBObject( "$push", new BasicDBObject( associationField, row ) );
 	}
 
 	@Override
@@ -289,17 +273,17 @@ public class MongoDBDialect implements GridDialect {
 		DBCollection collection;
 		DBObject query;
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot)association.getSnapshot();
-		String fieldPrefix;
+		String associationField;
 
 		if ( isEmbedded( key ) ) {
 			collection = this.getCollection( key.getEntityKey() );
 			query = new BasicDBObject( ID_FIELDNAME, key.getEntityKey().getColumnValues()[0] );
-			fieldPrefix = key.getCollectionRole();
+			associationField = key.getCollectionRole();
 		}
 		else {
 			collection = getAssociationCollection( key );
 			query = assocSnapshot.getQueryObject();
-			fieldPrefix = null;
+			associationField = ROWS_FIELDNAME;
 		}
 
 
@@ -311,17 +295,14 @@ public class MongoDBDialect implements GridDialect {
 
 			switch ( action.getType() ) {
 			case CLEAR:
-				update = new BasicDBObject( "$set", new BasicDBObject(
-						getPrefixedField( ROWS_FIELDNAME, fieldPrefix ),
-						Collections.EMPTY_LIST )
-				);
+				update = new BasicDBObject( "$set", new BasicDBObject (associationField, Collections.EMPTY_LIST ) );
 				break;
 			case PUT_NULL:
 			case PUT:
-				update = putAssociationRowKey( rowKey, rowValue, fieldPrefix );
+				update = putAssociationRowKey( rowKey, rowValue, associationField, key );
 				break;
 			case REMOVE:
-				update = removeAssociationRowKey( assocSnapshot, rowKey, fieldPrefix );
+				update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
 				break;
 			}
 
