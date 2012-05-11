@@ -71,6 +71,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		return new Tuple( new MongoDBTupleSnapshot( dbTuple ) );
 	}
 
+	//not for embedded
 	public DBObject getQueryObject() {
 		DBObject query = new BasicDBObject();
 		query.put( MongoDBDialect.ID_FIELDNAME, assoc.get( MongoDBDialect.ID_FIELDNAME ) );
@@ -87,10 +88,6 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		return map.size();
 	}
 
-	public Map<RowKey, DBObject> getAssembledMap() {
-		return map;
-	}
-
 	@SuppressWarnings("unchecked")
 	public Collection<DBObject> getRows() {
 		return (Collection<DBObject>)assoc.get( MongoDBDialect.ROWS_FIELDNAME );
@@ -103,10 +100,6 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Set<RowKey> getRowKeys() {
 		return map.keySet();
-	}
-
-	public DBObject getDBObject() {
-		return this.assoc;
 	}
 
 	@Override
