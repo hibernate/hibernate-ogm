@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider.AssociationStorage;
 import org.hibernate.ogm.grid.AssociationKey;
 
 import com.mongodb.BasicDBObject;
@@ -30,7 +31,8 @@ import com.mongodb.DBObject;
  */
 public class MongoHelpers {
 
-	public static DBObject associationKeyToObject(AssociationKey key) {
+	public static DBObject associationKeyToObject(AssociationStorage storage,
+			AssociationKey key) {
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
 
@@ -41,6 +43,9 @@ public class MongoHelpers {
 
 		DBObject obj = new BasicDBObject( 1 );
 		obj.put( MongoDBDialect.COLUMNS_FIELDNAME, columns );
+		
+		if (storage == AssociationStorage.GLOBAL)
+			obj.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 
 		return obj;
 	}
