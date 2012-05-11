@@ -46,6 +46,10 @@ public class MapTest extends OgmTestCase {
 		session.persist( home );
 		session.persist( work );
 		session.persist( user );
+		User user2 = new User();
+		user2.getNicknames().add("idrA");
+		user2.getNicknames().add("day[9]");
+		session.persist( user2 );
 		tx.commit();
 
 		session.clear();
@@ -68,6 +72,15 @@ public class MapTest extends OgmTestCase {
 		session.delete( user );
 		session.delete( session.load(Address.class, home.getId() ) );
 		session.delete( session.load(Address.class, work.getId() ) );
+
+		user2 = (User) session.get( User.class, user2.getId() );
+		assertThat( user2.getNicknames() )
+				.as( "Should have 2 nicks" )
+				.hasSize( 2 );
+		assertThat( user2.getNicknames() )
+			.as( "Should contain nick" )
+			.contains( "idrA", "day[9]" );
+		session.delete( user2 );
 
 		tx.commit();
 
