@@ -471,6 +471,11 @@ em.close();</programlisting>
       <listitem>
         <para><literal>hibernate.ogm.mongodb.database</literal> which is the database to connect to</para>
       </listitem>
+      
+      <listitem>
+        <para>To enable the safe mode (which means WriteConcern.SAFE for all operations) you have to use
+        <literal>hibernate.ogm.mongodb.safe</literal> and set it to <literal>true</literal></para>
+      </listitem>
     </itemizedlist>
   </section>
 
