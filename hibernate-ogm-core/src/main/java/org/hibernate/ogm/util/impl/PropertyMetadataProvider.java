@@ -32,6 +32,7 @@ import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.persister.collection.CollectionPersister;
 
 import java.io.Serializable;
 
@@ -96,7 +97,7 @@ public class PropertyMetadataProvider {
 			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 			if (collectionPersister != null) {
-				collectionMetadataKey.setCollectionRole( collectionPersister.getRole() );
+				collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
 				EntityKey entityKey = EntityKeyBuilder.fromPersister(
 						(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
 						(Serializable) key,
@@ -111,6 +112,12 @@ public class PropertyMetadataProvider {
 			}
 		}
 		return collectionMetadataKey;
+	}
+
+	private String getUnqualifiedRole(CollectionPersister persister) {
+		String entity = persister.getOwnerEntityPersister().getEntityName();
+		String role = persister.getRole();
+		return role.substring( entity.length() + 1 );
 	}
 
 	private Object[] getKeyColumnValues() {
