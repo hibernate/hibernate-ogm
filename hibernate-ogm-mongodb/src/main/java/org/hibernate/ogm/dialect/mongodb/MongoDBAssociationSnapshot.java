@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,10 +30,14 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -41,25 +46,40 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, DBObject> map;
 	private final DBObject assoc;
+	private AssociationKey associationKey;
 
-	public MongoDBAssociationSnapshot(DBObject assoc) {
-		this.assoc = assoc;
+	/**
+	 * @param assoc DBObject containing the association information
+	 * @param key
+	 */
+	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key) {
+		this.assoc = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
-		
+		this.associationKey = key;
+
 		for ( DBObject row : getRows() ) {
-			List<String> columnNames = new ArrayList<String>();
-			List<Object> columnValues = new ArrayList<Object>();
-			DBObject columns = (DBObject)row.get( MongoDBDialect.COLUMNS_FIELDNAME );
-			
-			for ( String columnKey : columns.keySet() ) {
-				columnNames.add( columnKey );
-				columnValues.add( columns.get( columnKey ) );
+			Collection<String> columnNames;
+			DBObject mongodbColumnData;
+			if ( isEmbedded( key ) ) {
+				//in the embedded case, we read RowKey metadata from AssociationKey and data from the tuple
+				columnNames = Arrays.asList( key.getRowKeyColumnNames() );
+				mongodbColumnData = row;
 			}
-			
-			RowKey rowKey = new RowKey( (String)row.get( MongoDBDialect.TABLE_FIELDNAME ),
-					columnNames.toArray( new String[]{} ),
+			else {
+				//we read RowKey metadata and data from the tuple
+				mongodbColumnData = (DBObject)row.get( MongoDBDialect.COLUMNS_FIELDNAME );
+				columnNames = mongodbColumnData.keySet();
+			}
+
+			List<Object> columnValues = new ArrayList<Object>();
+			for ( String columnKey : columnNames ) {
+				columnValues.add( mongodbColumnData.get( columnKey ) );
+			}
+			RowKey rowKey = new RowKey(
+					key.getTable(),
+					columnNames.toArray( new String[ columnNames.size() ] ),
 					columnValues.toArray() );
-			
+
 			this.map.put( rowKey, row );
 		}
 	}
@@ -67,8 +87,10 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		DBObject row = this.map.get( column );
-		DBObject dbTuple = (DBObject)row.get( MongoDBDialect.TUPLE_FIELDNAME );
-		return new Tuple( new MongoDBTupleSnapshot( dbTuple ) );
+		if ( ! isEmbedded( associationKey ) ) {
+			row = (DBObject) row.get( MongoDBDialect.TUPLE_FIELDNAME );
+		}
+		return new Tuple( new MongoDBTupleSnapshot( row ) );
 	}
 
 	//not for embedded
@@ -89,8 +111,13 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Collection<DBObject> getRows() {
-		return (Collection<DBObject>)assoc.get( MongoDBDialect.ROWS_FIELDNAME );
+	private Collection<DBObject> getRows() {
+		if ( isEmbedded( associationKey ) ) {
+			return getAssociationFieldOrNull( associationKey, assoc );
+		}
+		else {
+			return (Collection<DBObject>) assoc.get( MongoDBDialect.ROWS_FIELDNAME );
+		}
 	}
 
 	public DBObject getRowKeyDBObject(RowKey rowKey) {
