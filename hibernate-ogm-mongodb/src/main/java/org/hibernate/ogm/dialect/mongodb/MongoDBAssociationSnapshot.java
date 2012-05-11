@@ -41,6 +41,7 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 

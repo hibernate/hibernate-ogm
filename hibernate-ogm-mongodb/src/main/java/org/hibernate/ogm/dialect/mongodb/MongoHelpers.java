@@ -32,6 +32,7 @@ import java.util.Collections;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class MongoHelpers {
 
