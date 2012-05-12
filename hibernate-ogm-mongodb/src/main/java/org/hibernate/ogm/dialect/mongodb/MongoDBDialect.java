@@ -268,12 +268,26 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBObject putAssociationRowKey(RowKey rowKey, Tuple value, String associationField, AssociationKey associationKey) {
+		boolean embedded = isEmbedded( associationKey );
 		DBObject rowTupleMap = new BasicDBObject();
 		for ( String valueKeyName : value.getColumnNames() ) {
-			rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
+			boolean add = true;
+			if ( embedded ) {
+				//exclude columns from the associationKey
+				for ( String assocColumn : associationKey.getColumnNames() ) {
+					if ( valueKeyName.equals( assocColumn ) ) {
+						add = false;
+						break;
+					}
+				}
+			}
+			if (add) {
+				rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
+			}
 		}
 		DBObject row;
-		if ( isEmbedded( associationKey ) ) {
+
+		if ( embedded ) {
 			row = rowTupleMap;
 		}
 		else {

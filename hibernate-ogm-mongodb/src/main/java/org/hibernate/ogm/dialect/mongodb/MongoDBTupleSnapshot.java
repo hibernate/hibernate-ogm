@@ -21,15 +21,17 @@
 
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.logging.mongodb.impl.Log;
-import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 import com.mongodb.DBObject;
+import org.hibernate.ogm.grid.RowKey;
+
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
@@ -38,13 +40,26 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	
 	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
+	private final RowKey rowKey;
 
 	public MongoDBTupleSnapshot(DBObject dbObject) {
+		this( dbObject, null );
+	}
+
+	//consider RowKey columns and values as aprt of the Tuple
+	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
 		this.dbObject = dbObject;
+		this.rowKey = rowKey;
 	}
 
 	@Override
 	public Object get(String column) {
+		if ( rowKey != null && ! isEmpty() ) {
+			Object result = getValueFromColumns( column, rowKey.getColumnNames(), rowKey.getColumnValues() );
+			if ( result != null ) {
+				return result;
+			}
+		}
 		if ( column.contains( "." ) ) {
 			String[] fields = EMBEDDED_FIELDNAME_SEPARATOR.split( column, 0 );
 			return this.getObject( this.dbObject.toMap(), fields, 0 );
@@ -54,9 +69,18 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		}
 	}
 
+
+
 	@Override
 	public Set<String> getColumnNames() {
-		return this.dbObject.toMap().keySet();
+		Set<String> columns = this.dbObject.toMap().keySet();
+		if ( rowKey != null && ! isEmpty() ) {
+			columns = new HashSet<String>(columns);
+			for ( String column : rowKey.getColumnNames() ) {
+				columns.add( column );
+			}
+		}
+		return columns;
 	}
 
 	public DBObject getDbObject() {

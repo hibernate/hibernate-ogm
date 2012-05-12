@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -37,6 +38,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**
@@ -74,11 +76,23 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 			List<Object> columnValues = new ArrayList<Object>();
 			for ( String columnKey : columnNames ) {
-				columnValues.add( mongodbColumnData.get( columnKey ) );
+				boolean getFromMongoData = true;
+				int length = key.getColumnNames().length;
+				for ( int index = 0 ; index < length; index++ ) {
+					String assocColumn = key.getColumnNames()[index];
+					if ( assocColumn.equals( columnKey ) ) {
+						columnValues.add( associationKey.getColumnValues()[index] );
+						getFromMongoData = false;
+						break;
+					}
+				}
+				if ( getFromMongoData == true ) {
+					columnValues.add( mongodbColumnData.get( columnKey ) );
+				}
 			}
 			RowKey rowKey = new RowKey(
 					key.getTable(),
-					columnNames.toArray( new String[ columnNames.size() ] ),
+					columnNames.toArray( new String[columnNames.size()] ),
 					columnValues.toArray() );
 
 			this.map.put( rowKey, row );
@@ -91,7 +105,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		if ( ! isEmbedded( associationKey ) ) {
 			row = (DBObject) row.get( MongoDBDialect.TUPLE_FIELDNAME );
 		}
-		return new Tuple( new MongoDBTupleSnapshot( row ) );
+		return row == null ? null : new Tuple( new MongoDBTupleSnapshot( row, column ) );
 	}
 
 	//not for embedded

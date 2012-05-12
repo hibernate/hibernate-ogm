@@ -26,6 +26,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.hibernate.ogm.grid.AssociationKind;
+import org.hibernate.ogm.grid.RowKey;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +62,7 @@ public class MongoHelpers {
 	}
 
 	public static boolean isEmbedded(AssociationKey key) {
-		return key.getAssociationKind() == AssociationKind.EMBEDDED;
+		return key != null && key.getAssociationKind() == AssociationKind.EMBEDDED;
 	}
 
 	//only for embedded
@@ -92,5 +93,15 @@ public class MongoHelpers {
 				parent.put( node, field );
 			}
 		}
+	}
+
+	// Return null if the column is not present
+	public static Object getValueFromColumns(String column, String[] columns, Object[] values) {
+		for ( int index = 0 ; index < columns.length ; index++ ) {
+			if ( columns[index].equals( column ) ) {
+				return values[index];
+			}
+		}
+		return null;
 	}
 }
