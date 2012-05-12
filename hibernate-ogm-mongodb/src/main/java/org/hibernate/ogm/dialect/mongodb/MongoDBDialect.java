@@ -57,6 +57,21 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationField
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**
+ * Each Tuple entry is stored as a property in a MongoDB document.
+ *
+ * Each association is stored in an association document containing three properties:
+ * - the association table name (optionally)
+ * - the RowKey column names and values
+ * - the tuples as an array of elements
+ *
+ * Associations can be stored as:
+ * - one MongoDB collection per association class. The collection name is prefixed.
+ * - one MongoDB collection for all associations (the association table name property in then used)
+ * - embed the collection info in the owning entity document is planned but not supported at the moment (OGM-177)
+ *
+ * Collection of embeddable are stored within the owning entity document under the
+ * unqualified collection role
+ *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Alan Fitton <alan at eth0.org.uk>
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
