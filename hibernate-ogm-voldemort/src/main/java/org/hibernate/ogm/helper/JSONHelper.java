@@ -34,8 +34,8 @@ import org.hibernate.ogm.grid.EntityKey;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
@@ -60,7 +60,7 @@ public class JSONHelper {
                 throws JsonParseException {
             return new Date( json.getAsLong() );
         }
-    }).registerTypeAdapter( Calendar.class, new JsonSerializer<Calendar>() {
+    } ).registerTypeAdapter( Calendar.class, new JsonSerializer<Calendar>() {
 
         @Override
         public JsonElement serialize(Calendar src, Type typeOfSrc, JsonSerializationContext context) {
