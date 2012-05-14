@@ -20,6 +20,10 @@
 package org.hibernate.ogm.helper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -29,6 +33,14 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 /**
  * @author Seiya Kawashima <skawashima@uchicago.edu>
@@ -37,8 +49,43 @@ public class JSONHelper {
 
 	private final WrapperClassDetector classDetector;
 	private final JSONedClassDetector jsonDetector;
-	private final Gson gson = new Gson();
+	private final Gson gson = new GsonBuilder().registerTypeAdapter( Date.class, new JsonSerializer<Date>() {
+        @Override
+        public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive( src.getTime() );
+        }
+    } ).registerTypeAdapter( Date.class, new JsonDeserializer<Date>() {
 
+        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            return new Date( json.getAsLong() );
+        }
+    }).registerTypeAdapter( Calendar.class, new JsonSerializer<Calendar>() {
+
+        @Override
+        public JsonElement serialize(Calendar src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive( src.getTimeInMillis() );
+        }
+
+    } ).registerTypeAdapter( Calendar.class, new JsonDeserializer<Calendar>() {
+
+        @Override
+        public Calendar deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+                throws JsonParseException {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeInMillis( json.getAsLong() );
+            return calendar;
+        }
+
+    } ).registerTypeAdapter( GregorianCalendar.class, new JsonSerializer<GregorianCalendar>() {
+
+        @Override
+        public JsonElement serialize(GregorianCalendar src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive( src.getTimeInMillis() );
+        }
+
+    } ).create();
+	
 	public JSONHelper() {
 		this.classDetector = new WrapperClassDetector();
 		this.jsonDetector = new JSONedClassDetector();
