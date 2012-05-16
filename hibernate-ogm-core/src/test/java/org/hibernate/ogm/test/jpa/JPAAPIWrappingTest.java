@@ -51,7 +51,6 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Test
 	public void testWrappedStandalone() throws Exception {
-		closeFactory();
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		assertThat( emf.getClass() ).isEqualTo( OgmEntityManagerFactory.class );
 

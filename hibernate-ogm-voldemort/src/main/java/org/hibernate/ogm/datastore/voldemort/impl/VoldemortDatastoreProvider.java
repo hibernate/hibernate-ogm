@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.lang.ClassUtils;
 import org.codehaus.jackson.JsonGenerationException;
@@ -89,6 +90,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	private final JSONHelper jsonHelper = new JSONHelper();
 	private Map<String, String> requiredProperties;
 	private VoldemortServer embeddedServer;
+	private static final CopyOnWriteArrayList<DatastoreProvider> datastoreProviderList = new CopyOnWriteArrayList<DatastoreProvider>();
 
 	private static enum RequiredProp {
 
@@ -273,6 +275,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		tableIds.clear();
 		associationKeys.clear();
 		nextValues.clear();
+		datastoreProviderList.clear();
 
 		if ( clientFactory != null ) {
 			clientFactory.close();
@@ -320,6 +323,11 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 				throw new HibernateException( "Please configure Voldemort on hibernate.properties correctly." );
 			}
 
+			if(!addDatastoreProvider()){
+				stopAlreadyStartedDatastoreProvider();
+				addDatastoreProvider();
+			}
+			
 			startVoldemortServer();
 			setClientFactory();
 			setVoldemortClients();
@@ -328,8 +336,59 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 			setUpdateAction();
 		}
 		catch ( Throwable ex ) {
-			stop();
+			stopAlreadyStartedDatastoreProvider();
 		}
+	}
+
+	/**
+	 * Adds this to datastoreProviderList.
+	 * @return True if and only if there are no already started providers exist, otherwise false.
+	 */
+	private boolean addDatastoreProvider() {
+		if(!datastoreProviderList.isEmpty()){
+			return false;
+		}
+		return datastoreProviderList.add( this );
+	}
+
+	/**
+	 * Stops already started datastore providers. When starting datastore provider multiple times,
+	 * it is necessary to stop them first before the current one works properly.
+	 * @return True if and only if there are already started datastore provider and stop them successfully. Return false
+	 * when there are no datastores have not been started or there is only datastore provider exists which is the current one.
+	 */
+	private boolean stopAlreadyStartedDatastoreProvider() {
+
+		if ( datastoreProviderList.isEmpty() ) {
+			// // Nothing to stop.
+			return false;
+		}
+		else if ( datastoreProviderList.size() == 1 ) {
+			// // There is only the current datastore provider exists in the list.
+			return false;
+		}
+
+		// // Stop already started datastore provider except the current one.
+		boolean[] stopped = new boolean[datastoreProviderList.size()];
+		for ( int i = 0; i < datastoreProviderList.size(); i++ ) {
+			( (VoldemortDatastoreProvider) datastoreProviderList.get( i ) ).stop();
+			stopped[i] = true;
+		}
+
+		int trueCount = 0;
+		synchronized ( stopped ) {
+			for ( boolean b : stopped ) {
+				if ( b ) {
+					trueCount++;
+				}
+			}
+		}
+		
+		if(trueCount == stopped.length){
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -1194,7 +1253,8 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 			for ( Iterator<Serializable> itr2 = entry.getValue().iterator(); itr2.hasNext(); ) {
 				Serializable id = itr2.next();
 				EntityKey entityKey = new EntityKey( entry.getKey(), id,
-						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(),new Object[]{id},
+						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),
+						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(), new Object[] { id },
 						EntityKeyBuilder.getColumnMap( EntityKeyBuilder.DEBUG_OGM_PERSISTER ) );
 				map.put( entityKey, getEntityTuple( entityKey ) );
 			}
