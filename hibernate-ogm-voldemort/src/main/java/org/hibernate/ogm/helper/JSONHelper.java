@@ -22,15 +22,23 @@ package org.hibernate.ogm.helper;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.helper.annotation.AnnotationFinder;
+import org.hibernate.ogm.helper.annotation.embedded.EmbeddableHelper;
+import org.hibernate.ogm.helper.annotation.embedded.EmbeddableObject;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,54 +55,44 @@ import com.google.gson.JsonSerializer;
  */
 public class JSONHelper {
 
-	private final WrapperClassDetector classDetector;
-	private final JSONedClassDetector jsonDetector;
+	private static final Log log = LoggerFactory.make();
+	private final ConcurrentMap<String, Object> rawTuple = new ConcurrentHashMap<String, Object>();
 	private final Gson gson = new GsonBuilder().registerTypeAdapter( Date.class, new JsonSerializer<Date>() {
-        @Override
-        public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive( src.getTime() );
-        }
-    } ).registerTypeAdapter( Date.class, new JsonDeserializer<Date>() {
+		@Override
+		public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
+			return new JsonPrimitive( src.getTime() );
+		}
+	} ).registerTypeAdapter( Date.class, new JsonDeserializer<Date>() {
 
-        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            return new Date( json.getAsLong() );
-        }
-    } ).registerTypeAdapter( Calendar.class, new JsonSerializer<Calendar>() {
+		public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+				throws JsonParseException {
+			return new Date( json.getAsLong() );
+		}
+	} ).registerTypeAdapter( Calendar.class, new JsonSerializer<Calendar>() {
 
-        @Override
-        public JsonElement serialize(Calendar src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive( src.getTimeInMillis() );
-        }
+		@Override
+		public JsonElement serialize(Calendar src, Type typeOfSrc, JsonSerializationContext context) {
+			return new JsonPrimitive( src.getTimeInMillis() );
+		}
 
-    } ).registerTypeAdapter( Calendar.class, new JsonDeserializer<Calendar>() {
+	} ).registerTypeAdapter( Calendar.class, new JsonDeserializer<Calendar>() {
 
-        @Override
-        public Calendar deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
-                throws JsonParseException {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTimeInMillis( json.getAsLong() );
-            return calendar;
-        }
+		@Override
+		public Calendar deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+				throws JsonParseException {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTimeInMillis( json.getAsLong() );
+			return calendar;
+		}
 
-    } ).registerTypeAdapter( GregorianCalendar.class, new JsonSerializer<GregorianCalendar>() {
+	} ).registerTypeAdapter( GregorianCalendar.class, new JsonSerializer<GregorianCalendar>() {
 
-        @Override
-        public JsonElement serialize(GregorianCalendar src, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive( src.getTimeInMillis() );
-        }
+		@Override
+		public JsonElement serialize(GregorianCalendar src, Type typeOfSrc, JsonSerializationContext context) {
+			return new JsonPrimitive( src.getTimeInMillis() );
+		}
 
-    } ).create();
-	
-	public JSONHelper() {
-		this.classDetector = new WrapperClassDetector();
-		this.jsonDetector = new JSONedClassDetector();
-	}
-
-	public JSONHelper(WrapperClassDetector classDetector, JSONedClassDetector jsonDetector) {
-		this.classDetector = classDetector;
-		this.jsonDetector = jsonDetector;
-	}
+	} ).create();
 
 	/**
 	 * Creates JSON representation based on the specified object.
@@ -119,6 +117,17 @@ public class JSONHelper {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object fromJSON(String json, Class cls) {
+		if ( json == null || json.equals( "null" ) ) {
+			return null;
+		}
+
+		if ( cls.getCanonicalName().equals( "java.util.UUID" )
+				|| cls.getCanonicalName().equals( "java.math.BigDecimal" )
+				|| cls.getCanonicalName().equals( "java.net.URL" )
+				|| cls.getCanonicalName().equals( "java.math.BigInteger" ) ) {
+			return gson.fromJson( json, String.class );
+		}
+
 		return gson.fromJson( json, cls );
 	}
 
@@ -153,14 +162,39 @@ public class JSONHelper {
 	 */
 	public void getObjectFromJsonOn(Field field, String columnName, Map<String, Object> map) {
 
-		if ( field.getType().isArray() ) {
+		try {
 			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
 		}
-		else if ( classDetector.isWrapperClass( field.getType() ) ) {
-			map.put( columnName, classDetector.castWrapperClassFrom( map.get( columnName ), field.getType() ) );
-		}
-		else if ( jsonDetector.isAssignable( field.getType() ) ) {
-			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
+		catch ( JsonParseException ex ) {
+
+			AnnotationFinder finder = new AnnotationFinder();
+			if ( !finder.isEmbeddableAnnotated( field.getType() ) ) {
+				map.put( columnName, rawTuple.get( columnName ) );
+			}
+			else {
+
+				Map<String, Class> columnMap = finder.findAllColumnNamesFrom( field.getType() );
+				Iterator<String> itr = map.keySet().iterator();
+				while ( itr.hasNext() ) {
+					String k = itr.next();
+					Class type = columnMap.get( k );
+					if ( type != null ) {
+						map.put( k, fromJSON( (String) map.get( k ), type ) );
+					}
+				}
+
+				EmbeddableObject embeddableObject = new EmbeddableHelper().getObjectFromEmbeddableOn( columnName, map,
+						field.getType() );
+				Iterator<Entry<String, Object>> tupleItr = embeddableObject.getEntrySetFromTuple();
+				while ( tupleItr.hasNext() ) {
+					Entry<String, Object> tupleEntry = tupleItr.next();
+
+					log.info( "tupleEntry: " + tupleEntry.getKey() + " " + tupleEntry.getValue() + " classEntry: "
+							+ embeddableObject.getCls( tupleEntry.getKey() ) );
+					map.put( tupleEntry.getKey(),
+							fromJSON( (String) tupleEntry.getValue(), embeddableObject.getCls( tupleEntry.getKey() ) ) );
+				}
+			}
 		}
 	}
 
@@ -179,15 +213,11 @@ public class JSONHelper {
 		for ( String columnName : columnNames ) {
 			if ( snapshot.get( columnName ) == null ) {
 				map.put( columnName, null );
-			}
-			else if ( snapshot.get( columnName ).getClass().isArray() ) {
-				map.put( columnName, toJSON( snapshot.get( columnName ) ) );
-			}
-			else if ( jsonDetector.isAssignable( snapshot.get( columnName ).getClass() ) ) {
-				map.put( columnName, toJSON( snapshot.get( columnName ) ) );
+				rawTuple.putIfAbsent( columnName, "null" );
 			}
 			else {
-				map.put( columnName, snapshot.get( columnName ) );
+				map.put( columnName, toJSON( snapshot.get( columnName ) ) );
+				rawTuple.putIfAbsent( columnName, snapshot.get( columnName ) );
 			}
 		}
 		return map;
@@ -207,7 +237,6 @@ public class JSONHelper {
 
 		for ( Field field : fields ) {
 			String columnName = key.getColumnName( field.getName() );
-
 			if ( tuple.get( columnName ) != null ) {
 				getObjectFromJsonOn( field, columnName, tuple );
 			}
@@ -219,4 +248,3 @@ public class JSONHelper {
 		return tuple;
 	}
 }
-
