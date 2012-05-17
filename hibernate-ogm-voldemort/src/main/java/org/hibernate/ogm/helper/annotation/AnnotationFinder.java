@@ -37,16 +37,20 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class AnnotationFinder {
 
 	private static final Log log = LoggerFactory.make();
+	private final Pattern embeddableAnnotationPattern = Pattern.compile( "^\\@javax.persistence.Embeddable\\p{Punct}" );
+	private final Pattern namePropertyPattern = Pattern.compile( "name\\p{Punct}\\w*" );
 
 	public boolean isEmbeddableAnnotated(Class cls) {
 
-		return cls == null ? false : isAnnotatedBy( "javax.persistence.Embeddable", cls.getDeclaredAnnotations() );
+		return cls == null ? false : isAnnotatedBy( cls.getDeclaredAnnotations() , embeddableAnnotationPattern);
 	}
 
-	private boolean isAnnotatedBy(String annotationStr, Annotation[] annotations) {
+	private boolean isAnnotatedBy(Annotation[] annotations, Pattern pattern) {
 
 		for ( Annotation annotation : annotations ) {
-			if ( annotation.toString().contains( annotationStr ) ) {
+			Matcher matcher = pattern.matcher( annotation.toString() );
+			while(matcher.find()){
+				log.info("found " + matcher.group());
 				return true;
 			}
 		}
@@ -125,11 +129,10 @@ public class AnnotationFinder {
 
 	private String findColumnAnnotation(Annotation[] annotations) {
 
-		Pattern pattern = Pattern.compile( "name\\p{Punct}\\w*" );
 		for ( Annotation annotation : annotations ) {
 			String annStr = annotation.toString();
-			if ( annStr.contains( "javax.persistence.Column" ) ) {
-				return extractColumnNameFrom( annStr, pattern );
+			if ( annStr.startsWith( "@javax.persistence.Column(" ) ) {
+				return extractColumnNameFrom( annStr, namePropertyPattern );
 			}
 		}
 
