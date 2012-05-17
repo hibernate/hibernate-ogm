@@ -96,7 +96,7 @@ public class AnnotationFinderTest {
 	}
 
 	@Test
-	public void testFindColumnNameFromMethodOnRecursively() {
+	public void testFindMethodColumnAnnotationsFrom() {
 		Map<String, Class> columnMap = new HashMap<String, Class>();
 		finder.findMethodColumnAnnotationsFrom( person.getClass(), null, columnMap );
 		assertEquals( columnMap.get( "postal_code" ).getCanonicalName(), "java.lang.String" );
