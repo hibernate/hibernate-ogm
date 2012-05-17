@@ -173,7 +173,7 @@ public class JSONHelper {
 			}
 			else {
 
-				Map<String, Class> columnMap = finder.findAllColumnNamesFrom( field.getType() );
+				Map<String, Class> columnMap = finder.findAllColumnNamesFrom( field.getType(), "" );
 				Iterator<String> itr = map.keySet().iterator();
 				while ( itr.hasNext() ) {
 					String k = itr.next();

@@ -77,8 +77,12 @@ public class AnnotationFinderTest {
 
 	@Test
 	public void testFindAllColumnNamesFrom() {
-		checkColumnNameWith( finder.findAllColumnNamesFrom( job.getClass() ) );
-		checkColumnNameWith( finder.findAllColumnNamesFrom( person.getClass() ) );
+		checkColumnNameWith( finder.findAllColumnNamesFrom( job.getClass(), null ) );
+		checkColumnNameWith( finder.findAllColumnNamesFrom( person.getClass(), "" ) );
+		Map<String,Class> columnMap = finder.findAllColumnNamesFrom( person.getClass(), "name" );
+		assertEquals( columnMap.get( "job_name" ).getCanonicalName(), "java.lang.String");
+		System.out.println(columnMap);
+		assertTrue( "expecting size == 1 but found " + columnMap.size(), columnMap.size() == 1);
 	}
 
 	private void checkColumnNameWith(Map<String, Class> columnMap) {
@@ -88,18 +92,26 @@ public class AnnotationFinderTest {
 				columnMap.get( "summary" ).getCanonicalName().equals( "java.lang.String" ) );
 		assertTrue( "expecting 'java.lang.String' but found " + columnMap.get( "postal_code" ).getCanonicalName(),
 				columnMap.get( "postal_code" ).getCanonicalName().equals( "java.lang.String" ) );
+		assertTrue( "expecting size == 3 but found " + columnMap.size() ,columnMap.size() == 3 );
 	}
 
 	@Test
 	public void testFindColumnNameFromMethodOnRecursively() {
 		Map<String, Class> columnMap = new HashMap<String, Class>();
-		finder.findColumnNameFromMethodOnRecursively( person.getClass(), columnMap );
+		finder.findMethodColumnAnnotationsFrom( person.getClass(), null, columnMap );
 		assertEquals( columnMap.get( "postal_code" ).getCanonicalName(), "java.lang.String" );
 		assertEquals( columnMap.get( "job_name" ).getCanonicalName(), "java.lang.String" );
 		columnMap.clear();
-		finder.findColumnNameFromMethodOnRecursively( job.getClass(), columnMap );
+		finder.findMethodColumnAnnotationsFrom( job.getClass(), "", columnMap );
 		assertEquals( columnMap.get( "postal_code" ).getCanonicalName(), "java.lang.String" );
 		assertEquals( columnMap.get( "job_name" ).getCanonicalName(), "java.lang.String" );
-
+		columnMap.clear();
+		finder.findMethodColumnAnnotationsFrom( job.getClass(), "name" , columnMap );
+		assertEquals( columnMap.get( "job_name" ).getCanonicalName(), "java.lang.String");
+		assertTrue( "expecting size == 1 but found " + columnMap.size(), columnMap.size() == 1);
+		columnMap.clear();
+		finder.findMethodColumnAnnotationsFrom( job.getClass(), "zipCode", columnMap );
+		assertEquals( columnMap.get( "postal_code" ).getCanonicalName(), "java.lang.String" );
+		assertTrue( "expecting size == 1 but found " + columnMap.size(), columnMap.size() == 1);
 	}
 }

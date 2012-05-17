@@ -77,7 +77,17 @@ public class AnnotationFinder {
 		return columnMap;
 	}
 
-	public Map<String, Class> findColumnNameFromMethodOnRecursively(Class cls, Map<String, Class> columnMap) {
+	public Map<String,Class> findMethodColumnAnnotationsFrom(Class cls, String fieldName, Map<String,Class> columnMap){
+		
+		if(fieldName != null && !fieldName.equals("")){
+			Pattern pattern = Pattern.compile( "^get\\w*" + fieldName + "$", Pattern.CASE_INSENSITIVE );
+			return findColumnNameFromMethodOnRecursively(cls, pattern, columnMap);
+		}
+		
+		return findColumnNameFromMethodOnRecursively( cls, columnMap );
+	}
+	
+	private Map<String, Class> findColumnNameFromMethodOnRecursively(Class cls, Map<String, Class> columnMap) {
 
 		if ( isNull( cls ) ) {
 			return Collections.EMPTY_MAP;
@@ -86,9 +96,7 @@ public class AnnotationFinder {
 		columnMap.putAll( findColumnNameFromMethodOn( cls ) );
 
 		for ( Field field : cls.getDeclaredFields() ) {
-			// log.info( "field: " + field );
 			for ( Method method : field.getType().getDeclaredMethods() ) {
-				// log.info( "\tmethod: " + method.getName() + " " + method.getDeclaringClass());
 				String columnName = findColumnAnnotation( method.getDeclaredAnnotations() );
 				if ( !columnName.equals( "" ) ) {
 					columnMap.put( columnName, method.getReturnType() );
@@ -102,6 +110,41 @@ public class AnnotationFinder {
 		return columnMap;
 	}
 
+	private Map<String, Class> findColumnNameFromMethodOnRecursively(Class cls, Pattern pattern, Map<String, Class> columnMap) {
+
+		if ( isNull( cls ) ) {
+			return Collections.EMPTY_MAP;
+		}
+
+		columnMap.putAll( findColumnNameFromMethodOn( cls, pattern ) );
+		
+		for ( Field field : cls.getDeclaredFields() ) {
+			for ( Method method : field.getType().getDeclaredMethods() ) {
+				if ( hasPattern( method.getName(), pattern ) ) {
+					String columnName = findColumnAnnotation( method.getDeclaredAnnotations() );
+					if ( !columnName.equals( "" ) ) {
+						columnMap.put( columnName, method.getReturnType() );
+					}
+				}
+				else {
+					findColumnNameFromMethodOnRecursively( method.getDeclaringClass(), pattern, columnMap );
+				}
+			}
+		}
+
+		return columnMap;
+	}
+	
+	private boolean hasPattern(String str, Pattern pattern){
+		
+		Matcher matcher = pattern.matcher( str );
+		while(matcher.find()){
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public Map<String, Class> findColumnNameFromMethodOn(Class cls) {
 
 		if ( isNull( cls ) ) {
@@ -118,12 +161,31 @@ public class AnnotationFinder {
 
 		return columnMap;
 	}
+	
+	private Map<String, Class> findColumnNameFromMethodOn(Class cls, Pattern pattern) {
 
-	public Map<String, Class> findAllColumnNamesFrom(Class cls) {
+		if ( isNull( cls ) ) {
+			return Collections.EMPTY_MAP;
+		}
+
+		Map<String, Class> columnMap = new HashMap<String, Class>();
+		for ( Method method : cls.getDeclaredMethods() ) {
+			if ( hasPattern( method.getName(), pattern ) ) {
+				String columnName = findColumnAnnotation( method.getDeclaredAnnotations() );
+				if(!columnName.equals( "" )){
+					columnMap.put( columnName, method.getReturnType() );
+				}
+			}
+		}
+		
+		return columnMap;
+	}
+
+	public Map<String, Class> findAllColumnNamesFrom(Class cls, String fieldName) {
 
 		Map<String, Class> columnMap = new HashMap<String, Class>();
 		columnMap = findColumnNameFromFieldOnRecursively( cls, columnMap );
-		columnMap.putAll( findColumnNameFromMethodOnRecursively( cls, columnMap ) );
+		columnMap.putAll(findMethodColumnAnnotationsFrom(cls, fieldName, columnMap));
 		return columnMap;
 	}
 
