@@ -97,9 +97,11 @@ public class AnnotationFinder {
 
 		for ( Field field : cls.getDeclaredFields() ) {
 			for ( Method method : field.getType().getDeclaredMethods() ) {
-				String columnName = findColumnAnnotation( method.getDeclaredAnnotations() );
-				if ( !columnName.equals( "" ) ) {
-					columnMap.put( columnName, method.getReturnType() );
+				if ( method.getName().startsWith( "get" ) ) {
+					String columnName = findColumnAnnotation( method.getDeclaredAnnotations() );
+					if ( !columnName.equals( "" ) ) {
+						columnMap.put( columnName, method.getReturnType() );
+					}
 				}
 				else {
 					findColumnNameFromMethodOnRecursively( method.getDeclaringClass(), columnMap );
