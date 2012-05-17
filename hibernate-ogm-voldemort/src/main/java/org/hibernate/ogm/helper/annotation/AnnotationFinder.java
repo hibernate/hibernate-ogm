@@ -50,7 +50,6 @@ public class AnnotationFinder {
 		for ( Annotation annotation : annotations ) {
 			Matcher matcher = pattern.matcher( annotation.toString() );
 			while(matcher.find()){
-				log.info("found " + matcher.group());
 				return true;
 			}
 		}
@@ -58,19 +57,34 @@ public class AnnotationFinder {
 		return false;
 	}
 
-	public Map<String, Class> findColumnNameFromFieldOnRecursively(Class cls, Map<String, Class> columnMap) {
+	public Map<String, Class> findFieldColumnAnnotationsFrom(Class cls, String fieldName, Map<String, Class> columnMap) {
 
 		if ( isNull( cls ) ) {
 			return Collections.EMPTY_MAP;
 		}
 
-		for ( Field field : cls.getDeclaredFields() ) {
-			String columnName = findColumnAnnotation( field.getDeclaredAnnotations() );
-			if ( !columnName.equals( "" ) ) {
-				columnMap.put( columnName, field.getType() );
+		if ( fieldName != null && !fieldName.equals( "" ) ) {
+			for ( Field field : cls.getDeclaredFields() ) {
+				if ( field.getName().equals( fieldName ) ) {
+					String columnName = findColumnAnnotation( field.getDeclaredAnnotations() );
+					if ( !columnName.equals( "" ) ) {
+						columnMap.put( columnName, field.getType() );
+					}
+				}
+				else {
+					findFieldColumnAnnotationsFrom( field.getType(), fieldName, columnMap );
+				}
 			}
-			else {
-				findColumnNameFromFieldOnRecursively( field.getType(), columnMap );
+		}
+		else {
+			for ( Field field : cls.getDeclaredFields() ) {
+				String columnName = findColumnAnnotation( field.getDeclaredAnnotations() );
+				if ( !columnName.equals( "" ) ) {
+					columnMap.put( columnName, field.getType() );
+				}
+				else {
+					findFieldColumnAnnotationsFrom( field.getType(), fieldName, columnMap );
+				}
 			}
 		}
 
@@ -186,7 +200,7 @@ public class AnnotationFinder {
 	public Map<String, Class> findAllColumnNamesFrom(Class cls, String fieldName) {
 
 		Map<String, Class> columnMap = new HashMap<String, Class>();
-		columnMap = findColumnNameFromFieldOnRecursively( cls, columnMap );
+		columnMap = findFieldColumnAnnotationsFrom( cls, fieldName, columnMap );
 		columnMap.putAll(findMethodColumnAnnotationsFrom(cls, fieldName, columnMap));
 		return columnMap;
 	}

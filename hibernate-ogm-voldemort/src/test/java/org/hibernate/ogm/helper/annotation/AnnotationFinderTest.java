@@ -57,15 +57,18 @@ public class AnnotationFinderTest {
 	}
 
 	@Test
-	public void testFindColumnNameFromFieldOn() {
+	public void testFindFieldColumnAnnotationsFrom() {
 		Map<String, Class> columnMap = new HashMap<String, Class>();
-		finder.findColumnNameFromFieldOnRecursively( job.getClass(), columnMap );
+		finder.findFieldColumnAnnotationsFrom( job.getClass(), null, columnMap );
 		String columnType = columnMap.get( "summary" ).getCanonicalName();
 		assertEquals( "expecting 'java.lang.String' but found " + columnType, columnType, "java.lang.String" );
 		columnMap.clear();
-		finder.findColumnNameFromFieldOnRecursively( person.getClass(), columnMap );
+		finder.findFieldColumnAnnotationsFrom( person.getClass(), null, columnMap );
 		columnType = columnMap.get( "summary" ).getCanonicalName();
 		assertTrue( "expecting 'java.lang.String' but found " + columnType, columnType.equals( "java.lang.String" ) );
+		columnMap.clear();
+		finder.findFieldColumnAnnotationsFrom( job.getClass(), "zipCode", columnMap );
+		assertTrue( "expecting size == 0 but found " + columnMap.size(), columnMap.size() == 0);
 	}
 
 	@Test
@@ -81,7 +84,6 @@ public class AnnotationFinderTest {
 		checkColumnNameWith( finder.findAllColumnNamesFrom( person.getClass(), "" ) );
 		Map<String,Class> columnMap = finder.findAllColumnNamesFrom( person.getClass(), "name" );
 		assertEquals( columnMap.get( "job_name" ).getCanonicalName(), "java.lang.String");
-		System.out.println(columnMap);
 		assertTrue( "expecting size == 1 but found " + columnMap.size(), columnMap.size() == 1);
 	}
 
