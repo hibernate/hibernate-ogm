@@ -37,7 +37,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class AnnotationFinder {
 
 	private static final Log log = LoggerFactory.make();
-	private final Pattern embeddableAnnotationPattern = Pattern.compile( "^\\@javax.persistence.Embeddable\\p{Punct}" );
+	private final Pattern embeddableAnnotationPattern = Pattern.compile( "^@javax.persistence.Embeddable\\p{Punct}" );
 	private final Pattern namePropertyPattern = Pattern.compile( "name\\p{Punct}\\w*" );
 
 	public boolean isEmbeddableAnnotated(Class cls) {
