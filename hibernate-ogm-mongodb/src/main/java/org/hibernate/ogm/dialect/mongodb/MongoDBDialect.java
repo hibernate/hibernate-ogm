@@ -88,15 +88,29 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
+		DBObject toSave = this.preprareObject( key );
 		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
 
 	}
 
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
+		DBObject searchObject = this.preprareObject( key );
 		return collection.findOne( searchObject );
+	}
+
+	private DBObject preprareObject(EntityKey key) {
+		DBObject object = null;
+		if ( key.getColumnNames().length == 1 ) {
+			object = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
+		}
+		else {
+			object = new BasicDBObject();
+			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+				object.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+			}
+		}
+		return object;
 	}
 
 	private DBCollection getCollection(String table) {
