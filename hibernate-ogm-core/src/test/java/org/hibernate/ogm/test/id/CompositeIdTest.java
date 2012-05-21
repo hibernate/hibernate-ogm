@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.test.id;
 
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.EntityManager;
 
 import org.junit.Test;
@@ -36,23 +38,48 @@ public class CompositeIdTest extends JpaTestCase {
 	@Test
 	public void testCompositeEmbeddedId() throws Exception {
 		final String titleOGM = "How to use Hibernate OGM ?";
-		final String titleJUG = "What is a JUG ?";
+		final String titleAboutJUG = "What is a JUG ?";
+		final String titleCountJUG = "There are more than 20 JUGs in France";
+
 		final String author = "Guillaume";
+
 		final String contentOGM = "Simple, just like ORM but with a NoSQL database";
-		final String contentJUG = "JUG means Java User Group";
+		final String contentAboutJUG = "JUG means Java User Group";
+		final String contentCountJUG = "Great! Congratulations folks";
+
+		Label questionLabel = new Label( "question" );
+		Label jugLabel = new Label( "jug" );
+		Label hibernateLabel = new Label( "hibernate" );
+		Label ogmLabel = new Label( "OGM" );
 
 		NewsID newsOgmID = new NewsID( titleOGM, author );
-		NewsID newsJugID = new NewsID( titleJUG, author );
-		News newsOGM = new News( newsOgmID, contentOGM );
-		News newsJUG = new News( newsJugID, contentJUG );
+		NewsID newsAboutJugID = new NewsID( titleAboutJUG, author );
+		NewsID newsCountJugID = new NewsID( titleCountJUG, author );
+
+		final List<Label> newsOgmLabels = new ArrayList<Label>();
+		newsOgmLabels.add( ogmLabel );
+		newsOgmLabels.add( hibernateLabel );
+
+		final List<Label> newsAboutJugLabels = new ArrayList<Label>();
+		newsAboutJugLabels.add( jugLabel );
+		newsAboutJugLabels.add( questionLabel );
+
+		final List<Label> newsCountJugLabels = new ArrayList<Label>();
+		newsCountJugLabels.add( jugLabel );
+
+
+		News newsAboutJUG = new News( newsAboutJugID, contentAboutJUG, newsAboutJugLabels );
+		News newsOGM = new News( newsOgmID, contentOGM, newsOgmLabels );
+		News newsCountJUG = new News( newsCountJugID, contentCountJUG, newsCountJugLabels );
 
 		boolean operationSuccessful = false;
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
-		//em.getTransaction().begin();
+
 		try {
 			em.persist( newsOGM );
-			em.persist( newsJUG );
+			em.persist( newsAboutJUG );
+			em.persist( newsCountJUG );
 			operationSuccessful = true;
 		}
 		finally {
@@ -67,14 +94,23 @@ public class CompositeIdTest extends JpaTestCase {
 			assertThat( news.getContent() ).isEqualTo( contentOGM );
 			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
 			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
+			assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
 
 			em.clear();
-			news = em.find( News.class, newsJugID );
+			news = em.find( News.class, newsAboutJugID );
 			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentJUG );
+			assertThat( news.getContent() ).isEqualTo( contentAboutJUG );
 			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleJUG );
+			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
+			assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
 
+			em.clear();
+			news = em.find( News.class, newsCountJugID );
+			assertThat( news ).isNotNull();
+			assertThat( news.getContent() ).isEqualTo( contentCountJUG );
+			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
+			assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
 		}
 		finally {
 			commitOrRollback( operationSuccessful );
@@ -86,7 +122,8 @@ public class CompositeIdTest extends JpaTestCase {
 	public Class<?>[] getEntities() {
 		return new Class<?>[] {
 				News.class,
-				NewsID.class
+				NewsID.class,
+				Label.class
 		};
 	}
 }

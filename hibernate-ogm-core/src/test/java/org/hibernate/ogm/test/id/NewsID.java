@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -29,9 +29,7 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class NewsID implements Serializable {
 
-	public NewsID() {
-		super();
-	}
+	public NewsID() { super(); }
 
 	public NewsID(String title, String author) {
 		this.title = title;
@@ -39,24 +37,13 @@ public class NewsID implements Serializable {
 	}
 
 	private String title;
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
 	private String author;
 
-	public String getAuthor() {
-		return author;
-	}
+	public String getTitle() { return title; }
+	public void setTitle(String title) { this.title = title; }
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
+	public String getAuthor() {	return author; }
+	public void setAuthor(String author) { this.author = author; }
 
 	@Override
 	public boolean equals(Object o) {
