@@ -31,6 +31,7 @@ import javax.naming.Reference;
 import javax.naming.StringRefAddr;
 
 import org.hibernate.Cache;
+import org.hibernate.CustomEntityDirtinessStrategy;
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.MappingException;
@@ -44,6 +45,7 @@ import org.hibernate.cache.spi.QueryCache;
 import org.hibernate.cache.spi.Region;
 import org.hibernate.cache.spi.UpdateTimestampsCache;
 import org.hibernate.cfg.Settings;
+import org.hibernate.context.spi.CurrentTenantIdentifierResolver;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunctionRegistry;
 import org.hibernate.engine.ResultSetMappingDefinition;
@@ -54,6 +56,7 @@ import org.hibernate.engine.query.spi.QueryPlanCache;
 import org.hibernate.engine.spi.FilterDefinition;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
+import org.hibernate.engine.spi.SessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.exception.spi.SQLExceptionConverter;
@@ -273,7 +276,7 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
-	public SessionBuilder withOptions() {
+	public SessionBuilderImplementor withOptions() {
 		return new OgmSessionBuilderDelegator( delegate.withOptions(), this );
 	}
 
@@ -407,6 +410,21 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	@Override
 	public TypeHelper getTypeHelper() {
 		return delegate.getTypeHelper();
+	}
+
+	@Override
+	public CurrentTenantIdentifierResolver getCurrentTenantIdentifierResolver() {
+		return delegate.getCurrentTenantIdentifierResolver();
+	}
+
+	@Override
+	public Region getNaturalIdCacheRegion(String regionName) {
+		return delegate.getNaturalIdCacheRegion( regionName );
+	}
+
+	@Override
+	public CustomEntityDirtinessStrategy getCustomEntityDirtinessStrategy() {
+		return delegate.getCustomEntityDirtinessStrategy();
 	}
 
 	@Override
