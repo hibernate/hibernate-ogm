@@ -125,14 +125,14 @@
 
     <properties>
         <ehcacheVersion>2.5.1</ehcacheVersion>
-        <infinispanVersion>5.1.3.FINAL</infinispanVersion>
+        <infinispanVersion>5.1.5.CR1</infinispanVersion>
         <mongodbVersion>2.7.2</mongodbVersion>
         <hibernateVersion>4.1.3.Final</hibernateVersion>
-        <hibernateSearchVersion>4.1.0.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
         <jbossjtaVersion>4.16.3.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.0.GA</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>1.0.0.Final</jbossLoggingProcessorVersion>
+        <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -769,20 +769,6 @@
                                     </pluginExecutionFilter>
                                     <action>
                                         <ignore />
-                                    </action>
-                                </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.bsc.maven</groupId>
-                                        <artifactId>maven-processor-plugin</artifactId>
-                                        <versionRange>[2.0.2,)</versionRange>
-                                        <goals>
-                                            <goal>process</goal>
-                                            <goal>process-test</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
