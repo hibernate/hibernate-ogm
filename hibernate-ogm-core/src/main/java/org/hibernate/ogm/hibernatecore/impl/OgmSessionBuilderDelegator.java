@@ -26,17 +26,19 @@ import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.Interceptor;
 import org.hibernate.Session;
 import org.hibernate.SessionBuilder;
+import org.hibernate.engine.spi.SessionBuilderImplementor;
+import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmSessionBuilderDelegator implements SessionBuilder {
-	private final SessionBuilder builder;
+public class OgmSessionBuilderDelegator implements SessionBuilderImplementor {
+	private final SessionBuilderImplementor builder;
 	private final OgmSessionFactory factory;
 
 
-	public OgmSessionBuilderDelegator(SessionBuilder sessionBuilder, OgmSessionFactory factory) {
+	public OgmSessionBuilderDelegator(SessionBuilderImplementor sessionBuilder, OgmSessionFactory factory) {
 		this.builder = sessionBuilder;
 		this.factory = factory;
 	}
@@ -92,6 +94,12 @@ public class OgmSessionBuilderDelegator implements SessionBuilder {
 	@Override
 	public SessionBuilder tenantIdentifier(String tenantIdentifier) {
 		builder.tenantIdentifier( tenantIdentifier );
+		return this;
+	}
+
+	@Override
+	public SessionBuilder owner(SessionOwner sessionOwner) {
+		builder.owner(sessionOwner);
 		return this;
 	}
 }
