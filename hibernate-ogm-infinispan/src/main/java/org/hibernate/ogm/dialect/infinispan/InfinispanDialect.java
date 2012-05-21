@@ -25,7 +25,6 @@ import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
