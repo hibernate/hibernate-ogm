@@ -26,8 +26,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.logging.mongodb.impl.Log;
-import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 import com.mongodb.DBObject;
 
