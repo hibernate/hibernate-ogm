@@ -4,7 +4,7 @@ Version: 4.0.0-SNAPSHOT
 
 ## Description
 
-Hibernate OGM is an attempt to store data in a NoSQL data grid using he Hibernate Core engine rather than rewriting a JPA engine from scratch.
+Hibernate OGM is an attempt to store data in a NoSQL data grid using the Hibernate ORM engine rather than rewriting a JPA engine from scratch.
 
 The benefits are fairly obvious:
  - reimplementing the complex JPA specification is a lot of work
@@ -13,7 +13,7 @@ The benefits are fairly obvious:
 
 ## Instructions
 
-Checkout <http://hibernate.org/subprojects/ogm for more information>
+Checkout <http://ogm.hibernate.org for more information>
 The code is available on GitHub at <https://github.com/hibernate/hibernate-ogm>
 
 To build the project, run
