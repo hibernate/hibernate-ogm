@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -106,9 +107,10 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	public OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
+			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
 			final SessionFactoryImplementor factory,
 			final Mapping mapping) throws HibernateException {
-		super(persistentClass, cacheAccessStrategy, factory);
+		super(persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory);
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
 		}
