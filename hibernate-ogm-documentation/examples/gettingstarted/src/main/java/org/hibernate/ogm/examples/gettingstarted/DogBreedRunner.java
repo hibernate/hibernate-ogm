@@ -7,17 +7,14 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.ogm.examples.gettingstarted.domain.Breed;
 import org.hibernate.ogm.examples.gettingstarted.domain.Dog;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DogBreedRunner {
-	
-	private static final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
 
-	/**
-	 * @param args
-	 */
+	private static final Log logger = LoggerFactory.make();
+
 	public static void main(String[] args) {
 		
 		//accessing JBoss's Transaction can be done differently but this one works nicely
