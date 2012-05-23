@@ -21,9 +21,6 @@
 package org.hibernate.ogm.persister;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;

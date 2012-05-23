@@ -38,7 +38,6 @@ public final class EntityKey implements Serializable {
 	private String[] columnNames;
 	private Object[] columnValues;
     private final String entityName;
-    private final Map<String, String> columnMap;
     private final Serializable id;
 
 	public EntityKey(String tableName,Serializable id, String[] columnNames, Object[] values) {
@@ -48,24 +47,7 @@ public final class EntityKey implements Serializable {
 		this.hashCode = generateHashCode();
 		this.id = id;
         this.entityName = "";
-        this.columnMap = Collections.EMPTY_MAP;
 	}
-	
-    public EntityKey(String table, Serializable id) {
-        this.table = table;
-        this.id = id;
-        this.hashCode = generateHashCode();
-        this.entityName = "";
-        this.columnMap = Collections.EMPTY_MAP;
-    }
-	
-    public EntityKey(String table, Serializable id, String entityName, Map<String, String> columnMap) {
-        this.table = table;
-        this.id = id;
-        this.hashCode = generateHashCode();
-        this.entityName = entityName;
-        this.columnMap = columnMap;
-    }
     
     public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values) {
     	this.table = tableName;
@@ -73,7 +55,6 @@ public final class EntityKey implements Serializable {
     	this.columnValues = values;
     	this.hashCode = generateHashCode();
     	this.entityName = entityName;
-    	this.columnMap = Collections.EMPTY_MAP;
     	this.id = id;
     }
 
