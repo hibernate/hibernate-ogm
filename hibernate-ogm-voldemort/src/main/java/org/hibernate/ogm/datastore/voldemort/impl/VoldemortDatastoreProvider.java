@@ -148,45 +148,6 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	}
 
 	/**
-	 * Creates a wrapper object using the specified primitive class and string
-	 * value. This method calls a constructor with string parameter.
-	 * 
-	 * @param prmitiveClass
-	 *            Class used to find the corresponding wrapper class.
-	 * @param paramString
-	 *            Set in the wrapper class constructor.
-	 * @return Wrapper class object or null.
-	 */
-	protected Object createWrapperClassObjFrom(Class prmitiveClass, String paramString) {
-		Class wrapperClass = ClassUtils.primitiveToWrapper( prmitiveClass );
-		Constructor ctor;
-		try {
-			ctor = wrapperClass.getDeclaredConstructor( String.class );
-			return ctor.newInstance( paramString );
-		}
-		catch ( SecurityException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-		catch ( NoSuchMethodException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-		catch ( IllegalArgumentException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-		catch ( InstantiationException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-		catch ( IllegalAccessException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-		catch ( InvocationTargetException e ) {
-			throwHibernateExceptionFrom( e );
-		}
-
-		return null;
-	}
-
-	/**
 	 * Converts the specified exception to HibernateException and rethrows it.
 	 * 
 	 * @param <T>
