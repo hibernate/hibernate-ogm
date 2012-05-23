@@ -77,16 +77,6 @@ public final class EntityKey implements Serializable {
     	this.id = id;
     }
 
-	public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values, Map<String,String> columnMap){
-		this.table = tableName;
-		this.id = id;
-		this.hashCode = generateHashCode();
-		this.entityName = entityName;
-		this.columnNames = columnNames;
-		this.columnValues = values;
-		this.columnMap = columnMap;
-	}
-
 	public String getTable() {
 		return table;
 	}
@@ -156,9 +146,5 @@ public final class EntityKey implements Serializable {
         map.put( "id", this.id.toString() );
         map.put( "table", this.table );
         return Collections.unmodifiableMap( map );
-    }
-
-    public String getColumnName(String fieldName) {
-        return this.columnMap.get( fieldName ) == null ? fieldName : this.columnMap.get( fieldName );
     }
 }

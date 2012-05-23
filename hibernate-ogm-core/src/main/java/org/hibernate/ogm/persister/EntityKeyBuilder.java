@@ -84,28 +84,6 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 				);
-		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values, EntityKeyBuilder.getColumnMap( persister ) );
-	}
-
-
-	/**
-	 * Once the tests are done, change the scope to private. This method is
-	 * necessarily called by VoldemortDatastoreProvider.getEntityMap().
-	 * 
-	 * @param persister
-	 * @return
-	 */
-	public static Map<String, String> getColumnMap(OgmEntityPersister persister) {
-		Map<String, String> map = new HashMap<String, String>();
-
-		for ( String propName : persister.getPropertyNames() ) {
-
-			String columnName = persister.getPropertyColumnNames( propName )[0];
-			if ( !propName.equals( columnName ) ) {
-				map.put( propName, columnName );
-			}
-		}
-
-		return Collections.unmodifiableMap( map );
+		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values );
 	}
 }

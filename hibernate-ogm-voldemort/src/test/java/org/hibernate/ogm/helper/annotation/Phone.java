@@ -19,50 +19,29 @@
 
 package org.hibernate.ogm.helper.annotation;
 
-import javax.persistence.Entity;
+import javax.persistence.Column;
 import javax.persistence.Id;
 
 /**
  * @author Seiya Kawashima <skawashima@uchicago.edu>
  */
-@Entity
-public class Person {
+public class Phone {
 
+	private String phone_id;
+	private String number;
+	
 	@Id
-	private long id;
-	private String firstName;
-	private String lastName;
-	private Job job;
-
-	public String getFirstName() {
-		return firstName;
+	@Column(name="p_id")
+	public String getPhone_id() {
+		return phone_id;
 	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public void setPhone_id(String phone_id) {
+		this.phone_id = phone_id;
 	}
-
-	public String getLastName() {
-		return lastName;
+	public String getNumber() {
+		return number;
 	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public Job getJob() {
-		return job;
-	}
-
-	public void setJob(Job job) {
-		this.job = job;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
+	public void setNumber(String number) {
+		this.number = number;
 	}
 }

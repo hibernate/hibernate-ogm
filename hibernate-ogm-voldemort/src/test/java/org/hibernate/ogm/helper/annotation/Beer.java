@@ -1,6 +1,8 @@
-/* 
+/*
+ * Hibernate, Relational Persistence for Idiomatic Java
+ *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -16,53 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
 package org.hibernate.ogm.helper.annotation;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+
+import org.hibernate.annotations.GenericGenerator;
 
 /**
- * @author Seiya Kawashima <skawashima@uchicago.edu>
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
-public class Person {
-
+public class Beer {
 	@Id
-	private long id;
-	private String firstName;
-	private String lastName;
-	private Job job;
+	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
+	@Column(name = "beer_pk")
+	public String getId() { return id; }
+	public void setId(String id) {  this.id = id; }
+	private String id;
 
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public Job getJob() {
-		return job;
-	}
-
-	public void setJob(Job job) {
-		this.job = job;
-	}
-
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
+	@ManyToOne @JoinColumn(insertable = false, updatable = false, name = "brewery_id")
+	public Brewery getBrewery() { return brewery; }
+	public void setBrewery(Brewery brewery) {  this.brewery = brewery; }
+	private Brewery brewery;
 }

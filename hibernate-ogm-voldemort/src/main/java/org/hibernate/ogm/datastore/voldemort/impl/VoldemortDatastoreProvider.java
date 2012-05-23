@@ -1254,8 +1254,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 				Serializable id = itr2.next();
 				EntityKey entityKey = new EntityKey( entry.getKey(), id,
 						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),
-						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(), new Object[] { id },
-						EntityKeyBuilder.getColumnMap( EntityKeyBuilder.DEBUG_OGM_PERSISTER ) );
+						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(), new Object[] { id } );
 				map.put( entityKey, getEntityTuple( entityKey ) );
 			}
 		}

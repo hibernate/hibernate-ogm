@@ -169,7 +169,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 		//Check directly in the cache the values stored
 		EntityKey key = new EntityKey( "Bookmark", 42, Bookmark.class.getCanonicalName(), new String[] { "id" },
-				new Object[] { "42" }, EntityKeyBuilder.getColumnMap( EntityKeyBuilder.DEBUG_OGM_PERSISTER ) );
+				new Object[] { "42" } );
 		Map<String, String> entity = (Map<String, String>) extractEntityTuple( sessions, key );
 
 		assertEquals( "Entity visits count incorrect", entity.get( "visits_count" ), "444" );

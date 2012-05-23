@@ -21,22 +21,23 @@ package org.hibernate.ogm.helper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.UUID;
+
+import javassist.Modifier;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.helper.annotation.AnnotationFinder;
-import org.hibernate.ogm.helper.annotation.embedded.EmbeddableHelper;
-import org.hibernate.ogm.helper.annotation.embedded.EmbeddableObject;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -56,7 +57,7 @@ import com.google.gson.JsonSerializer;
 public class JSONHelper {
 
 	private static final Log log = LoggerFactory.make();
-	private final ConcurrentMap<String, Object> rawTuple = new ConcurrentHashMap<String, Object>();
+	private final AnnotationFinder finder = new AnnotationFinder();
 	private final Gson gson = new GsonBuilder().registerTypeAdapter( Date.class, new JsonSerializer<Date>() {
 		@Override
 		public JsonElement serialize(Date src, Type typeOfSrc, JsonSerializationContext context) {
@@ -92,6 +93,13 @@ public class JSONHelper {
 			return new JsonPrimitive( src.getTimeInMillis() );
 		}
 
+	} ).registerTypeAdapter( UUID.class, new JsonSerializer<UUID>() {
+
+		@Override
+		public JsonElement serialize(UUID src, Type typeOfSrc, JsonSerializationContext context) {
+			return new JsonPrimitive( src.toString() );
+		}
+
 	} ).create();
 
 	/**
@@ -119,13 +127,6 @@ public class JSONHelper {
 	public Object fromJSON(String json, Class cls) {
 		if ( json == null || json.equals( "null" ) ) {
 			return null;
-		}
-
-		if ( cls.getCanonicalName().equals( "java.util.UUID" )
-				|| cls.getCanonicalName().equals( "java.math.BigDecimal" )
-				|| cls.getCanonicalName().equals( "java.net.URL" )
-				|| cls.getCanonicalName().equals( "java.math.BigInteger" ) ) {
-			return gson.fromJson( json, String.class );
 		}
 
 		return gson.fromJson( json, cls );
@@ -160,41 +161,13 @@ public class JSONHelper {
 	 * @param map
 	 *            Stores entity objects.
 	 */
-	public void getObjectFromJsonOn(Field field, String columnName, Map<String, Object> map) {
+	public void getObjectFromJsonOn(Class cls, String columnName, Map<String, Object> map) {
 
 		try {
-			map.put( columnName, fromJSON( (String) map.get( columnName ), field.getType() ) );
+			map.put( columnName, fromJSON( (String) map.get( columnName ), cls ) );
 		}
 		catch ( JsonParseException ex ) {
-
-			AnnotationFinder finder = new AnnotationFinder();
-			if ( !finder.isEmbeddableAnnotated( field.getType() ) ) {
-				map.put( columnName, rawTuple.get( columnName ) );
-			}
-			else {
-
-				Map<String, Class> columnMap = finder.findAllColumnNamesFrom( field.getType(), "" );
-				Iterator<String> itr = map.keySet().iterator();
-				while ( itr.hasNext() ) {
-					String k = itr.next();
-					Class type = columnMap.get( k );
-					if ( type != null ) {
-						map.put( k, fromJSON( (String) map.get( k ), type ) );
-					}
-				}
-
-				EmbeddableObject embeddableObject = new EmbeddableHelper().getObjectFromEmbeddableOn( columnName, map,
-						field.getType() );
-				Iterator<Entry<String, Object>> tupleItr = embeddableObject.getEntrySetFromTuple();
-				while ( tupleItr.hasNext() ) {
-					Entry<String, Object> tupleEntry = tupleItr.next();
-
-					log.info( "tupleEntry: " + tupleEntry.getKey() + " " + tupleEntry.getValue() + " classEntry: "
-							+ embeddableObject.getCls( tupleEntry.getKey() ) );
-					map.put( tupleEntry.getKey(),
-							fromJSON( (String) tupleEntry.getValue(), embeddableObject.getCls( tupleEntry.getKey() ) ) );
-				}
-			}
+			throw new RuntimeException(ex);
 		}
 	}
 
@@ -211,14 +184,7 @@ public class JSONHelper {
 		Map<String, Object> map = new HashMap<String, Object>();
 
 		for ( String columnName : columnNames ) {
-			if ( snapshot.get( columnName ) == null ) {
-				map.put( columnName, null );
-				rawTuple.putIfAbsent( columnName, "null" );
-			}
-			else {
-				map.put( columnName, toJSON( snapshot.get( columnName ) ) );
-				rawTuple.putIfAbsent( columnName, snapshot.get( columnName ) );
-			}
+			map.put( columnName, toJSON( snapshot.get( columnName ) ) );
 		}
 		return map;
 	}
@@ -235,16 +201,121 @@ public class JSONHelper {
 	 */
 	public Map<String, Object> convertFromJsonOn(EntityKey key, Map<String, Object> tuple, Field[] fields) {
 
+		Map<String, Class> map = null;
 		for ( Field field : fields ) {
-			String columnName = key.getColumnName( field.getName() );
-			if ( tuple.get( columnName ) != null ) {
-				getObjectFromJsonOn( field, columnName, tuple );
+			if ( Modifier.isTransient( field.getModifiers() ) ) {
+				continue;
+			}
+
+			Object obj = tuple.get( field.getName() );
+			if ( obj != null ) {
+				if ( finder.isEntityAnnotated( field.getType() ) ) {
+					if ( isReturnAsString( field.getType() ) ) {
+						getObjectFromJsonOn( String.class, field.getName(), tuple );
+					}
+					else {
+						getObjectFromJsonOn( obj.getClass(), field.getName(), tuple );
+					}
+				}
+				else {
+					if ( isReturnAsString( field.getType() ) ) {
+						getObjectFromJsonOn( String.class, field.getName(), tuple );
+					}
+					else {
+						getObjectFromJsonOn( field.getType(), field.getName(), tuple );
+					}
+				}
 			}
 			else {
-				tuple.put( columnName, null );
+				if ( finder.isEntityAnnotated( field.getType() ) ) {
+					log.info( "this field has some kind of association, field: " + field.getName() );
+
+					map = finder.findAllJoinColumnNamesFrom( field.getType(), "", true );
+					if ( map.isEmpty() ) {
+						map = createKeys( field.getName(), finder.findAllIdsFrom( field.getType(), "", true ), "_" );
+					}
+					if ( !map.isEmpty() ) {
+						for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
+							Entry<String, Class> entry = itr.next();
+							if ( tuple.get( entry.getKey() ) != null ) {
+								getObjectFromJsonOn( String.class, entry.getKey(), tuple );
+							}
+						}
+					}
+				}
+				else if ( finder.isEmbeddableAnnotated( field.getType() ) ) {
+					log.info( "this field has @Embeddable and also has field and column mapping field: " + field.getName() + " " + field.getType() );
+					for(Field f: field.getType().getDeclaredFields()){
+						if(tuple.get( field.getName() + "." + f.getName() ) != null){
+							getObjectFromJsonOn(String.class,field.getName() + "." + f.getName(),tuple);
+						}
+					}
+					
+					map = finder.findAllColumnNamesFrom( field.getType(), "", false );
+					for(Iterator<Entry<String,Class>> itr = map.entrySet().iterator();itr.hasNext();){
+						Entry<String,Class> entry = itr.next();
+						getObjectFromJsonOn(entry.getValue(),entry.getKey(),tuple);
+					}
+					map = finder.findAllJoinColumnNamesFrom( field.getType(), "", false );
+					for(Iterator<Entry<String,Class>> itr = map.entrySet().iterator();itr.hasNext();){
+						Entry<String,Class> entry = itr.next();
+						getObjectFromJsonOn(entry.getValue(),entry.getKey(),tuple);
+					}
+				}
+				else {
+					log.info( "this field has some kind of field and column mapping,field: " + field.getName() );
+					map = finder.findAllColumnNamesFrom( field.getDeclaringClass(), field.getName(), true );
+
+					for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
+						Entry<String, Class> ent = itr.next();
+						String columnName = ent.getKey();
+						if ( isReturnAsString( field.getType() ) ) {
+							getObjectFromJsonOn( String.class, columnName, tuple );
+						}
+						else {
+							if ( tuple.get( columnName ) != null ) {
+								getObjectFromJsonOn( field.getType(), columnName, tuple );
+							}
+							else {
+								map = finder.findAllIdsFrom( field.getType(), "", true );
+								if ( !map.isEmpty() ) {
+									log.info( "no association. found id: " + map );
+									for ( Iterator<Entry<String, Class>> it = map.entrySet().iterator(); itr.hasNext(); ) {
+										Entry<String, Class> entry = it.next();
+										if ( tuple.get( entry.getKey() ) != null ) {
+											getObjectFromJsonOn( entry.getValue(), entry.getKey(), tuple );
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 
 		return tuple;
+	}
+	
+	private Map<String,Class> createKeys(String fieldName, Map<String,Class> map,String separator){
+		
+		Map<String,Class> keyMap = new HashMap<String,Class>();
+		for(Iterator<Entry<String,Class>> itr = map.entrySet().iterator();itr.hasNext();){
+			Entry<String,Class> entry = itr.next();
+			keyMap.put( fieldName + separator + entry.getKey(), entry.getValue() );
+		}
+		return keyMap;
+	}
+	
+	private boolean isReturnAsString(Class cls){
+		
+		if ( cls.getCanonicalName().equals( "java.util.UUID" )
+				|| cls.getCanonicalName().equals( "java.math.BigDecimal" )
+				|| cls.getCanonicalName().equals( "java.net.URL" )
+				|| cls.getCanonicalName().equals( "java.math.BigInteger" ) ) {
+			return true;
+		}
+		
+		return false;
 	}
 }
