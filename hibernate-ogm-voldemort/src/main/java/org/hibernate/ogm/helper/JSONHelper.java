@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -174,18 +175,23 @@ public class JSONHelper {
 	/**
 	 * Converts the value for the column as JSON format.
 	 * 
-	 * @param columnNames
-	 *            All the columnNames in the entity object.
+	 * @param entityRecord
 	 * @return Newly created Map storing JSON format when required.
 	 * @throws ClassNotFoundException
 	 */
-	public Map<String, Object> convertJsonAsNeededOn(Set<String> columnNames, TupleSnapshot snapshot) {
+	public Map<String, Object> convertJsonAsNeededOn(Map<String, Object> entityRecord) {
+
+		if ( entityRecord == null || entityRecord.isEmpty() ) {
+			return Collections.EMPTY_MAP;
+		}
 
 		Map<String, Object> map = new HashMap<String, Object>();
 
-		for ( String columnName : columnNames ) {
-			map.put( columnName, toJSON( snapshot.get( columnName ) ) );
+		for ( Iterator<Entry<String, Object>> itr = entityRecord.entrySet().iterator(); itr.hasNext(); ) {
+			Entry<String, Object> entry = itr.next();
+			map.put( entry.getKey(), toJSON( entry.getValue() ) );
 		}
+
 		return map;
 	}
 

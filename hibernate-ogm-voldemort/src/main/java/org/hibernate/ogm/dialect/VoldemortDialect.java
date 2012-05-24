@@ -122,21 +122,7 @@ public class VoldemortDialect implements GridDialect {
 	public void updateTuple(Tuple tuple, EntityKey key) {
 		Map<String, Object> entityRecord = ( (VoldemortTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
-		provider.putEntity( key, getSnapShotAsJsonMap( tuple ) );
-	}
-
-	/**
-	 * Gets snapshot as Map.
-	 * 
-	 * @return Map<String,Object> All the column name and value pairs as Map.
-	 */
-	private Map<String, Object> getSnapShotAsJsonMap(Tuple tuple) {
-		Set<String> columnNames = tuple.getColumnNames();
-		if ( tuple.getCurrentState() == null || columnNames.isEmpty() == true ) {
-			return Collections.EMPTY_MAP;
-		}
-
-		return provider.getJsonHelper().convertJsonAsNeededOn( columnNames, tuple.getSnapshot() );
+		provider.putEntity( key, provider.getJsonHelper().convertJsonAsNeededOn( entityRecord ) );
 	}
 
 	/*
