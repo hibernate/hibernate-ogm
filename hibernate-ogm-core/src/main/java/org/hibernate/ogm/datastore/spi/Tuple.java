@@ -131,27 +131,6 @@ public class Tuple {
         }
         return columnNames;
     }
-
-    /**
-     * Gets column values.
-     * 
-     * @return Set<Object> All the corresponding column values. If there are no
-     *         column names, then returns an empty Set.
-     */
-    public Set<Object> getColumnValues() {
-
-        Set<String> columnNames = getColumnNames();
-        if ( currentState == null || columnNames.isEmpty() == true ) {
-            return Collections.EMPTY_SET;
-        }
-
-        Set<Object> columnValues = new HashSet<Object>();
-        for ( String columnName : columnNames ) {
-            columnValues.add( currentState.get( columnName ) );
-        }
-
-        return Collections.unmodifiableSet( columnValues );
-    }
     
 	/**
 	 * Gets the current State.
