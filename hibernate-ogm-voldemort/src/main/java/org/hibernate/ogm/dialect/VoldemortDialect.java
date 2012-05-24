@@ -30,12 +30,12 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.voldemort.impl.VoldemortDatastoreProvider;
+import org.hibernate.ogm.datastore.voldemort.impl.VoldemortTupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -95,7 +95,7 @@ public class VoldemortDialect implements GridDialect {
 			return null;
 		}
 
-		return new Tuple( new MapBasedTupleSnapshot( entityMap ) );
+		return new Tuple( new VoldemortTupleSnapshot( entityMap ) );
 	}
 
 	/*
@@ -108,7 +108,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		HashMap<String, Object> tuple = new HashMap<String, Object>();
-		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
+		return new Tuple( new VoldemortTupleSnapshot( tuple ) );
 	}
 
 	/*
@@ -120,7 +120,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Map<String, Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
+		Map<String, Object> entityRecord = ( (VoldemortTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 		provider.putEntity( key, getSnapShotAsJsonMap( tuple ) );
 	}
