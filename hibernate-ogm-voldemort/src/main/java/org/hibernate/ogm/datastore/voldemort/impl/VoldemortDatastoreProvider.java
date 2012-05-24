@@ -114,50 +114,6 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		}
 	}
 
-	/**
-	 * Gets the common required property values among other datastore provider
-	 * and the datastore specific property values.
-	 * 
-	 * @return Key value pairs storing the properties.
-	 */
-	private Map<String, String> getRequiredPropertyValues() {
-		Map<String, String> map = new HashMap<String, String>();
-		map.put( RequiredProp.PROVIDER.getName(),
-				Environment.getProperties().getProperty( RequiredProp.PROVIDER.getPropPath() ) );
-		map.put( RequiredProp.DIALECT.getName(), RequiredProp.DIALECT.getPropPath() );
-		map.put( RequiredProp.PROVIDER_URL.getName(),
-				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
-		map.putAll( getSpecificSettings() );
-		return Collections.unmodifiableMap( map );
-	}
-
-	/**
-	 * Checks required property settings for Voldemort on hibernate.properties.
-	 * 
-	 * @return True if all the required properties are set, false otherwise.
-	 */
-	protected boolean checkRequiredSettings() {
-		requiredProperties = getRequiredPropertyValues();
-
-		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
-				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
-				&& requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Converts the specified exception to HibernateException and rethrows it.
-	 * 
-	 * @param <T>
-	 * @param exception
-	 *            Exception to be rethrown as HibernateException.
-	 */
-	protected <T extends Throwable> void throwHibernateExceptionFrom(T exception) {
-		throw new HibernateException( exception.getCause() );
-	}
-
 	private static enum VoldemortProp {
 
 		ASSOCIATION("HibernateOGM-Association", "voldemort_association_store",
@@ -299,6 +255,39 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		catch ( Throwable ex ) {
 			stopAlreadyStartedDatastoreProvider();
 		}
+	}
+
+	/**
+	 * Checks required property settings for Voldemort on hibernate.properties.
+	 * 
+	 * @return True if all the required properties are set, false otherwise.
+	 */
+	protected boolean checkRequiredSettings() {
+		requiredProperties = getRequiredPropertyValues();
+
+		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
+				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
+				&& requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Gets the common required property values among other datastore provider
+	 * and the datastore specific property values.
+	 * 
+	 * @return Key value pairs storing the properties.
+	 */
+	private Map<String, String> getRequiredPropertyValues() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put( RequiredProp.PROVIDER.getName(),
+				Environment.getProperties().getProperty( RequiredProp.PROVIDER.getPropPath() ) );
+		map.put( RequiredProp.DIALECT.getName(), RequiredProp.DIALECT.getPropPath() );
+		map.put( RequiredProp.PROVIDER_URL.getName(),
+				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
+		map.putAll( getSpecificSettings() );
+		return Collections.unmodifiableMap( map );
 	}
 
 	/**
@@ -1049,6 +1038,17 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		}
 
 		return b;
+	}
+
+	/**
+	 * Converts the specified exception to HibernateException and rethrows it.
+	 * 
+	 * @param <T>
+	 * @param exception
+	 *            Exception to be rethrown as HibernateException.
+	 */
+	protected <T extends Throwable> void throwHibernateExceptionFrom(T exception) {
+		throw new HibernateException( exception.getCause() );
 	}
 
 	/**
