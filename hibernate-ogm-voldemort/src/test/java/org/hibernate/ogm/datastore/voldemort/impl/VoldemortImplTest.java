@@ -59,7 +59,7 @@ public class VoldemortImplTest {
 		assertThat( value.makeValue().intValue(), equalTo( LOOPS * THREADS ) );
 
 		Versioned v = provider.getValue( provider.getVoldemortSequenceStoreName(),
-				gson.toJson( test.getRowKeyAsMap() ), true );
+				gson.toJson( dialect.getRowKeyAsMap( test ) ), true );
 		Map<String, Integer> m = (Map<String, Integer>) v.getValue();
 		assertThat( (Integer) m.get( "nextSequence" ), equalTo( LOOPS * THREADS ) );
 	}
@@ -77,7 +77,7 @@ public class VoldemortImplTest {
 
 		for ( int i = 0; i < rowKeys.length; i++ ) {
 			assertNull( provider.getValue( provider.getVoldemortSequenceStoreName(),
-					gson.toJson( rowKeys[i].getRowKeyAsMap() ), true ) );
+					gson.toJson( dialect.getRowKeyAsMap( rowKeys[i] ) ), true ) );
 		}
 	}
 

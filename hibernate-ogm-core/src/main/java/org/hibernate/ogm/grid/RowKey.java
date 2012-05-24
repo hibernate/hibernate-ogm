@@ -106,22 +106,4 @@ public final class RowKey implements Serializable {
 		sb.append( '}' );
 		return sb.toString();
 	}
-
-    /**
-     * Gets row key as Map object containing owning columns.
-     * 
-     * @return Row key as Map representation.
-     */
-    public Map<String, Object> getRowKeyAsMap() {
-
-        Map<String, Object> map = new HashMap<String, Object>();
-
-        if ( this.columnNames != null && this.columnValues != null ) {
-            for ( int i = 0; i < this.columnNames.length; i++ ) {
-                map.put( this.columnNames[i], this.columnValues[i] );
-            }
-        }
-        map.put( "table", this.table );
-        return Collections.unmodifiableMap( map );
-    }
 }

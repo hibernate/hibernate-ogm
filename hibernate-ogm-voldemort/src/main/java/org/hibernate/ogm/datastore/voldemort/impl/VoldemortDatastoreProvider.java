@@ -1137,7 +1137,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		deleteValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ), true );
 	}
 
-	public void setNextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+	public void setNextValue(RowKey key, Map<String,Object> rowKeyMap, IntegralDataTypeHolder value, int increment, int initialValue) {
 
 		/**
 		 * TODO To implement VoldemortDatastoreProvider.setNextValue() method, I
@@ -1162,11 +1162,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 			value.initialize( initialValue );
 
 			if ( flushToDb ) {
-				// taskQueue.offer(new PutSequenceRunnable(this, this
-				// .getVoldemortSequenceStoreName(), toJSON(key
-				// .getRowKeyAsMap()), nextSequence, true, false));
-
-				putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( key.getRowKeyAsMap() ), nextSequence,
+				putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( rowKeyMap ), nextSequence,
 						true, false );
 			}
 		}
@@ -1185,7 +1181,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 
 				if ( flushToDb ) {
 					if ( notContained ) {
-						putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( key.getRowKeyAsMap() ),
+						putValue( getVoldemortSequenceStoreName(), jsonHelper.toJSON( rowKeyMap ),
 								nextSequence, true, false );
 					}
 				}

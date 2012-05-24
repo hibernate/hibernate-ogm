@@ -209,8 +209,26 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		provider.setNextValue( key, value, increment, initialValue );
+		provider.setNextValue( key, getRowKeyAsMap( key ), value, increment, initialValue );
 	}
+	
+    /**
+     * Gets row key as Map object containing owning columns.
+     * 
+     * @return Row key as Map representation.
+     */
+    public Map<String, Object> getRowKeyAsMap(RowKey rowKey) {
+
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        if ( rowKey.getColumnNames() != null && rowKey.getColumnValues() != null ) {
+            for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
+                map.put( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+            }
+        }
+        map.put( "table", rowKey.getTable() );
+        return Collections.unmodifiableMap( map );
+    }
 
 	/* (non-Javadoc)
 	 * @see org.hibernate.ogm.dialect.GridDialect#overrideType(org.hibernate.type.Type)
