@@ -71,28 +71,6 @@ public class Association {
         return result.getValue();
     }
 
-    public Map<RowKey, Map<String, Object>> getAssociationAsMap() {
-
-        Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) this.getSnapshot() ).getUnderlyingMap();
-
-        for ( AssociationOperation action : this.getOperations() ) {
-            switch ( action.getType() ) {
-            case CLEAR:
-                atomicMap.clear();
-            case PUT_NULL:
-            case PUT:
-                atomicMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
-                this.put( action.getKey(), action.getValue() );
-                break;
-            case REMOVE:
-                atomicMap.remove( action.getKey() );
-                break;
-            }
-        }
-
-        return Collections.unmodifiableMap( atomicMap );
-    }
-
     public void put(RowKey key, Tuple value) {
         if ( value == null ) {
             currentState.put( key, new AssociationOperation( key, null, PUT_NULL ) );

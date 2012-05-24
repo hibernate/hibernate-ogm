@@ -173,7 +173,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
 		MapHelpers.updateAssociation( association, key );
-		provider.putAssociation( key, association.getAssociationAsMap() );
+		provider.putAssociation( key, ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap() );
 	}
 
 	/*
