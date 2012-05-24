@@ -1108,7 +1108,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	@SuppressWarnings("rawtypes")
 	private Versioned getAssociationFrom(AssociationKey key) {
 
-		return getValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ), true );
+		return getValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( getAssociationKeyAsMap(key) ), true );
 	}
 
 	/**
@@ -1122,7 +1122,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	public void putAssociation(AssociationKey key, Map<RowKey, Map<String, Object>> associationMap) {
 
 		associationKeys.add( key );
-		putValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ),
+		putValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( getAssociationKeyAsMap(key) ),
 				jsonHelper.toJSON( jsonHelper.convertKeyAndValueToJsonOn( associationMap ) ), true, true );
 	}
 
@@ -1134,7 +1134,22 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	public void removeAssociation(AssociationKey key) {
 		associationKeys.remove( key );
-		deleteValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( key.getAssociationKeyAsMap() ), true );
+		deleteValue( getVoldemortAssociationStoreName(), jsonHelper.toJSON( getAssociationKeyAsMap(key) ), true );
+	}
+	
+	/**
+	 * Gets association key as Map object containing owning columns.
+	 * 
+	 * @return Association key as Map representation.
+	 */
+	public Map<String, Object> getAssociationKeyAsMap(AssociationKey associationKey) {
+
+		Map<String, Object> map = new HashMap<String, Object>();
+		for ( int i = 0; i < associationKey.getColumnNames().length; i++ ) {
+			map.put( associationKey.getColumnNames()[i], associationKey.getColumnValues()[i] );
+		}
+		map.put( "table", associationKey.getTable());
+		return Collections.unmodifiableMap( map );
 	}
 
 	public void setNextValue(RowKey key, Map<String,Object> rowKeyMap, IntegralDataTypeHolder value, int increment, int initialValue) {
