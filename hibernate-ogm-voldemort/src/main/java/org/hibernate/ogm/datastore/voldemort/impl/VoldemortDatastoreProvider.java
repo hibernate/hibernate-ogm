@@ -521,7 +521,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Map<String, Object> getEntityTuple(EntityKey key) {
-		Versioned v = getValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), false );
+		Versioned v = getValue( getVoldemortStoreName(), getEntityKeyAsMap( key ), false );
 
 		if ( v == null ) {
 			return null;
@@ -530,6 +530,18 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		return jsonHelper.convertFromJsonOn( key, (Map<String, Object>) createReturnObjectFrom( v, Map.class ),
 				getDeclaredFieldsFrom( key.getEntityName() ) );
 	}
+	
+    /**
+     * Gets entity key as Map containing id and table name.
+     * 
+     * @return Map containing id and table name.
+     */
+    public Map<String, String> getEntityKeyAsMap(EntityKey entityKey) {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put( "id", entityKey.getId().toString() );
+        map.put( "table", entityKey.getTable() );
+        return Collections.unmodifiableMap( map );
+    }
 
 	/**
 	 * Gets value with the specified store and key from Voldemort.
@@ -680,7 +692,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 * @return True if put is successful, false otherwise.
 	 */
 	private boolean writeEntityTupleFrom(EntityKey key, Map<String, Object> tuple) {
-		return putValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), tuple, false, true );
+		return putValue( getVoldemortStoreName(), getEntityKeyAsMap( key ), tuple, false, true );
 	}
 
 	/**
@@ -964,7 +976,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	public void removeEntityTuple(EntityKey key) {
 		removeEntryFromIdTable( key );
-		deleteValue( getVoldemortStoreName(), key.getEntityKeyAsMap(), false );
+		deleteValue( getVoldemortStoreName(), getEntityKeyAsMap( key ), false );
 	}
 
 	/**

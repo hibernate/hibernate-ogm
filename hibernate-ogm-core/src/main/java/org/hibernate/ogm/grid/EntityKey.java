@@ -116,16 +116,4 @@ public final class EntityKey implements Serializable {
     public final String getEntityName() {
         return this.entityName;
     }
-
-    /**
-     * Gets entity key as Map containing id and table name.
-     * 
-     * @return Map containing id and table name.
-     */
-    public Map<String, String> getEntityKeyAsMap() {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put( "id", this.id.toString() );
-        map.put( "table", this.table );
-        return Collections.unmodifiableMap( map );
-    }
 }
