@@ -127,10 +127,9 @@ public final class AssociationKey implements Serializable {
 		sb.append( "AssociationKey" );
 		sb.append( "{table='" ).append( table ).append( "'" );
 		for( int index = 0 ; index < columnNames.length ; index++) {
-			sb.append("\n\t").append( columnNames[index] ).append( " = '" ).append( columnValues[index] ).append( "'" );
+			sb.append( columnNames[index] ).append( " = '" ).append( columnValues[index] ).append( "'" );
 		}
-
-		sb.append( "\n}" );
+		sb.append( "}" );
 		return sb.toString();
 	}
 
