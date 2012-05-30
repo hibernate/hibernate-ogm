@@ -90,7 +90,7 @@ public class PerfTest extends JpaTestCase {
 		start = System.nanoTime();
 		for (int i = 0 ; i < nbr_of_reads; i++) {
 			int primaryKey = rand.nextInt(nbrOfBlogEntries - 1)+1; //start from 1
-			BlogEntry blogEntry = em.find(BlogEntry.class, new Long(primaryKey));
+			BlogEntry blogEntry = em.find(BlogEntry.class, Long.valueOf( primaryKey ) );
 			assertThat(blogEntry.getContent()).isNotEmpty();
 			assertThat(blogEntry.getId()).isEqualTo(primaryKey);
 			assertThat(blogEntry.getAuthor()).isNotNull();
@@ -155,7 +155,7 @@ public class PerfTest extends JpaTestCase {
 		start = System.nanoTime();
 		for (int i = 0 ; i < nbr_of_reads; i++) {
 			int primaryKey = rand.nextInt(nbrOfBlogEntries - 1)+1; //start from 1
-			BlogEntry blog = em.find(BlogEntry.class, new Long(primaryKey));
+			BlogEntry blog = em.find(BlogEntry.class, Long.valueOf( primaryKey ) );
 			assertThat(blog.getContent()).isNotEmpty();
 			assertThat(blog.getId()).isEqualTo(primaryKey);
 			assertThat(blog.getAuthor()).isNotNull();

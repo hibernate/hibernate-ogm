@@ -60,6 +60,7 @@ import org.hibernate.type.Type;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
@@ -626,7 +627,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				//we try and match the whole tuple as it should be on both sides of the navigation
 				if ( rowKey == null ) {
 					throw new AssertionFailure( "Deleting a collection tuple that is not present: " +
-							"table {" + getTableName() + "} key column names {" + elementColumnNames + "} key column values {" + elementColumnValues + "}" );
+							"table {" + getTableName() + "} key column names {" + Arrays.toString( elementColumnNames )
+							+ "} key column values {" + Arrays.toString( elementColumnValues ) + "}" );
 				}
 				associationProvider.getCollectionMetadata().remove( rowKey );
 			}
