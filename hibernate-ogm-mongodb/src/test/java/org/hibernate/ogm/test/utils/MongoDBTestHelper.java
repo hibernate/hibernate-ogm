@@ -22,11 +22,9 @@
 package org.hibernate.ogm.test.utils;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import com.mongodb.MongoException;
-import org.bson.types.ObjectId;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
@@ -38,8 +36,6 @@ import org.hibernate.ogm.grid.EntityKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
@@ -89,32 +85,6 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 
 			count += db.getCollection( collectionName ).count();
-		}
-		return count;
-	}
-
-	private int countAssociationOnCollection(DBCollection collection) {
-		DBCursor cursor = collection.find( new BasicDBObject(), new BasicDBObject( MongoDBDialect.ID_FIELDNAME, 0 ) );
-		Iterator<DBObject> it = cursor.iterator();
-		int count = 0;
-		while ( it.hasNext() ) {
-			DBObject current = it.next();
-			Map<?, ?> map = current.toMap();
-			count += this.countAssociationOnDocument( map );
-		}
-		return count;
-	}
-
-	private int countAssociationOnDocument(Map<?, ?> map) {
-		int count = 0;
-		for ( Object key : map.keySet() ) {
-			Object value = map.get( key );
-			if ( value instanceof Map ) {
-				count += this.countAssociationOnDocument( (Map<?, ?>) value );
-			}
-			else {
-				count += map.get( key ).getClass().equals( ObjectId.class ) ? 1 : 0;
-			}
 		}
 		return count;
 	}

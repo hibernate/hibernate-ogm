@@ -136,7 +136,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		if ( persistentClass.isPolymorphic() ) {
 			@SuppressWarnings( "unchecked" )
 			Iterator<Subclass> iter = persistentClass.getSubclassIterator();
-			int k=1;
 			while ( iter.hasNext() ) {
 				Subclass sc = iter.next();
 				subclassByDiscriminatorValue.put( sc.getSubclassId(), sc.getEntityName() );
@@ -664,7 +663,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final int span = getTableSpan();
 
 		final boolean[] propsToUpdate;
-		final String[] updateStrings;
 		EntityEntry entry = session.getPersistenceContext().getEntry( object );
 
 		// Ensure that an immutable or non-modifiable entity is not being updated unless it is
