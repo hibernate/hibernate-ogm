@@ -41,6 +41,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.helper.annotation.AnnotationFinder;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -323,5 +325,27 @@ public class JSONHelper {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Creates association based on the parameter, associationAsJson.
+	 * @param associationAsJson JSON representation of association.
+	 * @return Map representation of association.
+	 */
+	public Map<String, Object> createAssociation(String associationAsJson) {
+
+		Map<String, Object> val = new HashMap<String, Object>();
+		try {
+			JSONObject json = new JSONObject( associationAsJson );
+			for ( Iterator itr = json.keys(); itr.hasNext(); ) {
+				String key = (String) itr.next();
+				val.put( key, json.get( key ) );
+			}
+		}
+		catch ( JSONException e ) {
+			throw new RuntimeException( e );
+		}
+
+		return val;
 	}
 }

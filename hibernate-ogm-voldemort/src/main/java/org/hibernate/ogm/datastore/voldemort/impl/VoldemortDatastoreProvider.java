@@ -1089,9 +1089,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 		for ( Iterator itr = associationMap.keySet().iterator(); itr.hasNext(); ) {
 			String key = (String) itr.next();
 			RowKey rowKey = (RowKey) jsonHelper.fromJSON( key, RowKey.class );
-			Map<String, Object> val = (Map<String, Object>) jsonHelper.fromJSON( (String) associationMap.get( key ),
-					Map.class );
-			association.put( rowKey, val );
+			association.put( rowKey, jsonHelper.createAssociation( (String) associationMap.get( key ) ) );
 		}
 
 		return association;
