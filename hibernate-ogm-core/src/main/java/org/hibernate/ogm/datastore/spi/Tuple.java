@@ -131,13 +131,4 @@ public class Tuple {
         }
         return columnNames;
     }
-    
-	/**
-	 * Gets the current State.
-	 * 
-	 * @return Map<String, TupleOperation> Current state.
-	 */
-	public Map<String, TupleOperation> getCurrentState() {
-		return currentState;
-	}
 }
