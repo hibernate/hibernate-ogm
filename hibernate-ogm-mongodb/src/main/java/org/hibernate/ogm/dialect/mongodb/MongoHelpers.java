@@ -26,7 +26,6 @@ import org.hibernate.ogm.grid.AssociationKey;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.hibernate.ogm.grid.AssociationKind;
-import org.hibernate.ogm.grid.RowKey;
 
 import java.util.Collection;
 import java.util.Collections;

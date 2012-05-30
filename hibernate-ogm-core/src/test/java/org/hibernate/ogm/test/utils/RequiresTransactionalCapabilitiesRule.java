@@ -22,8 +22,8 @@ package org.hibernate.ogm.test.utils;
 
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.junit.rules.MethodRule;
-import org.junit.runners.model.FrameworkMethod;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
@@ -33,11 +33,12 @@ import org.junit.runners.model.Statement;
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class RequiresTransactionalCapabilitiesRule implements MethodRule {
+public class RequiresTransactionalCapabilitiesRule implements TestRule {
 
 	private static final Log log = LoggerFactory.make();
 
-	public Statement apply(final Statement base, final FrameworkMethod method, final Object target) {
+	@Override
+	public Statement apply(final Statement base, final Description description) {
 		return new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
@@ -45,7 +46,7 @@ public class RequiresTransactionalCapabilitiesRule implements MethodRule {
 					base.evaluate();
 				}
 				else {
-					log.info( "Skipping test " + method.getName() + " as the current GridDialect doesn't support transactions" );
+					log.info( "Skipping test " + description.getMethodName() + " as the current GridDialect doesn't support transactions" );
 				}
 			}
 		};

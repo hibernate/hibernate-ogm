@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -38,7 +37,6 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
 
 /**

@@ -52,8 +52,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	private static final Random RANDOM = new Random();
 
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss:SSS Z" );
-	;
+	private final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss:SSS Z" );
 
 	@Test
 	public void testTypesSupport() throws Exception {
@@ -68,8 +67,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setSiteWeight( weight );
 		BigInteger visitCount = new BigInteger( "444" );
 		b.setVisitCount( visitCount );
-		b.setFavourite( true );
-		Byte displayMask = new Byte( (byte) '8' );
+		b.setFavourite( Boolean.TRUE );
+		Byte displayMask = Byte.valueOf( (byte) '8' );
 		b.setDisplayMask( displayMask );
 		Date now = new Date( System.currentTimeMillis() );
 		b.setCreationDate( now );
@@ -104,7 +103,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "http://www.hibernate.org/", b.getUrl().toString() );
 		assertEquals( weight, b.getSiteWeight() );
 		assertEquals( visitCount, b.getVisitCount() );
-		assertEquals( new Boolean( true ), b.isFavourite() );
+		assertEquals( Boolean.TRUE, b.isFavourite() );
 		assertEquals( displayMask, b.getDisplayMask() );
 		assertEquals( "serial number incorrect", serialNumber, b.getSerialNumber() );
 		assertEquals( "user id incorrect", userId, b.getUserId() );
