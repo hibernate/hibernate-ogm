@@ -59,9 +59,15 @@ public class BooleanType extends AbstractGenericBasicType<Boolean> {
 	
 	@Override
 	public Boolean fromStringValue(String value) throws HibernateException {
-		if( value != "true" && value != "false") {
+		//avoid using Boolean.parse as we want to explicitly check for 'false' literal
+		if ( Boolean.toString( true ).equals( value ) ) {
+			return Boolean.TRUE;
+		}
+		else if ( Boolean.toString( false ).equals( value ) ) {
+			return Boolean.FALSE;
+		}
+		else {
 			throw new HibernateException("Unable to rebuild Boolean from String");
 		}
-		return new Boolean(value);
 	}
 }
