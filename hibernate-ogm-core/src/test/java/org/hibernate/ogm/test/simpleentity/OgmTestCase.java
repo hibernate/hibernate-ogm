@@ -71,7 +71,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	private static final Log log = LoggerFactory.make();
-	protected static SessionFactory sessions;
+	protected SessionFactory sessions;
 	private Session session;
 
 	protected static Configuration cfg;
@@ -293,7 +293,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected void setSessions(SessionFactory sessions) {
-		OgmTestCase.sessions = sessions;
+		this.sessions = sessions;
 	}
 
 	protected SessionFactory getSessions() {

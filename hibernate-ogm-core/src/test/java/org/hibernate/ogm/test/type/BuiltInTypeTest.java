@@ -52,8 +52,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	private static final Random RANDOM = new Random();
 
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss:SSS Z" );
-	;
+	private final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss:SSS Z" );
 
 	@Test
 	public void testTypesSupport() throws Exception {

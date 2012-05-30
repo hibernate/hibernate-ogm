@@ -44,8 +44,6 @@ public class PackagingRule extends TemporaryFolder {
 	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
 
 	protected static ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-	protected static ClassLoader bundleClassLoader;
-	protected static File targetDir;
 
 	private final JavaArchive archive;
 	private final File testPackage;
