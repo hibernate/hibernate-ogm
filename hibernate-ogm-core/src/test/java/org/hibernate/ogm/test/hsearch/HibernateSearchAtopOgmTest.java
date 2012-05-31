@@ -72,7 +72,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		}
 		getTransactionManager().commit();
 		ftem.close();
-		closeFactory();
 	}
 
 	@Test
