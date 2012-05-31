@@ -34,8 +34,6 @@ import java.util.UUID;
 
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.helper.annotation.AnnotationFinder;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -54,7 +52,6 @@ import com.google.gson.JsonSerializer;
  */
 public class JSONHelper {
 
-	private static final Log log = LoggerFactory.make();
 	private final AnnotationFinder finder = new AnnotationFinder();
 	private final Gson gson = new GsonBuilder().registerTypeAdapter( Date.class, new JsonSerializer<Date>() {
 		@Override
