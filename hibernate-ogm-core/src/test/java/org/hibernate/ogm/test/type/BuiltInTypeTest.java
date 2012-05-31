@@ -23,6 +23,7 @@ package org.hibernate.ogm.test.type;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -166,7 +167,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b = (Bookmark) session.get( Bookmark.class, b.getId() );
 
 		//Check directly in the cache the values stored
-		EntityKey key = new EntityKey( "Bookmark", new String[]{ "id" }, new Object[]{ "42" } );
+		EntityKey key = new EntityKey( "Bookmark", 42, Bookmark.class.getCanonicalName(), new String[] { "id" },
+				new Object[] { "42" } );
 		Map<String, String> entity = (Map<String, String>) extractEntityTuple( sessions, key );
 
 		assertEquals( "Entity visits count incorrect", entity.get( "visits_count" ), "444" );

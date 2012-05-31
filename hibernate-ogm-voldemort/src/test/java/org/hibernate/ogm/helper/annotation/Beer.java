@@ -1,8 +1,8 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,41 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.helper.annotation;
 
-import junit.framework.Assert;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+import org.hibernate.annotations.GenericGenerator;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+@Entity
+public class Beer {
+	@Id
+	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
+	@Column(name = "beer_pk")
+	public String getId() { return id; }
+	public void setId(String id) {  this.id = id; }
+	private String id;
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.EHCACHE,
-		GridDialectType.VOLDEMORT} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
-
-	@Test
-	public void testCorrect() {
-		//all fine
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
-	}
-
+	@ManyToOne @JoinColumn(insertable = false, updatable = false, name = "brewery_id")
+	public Brewery getBrewery() { return brewery; }
+	public void setBrewery(Brewery brewery) {  this.brewery = brewery; }
+	private Brewery brewery;
 }

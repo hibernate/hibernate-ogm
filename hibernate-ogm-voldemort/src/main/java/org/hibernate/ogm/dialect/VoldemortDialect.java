@@ -19,8 +19,10 @@
 
 package org.hibernate.ogm.dialect;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -28,19 +30,21 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.voldemort.impl.VoldemortDatastoreProvider;
+import org.hibernate.ogm.datastore.voldemort.impl.VoldemortTupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.type.Type;
 
 /**
  * @author Seiya Kawashima <skawashima@uchicago.edu>
@@ -62,16 +66,18 @@ public class VoldemortDialect implements GridDialect {
 	 * .persister.entity.Lockable, org.hibernate.LockMode)
 	 */
 	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable,
-			LockMode lockMode) {
+	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
 
 		/**
-		 * TODO Voldemort itself doesn't expose Lock objects, so for right now
-		 * simple throws an exception here. However, need to confirm if this is
-		 * the right implementation.
+		 * TODO To implement GridDialect.getLockingStrategy() method, the
+		 * returned object whose type is LockingStratey represents locks on
+		 * underlying datatore according to the javadoc. How should we implement
+		 * this method when the underlying datastore doesn't explicitly expose
+		 * locks as objects ? Looks like that Infinispan exposes some lock
+		 * objects, so they are instantiated and returned from the method.
 		 */
-		throw new HibernateException("Lock " + lockMode
-				+ " is not supported on Voldemort.");
+
+		throw new HibernateException( "Lock " + lockMode + " is not supported on Voldemort." );
 	}
 
 	/*
@@ -83,12 +89,13 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Tuple getTuple(EntityKey key) {
-		Map<String, Object> entityMap = this.provider.getEntityTuple(key);
-		if (entityMap == null) {
+		Map<String, Object> entityMap = provider.getEntityTuple( key );
+
+		if ( entityMap == null ) {
 			return null;
 		}
 
-		return new Tuple(new MapBasedTupleSnapshot(entityMap));
+		return new Tuple( new VoldemortTupleSnapshot( entityMap ) );
 	}
 
 	/*
@@ -101,7 +108,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		HashMap<String, Object> tuple = new HashMap<String, Object>();
-		return new Tuple(new MapBasedTupleSnapshot(tuple));
+		return new Tuple( new VoldemortTupleSnapshot( tuple ) );
 	}
 
 	/*
@@ -113,10 +120,9 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Map<String, Object> entityRecord = ((MapBasedTupleSnapshot) tuple
-				.getSnapshot()).getMap();
-		MapHelpers.applyTupleOpsOnMap(tuple, entityRecord);
-		this.provider.putEntity(key, tuple.getSnapShotAsMap());
+		Map<String, Object> entityRecord = ( (VoldemortTupleSnapshot) tuple.getSnapshot() ).getMap();
+		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+		provider.putEntity( key, provider.getJsonHelper().convertJsonAsNeededOn( entityRecord ) );
 	}
 
 	/*
@@ -128,8 +134,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeTuple(EntityKey key) {
-		this.provider.removeEntityTuple(key);
-
+		provider.removeEntityTuple( key );
 	}
 
 	/*
@@ -141,10 +146,8 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public Association getAssociation(AssociationKey key) {
-		Map<RowKey, Map<String, Object>> associationMap = this.provider
-				.getAssociation(key);
-		return associationMap == null ? null : new Association(
-				new MapAssociationSnapshot(associationMap));
+		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
+		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	/*
@@ -157,7 +160,7 @@ public class VoldemortDialect implements GridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key) {
 		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String, Object>>();
-		return new Association(new MapAssociationSnapshot(associationMap));
+		return new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	/*
@@ -169,8 +172,8 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		MapHelpers.updateAssociation(association, key);
-		this.provider.putAssociation(key, association.getAssociationAsMap());
+		MapHelpers.updateAssociation( association, key );
+		provider.putAssociation( key, ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap() );
 	}
 
 	/*
@@ -182,8 +185,7 @@ public class VoldemortDialect implements GridDialect {
 	 */
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		this.provider.removeAssociation(key);
-
+		provider.removeAssociation( key );
 	}
 
 	/*
@@ -194,9 +196,8 @@ public class VoldemortDialect implements GridDialect {
 	 * .ogm.grid.AssociationKey, org.hibernate.ogm.grid.RowKey)
 	 */
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey,
-			RowKey rowKey) {
-		return new Tuple(EmptyTupleSnapshot.SINGLETON);
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
 
 	/*
@@ -207,9 +208,34 @@ public class VoldemortDialect implements GridDialect {
 	 * .RowKey, org.hibernate.id.IntegralDataTypeHolder, int, int)
 	 */
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value,
-			int increment, int initialValue) {
-		this.provider.setNextValue(key, value, increment, initialValue);
+	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		provider.setNextValue( key, getRowKeyAsMap( key ), value, increment, initialValue );
 	}
+	
+    /**
+     * Gets row key as Map object containing owning columns.
+     * 
+     * @return Row key as Map representation.
+     */
+    public Map<String, Object> getRowKeyAsMap(RowKey rowKey) {
 
+        Map<String, Object> map = new HashMap<String, Object>();
+
+        if ( rowKey.getColumnNames() != null && rowKey.getColumnValues() != null ) {
+            for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
+                map.put( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+            }
+        }
+        map.put( "table", rowKey.getTable() );
+        return Collections.unmodifiableMap( map );
+    }
+
+	/* (non-Javadoc)
+	 * @see org.hibernate.ogm.dialect.GridDialect#overrideType(org.hibernate.type.Type)
+	 */
+	@Override
+	public GridType overrideType(Type type) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

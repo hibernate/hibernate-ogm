@@ -22,10 +22,13 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents the key used to represent a row
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class RowKey implements Serializable {

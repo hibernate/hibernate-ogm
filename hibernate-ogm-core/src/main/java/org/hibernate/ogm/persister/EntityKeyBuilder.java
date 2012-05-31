@@ -32,6 +32,8 @@ import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
  */
 final public class EntityKeyBuilder {
 
+	public static OgmEntityPersister DEBUG_OGM_PERSISTER;
+
 	private EntityKeyBuilder() {
 	}
 
@@ -40,12 +42,14 @@ final public class EntityKeyBuilder {
 			final OgmEntityPersister persister,
 			final Serializable id,
 			SessionImplementor session) {
+		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
 		return fromData(
 				persister.getTableName(),
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
-				session );
+				session,
+				persister);
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -61,7 +65,22 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 		);
-		return new EntityKey( tableName, identifierColumnNames, values );
+		return new EntityKey( tableName,id, "" , identifierColumnNames, values );
 	}
-
+	
+	public static EntityKey fromData(
+			String tableName,
+			String[] identifierColumnNames,
+			GridType identifierGridType,
+			final Serializable id,
+			SessionImplementor session,
+			final OgmEntityPersister persister) {
+		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				id,
+				identifierGridType,
+				identifierColumnNames,
+				session
+				);
+		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values );
+	}
 }

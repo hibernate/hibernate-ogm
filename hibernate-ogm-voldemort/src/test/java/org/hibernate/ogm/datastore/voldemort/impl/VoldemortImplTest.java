@@ -1,27 +1,25 @@
 package org.hibernate.ogm.datastore.voldemort.impl;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.dialect.VoldemortDialect;
-import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.test.simpleentity.OgmTestBase;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+
 import voldemort.versioning.Versioned;
 
 import com.google.gson.Gson;
 
-public class VoldemortImplTest extends OgmTestBase {
+public class VoldemortImplTest {
 	private static final Log log = LoggerFactory.make();
 	private static final int LOOPS = 200;
 	private static final int THREADS = 10;
@@ -31,7 +29,6 @@ public class VoldemortImplTest extends OgmTestBase {
 
 	@Before
 	public void setUp() {
-		this.setUpServer();
 		provider = new VoldemortDatastoreProvider();
 		provider.start();
 		provider.setFlushToDb( true );
@@ -62,7 +59,7 @@ public class VoldemortImplTest extends OgmTestBase {
 		assertThat( value.makeValue().intValue(), equalTo( LOOPS * THREADS ) );
 
 		Versioned v = provider.getValue( provider.getVoldemortSequenceStoreName(),
-				gson.toJson( test.getRowKeyAsMap() ), true );
+				gson.toJson( dialect.getRowKeyAsMap( test ) ), true );
 		Map<String, Integer> m = (Map<String, Integer>) v.getValue();
 		assertThat( (Integer) m.get( "nextSequence" ), equalTo( LOOPS * THREADS ) );
 	}
@@ -80,12 +77,12 @@ public class VoldemortImplTest extends OgmTestBase {
 
 		for ( int i = 0; i < rowKeys.length; i++ ) {
 			assertNull( provider.getValue( provider.getVoldemortSequenceStoreName(),
-					gson.toJson( rowKeys[i].getRowKeyAsMap() ), true ) );
+					gson.toJson( dialect.getRowKeyAsMap( rowKeys[i] ) ), true ) );
 		}
 	}
 
 	@After
 	public void tearDown() {
-		this.stopServer();
+		provider.stop();
 	}
 }
