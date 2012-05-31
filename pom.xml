@@ -127,7 +127,7 @@
         <ehcacheVersion>2.5.1</ehcacheVersion>
         <infinispanVersion>5.1.5.FINAL</infinispanVersion>
         <mongodbVersion>2.7.2</mongodbVersion>
-        <hibernateVersion>4.1.3.Final</hibernateVersion>
+        <hibernateVersion>4.1.4.Final</hibernateVersion>
         <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
