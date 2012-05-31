@@ -73,11 +73,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		getTransactionManager().commit();
 		ftem.close();
 		closeFactory();
-		/**
-		 * To close the connection to the underlying datastore, explicitly calls closeFactory() method instead of not calling the method,
-		 * and relying on @After annotation in JpaTestCase.closeFactory(). Without explicit call, the connection is not closed properly for some reason.
-		 * As a result, get BindException with the message 'Address in use'. I believe that before rebasing to the master, it was ok, but not after rebasing.
-		 */
 	}
 
 	@Test
@@ -108,12 +103,6 @@ public class HibernateSearchAtopOgmTest extends JpaTestCase {
 		}
 		getTransactionManager().commit();
 		entityManager.close();
-		closeFactory();
-		/**
-		 * To close the connection to the underlying datastore, explicitly calls closeFactory() method instead of not calling the method,
-		 * and relying on @After annotation in JpaTestCase.closeFactory(). Without explicit call, the connection is not closed properly for some reason.
-		 * As a result, get BindException with the message 'Address in use'. I believe that before rebasing to the master, it was ok, but not after rebasing.
-		 */
 	}
 
 	@Override
