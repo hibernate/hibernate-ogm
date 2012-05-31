@@ -310,6 +310,11 @@ public class JSONHelper {
 		return keyMap;
 	}
 	
+	/**
+	 * Checks if the type of the parameter, cls is stored as String or not based on types in org.hibernate.ogm.type.
+	 * @param cls Examined if it's stored as String.
+	 * @return True if it's stored as String, otherwise false.
+	 */
 	private boolean isReturnAsString(Class cls){
 		
 		if ( cls.getCanonicalName().equals( "java.util.UUID" )
