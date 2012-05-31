@@ -204,100 +204,196 @@ public class JSONHelper {
 	 */
 	public Map<String, Object> convertFromJsonOn(EntityKey key, Map<String, Object> tuple, Field[] fields) {
 
+		Object obj = null;
 		Map<String, Class> map = null;
 		for ( Field field : fields ) {
 			if ( Modifier.isTransient( field.getModifiers() ) ) {
 				continue;
 			}
 
-			Object obj = tuple.get( field.getName() );
+			obj = tuple.get( field.getName() );
 			if ( obj != null ) {
-				if ( finder.isEntityAnnotated( field.getType() ) ) {
-					if ( isReturnAsString( field.getType() ) ) {
-						getObjectFromJsonOn( String.class, field.getName(), tuple );
-					}
-					else {
-						getObjectFromJsonOn( obj.getClass(), field.getName(), tuple );
-					}
-				}
-				else {
-					if ( isReturnAsString( field.getType() ) ) {
-						getObjectFromJsonOn( String.class, field.getName(), tuple );
-					}
-					else {
-						getObjectFromJsonOn( field.getType(), field.getName(), tuple );
-					}
-				}
+				putObjectFieldNameAsColumnName( field, obj, tuple );
 			}
 			else {
-				if ( finder.isEntityAnnotated( field.getType() ) ) {
-					log.info( "this field has some kind of association, field: " + field.getName() );
-
-					map = finder.findAllJoinColumnNamesFrom( field.getType(), "", true );
-					if ( map.isEmpty() ) {
-						map = createKeys( field.getName(), finder.findAllIdsFrom( field.getType(), "", true ), "_" );
-					}
-					if ( !map.isEmpty() ) {
-						for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
-							Entry<String, Class> entry = itr.next();
-							if ( tuple.get( entry.getKey() ) != null ) {
-								getObjectFromJsonOn( String.class, entry.getKey(), tuple );
-							}
-						}
-					}
-				}
-				else if ( finder.isEmbeddableAnnotated( field.getType() ) ) {
-					log.info( "this field has @Embeddable and also has field and column mapping field: " + field.getName() + " " + field.getType() );
-					for(Field f: field.getType().getDeclaredFields()){
-						if(tuple.get( field.getName() + "." + f.getName() ) != null){
-							getObjectFromJsonOn(String.class,field.getName() + "." + f.getName(),tuple);
-						}
-					}
-					
-					map = finder.findAllColumnNamesFrom( field.getType(), "", false );
-					for(Iterator<Entry<String,Class>> itr = map.entrySet().iterator();itr.hasNext();){
-						Entry<String,Class> entry = itr.next();
-						getObjectFromJsonOn(entry.getValue(),entry.getKey(),tuple);
-					}
-					map = finder.findAllJoinColumnNamesFrom( field.getType(), "", false );
-					for(Iterator<Entry<String,Class>> itr = map.entrySet().iterator();itr.hasNext();){
-						Entry<String,Class> entry = itr.next();
-						getObjectFromJsonOn(entry.getValue(),entry.getKey(),tuple);
-					}
-				}
-				else {
-					log.info( "this field has some kind of field and column mapping,field: " + field.getName() );
-					map = finder.findAllColumnNamesFrom( field.getDeclaringClass(), field.getName(), true );
-
-					for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
-						Entry<String, Class> ent = itr.next();
-						String columnName = ent.getKey();
-						if ( isReturnAsString( field.getType() ) ) {
-							getObjectFromJsonOn( String.class, columnName, tuple );
-						}
-						else {
-							if ( tuple.get( columnName ) != null ) {
-								getObjectFromJsonOn( field.getType(), columnName, tuple );
-							}
-							else {
-								map = finder.findAllIdsFrom( field.getType(), "", true );
-								if ( !map.isEmpty() ) {
-									log.info( "no association. found id: " + map );
-									for ( Iterator<Entry<String, Class>> it = map.entrySet().iterator(); itr.hasNext(); ) {
-										Entry<String, Class> entry = it.next();
-										if ( tuple.get( entry.getKey() ) != null ) {
-											getObjectFromJsonOn( entry.getValue(), entry.getKey(), tuple );
-										}
-									}
-								}
-							}
-						}
-					}
-				}
+				putObjectFieldNameNotAsColumnName( field, map, tuple );
 			}
 		}
 
 		return tuple;
+	}
+	
+	/**
+	 * Puts object from JSON whose key is the field name.
+	 * 
+	 * @param field
+	 *            Current field in an iterator to be examined for its field type and annotations.
+	 * @param obj
+	 *            Object having the expected type.
+	 * @param tuple
+	 */
+	private void putObjectFieldNameAsColumnName(Field field, Object obj, Map<String, Object> tuple) {
+		// No @Column nor other annotations change the corresponding column names.
+		if ( finder.isEntityAnnotated( field.getType() ) ) {
+			putObject( field, obj.getClass(), tuple );
+		}
+		else {
+			putObject( field, field.getType(), tuple );
+		}
+	}
+	
+	/**
+	 * Gets Object from JSON and puts the Object to the parameter, tuple.
+	 * 
+	 * @param field
+	 *            Current field in an iterator to be examined for its field type and annotations.
+	 * @param cls
+	 *            Expected class to be set as the field type.
+	 * @param tuple
+	 */
+	private void putObject(Field field, Class cls, Map<String, Object> tuple) {
+		if ( isReturnAsString( field.getType() ) ) {
+			getObjectFromJsonOn( String.class, field.getName(), tuple );
+		}
+		else {
+			getObjectFromJsonOn( cls, field.getName(), tuple );
+		}
+	}
+
+	/**
+	 * 
+	 * @param field
+	 * @param tuple
+	 */
+	private void putObjectFieldNameNotAsColumnName(Field field, Map<String, Class> map, Map<String, Object> tuple) {
+
+		if ( finder.isEntityAnnotated( field.getType() ) ) {
+			putObjectWithAssociation( field, map, tuple );
+		}
+		else if ( finder.isEmbeddableAnnotated( field.getType() ) ) {
+			putObjectWithEmbeddable( field, tuple );
+		}
+		else {
+			putObjectWithColumn( field, tuple );
+		}
+	}
+
+	/**
+	 * 
+	 * @param field
+	 * @param tuple
+	 */
+	private void putObjectWithEmbeddable(Field field, Map<String, Object> tuple) {
+		//this field has @Embeddable and also has field and column mapping field
+		putObjectWithInverseSide( field, tuple );
+		putObjectWith( field, finder.findAllColumnNamesFrom( field.getType(), "", true ), tuple );
+		putObjectWith( field, finder.findAllJoinColumnNamesFrom( field.getType(), "", true ), tuple );
+	}
+
+	/**
+	 * 
+	 * @param field
+	 * @param tuple
+	 */
+	private void putObjectWithInverseSide(Field field, Map<String, Object> tuple) {
+		for ( Field f : field.getType().getDeclaredFields() ) {
+			if ( tuple.get( field.getName() + "." + f.getName() ) != null ) {
+				getObjectFromJsonOn( String.class, field.getName() + "." + f.getName(), tuple );
+			}
+		}
+	}	
+
+	/**
+	 * 
+	 * @param field
+	 * @param map
+	 * @param tuple
+	 */
+	private void putObjectWith(Field field, Map<String, Class> map, Map<String, Object> tuple) {
+		if ( map != null && !map.isEmpty() ) {
+			for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
+				Entry<String, Class> entry = itr.next();
+				getObjectFromJsonOn( entry.getValue(), entry.getKey(), tuple );
+			}
+		}
+	}
+
+	/**
+	 * Gets Object from JSON whose keys representing some kind of associations and puts it to the parameter, tuple.
+	 * 
+	 * @param field
+	 *            Current field in an iterator to be examined for its field type and annotations.
+	 * @param map
+	 *            Stores field-column mapping.
+	 * @param tuple
+	 */
+	private void putObjectWithAssociation(Field field, Map<String, Class> map, Map<String, Object> tuple) {
+		// this field has some kind of association, field:
+		map = finder.findAllJoinColumnNamesFrom( field.getType(), "", true );
+		if ( map.isEmpty() ) {
+			map = createKeys( field.getName(), finder.findAllIdsFrom( field.getType(), "", true ), "_" );
+		}
+
+		putObjectAs( String.class, map, tuple );
+	}
+
+	/**
+	 * 
+	 * @param field
+	 * @param map
+	 * @param tuple
+	 */
+	private void putObjectWithColumn(Field field, Map<String, Object> tuple) {
+		// this field has some kind of field and column mapping
+
+		for ( Iterator<Entry<String, Class>> itr = finder
+				.findAllColumnNamesFrom( field.getDeclaringClass(), field.getName(), true ).entrySet().iterator(); itr
+				.hasNext(); ) {
+
+			String columnName = itr.next().getKey();
+			if ( isReturnAsString( field.getType() ) ) {
+				getObjectFromJsonOn( String.class, columnName, tuple );
+			}
+			else {
+				if ( tuple.get( columnName ) != null ) {
+					getObjectFromJsonOn( field.getType(), columnName, tuple );
+				}
+				else {
+					putObjectAs( null, finder.findAllIdsFrom( field.getType(), "", true ), tuple );
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Gets Object with the parameter,cls, Class from JSON and puts it to the parameter, tuple.
+	 * 
+	 * @param cls
+	 *            Expected class type used to deserialize JSON. if null then, uses the values, Class from the parameter,
+	 *            map.
+	 * @param map
+	 *            Stores field-column mapping.
+	 * @param tuple
+	 */
+	private void putObjectAs(Class cls, Map<String, Class> map, Map<String, Object> tuple) {
+		if ( !map.isEmpty() ) {
+			if ( cls != null ) {
+				for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
+					Entry<String, Class> entry = itr.next();
+					if ( tuple.get( entry.getKey() ) != null ) {
+						getObjectFromJsonOn( cls, entry.getKey(), tuple );
+					}
+				}
+			}
+			else if ( cls == null ) {
+				for ( Iterator<Entry<String, Class>> itr = map.entrySet().iterator(); itr.hasNext(); ) {
+					Entry<String, Class> entry = itr.next();
+					if ( tuple.get( entry.getKey() ) != null ) {
+						getObjectFromJsonOn( entry.getValue(), entry.getKey(), tuple );
+					}
+				}
+			}
+		}
 	}
 	
 	private Map<String,Class> createKeys(String fieldName, Map<String,Class> map,String separator){
