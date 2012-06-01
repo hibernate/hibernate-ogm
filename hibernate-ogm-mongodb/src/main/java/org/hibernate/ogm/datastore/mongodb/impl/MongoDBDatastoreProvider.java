@@ -41,7 +41,7 @@ import com.mongodb.ServerAddress;
 
 /**
  * Provides access to MongoDB system
- * 
+ *
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
 public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable {

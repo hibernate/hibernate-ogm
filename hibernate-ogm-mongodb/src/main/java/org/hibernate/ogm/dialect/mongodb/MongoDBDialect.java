@@ -82,6 +82,7 @@ public class MongoDBDialect implements GridDialect {
 	private static final Integer ONE = Integer.valueOf( 1 );
 
 	public static final String ID_FIELDNAME = "_id";
+	public static final String DOT_SEPARATOR = ".";
 	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ASSOCIATIONS_FIELDNAME = "associations";
 	public static final String TUPLE_FIELDNAME = "tuple";
@@ -111,27 +112,48 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = this.preprareObject( key );
-		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
-
+		DBObject toSave = this.preprareIdObject( key );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getColumnNames() ) );
 	}
 
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = this.preprareObject( key );
+		DBObject searchObject = this.preprareIdObject( key );
 		return collection.findOne( searchObject );
 	}
 
-	private DBObject preprareObject(EntityKey key) {
-		DBObject object = null;
+	/**
+	 * Create a DBObject which represents the _id field.
+	 * In case of simple id objects the json representation will look like {_id: "theIdValue"}
+	 * In case of composite id objects the json representation will look like {_id: {author: "Guillaume", title: "What this method is used for?"}}
+	 *
+	 * @param key
+	 *
+	 * @return the DBObject which represents the id field
+	 */
+	private BasicDBObject preprareIdObject(EntityKey key) {
+		BasicDBObject object = null;
 		if ( key.getColumnNames().length == 1 ) {
 			object = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
 		}
 		else {
 			object = new BasicDBObject();
+			DBObject idObject = new BasicDBObject();
 			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-				object.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+				String columnName = key.getColumnNames()[i];
+				Object columnValue = key.getColumnValues()[i];
+
+				if ( columnName.contains( DOT_SEPARATOR ) ) {
+					int dotIndex = columnName.indexOf( DOT_SEPARATOR );
+					String shortColumnName = columnName.substring( dotIndex + 1 );
+					idObject.put( shortColumnName, columnValue );
+				}
+				else {
+					idObject.put( key.getColumnNames()[i], columnValue );
+				}
+
 			}
+			object.put( ID_FIELDNAME, idObject );
 		}
 		return object;
 	}
@@ -171,7 +193,9 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( "." + ID_FIELDNAME ) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( DOT_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
+					column
+			) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -182,6 +206,10 @@ public class MongoDBDialect implements GridDialect {
 					break;
 				}
 			}
+		}
+
+		if ( updater.size() == 0 ) {
+			updater = this.preprareIdObject( key );
 		}
 		this.getCollection( key ).update( snapshot.getDbObject(), updater, true, false );
 	}
@@ -367,7 +395,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 		DBCollection collection = getAssociationCollection( key );
 		DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		
+
 		int nAffected = collection.remove( query ).getN();
 		log.removedAssociation( nAffected );
 	}

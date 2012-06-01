@@ -22,6 +22,9 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -37,19 +40,28 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
-	
+
 	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 	private final RowKey rowKey;
+	private List<String> idFieldName;
 
 	public MongoDBTupleSnapshot(DBObject dbObject) {
-		this( dbObject, null );
+		this.dbObject = dbObject;
+		this.rowKey = null;
 	}
 
 	//consider RowKey columns and values as aprt of the Tuple
 	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
 		this.dbObject = dbObject;
 		this.rowKey = rowKey;
+		this.idFieldName = new ArrayList<String>();
+	}
+
+	public MongoDBTupleSnapshot(DBObject dbObject, String[] idFieldName) {
+		this.dbObject = dbObject;
+		this.rowKey = null;
+		this.idFieldName = Arrays.asList( idFieldName );
 	}
 
 	@Override
@@ -112,4 +124,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		return this.dbObject.keySet().isEmpty();
 	}
 
+	public boolean columnInIdField(String column) {
+		return (idFieldName == null) ? false : idFieldName.contains( column );
+	}
 }
