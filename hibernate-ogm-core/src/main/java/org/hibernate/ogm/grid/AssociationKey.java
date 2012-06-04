@@ -134,11 +134,10 @@ public final class AssociationKey implements Serializable {
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "AssociationKey" );
-		sb.append( "{table='" ).append( table ).append( "'" );
-		for( int index = 0 ; index < columnNames.length ; index++) {
-			sb.append( columnNames[index] ).append( " = '" ).append( columnValues[index] ).append( "'" );
-		}
-		sb.append( "}" );
+		sb.append( "{table='" ).append( table ).append( '\'' );
+		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
+		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
+		sb.append( '}' );
 		return sb.toString();
 	}
 
