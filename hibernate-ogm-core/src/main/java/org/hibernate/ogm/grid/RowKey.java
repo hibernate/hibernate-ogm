@@ -97,7 +97,7 @@ public final class RowKey implements Serializable {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "RowKey" );
 		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columns=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
+		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
 		sb.append( ", columnValues=" )
 				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
