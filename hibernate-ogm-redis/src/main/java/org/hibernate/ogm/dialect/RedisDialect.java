@@ -176,25 +176,7 @@ public class RedisDialect implements GridDialect {
 	 */
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		provider.setNextValue( key, getRowKeyAsMap( key ), value, increment, initialValue );
-	}
-
-	/**
-	 * Reused from VoldemortDialect. Gets row key as Map object containing owning columns.
-	 * 
-	 * @return Row key as Map representation.
-	 */
-	public Map<String, Object> getRowKeyAsMap(RowKey rowKey) {
-
-		Map<String, Object> map = new HashMap<String, Object>();
-
-		if ( rowKey.getColumnNames() != null && rowKey.getColumnValues() != null ) {
-			for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
-				map.put( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
-			}
-		}
-		map.put( "table", rowKey.getTable() );
-		return Collections.unmodifiableMap( map );
+		provider.setNextValue( key, value, increment, initialValue );
 	}
 	
 	/*
