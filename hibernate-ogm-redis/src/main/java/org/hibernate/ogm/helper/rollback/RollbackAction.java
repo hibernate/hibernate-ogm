@@ -49,6 +49,7 @@ public class RollbackAction {
 
 	/**
 	 * Roll back to the previous state.
+	 * 
 	 * @param key
 	 */
 	public void rollback() {
@@ -56,13 +57,32 @@ public class RollbackAction {
 		originator.undo( careTaker.getMemento() );
 
 		if ( key instanceof EntityKey ) {
-			redisDatastoreProvider.putEntity( (EntityKey) key, (Map<String, Object>) originator.getObj() );
+
+			if ( originator.getObj() == null ) {
+				redisDatastoreProvider.putEntity( (EntityKey) key, null );
+			}
+			else {
+				redisDatastoreProvider.putEntity( (EntityKey) key, (Map<String, Object>) originator.getObj() );
+			}
 		}
 		else if ( key instanceof AssociationKey ) {
-			redisDatastoreProvider.putAssociation( (AssociationKey) key, (Map<RowKey, Map<String, Object>>) originator.getObj() );
+
+			if ( originator.getObj() == null ) {
+				redisDatastoreProvider.putAssociation( (AssociationKey) key, null );
+			}
+			else {
+				redisDatastoreProvider.putAssociation( (AssociationKey) key,
+						(Map<RowKey, Map<String, Object>>) originator.getObj() );
+			}
 		}
 		else if ( key instanceof RowKey ) {
-			redisDatastoreProvider.putSequence( (RowKey) key, (Map<String, Integer>) originator.getObj() );
+
+			if ( originator.getObj() == null ) {
+				redisDatastoreProvider.putSequence( (RowKey) key, null );
+			}
+			else {
+				redisDatastoreProvider.putSequence( (RowKey) key, (Map<String, Integer>) originator.getObj() );
+			}
 		}
 	}
 
