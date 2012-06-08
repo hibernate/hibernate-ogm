@@ -131,7 +131,7 @@
         <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
-        <jbossLoggingVersion>3.1.0.GA</jbossLoggingVersion>
+        <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
