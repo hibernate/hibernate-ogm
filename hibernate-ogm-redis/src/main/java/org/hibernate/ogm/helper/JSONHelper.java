@@ -109,6 +109,30 @@ public class JSONHelper {
 	}
 
 	/**
+	 * 
+	 * @param map
+	 * @return
+	 */
+	public String toJSON(Map map){
+		return new JSONObject(map).toString();
+	}
+
+	/**
+	 * 
+	 * @param json
+	 * @param key
+	 * @return
+	 */
+	public Object get(String json, String key) {
+		try {
+			return new JSONObject( json ).get( key );
+		}
+		catch ( JSONException ex ) {
+			throw new RuntimeException( ex );
+		}
+	}
+
+	/**
 	 * Creates Object from the specified JSON representation based on the
 	 * specified Class.
 	 * 
