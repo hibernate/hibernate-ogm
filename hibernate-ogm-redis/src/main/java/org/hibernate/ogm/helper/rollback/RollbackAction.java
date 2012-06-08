@@ -61,6 +61,9 @@ public class RollbackAction {
 		else if ( key instanceof AssociationKey ) {
 			redisDatastoreProvider.putAssociation( (AssociationKey) key, (Map<RowKey, Map<String, Object>>) originator.getObj() );
 		}
+		else if ( key instanceof RowKey ) {
+			redisDatastoreProvider.putSequence( (RowKey) key, (Map<String, Integer>) originator.getObj() );
+		}
 	}
 
 	/**
@@ -79,6 +82,9 @@ public class RollbackAction {
 		}
 		else if ( key instanceof AssociationKey ) {
 			memento = o.createMemento( redisDatastoreProvider.getAssociation( (AssociationKey) key ) );
+		}
+		else if ( key instanceof RowKey ) {
+			memento = o.createMemento( redisDatastoreProvider.getSequence( (RowKey) key ) );
 		}
 
 		objs[0] = o;
