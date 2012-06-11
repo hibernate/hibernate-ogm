@@ -59,7 +59,8 @@ public class RedisDialect implements GridDialect {
 	 */
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		// TODO implement this method later
+		// TODO Implementing this method needs help from Redis community. Once figuring out how to map lock strategies with Redis,
+		// this method will be implemented. Until that time, this method simply throws an exception.
 		throw new RuntimeException("the lock is not supported yet.");
 	}
 
