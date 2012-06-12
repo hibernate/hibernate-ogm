@@ -77,7 +77,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	private static final Log log = LoggerFactory.make();
 	private StoreClientFactory clientFactory;
 	private final ObjectMapper mapper = new ObjectMapper();
-	private final ConcurrentMap<String, Set<Serializable>> tableIds = new ConcurrentHashMap<String, Set<Serializable>>();
+	private final ConcurrentMap<String,EntityKey> entityKeys = new ConcurrentHashMap<String,EntityKey>();
 	private final Set<AssociationKey> associationKeys = Collections.synchronizedSet( new HashSet<AssociationKey>() );
 	private StoreClient dataClient;
 	private StoreClient associationClient;
@@ -189,7 +189,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	@Override
 	public void stop() {
 		log.info( "stopping Voldemort embeddedServer: " + embeddedServer );
-		tableIds.clear();
+		entityKeys.clear();
 		associationKeys.clear();
 		nextValues.clear();
 		datastoreProviderList.clear();
@@ -897,42 +897,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 *            Entity key to be stored.
 	 */
 	private void addEntryToIdTable(EntityKey key) {
-
-		Serializable rtnId = null;
-		tableIds.get( key.getTable() );
-
-		if ( tableIds.get( key.getTable() ) == null ) {
-			Set<Serializable> set = new HashSet<Serializable>();
-			set.add( key.getId() );
-			rtnId = (Serializable) tableIds.put( key.getTable(), set );
-		}
-		else {
-			tableIds.get( key.getTable() ).add( key.getId() );
-		}
-
-		// showAllTableIds();
-	}
-
-	/**
-	 * Shows all the table name and id pairs currently stored on this object.
-	 * This method for debugging purpose.
-	 */
-	private void showAllTableIds() {
-		StringBuilder stringBuilder = new StringBuilder();
-		Set<Entry<String, Set<Serializable>>> entries = tableIds.entrySet();
-		boolean found = false;
-		for ( Iterator<Entry<String, Set<Serializable>>> itr = entries.iterator(); itr.hasNext(); ) {
-			Entry<String, Set<Serializable>> entry = itr.next();
-			generateAllTableIdsMessage( entry, stringBuilder );
-			found = true;
-		}
-
-		if ( found ) {
-			log.info( stringBuilder );
-		}
-		else {
-			log.info( "currently there are no ids stored" );
-		}
+		entityKeys.putIfAbsent( jsonHelper.toJSON( getEntityKeyAsMap( key ) ), key );
 	}
 
 	/**
@@ -1058,7 +1023,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 *            Entity key to be removed.
 	 */
 	private void removeEntryFromIdTable(EntityKey key) {
-		tableIds.get( key.getTable() ).remove( key.getId() );
+		entityKeys.remove( jsonHelper.toJSON( getEntityKeyAsMap( key ) ) );
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -1229,16 +1194,9 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	public Map<EntityKey, Map<String, Object>> getEntityMap() {
 
 		Map<EntityKey, Map<String, Object>> map = new HashMap<EntityKey, Map<String, Object>>();
-		Set<Entry<String, Set<Serializable>>> entries = tableIds.entrySet();
-		for ( Iterator<Entry<String, Set<Serializable>>> itr = entries.iterator(); itr.hasNext(); ) {
-			Entry<String, Set<Serializable>> entry = itr.next();
-			for ( Iterator<Serializable> itr2 = entry.getValue().iterator(); itr2.hasNext(); ) {
-				Serializable id = itr2.next();
-				EntityKey entityKey = new EntityKey( entry.getKey(), id,
-						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getEntityName(),
-						EntityKeyBuilder.DEBUG_OGM_PERSISTER.getIdentifierColumnNames(), new Object[] { id } );
-				map.put( entityKey, getEntityTuple( entityKey ) );
-			}
+		for(Iterator<Entry<String,EntityKey>> itr = entityKeys.entrySet().iterator();itr.hasNext();){
+			Entry<String,EntityKey> entry = itr.next();
+			map.put( entry.getValue(), getEntityTuple( entry.getValue()) );
 		}
 
 		return map;

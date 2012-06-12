@@ -32,8 +32,6 @@ import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
  */
 final public class EntityKeyBuilder {
 
-	public static OgmEntityPersister DEBUG_OGM_PERSISTER;
-
 	private EntityKeyBuilder() {
 	}
 
@@ -42,7 +40,6 @@ final public class EntityKeyBuilder {
 			final OgmEntityPersister persister,
 			final Serializable id,
 			SessionImplementor session) {
-		EntityKeyBuilder.DEBUG_OGM_PERSISTER = persister;
 		return fromData(
 				persister.getTableName(),
 				persister.getIdentifierColumnNames(),

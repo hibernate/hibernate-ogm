@@ -108,6 +108,10 @@ public class JSONHelper {
 		return gson.toJson( obj );
 	}
 
+	public String toJSON(Map map) {
+		return gson.toJson( map );
+	}
+	
 	/**
 	 * Creates Object from the specified JSON representation based on the
 	 * specified Class.
