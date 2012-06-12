@@ -1144,8 +1144,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	}
 
 	/**
-	 * Meant to execute assertions in tests only. Delete
-	 * EntityKeyBuilder.DEBUG_OGM_PERSISTER when tests are done.
+	 * Meant to execute assertions in tests only.
 	 * 
 	 * @return a read-only view of the map containing the entities
 	 */
