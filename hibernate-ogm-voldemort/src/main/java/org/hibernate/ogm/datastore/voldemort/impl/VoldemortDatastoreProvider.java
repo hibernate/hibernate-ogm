@@ -667,7 +667,7 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	public boolean putEntity(EntityKey key, Map<String, Object> tuple) {
 
-		addEntryToIdTable( key );
+		entityKeys.putIfAbsent( jsonHelper.toJSON( getEntityKeyAsMap( key ) ), key );
 		return writeEntityTupleFrom( key, tuple );
 	}
 
@@ -891,45 +891,13 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	}
 
 	/**
-	 * Stores the specified key to this object.
-	 * 
-	 * @param key
-	 *            Entity key to be stored.
-	 */
-	private void addEntryToIdTable(EntityKey key) {
-		entityKeys.putIfAbsent( jsonHelper.toJSON( getEntityKeyAsMap( key ) ), key );
-	}
-
-	/**
-	 * Generates a message for showing all the table name and id pairs. This
-	 * method is also for debugging purpose.
-	 * 
-	 * @param entry
-	 *            Stores table name and the corresponding ids.
-	 * @param stringBuilder
-	 *            Used to build the message.
-	 */
-	private void generateAllTableIdsMessage(Entry<String, Set<Serializable>> entry, StringBuilder stringBuilder) {
-
-		stringBuilder.append( "table name: " + entry.getKey() + "\n" );
-		if ( entry.getValue().isEmpty() ) {
-			stringBuilder.append( "\tall the ids on table, " + entry.getKey() + " are already deleted.\n" );
-		}
-		else {
-			for ( Iterator<Serializable> itr = entry.getValue().iterator(); itr.hasNext(); ) {
-				stringBuilder.append( "\tid: " + itr.next() + "\n" );
-			}
-		}
-	}
-
-	/**
 	 * Removes entry with the specified key from Voldemort.
 	 * 
 	 * @param key
 	 *            Used to remove the entry.
 	 */
 	public void removeEntityTuple(EntityKey key) {
-		removeEntryFromIdTable( key );
+		entityKeys.remove( jsonHelper.toJSON( getEntityKeyAsMap( key ) ) );
 		deleteValue( getVoldemortStoreName(), getEntityKeyAsMap( key ), false );
 	}
 
@@ -1014,16 +982,6 @@ public class VoldemortDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	protected <T extends Throwable> void throwHibernateExceptionFrom(T exception) {
 		throw new HibernateException( exception.getCause() );
-	}
-
-	/**
-	 * Removes the specified key from this object.
-	 * 
-	 * @param key
-	 *            Entity key to be removed.
-	 */
-	private void removeEntryFromIdTable(EntityKey key) {
-		entityKeys.remove( jsonHelper.toJSON( getEntityKeyAsMap( key ) ) );
 	}
 
 	@SuppressWarnings("rawtypes")
