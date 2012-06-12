@@ -145,5 +145,4 @@ public abstract class JpaTestCase extends BaseOGMTest {
 			}
 		}
 	}
-
 }

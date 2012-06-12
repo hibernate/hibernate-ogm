@@ -1,6 +1,4 @@
 /* 
- * Hibernate, Relational Persistence for Idiomatic Java
- * 
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,41 +16,53 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
 
-import junit.framework.Assert;
+package org.hibernate.ogm.helper.annotation;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Seiya Kawashima <skawashima@uchicago.edu>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+@Entity
+public class Person {
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.EHCACHE,
-		GridDialectType.VOLDEMORT} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	@Id
+	private long id;
+	private String firstName;
+	private String lastName;
+	private Job job;
+
+	public String getFirstName() {
+		return firstName;
 	}
 
-	@Test
-	public void testCorrect() {
-		//all fine
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	public String getLastName() {
+		return lastName;
 	}
 
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public Job getJob() {
+		return job;
+	}
+
+	public void setJob(Job job) {
+		this.job = job;
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
+	}
 }

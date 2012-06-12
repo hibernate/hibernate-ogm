@@ -38,6 +38,7 @@
 
     <modules>
         <module>hibernate-ogm-core</module>
+        <module>hibernate-ogm-voldemort</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
     </modules>

@@ -45,7 +45,8 @@ final public class EntityKeyBuilder {
 				persister.getIdentifierColumnNames(),
 				persister.getGridIdentifierType(),
 				id,
-				session );
+				session,
+				persister);
 	}
 
 	//static method because the builder pattern version was showing up during profiling
@@ -61,7 +62,22 @@ final public class EntityKeyBuilder {
 				identifierColumnNames,
 				session
 		);
-		return new EntityKey( tableName, identifierColumnNames, values );
+		return new EntityKey( tableName,id, "" , identifierColumnNames, values );
 	}
-
+	
+	public static EntityKey fromData(
+			String tableName,
+			String[] identifierColumnNames,
+			GridType identifierGridType,
+			final Serializable id,
+			SessionImplementor session,
+			final OgmEntityPersister persister) {
+		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
+				id,
+				identifierGridType,
+				identifierColumnNames,
+				session
+				);
+		return new EntityKey( tableName, id, persister.getEntityName(),identifierColumnNames,values );
+	}
 }

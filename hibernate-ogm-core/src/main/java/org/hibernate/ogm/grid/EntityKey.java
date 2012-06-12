@@ -22,10 +22,13 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Entity key
- *
+ * 
  * @author Emmanuel Bernard
  */
 public final class EntityKey implements Serializable {
@@ -34,13 +37,26 @@ public final class EntityKey implements Serializable {
 	private final int hashCode;
 	private String[] columnNames;
 	private Object[] columnValues;
+    private final String entityName;
+    private final Serializable id;
 
-	public EntityKey(String tableName, String[] columnNames, Object[] values) {
+	public EntityKey(String tableName,Serializable id, String[] columnNames, Object[] values) {
 		this.table = tableName;
 		this.columnNames = columnNames;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
+		this.id = id;
+        this.entityName = "";
 	}
+    
+    public EntityKey(String tableName,Serializable id,String entityName, String[] columnNames, Object[] values) {
+    	this.table = tableName;
+    	this.columnNames = columnNames;
+    	this.columnValues = values;
+    	this.hashCode = generateHashCode();
+    	this.entityName = entityName;
+    	this.id = id;
+    }
 
 	public String getTable() {
 		return table;
@@ -92,4 +108,12 @@ public final class EntityKey implements Serializable {
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}
+	
+    public final Serializable getId() {
+        return this.id;
+    }
+
+    public final String getEntityName() {
+        return this.entityName;
+    }
 }

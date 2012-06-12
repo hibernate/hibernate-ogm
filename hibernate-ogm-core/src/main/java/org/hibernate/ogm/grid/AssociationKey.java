@@ -22,12 +22,16 @@ package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.annotations.common.AssertionFailure;
 
 /**
- * Represents the key used to link a property value and the id of it's owning entity
- *
+ * Represents the key used to link a property value and the id of it's owning
+ * entity
+ * 
  * @author Emmanuel Bernard
  * @author Sanne Grinovero
  */

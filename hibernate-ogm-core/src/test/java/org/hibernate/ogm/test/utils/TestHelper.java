@@ -35,8 +35,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
- *
- *
+ * 
+ * 
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
@@ -45,9 +45,9 @@ public class TestHelper {
 	private static final Log log = LoggerFactory.make();
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
-	public static int entityCacheSize(EntityManager em) {
-		return entityCacheSize( em.unwrap( Session.class ) );
-	}
+    public static int entityCacheSize(EntityManager em) {
+        return entityCacheSize(em.unwrap(Session.class));
+    }
 
 	private static TestableGridDialect createStoreSpecificHelper() {
 		for ( GridDialectType gridType : GridDialectType.values() ) {
@@ -71,25 +71,26 @@ public class TestHelper {
 		return GridDialectType.valueFromHelperClass( helper.getClass() );
 	}
 
-	public static int entityCacheSize(Session session) {
-		return entityCacheSize( session.getSessionFactory() );
-	}
+    public static int entityCacheSize(Session session) {
+        return entityCacheSize(session.getSessionFactory());
+    }
 
-	public static int entityCacheSize(SessionFactory sessionFactory) {
-		return helper.entityCacheSize( sessionFactory );
-	}
+    public static int entityCacheSize(SessionFactory sessionFactory) {
+        return helper.entityCacheSize(sessionFactory);
+    }
 
-	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return helper.extractEntityTuple( sessionFactory, key );
-	}
+    public static Map extractEntityTuple(SessionFactory sessionFactory,
+            EntityKey key) {
+        return helper.extractEntityTuple(sessionFactory, key);
+    }
 
-	public static int associationCacheSize(SessionFactory sessionFactory) {
-		return helper.associationCacheSize( sessionFactory );
-	}
+    public static int associationCacheSize(SessionFactory sessionFactory) {
+        return helper.associationCacheSize(sessionFactory);
+    }
 
-	public static boolean backendSupportsTransactions() {
-		return helper.backendSupportsTransactions();
-	}
+    public static boolean backendSupportsTransactions() {
+        return helper.backendSupportsTransactions();
+    }
 
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {

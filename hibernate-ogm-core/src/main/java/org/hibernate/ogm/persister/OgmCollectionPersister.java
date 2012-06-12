@@ -58,14 +58,15 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * CollectionPersister storing the collection in a grid 
- *
+ * CollectionPersister storing the collection in a grid
+ * 
  * @author Emmanuel Bernard
  */
 public class OgmCollectionPersister extends AbstractCollectionPersister implements CollectionPhysicalModel {

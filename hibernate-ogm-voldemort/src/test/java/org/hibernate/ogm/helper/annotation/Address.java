@@ -18,31 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.loader;
+package org.hibernate.ogm.helper.annotation;
 
-import java.io.Serializable;
-
-import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.loader.collection.CollectionInitializer;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.type.Type;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
 /**
  * @author Emmanuel Bernard
  */
-public class OgmBasicCollectionLoader extends OgmLoader implements CollectionInitializer {
-    public OgmBasicCollectionLoader(OgmCollectionPersister collectionPersister) {
-        super( new OgmCollectionPersister[] { collectionPersister } );
-    }
+@Embeddable
+public class Address {
+	public String getStreet1() { return street1; }
+	public void setStreet1(String street1) {  this.street1 = street1; }
+	private String street1;
 
-    @Override
-    public void initialize(Serializable id, SessionImplementor session)
-    throws HibernateException {
-        loadCollection( session, id, getKeyType() );
-    }
+	public String getStreet2() { return street2; }
+	public void setStreet2(String street2) {  this.street2 = street2; }
+	private String street2;
 
-    protected Type getKeyType() {
-        return getCollectionPersisters()[0].getKeyType();
-    }
+	public String getCity() { return city; }
+	public void setCity(String city) {  this.city = city; }
+	private String city;
+
+	@Column(name = "postal_code")
+	public String getZipCode() { return zipCode; }
+	public void setZipCode(String zipCode) {  this.zipCode = zipCode; }
+	private String zipCode;
+
+	public String getCountry() { return country; }
+	public void setCountry(String country) {  this.country = country; }
+	private String country;
+
 }

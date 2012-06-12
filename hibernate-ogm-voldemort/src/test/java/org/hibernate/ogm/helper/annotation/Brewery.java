@@ -18,46 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.jpa;
+package org.hibernate.ogm.helper.annotation;
 
-import javax.persistence.EntityManager;
+import java.util.HashSet;
+import java.util.Set;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 
-import org.junit.Test;
-
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+import org.hibernate.annotations.GenericGenerator;
 
 /**
- * Test that PersistenceProvider#createContainerEntityManagerFactory work properly in a JTA environment
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class JPAAndJTAViaContainerAPITest extends JpaTestCase {
-	@Test
-	public void testJPAAndJTAViaContainer() throws Exception {
-		getTransactionManager().begin();
-		final EntityManager em = getFactory().createEntityManager();
-		Poem poem = new Poem();
-		poem.setName( "L'albatros" );
-		em.persist( poem );
-		getTransactionManager().commit();
+@Entity
+public class Brewery {
+	@Id
+	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
+	@Column(name = "brewery_pk")
+	public String getId() { return id; }
+	public void setId(String id) {  this.id = id; }
+	private String id;
 
-		em.clear();
-
-		getTransactionManager().begin();
-		poem = em.find( Poem.class, poem.getId() );
-		assertThat( poem ).isNotNull();
-		assertThat( poem.getName() ).isEqualTo( "L'albatros" );
-		em.remove( poem );
-		getTransactionManager().commit();
-
-		em.close();
-	}
-
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] {
-				Poem.class
-		};
-	}
+	@OneToMany @JoinColumn(name = "brewery_id")
+	@Cascade( { CascadeType.PERSIST, CascadeType.SAVE_UPDATE} )
+	public Set<Beer> getBeers() { return beers; }
+	public void setBeers(Set<Beer> beers) {  this.beers = beers; }
+	private Set<Beer> beers = new HashSet<Beer>(  );
 }
