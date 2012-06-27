@@ -46,14 +46,14 @@ public final class EntityKey implements Serializable {
 		this.entityName = "";
 	}
 	
-    public EntityKey(String tableName, Serializable id, String entityName, String[] columnNames, Object[] values) {
-    	this.table = tableName;
-    	this.columnNames = columnNames;
-    	this.columnValues = values;
-    	this.hashCode = generateHashCode();
-    	this.entityName = entityName;
-    	this.id = id;
-    }
+	public EntityKey(String tableName, Serializable id, String entityName, String[] columnNames, Object[] values) {
+		this.table = tableName;
+		this.columnNames = columnNames;
+		this.columnValues = values;
+		this.hashCode = generateHashCode();
+		this.entityName = entityName;
+		this.id = id;
+	}
 
 	public String getTable() {
 		return table;
