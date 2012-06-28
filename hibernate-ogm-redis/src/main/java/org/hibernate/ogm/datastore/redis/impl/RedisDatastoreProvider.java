@@ -102,7 +102,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	 */
 	@Override
 	public void stop() {
-		log.info( "Redis stopping ..." );
+		log.redisStopping();
 		entityKeys.clear();
 		associationKeys.clear();
 		pool.destroy();
@@ -121,7 +121,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 				throw new HibernateException( "Please configure Redis on hibernate.properties correctly." );
 			}
 
-			log.info( "Redis starting ..." );
+			log.redisStarting();
 			setUpRedis();
 		}
 		catch ( Exception ex ) {

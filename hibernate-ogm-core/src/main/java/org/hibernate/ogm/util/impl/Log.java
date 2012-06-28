@@ -93,4 +93,12 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
 	void useGridDialect(String gridDialectClass);
+
+	@LogMessage(level = INFO)
+	@Message(id = 18, value = "Redis stopping")
+	void redisStopping();
+
+	@LogMessage(level = INFO)
+	@Message(id = 19, value = "Redis starting")
+	void redisStarting();
 }
