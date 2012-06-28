@@ -77,7 +77,6 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	private static final String SEQUENCE_LABEL = "nextSequence";
 	
 	private static enum RequiredProp {
-		// Reused from VoldemortDatastoreProvider
 		PROVIDER("provider", "hibernate.ogm.datastore.provider"), DIALECT("dialect", "hibernate.dialect"), PROVIDER_URL(
 				"provider_url", "hibernate.ogm.datastore.provider_url");
 
