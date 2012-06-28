@@ -77,7 +77,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	private static final String SEQUENCE_LABEL = "nextSequence";
 	
 	private static enum RequiredProp {
-		PROVIDER("provider", "hibernate.ogm.datastore.provider"), DIALECT("dialect", "hibernate.dialect"), PROVIDER_URL(
+		PROVIDER("provider", "hibernate.ogm.datastore.provider"), PROVIDER_URL(
 				"provider_url", "hibernate.ogm.datastore.provider_url");
 
 		private String name;
@@ -138,8 +138,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 		requiredProperties = getRequiredPropertyValues();
 
 		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
-				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null
-				&& requiredProperties.get( RequiredProp.DIALECT.getName() ) != null ) {
+				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null ) {
 			return true;
 		}
 		return false;
@@ -155,7 +154,6 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 		Map<String, String> map = new HashMap<String, String>();
 		map.put( RequiredProp.PROVIDER.getName(),
 				Environment.getProperties().getProperty( RequiredProp.PROVIDER.getPropPath() ) );
-		map.put( RequiredProp.DIALECT.getName(), RequiredProp.DIALECT.getPropPath() );
 		map.put( RequiredProp.PROVIDER_URL.getName(),
 				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
 		
