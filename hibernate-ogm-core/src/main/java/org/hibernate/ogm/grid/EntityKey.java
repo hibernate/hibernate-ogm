@@ -21,6 +21,7 @@
 package org.hibernate.ogm.grid;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Entity key
@@ -30,50 +31,51 @@ import java.io.Serializable;
 public final class EntityKey implements Serializable {
 
 	private final String table;
-	private final Serializable id;
 	private final int hashCode;
+	private String[] columnNames;
+	private Object[] columnValues;
 
-	public EntityKey(String table, Serializable id) {
-		this.table = table;
-		this.id = id;
+	public EntityKey(String tableName, String[] columnNames, Object[] values) {
+		this.table = tableName;
+		this.columnNames = columnNames;
+		this.columnValues = values;
 		this.hashCode = generateHashCode();
-	}
-
-	public Serializable getId() {
-		return id;
 	}
 
 	public String getTable() {
 		return table;
 	}
 
+	public Object[] getColumnValues() {
+		return columnValues;
+	}
+
+	public String[] getColumnNames() {
+		return columnNames;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "Key" );
-		sb.append( "{table=" ).append( table );
-		sb.append( ", id=" ).append( id );
+		sb.append( "EntityKey" );
+		sb.append( "{table='" ).append( table ).append( '\'' );
+		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
+		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
 		return sb.toString();
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if ( this == o ) {
-			return true;
-		}
-		if ( o == null || EntityKey.class != o.getClass() ) {
-			return false;
-		}
+		if ( this == o ) return true;
+		if ( o == null || EntityKey.class != o.getClass() ) return false;
 
-		EntityKey key = ( EntityKey ) o;
+		EntityKey entityKey = (EntityKey) o;
 
-		if ( id != null ? !id.equals( key.id ) : key.id != null ) {
-			return false;
-		}
-		if ( !table.equals( key.table ) ) {
-			return false;
-		}
+		//values are more discriminatory, test first
+		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) return false;
+		if ( !Arrays.equals( columnNames, entityKey.columnNames ) ) return false;
+		if ( !table.equals( entityKey.table ) ) return false;
 
 		return true;
 	}
@@ -84,12 +86,10 @@ public final class EntityKey implements Serializable {
 	}
 
 	private int generateHashCode() {
-		final int result = table.hashCode();
-		if ( id == null ) {
-			return result;
-		}
-		else {
-			return result * 31 + id.hashCode();
-		}
+		//Note we don't hash on the column names as the hash will discriminate enough
+		//with values and Arrays.hashCode is nto cheap
+		int result = table.hashCode();
+		result = 31 * result + Arrays.hashCode( columnValues );
+		return result;
 	}
 }
