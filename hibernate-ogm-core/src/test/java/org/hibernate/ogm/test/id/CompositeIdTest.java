@@ -95,6 +95,8 @@ public class CompositeIdTest extends JpaTestCase {
 			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
 			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
 			assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
+			em.remove( news );
+			assertThat( em.find( News.class, newsOgmID ) ).isNull();
 
 			em.clear();
 			news = em.find( News.class, newsAboutJugID );
@@ -103,6 +105,8 @@ public class CompositeIdTest extends JpaTestCase {
 			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
 			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
 			assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
+			em.remove( news );
+			assertThat( em.find( News.class, newsAboutJugID ) ).isNull();
 
 			em.clear();
 			news = em.find( News.class, newsCountJugID );
@@ -111,6 +115,8 @@ public class CompositeIdTest extends JpaTestCase {
 			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
 			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
 			assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
+			em.remove( news );
+			assertThat( em.find( News.class, newsCountJugID ) ).isNull();
 		}
 		finally {
 			commitOrRollback( operationSuccessful );
