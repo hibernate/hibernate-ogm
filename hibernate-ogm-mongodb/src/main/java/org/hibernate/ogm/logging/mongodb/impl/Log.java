@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.TRACE;
 
 import com.mongodb.MongoException;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -75,4 +76,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = INFO)
 	@Message(id = 1211, value = "The configuration property '" + Environment.MONGODB_SAFE + "' is set to %b")
 	void useSafe(boolean safe);
+
+	@Message(id = 1212, value = "Unknown association storage strategy: [%s]. Supported values in enum %s" )
+	HibernateException unknownAssociationStorageStrategy(String databaseName, Class<?> enumType);
 }
