@@ -29,7 +29,7 @@ If you have MongoDB installed on `localhost` and the default port, use the mongo
 If you have MongoDB installed in a non default host / port, you can set the environment variables
 and then run the test suite
 
-    export MONGODB_HOST=mongodb-machine
+    export MONGODB_HOSTNAME=mongodb-machine
     export MONGODB_PORT=1234
     mvn clean install -s settings-example.xml -Pmongodb
 
