@@ -62,7 +62,7 @@ public interface Environment {
 	/**
 	 * The default value used to configure the safe mode {@link MONGODB_SAFE}
 	 */
-	public static final boolean MONGODB_DEFAULT_SAFE = false;
+	public static final boolean MONGODB_DEFAULT_SAFE = true;
 
 	/**
 	 * Where to store associations.

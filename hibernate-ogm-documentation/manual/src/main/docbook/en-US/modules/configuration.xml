@@ -473,8 +473,8 @@ em.close();</programlisting>
       </listitem>
       
       <listitem>
-        <para>To enable the safe mode (which means WriteConcern.SAFE for all operations) you have to use
-        <literal>hibernate.ogm.mongodb.safe</literal> and set it to <literal>true</literal></para>
+        <para>By default <literal>hibernate.ogm.mongodb.safe</literal> is set it to <literal>true</literal>
+        which means the driver will use WriteConcern.SAFE for all operations</para>
       </listitem>
     </itemizedlist>
   </section>
