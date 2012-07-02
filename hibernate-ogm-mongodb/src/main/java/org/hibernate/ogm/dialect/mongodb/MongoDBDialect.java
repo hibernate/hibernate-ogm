@@ -238,7 +238,15 @@ public class MongoDBDialect implements GridDialect {
 		}
 		else {
 			if ( log.isDebugEnabled() ) {
-				log.debugf( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
+				StringBuilder builder = new StringBuilder( "Unable to remove {" );
+				for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+					builder.append( key.getColumnNames()[i] );
+					builder.append( ":" );
+					builder.append( key.getColumnValues()[i] );
+				}
+
+				builder.append( "} (object not found)" );
+				log.debug( builder.toString() );
 			}
 		}
 	}
