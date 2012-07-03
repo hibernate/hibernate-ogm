@@ -216,12 +216,13 @@ public class MongoDBDialect implements GridDialect {
 			}
 		}
 
-		/*Needed because in case of object with only an ID field
-           the "_id" won't be persisted properly.
-            With this adjustment, it will work like this:
-            	if the object (from snapshot) doesn't exist so create the one represented by updater
-            	so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
-            	of the custom id
+		/*
+		* Needed because in case of object with only an ID field
+        * the "_id" won't be persisted properly.
+        * With this adjustment, it will work like this:
+        *	if the object (from snapshot) doesn't exist so create the one represented by updater
+        *   so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
+        *   of the custom id
 		 */
 		if ( updater.size() == 0 ) {
 			updater = this.prepareIdObject( key );
