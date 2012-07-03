@@ -82,7 +82,7 @@ public class MongoDBDialect implements GridDialect {
 	private static final Integer ONE = Integer.valueOf( 1 );
 
 	public static final String ID_FIELDNAME = "_id";
-	public static final String DOT_SEPARATOR = ".";
+	public static final String PROPERTY_SEPARATOR = ".";
 	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ASSOCIATIONS_FIELDNAME = "associations";
 	public static final String TUPLE_FIELDNAME = "tuple";
@@ -151,8 +151,8 @@ public class MongoDBDialect implements GridDialect {
 				String columnName = columnNames[i];
 				Object columnValue = columnValues[i];
 
-				if ( columnName.contains( DOT_SEPARATOR ) ) {
-					int dotIndex = columnName.indexOf( DOT_SEPARATOR );
+				if ( columnName.contains( PROPERTY_SEPARATOR ) ) {
+					int dotIndex = columnName.indexOf( PROPERTY_SEPARATOR );
 					String shortColumnName = columnName.substring( dotIndex + 1 );
 					idObject.put( shortColumnName, columnValue );
 				}
@@ -201,7 +201,7 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( DOT_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
 					column
 			) ) {
 				switch ( operation.getType() ) {
