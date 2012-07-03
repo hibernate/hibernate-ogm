@@ -96,7 +96,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		AssociationStorage assocStorage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
 
-		if ( assocStorage == AssociationStorage.GLOBAL_COLLECTION ) {
+		if ( assocStorage == AssociationStorage.IN_ENTITY ) {
+			return true; //FIXME find a way to test that, maybe with some map reduce magic?
+		}
+		else if ( assocStorage == AssociationStorage.GLOBAL_COLLECTION ) {
 			return db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
 		}
 		else if ( assocStorage == AssociationStorage.COLLECTION ) {
