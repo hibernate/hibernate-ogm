@@ -45,8 +45,8 @@ public class TestHelper {
 	private static final Log log = LoggerFactory.make();
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
-	public static int entityCacheSize(EntityManager em) {
-		return entityCacheSize( em.unwrap( Session.class ) );
+	public static boolean assertNumberOfEntities(int numberOfEntities, EntityManager em) {
+		return assertNumberOfEntities( numberOfEntities, em.unwrap( Session.class ) );
 	}
 
 	private static TestableGridDialect createStoreSpecificHelper() {
@@ -71,20 +71,21 @@ public class TestHelper {
 		return GridDialectType.valueFromHelperClass( helper.getClass() );
 	}
 
-	public static int entityCacheSize(Session session) {
-		return entityCacheSize( session.getSessionFactory() );
+	public static boolean assertNumberOfEntities(int numberOfEntities, Session session) {
+		return assertNumberOfEntities( numberOfEntities, session.getSessionFactory() );
 	}
 
-	public static int entityCacheSize(SessionFactory sessionFactory) {
-		return helper.entityCacheSize( sessionFactory );
+	public static boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
+		return helper.assertNumberOfEntities( numberOfEntities, sessionFactory );
 	}
 
 	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return helper.extractEntityTuple( sessionFactory, key );
 	}
 
-	public static int associationCacheSize(SessionFactory sessionFactory) {
-		return helper.associationCacheSize( sessionFactory );
+	public static boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		boolean result = helper.assertNumberOfAssociations( numberOfAssociations, sessionFactory );
+		return result;
 	}
 
 	public static boolean backendSupportsTransactions() {

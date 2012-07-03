@@ -36,13 +36,13 @@ import org.hibernate.ogm.grid.RowKey;
 public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
-	public int entityCacheSize(SessionFactory sessionFactory) {
-		return getEntityMap( sessionFactory ).size();
+	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
+		return getEntityMap( sessionFactory ).size() == numberOfEntities;
 	}
 
 	@Override
-	public int associationCacheSize(SessionFactory sessionFactory) {
-		 return getAssociationCache( sessionFactory ).size();
+	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		 return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
 	}
 
 	@Override

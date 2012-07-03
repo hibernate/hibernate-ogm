@@ -35,16 +35,16 @@ import org.hibernate.ogm.grid.EntityKey;
 public interface TestableGridDialect {
 
 	/**
+	 * Check that the number of entities present matches expectations
 	 * @param sessionFactory
-	 * @return the number of elements stored in the entity "cache"
 	 */
-	int entityCacheSize(SessionFactory sessionFactory);
+	boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory);
 
 	/**
+	 * Check that the number of entities present matches expectations
 	 * @param sessionFactory
-	 * @return the number of elements stored in the association "cache"
 	 */
-	int associationCacheSize(SessionFactory sessionFactory);
+	boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory);
 
 	/**
 	 * Loads a specific entity tuple directly from the data store by entity key

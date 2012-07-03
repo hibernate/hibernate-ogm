@@ -23,10 +23,11 @@ package org.hibernate.ogm.test.associations.collection.unidirectional;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.TestHelper;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
-import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 
 /**
  * @author Emmanuel Bernard
@@ -48,12 +49,12 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf2 );
 		session.persist( cloud );
 		session.flush();
-		assertThat(entityCacheSize( sessions )).isEqualTo( 3 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 3 );
+		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
 		transaction.commit();
 
-		assertThat(entityCacheSize( sessions )).isEqualTo( 3 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 3 );
+		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
 
 		session.clear();
 
@@ -69,8 +70,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf3 );
 		transaction.commit();
 
-		assertThat(entityCacheSize( sessions )).isEqualTo( 4 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 3 );
+		assertThat( assertNumberOfEntities( 4, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
 
 		session.clear();
 
@@ -92,8 +93,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().clear();
 		transaction.commit();
 
-		assertThat(entityCacheSize( sessions )).isEqualTo( 1 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 0 );
+		assertThat( assertNumberOfEntities( 1, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
 
 		session.clear();
 
@@ -105,8 +106,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.flush();
 		transaction.commit();
 
-		assertThat(entityCacheSize( sessions )).isEqualTo( 0 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 0 );
+		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
 		session.close();
 
 		checkCleanCache();

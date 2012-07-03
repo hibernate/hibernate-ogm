@@ -23,11 +23,12 @@ package org.hibernate.ogm.test.associations.manytoone;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.TestHelper;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.get;
-import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
-import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
 
 /**
  * @author Emmanuel Bernard
@@ -45,11 +46,11 @@ public class ManyToOneTest extends OgmTestCase {
 		emmanuel.setMemberOf( jug );
 		session.persist( emmanuel );
 		session.flush();
-		assertThat(entityCacheSize( sessions )).isEqualTo( 2 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 1 );
+		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 		transaction.commit();
-		assertThat(entityCacheSize( sessions )).isEqualTo( 2 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 1 );
+		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 
 		session.clear();
 
@@ -59,8 +60,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( emmanuel );
 		session.delete( jug );
 		transaction.commit();
-		assertThat(entityCacheSize( sessions )).isEqualTo( 0 );
-		assertThat(associationCacheSize( sessions )).isEqualTo( 0 );
+		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
 
 		session.close();
 

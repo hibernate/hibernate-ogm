@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.simpleentity;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.associationCacheSize;
-import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 
 import java.io.InputStream;
@@ -406,7 +406,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	public void checkCleanCache() {
-		assertThat(entityCacheSize( sessions )).as("Entity cache should be empty").isEqualTo( 0 );
-		assertThat(associationCacheSize( sessions )).as("Association cache should be empty").isEqualTo( 0 );
+		assertThat( assertNumberOfEntities( 0, sessions ) ).as("Entity cache should be empty").isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).as("Association cache should be empty").isTrue();
 	}
 }
