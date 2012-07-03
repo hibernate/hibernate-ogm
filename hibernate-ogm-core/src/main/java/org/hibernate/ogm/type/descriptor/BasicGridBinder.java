@@ -73,7 +73,7 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 		}
 		else {
 			if ( log.isTraceEnabled() ) {
-				log.tracef( "binding [%2$s] to parameter(s) %1$s", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
+				log.tracef( "binding [%1$s] to parameter(s) %2$s", javaDescriptor.extractLoggableRepresentation( value ), Arrays.toString( names ) );
 			}
 			doBind( resultset, value, names, DEFAULT_OPTIONS );
 		}
