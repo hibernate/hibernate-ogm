@@ -26,6 +26,7 @@ import java.util.Map;
 
 import com.mongodb.MongoException;
 import org.hibernate.SessionFactory;
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
@@ -66,7 +67,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public int entityCacheSize(SessionFactory sessionFactory) {
+	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		AssociationStorage storage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
@@ -86,19 +87,19 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 			count += db.getCollection( collectionName ).count();
 		}
-		return count;
+		return count == numberOfEntities;
 	}
 
 	@Override
-	public int associationCacheSize(SessionFactory sessionFactory) {
+	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		AssociationStorage assocStorage = provider.getAssociationStorage();
 		DB db = provider.getDatabase();
 
 		if ( assocStorage == AssociationStorage.GLOBAL_COLLECTION ) {
-			return (int) db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count();
+			return db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
 		}
-		else {
+		else if ( assocStorage == AssociationStorage.COLLECTION ) {
 			int count = 0;
 			for ( String collectionName : db.getCollectionNames() ) {
 				if ( assocStorage == AssociationStorage.COLLECTION
@@ -106,7 +107,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 					count += db.getCollection( collectionName ).count();
 				}
 			}
-			return count;
+			return count == numberOfAssociations;
+		}
+		else {
+			throw new AssertionFailure( "Unknown AssociationStorage approach: " + assocStorage );
 		}
 	}
 

@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
-import static org.hibernate.ogm.test.utils.TestHelper.entityCacheSize;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -66,10 +66,10 @@ public class JPAResourceLocalStandaloneTest {
 				poem2.setName( "Wazaaaaa" );
 				em.persist( poem2 );
 				em.flush();
-				assertThat( entityCacheSize( em ) ).isEqualTo( 2 );
+				assertThat( assertNumberOfEntities( 2, em ) ).isTrue();
 				em.getTransaction().rollback();
 
-				assertThat( entityCacheSize( em ) ).isEqualTo( 1 );
+				assertThat( assertNumberOfEntities( 1, em ) ).isTrue();
 
 				em.getTransaction().begin();
 				poem = em.find( Poem.class, poem.getId() );

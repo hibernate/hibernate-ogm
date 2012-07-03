@@ -38,17 +38,17 @@ import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE
  */
 public class EhcacheTestHelper implements TestableGridDialect {
 	@Override
-	public int entityCacheSize(SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).getSize();
+	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
+		return getEntityCache( sessionFactory ).getSize() == numberOfEntities;
 	}
 
 	@Override
-	public int associationCacheSize(SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).getSize();
+	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		return getAssociationCache( sessionFactory ).getSize() == numberOfAssociations;
 	}
 
 	@Override
-	public Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String,Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return (Map) getEntityCache( sessionFactory ).get( key ).getValue();
 	}
 

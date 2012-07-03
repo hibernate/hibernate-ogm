@@ -38,17 +38,17 @@ import org.infinispan.Cache;
 public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
-	public int entityCacheSize(SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).size();
+	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
+		return getEntityCache( sessionFactory ).size() == numberOfEntities;
 	}
 
 	@Override
-	public int associationCacheSize(SessionFactory sessionFactory) {
-		 return getAssociationCache( sessionFactory ).size();
+	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		 return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
 	}
 
 	@Override
-	public Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String,Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return (Map) getEntityCache( sessionFactory ).get( key );
 	}
 
