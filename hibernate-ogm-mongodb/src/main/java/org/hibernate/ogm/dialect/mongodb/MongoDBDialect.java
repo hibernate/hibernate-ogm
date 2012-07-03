@@ -422,13 +422,14 @@ public class MongoDBDialect implements GridDialect {
 				this.addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
 				this.getCollection( key.getEntityKey() ).update( entity, updater, true, false );
 			}
-
 		}
-		DBCollection collection = getAssociationCollection( key );
-		DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
+		else {
+			DBCollection collection = getAssociationCollection( key );
+			DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
 
-		int nAffected = collection.remove( query ).getN();
-		log.removedAssociation( nAffected );
+			int nAffected = collection.remove( query ).getN();
+			log.removedAssociation( nAffected );
+		}
 	}
 
 	@Override
