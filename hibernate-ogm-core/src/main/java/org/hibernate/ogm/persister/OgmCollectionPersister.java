@@ -106,7 +106,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		else if ( getElementType().isAssociationType() && getElementType().isEntityType() ) {
 			associationType = AssociationType.ASSOCIATION_TABLE_TO_ENTITY;
-			gridTypeOfAssociatedId = null;
+			final Type identifierOrUniqueKeyType = ( ( EntityType ) getElementType() ).getIdentifierOrUniqueKeyType( factory );
+			gridTypeOfAssociatedId = typeTranslator.getType( identifierOrUniqueKeyType );
 		}
 		else {
 			gridTypeOfAssociatedId = null;
@@ -606,13 +607,16 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, elementColumnNames);
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
 			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
 					.gridDialect(gridDialect)
 					.keyColumnNames( elementColumnNames )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
 					.collectionPersister( this )
-					.tableName( getTableName() );
+					.tableName( getTableName() )
+					.key( entityId )
+					.inverse();
 
 			//TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if (action == Action.ADD) {

@@ -24,6 +24,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
@@ -55,6 +56,7 @@ public class PropertyMetadataProvider {
 	private OgmCollectionPersister collectionPersister;
 	private GridType gridPropertyType;
 	private OgmEntityPersister persister;
+	private boolean inverse;
 
 	//fluent methods for populating data
 
@@ -94,6 +96,11 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
+	public PropertyMetadataProvider inverse() {
+		this.inverse = true;
+		return this;
+	}
+
 
 	//action methods
 
@@ -102,12 +109,26 @@ public class PropertyMetadataProvider {
 			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 			if (collectionPersister != null) {
-				collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
-				EntityKey entityKey = EntityKeyBuilder.fromPersister(
-						(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
-						(Serializable) key,
-						session
-				);
+				EntityKey entityKey;
+				if (inverse) {
+					//inverse side of a collection, build the key of the other side's entity
+					//FIXME: inverse: update collection role to add assoc table + collection role??
+					collectionMetadataKey.setCollectionRole( tableName + "_" + getUnqualifiedRole( collectionPersister ) );
+					entityKey = EntityKeyBuilder.fromPersister(
+							(OgmEntityPersister) collectionPersister.getElementPersister(),
+							(Serializable) key,
+							session
+					);
+				}
+				else {
+					//owner side of the collection
+					collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
+					entityKey = EntityKeyBuilder.fromPersister(
+							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
+							(Serializable) key,
+							session
+					);
+				}
 				collectionMetadataKey.setOwnerEntityKey( entityKey );
 				//TODO add information on the collection type, set, map, bag, list etc
 
@@ -158,7 +179,7 @@ public class PropertyMetadataProvider {
 	}
 
 	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey);
+		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey );
 		getCollectionMetadata().put( rowKey, associationTuple);
 		return associationTuple;
 	}
