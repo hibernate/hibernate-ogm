@@ -71,7 +71,7 @@ public class CassandraDatastoreProvider implements DatastoreProvider, StartStopp
 			Class.forName( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
 		}
 		catch (ClassNotFoundException e) {
-			log.unableToLoadDriver("org.apache.cassandra.cql.jdbc.CassandraDriver") ;
+			throw log.unableToLoadDriver( "org.apache.cassandra.cql.jdbc.CassandraDriver" );
 		}
 	}
 
@@ -94,7 +94,8 @@ public class CassandraDatastoreProvider implements DatastoreProvider, StartStopp
 		}
 
 		if ( keyspace == null ) {
-			throw new HibernateException( "Unable to get keyspace value from configuration on key " + CASSANDRA_KEYSPACE );
+			log.unableToGetKeyspace( CASSANDRA_KEYSPACE );
+			throw log.unableToGetKeyspace( CASSANDRA_KEYSPACE );
 		}
 	}
 

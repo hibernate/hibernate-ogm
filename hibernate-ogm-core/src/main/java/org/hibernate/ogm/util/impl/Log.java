@@ -100,4 +100,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 19, value = "Cannot load %1$s driver")
 	HibernateException unableToLoadDriver(String driverName);
+
+	@Message(id = 20, value = "Unable to get keyspace value from configuration on key %1$s")
+	HibernateException unableToGetKeyspace(String keyspaceName);
 }

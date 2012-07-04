@@ -2,25 +2,25 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~ Copyright (c) 2010-2011, Red Hat, Inc. and/or its affiliates or third-party contributors as
-  ~ indicated by the @author tags or express copyright attribution
-  ~ statements applied by the authors.  All third-party contributions are
-  ~ distributed under license by Red Hat, Inc.
+  ~  Copyright (c) 2010-2012, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~  indicated by the @author tags or express copyright attribution
+  ~  statements applied by the authors.  All third-party contributions are
+  ~  distributed under license by Red Hat, Inc.
   ~
-  ~ This copyrighted material is made available to anyone wishing to use, modify,
-  ~ copy, or redistribute it subject to the terms and conditions of the GNU
-  ~ Lesser General Public License, as published by the Free Software Foundation.
+  ~  This copyrighted material is made available to anyone wishing to use, modify,
+  ~  copy, or redistribute it subject to the terms and conditions of the GNU
+  ~  Lesser General Public License, as published by the Free Software Foundation.
   ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
-  ~ for more details.
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+  ~  for more details.
   ~
-  ~ You should have received a copy of the GNU Lesser General Public License
-  ~ along with this distribution; if not, write to:
-  ~ Free Software Foundation, Inc.
-  ~ 51 Franklin Street, Fifth Floor
-  ~ Boston, MA  02110-1301  USA
+  ~  You should have received a copy of the GNU Lesser General Public License
+  ~  along with this distribution; if not, write to:
+  ~  Free Software Foundation, Inc.
+  ~  51 Franklin Street, Fifth Floor
+  ~  Boston, MA  02110-1301  USA
   -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
@@ -47,39 +47,15 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache-extras.cassandra-jdbc</groupId>
             <artifactId>cassandra-jdbc</artifactId>
-            <!--<version>1.0.5-SNAPSHOT</version>-->
-            <!--<version>1.1-dev-SNAPSHOT</version>-->
-            <!--<version>1.1.0</version>-->
             <version>1.1.1</version>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-lucene-directory</artifactId>
-            <optional>true</optional>
-        </dependency>
-        
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -89,17 +65,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <!-- this is optional on core :( and needed for testing -->
-        <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.jbossts</groupId>
-            <artifactId>jbossjta</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -116,18 +81,6 @@
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <!-- Cassandra driver issue with SLF4J deps -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.6.1</version>
         </dependency>
     </dependencies>
 
@@ -159,16 +112,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>test</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <skipUnitTests>false</skipUnitTests>
-            </properties>
-        </profile>
-     </profiles>
 </project>
