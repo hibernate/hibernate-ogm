@@ -20,11 +20,9 @@
  */
 package org.hibernate.ogm.util.impl;
 
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
@@ -35,10 +33,10 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.ogm.type.ManyToOneType;
+import org.hibernate.type.EntityType;
+import org.hibernate.type.Type;
 
 import java.io.Serializable;
-import java.util.Set;
 
 /**
  * @author Emmanuel Bernard
@@ -54,9 +52,8 @@ public class PropertyMetadataProvider {
 	private Object[] columnValues;
 	private GridDialect gridDialect;
 	private OgmCollectionPersister collectionPersister;
-	private GridType gridPropertyType;
-	private OgmEntityPersister persister;
 	private boolean inverse;
+	private Type propertyType;
 
 	//fluent methods for populating data
 
@@ -142,28 +139,26 @@ public class PropertyMetadataProvider {
 				collectionMetadataKey.setAssociationKind( type );
 				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
-			else if ( gridPropertyType != null ) {
-				if ( gridPropertyType instanceof ManyToOneType ) {
-					String entityName = ( ( ManyToOneType ) gridPropertyType ).getReturnedClass().getName();
-					String proeprtyName = "foo" ; //( ( ManyToOneType ) gridPropertyType ).getReferencedPropertyName();
-					SessionFactoryImplementor factory = session.getFactory();
-//					EntityPersister entityPersister = factory.getEntityPersister( entityName );
-//					entityPersister.getEntityMetamodel()
-					Set<String> collectionRolesByEntityParticipant = factory.getCollectionRolesByEntityParticipant( persister.getEntityName() );
-					if ( collectionRolesByEntityParticipant == null || collectionRolesByEntityParticipant.size() == 0 ) {
-						System.out.println( "******* Not participating in  collection " + persister.getEntityName() );
-					}
-					else {
-						System.out.println( "******* Participating in  collection " + persister.getEntityName() );
-					}
-
+			else if ( propertyType != null ) {
+				collectionMetadataKey.setCollectionRole( tableName );
+				collectionMetadataKey.setAssociationKind( propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED );
+				if ( propertyType instanceof EntityType ) {
+					EntityType entityType = (EntityType) propertyType;
+					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
+					EntityKey entityKey = new EntityKey(
+							associatedPersister.getTableName(),
+							associatedPersister.getIdentifierColumnNames(),
+							columnValues
+					);
+					collectionMetadataKey.setOwnerEntityKey( entityKey );
+					collectionMetadataKey.setRowKeyColumnNames( keyColumnNames );
 				}
 				else {
-					System.out.println( "*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0] + ":" + gridPropertyType.getClass() );
+					System.out.println( "*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0] + ":" + propertyType.getClass() );
 				}
 			}
 			else {
-				System.out.println("*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0]);
+				System.out.println("*********** girdpropertytype is null" + tableName + ":" + keyColumnNames[0]);
 			}
 		}
 		return collectionMetadataKey;
@@ -222,13 +217,8 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	public PropertyMetadataProvider gridPropertyType(GridType gridPropertyType) {
-		this.gridPropertyType = gridPropertyType;
-		return this;
-	}
-
-	public PropertyMetadataProvider persister(OgmEntityPersister persister) {
-		this.persister = persister;
+	public PropertyMetadataProvider propertyType(Type type) {
+		this.propertyType = type;
 		return this;
 	}
 }

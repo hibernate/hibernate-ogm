@@ -180,8 +180,8 @@ class EntityDehydrator {
 	}
 
 	private void doAddPropertyMetadata(int tableIndex,
-										int propertyIndex,
-										Object[] newColumnValue) {
+									   int propertyIndex,
+									   Object[] newColumnValue) {
 
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
@@ -190,8 +190,7 @@ class EntityDehydrator {
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
 				.tableName( persister.getTableName( tableIndex ) )
-				.gridPropertyType( gridPropertyTypes[propertyIndex] )
-				.persister(persister);
+				.propertyType( persister.getPropertyTypes()[propertyIndex] );
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -225,7 +224,8 @@ class EntityDehydrator {
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) );
+				.tableName( persister.getTableName( tableIndex ) )
+				.propertyType( persister.getPropertyTypes()[propertyIndex] );
 		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
 
