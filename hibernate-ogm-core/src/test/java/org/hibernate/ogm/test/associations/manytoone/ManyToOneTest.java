@@ -44,12 +44,16 @@ public class ManyToOneTest extends OgmTestCase {
 		Member emmanuel = new Member();
 		emmanuel.setName( "Emmanuel Bernard" );
 		emmanuel.setMemberOf( jug );
+		Member jerome = new Member();
+		jerome.setName( "Jerome" );
+		jerome.setMemberOf( jug );
 		session.persist( emmanuel );
+		session.persist( jerome );
 		session.flush();
-		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
+		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
 		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 		transaction.commit();
-		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
+		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
 		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 
 		session.clear();
@@ -58,6 +62,8 @@ public class ManyToOneTest extends OgmTestCase {
 		emmanuel = (Member) session.get( Member.class, emmanuel.getId() );
 		jug = emmanuel.getMemberOf();
 		session.delete( emmanuel );
+		jerome = (Member) session.get( Member.class, jerome.getId() );
+		session.delete( jerome );
 		session.delete( jug );
 		transaction.commit();
 		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
