@@ -110,10 +110,10 @@ public class PropertyMetadataProvider {
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 			if (collectionPersister != null) {
 				EntityKey entityKey;
-				if (inverse) {
+				if ( inverse ) {
 					//inverse side of a collection, build the key of the other side's entity
 					//FIXME: inverse: update collection role to add assoc table + collection role??
-					collectionMetadataKey.setCollectionRole( tableName + "_" + getUnqualifiedRole( collectionPersister ) );
+					collectionMetadataKey.setCollectionRole( tableName );
 					entityKey = EntityKeyBuilder.fromPersister(
 							(OgmEntityPersister) collectionPersister.getElementPersister(),
 							(Serializable) key,
@@ -121,8 +121,14 @@ public class PropertyMetadataProvider {
 					);
 				}
 				else {
-					//owner side of the collection
-					collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
+					if ( ! collectionPersister.isInverse() ) {
+						//owner side of the collection
+						collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
+					}
+					else {
+						// aligned with the logic updating the inverse side
+						collectionMetadataKey.setCollectionRole( tableName );
+					}
 					entityKey = EntityKeyBuilder.fromPersister(
 							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
 							(Serializable) key,
