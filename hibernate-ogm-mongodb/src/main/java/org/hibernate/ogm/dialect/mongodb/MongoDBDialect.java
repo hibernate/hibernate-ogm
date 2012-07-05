@@ -82,6 +82,7 @@ public class MongoDBDialect implements GridDialect {
 	private static final Integer ONE = Integer.valueOf( 1 );
 
 	public static final String ID_FIELDNAME = "_id";
+	public static final String PROPERTY_SEPARATOR = ".";
 	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ASSOCIATIONS_FIELDNAME = "associations";
 	public static final String TUPLE_FIELDNAME = "tuple";
@@ -106,20 +107,63 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key) {
 		DBObject found = this.getObject( key );
-		return found != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
+		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		DBObject toSave = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
-		return new Tuple( new MongoDBTupleSnapshot( toSave ) );
-
+		DBObject toSave = this.prepareIdObject( key );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
 	}
 
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = new BasicDBObject( ID_FIELDNAME, key.getColumnValues()[0] );
+		DBObject searchObject = this.prepareIdObject( key );
 		return collection.findOne( searchObject );
+	}
+
+	/**
+	 * Create a DBObject which represents the _id field.
+	 * In case of simple id objects the json representation will look like {_id: "theIdValue"}
+	 * In case of composite id objects the json representation will look like {_id: {author: "Guillaume", title: "What this method is used for?"}}
+	 *
+	 * @param key
+	 *
+	 * @return the DBObject which represents the id field
+	 */
+	private BasicDBObject prepareIdObject(EntityKey key) {
+		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	}
+
+	private BasicDBObject prepareIdObject(AssociationKey key){
+		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	}
+
+	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues){
+		BasicDBObject object = null;
+		if ( columnNames.length == 1 ) {
+			object = new BasicDBObject( ID_FIELDNAME, columnValues[0] );
+		}
+		else {
+			object = new BasicDBObject();
+			DBObject idObject = new BasicDBObject();
+			for ( int i = 0; i < columnNames.length; i++ ) {
+				String columnName = columnNames[i];
+				Object columnValue = columnValues[i];
+
+				if ( columnName.contains( PROPERTY_SEPARATOR ) ) {
+					int dotIndex = columnName.indexOf( PROPERTY_SEPARATOR );
+					String shortColumnName = columnName.substring( dotIndex + 1 );
+					idObject.put( shortColumnName, columnValue );
+				}
+				else {
+					idObject.put( columnNames[i], columnValue );
+				}
+
+			}
+			object.put( ID_FIELDNAME, idObject );
+		}
+		return object;
 	}
 
 	private DBCollection getCollection(String table) {
@@ -157,7 +201,9 @@ public class MongoDBDialect implements GridDialect {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( "." + ID_FIELDNAME ) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
+					column
+			) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -168,6 +214,18 @@ public class MongoDBDialect implements GridDialect {
 					break;
 				}
 			}
+		}
+
+		/*
+		* Needed because in case of object with only an ID field
+        * the "_id" won't be persisted properly.
+        * With this adjustment, it will work like this:
+        *	if the object (from snapshot) doesn't exist so create the one represented by updater
+        *   so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
+        *   of the custom id
+		 */
+		if ( updater.size() == 0 ) {
+			updater = this.prepareIdObject( key );
 		}
 		this.getCollection( key ).update( snapshot.getDbObject(), updater, true, false );
 	}
@@ -181,7 +239,15 @@ public class MongoDBDialect implements GridDialect {
 		}
 		else {
 			if ( log.isDebugEnabled() ) {
-				log.debugf( "Unable to remove %1$s (object not found)", key.getColumnValues()[0] );
+				StringBuilder builder = new StringBuilder( "Unable to remove {" );
+				for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+					builder.append( key.getColumnNames()[i] );
+					builder.append( ":" );
+					builder.append( key.getColumnValues()[i] );
+				}
+
+				builder.append( "} (object not found)" );
+				log.debug( builder.toString() );
 			}
 		}
 	}
@@ -218,7 +284,7 @@ public class MongoDBDialect implements GridDialect {
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
-				entity = new BasicDBObject( ID_FIELDNAME, key.getEntityKey().getColumnValues()[0] );
+				entity = this.prepareIdObject( key );
 			}
 			if ( getAssociationFieldOrNull( key, entity ) == null ) {
 				if ( insert ) {
@@ -306,7 +372,7 @@ public class MongoDBDialect implements GridDialect {
 
 		if ( isEmbedded( key ) ) {
 			collection = this.getCollection( key.getEntityKey() );
-			query = new BasicDBObject( ID_FIELDNAME, key.getEntityKey().getColumnValues()[0] );
+			query = this.prepareIdObject( key );
 			associationField = key.getCollectionRole();
 		}
 		else {
@@ -353,7 +419,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 		DBCollection collection = getAssociationCollection( key );
 		DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		
+
 		int nAffected = collection.remove( query ).getN();
 		log.removedAssociation( nAffected );
 	}
