@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
 import com.mongodb.DBObject;
+
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
@@ -44,24 +46,25 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 	private final RowKey rowKey;
-	private List<String> idFieldName;
+	private final EntityKey entityKey;
 
-	public MongoDBTupleSnapshot(DBObject dbObject) {
-		this.dbObject = dbObject;
-		this.rowKey = null;
-	}
+	//use it so it avoids multiple calls to Arrays.asList()
+	private final List<String> columnNames;
+
 
 	//consider RowKey columns and values as aprt of the Tuple
 	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
 		this.dbObject = dbObject;
 		this.rowKey = rowKey;
-		this.idFieldName = new ArrayList<String>();
+		this.entityKey = null;
+		this.columnNames = null;
 	}
 
-	public MongoDBTupleSnapshot(DBObject dbObject, String[] idFieldName) {
+	public MongoDBTupleSnapshot(DBObject dbObject, EntityKey entityKey) {
 		this.dbObject = dbObject;
+		this.entityKey = entityKey;
+		this.columnNames  = Arrays.asList( entityKey.getColumnNames());
 		this.rowKey = null;
-		this.idFieldName = Arrays.asList( idFieldName );
 	}
 
 	@Override
@@ -125,6 +128,6 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	}
 
 	public boolean columnInIdField(String column) {
-		return (idFieldName == null) ? false : idFieldName.contains( column );
+		return (this.columnNames == null) ? false : this.columnNames.contains( column );
 	}
 }

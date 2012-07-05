@@ -107,13 +107,13 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key) {
 		DBObject found = this.getObject( key );
-		return found != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
+		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		DBObject toSave = this.prepareIdObject( key );
-		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getColumnNames() ) );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
 	}
 
 	private DBObject getObject(EntityKey key) {
