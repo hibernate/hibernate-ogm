@@ -51,6 +51,7 @@ public class CompositeIdTest extends JpaTestCase {
 		Label jugLabel = new Label( "jug" );
 		Label hibernateLabel = new Label( "hibernate" );
 		Label ogmLabel = new Label( "OGM" );
+		Label statJugLabel = new Label( "statJUG" );
 
 		NewsID newsOgmID = new NewsID( titleOGM, author );
 		NewsID newsAboutJugID = new NewsID( titleAboutJUG, author );
@@ -65,7 +66,7 @@ public class CompositeIdTest extends JpaTestCase {
 		newsAboutJugLabels.add( questionLabel );
 
 		final List<Label> newsCountJugLabels = new ArrayList<Label>();
-		newsCountJugLabels.add( jugLabel );
+		newsCountJugLabels.add( statJugLabel );
 
 
 		News newsAboutJUG = new News( newsAboutJugID, contentAboutJUG, newsAboutJugLabels );
