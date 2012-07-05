@@ -1,8 +1,8 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,41 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.type;
 
-import junit.framework.Assert;
+import java.util.Calendar;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.java.CalendarTypeDescriptor;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class CalendarType extends AbstractGenericBasicType<Calendar> {
+	public static final CalendarType INSTANCE = new CalendarType();
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.CASSANDRA,
-		GridDialectType.EHCACHE} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
-
-	@Test
-	public void testCorrect() {
-		//all fine
+	public CalendarType() {
+		super( StringMappedGridTypeDescriptor.INSTANCE, CalendarTypeDescriptor.INSTANCE );
 	}
 
 	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 
+	@Override
+	public String getName() {
+		return "calendar";
+	}
 }

@@ -93,4 +93,14 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
 	void useGridDialect(String gridDialectClass);
+
+	@LogMessage(level = WARN)
+	@Message(id = 18, value = "Invalid or inexistant configuration value for key: %1$s but will use: %2$s")
+	void unexpectedConfiguration(String key, String defaultValue);
+
+	@Message(id = 19, value = "Cannot load %1$s driver")
+	HibernateException unableToLoadDriver(String driverName);
+
+	@Message(id = 20, value = "Unable to get keyspace value from configuration on key %1$s")
+	HibernateException unableToGetKeyspace(String keyspaceName);
 }

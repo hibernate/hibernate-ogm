@@ -38,6 +38,30 @@ public class OgmConfiguration extends Configuration {
 
 	public static final String OGM_ON = "hibernate.ogm._activate";
 
+	public static final String HIBERNATE_OGM_GENERATE_SCHEMA = "hibernate.ogm.generate_schema";
+
+	public static final GenerateSchemaValue HIBERNATE_OGM_GENERATE_SCHEMA_DEFAULT = GenerateSchemaValue.DEFAULT;
+
+	public enum GenerateSchemaValue {
+		DEFAULT("default"),
+		CREATE_DROP("create-drop"),
+		CREATE("create");
+
+		private final String value;
+
+		private GenerateSchemaValue(String value) {
+			this.value = value;
+		}
+
+		public String getValue() {
+			return this.value;
+		}
+
+		public static boolean isValid(String value) {
+			return DEFAULT.getValue().equals( value ) || CREATE.getValue().equals( value ) || CREATE_DROP.getValue().equals( value );
+		}
+	}
+	
 	public OgmConfiguration() {
 		super();
 		resetOgm();

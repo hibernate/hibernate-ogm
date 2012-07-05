@@ -18,41 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.type;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.BigDecimalTypeDescriptor;
+import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * For Cassandra persist a {@link BigDecimal} as a {@link String}.
+ *
+ * @author Khanh Tuong Maudoux
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class StringBigDecimal extends AbstractGenericBasicType  {
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.CASSANDRA,
-		GridDialectType.EHCACHE} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	public static final StringBigDecimal INSTANCE = new StringBigDecimal();
 
-	@Test
-	public void testCorrect() {
-		//all fine
+	public StringBigDecimal() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, BigDecimalTypeDescriptor.INSTANCE );
 	}
 
 	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	public String getName() {
+		return "string_bigdecimal";
+	}
+
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 
 }
