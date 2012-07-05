@@ -54,6 +54,8 @@ public class PropertyMetadataProvider {
 	private OgmCollectionPersister collectionPersister;
 	private boolean inverse;
 	private Type propertyType;
+	private OgmEntityPersister persister;
+	private String[] rowKeyColumnNames;
 
 	//fluent methods for populating data
 
@@ -151,7 +153,7 @@ public class PropertyMetadataProvider {
 							columnValues
 					);
 					collectionMetadataKey.setOwnerEntityKey( entityKey );
-					collectionMetadataKey.setRowKeyColumnNames( keyColumnNames );
+					collectionMetadataKey.setRowKeyColumnNames( rowKeyColumnNames );
 				}
 				else {
 					System.out.println( "*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0] + ":" + propertyType.getClass() );
@@ -219,6 +221,11 @@ public class PropertyMetadataProvider {
 
 	public PropertyMetadataProvider propertyType(Type type) {
 		this.propertyType = type;
+		return this;
+	}
+
+	public PropertyMetadataProvider rowKeyColumnNames(String[] rowKeyColumnNames) {
+		this.rowKeyColumnNames = rowKeyColumnNames;
 		return this;
 	}
 }
