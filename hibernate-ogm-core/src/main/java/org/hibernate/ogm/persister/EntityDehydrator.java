@@ -184,7 +184,7 @@ class EntityDehydrator {
 									   Object[] newColumnValue) {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
-		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( propertyColumnNames );
+		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
 				.keyColumnNames( propertyColumnNames )
@@ -219,7 +219,7 @@ class EntityDehydrator {
 	// Here the RowKey is made of the foreign key columns pointing to the associated entity
 	// and the identifier columns of the owner's entity
 	// We use the same order as the collection: id column names, foreign key column names
-	private String[] buildRowKeyColumnNamesForStarToOne(String[] keyColumnNames) {
+	public static String[] buildRowKeyColumnNamesForStarToOne(OgmEntityPersister persister, String[] keyColumnNames) {
 		String[] identifierColumnNames = persister.getIdentifierColumnNames();
 		int length = identifierColumnNames.length + keyColumnNames.length;
 		String[] rowKeyColumnNames = new String[length];
@@ -232,7 +232,7 @@ class EntityDehydrator {
 										int propertyIndex,
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
-		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( propertyColumnNames );
+		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
 				.keyColumnNames( propertyColumnNames )
@@ -256,7 +256,7 @@ class EntityDehydrator {
 			//this is a StarToOne case ie the FK is on the owning entity
 			final RowKey matchingTuple = new RowKeyBuilder()
 					.tableName( persister.getTableName() )
-					.addColumns( buildRowKeyColumnNamesForStarToOne( propertyColumnNames ) )
+					.addColumns( buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames ) )
 					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?

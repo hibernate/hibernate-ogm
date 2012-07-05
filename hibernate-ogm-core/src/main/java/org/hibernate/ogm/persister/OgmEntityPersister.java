@@ -77,6 +77,8 @@ import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
 
+import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
+
 /**
  * Use a table per concrete class strategy
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}
@@ -381,9 +383,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			Object uniqueKey,
 			SessionImplementor session) throws HibernateException {
 		//we get the property type for an associated entity
-		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyName );
-		//get the associated property index (to get its column names)
 		final int propertyIndex = getPropertyIndex( propertyName );
+		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyIndex, propertyName );
+		//get the associated property index (to get its column names)
 		//find the ids per unique property name
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.tableName( getTableName() )
@@ -392,7 +394,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.keyGridType( gridUniqueKeyType )
 				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
 				//does not set .collectionPersister as it does not make sense here for an entity
-				.session( session );
+				.session( session )
+				.propertyType( getPropertyTypes()[propertyIndex] )
+				.rowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, getPropertyColumnNames( propertyIndex ) ) );
 		final Association ids = metadataProvider.getCollectionMetadata();
 
 		if (ids == null || ids.size() == 0 ) {
@@ -413,13 +417,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 	}
 
-	private GridType getUniqueKeyTypeFromAssociatedEntity(String propertyName) {
+	private GridType getUniqueKeyTypeFromAssociatedEntity(int propertyIndex, String propertyName) {
 		GridType gridUniqueKeyType;//get the unique key type and if it's an entity type, get it's identifier type
-		final Type uniqueKeyType = propertyMapping.toType( propertyName );
+		final Type uniqueKeyType = getPropertyTypes()[propertyIndex];
 		if ( uniqueKeyType.isEntityType() ) {
-			String className = ( ( EntityType ) uniqueKeyType ).getAssociatedEntityName();
 			//we run under the assumption that we are fully in an OGM world
-			final OgmEntityPersister entityPersister = (OgmEntityPersister) getFactory().getEntityPersister( className );
+			EntityType entityType = (EntityType) uniqueKeyType;
+			final OgmEntityPersister entityPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( getFactory() );
 			gridUniqueKeyType = entityPersister.getGridIdentifierType();
 		}
 		else {
