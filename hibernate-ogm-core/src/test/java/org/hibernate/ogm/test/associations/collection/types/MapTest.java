@@ -56,6 +56,19 @@ public class MapTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
+		assertThat( user.getNicknames() )
+				.as( "Should have 2 nick1" )
+				.hasSize( 2 );
+		assertThat( user.getNicknames() )
+			.as( "Should contain nicks" )
+			.contains( "idrA", "day[9]" );
+		user.getNicknames().remove( "idrA" );
+		tx.commit();
+
+		session.clear();
+
+		tx = session.beginTransaction();
+		user = (User) session.get( User.class, user.getId() );
 		//TODO do null value
 		assertThat( user.getAddresses() )
 				.as( "List should have 2 elements" )
@@ -64,11 +77,11 @@ public class MapTest extends OgmTestCase {
 				.as( "home address should be under home" )
 				.isEqualTo( home.getCity() );
 		assertThat( user.getNicknames() )
-				.as( "Should have 2 nicks" )
-				.hasSize( 2 );
+				.as( "Should have 1 nick1" )
+				.hasSize( 1 );
 		assertThat( user.getNicknames() )
 			.as( "Should contain nick" )
-			.contains( "idrA", "day[9]" );
+			.contains( "day[9]" );
 		session.delete( user );
 		session.delete( session.load(Address.class, home.getId() ) );
 		session.delete( session.load(Address.class, work.getId() ) );
