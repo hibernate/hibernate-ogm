@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -37,7 +38,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbedded;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -48,12 +49,14 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	private final Map<RowKey, DBObject> map;
 	private final DBObject assoc;
 	private AssociationKey associationKey;
+	private AssociationStorage storage;
 
 	/**
 	 * @param assoc DBObject containing the association information
 	 * @param key
 	 */
-	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key) {
+	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorage storage) {
+		this.storage = storage;
 		this.assoc = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
 		this.associationKey = key;
@@ -61,7 +64,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		for ( DBObject row : getRows() ) {
 			Collection<String> columnNames;
 			DBObject mongodbColumnData;
-			if ( isEmbedded( key ) ) {
+			if ( isEmbeddedInEntity( key, storage ) ) {
 				//in the embedded case, we read RowKey metadata from AssociationKey and data from the tuple
 				columnNames = Arrays.asList( key.getRowKeyColumnNames() );
 				mongodbColumnData = row;
@@ -100,7 +103,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		DBObject row = this.map.get( column );
-		if ( ! isEmbedded( associationKey ) ) {
+		if ( ! isEmbeddedInEntity( associationKey, storage ) ) {
 			row = (DBObject) row.get( MongoDBDialect.TUPLE_FIELDNAME );
 		}
 		return row == null ? null : new Tuple( new MongoDBTupleSnapshot( row, column ) );
@@ -125,7 +128,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
-		if ( isEmbedded( associationKey ) ) {
+		if ( isEmbeddedInEntity( associationKey, storage ) ) {
 			return getAssociationFieldOrNull( associationKey, assoc );
 		}
 		else {

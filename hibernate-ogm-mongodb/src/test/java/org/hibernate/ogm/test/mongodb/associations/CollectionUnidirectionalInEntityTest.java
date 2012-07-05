@@ -18,25 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
+package org.hibernate.ogm.test.mongodb.associations;
+
+import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.test.associations.collection.unidirectional.CollectionUnidirectionalTest;
 
 /**
- * Defines the various association storage strategies
- *
- * @author Alan Fitton <alan at eth0.org.uk>
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public enum AssociationStorage {
-	/**
-	 * Store the association info in a unique MongoDB collection for all associations
-	 */
-	GLOBAL_COLLECTION,
-	/**
-	 * Store the association in a dedicated MongoDB collection per association
-	 */
-	COLLECTION,
-	/**
-	 * Store association information from within the entity
-	 */
-	IN_ENTITY
+public class CollectionUnidirectionalInEntityTest extends CollectionUnidirectionalTest {
+	@Override
+	protected void configure(Configuration cfg) {
+		super.configure( cfg );
+		cfg.setProperty(
+				Environment.MONGODB_ASSOCIATIONS_STORE,
+				AssociationStorage.IN_ENTITY.toString().toLowerCase()
+		);
+	}
 }

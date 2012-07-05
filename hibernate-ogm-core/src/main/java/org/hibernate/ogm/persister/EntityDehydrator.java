@@ -180,16 +180,20 @@ class EntityDehydrator {
 	}
 
 	private void doAddPropertyMetadata(int tableIndex,
-										int propertyIndex,
-										Object[] newColumnValue) {
+									   int propertyIndex,
+									   Object[] newColumnValue) {
 
+		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
+		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
-				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
+				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) );
+				.tableName( persister.getTableName( tableIndex ) )
+				.propertyType( persister.getPropertyTypes()[propertyIndex] )
+				.rowKeyColumnNames( rowKeyColumnNames );
 		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -198,12 +202,12 @@ class EntityDehydrator {
 		gridPropertyTypes[propertyIndex].nullSafeSet(
 							tuple,
 							fields[propertyIndex],
-							persister.getPropertyColumnNames( propertyIndex ),
+							propertyColumnNames,
 							includeColumns[propertyIndex],
 							session
 					);
-		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, identifierColumnNames);
-		final RowKey rowKey = new RowKey( persister.getTableName(), identifierColumnNames, columnValues );
+		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, rowKeyColumnNames);
+		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues );
 
 		Tuple assocEntryTuple = metadataProvider.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
@@ -212,19 +216,38 @@ class EntityDehydrator {
 		metadataProvider.flushToCache();
 	}
 
-
+	// Here the RowKey is made of the foreign key columns pointing to the associated entity
+	// and the identifier columns of the owner's entity
+	// We use the same order as the collection: id column names, foreign key column names
+	public static String[] buildRowKeyColumnNamesForStarToOne(OgmEntityPersister persister, String[] keyColumnNames) {
+		String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		int length = identifierColumnNames.length + keyColumnNames.length;
+		String[] rowKeyColumnNames = new String[length];
+		System.arraycopy( identifierColumnNames, 0, rowKeyColumnNames, 0, identifierColumnNames.length );
+		System.arraycopy( keyColumnNames, 0, rowKeyColumnNames, identifierColumnNames.length, keyColumnNames.length );
+		return rowKeyColumnNames;
+	}
 
 	private void doRemovePropertyMetadata(int tableIndex,
 										int propertyIndex,
 										Object[] oldColumnValue) {
+		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
+		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
-				.keyColumnNames( persister.getPropertyColumnNames( propertyIndex ) )
+				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) );
+				.tableName( persister.getTableName( tableIndex ) )
+				.propertyType( persister.getPropertyTypes()[propertyIndex] )
+				.rowKeyColumnNames( rowKeyColumnNames );
+		//add fk column value in TupleKey
 		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		for (int index = 0 ; index < propertyColumnNames.length ; index++) {
+			tupleKey.put( propertyColumnNames[index], oldColumnValue[index] );
+		}
+		//add id value in TupleKey
 		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
 
 		Association propertyValues = metadataProvider.getCollectionMetadata();
@@ -233,7 +256,7 @@ class EntityDehydrator {
 			//this is a StarToOne case ie the FK is on the owning entity
 			final RowKey matchingTuple = new RowKeyBuilder()
 					.tableName( persister.getTableName() )
-					.addColumns( persister.getIdentifierColumnNames() )
+					.addColumns( buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames ) )
 					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?

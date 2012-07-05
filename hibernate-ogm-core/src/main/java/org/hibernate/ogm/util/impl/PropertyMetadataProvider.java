@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -33,6 +34,8 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.type.EntityType;
+import org.hibernate.type.Type;
 
 import java.io.Serializable;
 
@@ -50,6 +53,10 @@ public class PropertyMetadataProvider {
 	private Object[] columnValues;
 	private GridDialect gridDialect;
 	private OgmCollectionPersister collectionPersister;
+	private boolean inverse;
+	private Type propertyType;
+	private OgmEntityPersister persister;
+	private String[] rowKeyColumnNames;
 
 	//fluent methods for populating data
 
@@ -89,6 +96,11 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
+	public PropertyMetadataProvider inverse() {
+		this.inverse = true;
+		return this;
+	}
+
 
 	//action methods
 
@@ -97,18 +109,59 @@ public class PropertyMetadataProvider {
 			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
 			if (collectionPersister != null) {
-				collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
-				EntityKey entityKey = EntityKeyBuilder.fromPersister(
-						(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
-						(Serializable) key,
-						session
-				);
+				EntityKey entityKey;
+				if ( inverse ) {
+					//inverse side of a collection, build the key of the other side's entity
+					//FIXME: inverse: update collection role to add assoc table + collection role??
+					collectionMetadataKey.setCollectionRole( tableName );
+					entityKey = EntityKeyBuilder.fromPersister(
+							(OgmEntityPersister) collectionPersister.getElementPersister(),
+							(Serializable) key,
+							session
+					);
+				}
+				else {
+					if ( ! collectionPersister.isInverse() ) {
+						//owner side of the collection
+						collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
+					}
+					else {
+						// aligned with the logic updating the inverse side
+						collectionMetadataKey.setCollectionRole( tableName );
+					}
+					entityKey = EntityKeyBuilder.fromPersister(
+							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
+							(Serializable) key,
+							session
+					);
+				}
 				collectionMetadataKey.setOwnerEntityKey( entityKey );
 				//TODO add information on the collection type, set, map, bag, list etc
 
 				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED;
 				collectionMetadataKey.setAssociationKind( type );
 				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
+			}
+			else if ( propertyType != null ) {
+				collectionMetadataKey.setCollectionRole( tableName );
+				collectionMetadataKey.setAssociationKind( propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED );
+				if ( propertyType instanceof EntityType ) {
+					EntityType entityType = (EntityType) propertyType;
+					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
+					EntityKey entityKey = new EntityKey(
+							associatedPersister.getTableName(),
+							associatedPersister.getIdentifierColumnNames(),
+							columnValues
+					);
+					collectionMetadataKey.setOwnerEntityKey( entityKey );
+					collectionMetadataKey.setRowKeyColumnNames( rowKeyColumnNames );
+				}
+				else {
+					throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
+				}
+			}
+			else {
+				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
 		}
 		return collectionMetadataKey;
@@ -130,7 +183,7 @@ public class PropertyMetadataProvider {
 	}
 
 	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey);
+		Tuple associationTuple = gridDialect.createTupleAssociation( getCollectionMetadataKey(), rowKey );
 		getCollectionMetadata().put( rowKey, associationTuple);
 		return associationTuple;
 	}
@@ -164,6 +217,16 @@ public class PropertyMetadataProvider {
 
 	public PropertyMetadataProvider collectionPersister(OgmCollectionPersister collectionPersister) {
 		this.collectionPersister = collectionPersister;
+		return this;
+	}
+
+	public PropertyMetadataProvider propertyType(Type type) {
+		this.propertyType = type;
+		return this;
+	}
+
+	public PropertyMetadataProvider rowKeyColumnNames(String[] rowKeyColumnNames) {
+		this.rowKeyColumnNames = rowKeyColumnNames;
 		return this;
 	}
 }

@@ -21,8 +21,10 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import java.net.UnknownHostException;
+import java.util.Locale;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -59,11 +61,17 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		cfg = configurationValues;
 		
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
-		if ( assocStoreString != null && assocStoreString.equalsIgnoreCase( AssociationStorage.GLOBAL_COLLECTION.name() ) ) {
-			associationStorage = AssociationStorage.GLOBAL_COLLECTION;
+		if ( assocStoreString == null ) {
+			//default value
+			associationStorage = AssociationStorage.COLLECTION;
 		}
 		else {
-			associationStorage = AssociationStorage.COLLECTION;
+			try {
+				associationStorage = AssociationStorage.valueOf( assocStoreString.toUpperCase( Locale.ENGLISH ) );
+			}
+			catch ( IllegalArgumentException e ) {
+				log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorage.class );
+			}
 		}
 	}
 
