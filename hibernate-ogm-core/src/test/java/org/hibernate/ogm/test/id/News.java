@@ -39,8 +39,8 @@ public class News {
 	private String content;
 
 	@OneToMany(cascade =  CascadeType.ALL )
-	@JoinColumns({@JoinColumn(name="news_topic_fk", nullable = false) ,
-				  @JoinColumn(name="news_author_fk", nullable = false)})
+	@JoinColumns({@JoinColumn(name="news_topic_fk", referencedColumnName = "newsid.title", nullable = false) ,
+				  @JoinColumn(name="news_author_fk", referencedColumnName = "newsid.author", nullable = false)})
 	private List<Label> labels;
 
 	public News() {
