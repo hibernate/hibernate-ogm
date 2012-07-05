@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -156,11 +157,11 @@ public class PropertyMetadataProvider {
 					collectionMetadataKey.setRowKeyColumnNames( rowKeyColumnNames );
 				}
 				else {
-					System.out.println( "*********** On est pas dans la merde " + tableName + ":" + keyColumnNames[0] + ":" + propertyType.getClass() );
+					throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
 				}
 			}
 			else {
-				System.out.println("*********** girdpropertytype is null" + tableName + ":" + keyColumnNames[0]);
+				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
 		}
 		return collectionMetadataKey;
