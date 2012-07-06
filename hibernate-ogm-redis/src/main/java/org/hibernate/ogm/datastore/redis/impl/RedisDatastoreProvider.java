@@ -77,7 +77,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	private static final String SEQUENCE_LABEL = "nextSequence";
 	
 	private static enum RequiredProp {
-		PROVIDER("provider", "hibernate.ogm.datastore.provider"), PROVIDER_URL(
+		PROVIDER_URL(
 				"provider_url", "hibernate.ogm.datastore.provider_url");
 
 		private String name;
@@ -140,14 +140,10 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	 * @return Empty map if the required properties set correctly. Otherwise return a map containing unset required properties
 	 *         whose keys are the required properties' names and values are the corresponding values.
 	 */
-	protected synchronized Map<String,String> checkRequiredSettings() {
+	private synchronized Map<String,String> checkRequiredSettings() {
 		requiredProperties = getRequiredPropertyValues();
 
 		Map<String, String> unSetRequiredProperties = new HashMap<String, String>();
-		if ( !requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() ) ) {
-			unSetRequiredProperties.put( RequiredProp.PROVIDER.getName(),
-					requiredProperties.get( RequiredProp.PROVIDER.getName() ) );
-		}
 
 		if ( requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) == null
 				|| requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ).equals( "" ) ) {
@@ -165,8 +161,6 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	 */
 	private Map<String, String> getRequiredPropertyValues() {
 		Map<String, String> map = new HashMap<String, String>();
-		map.put( RequiredProp.PROVIDER.getName(),
-				Environment.getProperties().getProperty( RequiredProp.PROVIDER.getPropPath() ) );
 		map.put( RequiredProp.PROVIDER_URL.getName(),
 				Environment.getProperties().getProperty( RequiredProp.PROVIDER_URL.getPropPath() ) );
 		
