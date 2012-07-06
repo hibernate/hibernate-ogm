@@ -140,6 +140,10 @@ public class MongoDBDialect implements GridDialect {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
+	private BasicDBObject prepareIdObject(RowKey key) {
+		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	}
+
 	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues){
 		BasicDBObject object = null;
 		if ( columnNames.length == 1 ) {
@@ -216,7 +220,7 @@ public class MongoDBDialect implements GridDialect {
 				}
 			}
 		}
-
+		BasicDBObject idObject = this.prepareIdObject( key );
 		/*
 		* Needed because in case of object with only an ID field
         * the "_id" won't be persisted properly.
@@ -226,15 +230,15 @@ public class MongoDBDialect implements GridDialect {
         *   of the custom id
 		 */
 		if ( updater.size() == 0 ) {
-			updater = this.prepareIdObject( key );
+			updater = idObject;
 		}
-		this.getCollection( key ).update( snapshot.getDbObject(), updater, true, false );
+		this.getCollection( key ).update( idObject, updater, true, false );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
-		DBObject toDelete = this.getObject( key );
+		DBObject toDelete = this.prepareIdObject( key );
 		if ( toDelete != null ) {
 			collection.remove( toDelete );
 		}
@@ -418,7 +422,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
-			DBObject entity = getObject( key.getEntityKey() );
+			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
 				this.addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
@@ -442,12 +446,10 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );
-		DBObject query = new BasicDBObject();
+		DBObject query = this.prepareIdObject( key );
 		int size = key.getColumnNames().length;
 		//all columns should match to find the value
-		for ( int index = 0; index < size; index++ ) {
-			query.put( key.getColumnNames()[index], key.getColumnValues()[index] );
-		}
+
 		BasicDBObject update = new BasicDBObject();
 		//FIXME should "value" be hardcoded?
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
