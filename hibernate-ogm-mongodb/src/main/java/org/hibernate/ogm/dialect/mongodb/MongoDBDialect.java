@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
@@ -79,6 +80,7 @@ public class MongoDBDialect implements GridDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 	private static final Integer ONE = Integer.valueOf( 1 );
+	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -277,9 +279,9 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBObject getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = key.getCollectionRole().split( "\\." );
+		String[] path = DOT_SEPARATOR_PATTERN.split( key.getCollectionRole() );
 		DBObject field = entity;
-		for (String node : path) {
+		for ( String node : path ) {
 			field = field != null ? (DBObject) field.get( node ) : null;
 		}
 		return field;
