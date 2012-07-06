@@ -1,6 +1,4 @@
 /* 
- * Hibernate, Relational Persistence for Idiomatic Java
- * 
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,41 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+package org.hibernate.ogm.helper.memento;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Seiya Kawashima <skawashima@uchicago.edu>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class Originator {
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.EHCACHE,
-		GridDialectType.REDIS} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private Object obj;
+
+	public Memento createMemento(Object obj) {
+		return new Memento( obj );
 	}
 
-	@Test
-	public void testCorrect() {
-		//all fine
+	public Object getObj() {
+		return obj;
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	public void undo(Memento memento) {
+		obj = memento.getObj();
 	}
-
 }

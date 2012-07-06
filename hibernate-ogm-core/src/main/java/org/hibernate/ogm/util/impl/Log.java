@@ -93,4 +93,18 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
 	void useGridDialect(String gridDialectClass);
+
+	@LogMessage(level = INFO)
+	@Message(id = 18, value = "Redis stopping")
+	void redisStopping();
+
+	@LogMessage(level = INFO)
+	@Message(id = 19, value = "Redis starting")
+	void redisStarting();
+
+	@Message(id = 20, value = "Required properties, %1$s are missing or set incorrectly")
+	HibernateException missingPropertiesAtStartup(String unSetRequiredProperties);
+
+	@Message(id = 21, value = "Cannot start Redis because of some errors at startup")
+	HibernateException cannotStartRedis(@Cause Exception e);
 }

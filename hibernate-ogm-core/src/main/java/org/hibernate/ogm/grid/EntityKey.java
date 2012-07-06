@@ -34,12 +34,25 @@ public final class EntityKey implements Serializable {
 	private final int hashCode;
 	private String[] columnNames;
 	private Object[] columnValues;
+	private final String entityName;
+	private final Serializable id;
 
-	public EntityKey(String tableName, String[] columnNames, Object[] values) {
+	public EntityKey(String tableName, Serializable id, String[] columnNames, Object[] values) {
 		this.table = tableName;
 		this.columnNames = columnNames;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
+		this.id = id;
+		this.entityName = "";
+	}
+	
+	public EntityKey(String tableName, Serializable id, String entityName, String[] columnNames, Object[] values) {
+		this.table = tableName;
+		this.columnNames = columnNames;
+		this.columnValues = values;
+		this.hashCode = generateHashCode();
+		this.entityName = entityName;
+		this.id = id;
 	}
 
 	public String getTable() {
@@ -91,5 +104,13 @@ public final class EntityKey implements Serializable {
 		int result = table.hashCode();
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
+	}
+	
+	public final Serializable getId(){
+		return id;
+	}
+	
+	public final String getEntityName(){
+		return entityName;
 	}
 }

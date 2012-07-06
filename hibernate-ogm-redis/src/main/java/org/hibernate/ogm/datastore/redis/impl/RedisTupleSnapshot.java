@@ -1,6 +1,4 @@
 /* 
- * Hibernate, Relational Persistence for Idiomatic Java
- * 
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,41 +16,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
 
-import junit.framework.Assert;
+package org.hibernate.ogm.datastore.redis.impl;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
+import java.util.Map;
+import java.util.Set;
 
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Seiya Kawashima <skawashima@uchicago.edu>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class RedisTupleSnapshot implements TupleSnapshot {
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.EHCACHE,
-		GridDialectType.REDIS} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private Map<String,Object> map;
+	
+	public RedisTupleSnapshot(Map<String,Object> map){
+		this.map = map;
 	}
-
-	@Test
-	public void testCorrect() {
-		//all fine
+	
+	@Override
+	public Object get(String column) {
+		return map.get( column );
 	}
 
 	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	public boolean isEmpty() {
+		return map.isEmpty();
 	}
 
+	@Override
+	public Set<String> getColumnNames() {
+		return map.keySet();
+	}
+
+	public Map<String,Object> getMap(){
+		return map;
+	}
 }
