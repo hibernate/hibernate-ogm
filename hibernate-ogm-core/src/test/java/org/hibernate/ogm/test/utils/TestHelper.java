@@ -27,6 +27,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
+import com.arjuna.ats.arjuna.coordinator.TxControl;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +46,11 @@ public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
+
+	static {
+		//set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
+		TxControl.setDefaultTimeout( 60 * 60 * 2 );
+	}
 
 	public static boolean assertNumberOfEntities(int numberOfEntities, EntityManager em) {
 		return assertNumberOfEntities( numberOfEntities, em.unwrap( Session.class ) );
