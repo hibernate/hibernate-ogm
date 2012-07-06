@@ -117,8 +117,9 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 	public void start() {
 
 		try {
-			if ( !checkRequiredSettings() ) {
-				throw new HibernateException( "Please configure Redis on hibernate.properties correctly." );
+			Map<String, String> unSetRequiredProperties = checkRequiredSettings();
+			if ( !unSetRequiredProperties.isEmpty() ) {
+				throw log.missingPropertiesAtStartup( unSetRequiredProperties.toString() );
 			}
 
 			log.redisStarting();
@@ -128,20 +129,28 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 			stop();
 		}
 	}
-	
+
 	/**
 	 * Reused from VoldemortDatastoreProvider. Checks required property settings for Redis on hibernate.properties.
 	 * 
-	 * @return True if all the required properties are set, false otherwise.
+	 * @return Empty map if the required properties set correctly. Otherwise return a map containing unset required properties
+	 *         whose keys are the required properties' names and values are the corresponding values.
 	 */
-	protected synchronized boolean checkRequiredSettings() {
+	protected synchronized Map<String,String> checkRequiredSettings() {
 		requiredProperties = getRequiredPropertyValues();
 
-		if ( requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() )
-				&& requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) != null ) {
-			return true;
+		Map<String, String> unSetRequiredProperties = new HashMap<String, String>();
+		if ( !requiredProperties.get( RequiredProp.PROVIDER.getName() ).equals( this.getClass().getCanonicalName() ) ) {
+			unSetRequiredProperties.put( RequiredProp.PROVIDER.getName(),
+					requiredProperties.get( RequiredProp.PROVIDER.getName() ) );
 		}
-		return false;
+
+		if ( requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ) == null
+				|| requiredProperties.get( RequiredProp.PROVIDER_URL.getName() ).equals( "" ) ) {
+			unSetRequiredProperties.put( RequiredProp.PROVIDER_URL.getName(), null );
+		}
+
+		return unSetRequiredProperties;
 	}
 
 	/**

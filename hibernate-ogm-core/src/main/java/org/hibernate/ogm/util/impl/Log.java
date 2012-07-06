@@ -101,4 +101,7 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 19, value = "Redis starting")
 	void redisStarting();
+
+	@Message(id = 20, value = "Required properties, %1$s are missing or set incorrectly")
+	HibernateException missingPropertiesAtStartup(String unSetRequiredProperties);
 }
