@@ -105,7 +105,10 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 		log.redisStopping();
 		entityKeys.clear();
 		associationKeys.clear();
-		pool.destroy();
+
+		if ( pool != null ) {
+			pool.destroy();
+		}
 	}
 
 	/*
