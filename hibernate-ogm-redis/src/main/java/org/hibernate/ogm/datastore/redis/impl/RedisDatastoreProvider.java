@@ -127,6 +127,7 @@ public class RedisDatastoreProvider implements DatastoreProvider, Startable, Sto
 		}
 		catch ( Exception ex ) {
 			stop();
+			throw log.cannotStartRedis( ex );
 		}
 	}
 
