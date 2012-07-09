@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -35,9 +36,11 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
+import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
@@ -104,7 +107,6 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-
 	//action methods
 
 	private AssociationKey getCollectionMetadataKey() {
@@ -169,21 +171,26 @@ public class PropertyMetadataProvider {
 	 * If a match is found, use the other side's association name as role
 	 * Otherwise use the table name
 	 */
+	//TODO we could cache such knowledge in a service if that turns out to be costly
 	private String getCollectionRoleFromToOne(OgmEntityPersister associatedPersister) {
 		//code logic is slightly duplicated but the input and context is different, hence this choice
 		Type[] propertyTypes = associatedPersister.getPropertyTypes();
 		String otherSidePropertyName = null;
 		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
 			Type type = propertyTypes[index];
+			boolean matching = false;
 			if ( type.isAssociationType() && type.isCollectionType() ) {
-				boolean matching = isCollectionMatching( (CollectionType) type, tableName );
-				if ( matching ) {
-					otherSidePropertyName = associatedPersister.getPropertyNames()[index];
-					break;
-				}
+				matching = isCollectionMatching( (CollectionType) type, tableName );
+			}
+			else if ( type.isAssociationType() && ! type.isCollectionType() ) { //isCollectionType redundant but kept for readability
+				matching = isToOneMatching( associatedPersister, index, type );
+			}
+			if ( matching ) {
+				otherSidePropertyName = associatedPersister.getPropertyNames()[index];
+				break;
 			}
 		}
-		return otherSidePropertyName != null ? otherSidePropertyName : tableName;
+		return processOtherSidePropertyName( otherSidePropertyName );
 	}
 
 	private boolean isCollectionMatching(CollectionType type, String primarySideTableName) {
@@ -198,6 +205,7 @@ public class PropertyMetadataProvider {
 	 * If a match is found, use the other side's association name as role
 	 * Otherwise use the table name
 	 */
+	//TODO we could cache such knowledge in a service if that turns out to be costly
 	private String buildCollectionRole(OgmCollectionPersister collectionPersister) {
 		String otherSidePropertyName = null;
 		Loadable elementPersister = (Loadable) collectionPersister.getElementPersister();
@@ -206,23 +214,52 @@ public class PropertyMetadataProvider {
 		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
 			Type type = propertyTypes[index];
 			if ( type.isAssociationType() ) {
+				boolean matching = false;
 				if ( collectionPersister.isOneToMany() && ! type.isCollectionType() ) {
-					if ( Arrays.equals( keyColumnNames, elementPersister.getPropertyColumnNames( index ) ) ) {
-						//the property match
-						otherSidePropertyName = elementPersister.getPropertyNames()[index];
-						break;
-					}
+					matching = isToOneMatching( elementPersister, index, type );
 				}
 				else if ( ! collectionPersister.isOneToMany() && type.isCollectionType() ) {
-					boolean matching = isCollectionMatching( (CollectionType) type, collectionPersister.getTableName() );
-					if ( matching ) {
-						otherSidePropertyName = elementPersister.getPropertyNames()[index];
-						break;
-					}
+					matching = isCollectionMatching( (CollectionType) type, collectionPersister.getTableName() );
+				}
+				if ( matching ) {
+					otherSidePropertyName = elementPersister.getPropertyNames()[index];
+					break;
 				}
 			}
 		}
-		return otherSidePropertyName != null ? otherSidePropertyName : tableName;
+		return processOtherSidePropertyName( otherSidePropertyName );
+	}
+
+	private boolean isToOneMatching(Loadable elementPersister, int index, Type type) {
+		if ( ( (EntityType) type ).isOneToOne() ) {
+			// If that's a OneToOne check the associated property name and see if it matches where we come from
+			// we need to do that as OneToOne don't define columns
+			OneToOneType oneToOneType = (OneToOneType) type;
+			String associatedProperty = oneToOneType.getRHSUniqueKeyPropertyName();
+			if ( associatedProperty != null ) {
+				OgmEntityPersister mainSidePersister = (OgmEntityPersister) oneToOneType.getAssociatedJoinable( session.getFactory() );
+				try {
+					int propertyIndex = mainSidePersister.getPropertyIndex( associatedProperty );
+					return mainSidePersister.getPropertyTypes()[propertyIndex] == propertyType;
+				}
+				catch ( HibernateException e ) {
+					//not the right property
+					//probably should not happen
+				}
+			}
+		}
+		return Arrays.equals( keyColumnNames, elementPersister.getPropertyColumnNames( index ) );
+	}
+
+	private String processOtherSidePropertyName(String otherSidePropertyName) {
+		if ( otherSidePropertyName != null ) {
+			isBidirectional = Boolean.TRUE;
+		}
+		else {
+			isBidirectional = Boolean.FALSE;
+			otherSidePropertyName = tableName;
+		}
+		return otherSidePropertyName;
 	}
 
 	private String getUnqualifiedRole(CollectionPersister persister) {
