@@ -23,6 +23,7 @@ package org.hibernate.ogm.util.impl;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -45,6 +46,7 @@ import org.hibernate.type.Type;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author Emmanuel Bernard
@@ -63,6 +65,14 @@ public class PropertyMetadataProvider {
 	private boolean inverse;
 	private Type propertyType;
 	private String[] rowKeyColumnNames;
+	/*
+	 * Return true if the other side association has been searched and not been found
+	 * The other side association is searched when we are looking forward to udpate it
+	 * and need to build the corresponding association key.
+	 *
+	 * It uses Boolean instead of boolean to make sure it's used only after being calculated
+	 */
+	private Boolean isBidirectional;
 
 	//fluent methods for populating data
 
@@ -285,9 +295,17 @@ public class PropertyMetadataProvider {
 
 	public Association getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
-			if (collectionMetadata == null) {
-				collectionMetadata = gridDialect.createAssociation( getCollectionMetadataKey() );
+			// Compute bidirectionality first
+			AssociationKey key = getCollectionMetadataKey();
+			if ( isBidirectional == Boolean.FALSE ){
+				//fake association to prevent unidirectional associations to keep record of the inverse side
+				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
+			}
+			else {
+				collectionMetadata = gridDialect.getAssociation( key );
+				if (collectionMetadata == null) {
+					collectionMetadata = gridDialect.createAssociation( key );
+				}
 			}
 		}
 		return collectionMetadata;
@@ -301,12 +319,16 @@ public class PropertyMetadataProvider {
 	}
 
 	public void flushToCache() {
-		if ( getCollectionMetadata().isEmpty() ) {
-			gridDialect.removeAssociation( getCollectionMetadataKey() );
-			collectionMetadata = null;
-		}
-		else {
-			gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
+		//If we don't have a bidirectional association, do not update the info
+		//to prevent unidirectional associations to keep record of the inverse side
+		if ( isBidirectional != Boolean.FALSE ) {
+			if ( getCollectionMetadata().isEmpty() ) {
+				gridDialect.removeAssociation( getCollectionMetadataKey() );
+				collectionMetadata = null;
+			}
+			else {
+				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
+			}
 		}
 	}
 
