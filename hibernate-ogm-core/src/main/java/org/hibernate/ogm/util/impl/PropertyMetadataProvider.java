@@ -29,15 +29,19 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.Loadable;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * @author Emmanuel Bernard
@@ -55,7 +59,6 @@ public class PropertyMetadataProvider {
 	private OgmCollectionPersister collectionPersister;
 	private boolean inverse;
 	private Type propertyType;
-	private OgmEntityPersister persister;
 	private String[] rowKeyColumnNames;
 
 	//fluent methods for populating data
@@ -111,24 +114,18 @@ public class PropertyMetadataProvider {
 			if (collectionPersister != null) {
 				EntityKey entityKey;
 				if ( inverse ) {
-					//inverse side of a collection, build the key of the other side's entity
-					//FIXME: inverse: update collection role to add assoc table + collection role??
-					collectionMetadataKey.setCollectionRole( tableName );
+					//look for the other side of the collection, build the key of the other side's entity
+					OgmEntityPersister elementPersister = (OgmEntityPersister) collectionPersister.getElementPersister();
 					entityKey = EntityKeyBuilder.fromPersister(
-							(OgmEntityPersister) collectionPersister.getElementPersister(),
+							elementPersister,
 							(Serializable) key,
 							session
 					);
+					collectionMetadataKey.setCollectionRole( buildCollectionRole(collectionPersister) );
 				}
 				else {
-					if ( ! collectionPersister.isInverse() ) {
-						//owner side of the collection
-						collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
-					}
-					else {
-						// aligned with the logic updating the inverse side
-						collectionMetadataKey.setCollectionRole( tableName );
-					}
+					//we are on the right side, use the association property
+					collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
 					entityKey = EntityKeyBuilder.fromPersister(
 							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
 							(Serializable) key,
@@ -143,7 +140,6 @@ public class PropertyMetadataProvider {
 				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
 			else if ( propertyType != null ) {
-				collectionMetadataKey.setCollectionRole( tableName );
 				collectionMetadataKey.setAssociationKind( propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED );
 				if ( propertyType instanceof EntityType ) {
 					EntityType entityType = (EntityType) propertyType;
@@ -155,6 +151,7 @@ public class PropertyMetadataProvider {
 					);
 					collectionMetadataKey.setOwnerEntityKey( entityKey );
 					collectionMetadataKey.setRowKeyColumnNames( rowKeyColumnNames );
+					collectionMetadataKey.setCollectionRole( getCollectionRoleFromToOne( associatedPersister ) );
 				}
 				else {
 					throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
@@ -165,6 +162,67 @@ public class PropertyMetadataProvider {
 			}
 		}
 		return collectionMetadataKey;
+	}
+
+	/*
+	 * Try and find the inverse association matching from the associated entity
+	 * If a match is found, use the other side's association name as role
+	 * Otherwise use the table name
+	 */
+	private String getCollectionRoleFromToOne(OgmEntityPersister associatedPersister) {
+		//code logic is slightly duplicated but the input and context is different, hence this choice
+		Type[] propertyTypes = associatedPersister.getPropertyTypes();
+		String otherSidePropertyName = null;
+		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
+			Type type = propertyTypes[index];
+			if ( type.isAssociationType() && type.isCollectionType() ) {
+				boolean matching = isCollectionMatching( (CollectionType) type, tableName );
+				if ( matching ) {
+					otherSidePropertyName = associatedPersister.getPropertyNames()[index];
+					break;
+				}
+			}
+		}
+		return otherSidePropertyName != null ? otherSidePropertyName : tableName;
+	}
+
+	private boolean isCollectionMatching(CollectionType type, String primarySideTableName) {
+		String collectionRole = type.getRole();
+		CollectionPhysicalModel reverseCollectionPersister = (CollectionPhysicalModel) session.getFactory().getCollectionPersister( collectionRole );
+		boolean isSameTable = primarySideTableName.equals( reverseCollectionPersister.getTableName() );
+		return isSameTable && Arrays.equals( keyColumnNames, reverseCollectionPersister.getKeyColumnNames() );
+	}
+
+	/*
+	 * Try and find the inverse association matching from the associated entity
+	 * If a match is found, use the other side's association name as role
+	 * Otherwise use the table name
+	 */
+	private String buildCollectionRole(OgmCollectionPersister collectionPersister) {
+		String otherSidePropertyName = null;
+		Loadable elementPersister = (Loadable) collectionPersister.getElementPersister();
+		Type[] propertyTypes = elementPersister.getPropertyTypes();
+
+		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
+			Type type = propertyTypes[index];
+			if ( type.isAssociationType() ) {
+				if ( collectionPersister.isOneToMany() && ! type.isCollectionType() ) {
+					if ( Arrays.equals( keyColumnNames, elementPersister.getPropertyColumnNames( index ) ) ) {
+						//the property match
+						otherSidePropertyName = elementPersister.getPropertyNames()[index];
+						break;
+					}
+				}
+				else if ( ! collectionPersister.isOneToMany() && type.isCollectionType() ) {
+					boolean matching = isCollectionMatching( (CollectionType) type, collectionPersister.getTableName() );
+					if ( matching ) {
+						otherSidePropertyName = elementPersister.getPropertyNames()[index];
+						break;
+					}
+				}
+			}
+		}
+		return otherSidePropertyName != null ? otherSidePropertyName : tableName;
 	}
 
 	private String getUnqualifiedRole(CollectionPersister persister) {
