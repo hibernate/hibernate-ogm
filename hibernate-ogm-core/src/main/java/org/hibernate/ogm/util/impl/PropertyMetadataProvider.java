@@ -123,8 +123,10 @@ public class PropertyMetadataProvider {
 		if ( collectionMetadataKey == null ) {
 			final Object[] columnValues = getKeyColumnValues();
 			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
+			// We have a collection on the main side
 			if (collectionPersister != null) {
 				EntityKey entityKey;
+				// we are explicitly looking to update the non owning side
 				if ( inverse ) {
 					//look for the other side of the collection, build the key of the other side's entity
 					OgmEntityPersister elementPersister = (OgmEntityPersister) collectionPersister.getElementPersister();
@@ -151,6 +153,7 @@ public class PropertyMetadataProvider {
 				collectionMetadataKey.setAssociationKind( type );
 				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
+			// We have a to-one on the main side
 			else if ( propertyType != null ) {
 				collectionMetadataKey.setAssociationKind( propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED );
 				if ( propertyType instanceof EntityType ) {
@@ -189,9 +192,12 @@ public class PropertyMetadataProvider {
 		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
 			Type type = propertyTypes[index];
 			boolean matching = false;
+			//we try and restrict type search as much as possible
+			//we look for associations that also are collections
 			if ( type.isAssociationType() && type.isCollectionType() ) {
 				matching = isCollectionMatching( (CollectionType) type, tableName );
 			}
+			//we look for associations that are to-one
 			else if ( type.isAssociationType() && ! type.isCollectionType() ) { //isCollectionType redundant but kept for readability
 				matching = isToOneMatching( associatedPersister, index, type );
 			}
@@ -204,6 +210,8 @@ public class PropertyMetadataProvider {
 	}
 
 	private boolean isCollectionMatching(CollectionType type, String primarySideTableName) {
+		// Find the reverse side collection and check if the table name and key columns are matching 
+		// what we have on the main side
 		String collectionRole = type.getRole();
 		CollectionPhysicalModel reverseCollectionPersister = (CollectionPhysicalModel) session.getFactory().getCollectionPersister( collectionRole );
 		boolean isSameTable = primarySideTableName.equals( reverseCollectionPersister.getTableName() );
@@ -223,11 +231,14 @@ public class PropertyMetadataProvider {
 
 		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
 			Type type = propertyTypes[index];
+			//we try and restrict type search as much as possible
 			if ( type.isAssociationType() ) {
 				boolean matching = false;
+				//if the main side collection is a one-to-many, the reverse side should be a to-one is not a collection
 				if ( collectionPersister.isOneToMany() && ! type.isCollectionType() ) {
 					matching = isToOneMatching( elementPersister, index, type );
 				}
+				//if the main side collection is not a one-to-many, the reverse side should be a collection
 				else if ( ! collectionPersister.isOneToMany() && type.isCollectionType() ) {
 					matching = isCollectionMatching( (CollectionType) type, collectionPersister.getTableName() );
 				}
@@ -258,10 +269,13 @@ public class PropertyMetadataProvider {
 				}
 			}
 		}
+		//otherwise we do a key column comparison to see if it matches
 		return Arrays.equals( keyColumnNames, elementPersister.getPropertyColumnNames( index ) );
 	}
 
 	private String processOtherSidePropertyName(String otherSidePropertyName) {
+		//if we found the matching property on the reverse side, we are
+		//bidirectional, otherwise we are not
 		if ( otherSidePropertyName != null ) {
 			isBidirectional = Boolean.TRUE;
 		}
@@ -293,9 +307,12 @@ public class PropertyMetadataProvider {
 		return associationTuple;
 	}
 
+	/*
+	 * Load a collection and create it if it is not found
+	 */
 	public Association getCollectionMetadata() {
 		if ( collectionMetadata == null ) {
-			// Compute bidirectionality first
+			// Compute bi-directionality first
 			AssociationKey key = getCollectionMetadataKey();
 			if ( isBidirectional == Boolean.FALSE ){
 				//fake association to prevent unidirectional associations to keep record of the inverse side
@@ -311,6 +328,9 @@ public class PropertyMetadataProvider {
 		return collectionMetadata;
 	}
 
+	/*
+	 * Does not create a collection if it is not found
+	 */
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
 			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
