@@ -40,4 +40,14 @@ public class TupleContext {
 	public List<String> getSelectableColumns() {
 		return selectableColumns;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
+		for ( String columnName : this.getSelectableColumns() ) {
+			builder.append( columnName );
+		}
+		builder.append( "}" );
+		return builder.toString();
+	}
 }

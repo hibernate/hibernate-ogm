@@ -20,11 +20,14 @@
  */
 package org.hibernate.ogm.dialect;
 
+import java.util.List;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -70,10 +73,11 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.getLockingStrategy( lockable, lockMode );
 	}
 
+
 	@Override
-	public Tuple getTuple(EntityKey key) {
-		log.tracef( "Reading Tuple with key %1$s from datastore", key );
-		return gridDialect.getTuple( key );
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext){
+		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext.toString() );
+		return gridDialect.getTuple( key, tupleContext );
 	}
 
 	@Override
