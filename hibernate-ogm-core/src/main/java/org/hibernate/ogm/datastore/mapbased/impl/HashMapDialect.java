@@ -34,6 +34,7 @@ import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -73,8 +74,9 @@ public class HashMapDialect implements GridDialect {
 		return new MapPessimisticWriteLockingStrategy( lockable, lockMode );
 	}
 
+
 	@Override
-	public Tuple getTuple(EntityKey key) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		Map<String, Object> entityMap = provider.getEntityTuple( key );
 		if ( entityMap == null ) {
 			return null;
