@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.StartStoppable;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -40,6 +41,7 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical
@@ -92,6 +94,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 
 		@Override
 		public Tuple getTuple(EntityKey key) {
+			return null;  //To change body of implemented methods use File | Settings | File Templates.
+		}
+
+		@Override
+		public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 			return null;  //To change body of implemented methods use File | Settings | File Templates.
 		}
 
