@@ -20,7 +20,10 @@
  */
 package org.hibernate.ogm.dialect;
 
+import java.util.List;
+
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.service.Service;
 
@@ -44,9 +47,9 @@ public interface GridDialect extends Service {
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
 
 	/**
-	 * Return the tuple for a given key or null if not present
+	 * Return the tuple with the given column for a given key
 	 */
-	Tuple getTuple(EntityKey key);
+	Tuple getTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Return a new tuple for a given key
