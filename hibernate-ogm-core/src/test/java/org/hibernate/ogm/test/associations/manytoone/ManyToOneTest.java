@@ -57,10 +57,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( jerome );
 		session.flush();
 		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
 		transaction.commit();
 		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
 
 		session.clear();
 

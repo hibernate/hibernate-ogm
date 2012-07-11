@@ -397,7 +397,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.session( session )
 				.propertyType( getPropertyTypes()[propertyIndex] )
 				.rowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, getPropertyColumnNames( propertyIndex ) ) );
-		final Association ids = metadataProvider.getCollectionMetadata();
+		final Association ids = metadataProvider.getCollectionMetadataOrNull();
 
 		if (ids == null || ids.size() == 0 ) {
 			return null;

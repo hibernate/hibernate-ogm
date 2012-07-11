@@ -50,11 +50,11 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.persist( cloud );
 		session.flush();
 		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 		transaction.commit();
 
 		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 
 		session.clear();
 
@@ -71,7 +71,7 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		transaction.commit();
 
 		assertThat( assertNumberOfEntities( 4, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 3, sessions ) ).isTrue();
+		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
 
 		session.clear();
 
