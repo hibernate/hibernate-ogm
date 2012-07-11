@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -34,6 +35,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -48,6 +50,7 @@ import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.type.StandardBasicTypes;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -106,8 +109,8 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key) {
-		DBObject found = this.getObject( key );
+	public  Tuple getTuple(EntityKey key, TupleContext tupleContext){
+		DBObject found = this.getObject( key, tupleContext );
 		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
 	}
 
@@ -120,6 +123,19 @@ public class MongoDBDialect implements GridDialect {
 	private DBObject getObject(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
 		DBObject searchObject = this.prepareIdObject( key );
+		return collection.findOne( searchObject );
+	}
+
+	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
+		DBCollection collection = this.getCollection( key );
+		DBObject searchObject = this.prepareIdObject( key );
+		if ( tupleContext != null && tupleContext.getSelectableColumns() != null ) {
+			BasicDBObject restrictionObject = new BasicDBObject();
+			for ( String column : tupleContext.getSelectableColumns() ) {
+				restrictionObject.append( column, 1 );
+			}
+			return collection.findOne( searchObject, restrictionObject );
+		}
 		return collection.findOne( searchObject );
 	}
 
