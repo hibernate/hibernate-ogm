@@ -25,10 +25,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import org.hibernate.AssertionFailure;
@@ -101,6 +103,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private Object discriminatorValue;
+	private final TupleContext tupleContext;
 
 	//service references
 	private final GridDialect gridDialect;
@@ -217,7 +220,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			gridPropertyTypes[index] = typeTranslator.getType( types[index] );
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
-		gridIdentifierType = typeTranslator.getType( getIdentifierType() ); 
+		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
+
+		List<String> columnNames = new ArrayList<String>();
+		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
+			String[] property = this.getPropertyColumnNames( propertyCount );
+			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
+				columnNames.add( property[columnCount] );
+			}
+		}
+		this.tupleContext = new TupleContext( columnNames );
+
 	}
 
 	//FIXME finish implement postInstantiate
@@ -1127,5 +1140,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	@Override
 	public Serializable[] getPropertySpaces() {
 		return spaces;
+	}
+
+	public TupleContext getTupleContext() {
+		return this.tupleContext;
 	}
 }
