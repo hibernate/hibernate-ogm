@@ -46,10 +46,20 @@ public final class EntityKey implements Serializable {
 		return table;
 	}
 
+	/**
+	 * This class should be treated as immutable. While we expose this array,
+	 * you should never make changes to it!
+	 * This is a design tradeoff vs. raw performance and memory usage.
+	 */
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
 
+	/**
+	 * This class should be treated as immutable. While we expose this array,
+	 * you should never make changes to it!
+	 * This is a design tradeoff vs. raw performance and memory usage.
+	 */
 	public String[] getColumnNames() {
 		return columnNames;
 	}
