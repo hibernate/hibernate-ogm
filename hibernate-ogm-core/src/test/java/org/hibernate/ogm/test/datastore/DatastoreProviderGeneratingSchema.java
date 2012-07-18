@@ -93,11 +93,6 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public Tuple getTuple(EntityKey key) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
-		}
-
-		@Override
 		public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 			return null;  //To change body of implemented methods use File | Settings | File Templates.
 		}
