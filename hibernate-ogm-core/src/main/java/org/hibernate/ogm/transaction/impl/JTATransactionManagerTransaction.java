@@ -47,19 +47,13 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	private static final Log log = LoggerFactory.make();
 
-	private boolean begun;
-	private boolean commitFailed;
 	private boolean newTransaction;
-	private boolean callback;
-	private boolean commitSucceeded;
-	private TransactionCoordinator coordinator;
 	private TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
 	public JTATransactionManagerTransaction(TransactionCoordinator coordinator) {
 		super(coordinator);
-		this.coordinator = coordinator;
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
 					.getTransactionEnvironment()
