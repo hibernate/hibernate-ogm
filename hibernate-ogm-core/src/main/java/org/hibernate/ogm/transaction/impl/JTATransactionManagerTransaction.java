@@ -33,6 +33,7 @@ import org.hibernate.engine.transaction.spi.AbstractTransactionImpl;
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.JoinStatus;
 import org.hibernate.engine.transaction.spi.LocalStatus;
+import org.hibernate.engine.transaction.spi.TransactionContext;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -42,13 +43,14 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
  * Transaction implementation using JTA transactions exclusively from the TransactionManager
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero  <sanne@hibernate.org>
  */
 public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
 
 	private static final Log log = LoggerFactory.make();
 
 	private boolean newTransaction;
-	private TransactionManager transactionManager;
+	private final TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
@@ -82,42 +84,46 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	protected void afterTransactionBegin() {
-		transactionCoordinator().pulse();
+		final TransactionCoordinator coordinator = transactionCoordinator();
+		coordinator.pulse();
 
-		if ( !transactionCoordinator().isSynchronizationRegistered() ) {
-			isDriver = transactionCoordinator().takeOwnership();
+		if ( !coordinator.isSynchronizationRegistered() ) {
+			isDriver = coordinator.takeOwnership();
 		}
 
 		applyTimeout();
-		transactionCoordinator().sendAfterTransactionBeginNotifications( this );
-		transactionCoordinator().getTransactionContext().afterTransactionBegin( this );
+		coordinator.sendAfterTransactionBeginNotifications( this );
+		coordinator.getTransactionContext().afterTransactionBegin( this );
 	}
 
 	@Override
 	protected void beforeTransactionCommit() {
-		transactionCoordinator().sendBeforeTransactionCompletionNotifications( this );
+		final TransactionCoordinator coordinator = transactionCoordinator();
+		coordinator.sendBeforeTransactionCompletionNotifications( this );
+		final TransactionContext transactionContext = coordinator.getTransactionContext();
 
-		final boolean flush = ! transactionCoordinator().getTransactionContext().isFlushModeNever() &&
-				( isDriver || ! transactionCoordinator().getTransactionContext().isFlushBeforeCompletionEnabled() );
+		final boolean flush = ! transactionContext.isFlushModeNever() &&
+				( isDriver || ! transactionContext.isFlushBeforeCompletionEnabled() );
 
 		if ( flush ) {
 			// if an exception occurs during flush, user must call rollback()
-			transactionCoordinator().getTransactionContext().managedFlush();
+			transactionContext.managedFlush();
 		}
 
 		if ( isDriver && isInitiator ) {
-			transactionCoordinator().getTransactionContext().beforeTransactionCompletion( this );
+			transactionContext.beforeTransactionCompletion( this );
 		}
 
 		closeIfRequired();
 	}
 
 	private void closeIfRequired() throws HibernateException {
+		final TransactionContext transactionContext = transactionCoordinator().getTransactionContext();
 		final boolean close = isDriver &&
-				transactionCoordinator().getTransactionContext().shouldAutoClose() &&
-				! transactionCoordinator().getTransactionContext().isClosed();
+				transactionContext.shouldAutoClose() &&
+				! transactionContext.isClosed();
 		if ( close ) {
-			transactionCoordinator().getTransactionContext().managedClose();
+			transactionContext.managedClose();
 		}
 	}
 
