@@ -145,20 +145,14 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	protected void afterTransactionCompletion(int status) {
-		// nothing to do
+		if ( isDriver ) {
+			transactionCoordinator().afterTransaction( this, status );
+		}
 	}
 
 	@Override
 	protected void afterAfterCompletion() {
-		// this method is a noop if there is a Synchronization!
-		if ( isDriver ) {
-			try {
-				transactionCoordinator().afterTransaction( this, transactionManager.getStatus() );
-			}
-			catch (SystemException e) {
-				throw new TransactionException( "Unable to determine UserTransaction status", e );
-			}
-		}
+		// nothing to do
 	}
 
 	@Override
