@@ -276,7 +276,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	private Tuple getResultsetById(Serializable id, SessionImplementor session) {
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple(key);
+		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 		return resultset;
 	}
 
@@ -382,7 +382,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key );
+		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
 		gridDialect.updateTuple( resultset, key );
@@ -728,7 +728,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-				Tuple resultset = gridDialect.getTuple( key );
+				Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 				final boolean useVersion = j == 0 && isVersioned();
 
 				resultset = createNewResultSetIfNull( key, resultset, id, session );
@@ -875,7 +875,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 
 			final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-			Tuple resultset = gridDialect.getTuple( key );
+			Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 			// add the discriminator
 			if ( j == 0 ) {
 				if (resultset != null) {
@@ -937,7 +937,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key );
+		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements
