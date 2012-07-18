@@ -26,13 +26,13 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
-import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.internal.jta.JtaIsolationDelegate;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 import org.hibernate.engine.transaction.spi.AbstractTransactionImpl;
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.engine.transaction.spi.JoinStatus;
 import org.hibernate.engine.transaction.spi.LocalStatus;
+import org.hibernate.engine.transaction.spi.TransactionContext;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -42,24 +42,19 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
  * Transaction implementation using JTA transactions exclusively from the TransactionManager
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero  <sanne@hibernate.org>
  */
 public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
 
 	private static final Log log = LoggerFactory.make();
 
-	private boolean begun;
-	private boolean commitFailed;
 	private boolean newTransaction;
-	private boolean callback;
-	private boolean commitSucceeded;
-	private TransactionCoordinator coordinator;
-	private TransactionManager transactionManager;
+	private final TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
 	public JTATransactionManagerTransaction(TransactionCoordinator coordinator) {
 		super(coordinator);
-		this.coordinator = coordinator;
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
 					.getTransactionEnvironment()
@@ -81,49 +76,52 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			log.error( "JTA transaction begin failed", e );
-			throw new TransactionException( "JTA transaction begin failed", e );
+			throw log.jtaTransactionBeginFailed( e );
 		}
 	}
 
 	@Override
 	protected void afterTransactionBegin() {
-		transactionCoordinator().pulse();
+		final TransactionCoordinator coordinator = transactionCoordinator();
+		coordinator.pulse();
 
-		if ( !transactionCoordinator().isSynchronizationRegistered() ) {
-			isDriver = transactionCoordinator().takeOwnership();
+		if ( !coordinator.isSynchronizationRegistered() ) {
+			isDriver = coordinator.takeOwnership();
 		}
 
 		applyTimeout();
-		transactionCoordinator().sendAfterTransactionBeginNotifications( this );
-		transactionCoordinator().getTransactionContext().afterTransactionBegin( this );
+		coordinator.sendAfterTransactionBeginNotifications( this );
+		coordinator.getTransactionContext().afterTransactionBegin( this );
 	}
 
 	@Override
 	protected void beforeTransactionCommit() {
-		transactionCoordinator().sendBeforeTransactionCompletionNotifications( this );
+		final TransactionCoordinator coordinator = transactionCoordinator();
+		coordinator.sendBeforeTransactionCompletionNotifications( this );
+		final TransactionContext transactionContext = coordinator.getTransactionContext();
 
-		final boolean flush = ! transactionCoordinator().getTransactionContext().isFlushModeNever() &&
-				( isDriver || ! transactionCoordinator().getTransactionContext().isFlushBeforeCompletionEnabled() );
+		final boolean flush = ! transactionContext.isFlushModeNever() &&
+				( isDriver || ! transactionContext.isFlushBeforeCompletionEnabled() );
 
 		if ( flush ) {
 			// if an exception occurs during flush, user must call rollback()
-			transactionCoordinator().getTransactionContext().managedFlush();
+			transactionContext.managedFlush();
 		}
 
 		if ( isDriver && isInitiator ) {
-			transactionCoordinator().getTransactionContext().beforeTransactionCompletion( this );
+			transactionContext.beforeTransactionCompletion( this );
 		}
 
 		closeIfRequired();
 	}
 
 	private void closeIfRequired() throws HibernateException {
+		final TransactionContext transactionContext = transactionCoordinator().getTransactionContext();
 		final boolean close = isDriver &&
-				transactionCoordinator().getTransactionContext().shouldAutoClose() &&
-				! transactionCoordinator().getTransactionContext().isClosed();
+				transactionContext.shouldAutoClose() &&
+				! transactionContext.isClosed();
 		if ( close ) {
-			transactionCoordinator().getTransactionContext().managedClose();
+			transactionContext.managedClose();
 		}
 	}
 
@@ -136,7 +134,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			throw new TransactionException( "JTA commit failed: ", e );
+			throw log.jtaCommitFailed( e );
 		}
 		finally {
 			isInitiator = false;
@@ -145,20 +143,14 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	protected void afterTransactionCompletion(int status) {
-		// nothing to do
+		if ( isDriver ) {
+			transactionCoordinator().afterTransaction( this, status );
+		}
 	}
 
 	@Override
 	protected void afterAfterCompletion() {
-		// this method is a noop if there is a Synchronization!
-		if ( isDriver ) {
-			try {
-				transactionCoordinator().afterTransaction( this, transactionManager.getStatus() );
-			}
-			catch (SystemException e) {
-				throw new TransactionException( "Unable to determine UserTransaction status", e );
-			}
-		}
+		// nothing to do
 	}
 
 	@Override
@@ -171,7 +163,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		try {
 			if ( isInitiator ) {
 				// failed commits automatically rollback the transaction per JTA spec
-				if ( getLocalStatus() != LocalStatus.FAILED_COMMIT  ) {
+				if ( getLocalStatus() != LocalStatus.FAILED_COMMIT ) {
 					transactionManager.rollback();
 					log.debug( "Rolled back JTA UserTransaction" );
 				}
@@ -181,7 +173,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			throw new TransactionException( "JTA rollback failed", e );
+			throw log.jtaRollbackFailed( e );
 		}
 	}
 
@@ -192,8 +184,8 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			transactionManager.setRollbackOnly();
 			log.debug( "set JTA UserTransaction to rollback only" );
 		}
-		catch (SystemException e) {
-			log.debug( "Unable to mark transaction for rollback only", e );
+		catch ( SystemException e ) {
+			throw log.unableToMarkTransactionForRollback( e );
 		}
 	}
 
@@ -218,7 +210,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			status = transactionManager.getStatus();
 		}
 		catch ( SystemException se ) {
-			throw new TransactionException( "Could not determine transaction status: ", se );
+			throw log.jtaCouldNotDetermineStatus( se );
 		}
 		return JtaStatusHelper.isActive( status );
 	}
@@ -233,8 +225,8 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		try {
 			transactionManager.setTransactionTimeout( getTimeout() );
 		}
-		catch ( SystemException e ) {
-			throw new TransactionException( "Unable to set timeout: " + getTimeout(), e );
+		catch ( SystemException se ) {
+			throw log.unableToSetTimeout( se, getTimeout() );
 		}
 	}
 
