@@ -165,7 +165,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		try {
 			if ( isInitiator ) {
 				// failed commits automatically rollback the transaction per JTA spec
-				if ( getLocalStatus() != LocalStatus.FAILED_COMMIT  ) {
+				if ( getLocalStatus() != LocalStatus.FAILED_COMMIT ) {
 					transactionManager.rollback();
 					log.debug( "Rolled back JTA UserTransaction" );
 				}
@@ -186,7 +186,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			transactionManager.setRollbackOnly();
 			log.debug( "set JTA UserTransaction to rollback only" );
 		}
-		catch (SystemException e) {
+		catch ( SystemException e ) {
 			log.debug( "Unable to mark transaction for rollback only", e );
 		}
 	}
