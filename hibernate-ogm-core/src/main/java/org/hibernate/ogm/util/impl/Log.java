@@ -22,8 +22,12 @@ package org.hibernate.ogm.util.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.ERROR;
+
+import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
+import org.hibernate.TransactionException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -93,4 +97,23 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
 	void useGridDialect(String gridDialectClass);
+
+	@Message(id = 18, value = "JTA transaction begin failed")
+	TransactionException jtaTransactionBeginFailed(@Cause Exception e);
+
+	@Message(id = 19, value = "JTA transaction commit failed")
+	TransactionException jtaCommitFailed(@Cause Exception e);
+
+	@Message(id = 20, value = "JTA transaction rollback failed")
+	TransactionException jtaRollbackFailed(@Cause Exception e);
+
+	@Message(id = 21, value = "Unable to mark JTA transaction for rollback")
+	TransactionException unableToMarkTransactionForRollback(@Cause Exception e);
+
+	@Message(id = 22, value = "Could not determine transaction status")
+	TransactionException jtaCouldNotDetermineStatus(@Cause SystemException se);
+
+	@Message(id = 23, value = "Unable to set transaction timeout to '%1$s'")
+	TransactionException unableToSetTimeout(@Cause SystemException se, int timeout);
+
 }

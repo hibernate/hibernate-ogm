@@ -26,7 +26,6 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
-import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.internal.jta.JtaIsolationDelegate;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 import org.hibernate.engine.transaction.spi.AbstractTransactionImpl;
@@ -77,8 +76,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			log.error( "JTA transaction begin failed", e );
-			throw new TransactionException( "JTA transaction begin failed", e );
+			throw log.jtaTransactionBeginFailed( e );
 		}
 	}
 
@@ -136,7 +134,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			throw new TransactionException( "JTA commit failed: ", e );
+			throw log.jtaCommitFailed( e );
 		}
 		finally {
 			isInitiator = false;
@@ -175,7 +173,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			}
 		}
 		catch ( Exception e ) {
-			throw new TransactionException( "JTA rollback failed", e );
+			throw log.jtaRollbackFailed( e );
 		}
 	}
 
@@ -187,7 +185,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			log.debug( "set JTA UserTransaction to rollback only" );
 		}
 		catch ( SystemException e ) {
-			log.debug( "Unable to mark transaction for rollback only", e );
+			throw log.unableToMarkTransactionForRollback( e );
 		}
 	}
 
@@ -212,7 +210,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			status = transactionManager.getStatus();
 		}
 		catch ( SystemException se ) {
-			throw new TransactionException( "Could not determine transaction status: ", se );
+			throw log.jtaCouldNotDetermineStatus( se );
 		}
 		return JtaStatusHelper.isActive( status );
 	}
@@ -227,8 +225,8 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		try {
 			transactionManager.setTransactionTimeout( getTimeout() );
 		}
-		catch ( SystemException e ) {
-			throw new TransactionException( "Unable to set timeout: " + getTimeout(), e );
+		catch ( SystemException se ) {
+			throw log.unableToSetTimeout( se, getTimeout() );
 		}
 	}
 
