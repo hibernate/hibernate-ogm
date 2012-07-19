@@ -29,12 +29,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Mapping API context
@@ -48,16 +47,21 @@ public class MappingContext {
 		this.fromInterfaceToGenerator = new HashMap<Method, Object>();
 		for ( Object generator : generators ) {
 			Class<?> generatorClass = generator.getClass();
+			enlistMethods( generator, generatorClass );
+		}
+		proxyPerEntityOrProperty = new HashMap<List<Object>, Object>();
+		processGlobalContextType( mappingApi );
+	}
+
+	private void enlistMethods(Object generator, Class<?> generatorClass) {
+		if ( generatorClass.isInterface() ) {
 			for ( Method method : generatorClass.getMethods() ) {
-				int modifiers = method.getModifiers();
-				//interfaces are public and non static so we filter them a bit
-				if ( Modifier.isPublic( modifiers ) && !Modifier.isStatic( modifiers ) ) {
-					fromInterfaceToGenerator.put( method, generator );
-				}
+				fromInterfaceToGenerator.put( method, generator );
 			}
 		}
-		proxyPerEntityType = new HashMap<Class<?>, Object>();
-		processGlobalContextType( mappingApi );
+		for ( Class<?> clazz : generatorClass.getInterfaces() ) {
+			enlistMethods( generator, clazz );
+		}
 	}
 
 	private void processGlobalContextType(Class<? extends GlobalContext<?,?,?>> globalContextSubtype) {
@@ -148,8 +152,8 @@ public class MappingContext {
 		}
 	}
 
-	public Map<Class<?>,Object> getProxyPerEntityType() { return proxyPerEntityType; }
-	private Map<Class<?>,Object> proxyPerEntityType;
+	public Map<List<Object>,Object> getProxyPerEntityOrProperty() { return proxyPerEntityOrProperty; }
+	private Map<List<Object>,Object> proxyPerEntityOrProperty;
 
 	public Map<Method, Object> getFromInterfaceToGenerator() { return fromInterfaceToGenerator; }
 	private Map<Method, Object> fromInterfaceToGenerator;

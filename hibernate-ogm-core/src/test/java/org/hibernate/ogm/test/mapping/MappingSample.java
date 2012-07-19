@@ -48,30 +48,39 @@ public class MappingSample {
 				SamplePropertyOptions<SamplePropertyContext> {}
 
 	public static class SampleGlobalOptionGenerator implements SampleGlobalOptions<Object> {
+		public int calledForce = 0;
 
 		@Override
 		public Object force(boolean force) {
+			calledForce++;
 			return force;
 		}
 	}
 
 	public static class SampleEntityOptionGenerator implements SampleEntityOptions<Object> {
+		public int calledForce = 0;
+		public int calledName = 0;
 
 		@Override
 		public Object force(boolean force) {
+			calledForce++;
 			return force;
 		}
 
 		@Override
 		public Object name(String name) {
+			calledName++;
 			return name;
 		}
 	}
 
 	public static class SamplePropertyOptionGenerator implements SamplePropertyOptions<Object> {
 
+		public int calledEmbed = 0;
+
 		@Override
 		public Object embed() {
+			calledEmbed++;
 			return null;
 		}
 	}

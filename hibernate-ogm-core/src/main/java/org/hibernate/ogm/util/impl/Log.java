@@ -116,4 +116,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 23, value = "Unable to set transaction timeout to '%1$s'")
 	TransactionException unableToSetTimeout(@Cause SystemException se, int timeout);
 
+	@Message( id = 24, value = "Unable to support mapping subtypes that are not interfaces: %1$s" )
+	HibernateException mappingSubtypeNotInterface(Class<?> mappingType);
 }

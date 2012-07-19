@@ -20,9 +20,11 @@
  */
 package org.hibernate.ogm.test.mapping;
 
+import org.hibernate.ogm.mapping.impl.ConfigurationProxyFactory;
 import org.hibernate.ogm.mapping.impl.MappingContext;
 import org.junit.Test;
 
+import java.lang.annotation.ElementType;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,9 +33,9 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MappingContextTest{
+public class ProxyFactoryTest {
 	@Test
-	public void testContext() throws Exception {
+	public void testProxyGeneration() throws Exception {
 		Set<Object> generators = new HashSet<Object>(  );
 		MappingSample.SampleGlobalOptionGenerator global = new MappingSample.SampleGlobalOptionGenerator();
 		generators.add( global );
@@ -43,7 +45,34 @@ public class MappingContextTest{
 		generators.add( property );
 
 		MappingContext context = new MappingContext(MappingSample.SampleMapping.class, generators);
-		assertThat( context.getEntityContextClass() ).isEqualTo( MappingSample.SampleEntityContext.class );
-		assertThat( context.getPropertyContextClass() ).isEqualTo( MappingSample.SamplePropertyContext.class );
+		MappingSample.SampleMapping sampleMapping = ConfigurationProxyFactory.get( MappingSample.SampleMapping.class, context );
+		sampleMapping
+				.force( true )
+				.entity( Example.class )
+					.force( true )
+					.property( "title", ElementType.METHOD )
+						.embed()
+				.entity( Sample.class )
+					.force( false );
+		assertThat( global.calledForce ).isEqualTo( 1 );
+		assertThat( entity.calledName ).isEqualTo( 0 );
+		assertThat( entity.calledForce ).isEqualTo( 2 );
+		assertThat( property.calledEmbed ).isEqualTo( 1 );
+	}
+
+	public static final class Example {
+		public String getTitle() { return title; }
+		public void setTitle(String title) {  this.title = title; }
+		private String title;
+
+		public String getContent() { return content; }
+		public void setContent(String content) {  this.content = content; }
+		private String content;
+	}
+
+	public static final class Sample {
+		public Integer getId() { return id; }
+		public void setId(Integer id) {  this.id = id; }
+		private Integer id;
 	}
 }
