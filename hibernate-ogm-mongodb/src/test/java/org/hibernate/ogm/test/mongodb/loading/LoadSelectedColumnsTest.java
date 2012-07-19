@@ -90,3 +90,4 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		return new Class<?>[0];
 	}
 }
+
