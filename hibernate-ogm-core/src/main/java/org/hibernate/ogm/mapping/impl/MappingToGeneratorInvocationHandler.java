@@ -27,9 +27,11 @@ import org.hibernate.ogm.mapping.context.PropertyContext;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Bind the expected generator implementation with the
@@ -73,6 +75,9 @@ public class MappingToGeneratorInvocationHandler implements InvocationHandler {
 			key = new ArrayList<Object>(2);
 			key.add( method );
 			key.add( args[0] );
+			//We enter an entity context, update the stack
+			context.setCurrentEntity( (Class<?>) args[0] );
+			context.setCurrentProperty( null );
 			return returnProxy( key, context.getEntityContextClass() );
 		}
 		else if ( isEqual(method, PROPERTY_FROM_ENTITY)
@@ -83,17 +88,41 @@ public class MappingToGeneratorInvocationHandler implements InvocationHandler {
 			key.add( method );
 			key.add( args[0] );
 			key.add( args[1] );
+			//we enter a property context, update the stack
+			context.setCurrentProperty( new MappingContext.PropertyKey( context.getCurrentEntity(), (String) args[0] ) );
 			return returnProxy( key, context.getPropertyContextClass() );
 		}
 
 		Object delegate = context.getFromInterfaceToGenerator().get( method );
 		if ( delegate != null ) {
-			//TODO store that info somewhere
-			method.invoke( delegate, args );
+			putGeneratorResultInRightContext( method, args, delegate );
 		}
 		//if nothing match we return the proxy directly?
 		//FIXME or should we rather raise an exception?
 		return proxy;
+	}
+
+	private void putGeneratorResultInRightContext(Method method, Object[] args, Object delegate) throws IllegalAccessException, InvocationTargetException {
+		Object result = method.invoke( delegate, args );
+		if ( context.getCurrentEntity() == null ) {
+			context.getGlobalOptions().add( result );
+		}
+		else if ( context.getCurrentProperty() == null ) {
+			List<Object> optionsPerEntity = context.getOptionsPerEntity().get( context.getCurrentEntity() );
+			if ( optionsPerEntity == null ) {
+				optionsPerEntity = new ArrayList<Object>();
+				context.getOptionsPerEntity().put( context.getCurrentEntity(), optionsPerEntity );
+			}
+			optionsPerEntity.add( result );
+		}
+		else {
+			List<Object> optionsPerProperty = context.getOptionsPerProperty().get( context.getCurrentProperty() );
+			if ( optionsPerProperty == null ) {
+				optionsPerProperty = new ArrayList<Object>();
+				context.getOptionsPerProperty().put( context.getCurrentProperty(), optionsPerProperty );
+			}
+			optionsPerProperty.add( result );
+		}
 	}
 
 	private Object returnProxy(List<Object> key, Class<?> contextClass) {

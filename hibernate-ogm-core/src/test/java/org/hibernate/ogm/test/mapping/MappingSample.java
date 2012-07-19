@@ -81,7 +81,7 @@ public class MappingSample {
 		@Override
 		public Object embed() {
 			calledEmbed++;
-			return null;
+			return new Object();
 		}
 	}
 

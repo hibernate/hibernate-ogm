@@ -30,6 +30,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,9 @@ public class MappingContext {
 			enlistMethods( generator, generatorClass );
 		}
 		proxyPerEntityOrProperty = new HashMap<List<Object>, Object>();
+		globalOptions = new ArrayList<Object>();
+		optionsPerEntity = new HashMap<Class<?>, List<Object>>(  );
+		optionsPerProperty = new HashMap<PropertyKey, List<Object>>(  );
 		processGlobalContextType( mappingApi );
 	}
 
@@ -152,15 +156,81 @@ public class MappingContext {
 		}
 	}
 
+	/** cache of already built proxy instances */
 	public Map<List<Object>,Object> getProxyPerEntityOrProperty() { return proxyPerEntityOrProperty; }
 	private Map<List<Object>,Object> proxyPerEntityOrProperty;
 
+	/** cache of appropriate generator instance per expected method */
 	public Map<Method, Object> getFromInterfaceToGenerator() { return fromInterfaceToGenerator; }
 	private Map<Method, Object> fromInterfaceToGenerator;
 
+	/** Actual subclass instance of EntityContext detected from concrete entry point type (GlobalContext subclass) */
 	public Class<EntityContext<?,?,?>> getEntityContextClass() { return entityContextClass; }
 	private Class<EntityContext<?,?,?>> entityContextClass;
 
+	/** Actual subclass instance of PropertyContext detected from concrete entry point type (GlobalContext subclass) */
 	public Class<PropertyContext<?,?,?>> getPropertyContextClass() { return propertyContextClass; }
 	private Class<PropertyContext<?,?,?>> propertyContextClass;
+
+	/** Gather the internal model of the global options */
+	public List<Object> getGlobalOptions() { return globalOptions; }
+	public void setGlobalOptions(List<Object> globalOptions) {  this.globalOptions = globalOptions; }
+	private List<Object> globalOptions;
+
+	/** Gather the internal model of the entity level options */
+	public Map<Class<?>,List<Object>> getOptionsPerEntity() { return optionsPerEntity; }
+	public void setOptionsPerEntity(Map<Class<?>,List<Object>> optionsPerEntity) {  this.optionsPerEntity = optionsPerEntity; }
+	private Map<Class<?>,List<Object>>  optionsPerEntity;
+
+	/** Gather the internal model of the property level options */
+	public Map<PropertyKey,List<Object>> getOptionsPerProperty() { return optionsPerProperty; }
+	private Map<PropertyKey,List<Object>> optionsPerProperty;
+
+	/** Returns the current entity being processed or null of at the global level */
+	public Class<?> getCurrentEntity() { return currentEntity; }
+	public void setCurrentEntity(Class<?> currentEntity) {  this.currentEntity = currentEntity; }
+	private Class<?> currentEntity;
+
+	/** Returns the current property being processed or null of at the global or entity level */
+	public PropertyKey getCurrentProperty() { return currentProperty; }
+	public void setCurrentProperty(PropertyKey currentProperty) {  this.currentProperty = currentProperty; }
+	private PropertyKey currentProperty;
+
+	/**
+	 * Represents the lookup key to uniquely identify a property
+	 */
+	public static class PropertyKey {
+		public PropertyKey(Class<?> entity, String property) {
+			this.entity = entity;
+			this.property = property;
+		}
+
+		public Class<?> getEntity() { return entity; }
+		public void setEntity(Class<?> entity) {  this.entity = entity; }
+		private Class<?> entity;
+
+		public String getProperty() { return property; }
+		public void setProperty(String property) {  this.property = property; }
+		private String property;
+
+		@Override
+		public boolean equals(Object o) {
+			if ( this == o ) return true;
+			if ( o == null || getClass() != o.getClass() ) return false;
+
+			PropertyKey that = (PropertyKey) o;
+
+			if ( !entity.equals( that.entity ) ) return false;
+			if ( !property.equals( that.property ) ) return false;
+
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = entity.hashCode();
+			result = 31 * result + property.hashCode();
+			return result;
+		}
+	}
 }

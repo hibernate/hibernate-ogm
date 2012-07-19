@@ -53,11 +53,19 @@ public class ProxyFactoryTest {
 					.property( "title", ElementType.METHOD )
 						.embed()
 				.entity( Sample.class )
-					.force( false );
+					.name("Joker")
+					.force( false )
+				.entity( Example.class )
+					.name( "Batman" );
 		assertThat( global.calledForce ).isEqualTo( 1 );
-		assertThat( entity.calledName ).isEqualTo( 0 );
+		assertThat( entity.calledName ).isEqualTo( 2 );
 		assertThat( entity.calledForce ).isEqualTo( 2 );
 		assertThat( property.calledEmbed ).isEqualTo( 1 );
+		assertThat( context.getGlobalOptions() ).hasSize( 1 ).contains( true );
+		assertThat( context.getOptionsPerEntity().get( Example.class ) ).hasSize( 2 ).contains( true, "Batman" );
+		assertThat( context.getOptionsPerEntity().get( Sample.class ) ).hasSize( 2 ).contains( false, "Joker" );
+		assertThat( context.getOptionsPerProperty().get( new MappingContext.PropertyKey( Example.class, "title" ) ) )
+				.hasSize( 1 );
 	}
 
 	public static final class Example {
