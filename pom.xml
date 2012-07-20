@@ -32,7 +32,7 @@
 
     <name>Hibernate OGM Aggregator</name>
     <description>Hibernate OGM Aggregator POM</description>
-    <url>http://community.jboss.org/en/hibernate/ogm</url>
+    <url>http://ogm.hibernate.org</url>
 
     <inceptionYear>2010</inceptionYear>
 
@@ -48,7 +48,7 @@
 
     <issueManagement>
         <system>JIRA</system>
-        <url>http://opensource.atlassian.com/projects/hibernate/browse/OGM</url>
+        <url>https://hibernate.onjira.com/browse/OGM</url>
     </issueManagement>
 
     <scm>
