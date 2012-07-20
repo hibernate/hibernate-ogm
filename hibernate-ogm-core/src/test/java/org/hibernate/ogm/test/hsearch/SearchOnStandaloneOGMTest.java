@@ -27,6 +27,7 @@ import java.util.List;
 import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
@@ -45,6 +46,12 @@ import org.junit.Test;
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public class SearchOnStandaloneOGMTest extends OgmTestCase {
+
+	@Override
+	protected void configure(Configuration cfg) {
+		super.configure( cfg );
+		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
+	}
 
 	@Test
 	public void testHibernateSearchJPAAPIUsage() throws Exception {
