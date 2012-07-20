@@ -38,6 +38,7 @@ import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -93,10 +94,10 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple getTuple(EntityKey key) {
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
-		FineGrainedAtomicMap<String,Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
-		if (atomicMap == null) {
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
+		FineGrainedAtomicMap<String, Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
+		if ( atomicMap == null ) {
 			return null;
 		}
 		else {

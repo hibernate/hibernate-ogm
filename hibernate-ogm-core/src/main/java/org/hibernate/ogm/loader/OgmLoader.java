@@ -50,6 +50,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.persister.entity.UniqueKeyLoadable;
 import org.hibernate.pretty.MessageHelper;
@@ -392,8 +393,9 @@ public class OgmLoader implements UniqueEntityLoader {
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
-			final EntityKey key = EntityKeyBuilder.fromPersister( getEntityPersisters()[0], id, session );
-			Tuple entry = gridDialect.getTuple(key);
+			OgmEntityPersister persister = getEntityPersisters()[0];
+			final EntityKey key = EntityKeyBuilder.fromPersister( persister, id, session );
+			Tuple entry = gridDialect.getTuple( key, persister.getTupleContext() );
 			if ( entry != null ) {
 				resultset.addTuple( entry );
 			}
