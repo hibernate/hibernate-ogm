@@ -41,7 +41,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical
@@ -98,17 +97,17 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public Tuple createTuple(EntityKey key) {
+		public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 			return null;  //To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		@Override
-		public void updateTuple(Tuple tuple, EntityKey key) {
+		public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 			//To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		@Override
-		public void removeTuple(EntityKey key) {
+		public void removeTuple(EntityKey key, TupleContext tupleContext) {
 			//To change body of implemented methods use File | Settings | File Templates.
 		}
 
