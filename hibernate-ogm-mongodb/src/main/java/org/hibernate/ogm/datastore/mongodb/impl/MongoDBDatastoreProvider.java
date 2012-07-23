@@ -114,10 +114,26 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					safe = Boolean.parseBoolean( cfgSafe.toString() );
 				}
 
+				Object cfgTimeout = this.cfg.get( Environment.MONGODB_TIMEOUT );
+				int timeout = Environment.MONGODB_DEFAULT_TIMEOUT;
+				if ( cfgTimeout != null ) {
+					try {
+						int temporaryTimeout = Integer.valueOf( cfgTimeout.toString() ).intValue();
+						if ( temporaryTimeout < 0 ) {
+							throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
+						}
+						timeout = temporaryTimeout;
+					}
+					catch ( NumberFormatException e ) {
+						throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
+					}
+				}
+
 				MongoOptions options = new MongoOptions();
 				options.safe = safe;
+				options.connectTimeout = timeout;
 				log.useSafe( safe );
-				log.connectingToMongo( host, port );
+				log.connectingToMongo( host, port, timeout );
 
 				ServerAddress serverAddress = new ServerAddress( host, port );
 

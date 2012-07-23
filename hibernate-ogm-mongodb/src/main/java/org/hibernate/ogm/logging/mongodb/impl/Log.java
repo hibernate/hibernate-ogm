@@ -39,8 +39,8 @@ import org.jboss.logging.MessageLogger;
 public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = INFO)
-	@Message(id = 1201, value = "Connecting to MongoDB at %1$s:%2$d")
-	void connectingToMongo(String host, int port);
+	@Message(id = 1201, value = "Connecting to MongoDB at %1$s:%2$d with a timeout set at %3$d millisecond(s)")
+	void connectingToMongo(String host, int port, int timeout);
 
 	@LogMessage(level = INFO)
 	@Message(id = 1202, value = "Closing connection to MongoDB")
@@ -85,4 +85,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1214, value = "Unable to connect to MongoDB instance %1$s:%2$d" )
 	HibernateException unableToConnectToDatastore(String host, int port, @Cause Exception e);
+
+	@Message( id = 1215, value = "The value set for the configuration property" + Environment.MONGODB_TIMEOUT +" must be a number greater than 0. Found '[%s]'.")
+	HibernateException mongoDBTimeOutIllegalValue(String value);
 }
