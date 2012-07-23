@@ -45,8 +45,12 @@ public class AssociationContext {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder( "Association Context {" );
-		for ( String columnName : this.getSelectableColumns() ) {
+		for ( int i=0; i<this.getSelectableColumns().size(); i++ ) {
+			String columnName = this.getSelectableColumns().get( i );
 			builder.append( columnName );
+			if(i != this.getSelectableColumns().size()-1){
+				builder.append( ", " );
+			}
 		}
 		builder.append( "}" );
 		return builder.toString();

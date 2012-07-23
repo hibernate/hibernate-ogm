@@ -105,7 +105,7 @@ public class GridDialectLogger implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		log.tracef( "Reading association with key %1$s from datastore with context %1$s", key, associationContext );
+		log.tracef( "Reading association with key %1$s from datastore and context %2$s", key, associationContext );
 		return gridDialect.getAssociation( key, associationContext );
 	}
 
