@@ -34,6 +34,7 @@ import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -90,8 +91,9 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		return serviceRegistry.getService( serviceImpl );
 	}
+
 	private GridDialect getGridDialect(){
-		return (GridDialect) this.getService( DatastoreServices.class );
+		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
 	}
 
 	@Override
