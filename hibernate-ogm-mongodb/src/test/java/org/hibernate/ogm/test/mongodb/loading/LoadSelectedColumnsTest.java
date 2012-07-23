@@ -29,15 +29,20 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import org.junit.Test;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -49,10 +54,7 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 	public void testLoadSelectedColumns() {
 		final String collectionName = "Drink";
 
-		SessionFactoryImplementor factory = super.sfi();
-		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-
-		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
 
 		DB database = provider.getDatabase();
 		DBCollection collection = database.getCollection( collectionName );
@@ -62,7 +64,6 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		water.put( "volume", "1L" );
 		collection.insert( water );
 
-		GridDialect gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
 		EntityKey key = new EntityKey( collectionName, new String[] { "_id" }, new Object[] { "1234" } );
 
 		List<String> selectedColumns = new ArrayList<String>();
@@ -70,7 +71,7 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 
 		TupleContext tupleContext = new TupleContext( selectedColumns );
 
-		Tuple tuple = gridDialect.getTuple( key, tupleContext );
+		Tuple tuple = this.getGridDialect().getTuple( key, tupleContext );
 		assertNotNull( tuple );
 		Set<String> retrievedColumn = tuple.getColumnNames();
 
@@ -84,6 +85,14 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		collection.remove( water );
 	}
 
+	private Service getService(Class<? extends Service> serviceImpl){
+		SessionFactoryImplementor factory = super.sfi();
+		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+		return serviceRegistry.getService( serviceImpl );
+	}
+	private GridDialect getGridDialect(){
+		return (GridDialect) this.getService( DatastoreServices.class );
+	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
