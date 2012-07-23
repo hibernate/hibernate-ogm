@@ -49,13 +49,13 @@ public class MongoHelpers {
 			return columns;
 		}
 		else {
-			DBObject obj = new BasicDBObject( 1 );
-			obj.put( MongoDBDialect.COLUMNS_FIELDNAME, columns );
+			BasicDBObject idObject = new BasicDBObject( 1 );
 
 			if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
-				obj.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
+				columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 			}
-			return obj;
+			idObject.put("_id", columns );
+			return idObject;
 		}
 	}
 
