@@ -27,19 +27,29 @@ import java.util.Set;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import org.junit.Test;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.mongodb.MongoDBAssociationSnapshot;
+import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
@@ -49,10 +59,7 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 	public void testLoadSelectedColumns() {
 		final String collectionName = "Drink";
 
-		SessionFactoryImplementor factory = super.sfi();
-		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-
-		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
 
 		DB database = provider.getDatabase();
 		DBCollection collection = database.getCollection( collectionName );
@@ -62,15 +69,10 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		water.put( "volume", "1L" );
 		collection.insert( water );
 
-		GridDialect gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
-		EntityKey key = new EntityKey( collectionName, new String[] { "_id" }, new Object[] { "1234" } );
-
 		List<String> selectedColumns = new ArrayList<String>();
 		selectedColumns.add( "name" );
+		Tuple tuple = this.getTuple( collectionName, "1234", selectedColumns );
 
-		TupleContext tupleContext = new TupleContext( selectedColumns );
-
-		Tuple tuple = gridDialect.getTuple( key, tupleContext );
 		assertNotNull( tuple );
 		Set<String> retrievedColumn = tuple.getColumnNames();
 
@@ -84,10 +86,101 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		collection.remove( water );
 	}
 
+	@Test
+	public void testLoadSelectedAssociationColumns() {
+		Session session = openSession();
+		final Transaction transaction = session.getTransaction();
+		transaction.begin();
+
+		Module mongodb = new Module();
+		mongodb.setName( "MongoDB" );
+		session.persist( mongodb );
+
+		Module infinispan = new Module();
+		infinispan.setName( "Infinispan" );
+		session.persist( infinispan );
+
+		List<Module> modules = new ArrayList<Module>();
+		modules.add( mongodb );
+		modules.add( infinispan );
+
+		Project hibernateOGM = new Project();
+		hibernateOGM.setId( "projectID" );
+		hibernateOGM.setName( "HibernateOGM" );
+		hibernateOGM.setModules( modules );
+
+		session.persist( hibernateOGM );
+		transaction.commit();
+
+		this.addExtraColumn();
+		this.checkLoading();
+
+		session.delete( mongodb );
+		session.delete( infinispan );
+		session.delete( hibernateOGM );
+		session.close();
+	}
+
+	public Tuple getTuple(String collectionName, String id, List<String> selectedColumns){
+		EntityKey key = new EntityKey( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME }, new Object[] { id } );
+		TupleContext tupleContext = new TupleContext( selectedColumns );
+		return this.getGridDialect().getTuple( key, tupleContext );
+	}
+
+	protected Service getService(Class<? extends Service> serviceImpl){
+		SessionFactoryImplementor factory = super.sfi();
+		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+		return serviceRegistry.getService( serviceImpl );
+	}
+
+	protected GridDialect getGridDialect(){
+		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
+	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[0];
+		return new Class<?>[] {
+				Project.class,
+				Module.class
+		};
+	}
+
+	/**
+	 * To be sure the datastoreProvider retrieves only the columns we want,
+	 * an extra column is manually added to the association document
+	 */
+	protected void addExtraColumn(){
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
+		DB database = provider.getDatabase();
+		DBCollection collection = database.getCollection( "associations_Project_Module" );
+		BasicDBObject query = new BasicDBObject( 1 );
+		query.put( "_id", new BasicDBObject( "Project_id", "projectID" ) );
+
+		BasicDBObject updater = new BasicDBObject( 1 );
+		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
+		collection.update( query, updater );
+	}
+
+	protected void checkLoading() {
+		GridDialect gridDialect = this.getGridDialect();
+		AssociationKey associationKey = new AssociationKey(
+				"Project_Module",
+				new String[] { "Project_id" },
+				new Object[] { "projectID" }
+		);
+		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
+
+		AssociationContext associationContext = new AssociationContext();
+		final Association association = gridDialect.getAssociation( associationKey, associationContext );
+		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
+		final DBObject assocObject = associationSnapshot.getAssoc();
+
+		/*
+		* The only column (except _id) that needs to be retrieved is "rows"
+		* So we should have 2 columns
+		*/
+		final Set<?> retrievedColumns = assocObject.keySet();
+		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
 	}
 }
 
