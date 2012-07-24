@@ -145,6 +145,10 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		return map.keySet();
 	}
 
+	public DBObject getAssoc() {
+		return this.assoc;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();

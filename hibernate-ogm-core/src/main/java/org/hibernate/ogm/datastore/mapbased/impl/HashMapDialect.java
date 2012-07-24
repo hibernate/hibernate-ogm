@@ -33,6 +33,7 @@ import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -105,7 +106,7 @@ public class HashMapDialect implements GridDialect {
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		Map<RowKey, Map<String, Object>> associationMap = provider.getAssociation( key );
 		return associationMap == null ? null : new Association( new MapAssociationSnapshot( associationMap ) );
 	}
