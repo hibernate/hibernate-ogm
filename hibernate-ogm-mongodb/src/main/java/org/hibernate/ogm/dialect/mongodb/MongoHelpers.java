@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.grid.AssociationKey;
 
@@ -37,6 +38,10 @@ import java.util.Collections;
 public class MongoHelpers {
 
 	public static DBObject associationKeyToObject(AssociationStorage storage, AssociationKey key) {
+		if ( isEmbeddedInEntity( key, storage ) ) {
+			throw new AssertionFailure( MongoHelpers.class.getName()
+					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
+		}
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
 
@@ -45,18 +50,13 @@ public class MongoHelpers {
 			columns.put( name, columnValues[i++] );
 		}
 
-		if ( isEmbeddedInEntity( key, storage ) ) {
-			return columns;
-		}
-		else {
-			BasicDBObject idObject = new BasicDBObject( 1 );
+		BasicDBObject idObject = new BasicDBObject( 1 );
 
-			if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
-				columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
-			}
-			idObject.put("_id", columns );
-			return idObject;
+		if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
+			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
+		idObject.put("_id", columns );
+		return idObject;
 	}
 
 	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorage storage) {
