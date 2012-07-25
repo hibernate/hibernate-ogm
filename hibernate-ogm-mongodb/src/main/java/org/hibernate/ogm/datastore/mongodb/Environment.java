@@ -48,6 +48,16 @@ public interface Environment {
 	public static final String MONGODB_HOST = "hibernate.ogm.mongodb.host";
 
 	/**
+	 * The username of the MongoDB admin database with auth enabled.
+	 */
+	public static final String MONGODB_USERNAME = "hibernate.ogm.mongodb.username";
+
+	/**
+	 * The password of the MongoDB admin database with auth enabled.
+	 */
+	public static final String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
+
+	/**
 	 * The default host used to connect to MongoDB: if the {@link MONGODB_HOST}
 	 * property is not set, we'll attempt to connect to localhost.
 	 */
