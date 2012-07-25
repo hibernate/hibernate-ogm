@@ -13,3 +13,4 @@
 # Specify we want Java-friendly readable chunk headers for diff:
 
 *.java	diff=java
+
