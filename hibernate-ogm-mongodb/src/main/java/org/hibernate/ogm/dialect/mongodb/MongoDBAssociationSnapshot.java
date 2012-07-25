@@ -62,18 +62,8 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		this.associationKey = key;
 
 		for ( DBObject row : getRows() ) {
-			Collection<String> columnNames;
-			DBObject mongodbColumnData;
-			if ( isEmbeddedInEntity( key, storage ) ) {
-				//in the embedded case, we read RowKey metadata from AssociationKey and data from the tuple
-				columnNames = Arrays.asList( key.getRowKeyColumnNames() );
-				mongodbColumnData = row;
-			}
-			else {
-				//we read RowKey metadata and data from the tuple
-				mongodbColumnData = (DBObject)row.get( MongoDBDialect.COLUMNS_FIELDNAME );
-				columnNames = mongodbColumnData.keySet();
-			}
+			DBObject mongodbColumnData = row;
+			Collection<String> columnNames = Arrays.asList( key.getRowKeyColumnNames() );
 
 			List<Object> columnValues = new ArrayList<Object>();
 			for ( String columnKey : columnNames ) {
@@ -103,9 +93,6 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		DBObject row = this.map.get( column );
-		if ( ! isEmbeddedInEntity( associationKey, storage ) ) {
-			row = (DBObject) row.get( MongoDBDialect.TUPLE_FIELDNAME );
-		}
 		return row == null ? null : new Tuple( new MongoDBTupleSnapshot( row, column ) );
 	}
 
