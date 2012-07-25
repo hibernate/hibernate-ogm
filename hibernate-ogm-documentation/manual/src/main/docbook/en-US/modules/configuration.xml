@@ -477,6 +477,19 @@ em.close();</programlisting>
       </listitem>
 
       <listitem>
+        <para><literal>hibernate.ogm.mongodb.username</literal> username to
+        use when the MongoDB server requires authentication.
+        There is no default value.</para>
+      </listitem>
+
+      <listitem>
+        <para><literal>hibernate.ogm.mongodb.password</literal> password to
+        use when the MongoDB server requires authentication. Is ignored if
+        <literal>username</literal> isn't specified.
+        There is no default value.</para>
+      </listitem>
+
+      <listitem>
         <para><literal>hibernate.ogm.mongodb.safe</literal> defines the safe
         mode of the MongoDB driver (<literal>true</literal> or
         <literal>false</literal>). When set to <literal>false</literal>, the
