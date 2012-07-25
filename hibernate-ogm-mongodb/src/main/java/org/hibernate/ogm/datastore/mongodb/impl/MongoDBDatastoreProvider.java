@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -159,7 +158,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			String password = passwordObject != null ? passwordObject.toString() : "";
 			boolean auth = admin.authenticate( username, password.toCharArray() );
 			if ( !auth ) {
-				log.warn( "Mongodb authenticate failed with username " + username );
+				log.authenticationFailed( username );
 			}
 		}
 		if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {

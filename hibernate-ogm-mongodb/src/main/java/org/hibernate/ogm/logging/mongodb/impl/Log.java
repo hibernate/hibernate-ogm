@@ -22,10 +22,10 @@ package org.hibernate.ogm.logging.mongodb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import com.mongodb.MongoException;
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -79,4 +79,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1212, value = "Unknown association storage strategy: [%s]. Supported values in enum %s" )
 	HibernateException unknownAssociationStorageStrategy(String databaseName, Class<?> enumType);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
+	void authenticationFailed(String username);
 }
