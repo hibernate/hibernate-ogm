@@ -21,7 +21,6 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -50,7 +49,6 @@ import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.type.StandardBasicTypes;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -88,9 +86,6 @@ public class MongoDBDialect implements GridDialect {
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
 	public static final String SEQUENCE_VALUE = "sequence_value";
-	public static final String ASSOCIATIONS_FIELDNAME = "associations";
-	public static final String TUPLE_FIELDNAME = "tuple";
-	public static final String COLUMNS_FIELDNAME = "columns";
 	public static final String ROWS_FIELDNAME = "rows";
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
@@ -347,49 +342,22 @@ public class MongoDBDialect implements GridDialect {
 		return new BasicDBObject( "$pull", pull );
 	}
 
-	//non embedded only
-	private static DBObject createBaseRowKey(RowKey rowKey) {
-		DBObject row = new BasicDBObject();
-		DBObject rowColumnMap = new BasicDBObject();
-		Object[] columnValues = rowKey.getColumnValues();
-
-		int i = 0;
-		for ( String rowKeyColumnName : rowKey.getColumnNames() )
-			rowColumnMap.put( rowKeyColumnName, columnValues[i++] );
-
-		row.put( TABLE_FIELDNAME, rowKey.getTable() );
-		row.put( COLUMNS_FIELDNAME, rowColumnMap );
-
-		return row;
-	}
-
-	private DBObject putAssociationRowKey(RowKey rowKey, Tuple value, String associationField, AssociationKey associationKey) {
-		boolean embedded = isEmbeddedInEntity( associationKey, provider.getAssociationStorage() );
+	private DBObject putAssociationRowKey(Tuple value, String associationField, AssociationKey associationKey) {
 		DBObject rowTupleMap = new BasicDBObject();
 		for ( String valueKeyName : value.getColumnNames() ) {
 			boolean add = true;
-			if ( embedded ) {
-				//exclude columns from the associationKey
-				for ( String assocColumn : associationKey.getColumnNames() ) {
-					if ( valueKeyName.equals( assocColumn ) ) {
-						add = false;
-						break;
-					}
+			//exclude columns from the associationKey
+			for ( String assocColumn : associationKey.getColumnNames() ) {
+				if ( valueKeyName.equals( assocColumn ) ) {
+					add = false;
+					break;
 				}
 			}
 			if (add) {
 				rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
 			}
 		}
-		DBObject row;
-
-		if ( embedded ) {
-			row = rowTupleMap;
-		}
-		else {
-			row = createBaseRowKey(rowKey);
-			row.put( TUPLE_FIELDNAME, rowTupleMap );
-		}
+		DBObject row = rowTupleMap;
 		return new BasicDBObject( "$push", new BasicDBObject( associationField, row ) );
 	}
 
@@ -397,7 +365,7 @@ public class MongoDBDialect implements GridDialect {
 	public void updateAssociation(Association association, AssociationKey key) {
 		DBCollection collection;
 		DBObject query;
-		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot)association.getSnapshot();
+		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		String associationField;
 
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
@@ -423,15 +391,16 @@ public class MongoDBDialect implements GridDialect {
 				break;
 			case PUT_NULL:
 			case PUT:
-				update = putAssociationRowKey( rowKey, rowValue, associationField, key );
+				update = putAssociationRowKey( rowValue, associationField, key );
 				break;
 			case REMOVE:
 				update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
 				break;
 			}
 
-			if ( update != null )
+			if ( update != null ) {
 				collection.update( query, update, true, false );
+			}
 		}
 	}
 
