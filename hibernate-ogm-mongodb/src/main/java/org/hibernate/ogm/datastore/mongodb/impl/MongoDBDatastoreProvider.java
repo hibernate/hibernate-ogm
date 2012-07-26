@@ -172,7 +172,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			throw e;
 		}
 		catch ( Exception e ) {
-			throw log.unableToConnectToDatastore(this.mongo.getAddress().getHost(), this.mongo.getAddress().getPort(), e);
+			throw log.unableToConnectToDatastore( this.mongo.getAddress().getHost(), this.mongo.getAddress().getPort(), e );
 		}
 	}
 

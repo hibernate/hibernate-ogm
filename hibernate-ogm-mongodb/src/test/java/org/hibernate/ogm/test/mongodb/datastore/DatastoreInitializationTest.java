@@ -31,13 +31,11 @@ import org.junit.rules.ExpectedException;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.Fail.fail;
-
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreInitializationTest {
+
 	@Rule
 	public ExpectedException error = ExpectedException.none();
 
