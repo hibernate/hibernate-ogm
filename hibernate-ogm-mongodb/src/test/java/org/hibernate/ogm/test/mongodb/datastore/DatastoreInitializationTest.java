@@ -24,7 +24,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Map;
 import java.util.Properties;
@@ -36,6 +38,9 @@ import static org.fest.assertions.Fail.fail;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreInitializationTest {
+	@Rule
+	public ExpectedException error = ExpectedException.none();
+
 	@Test
 	public void testAuthentication() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
@@ -44,14 +49,9 @@ public class DatastoreInitializationTest {
 		cfg.put( Environment.MONGODB_PASSWORD, "test" );
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.configure( cfg );
-		try {
-			provider.start();
-		}
-		catch ( HibernateException e ) {
-			assertThat( e.getMessage() ).contains( "OGM001213" );
-			return;
-		}
-		fail( "Authentication should fail" );
+		error.expect( HibernateException.class );
+		error.expectMessage( "OGM001213" );
+		provider.start();
 	}
 
 	@Test
@@ -67,17 +67,9 @@ public class DatastoreInitializationTest {
 		//FIXME put the timeout setting as soon as OGM-219 is implemented
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.configure( cfg );
-		try {
-			provider.start();
-		}
-		catch ( HibernateException e ) {
-			assertThat( e.getMessage() ).contains( "OGM001214" );
-			return;
-		}
-		catch ( Exception e ) {
-			fail( "MongoDB connection failures should be wrapped in an HibernatException");
-		}
-		fail( "MongoDB connection should fail" );
+		error.expect( HibernateException.class );
+		error.expectMessage( "OGM001214" );
+		provider.start();
 	}
 }
 
