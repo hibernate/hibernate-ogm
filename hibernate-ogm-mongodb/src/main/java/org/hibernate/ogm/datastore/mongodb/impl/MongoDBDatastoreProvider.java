@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -144,27 +145,35 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	private DB extractDatabase() {
-		Object dbNameObject = this.cfg.get( Environment.MONGODB_DATABASE );
-		if ( dbNameObject == null ) {
-			throw log.mongoDbNameMissing();
-		}
-		String dbName = (String) dbNameObject;
-		log.connectingToMongoDatabase( dbName );
-		Object usernameObject = this.cfg.get( Environment.MONGODB_USERNAME );
-		if ( usernameObject != null ) {
-			DB admin = this.mongo.getDB( "admin" );
-			String username = usernameObject.toString();
-			Object passwordObject = this.cfg.get( Environment.MONGODB_PASSWORD );
-			String password = passwordObject != null ? passwordObject.toString() : "";
-			boolean auth = admin.authenticate( username, password.toCharArray() );
-			if ( !auth ) {
-				throw log.authenticationFailed( username );
+		try {
+			Object dbNameObject = this.cfg.get( Environment.MONGODB_DATABASE );
+			if ( dbNameObject == null ) {
+				throw log.mongoDbNameMissing();
 			}
+			String dbName = (String) dbNameObject;
+			log.connectingToMongoDatabase( dbName );
+			Object usernameObject = this.cfg.get( Environment.MONGODB_USERNAME );
+			if ( usernameObject != null ) {
+				DB admin = this.mongo.getDB( "admin" );
+				String username = usernameObject.toString();
+				Object passwordObject = this.cfg.get( Environment.MONGODB_PASSWORD );
+				String password = passwordObject != null ? passwordObject.toString() : "";
+				boolean auth = admin.authenticate( username, password.toCharArray() );
+				if ( !auth ) {
+					throw log.authenticationFailed( username );
+				}
+			}
+			if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
+				log.creatingDatabase( dbName );
+			}
+			return this.mongo.getDB( dbName );
 		}
-		if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
-			log.creatingDatabase( dbName );
+		catch ( HibernateException e ) {
+			throw e;
 		}
-		return this.mongo.getDB( dbName );
+		catch ( Exception e ) {
+			throw log.unableToConnectToDatastore(this.mongo.getAddress().getHost(), this.mongo.getAddress().getPort(), e);
+		}
 	}
 
 }
