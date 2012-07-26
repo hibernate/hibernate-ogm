@@ -80,7 +80,9 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1212, value = "Unknown association storage strategy: [%s]. Supported values in enum %s" )
 	HibernateException unknownAssociationStorageStrategy(String databaseName, Class<?> enumType);
 
-	@LogMessage(level = WARN)
 	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
-	void authenticationFailed(String username);
+	HibernateException authenticationFailed(String username);
+
+	@Message(id = 1214, value = "Unable to connect to MongoDB instance %1$s:%2$d" )
+	HibernateException unableToConnectToDatastore(String host, int port, @Cause Exception e);
 }
