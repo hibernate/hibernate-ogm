@@ -158,7 +158,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			String password = passwordObject != null ? passwordObject.toString() : "";
 			boolean auth = admin.authenticate( username, password.toCharArray() );
 			if ( !auth ) {
-				log.authenticationFailed( username );
+				throw log.authenticationFailed( username );
 			}
 		}
 		if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
