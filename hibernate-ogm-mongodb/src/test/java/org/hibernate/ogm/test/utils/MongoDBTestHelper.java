@@ -154,14 +154,17 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	public Map<String, String> getEnvironmentProperties() {
 		//read variables from the System properties set in the static initializer
 		Map<String,String> envProps = new HashMap<String, String>(2);
-		String host = System.getProperties().getProperty( Environment.MONGODB_HOST );
-		if ( host != null && host.length() > 0 ) {
-			envProps.put( Environment.MONGODB_HOST, host );
-		}
-		String port = System.getProperties().getProperty( Environment.MONGODB_PORT );
-		if ( port != null && port.length() > 0 ) {
-			envProps.put( Environment.MONGODB_PORT, port );
-		}
+		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_HOST, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_PORT, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_USERNAME, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_PASSWORD, envProps );
 		return envProps;
+	}
+
+	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
+		String value = System.getProperties().getProperty( environmentVariableName );
+		if ( value != null && value.length() > 0 ) {
+			envProps.put( environmentVariableName, value );
+		}
 	}
 }
