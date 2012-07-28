@@ -102,11 +102,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
+	private final String jpaEntityName;
 	private Object discriminatorValue;
 	private final TupleContext tupleContext;
 
 	//service references
 	private final GridDialect gridDialect;
+
 
 
 	public OgmEntityPersister(
@@ -221,7 +223,6 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
-
 		List<String> columnNames = new ArrayList<String>();
 		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
 			String[] property = this.getPropertyColumnNames( propertyCount );
@@ -230,7 +231,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			}
 		}
 		this.tupleContext = new TupleContext( columnNames );
-
+		jpaEntityName = persistentClass.getJpaEntityName();
 	}
 
 	//FIXME finish implement postInstantiate
@@ -1144,5 +1145,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	public TupleContext getTupleContext() {
 		return this.tupleContext;
+	}
+
+	public String getJpaEntityName() {
+		return jpaEntityName;
 	}
 }
