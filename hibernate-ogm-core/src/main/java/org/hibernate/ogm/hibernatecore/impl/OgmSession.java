@@ -22,6 +22,7 @@ package org.hibernate.ogm.hibernatecore.impl;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ import org.hibernate.ReplicationMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
+import org.hibernate.SessionException;
 import org.hibernate.SessionFactory;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -52,6 +54,8 @@ import org.hibernate.UnknownProfileException;
 import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.engine.query.spi.HQLQueryPlan;
+import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.ActionQueue;
 import org.hibernate.engine.spi.EntityEntry;
@@ -124,8 +128,16 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public Query createQuery(String queryString) throws HibernateException {
-		//TODO plug the Lucene engine
-		throw new NotSupportedException( "OGM-22", "JP-QL queries are not supported yet" );
+		errorIfClosed();
+		Map enabledFilters = Collections.EMPTY_MAP; //What here?
+		// Use existing Hibernate ORM special-purpose parser to extract the parameters metadata.
+		// I think we have the same details in our AST already, but I keep this for now to not
+		// diverge too much from ORM code.
+		HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
+		ParameterMetadata parameterMetadata = plan.getParameterMetadata();
+		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, this, parameterMetadata, factory );
+		query.setComment( queryString );
+		return query;
 	}
 
 	@Override
@@ -819,6 +831,14 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(Class entityClass) {
 		return delegate.bySimpleNaturalId( entityClass );
 	}
-}
 
+	//Copied from org.hibernate.internal.AbstractSessionImpl.errorIfClosed()
+	//to mimic same behaviour
+	protected void errorIfClosed() {
+		if ( delegate.isClosed() ) {
+			throw new SessionException( "Session is closed!" );
+		}
+	}
+
+}
 
