@@ -51,7 +51,10 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
-            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.jpql</groupId>
+            <artifactId>hibernate-jpql-parser</artifactId>
         </dependency>
 
         <!-- test dependencies -->
