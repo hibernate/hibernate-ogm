@@ -57,6 +57,12 @@ public interface Environment {
 	 */
 	public static final String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
 
+	/*
+	 * The timeout used at the connection to the MongoDB instance.
+	 * This value is set in milliseconds.
+	 */
+	public static final String MONGODB_TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
+
 	/**
 	 * The default host used to connect to MongoDB: if the {@link MONGODB_HOST}
 	 * property is not set, we'll attempt to connect to localhost.
@@ -80,4 +86,10 @@ public interface Environment {
 
 	public static final String MONGODB_ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
 	public static final String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
+
+	/**
+	 * The default value used to set the timeout during the connection to the MongoDB instance (@link MONGODB_TIMEOUT)
+	 * This value is set in millseconds
+	 */
+	public static final int MONGODB_DEFAULT_TIMEOUT = 5000;
 }

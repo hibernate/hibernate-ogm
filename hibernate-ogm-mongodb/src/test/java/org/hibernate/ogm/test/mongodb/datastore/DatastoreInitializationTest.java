@@ -28,8 +28,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -68,6 +72,43 @@ public class DatastoreInitializationTest {
 		error.expect( HibernateException.class );
 		error.expectMessage( "OGM001214" );
 		provider.start();
+	}
+
+	@Test
+	public void testConnectionTimeout() {
+		/**
+		 * The timeout used by the driver is set at 30ms.
+		 * The IP address 203.0.113.1 has been chosen because of:
+		 * "203.0.113.0/24 No Assigned as "TEST-NET-3" in RFC 5737 for use solely in documentation and
+		 * example source code and should not be used publicly."
+		 */
+		String host = "203.0.113.1";
+
+		Map<String, Object> cfg = new HashMap<String, Object>();
+		cfg.put( Environment.MONGODB_TIMEOUT, "30" );
+		cfg.put( Environment.MONGODB_HOST, host );
+		cfg.put( Environment.MONGODB_DATABASE, "ogm_test_database" );
+		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
+
+		/*
+		 * To be sure, the test passes on slow / busy machines the hole
+		 * operation should not take more than 5 seconds.
+		  */
+		final long estimateSpentTime = 5 * 1000 * 1000 * 1000;
+		provider.configure( cfg );
+
+		Exception exception = null;
+		final long start = System.nanoTime();
+		try {
+			provider.start();
+		}
+		catch ( Exception e ) {
+			exception = e;
+			assertThat( System.nanoTime() - start ).isLessThanOrEqualTo( estimateSpentTime );
+		}
+		if ( exception == null ) {
+			fail( "The expected exception has not been raised, a MongoDB instance runs on " + host );
+		}
 	}
 }
 

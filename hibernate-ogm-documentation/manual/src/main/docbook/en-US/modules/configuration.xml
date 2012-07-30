@@ -450,7 +450,7 @@ em.close();</programlisting>
   <section>
     <title>Configuring MongoDB</title>
 
-    <para>To use Hibernate OGM with MongoDB there are four properties to
+    <para>To use Hibernate OGM with MongoDB there are the properties to
     configure:</para>
 
     <itemizedlist>
@@ -500,6 +500,15 @@ em.close();</programlisting>
         operation to succeed before returning. Note that this is slower than
         the unsafe mode.</para>
       </listitem>
+
+        <listitem>
+            <para>
+                <literal>hibernate.ogm.mongodb.connection_timeout</literal>
+                defines the timeout used by the driver when the connection to
+                the MongoDB instance is made. This configuration is expressed in milliseconds and
+                its default value is <literal>5000</literal>.
+            </para>
+        </listitem>
     </itemizedlist>
 
     <note>
