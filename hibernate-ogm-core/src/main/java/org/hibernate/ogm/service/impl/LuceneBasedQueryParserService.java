@@ -34,16 +34,12 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.event.service.spi.EventListenerRegistry;
-import org.hibernate.event.spi.EventType;
-import org.hibernate.event.spi.PostInsertEventListener;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
-import org.hibernate.search.event.impl.FullTextIndexEventListener;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
 import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -87,14 +83,13 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 			// AST nodes have payloads referring to the tokens from the Lexer:
 			treeStream.setTokenStream( tokens );
 			HashMap<String, Class> entityNames = getDefinedEntityNames( session.getSessionFactory() );
-			SearchFactoryImplementor searchFactory = getSearchFactory( session );
+			FullTextSession fullTextSession = Search.getFullTextSession( session );
+			SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
 			// Finally create the treewalker:
 			LuceneJPQLWalker walker = new LuceneJPQLWalker( treeStream, searchFactory, entityNames, namedParameters );
 			walker.statement();
 			org.apache.lucene.search.Query luceneQuery = walker.getLuceneQuery();
 			Class targetEntity = walker.getTargetEntity();
-			//TODO avoid wrapping in a Search FullTextSession? (repeated lookup of SearchFactory)
-			FullTextSession fullTextSession = Search.getFullTextSession( session );
 			FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( luceneQuery, targetEntity );
 			//Following options are mandatory to load matching entities without using a query
 			//(chicken and egg problem)
@@ -104,15 +99,6 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		catch (RecognitionException e) {
 			throw new HibernateException( "Invalid query syntax", e );
 		}
-	}
-
-	private SearchFactoryImplementor getSearchFactory(Session session) {
-		//FIXME should use lookupSearchFactory(ServiceRegistryImplementor) instead
-		if ( searchFactory == null ) {
-			FullTextSession fullTextSession = Search.getFullTextSession( session );
-			searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
-		}
-		return searchFactory;
 	}
 
 	/**
@@ -136,28 +122,6 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		hashMap.put( Object.class.getName(), Object.class );
 		hashMap.put( Object.class.getSimpleName(), Object.class );
 		return hashMap;
-	}
-
-	private static SearchFactoryImplementor lookupSearchFactory(final ServiceRegistryImplementor registry) {
-		//FIXME following code taken from Hibernate Search's 
-		// org.hibernate.search.util.impl.ContextHelper
-		//TODO Have Hibernate Search register the SearchFactoryImplementor in the registry?
-		final EventListenerRegistry service = registry
-				.getService( EventListenerRegistry.class );
-		final Iterable<PostInsertEventListener> listeners = service
-				.getEventListenerGroup( EventType.POST_INSERT )
-				.listeners();
-		FullTextIndexEventListener listener = null;
-		for ( PostInsertEventListener candidate : listeners ) {
-			if ( candidate instanceof FullTextIndexEventListener ) {
-				listener = (FullTextIndexEventListener) candidate;
-				break;
-			}
-		}
-		if ( listener == null ) {
-			throw new HibernateException( "Hibernate Search Event listeners not found" );
-		}
-		return listener.getSearchFactoryImplementor();
 	}
 
 }
