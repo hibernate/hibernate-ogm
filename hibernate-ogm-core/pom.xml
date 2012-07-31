@@ -61,7 +61,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-testing</artifactId>
-            <!-- <scope>test</scope> TODO fix this -->
+            <scope>test</scope>
         </dependency>
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
