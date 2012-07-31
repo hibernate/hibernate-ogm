@@ -120,9 +120,9 @@
                     <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                     <links>
                         <link>http://download.oracle.com/javase/6/docs/api/</link>
-                        <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
-                        <link>http://docs.jboss.org/hibernate/stable/search/api/</link>
-                        <link>http://lucene.apache.org/java/3_4_0/api/all</link>
+                        <link>http://docs.jboss.org/hibernate/orm/4.1/javadocs/</link>
+                        <link>http://docs.jboss.org/hibernate/search/4.1/api/</link>
+                        <link>http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/api/all/</link>
                     </links>
                     <packagesheader>Hibernate OGM Packages</packagesheader>
                     <doctitle>Hibernate OGM ${project.version}</doctitle>
