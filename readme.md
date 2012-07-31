@@ -20,6 +20,14 @@ To build the project, run
 
     mvn clean install -s settings-example.xml
 
+### Documentation
+
+To build the documentation, set the `buildDocs` property to `true`.
+
+    mvn clean install -DbuildDocs=true -s settings-example.xml
+
+If you just want to build the documentation, run it from the `hibernate-ogm-documentation/manual` subdirectory.
+
 ### MongoDB
 
 If you have MongoDB installed on `localhost` and the default port, use the mongodb profile as well
