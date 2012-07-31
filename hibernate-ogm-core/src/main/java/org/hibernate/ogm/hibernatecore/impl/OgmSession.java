@@ -45,7 +45,6 @@ import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.SessionException;
-import org.hibernate.SessionFactory;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.Transaction;
@@ -98,7 +97,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
-	public SessionFactory getSessionFactory() {
+	public OgmSessionFactory getSessionFactory() {
 		return factory;
 	}
 
@@ -136,7 +135,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
 		ParameterMetadata parameterMetadata = plan.getParameterMetadata();
 		//TODO make sure the HQLQueryPlan et al are cached at some level
-		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, this, parameterMetadata, factory );
+		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata );
 		query.setComment( queryString );
 		return query;
 	}
