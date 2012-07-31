@@ -2,7 +2,7 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~  Copyright (c) 2011, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~  Copyright (c) 2011-2012, Red Hat, Inc. and/or its affiliates or third-party contributors as
   ~  indicated by the @author tags or express copyright attribution
   ~  statements applied by the authors.  All third-party contributions are
   ~  distributed under license by Red Hat, Inc.
@@ -57,15 +57,16 @@
     <title>Preface</title>
 
     <para>Hibernate Object/Grid Mapper (OGM) is a persistence engine providing
-    Java Persistence (JPA) support for NoSQL storage solutions. It reuses
-    Hibernate ORM's object life cycle management and (de)hydration engine but
-    persists entities into a NoSQL store (key/value, document, column-oriented
-    etc) instead of a relational database. It reuses the Java Persistence
-    Query Language (JP-QL) as an interface to querying stored data.</para>
+    Java Persistence (JPA) support for NoSQL datastores. It reuses Hibernate
+    ORM's object life cycle management and (de)hydration engine but persists
+    entities into a NoSQL store (key/value, document, column-oriented etc)
+    instead of a relational database. It reuses the Java Persistence Query
+    Language (JP-QL) as an interface to querying stored data.</para>
 
-    <para>The project is still very young and many things are on the roadmap
-    (more NoSQL, query, denormalization engine, etc). If you wish to help,
-    please check <xref linkend="ogm-howtocontribute"/>.</para>
+    <para>The project is still very young and very ambitious at the same time.
+    Many things are on the roadmap (more NoSQL, query, denormalization engine,
+    etc). If you wish to help, please check <xref
+    linkend="ogm-howtocontribute"/>.</para>
 
     <para>Hibernate OGM is released under the LGPL open source license.</para>
 
@@ -94,25 +95,25 @@
     <section>
       <title>Goals</title>
 
-      <para>Hibernate OGM tries to achieve a few goals:</para>
+      <para>Hibernate OGM:</para>
 
       <itemizedlist>
         <listitem>
-          <para>offer a familiar environment for NoSQL stores</para>
+          <para>offers a familiar environment for NoSQL stores</para>
         </listitem>
 
         <listitem>
-          <para>move model denormalization from a manual imperative work to a
+          <para>moves model denormalization from a manual imperative work to a
           declarative approach handled by the engine</para>
         </listitem>
 
         <listitem>
-          <para>encourage new data usage patterns and NoSQL exploration in
+          <para>encourages new data usage patterns and NoSQL exploration in
           more "traditional" enterprises</para>
         </listitem>
 
         <listitem>
-          <para>help scale existing applications with a NoSQL front end to a
+          <para>helps scale existing applications with a NoSQL front end to a
           more traditional database</para>
         </listitem>
       </itemizedlist>
@@ -187,11 +188,17 @@
         </listitem>
 
         <listitem>
-          <para>CRUD for entities</para>
+          <para>store data in document stores (MongoDB)</para>
         </listitem>
 
         <listitem>
-          <para>polymorphic entities</para>
+          <para>Create, Read, Update and Delete operations (CRUD) for
+          entities</para>
+        </listitem>
+
+        <listitem>
+          <para>polymorphic entities (support for superclasses, subclasses
+          etc).</para>
         </listitem>
 
         <listitem>

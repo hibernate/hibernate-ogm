@@ -3,7 +3,7 @@
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
   ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+  ~ Copyright 2011-2012 Red Hat Inc. and/or its affiliates and other contributors
   ~ as indicated by the @authors tag. All rights reserved.
   ~ See the copyright.txt in the distribution for a
   ~ full listing of individual contributors.
@@ -51,20 +51,31 @@
   Adjust your <filename>~/.m2/settings.xml</filename> file according to the
   guidelines found <ulink
   url="http://community.jboss.org/wiki/MavenGettingStarted-Users">on this
-  webpage</ulink>.</para>
+  webpage</ulink>. In this example we will use Infinispan as the targeted
+  datastore.</para>
 
   <para>Add
-  <literal>org.hibernate.ogm:hibernate-ogm-core:&version;</literal> to
+  <literal>org.hibernate.ogm:hibernate-ogm-infinispan:&version;</literal> to
   your project dependencies.</para>
 
   <programlisting language="XML" role="XML">&lt;dependency&gt;
-  &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
-  &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
-  &lt;version&gt;&version;&lt;/version&gt;
+    &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+    &lt;artifactId&gt;hibernate-ogm-infinispan&lt;/artifactId&gt;
+    &lt;version&gt;&version;&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.hibernate.javax.persistence&lt;/groupId&gt;
+    &lt;artifactId&gt;hibernate-jpa-2.0-api&lt;/artifactId&gt;
+    &lt;version&gt;1.0.1.Final&lt;/version&gt;
 &lt;/dependency&gt;</programlisting>
 
-  <para>Transitively, Hibernate OGM depends on JPA 2.0: we will use these APIs
-  in this tutorial.</para>
+  <note>
+    <para>While Hibernate OGM depends on JPA 2.0, it is marked as provided in
+    the Maven POM file. If you run outside a Java EE container, make sure to
+    explicitly add the dependency.</para>
+  </note>
+
+  <para>We will use the JPA APIs in this tutorial.</para>
 
   <para>Let's now map our first Hibernate OGM entity.</para>
 
@@ -115,16 +126,27 @@ public class Breed {
   this:</para>
 
   <programlisting language="XML" role="XML">&lt;dependencies&gt;
+    &lt;!-- Hibernate OGM dependency --&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
         &lt;artifactId&gt;hibernate-ogm-core&lt;/artifactId&gt;
         &lt;version&gt;&version;&lt;/version&gt;
     &lt;/dependency&gt;
+
+    &lt;!-- standard APIs dependencies - provided in a Java EE container --&gt;
     &lt;dependency&gt;
-        &lt;groupId&gt;org.infinispan&lt;/groupId&gt;
-        &lt;artifactId&gt;infinispan-core&lt;/artifactId&gt;
-        &lt;version&gt;&infinispanVersion;&lt;/version&gt;
+        &lt;groupId&gt;org.hibernate.javax.persistence&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-jpa-2.0-api&lt;/artifactId&gt;
+        &lt;version&gt;1.0.1.Final&lt;/version&gt;
     &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.jboss.spec.javax.transaction&lt;/groupId&gt;
+        &lt;artifactId&gt;jboss-transaction-api_1.1_spec&lt;/artifactId&gt;
+        &lt;version&gt;1.0.0.Final&lt;/version&gt;
+        &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+
+    &lt;!-- JBoss Transaction dependency --&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
         &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
@@ -145,6 +167,12 @@ public class Breed {
         &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
+            &lt;!-- property optional if you plan and use Infinispan, otherwise adjust to your favorite
+                NoSQL Datastore provider.
+            &lt;property name="hibernate.ogm.datastore.provider"
+                      value="org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"/&gt;
+            --&gt;
+            &lt;!-- defines which JTA Transaction we plan to use --&gt;
             &lt;property name="hibernate.transaction.jta.platform"
                       value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/&gt;
         &lt;/properties&gt;
@@ -154,7 +182,7 @@ public class Breed {
   <para>Let's now persist a set of entities and retrieve them.</para>
 
   <programlisting language="JAVA" role="JAVA">//accessing JBoss's Transaction can be done differently but this one works nicely
-TransactionManager tm = new JBossStandAloneJtaPlatform().getTransactionManager();
+TransactionManager tm = getTransactionManager();
 
 //build the EntityManagerFactory as you would build in in Hibernate ORM
 EntityManagerFactory emf = Persistence.createEntityManagerFactory(
@@ -166,6 +194,7 @@ final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
 
 //Persist entities the way you are used to in plain JPA
 tm.begin();
+logger.infof( "About to store dog and breed" );
 EntityManager em = emf.createEntityManager();
 Breed collie = new Breed();
 collie.setName("Collie");
@@ -183,16 +212,33 @@ tm.commit();
 
 //Retrieve your entities the way you are used to in plain JPA
 tm.begin();
+logger.infof( "About to retrieve dog and breed" );
 em = emf.createEntityManager();
 dina = em.find(Dog.class, dinaId);
-logger.debug(dina.getName());
-logger.debug(dina.getBreed().getName());
+logger.infof("Found dog %s of breed %s", dina.getName(), dina.getBreed().getName());
 em.flush();
 em.close();
 tm.commit();
 
 [...]
-emf.close();;</programlisting>
+emf.close();
+
+public static TransactionManager getTransactionManager() throws Exception 
+    Class&lt;?&gt; tmClass = Main.class.getClassLoader().loadClass( JBOSS_TM_CLASS_NAME );
+    return (TransactionManager) tmClass.getMethod( "transactionManager" ).invoke( null );
+}</programlisting>
+
+  <note>
+    <para>Some JVM do not handle mixed IPv4/IPv6 stacks properly (older <ulink
+    url="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274">Mac OS X
+    JDK in particular</ulink>), if you experience trouble starting the
+    Infinispan cluster, pass the following property:
+    -Djava.net.preferIPv4Stack=true to your JVM or upgrade to a recent JDK
+    version. jdk7u6 (b22) is known to work on Max OS X.</para>
+  </note>
+
+  <para>A working example can be found in Hibernate OGM's distribution under
+  <filename>hibernate-ogm-documentation/examples/gettingstarted</filename>.</para>
 
   <para>TODO: explain how to run a second Infinispan node to show how data
   does outlive the <classname>EntityManagerFactory</classname>
