@@ -9,6 +9,12 @@
 		<!-- Use Hibernate OGM provider: configuration will be transparent -->
 		<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
+            <!-- property optional if you plan and use Infinispan, otherwise adjust to your favorite
+                NoSQL Datastore provider.
+            <property name="hibernate.ogm.datastore.provider"
+                      value="org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"/>
+            -->
+            <!-- defines which JTA Transaction we plan to use -->
             <property name="hibernate.transaction.jta.platform"
                       value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
         </properties>
