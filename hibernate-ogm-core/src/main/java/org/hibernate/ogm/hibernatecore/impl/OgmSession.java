@@ -71,6 +71,7 @@ import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.type.Type;
@@ -84,6 +85,7 @@ import org.hibernate.type.Type;
 public class OgmSession implements org.hibernate.Session, EventSource {
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
+	private QueryParserService queryParserService;
 
 	public OgmSession(OgmSessionFactory factory, EventSource delegate) {
 		this.delegate = delegate;
@@ -135,9 +137,16 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
 		ParameterMetadata parameterMetadata = plan.getParameterMetadata();
 		//TODO make sure the HQLQueryPlan et al are cached at some level
-		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata );
+		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata, getQueryParserService() );
 		query.setComment( queryString );
 		return query;
+	}
+
+	private QueryParserService getQueryParserService() {
+		if ( queryParserService == null ) {
+			queryParserService = getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
+		}
+		return queryParserService;
 	}
 
 	@Override

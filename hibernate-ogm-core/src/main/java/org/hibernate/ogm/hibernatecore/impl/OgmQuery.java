@@ -35,7 +35,6 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.engine.query.spi.ParameterMetadata;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -57,10 +56,11 @@ public class OgmQuery extends AbstractQueryImpl {
 	private final Session session;
 	private final QueryParserService queryParserService;
 
-	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session, ParameterMetadata parameterMetadata) {
+	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session,
+			ParameterMetadata parameterMetadata, QueryParserService queryParserService) {
 		super( queryString, flushMode, session, parameterMetadata );
 		this.session = session;
-		this.queryParserService = session.getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
+		this.queryParserService = queryParserService;
 	}
 
 	@Override
