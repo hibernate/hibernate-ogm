@@ -88,7 +88,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	 * so it only supports execution and expects all parameters to be set at this point.
 	 */
 	private Query getExecutingQuery() {
-		Map<String,Object> namedParameters = stringTransformedParameters();
+		Map<String,Object> namedParameters = toUntypedParameters();
 		return queryParserService.getParsedQueryExecutor( session, getQueryString(), namedParameters );
 	}
 
@@ -98,14 +98,8 @@ public class OgmQuery extends AbstractQueryImpl {
 	 * In the case of the Lucene Queries generator, using the Hibernate Search provided
 	 * QueryBuilder this should pick the correct converter.
 	 */
-	private Map<String, Object> stringTransformedParameters() {
-		HashMap<String, Object> namedValues = new HashMap<String,Object>();
-		Map namedParams = this.getNamedParams(); //<String,TypedValue>
-		Set<Map.Entry<String, TypedValue>> entrySet = namedParams.entrySet();
-		for ( Map.Entry<String, TypedValue> entry : entrySet ) {
-			namedValues.put( entry.getKey(), entry.getValue() );
-		}
-		return namedValues;
+	private Map<String,Object> toUntypedParameters() {
+		return new HashMap<String,Object>( this.getNamedParams() );
 	}
 
 	@Override
