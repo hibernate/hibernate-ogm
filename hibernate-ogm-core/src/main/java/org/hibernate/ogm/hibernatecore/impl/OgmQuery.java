@@ -57,11 +57,10 @@ public class OgmQuery extends AbstractQueryImpl {
 	private final Session session;
 	private final QueryParserService queryParserService;
 
-	public OgmQuery(String queryString, FlushMode flushMode, Session session, SessionImplementor sessionImplementor,
-			ParameterMetadata parameterMetadata, OgmSessionFactory factory) {
-		super( queryString, flushMode, sessionImplementor, parameterMetadata );
+	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session, ParameterMetadata parameterMetadata) {
+		super( queryString, flushMode, session, parameterMetadata );
 		this.session = session;
-		this.queryParserService = factory.getServiceRegistry().getService( QueryParserService.class );
+		this.queryParserService = session.getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
 	}
 
 	@Override
