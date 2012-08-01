@@ -37,19 +37,19 @@ import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBAssociationSnapshot;
+import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
@@ -116,12 +116,28 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		session.persist( hibernateOGM );
 		transaction.commit();
 
+		/**
+		 * To be sure the datastoreProvider retrieves only the columns we want,
+		 * an extra column is manually added to the association document
+		 */
+
+		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
+		DB database = provider.getDatabase();
+		DBCollection collection = database.getCollection( "associations_Project_Module" );
+		BasicDBObject query = new BasicDBObject( 1 );
+		query.put( "_id", new BasicDBObject( "Project_id", "projectID" ) );
+
+		BasicDBObject updater = new BasicDBObject( 1 );
+		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
+		collection.update( query, updater );
+
 		GridDialect gridDialect = this.getGridDialect();
 		AssociationKey associationKey = new AssociationKey(
 				"Project_Module",
 				new String[] { "Project_id" },
 				new Object[] { "projectID" }
 		);
+		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
 
 		AssociationContext associationContext = new AssociationContext();
 		final Association association = gridDialect.getAssociation( associationKey, associationContext );
@@ -129,14 +145,11 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		final DBObject assocObject = associationSnapshot.getAssoc();
 
 		/*
-		*The dialect will return all columns (which include _id field) so we have to substract 1 to check if
-		*the right number of columns has been loaded.
+		* The only column (except _id) that needs to be retrieved is "rows"
+		* So we should have 2 columns
 		*/
-		int requiredRowCount = associationContext.getSelectableColumns().size();
-		final Set<?> retrievedColumns = assocObject.toMap().keySet();
-		int retrievedRowCount = retrievedColumns.size() - 1;
-		assertEquals( retrievedRowCount, requiredRowCount );
-		assertTrue( retrievedColumns.containsAll( associationContext.getSelectableColumns() ) );
+		final Set<?> retrievedColumns = assocObject.keySet();
+		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
 
 		session.delete( mongodb );
 		session.delete( infinispan );
