@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -134,10 +135,6 @@ public class MongoDBDialect implements GridDialect {
 
 	private BasicDBObject getSearchObject(TupleContext tupleContext){
 		return this.getSearchObject( tupleContext.getSelectableColumns() );
-	}
-
-	private BasicDBObject getSearchObject(AssociationContext associationContext){
-		return this.getSearchObject( associationContext.getSelectableColumns() );
 	}
 
 	private BasicDBObject getSearchObject(List<String> selectedColumns){
@@ -284,7 +281,9 @@ public class MongoDBDialect implements GridDialect {
 	//not for embedded
 	private DBObject findAssociation(AssociationKey key, AssociationContext associationContext) {
 		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		return this.getAssociationCollection( key ).findOne( associationKeyObject, this.getSearchObject( associationContext ) );
+		BasicDBObject searchObject = new BasicDBObject( 1 );
+		searchObject.append( ROWS_FIELDNAME, 1 );
+		return this.getAssociationCollection( key ).findOne( associationKeyObject, searchObject );
 	}
 
 	@Override
