@@ -29,7 +29,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
-class QueryParserServicesInitiatior implements BasicServiceInitiator<QueryParserService> {
+class QueryParserServicesInitiatior extends OptionalServiceInitiator<QueryParserService> {
 
 	public static final BasicServiceInitiator INSTANCE = new QueryParserServicesInitiatior();
 
@@ -39,9 +39,14 @@ class QueryParserServicesInitiatior implements BasicServiceInitiator<QueryParser
 	}
 
 	@Override
-	public QueryParserService initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected QueryParserService buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		// TODO pick a service implementation by configuration options?
 		return new LuceneBasedQueryParserService( registry, configurationValues );
+	}
+
+	@Override
+	protected BasicServiceInitiator<QueryParserService> backupInitiator() {
+		return null; //nothing
 	}
 
 }
