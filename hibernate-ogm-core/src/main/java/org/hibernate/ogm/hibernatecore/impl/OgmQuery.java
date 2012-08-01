@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
@@ -35,7 +34,6 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.engine.query.spi.ParameterMetadata;
-import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.service.impl.QueryParserService;

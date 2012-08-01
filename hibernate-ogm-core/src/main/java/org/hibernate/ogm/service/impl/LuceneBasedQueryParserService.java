@@ -20,9 +20,7 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -34,8 +32,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -45,6 +41,7 @@ import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.sql.ast.origin.hql.parse.HQLLexer;
 import org.hibernate.sql.ast.origin.hql.parse.HQLParser;
+import org.hibernate.sql.ast.origin.hql.resolve.EntityNamesResolver;
 import org.hibernate.sql.ast.origin.hql.resolve.LuceneJPQLWalker;
 
 
@@ -58,7 +55,7 @@ import org.hibernate.sql.ast.origin.hql.resolve.LuceneJPQLWalker;
 public class LuceneBasedQueryParserService implements QueryParserService {
 
 	private final ServiceRegistryImplementor registry;
-	private transient SearchFactoryImplementor searchFactory;
+	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
 	public LuceneBasedQueryParserService(ServiceRegistryImplementor registry, Map configurationValues) {
 		this.registry = registry;
@@ -82,11 +79,11 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 			CommonTreeNodeStream treeStream = new CommonTreeNodeStream( tree );
 			// AST nodes have payloads referring to the tokens from the Lexer:
 			treeStream.setTokenStream( tokens );
-			HashMap<String, Class> entityNames = getDefinedEntityNames( session.getSessionFactory() );
+			EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
 			FullTextSession fullTextSession = Search.getFullTextSession( session );
 			SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
 			// Finally create the treewalker:
-			LuceneJPQLWalker walker = new LuceneJPQLWalker( treeStream, searchFactory, entityNames, namedParameters );
+			LuceneJPQLWalker walker = new LuceneJPQLWalker( treeStream, searchFactory, entityNamesResolver, namedParameters );
 			walker.statement();
 			org.apache.lucene.search.Query luceneQuery = walker.getLuceneQuery();
 			Class targetEntity = walker.getTargetEntity();
@@ -101,27 +98,11 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		}
 	}
 
-	/**
-	 * @return a map function from entity names to Class types representing the entity
-	 */
-	private HashMap<String, Class> getDefinedEntityNames(SessionFactory factory) {
-		Map<String, ClassMetadata> allClassMetadata = factory.getAllClassMetadata();
-		HashMap<String,Class> hashMap = new HashMap<String, Class>();
-		for ( Entry<String, ClassMetadata> entry : allClassMetadata.entrySet() ) {
-			OgmEntityPersister classMetadata = (OgmEntityPersister) entry.getValue();
-			Class mappedClass = classMetadata.getMappedClass();
-			String entityName = classMetadata.getJpaEntityName();
-			if ( mappedClass != null ) {
-				//add the short-hand entityName
-				hashMap.put( entityName, mappedClass );
-				//and the full class name as it might be used too
-				hashMap.put( mappedClass.getName(), mappedClass );
-			}
+	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {
+		if ( entityNamesResolver == null ) {
+			entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
 		}
-		//finally make sure to define java.lang.Object as a special case query
-		hashMap.put( Object.class.getName(), Object.class );
-		hashMap.put( Object.class.getSimpleName(), Object.class );
-		return hashMap;
+		return entityNamesResolver;
 	}
 
 }
