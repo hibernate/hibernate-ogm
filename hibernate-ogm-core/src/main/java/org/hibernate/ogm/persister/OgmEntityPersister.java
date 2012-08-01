@@ -385,7 +385,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 		checkVersionAndRaiseSOSE(id, currentVersion, session, resultset);
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.updateTuple( resultset, key );
+		gridDialect.updateTuple( resultset, key, getTupleContext() );
 		return nextVersion;
 	}
 
@@ -773,7 +773,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 				//dehydrate
 				dehydrate(resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				gridDialect.updateTuple( resultset, key );
+				gridDialect.updateTuple( resultset, key, getTupleContext() );
 			}
 		}
 	}
@@ -890,7 +890,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 			//dehydrate
 			dehydrate(resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
-			gridDialect.updateTuple( resultset, key );
+			gridDialect.updateTuple( resultset, key, getTupleContext() );
 		}
 	}
 
@@ -900,7 +900,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple(key);
+			resultset = gridDialect.createTuple( key, getTupleContext() );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -997,7 +997,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				.onlyRemovePropertyMetadata()
 				.dehydrate();
 
-			gridDialect.removeTuple( key );
+			gridDialect.removeTuple( key, getTupleContext() );
 		}
 
 	}

@@ -106,7 +106,7 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
@@ -115,13 +115,13 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}

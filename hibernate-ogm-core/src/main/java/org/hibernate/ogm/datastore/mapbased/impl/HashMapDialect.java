@@ -87,20 +87,20 @@ public class HashMapDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		HashMap<String,Object> tuple = new HashMap<String,Object>();
 		provider.putEntity( key, tuple );
 		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Map<String,Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		provider.removeEntityTuple( key );
 	}
 
