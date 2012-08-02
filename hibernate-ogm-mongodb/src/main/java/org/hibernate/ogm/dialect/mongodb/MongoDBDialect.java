@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -92,6 +91,8 @@ public class MongoDBDialect implements GridDialect {
 	public static final String ROWS_FIELDNAME = "rows";
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
+
+	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -284,14 +285,12 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBObject getSearchObject(AssociationKey key, boolean embedded) {
-		ArrayList<String> selectedColumns = new ArrayList<String>( 1 );
 		if ( embedded ) {
-			selectedColumns.add( key.getCollectionRole() );
+			return getSearchObject( Collections.singletonList( key.getCollectionRole() ) );
 		}
 		else {
-			selectedColumns.add( ROWS_FIELDNAME );
+			return getSearchObject( ROWS_FIELDNAME_LIST );
 		}
-		return getSearchObject( selectedColumns );
 	}
 
 	@Override
