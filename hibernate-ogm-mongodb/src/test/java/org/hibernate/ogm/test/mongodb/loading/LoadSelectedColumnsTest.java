@@ -29,6 +29,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.junit.Test;
 
 import org.hibernate.Session;
@@ -114,7 +115,21 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		this.checkLoading();
+		GridDialect gridDialect = this.getGridDialect();
+		AssociationKey associationKey = new AssociationKey(
+				"Project_Module",
+				new String[] { "Project_id" },
+				new Object[] { "projectID" }
+		);
+		associationKey.setAssociationKind( AssociationKind.ASSOCIATION );
+		associationKey.setCollectionRole( "modules" );
+		associationKey.setOwnerEntityKey( new EntityKey( "Project", new String[] { "id" }, new String[] { "projectID" } ) );
+		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
+		AssociationContext associationContext = new AssociationContext( Arrays.asList( associationKey.getRowKeyColumnNames() ) );
+		final Association association = gridDialect.getAssociation( associationKey, associationContext );
+		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
+		final DBObject assocObject = associationSnapshot.getDBObject();
+		this.checkLoading(assocObject);
 
 		session.delete( mongodb );
 		session.delete( infinispan );
@@ -162,25 +177,12 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		collection.update( query, updater );
 	}
 
-	protected void checkLoading() {
-		GridDialect gridDialect = this.getGridDialect();
-		AssociationKey associationKey = new AssociationKey(
-				"Project_Module",
-				new String[] { "Project_id" },
-				new Object[] { "projectID" }
-		);
-		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
-
-		AssociationContext associationContext = new AssociationContext( Arrays.asList( associationKey.getRowKeyColumnNames() ) );
-		final Association association = gridDialect.getAssociation( associationKey, associationContext );
-		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		final DBObject assocObject = associationSnapshot.getDBObject();
-
+	protected void checkLoading(DBObject associationObject) {
 		/*
 		* The only column (except _id) that needs to be retrieved is "rows"
 		* So we should have 2 columns
 		*/
-		final Set<?> retrievedColumns = assocObject.keySet();
+		final Set<?> retrievedColumns = associationObject.keySet();
 		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
 	}
 }
