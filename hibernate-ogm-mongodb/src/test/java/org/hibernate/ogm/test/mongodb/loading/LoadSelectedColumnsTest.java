@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.mongodb.loading;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -170,7 +171,7 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		);
 		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
 
-		AssociationContext associationContext = new AssociationContext();
+		AssociationContext associationContext = new AssociationContext( Arrays.asList( associationKey.getRowKeyColumnNames() ) );
 		final Association association = gridDialect.getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();
