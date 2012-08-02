@@ -29,6 +29,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.StartStoppable;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -113,7 +114,7 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public Association getAssociation(AssociationKey key) {
+		public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 			return null;  //To change body of implemented methods use File | Settings | File Templates.
 		}
 

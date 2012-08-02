@@ -26,6 +26,7 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -103,9 +104,9 @@ public class GridDialectLogger implements GridDialect {
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
-		log.tracef( "Reading association with key %1$s from datastore", key );
-		return gridDialect.getAssociation( key );
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
+		log.tracef( "Reading association with key %1$s from datastore and context %2$s", key, associationContext );
+		return gridDialect.getAssociation( key, associationContext );
 	}
 
 	@Override

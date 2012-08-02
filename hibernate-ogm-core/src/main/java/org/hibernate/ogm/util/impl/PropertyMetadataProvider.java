@@ -25,6 +25,7 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -65,6 +66,7 @@ public class PropertyMetadataProvider {
 	private boolean inverse;
 	private Type propertyType;
 	private String[] rowKeyColumnNames;
+	private AssociationContext associationContext;
 	/*
 	 * Return true if the other side association has been searched and not been found
 	 * The other side association is searched when we are looking forward to udpate it
@@ -319,7 +321,7 @@ public class PropertyMetadataProvider {
 				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
 			}
 			else {
-				collectionMetadata = gridDialect.getAssociation( key );
+				collectionMetadata = gridDialect.getAssociation( key, this.getAssociationContext() );
 				if (collectionMetadata == null) {
 					collectionMetadata = gridDialect.createAssociation( key );
 				}
@@ -333,7 +335,7 @@ public class PropertyMetadataProvider {
 	 */
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), this.getAssociationContext() );
 		}
 		return collectionMetadata;
 	}
@@ -365,5 +367,12 @@ public class PropertyMetadataProvider {
 	public PropertyMetadataProvider rowKeyColumnNames(String[] rowKeyColumnNames) {
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		return this;
+	}
+
+	private AssociationContext getAssociationContext() {
+		if ( associationContext == null ) {
+			this.associationContext = new AssociationContext();
+		}
+		return associationContext;
 	}
 }

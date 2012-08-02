@@ -38,6 +38,7 @@ import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -113,7 +114,7 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		final Cache associationCache = getAssociationCache();
 		final Element element = associationCache.get( key );
 		if ( element == null ) {

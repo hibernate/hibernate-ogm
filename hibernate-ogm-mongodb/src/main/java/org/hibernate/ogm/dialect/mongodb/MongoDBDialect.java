@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -32,6 +33,7 @@ import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -125,15 +127,23 @@ public class MongoDBDialect implements GridDialect {
 		DBCollection collection = this.getCollection( key );
 		DBObject searchObject = this.prepareIdObject( key );
 		if ( tupleContext != null && tupleContext.getSelectableColumns() != null ) {
-			BasicDBObject restrictionObject = new BasicDBObject();
-			for ( String column : tupleContext.getSelectableColumns() ) {
-				restrictionObject.append( column, 1 );
-			}
+			BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
 			return collection.findOne( searchObject, restrictionObject );
 		}
 		return collection.findOne( searchObject );
 	}
 
+	private BasicDBObject getSearchObject(TupleContext tupleContext){
+		return this.getSearchObject( tupleContext.getSelectableColumns() );
+	}
+
+	private BasicDBObject getSearchObject(List<String> selectedColumns){
+		BasicDBObject searchObject = new BasicDBObject();
+		for ( String column : selectedColumns ) {
+			searchObject.append( column, 1 );
+		}
+		return searchObject;
+	}
 	/**
 	 * Create a DBObject which represents the _id field.
 	 * In case of simple id objects the json representation will look like {_id: "theIdValue"}
@@ -269,13 +279,15 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	//not for embedded
-	private DBObject findAssociation(AssociationKey key) {
+	private DBObject findAssociation(AssociationKey key, AssociationContext associationContext) {
 		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		return this.getAssociationCollection( key ).findOne( associationKeyObject );
+		BasicDBObject searchObject = new BasicDBObject( 1 );
+		searchObject.append( ROWS_FIELDNAME, 1 );
+		return this.getAssociationCollection( key ).findOne( associationKeyObject, searchObject );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			DBObject entity = getObject( key.getEntityKey() );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
@@ -285,7 +297,7 @@ public class MongoDBDialect implements GridDialect {
 				return null;
 			}
 		}
-		final DBObject result = findAssociation( key );
+		final DBObject result = findAssociation( key, associationContext );
 		if ( result == null ) {
 			return null;
 		} else {
