@@ -20,47 +20,31 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.hibernate.SessionFactory;
-import org.hibernate.metadata.ClassMetadata;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.sql.ast.origin.hql.resolve.EntityNamesResolver;
 
 /**
  * Resolves entity names into Class references using the metadata
  * from the Hibernate SessionFactory.
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class SessionFactoryEntityNamesResolver implements EntityNamesResolver {
 
-	private final Map<String, ClassMetadata> classMetadata;
-	private final HashMap<String, Class> entityNamesMap;
+	private final SessionFactoryImplementor sessionFactory;
+	private final ClassLoaderService classLoaderService;
 
 	public SessionFactoryEntityNamesResolver(SessionFactory sessionFactory) {
-		this.classMetadata = sessionFactory.getAllClassMetadata();
-		this.entityNamesMap = new HashMap<String, Class>();
-		for ( Entry<String, ClassMetadata> entry : classMetadata.entrySet() ) {
-			OgmEntityPersister classMetadata = (OgmEntityPersister) entry.getValue();
-			Class mappedClass = classMetadata.getMappedClass();
-			String entityName = classMetadata.getJpaEntityName();
-			if ( mappedClass != null ) {
-				// add the short-hand entityName
-				entityNamesMap.put( entityName, mappedClass );
-				// and the full class name as it might be used too
-				entityNamesMap.put( mappedClass.getName(), mappedClass );
-			}
-		}
-		// finally make sure to define java.lang.Object as a special case query
-		entityNamesMap.put( Object.class.getName(), Object.class );
+		this.sessionFactory = (SessionFactoryImplementor) sessionFactory;
+		this.classLoaderService = this.sessionFactory.getServiceRegistry().getService( ClassLoaderService.class );
 	}
 
 	@Override
 	public Class getClassFromName(String entityName) {
-		return entityNamesMap.get( entityName );
+		return classLoaderService.classForName( sessionFactory.getImportedClassName( entityName ) );
 	}
 
 }
