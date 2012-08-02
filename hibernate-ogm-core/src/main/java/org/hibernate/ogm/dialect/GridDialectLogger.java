@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.List;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;

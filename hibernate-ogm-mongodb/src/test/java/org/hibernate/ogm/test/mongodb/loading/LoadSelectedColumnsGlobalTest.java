@@ -20,32 +20,21 @@
  */
 package org.hibernate.ogm.test.mongodb.loading;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.mongodb.MongoDBAssociationSnapshot;
-import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
-import org.hibernate.ogm.grid.AssociationKey;
 
-import static org.fest.assertions.Assertions.assertThat;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsTest {
+
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );

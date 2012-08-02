@@ -20,24 +20,21 @@
  */
 package org.hibernate.ogm.test.mongodb.loading;
 
-import java.util.ArrayList;
-import java.util.List;
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.Set;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-
-import com.mongodb.DBObject;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 
-import static org.fest.assertions.Assertions.assertThat;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>

@@ -21,14 +21,12 @@
 package org.hibernate.ogm.test.mongodb.loading;
 
 import java.util.List;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
