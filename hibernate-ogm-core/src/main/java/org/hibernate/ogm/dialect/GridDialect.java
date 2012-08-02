@@ -23,6 +23,7 @@ package org.hibernate.ogm.dialect;
 import java.util.List;
 
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.service.Service;
@@ -68,9 +69,9 @@ public interface GridDialect extends Service {
 	void removeTuple(EntityKey key);
 
 	/**
-	 * Return the list of tuples corresponding to a given association
+	 * Return the list of tuples corresponding to a given association and the given context
 	 */
-	Association getAssociation(AssociationKey key);
+	Association getAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Create an empty container for the list of tuples corresponding to a given association

@@ -37,6 +37,7 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKey;
@@ -60,8 +61,10 @@ import org.hibernate.type.Type;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * CollectionPersister storing the collection in a grid 
@@ -81,6 +84,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
+	private final AssociationContext associationContext;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -113,6 +117,34 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
+		associationContext = buildAssociationContext();
+}
+
+	public AssociationContext getAssociationContext() {
+		return associationContext;
+	}
+
+	private AssociationContext buildAssociationContext() {
+		List<String> selectableColumns = new ArrayList<String>();
+		// add identifier, index, key and element columns
+		String identifierColumnName = getIdentifierColumnName();
+		if ( identifierColumnName != null ) {
+			selectableColumns.add( identifierColumnName );
+		}
+		for ( String column : getKeyColumnNames() ) {
+			selectableColumns.add( column );
+		}
+		String[] columns = getIndexColumnNames();
+		if ( columns != null ) {
+			for ( String column : columns ) {
+				selectableColumns.add( column );
+			}
+		}
+		columns = getElementColumnNames();
+		for ( String column : columns ) {
+			selectableColumns.add( column );
+		}
+		return new AssociationContext( selectableColumns );
 	}
 
 	/** represents the type of associations at stake */

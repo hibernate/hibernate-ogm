@@ -37,6 +37,7 @@ import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -127,7 +128,7 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		return atomicMap == null ? null : new Association( new MapAssociationSnapshot( atomicMap ) );

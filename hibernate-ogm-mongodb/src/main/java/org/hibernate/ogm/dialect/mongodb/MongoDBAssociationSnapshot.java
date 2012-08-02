@@ -47,7 +47,7 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, DBObject> map;
-	private final DBObject assoc;
+	private final DBObject dbObject;
 	private AssociationKey associationKey;
 	private AssociationStorage storage;
 
@@ -57,7 +57,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	 */
 	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorage storage) {
 		this.storage = storage;
-		this.assoc = document;
+		this.dbObject = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
 		this.associationKey = key;
 
@@ -99,7 +99,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	//not for embedded
 	public DBObject getQueryObject() {
 		DBObject query = new BasicDBObject();
-		query.put( MongoDBDialect.ID_FIELDNAME, assoc.get( MongoDBDialect.ID_FIELDNAME ) );
+		query.put( MongoDBDialect.ID_FIELDNAME, dbObject.get( MongoDBDialect.ID_FIELDNAME ) );
 		return query;
 	}
 
@@ -116,10 +116,10 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
 		if ( isEmbeddedInEntity( associationKey, storage ) ) {
-			return getAssociationFieldOrNull( associationKey, assoc );
+			return getAssociationFieldOrNull( associationKey, dbObject );
 		}
 		else {
-			return (Collection<DBObject>) assoc.get( MongoDBDialect.ROWS_FIELDNAME );
+			return (Collection<DBObject>) dbObject.get( MongoDBDialect.ROWS_FIELDNAME );
 		}
 	}
 
@@ -130,6 +130,10 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Set<RowKey> getRowKeys() {
 		return map.keySet();
+	}
+
+	public DBObject getDBObject() {
+		return this.dbObject;
 	}
 
 	@Override

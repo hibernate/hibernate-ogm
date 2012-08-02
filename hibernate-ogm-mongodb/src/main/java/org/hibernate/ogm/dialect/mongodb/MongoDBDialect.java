@@ -20,7 +20,9 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -32,6 +34,7 @@ import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -115,25 +118,31 @@ public class MongoDBDialect implements GridDialect {
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
 	}
 
-	private DBObject getObject(EntityKey key) {
-		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = this.prepareIdObject( key );
-		return collection.findOne( searchObject );
+	private DBObject getObjectAsEmbeddedAssociation(AssociationKey key) {
+		DBCollection collection = this.getCollection( key.getEntityKey() );
+		DBObject searchObject = this.prepareIdObject( key.getEntityKey() );
+		DBObject restrictionObject = this.getSearchObject( key, true );
+		return collection.findOne( searchObject, restrictionObject );
 	}
 
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
 		DBCollection collection = this.getCollection( key );
 		DBObject searchObject = this.prepareIdObject( key );
-		if ( tupleContext != null && tupleContext.getSelectableColumns() != null ) {
-			BasicDBObject restrictionObject = new BasicDBObject();
-			for ( String column : tupleContext.getSelectableColumns() ) {
-				restrictionObject.append( column, 1 );
-			}
-			return collection.findOne( searchObject, restrictionObject );
-		}
-		return collection.findOne( searchObject );
+		BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
+		return collection.findOne( searchObject, restrictionObject );
 	}
 
+	private BasicDBObject getSearchObject(TupleContext tupleContext){
+		return this.getSearchObject( tupleContext.getSelectableColumns() );
+	}
+
+	private BasicDBObject getSearchObject(List<String> selectedColumns){
+		BasicDBObject searchObject = new BasicDBObject();
+		for ( String column : selectedColumns ) {
+			searchObject.append( column, 1 );
+		}
+		return searchObject;
+	}
 	/**
 	 * Create a DBObject which represents the _id field.
 	 * In case of simple id objects the json representation will look like {_id: "theIdValue"}
@@ -156,7 +165,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues){
-		BasicDBObject object = null;
+		BasicDBObject object;
 		if ( columnNames.length == 1 ) {
 			object = new BasicDBObject( ID_FIELDNAME, columnValues[0] );
 		}
@@ -271,13 +280,24 @@ public class MongoDBDialect implements GridDialect {
 	//not for embedded
 	private DBObject findAssociation(AssociationKey key) {
 		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		return this.getAssociationCollection( key ).findOne( associationKeyObject );
+		return this.getAssociationCollection( key ).findOne( associationKeyObject, getSearchObject( key, false ) );
+	}
+
+	private DBObject getSearchObject(AssociationKey key, boolean embedded) {
+		ArrayList<String> selectedColumns = new ArrayList<String>( 1 );
+		if ( embedded ) {
+			selectedColumns.add( key.getCollectionRole() );
+		}
+		else {
+			selectedColumns.add( ROWS_FIELDNAME );
+		}
+		return getSearchObject( selectedColumns );
 	}
 
 	@Override
-	public Association getAssociation(AssociationKey key) {
+	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
-			DBObject entity = getObject( key.getEntityKey() );
+			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, provider.getAssociationStorage() ) );
 			}
@@ -305,7 +325,7 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
-			DBObject entity = getObject( key.getEntityKey() );
+			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
@@ -432,7 +452,6 @@ public class MongoDBDialect implements GridDialect {
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );
 		DBObject query = this.prepareIdObject( key );
-		int size = key.getColumnNames().length;
 		//all columns should match to find the value
 
 		BasicDBObject update = new BasicDBObject();

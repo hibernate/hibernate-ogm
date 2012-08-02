@@ -25,6 +25,7 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -37,7 +38,6 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
@@ -45,8 +45,10 @@ import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Emmanuel Bernard
@@ -65,6 +67,7 @@ public class PropertyMetadataProvider {
 	private boolean inverse;
 	private Type propertyType;
 	private String[] rowKeyColumnNames;
+	private AssociationContext associationContext;
 	/*
 	 * Return true if the other side association has been searched and not been found
 	 * The other side association is searched when we are looking forward to udpate it
@@ -319,7 +322,7 @@ public class PropertyMetadataProvider {
 				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
 			}
 			else {
-				collectionMetadata = gridDialect.getAssociation( key );
+				collectionMetadata = gridDialect.getAssociation( key, this.getAssociationContext() );
 				if (collectionMetadata == null) {
 					collectionMetadata = gridDialect.createAssociation( key );
 				}
@@ -333,7 +336,7 @@ public class PropertyMetadataProvider {
 	 */
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), this.getAssociationContext() );
 		}
 		return collectionMetadata;
 	}
@@ -365,5 +368,21 @@ public class PropertyMetadataProvider {
 	public PropertyMetadataProvider rowKeyColumnNames(String[] rowKeyColumnNames) {
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		return this;
+	}
+
+	private AssociationContext getAssociationContext() {
+		if ( associationContext == null ) {
+			if ( collectionPersister != null ) {
+				associationContext = collectionPersister.getAssociationContext();
+			}
+			else {
+				List<String> selectableColumns = new ArrayList<String>( rowKeyColumnNames.length );
+				for ( String column : rowKeyColumnNames ) {
+					selectableColumns.add( column );
+				}
+				associationContext = new AssociationContext( selectableColumns );
+			}
+		}
+		return associationContext;
 	}
 }
