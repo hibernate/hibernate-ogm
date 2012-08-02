@@ -127,11 +127,8 @@ public class MongoDBDialect implements GridDialect {
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
 		DBCollection collection = this.getCollection( key );
 		DBObject searchObject = this.prepareIdObject( key );
-		if ( tupleContext != null && tupleContext.getSelectableColumns() != null ) {
-			BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
-			return collection.findOne( searchObject, restrictionObject );
-		}
-		return collection.findOne( searchObject );
+		BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
+		return collection.findOne( searchObject, restrictionObject );
 	}
 
 	private BasicDBObject getSearchObject(TupleContext tupleContext){
