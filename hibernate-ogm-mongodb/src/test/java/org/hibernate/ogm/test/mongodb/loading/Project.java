@@ -26,6 +26,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderColumn;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -44,6 +45,7 @@ public class Project {
 	public void setName(String name) { this.name = name; }
 
 	@OneToMany(cascade = { CascadeType.PERSIST})
+	@OrderColumn(name="ordering")
 	private List<Module> modules;
 	public List<Module> getModules() { return modules; }
 	public void setModules(List<Module> modules) { this.modules = modules; }
