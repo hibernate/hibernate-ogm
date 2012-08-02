@@ -76,27 +76,4 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsTest {
 		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
 		collection.update( query, updater );
 	}
-
-	@Override
-	protected void checkLoading() {
-		GridDialect gridDialect = this.getGridDialect();
-		AssociationKey associationKey = new AssociationKey(
-				"Project_Module",
-				new String[] { "Project_id", "table" },
-				new Object[] { "projectID", "Project_Module" }
-		);
-		associationKey.setRowKeyColumnNames( new String[]{"Project_id", "module_id"} );
-
-		AssociationContext associationContext = new AssociationContext( Arrays.asList( associationKey.getRowKeyColumnNames() ) );
-		final Association association = gridDialect.getAssociation( associationKey, associationContext );
-		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		final DBObject assocObject = associationSnapshot.getDBObject();
-
-		/*
-		* The only column (except _id) that needs to be retrieved is "rows"
-		* So we should have 2 columns
-		*/
-		final Set<?> retrievedColumns = assocObject.keySet();
-		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
-	}
 }

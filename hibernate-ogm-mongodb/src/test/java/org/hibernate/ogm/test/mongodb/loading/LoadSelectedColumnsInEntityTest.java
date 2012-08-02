@@ -28,12 +28,14 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 
+import com.mongodb.DBObject;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -64,20 +66,12 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsTest {
 		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
 	}
 
-	@Override
-	protected void checkLoading() {
-		List<String> selectedColumns = new ArrayList<String>();
-		selectedColumns.add( "name" );
-		selectedColumns.add( "modules" );
-
-		Tuple tuple = super.getTuple( "Project", "projectID", selectedColumns );
-		assertThat( tuple ).isNotNull();
-
-		Set<String> retrievedColumns = tuple.getColumnNames();
-
-		/**
-		 * the retrieved columns must contain all property columns and the _id
+	protected void checkLoading(DBObject associationObject) {
+		/*
+		 * The only column (except _id) that needs to be retrieved is "modules"
+		 * So we should have 2 columns
 		 */
-		assertThat( retrievedColumns ).hasSize( selectedColumns.size()+1 ).contains( "name", "modules" );
+		final Set<?> retrievedColumns = associationObject.keySet();
+		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, "modules" );
 	}
 }
