@@ -22,6 +22,7 @@ package org.hibernate.ogm.hibernatecore.impl;
 
 import java.io.Serializable;
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ import org.hibernate.ReplicationMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
-import org.hibernate.SessionFactory;
+import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.Transaction;
@@ -52,6 +53,8 @@ import org.hibernate.UnknownProfileException;
 import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.collection.spi.PersistentCollection;
 import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.engine.query.spi.HQLQueryPlan;
+import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.ActionQueue;
 import org.hibernate.engine.spi.EntityEntry;
@@ -63,11 +66,15 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.type.Type;
@@ -79,8 +86,12 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmSession implements org.hibernate.Session, EventSource {
+
+	private static final Log log = LoggerFactory.make();
+
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
+	private QueryParserService queryParserService;
 
 	public OgmSession(OgmSessionFactory factory, EventSource delegate) {
 		this.delegate = delegate;
@@ -94,7 +105,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
-	public SessionFactory getSessionFactory() {
+	public OgmSessionFactory getSessionFactory() {
 		return factory;
 	}
 
@@ -124,8 +135,29 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public Query createQuery(String queryString) throws HibernateException {
-		//TODO plug the Lucene engine
-		throw new NotSupportedException( "OGM-22", "JP-QL queries are not supported yet" );
+		errorIfClosed();
+		Map enabledFilters = Collections.EMPTY_MAP; //What here?
+		// Use existing Hibernate ORM special-purpose parser to extract the parameters metadata.
+		// I think we have the same details in our AST already, but I keep this for now to not
+		// diverge too much from ORM code.
+		try {
+			HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
+			ParameterMetadata parameterMetadata = plan.getParameterMetadata();
+			//TODO make sure the HQLQueryPlan et al are cached at some level
+			OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata, getQueryParserService() );
+			query.setComment( queryString );
+			return query;
+		}
+		catch ( QuerySyntaxException qse ) {
+			throw log.querySyntaxException( qse, queryString );
+		}
+	}
+
+	private QueryParserService getQueryParserService() {
+		if ( queryParserService == null ) {
+			queryParserService = getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
+		}
+		return queryParserService;
 	}
 
 	@Override
@@ -819,6 +851,14 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	public SimpleNaturalIdLoadAccess bySimpleNaturalId(Class entityClass) {
 		return delegate.bySimpleNaturalId( entityClass );
 	}
-}
 
+	//Copied from org.hibernate.internal.AbstractSessionImpl.errorIfClosed()
+	//to mimic same behaviour
+	protected void errorIfClosed() {
+		if ( delegate.isClosed() ) {
+			throw new SessionException( "Session is closed!" );
+		}
+	}
+
+}
 

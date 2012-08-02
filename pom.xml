@@ -129,6 +129,7 @@
         <mongodbVersion>2.7.2</mongodbVersion>
         <hibernateVersion>4.1.4.Final</hibernateVersion>
         <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
+        <hibernateParserVersion>1.0.0-SNAPSHOT</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
@@ -226,6 +227,13 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${jbossLoggingVersion}</version>
+            </dependency>
+
+            <!-- JPQL Parsing support -->
+            <dependency>
+                <groupId>org.hibernate.jpql</groupId>
+                <artifactId>hibernate-jpql-parser</artifactId>
+                <version>${hibernateParserVersion}</version>
             </dependency>
 
             <!-- NoSQL databases -->

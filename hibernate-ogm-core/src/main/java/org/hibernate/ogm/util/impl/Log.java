@@ -28,6 +28,7 @@ import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
+import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -115,5 +116,8 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 23, value = "Unable to set transaction timeout to '%1$s'")
 	TransactionException unableToSetTimeout(@Cause SystemException se, int timeout);
+
+	@Message(id = 24, value = "Syntax error in query: [%1$s]")
+	HibernateException querySyntaxException(@Cause QuerySyntaxException qse, String queryString);
 
 }
