@@ -69,14 +69,10 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		water.put( "volume", "1L" );
 		collection.insert( water );
 
-		EntityKey key = new EntityKey( collectionName, new String[] { "_id" }, new Object[] { "1234" } );
-
 		List<String> selectedColumns = new ArrayList<String>();
 		selectedColumns.add( "name" );
+		Tuple tuple = this.getTuple( collectionName, "1234", selectedColumns );
 
-		TupleContext tupleContext = new TupleContext( selectedColumns );
-
-		Tuple tuple = this.getGridDialect().getTuple( key, tupleContext );
 		assertNotNull( tuple );
 		Set<String> retrievedColumn = tuple.getColumnNames();
 
@@ -116,11 +112,44 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		session.persist( hibernateOGM );
 		transaction.commit();
 
-		/**
-		 * To be sure the datastoreProvider retrieves only the columns we want,
-		 * an extra column is manually added to the association document
-		 */
+		this.addExtraColumn();
+		this.checkLoading();
 
+		session.delete( mongodb );
+		session.delete( infinispan );
+		session.delete( hibernateOGM );
+		session.close();
+	}
+
+	public Tuple getTuple(String collectionName, String id, List<String> selectedColumns){
+		EntityKey key = new EntityKey( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME }, new Object[] { id } );
+		TupleContext tupleContext = new TupleContext( selectedColumns );
+		return this.getGridDialect().getTuple( key, tupleContext );
+	}
+
+	protected Service getService(Class<? extends Service> serviceImpl){
+		SessionFactoryImplementor factory = super.sfi();
+		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+		return serviceRegistry.getService( serviceImpl );
+	}
+
+	protected GridDialect getGridDialect(){
+		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
+	}
+
+	@Override
+	protected Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] {
+				Project.class,
+				Module.class
+		};
+	}
+
+	/**
+	 * To be sure the datastoreProvider retrieves only the columns we want,
+	 * an extra column is manually added to the association document
+	 */
+	protected void addExtraColumn(){
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) this.getService( DatastoreProvider.class );
 		DB database = provider.getDatabase();
 		DBCollection collection = database.getCollection( "associations_Project_Module" );
@@ -130,7 +159,9 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		BasicDBObject updater = new BasicDBObject( 1 );
 		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
 		collection.update( query, updater );
+	}
 
+	protected void checkLoading() {
 		GridDialect gridDialect = this.getGridDialect();
 		AssociationKey associationKey = new AssociationKey(
 				"Project_Module",
@@ -150,28 +181,5 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 		*/
 		final Set<?> retrievedColumns = assocObject.keySet();
 		assertThat( retrievedColumns ).hasSize( 2 ).containsOnly( MongoDBDialect.ID_FIELDNAME, MongoDBDialect.ROWS_FIELDNAME );
-
-		session.delete( mongodb );
-		session.delete( infinispan );
-		session.delete( hibernateOGM );
-		session.close();
-	}
-
-	private Service getService(Class<? extends Service> serviceImpl){
-		SessionFactoryImplementor factory = super.sfi();
-		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-		return serviceRegistry.getService( serviceImpl );
-	}
-
-	private GridDialect getGridDialect(){
-		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Project.class,
-				Module.class
-		};
 	}
 }
