@@ -57,7 +57,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class HibernateOgmPersistence implements PersistenceProvider {
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();
 	private HibernatePersistence delegate = new HibernatePersistence();
-	private static Log log = LoggerFactory.make();
+	private static final Log log = LoggerFactory.make();
 	private static final Map EMPTY_MAP = new HashMap<Object, Object>( 0 );
 
 	@Override

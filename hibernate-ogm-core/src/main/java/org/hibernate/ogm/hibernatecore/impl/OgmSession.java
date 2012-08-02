@@ -66,12 +66,15 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.type.Type;
@@ -83,6 +86,9 @@ import org.hibernate.type.Type;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmSession implements org.hibernate.Session, EventSource {
+
+	private static final Log log = LoggerFactory.make();
+
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
 	private QueryParserService queryParserService;
@@ -134,12 +140,17 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		// Use existing Hibernate ORM special-purpose parser to extract the parameters metadata.
 		// I think we have the same details in our AST already, but I keep this for now to not
 		// diverge too much from ORM code.
-		HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
-		ParameterMetadata parameterMetadata = plan.getParameterMetadata();
-		//TODO make sure the HQLQueryPlan et al are cached at some level
-		OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata, getQueryParserService() );
-		query.setComment( queryString );
-		return query;
+		try {
+			HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
+			ParameterMetadata parameterMetadata = plan.getParameterMetadata();
+			//TODO make sure the HQLQueryPlan et al are cached at some level
+			OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata, getQueryParserService() );
+			query.setComment( queryString );
+			return query;
+		}
+		catch ( QuerySyntaxException qse ) {
+			throw log.querySyntaxException( qse, queryString );
+		}
 	}
 
 	private QueryParserService getQueryParserService() {

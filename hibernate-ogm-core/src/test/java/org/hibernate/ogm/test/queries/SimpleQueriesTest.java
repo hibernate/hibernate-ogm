@@ -20,24 +20,38 @@
  */
 package org.hibernate.ogm.test.queries;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.List;
 
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Before;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.ogm.test.utils.SessionFactoryRule;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
-public class SimpleQueriesTest extends OgmTestCase {
+public class SimpleQueriesTest {
 
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+	@ClassRule
+	public static final SessionFactoryRule sessions = new SessionFactoryRule(
+			Hypothesis.class,
+			Helicopter.class
+		);
+
+	@Test
 	public void testSimpleQueries() throws Exception {
-		final Session session = openSession();
+		final Session session = sessions.openSession();
 
 		assertQuery( session, 4, session.createQuery(
 				"from Hypothesis" ) );
@@ -47,19 +61,34 @@ public class SimpleQueriesTest extends OgmTestCase {
 				"from Helicopter" ) );
 		assertQuery( session, 5, session.createQuery(
 				"from java.lang.Object" ) );
-		session.close();
 	}
 
+	@Test
+	public void testFailingQuery() {
+		final Session session = sessions.openSession();
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000024" );
+		try {
+			assertQuery( session, 4, session.createQuery(
+					"from Object" ) ); //Illegal query
+		}
+		finally {
+			session.close();
+		}
+	}
+
+	@Test
 	public void testConstantParameterQueries() throws Exception {
-		final Session session = openSession();
+		final Session session = sessions.openSession();
 
 		assertQuery( session, 1, session.createQuery(
 				"from Hypothesis h where h.description = 'stuff works'" ) );
 		session.close();
 	}
 
+	@Test
 	public void testParametricQueries() throws Exception {
-		final Session session = openSession();
+		final Session session = sessions.openSession();
 
 		Query query = session
 				.createQuery( "from Hypothesis h where h.description = :myParam" )
@@ -80,10 +109,9 @@ public class SimpleQueriesTest extends OgmTestCase {
 		}
 	}
 
-	@Before
-	public void setUp() throws Exception {
-		super.setUp();
-		final Session session = openSession();
+	@BeforeClass
+	public static void setUp() throws Exception {
+		final Session session = sessions.openSession();
 		Transaction transaction = session.beginTransaction();
 
 		Hypothesis socrates = new Hypothesis();
@@ -118,16 +146,4 @@ public class SimpleQueriesTest extends OgmTestCase {
 		session.close();
 	}
 
-	protected void configure(Configuration cfg) {
-		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
-		cfg.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
-	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class,
-				Helicopter.class
-		};
-	}
 }
