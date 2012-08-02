@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.cfg;
 
+import java.util.Properties;
+
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -48,14 +50,20 @@ public class OgmConfiguration extends Configuration {
 		setProperty( OGM_ON, "true" );
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.hibernate.cfg.Configuration#buildSessionFactory()
-	 */
 	@Override
 	public SessionFactory buildSessionFactory() throws HibernateException {
 		return new OgmSessionFactory( (SessionFactoryImplementor ) super.buildSessionFactory() );
+	}
+
+	@Override
+	public Configuration setProperties(Properties properties) {
+		super.setProperties( properties );
+		//Unless the new configuration properties explicitly disable OGM,
+		//assume there was no intention to disable it:
+		if ( ! properties.containsKey( OGM_ON ) ) {
+			setProperty( OGM_ON, "true" );
+		}
+		return this;
 	}
 
 }
