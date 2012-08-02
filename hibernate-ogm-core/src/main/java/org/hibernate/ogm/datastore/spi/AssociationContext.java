@@ -32,10 +32,8 @@ import java.util.List;
 public class AssociationContext {
 	private final List<String> selectableColumns;
 
-	public AssociationContext() {
-		this.selectableColumns = new ArrayList<String>();
-		this.selectableColumns.add( "rows" );
-		this.selectableColumns.add( "columns" );
+	public AssociationContext(List<String> selectableColumns) {
+		this.selectableColumns = selectableColumns;
 	}
 
 	public List<String> getSelectableColumns() {

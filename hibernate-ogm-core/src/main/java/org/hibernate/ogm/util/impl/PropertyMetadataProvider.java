@@ -38,7 +38,6 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
@@ -46,8 +45,10 @@ import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Emmanuel Bernard
@@ -371,7 +372,16 @@ public class PropertyMetadataProvider {
 
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			this.associationContext = new AssociationContext();
+			if ( collectionPersister != null ) {
+				associationContext = collectionPersister.getAssociationContext();
+			}
+			else {
+				List<String> selectableColumns = new ArrayList<String>( rowKeyColumnNames.length );
+				for ( String column : rowKeyColumnNames ) {
+					selectableColumns.add( column );
+				}
+				associationContext = new AssociationContext( selectableColumns );
+			}
 		}
 		return associationContext;
 	}
