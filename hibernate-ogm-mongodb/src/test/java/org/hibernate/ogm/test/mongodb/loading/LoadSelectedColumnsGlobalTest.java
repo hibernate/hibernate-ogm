@@ -89,7 +89,7 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsTest {
 		AssociationContext associationContext = new AssociationContext();
 		final Association association = gridDialect.getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-		final DBObject assocObject = associationSnapshot.getAssoc();
+		final DBObject assocObject = associationSnapshot.getDBObject();
 
 		/*
 		* The only column (except _id) that needs to be retrieved is "rows"
