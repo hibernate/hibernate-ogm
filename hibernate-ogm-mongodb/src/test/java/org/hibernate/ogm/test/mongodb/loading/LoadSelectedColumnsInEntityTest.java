@@ -61,6 +61,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsTest {
 
 		BasicDBObject updater = new BasicDBObject( 1 );
 		updater.put( "$push", new BasicDBObject( "extraColumn", 1 ) );
+		collection.update( query, updater );
 	}
 
 	protected void checkLoading(DBObject associationObject) {
