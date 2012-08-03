@@ -207,6 +207,20 @@
                 <artifactId>hibernate-testing</artifactId>
                 <version>${hibernateVersion}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>xapool</artifactId>
+                        <groupId>com.experlog</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>byteman</artifactId>
+                        <groupId>org.jboss.byteman</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>byteman-install</artifactId>
+                        <groupId>org.jboss.byteman</groupId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.ogm</groupId>
