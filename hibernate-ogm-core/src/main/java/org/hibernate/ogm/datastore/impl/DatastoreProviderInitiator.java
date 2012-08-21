@@ -47,11 +47,24 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 		Object managerProperty = configurationValues.get(DATASTORE_PROVIDER);
 		Class<?> managerClass = null;
 		if ( managerProperty instanceof String ) {
+			final String managerPropertyValue = (String) managerProperty;
+			String datastoreProviderClass;
 			try {
-				managerClass = registry.getService(ClassLoaderService.class).classForName( managerProperty.toString() );
+				if( isValidShortcut( managerPropertyValue ) ){
+					datastoreProviderClass = AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() ).getValue();
+				} else {
+	            	datastoreProviderClass = managerPropertyValue;
+				}
+				managerClass = registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClass );
 			}
 			catch (Exception e) {
-				throw log.datastoreClassCannotBeFound( managerProperty.toString() );
+				StringBuilder builder = new StringBuilder( "{" );
+				for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+					builder.append( provider.name() );
+					builder.append( " " );
+				}
+				builder.append( "}" );
+				throw log.datastoreClassCannotBeFound( managerPropertyValue, builder.toString() );
 			}
 		}
 		else if (managerProperty instanceof Class) {
@@ -78,6 +91,16 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 		else {
 			throw log.unknownDatastoreManagerType( managerProperty.getClass().getName() );
 		}
+	}
+
+	private boolean isValidShortcut( String shortcut ){
+		boolean isValid = false;
+		AvailableDatastoreProvider[] providers = AvailableDatastoreProvider.values();
+		int i = 0;
+		while ( i < providers.length && !isValid ){
+			isValid = providers[i++].name().equalsIgnoreCase( shortcut );
+		}
+		return isValid;
 	}
 
 	@Override
