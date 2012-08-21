@@ -67,8 +67,8 @@ public interface Log extends BasicLogger {
 	@Message(id = 7, value = "DatastoreManager property is of unknown type %1$s")
 	HibernateException unknownDatastoreManagerType(String managerType);
 
-	@Message(id = 8, value = "DatastoreManager class [%1$s] cannot be found in classpath")
-	HibernateException datastoreClassCannotBeFound(String className);
+	@Message(id = 8, value = "DatastoreManager class [%1$s] cannot be found in classpath try with: %2$s")
+	HibernateException datastoreClassCannotBeFound(String className, String availableShortcuts);
 
 	@Message(id = 9, value = DatastoreProviderInitiator.DATASTORE_PROVIDER + " has not been defined and no DatastoreManager could be guessed")
 	HibernateException noDatastoreConfigured();
