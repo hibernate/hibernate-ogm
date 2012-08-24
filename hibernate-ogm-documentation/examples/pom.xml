@@ -4,6 +4,7 @@
     <artifactId>hibernate-ogm-documentation</artifactId>
     <groupId>org.hibernate.ogm</groupId>
     <version>4.0.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <groupId>org.hibernate.ogm</groupId>
   <artifactId>hibernate-ogm-documentation-examples</artifactId>

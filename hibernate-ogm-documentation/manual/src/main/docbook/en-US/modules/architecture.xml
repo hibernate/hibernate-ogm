@@ -3,7 +3,7 @@
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
   ~ JBoss, Home of Professional Open Source
-  ~ Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+  ~ Copyright 2011-2012 Red Hat Inc. and/or its affiliates and other contributors
   ~ as indicated by the @authors tag. All rights reserved.
   ~ See the copyright.txt in the distribution for a
   ~ full listing of individual contributors.
@@ -31,10 +31,11 @@
   <title>Architecture</title>
 
   <note>
-    <para>We have defined an abstraction layer represented by
+    <para>Hibernate OGM defines an abstraction layer represented by
     <classname>DatastoreProvider</classname> and
-    <classname>GridDialect</classname>. It has successfully abstracted various
-    key/value stores and we are working on testing it on other NoSQL
+    <classname>GridDialect</classname> to separate the OGM engine from the
+    datastores interaction. It has successfully abstracted various key/value
+    stores and MongoDB. We are working on testing it on other NoSQL
     families.</para>
   </note>
 
@@ -46,7 +47,7 @@
     </listitem>
 
     <listitem>
-      <para>how the data is persisted in the data grid</para>
+      <para>how the data is persisted in the NoSQL datastore</para>
     </listitem>
 
     <listitem>
@@ -88,13 +89,13 @@
 
     <mediaobject>
       <imageobject role="html">
-        <imagedata align="center" fileref="images/architecture-components.png"
-                   format="PNG" role="html"/>
+        <imagedata align="center" fileref="images/ogm-architecture.png"
+                   format="PNG" role="html" scalefit="1"/>
       </imageobject>
 
       <imageobject role="fo">
         <imagedata align="center" depth=""
-                   fileref="images/architecture-components.png" format="PNG"
+                   fileref="images/ogm-architecture.png" format="PNG"
                    role="fo" scalefit="1" width="12cm"/>
       </imageobject>
 
@@ -105,19 +106,39 @@
     infrastructure. There is no need to rewrite an entirely new JPA engine.
     The <classname>Persister</classname>s and the
     <classname>Loader</classname>s (two interfaces used by Hibernate ORM) have
-    been rewritten to persist data using concepts like
-    <classname>GridDialect</classname> and
-    <classname>DatastoreProvider</classname>s instead of JDBC. These
-    implementations are the core of Hibernate OGM. We will see in <xref
+    been rewritten to persist data in the NoSQL store. These implementations
+    are the core of Hibernate OGM. We will see in <xref
     linkend="ogm-architecture-datapersisted"/> how the data is structured.
-    Other than that, all the Create/Read/Update/Delete (CRUD) operations are
-    implemented by Hibernate ORM.</para>
+    </para>
 
-    <para>AS of today, we have implemented three datastore providers:</para>
+    <para>The particularities between NoSQL stores are abstracted by the
+    notion of a <classname>DatastoreProvider</classname> and a
+    <classname>GridDialect</classname>. </para>
 
     <itemizedlist>
       <listitem>
-        <para>a Map based datastore provider (for testing essentially)</para>
+        <para><classname>DatastoreProvider</classname> abstracts how to start
+        and maintain a connection between Hibernate OGM and the
+        datastore.</para>
+      </listitem>
+
+      <listitem>
+        <para><classname>GridDialect</classname> abstracts how data itself
+        including association is persisted.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Think of them as the JDBC layer for our NoSQL stores. </para>
+
+    <para>Other than these, all the Create/Read/Update/Delete (CRUD)
+    operations are implemented by the Hibernate ORM engine (object hydration
+    and dehydration, cascading, lifecycle etc).</para>
+
+    <para>As of today, we have implemented four datastore providers:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>a Map based datastore provider (for testing)</para>
       </listitem>
 
       <listitem>
@@ -129,22 +150,24 @@
         <para>a EHCache based datastore provider to persist your entities in
         EHCache</para>
       </listitem>
+
+      <listitem>
+        <para>a MongoDB based datastore provider to persist data in a MongoDB
+        database</para>
+      </listitem>
     </itemizedlist>
 
-    <para>To implement JP-QL queries, Hibernate OGM converts the JP-QL string
-    into an Hibernate Search query. This query is then executed against the
-    Lucene indexes stored in Infinispan and return the list of matching
-    entities. Hibernate Search also listens to entity changes thanks to
-    Hibernate ORM events and update the Lucene indexes accordingly.</para>
+    <para>To implement JP-QL queries, Hibernate OGM parses the JP-QL string
+    and calls the appropriate translator functions to build a native query. If
+    the query is too complex for the native capabilities of the NoSQL store,
+    the Teiid query engine is used as an intermediary engine to implement the
+    missing features (typically joins between entities, aggregation). Finally,
+    if the underlying engine does not have any query support, we use Hibernate
+    Search as an external query engine.</para>
 
-    <note>
-      <para>Complex JP-QL queries esp with collection joins will require
-      capabilities beyond Hibernate Search's current approach. We have several
-      ideas in mind to address this problem.</para>
-
-      <para>We also plan to bind JP-QL queries to the underlying capability of
-      the datastore</para>
-    </note>
+    <para>Reality is a bit more nuanced, we will discuss the subject of
+    querying in more details in <xref
+    linkend="ogm-architecture-dataqueried"/>.</para>
 
     <para>Hibernate OGM best works in a JTA environment. The easiest solution
     is to deploy it on a Java EE container. Alternatively, you can use a
@@ -248,15 +271,15 @@
     </note>
 
     <para>Entities are stored as tuples of values by Hibernate OGM. More
-    specifically, each entity is represented by a
-    <classname>Map&lt;String,Object&gt;</classname> conceptually where the key
-    represents the column name (often the property name but not always) and
-    the value represents the column value as a basic type. We favor basic
-    types over complex ones to increase portability (across platforms and
-    across type / class schema evolution over time). For example a URL object
-    is store as its String representation.</para>
+    specifically, each entity is conceptually represented by a
+    <classname>Map&lt;String,Object&gt;</classname> where the key represents
+    the column name (often the property name but not always) and the value
+    represents the column value as a basic type. We favor basic types over
+    complex ones to increase portability (across platforms and across type /
+    class schema evolution over time). For example a URL object is store as
+    its String representation.</para>
 
-    <para>The key where a given entity instance is stored is composed
+    <para>The key identifying a given entity instance is is composed
     of:</para>
 
     <itemizedlist>
@@ -273,25 +296,33 @@
       </listitem>
     </itemizedlist>
 
-    <para>This gives us several interesting properties. An entity is
-    addressable by a single lookup. All entity types can live in the same key
-    name space as they are entirely isolated.</para>
-
     <mediaobject>
       <imageobject role="html">
         <imagedata align="center" fileref="images/data-entity.png"
                    format="PNG" role="html"/>
       </imageobject>
 
-      <imageobject role="fo">
-        <imagedata align="center" depth="" fileref="images/data-entity.png"
-                   format="PNG" role="fo" scalefit="1" width="12cm"/>
-      </imageobject>
-
       <caption><para>Storing entities</para></caption>
     </mediaobject>
 
-    <para/>
+    <para> The <classname>GridDialect</classname> specific to the NoSQL
+    datastore you target is then responsible to convert this map into the most
+    natural model:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>for a key/value store or a data grid, we use the logical key as
+        the key in the grid and we store the map as the value. Note that it's
+        an approximation and some key/value providers will use more tailored
+        approaches.</para>
+      </listitem>
+
+      <listitem>
+        <para>for a document oriented store, the map is represented by a
+        document and each entry in the map corresponds to a property in a
+        document.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Associations are also stored as tuple as well or more specifically
     as a set of tuples. Hibernate OGM stores the information necessary to
@@ -359,9 +390,18 @@
       the future based on feedback.</para>
     </note>
 
-    <para>Some identifiers require to store a seed in the datastore (think
-    about sequences for examples). The seed is stored in the value whose key
-    is composed of:</para>
+    <para>Again, there are specificities in how data is inherently stored in
+    the specific NoSQL store. For example, in document oriented stores, the
+    association information including the identifier to the associated
+    entities can be stored in the entity owning the association. This is a
+    more natural model for documents.</para>
+
+    <para>TODO: this sentence might be worth a diagram to show the difference
+    with the key/value store.</para>
+
+    <para>Some identifiers require to store a seed in the datastore (like
+    sequences for examples). The seed is stored in the value whose key is
+    composed of:</para>
 
     <itemizedlist>
       <listitem>
@@ -376,6 +416,9 @@
         <para>the column value representing the segment</para>
       </listitem>
     </itemizedlist>
+
+    <para>Make sure to check the chapter dedicated to the NoSQL store you
+    target to find the specificities.</para>
 
     <para>Many NoSQL stores have no notion of schema. Likewise, the tuple
     stored by Hibernate OGM is not tied to a particular schema: the tuple is
@@ -401,9 +444,155 @@
     pushed by some NoSQL families.</para>
   </section>
 
-  <section>
+  <section id="ogm-architecture-dataqueried">
     <title>How is data queried</title>
 
-    <para>TODO</para>
+    <note>
+      <para>Query support is in active development. This section describes
+      where the project is going.</para>
+    </note>
+
+    <para>Since Hibernate OGM wants to offer all of JPA, it needs to support
+    JP-QL queries. Hibernate OGM parses the JP-QL query string and extracts
+    its meaning. From there, several options are available depending of the
+    capabilities of the NoSQL store you target:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>it directly delegates the native query generation to the
+        datastore specific query translator implementation</para>
+      </listitem>
+
+      <listitem>
+        <para>it uses Teiid as an intermediary engine, Teiid delegating parts
+        of the query to the datastore specific query translator
+        implementation</para>
+      </listitem>
+
+      <listitem>
+        <para>it uses Hibernate Search as a query engine to execute the
+        query</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If the NoSQL datastore has some query capabilities and if the JP-QL
+    query is simple enough to be executed by the datastore, then the JP-QL
+    parser directly pushes the query generation to the NoSQL specific query
+    translator. The query returns the list of matching identifiers and uses
+    Hibernate OGM to return managed objects.</para>
+
+    <para>Some of the JP-QL features are not supported by NoSQL solutions. Two
+    typical examples are joins between entities - which you should limit
+    anyways in a NoSQL environment - and aggregations like average, max, min
+    etc. When the NoSQL store does not support the query, we use Teiid - a
+    database federation engine - to build simpler queries executed to the
+    datastore and do the join or aggregation in Teiid itself.</para>
+
+    <para>Finally some NoSQL stores have no or too poor query support. In this
+    situation, Hibernate OGM can use Hibernate Search as its indexing and
+    query engine. Hibernate Search is able to index and query objects -
+    entities - and run full-text queries. It uses the well known Apache Lucene
+    to do that but add a few interesting characteristics like clustering
+    support and an object oriented abstraction including an object oriented
+    query DSL. Let's have a look at the architecture of Hibernate OGM when
+    using Hibernate Search:</para>
+
+    <mediaobject>
+      <imageobject role="html">
+        <imagedata align="center"
+                   fileref="images/ogm-architecture-with-hsearch.png"
+                   format="PNG" role="html" scalefit="1"/>
+      </imageobject>
+
+      <imageobject role="fo">
+        <imagedata align="center" depth=""
+                   fileref="images/ogm-architecture-with-hsearch.png"
+                   format="PNG" role="fo" scalefit="1" width="12cm"/>
+      </imageobject>
+
+      <caption><para>Using Hibernate Search as query engine - greyed areas are
+      blocks already present in Hibernate OGM's architecture</para></caption>
+    </mediaobject>
+
+    <para>In this situation, Hibernate ORM Core pushes change events to
+    Hibernate Search which will index entities accordingly and keep the index
+    and the datastore in sync. The JP-QL query parser delegates the query
+    translation to the Hibernate Search query translator and executes the
+    query on top of the Lucene indexes. Indexes can be stored in various
+    fashion:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>on a file system (the default in Lucene)</para>
+      </listitem>
+
+      <listitem>
+        <para>in Infinispan via the Infinispan Lucene directory
+        implementation: the index is then distributed across several servers
+        transparently</para>
+      </listitem>
+
+      <listitem>
+        <para>in NoSQL stores like Voldemort that can natively store Lucene
+        indexes</para>
+      </listitem>
+
+      <listitem>
+        <para>in NoSQL stores that can be used as overflow to Infinispan: in
+        this case Infinispan is used as an intermediary layer to serve the
+        index efficiently but persists the index in another NoSQL
+        store.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Note that for complex queries involving joins or aggregation,
+    Hibernate OGM, can use Teiid as an intermediary query engine that will
+    delegate to Hibernate Search.</para>
+
+    <para>While all these options add some complexity, they also offer a lot
+    of flexibility to address queries in the most tailored way for your
+    project. A detail on the various options will be discussed in XXX (hsearch
+    options chapter).</para>
+
+    <para>Note that you can use Hibernate Search even if you do plan to use
+    the NoSQL datastore query capabilities. Hibernate Search offers a few
+    interesting options:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>clusterability</para>
+      </listitem>
+
+      <listitem>
+        <para>full-text queries - ie Google for your entities</para>
+      </listitem>
+
+      <listitem>
+        <para>geospatial queries</para>
+      </listitem>
+
+      <listitem>
+        <para>query faceting (ie dynamic categorization of the query results
+        by price, brand etc)</para>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <title>What's the progress status on queries?</title>
+
+      <para>Well... now is a good time to remind you that Hibernate OGM is
+      open source and that contributing to such cutting edge project is a lot
+      of fun. Check out <xref linkend="ogm-howtocontribute"/> for more
+      details. </para>
+
+      <para>But to answer your question, we have finished the skeleton of the
+      architecture as well as the JP-QL parser implementation. The Hibernate
+      Search query translator can execute simple queries already. However, we
+      do not yet have a NoSQL specific query translator but the approach is
+      quite clear to us. Teiid for complex queries is also not integrated but
+      work is being done in the Teiid project to facilitate that integration
+      in the future. Native Hibernate Search queries are fully
+      supported.</para>
+    </note>
   </section>
 </chapter>
