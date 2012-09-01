@@ -32,5 +32,5 @@ import java.util.Map;
 public interface GridDialectFactory extends Service {
 	public static final String GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
 
-	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry);
+	public GridDialect buildGridDialect();
 }

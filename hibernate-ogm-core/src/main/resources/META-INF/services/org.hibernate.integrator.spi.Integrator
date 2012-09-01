@@ -1,1 +1,1 @@
-org.hibernate.ogm.service.impl.OgmIntegrator
+org.hibernate.ogm.teiid.TeiidOgmIntegrator
