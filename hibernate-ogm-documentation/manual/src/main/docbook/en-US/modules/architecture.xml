@@ -279,7 +279,7 @@
     class schema evolution over time). For example a URL object is store as
     its String representation.</para>
 
-    <para>The key identifying a given entity instance is is composed
+    <para>The key identifying a given entity instance is composed
     of:</para>
 
     <itemizedlist>
@@ -492,7 +492,7 @@
     situation, Hibernate OGM can use Hibernate Search as its indexing and
     query engine. Hibernate Search is able to index and query objects -
     entities - and run full-text queries. It uses the well known Apache Lucene
-    to do that but add a few interesting characteristics like clustering
+    to do that but adds a few interesting characteristics like clustering
     support and an object oriented abstraction including an object oriented
     query DSL. Let's have a look at the architecture of Hibernate OGM when
     using Hibernate Search:</para>
@@ -546,7 +546,7 @@
     </itemizedlist>
 
     <para>Note that for complex queries involving joins or aggregation,
-    Hibernate OGM, can use Teiid as an intermediary query engine that will
+    Hibernate OGM can use Teiid as an intermediary query engine that will
     delegate to Hibernate Search.</para>
 
     <para>While all these options add some complexity, they also offer a lot
