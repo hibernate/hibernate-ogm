@@ -38,7 +38,7 @@
 
     <name>Hibernate Object Grid Mapper</name>
     <description>Persist data in a grid rather than a relational database</description>
-
+    
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -62,12 +62,37 @@
             <scope>provided</scope>
             <!-- I do hope it is optional but that needs to be verified -->
             <optional>true</optional>
+        </dependency>        
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-client</artifactId>
+          <version>8.2.0.Alpha1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-common-core</artifactId>
+          <version>8.2.0.Alpha1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-hibernate-dialect</artifactId>
+          <version>8.2.0.Alpha1-SNAPSHOT</version>
+        </dependency>     
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-runtime</artifactId>
+          <version>8.2.0.Alpha1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-admin</artifactId>
+          <version>8.2.0.Alpha1-SNAPSHOT</version>
+        </dependency>   
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-testing</artifactId>
-            <scope>test</scope>
+            <!-- <scope>test</scope> TODO fix this -->
         </dependency>
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
@@ -126,9 +151,9 @@
                     <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                     <links>
                         <link>http://download.oracle.com/javase/6/docs/api/</link>
-                        <link>http://docs.jboss.org/hibernate/orm/4.1/javadocs/</link>
-                        <link>http://docs.jboss.org/hibernate/search/4.1/api/</link>
-                        <link>http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/api/all/</link>
+                        <link>http://docs.jboss.org/hibernate/stable/core/javadocs/</link>
+                        <link>http://docs.jboss.org/hibernate/stable/search/api/</link>
+                        <link>http://lucene.apache.org/java/3_4_0/api/all</link>
                     </links>
                     <packagesheader>Hibernate OGM Packages</packagesheader>
                     <doctitle>Hibernate OGM ${project.version}</doctitle>

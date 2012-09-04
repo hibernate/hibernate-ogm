@@ -51,7 +51,7 @@ public class DatastoreServicesImpl implements DatastoreServices, ServiceRegistry
 	public void configure(Map configurationValues) {
 		GridDialectFactoryImpl dialectFactory = serviceRegistry.getService(GridDialectFactoryImpl.class);
 		DatastoreProvider datastoreProvider = serviceRegistry.getService(DatastoreProvider.class);
-		this.gridDialect = dialectFactory.buildGridDialect(configurationValues, serviceRegistry);
+		this.gridDialect = dialectFactory.buildGridDialect();
 		this.serviceRegistry = null;
 	}
 }

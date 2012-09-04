@@ -20,8 +20,12 @@
  */
 package org.hibernate.ogm.test.simpleentity;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.metadata.ClassMetadata;
 
 /**
  * @author Emmanuel Bernard
@@ -32,6 +36,10 @@ public class CRUDTest extends OgmTestCase {
 	public void testSimpleCRUD() throws Exception {
 		final Session session = openSession();
 
+		Collection<ClassMetadata> metadata = session.getSessionFactory().getAllClassMetadata().values();
+		for (ClassMetadata entity:metadata) {
+			System.out.println(entity.getEntityName());
+		}
 		Transaction transaction = session.beginTransaction();
 		Hypothesis hyp = new Hypothesis();
 		hyp.setId( "1234567890" );
@@ -41,6 +49,13 @@ public class CRUDTest extends OgmTestCase {
 		transaction.commit();
 
 		session.clear();
+		
+		transaction = session.beginTransaction();
+		List<Hypothesis>list = session.createQuery("From Hypothesis").list();
+		transaction.commit();
+		for (Hypothesis h:list) {
+			System.out.println("*****hyp = "+h.getDescription());
+		}
 
 		transaction = session.beginTransaction();
 		final Hypothesis loadedHyp = (Hypothesis) session.get( Hypothesis.class, hyp.getId() );

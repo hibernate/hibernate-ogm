@@ -99,7 +99,7 @@ public final class RowKey implements Serializable {
 
 	private int generateHashCode() {
 		final int result = table.hashCode();
-		return 31 * result + Arrays.hashCode( columnValues );
+		return 31 * result + Arrays.hashCode( columnValues ) + + Arrays.hashCode( columnNames );
 	}
 
 	@Override

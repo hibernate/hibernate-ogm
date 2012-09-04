@@ -316,14 +316,20 @@ public abstract class OgmTestCase extends TestCase {
 	protected void buildConfiguration() throws Exception {
 		closeSessionFactory();
 		try {
-			setCfg( new OgmConfiguration() );
+			setCfg( new Configuration() );
 
 			//Grid specific configuration
 			cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-local.xml" );
 			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
 			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
 
-
+			cfg.setProperty("hibernate.dialect", "org.teiid.dialect.TeiidDialect");
+			cfg.setProperty("hibernate.connection.url", "jdbc:teiid:sample@mm://localhost:31000");
+			cfg.setProperty("hibernate.connection.username", "user");
+			cfg.setProperty("hibernate.connection.password", "user");
+			cfg.setProperty("hibernate.connection.driver_class","org.teiid.jdbc.TeiidDriver");
+			cfg.setProperty("hibernate.ogm._activate", "true");
+			
 			//Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );

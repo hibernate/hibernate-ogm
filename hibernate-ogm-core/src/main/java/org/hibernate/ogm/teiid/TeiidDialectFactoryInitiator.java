@@ -18,32 +18,46 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.impl;
+package org.hibernate.ogm.teiid;
 
+import java.sql.Connection;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.service.jdbc.dialect.internal.DialectFactoryInitiator;
+import org.hibernate.service.jdbc.dialect.spi.DialectFactory;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.teiid.dialect.TeiidDialect;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactory> {
-	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
+public class TeiidDialectFactoryInitiator extends OptionalServiceInitiator<DialectFactory> {
+
+	public static TeiidDialectFactoryInitiator INSTANCE = new TeiidDialectFactoryInitiator();
 
 	@Override
-	public GridDialectFactoryImpl buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridDialectFactoryImpl(configurationValues, registry);
+	protected DialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+		return new TeiidDialectFactory();
 	}
 
 	@Override
-	protected BasicServiceInitiator<GridDialectFactory> backupInitiator() {
-		return null;
+	protected BasicServiceInitiator<DialectFactory> backupInitiator() {
+		return DialectFactoryInitiator.INSTANCE;
 	}
 
 	@Override
-	public Class<GridDialectFactory> getServiceInitiated() {
-		return GridDialectFactory.class;
+	public Class<DialectFactory> getServiceInitiated() {
+		return DialectFactory.class;
+	}
+
+	private static class TeiidDialectFactory implements DialectFactory {
+		@Override
+		public Dialect buildDialect(Map configValues, Connection connection) throws HibernateException {
+			return new TeiidDialect();
+		}
 	}
 }

@@ -37,8 +37,15 @@ import java.util.Map;
 public class GridDialectFactoryImpl implements GridDialectFactory {
 
 	private static final Log log = LoggerFactory.make();
-
-	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
+	private Map configurationValues;
+	private ServiceRegistry registry;
+	
+	public GridDialectFactoryImpl(Map configurationValues, ServiceRegistry registry) {
+		this.configurationValues = configurationValues;
+		this.registry = registry;
+	}
+	
+	public GridDialect buildGridDialect() {
 		Object value = configurationValues.get(GRID_DIALECT);
 		Class<? extends GridDialect> dialectClass = null;
 		if ( value == null ) {
