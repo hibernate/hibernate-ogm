@@ -29,7 +29,7 @@
             <property name="hibernate.transaction.jta.platform"
                       value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" />
             <property name="hibernate.ogm.datastore.provider"
-                      value="mapbased"/>
+                      value="org.hibernate.ogm.datastore.mapbased.impl.MapBasedDatastoreProvider"/>
             <property name="hibernate.ogm.datastore.grid_dialect" value="org.hibernate.ogm.test.type.OverridingTypeDialect"/>
         </properties>
     </persistence-unit>
