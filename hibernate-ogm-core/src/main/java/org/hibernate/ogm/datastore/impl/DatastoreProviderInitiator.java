@@ -44,20 +44,22 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 
 	@Override
 	public DatastoreProvider buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		Object managerProperty = configurationValues.get(DATASTORE_PROVIDER);
+		Object managerProperty = configurationValues.get( DATASTORE_PROVIDER );
 		Class<?> managerClass = null;
 		if ( managerProperty instanceof String ) {
 			final String managerPropertyValue = (String) managerProperty;
 			String datastoreProviderClass;
 			try {
-				if( isValidShortcut( managerPropertyValue ) ){
-					datastoreProviderClass = AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() ).getValue();
-				} else {
-	            	datastoreProviderClass = managerPropertyValue;
+				if ( isValidShortcut( managerPropertyValue ) ) {
+					datastoreProviderClass = AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() )
+							.getDatastoreProviderClassName();
+				}
+				else {
+					datastoreProviderClass = managerPropertyValue;
 				}
 				managerClass = registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClass );
 			}
-			catch (Exception e) {
+			catch ( Exception e ) {
 				StringBuilder builder = new StringBuilder( "{" );
 				for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
 					builder.append( provider.name() );
@@ -67,26 +69,26 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 				throw log.datastoreClassCannotBeFound( managerPropertyValue, builder.toString() );
 			}
 		}
-		else if (managerProperty instanceof Class) {
+		else if ( managerProperty instanceof Class ) {
 			managerClass = (Class<?>) managerProperty;
 		}
-		if (managerClass != null) {
-			if ( !(DatastoreProvider.class.isAssignableFrom(managerClass) ) ) {
+		if ( managerClass != null ) {
+			if ( !( DatastoreProvider.class.isAssignableFrom( managerClass ) ) ) {
 				throw log.notADatastoreManager( managerClass.getName() );
 			}
 			try {
-				return logAndReturn((DatastoreProvider) managerClass.newInstance());
+				return logAndReturn( (DatastoreProvider) managerClass.newInstance() );
 			}
-			catch (Exception e) {
-				throw log.unableToInstantiateDatastoreManager(managerClass.getName(), e);
+			catch ( Exception e ) {
+				throw log.unableToInstantiateDatastoreManager( managerClass.getName(), e );
 			}
 		}
 
-		if (managerProperty instanceof DatastoreProvider) {
-			return logAndReturn((DatastoreProvider) managerProperty);
+		if ( managerProperty instanceof DatastoreProvider ) {
+			return logAndReturn( (DatastoreProvider) managerProperty );
 		}
 		else if ( managerProperty == null ) {
-			return logAndReturn(guessDatastoreProvider(registry.getService(ClassLoaderService.class)));
+			return logAndReturn( guessDatastoreProvider( registry.getService( ClassLoaderService.class ) ) );
 		}
 		else {
 			throw log.unknownDatastoreManagerType( managerProperty.getClass().getName() );
