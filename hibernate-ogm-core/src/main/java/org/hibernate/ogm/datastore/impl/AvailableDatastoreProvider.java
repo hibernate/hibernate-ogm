@@ -31,7 +31,7 @@ public enum AvailableDatastoreProvider {
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" );
 
-	private String value;
-	private AvailableDatastoreProvider(String value) { this.value = value; }
-	public String getValue(){ return this.value; }
+	private String datastoreProviderClassName;
+	private AvailableDatastoreProvider(String datastoreProviderClassName) { this.datastoreProviderClassName = datastoreProviderClassName; }
+	public String getDatastoreProviderClassName() { return this.datastoreProviderClassName; }
 }
