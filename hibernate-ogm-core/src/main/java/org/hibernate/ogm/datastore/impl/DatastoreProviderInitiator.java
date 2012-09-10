@@ -28,6 +28,7 @@ import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -60,12 +61,9 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 				managerClass = registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClass );
 			}
 			catch ( Exception e ) {
-				StringBuilder builder = new StringBuilder( "{" );
-				for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
-					builder.append( provider.name() );
-					builder.append( " " );
-				}
-				builder.append( "}" );
+				StringBuilder builder = new StringBuilder( "{ " );
+				builder.append( Arrays.toString( AvailableDatastoreProvider.values() ) );
+				builder.append( " }" );
 				throw log.datastoreClassCannotBeFound( managerPropertyValue, builder.toString() );
 			}
 		}
@@ -95,14 +93,13 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 		}
 	}
 
-	private boolean isValidShortcut( String shortcut ){
-		boolean isValid = false;
-		AvailableDatastoreProvider[] providers = AvailableDatastoreProvider.values();
-		int i = 0;
-		while ( i < providers.length && !isValid ){
-			isValid = providers[i++].name().equalsIgnoreCase( shortcut );
+	private boolean isValidShortcut(String shortcut) {
+		for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
+			if ( provider.name().equalsIgnoreCase( shortcut ) ) {
+				return true;
+			}
 		}
-		return isValid;
+		return false;
 	}
 
 	@Override
@@ -118,17 +115,19 @@ public class DatastoreProviderInitiator extends OptionalServiceInitiator<Datasto
 	private DatastoreProvider guessDatastoreProvider(ClassLoaderService service) {
 		Class<?> managerClass = null;
 		try {
-			managerClass = service.classForName("org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider");
+			managerClass = service.classForName(
+					"org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"
+			);
 		}
-		catch (Exception e) {
+		catch ( Exception e ) {
 
 		}
-		if (managerClass != null) {
+		if ( managerClass != null ) {
 			try {
 				return (DatastoreProvider) managerClass.newInstance();
 			}
-			catch (Exception e) {
-				throw log.unableToInstantiateDatastoreManager(managerClass.getName(), e);
+			catch ( Exception e ) {
+				throw log.unableToInstantiateDatastoreManager( managerClass.getName(), e );
 			}
 		}
 		throw log.noDatastoreConfigured();
