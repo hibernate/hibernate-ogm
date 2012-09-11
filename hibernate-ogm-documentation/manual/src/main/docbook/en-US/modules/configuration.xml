@@ -456,7 +456,7 @@ em.close();</programlisting>
     <itemizedlist>
       <listitem>
         <para><literal>hibernate.ogm.datastore.provider</literal> to set to
-        <literal>org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider</literal></para>
+        <literal>mongodb</literal></para>
       </listitem>
 
       <listitem>
