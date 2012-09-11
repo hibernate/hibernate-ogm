@@ -36,7 +36,7 @@ import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 
-public class JPAPolymorphismTest {
+public class JPAPolymorphicGetReferenceTest {
 	
 	
 
@@ -44,7 +44,7 @@ public class JPAPolymorphismTest {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Hero.class, SuperHero.class );
 
 	@Test
-	public void testJPAPolymorph() throws Exception {
+	public void testJPAPolymorphicGetReference() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 
@@ -64,10 +64,10 @@ public class JPAPolymorphismTest {
 		em.clear();
 		
 		transactionManager.begin();
-		Hero lh = em.find( Hero.class, h.getName() );
+		Hero lh = em.getReference( Hero.class, h.getName() );
 		assertThat( lh ).isNotNull();
 		assertThat( h.getName() ).isEqualTo( lh.getName() );
-		Hero lsh = em.find( Hero.class, sh.getName() );
+		Hero lsh = em.getReference( Hero.class, sh.getName() );
 		assertThat( lsh ).isNotNull();
 		assertThat( lsh ).isInstanceOf(SuperHero.class);
 		assertThat( sh.getSpecialPower() ).isEqualTo( ((SuperHero)lsh).getSpecialPower() );
