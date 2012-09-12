@@ -33,6 +33,7 @@ import org.hibernate.ogm.test.simpleentity.Hero;
 import org.hibernate.ogm.test.simpleentity.SuperHero;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.TestHelper;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -69,6 +70,8 @@ public class JPAPolymorphicGetReferenceTest {
 		assertThat( h.getName() ).isEqualTo( lh.getName() );
 		Hero lsh = em.getReference( Hero.class, sh.getName() );
 		assertThat( lsh ).isNotNull();
+		// hydrate the reference
+		lsh = (Hero)((HibernateProxy)lsh).getHibernateLazyInitializer().getImplementation();
 		assertThat( lsh ).isInstanceOf(SuperHero.class);
 		assertThat( sh.getSpecialPower() ).isEqualTo( ((SuperHero)lsh).getSpecialPower() );
 		em.remove( lh );
