@@ -233,8 +233,8 @@ public static TransactionManager getTransactionManager() throws Exception
     url="http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274">Mac OS X
     JDK in particular</ulink>), if you experience trouble starting the
     Infinispan cluster, pass the following property:
-    -Djava.net.preferIPv4Stack=true to your JVM or upgrade to a recent JDK
-    version. jdk7u6 (b22) is known to work on Max OS X.</para>
+    <literal>-Djava.net.preferIPv4Stack=true</literal> to your JVM or upgrade
+    to a recent JDK version. jdk7u6 (b22) is known to work on Max OS X.</para>
   </note>
 
   <para>A working example can be found in Hibernate OGM's distribution under

@@ -69,7 +69,7 @@
       </listitem>
 
       <listitem>
-        <para>Hibernate Search for indexing purposes</para>
+        <para>Hibernate Search for indexing and query purposes</para>
       </listitem>
 
       <listitem>
@@ -78,8 +78,8 @@
       </listitem>
 
       <listitem>
-        <para>Infinispan's Lucene directory to store indexed in Infinispan
-        itself</para>
+        <para>Infinispan's Lucene Directory to store indexes in Infinispan
+        itself, or in many other NoSQL using Infinispan's write-through cachestores</para>
       </listitem>
 
       <listitem>
@@ -183,10 +183,10 @@
     <title>How is data persisted</title>
 
     <para>Hibernate OGM tries to reuse as much as possible the relational
-    model concepts (at least when they are practical and make sense in OGM's
-    case). For very good reasons, the relational model brought peace in the
+    model concepts, at least when they are practical and make sense in OGM's
+    case. For very good reasons, the relational model brought peace in the
     database landscape over 30 years ago. In particular, Hibernate OGM
-    inherits the following philosophy traits:</para>
+    inherits the following traits:</para>
 
     <itemizedlist>
       <listitem>
@@ -249,11 +249,11 @@
           <para>When entities are pointing to other entities are you storing
           the whole graph?</para>
 
-          <para>Hint this can be quite big!</para>
+          <para>Hint: this can be quite big!</para>
         </listitem>
 
         <listitem>
-          <para>If so, how do you guarantee object identity or even
+          <para>If doing so, how do you guarantee object identity or even
           consistency amongst duplicated objects?</para>
 
           <para>It might make sense to store the same object graph from
@@ -486,10 +486,10 @@
     anyways in a NoSQL environment - and aggregations like average, max, min
     etc. When the NoSQL store does not support the query, we use Teiid - a
     database federation engine - to build simpler queries executed to the
-    datastore and do the join or aggregation in Teiid itself.</para>
+    datastore and perform the join or aggregation operations in Teiid itself.</para>
 
-    <para>Finally some NoSQL stores have no or too poor query support. In this
-    situation, Hibernate OGM can use Hibernate Search as its indexing and
+    <para>Finally some NoSQL stores have poor query support, or none at all.
+    In this case Hibernate OGM can use Hibernate Search as its indexing and
     query engine. Hibernate Search is able to index and query objects -
     entities - and run full-text queries. It uses the well known Apache Lucene
     to do that but adds a few interesting characteristics like clustering

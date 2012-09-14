@@ -39,7 +39,7 @@
 
     <para>First of all, make sure to read this reference documentation. This
     is the most comprehensive formal source of information. Of course, it is
-    not perfect, feel free to come and ask for help, comment or propose
+    not perfect: feel free to come and ask for help, comment or propose
     improvements in our <ulink
     url="https://forum.hibernate.org/viewforum.php?f=31">Hibernate OGM
     forum.</ulink></para>
@@ -49,7 +49,7 @@
     <itemizedlist>
       <listitem>
         <para>open bug reports in <ulink
-        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink></para>
+        url="https://hibernate.onjira.com/browse/OGM">JIRA</ulink></para>
       </listitem>
 
       <listitem>
@@ -59,9 +59,10 @@
       </listitem>
 
       <listitem>
-        <para>and join us on IRC to discuss developments and improvements
-        (#hibernate-dev on freenode.net ; you need to be registered on
-        freenode, the room does not accept "anonymous" persons).</para>
+        <para>join us on IRC to discuss developments and improvements
+        (<literal>#hibernate-dev</literal> on <literal>freenode.net</literal>;
+        you need to be registered on freenode: the room does not accept
+        "anonymous" users).</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -76,7 +77,7 @@
     <itemizedlist>
       <listitem>
         <para>report bugs in <ulink
-        url="http://opensource.atlassian.com/projects/hibernate/browse/OGM">JIRA</ulink></para>
+        url="https://hibernate.onjira.com/browse/OGM">JIRA</ulink></para>
       </listitem>
 
       <listitem>
@@ -89,7 +90,7 @@
       </listitem>
 
       <listitem>
-        <para>fix bug or contribute new features</para>
+        <para>fix bugs or contribute new features</para>
       </listitem>
 
       <listitem>
@@ -109,13 +110,13 @@
 
       <para>Clone the git repository from GitHub:</para>
 
-      <programlisting>#get the sources
+      <programlisting><lineannotation>#get the sources</lineannotation>
 git clone https://github.com/hibernate/hibernate-ogm
 cd hibernate-ogm</programlisting>
 
       <para>Run maven</para>
 
-      <programlisting>#build project
+      <programlisting><lineannotation>#build project</lineannotation>
 mvn clean install -s settings-example.xml</programlisting>
 
       <note>
@@ -125,11 +126,11 @@ mvn clean install -s settings-example.xml</programlisting>
         <filename>~/.m2/settings.xml</filename> according to the descriptions
         available <ulink
         url="http://community.jboss.org/wiki/MavenGettingStarted-Users">on
-        this jboss.org web page</ulink>.</para>
+        this jboss.org wiki page</ulink>.</para>
       </note>
 
-      <para>To build the documentation, set the buildDocs property to
-      true.</para>
+      <para>To build the documentation, set the <literal>buildDocs</literal> property to
+      true:</para>
 
       <programlisting>mvn clean install -DbuildDocs=true -s settings-example.xml</programlisting>
 
@@ -141,8 +142,8 @@ mvn clean install -s settings-example.xml</programlisting>
     <section>
       <title>How to contribute code effectively</title>
 
-      <para>The best way to share code is to fork Hibernate OGM repository on
-      GitHub, create a branch and open a pull request when you are ready. Make
+      <para>The best way to share code is to fork the Hibernate OGM repository
+      on GitHub, create a branch and open a pull request when you are ready. Make
       sure to rebase your pull request on the latest version of the master
       branch before offering it.</para>
 
@@ -164,7 +165,9 @@ mvn clean install -s settings-example.xml</programlisting>
 
           <programlisting>OGM-123 Summary of commit operation
 
-Optional details on the commit.</programlisting>
+Optional details on the commit
+and a longer description can be
+added here.</programlisting>
         </listitem>
 
         <listitem>
