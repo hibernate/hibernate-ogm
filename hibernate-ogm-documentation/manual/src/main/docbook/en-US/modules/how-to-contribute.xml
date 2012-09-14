@@ -102,7 +102,7 @@
     url="https://github.com/hibernate/hibernate-ogm">https://github.com/hibernate/hibernate-ogm</ulink>.</para>
 
     <section>
-      <title>how to build Hibernate OGM</title>
+      <title>How to build Hibernate OGM</title>
 
       <para>Hibernate OGM uses Git and Maven 3, make sure to have both
       installed on your system.</para>
@@ -152,7 +152,7 @@ mvn clean install -s settings-example.xml</programlisting>
         <listitem>
           <para>We do small independent commits for each code change. In
           particular, we do not mix stylistic code changes (import, typo etc)
-          and new feature in the same commit.</para>
+          and new features in the same commit.</para>
         </listitem>
 
         <listitem>

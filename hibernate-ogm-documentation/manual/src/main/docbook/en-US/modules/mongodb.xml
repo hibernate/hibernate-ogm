@@ -28,7 +28,7 @@
 %BOOK_ENTITIES;
 ]>
 <section>
-    <title>MongoBD</title>
+    <title>MongoDB</title>
 
     <section>
         <title>Configuring MongoDB</title>

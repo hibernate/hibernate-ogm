@@ -147,8 +147,8 @@
       </listitem>
 
       <listitem>
-        <para>a EHCache based datastore provider to persist your entities in
-        EHCache</para>
+        <para>a Ehcache based datastore provider to persist your entities in
+        Ehcache</para>
       </listitem>
 
       <listitem>
@@ -276,7 +276,7 @@
     the column name (often the property name but not always) and the value
     represents the column value as a basic type. We favor basic types over
     complex ones to increase portability (across platforms and across type /
-    class schema evolution over time). For example a URL object is store as
+    class schema evolution over time). For example a URL object is stored as
     its String representation.</para>
 
     <para>The key identifying a given entity instance is composed
@@ -305,7 +305,7 @@
       <caption><para>Storing entities</para></caption>
     </mediaobject>
 
-    <para> The <classname>GridDialect</classname> specific to the NoSQL
+    <para>The <classname>GridDialect</classname> specific to the NoSQL
     datastore you target is then responsible to convert this map into the most
     natural model:</para>
 
@@ -519,7 +519,7 @@
     and the datastore in sync. The JP-QL query parser delegates the query
     translation to the Hibernate Search query translator and executes the
     query on top of the Lucene indexes. Indexes can be stored in various
-    fashion:</para>
+    fashions:</para>
 
     <itemizedlist>
       <listitem>
