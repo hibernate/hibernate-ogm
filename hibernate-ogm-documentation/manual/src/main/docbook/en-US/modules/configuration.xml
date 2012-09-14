@@ -47,7 +47,7 @@
       <para>The good news is that if you use JPA as your primary API, the
       configuration is extremely simple. Hibernate OGM is seen as a
       persistence provider which you need to configure in your
-      persistence.xml. That's it! The provider name is
+      <filename>persistence.xml</filename>. That's it! The provider name is
       <classname>org.hibernate.ogm.jpa.HibernateOgmPersistence</classname>.</para>
 
       <example>
@@ -63,8 +63,10 @@
         &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
-            &lt;property name="hibernate.transaction.manager_lookup_class"
-                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+            &lt;property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" /&gt;
+            &lt;property name="hibernate.ogm.datastore.provider"
+                      value="infinispan" /&gt;
         &lt;/properties&gt;
     &lt;/persistence-unit&gt;
 &lt;/persistence&gt;</programlisting>
@@ -86,19 +88,20 @@
 
         <listitem>
           <para>there is no DDL scheme generation options
-          (<literal>hbm2ddl</literal>) as Infinispan does not require
+          (<literal>hbm2ddl</literal>) as NoSQL generally do not require
           schemas</para>
         </listitem>
 
         <listitem>
-          <para>if you use JTA, you will need to set the transaction manager
-          lookup strategy</para>
+          <para>if you use JTA (which we recommend), you will need to set the
+          JTA platform</para>
         </listitem>
       </itemizedlist>
 
-      <para>It is possible to configure how to connect to Infinispan, see
-      <xref
-      linkend="ogm-configuration-optionsogm-configuration-options"/>.</para>
+      <para>You also need to configure which NoSQL datastore you want to use
+      and how to connect to it. We will detail how to do that later in <xref
+      linkend="ogm-datastore-providers"/>. In this case, we have used the
+      defaults settings for Infinispan.</para>
 
       <para>From there, simply bootstrap JPA the way you are used to with
       Hibernate ORM:</para>
@@ -126,7 +129,7 @@
       <title>Using Hibernate ORM native APIs</title>
 
       <para>If you want to bootstrap Hibernate OGM using the native Hibernate
-      APIs, you can use the class
+      APIs, use the class
       <classname>org.hibernate.ogm.cfg.OgmConfiguration</classname>.</para>
 
       <example>
@@ -137,9 +140,13 @@
 //assuming you are using JTA in a non contained environment
 cfg.setProperty( Environment.TRANSACTION_STRATEGY, 
                  "org.hibernate.transaction.JTATransactionFactory" );
-//assuming JBoss TransactionManager
-cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, 
-                 "org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" );
+//assuming JBoss TransactionManager in standalone mode
+cfg.setProperty( Environment.JTA_PLATFORM, 
+                 "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" );
+
+//assuming the default infinispan settings
+cfg.setProperty( "hibernate.ogm.datastore.provider",
+                 "infinispan" );
 
 //add your annotated classes
 cfg.addAnnotatedClass(Order.class)
@@ -166,9 +173,10 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         </listitem>
       </itemizedlist>
 
-      <para>It is possible to configure how to connect to Infinispan, see
-      <xref
-      linkend="ogm-configuration-optionsogm-configuration-options"/>.</para>
+      <para>You also need to configure which NoSQL datastore you want to use
+      and how to connect to it. We will detail how to do that later in <xref
+      linkend="ogm-datastore-providers"/>. In this case, we have used the
+      defaults settings for Infinispan.</para>
     </section>
   </section>
 
@@ -191,7 +199,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         </listitem>
 
         <listitem>
-          <para>the transaction manager lookup strategy</para>
+          <para>the JTA platform</para>
         </listitem>
 
         <listitem>
@@ -219,14 +227,13 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         </listitem>
       </itemizedlist>
 
-      <para>Set the transaction manager lookup strategy to the right Java EE
-      container. The property is
-      <literal>hibernate.transaction.manager_lookup_class</literal> and must
-      contain the fully qualified class name of the lookup implementation. The
-      list of available values are listed in <ulink
-      url="http://docs.jboss.org/hibernate/stable/core/reference/en-US/html_single/#configuration-optional-transactionstrategy">Hibernate
+      <para>Set the JTA platform to the right Java EE container. The property
+      is <literal>hibernate.transaction.transaction.jta.platform</literal> and
+      must contain the fully qualified class name of the lookup
+      implementation. The list of available values are listed in <ulink
+      url="http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform">Hibernate
       ORM's configuration section</ulink>. For example, in JBoss AS, use
-      <literal>org.hibernate.transaction.JBossTransactionManagerLookup</literal>.</para>
+      <literal>org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform</literal>.</para>
 
       <para>In your <filename>persistence.xml</filename>, you also need to
       define an existing datasource. It is not needed by Hibernate OGM and
@@ -246,8 +253,10 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;jta-data-source&gt;java:/DefaultDS&lt;/jta-data-source&gt;
         &lt;properties&gt;
-            &lt;property name="hibernate.transaction.manager_lookup_class"
-                      value="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" /&gt;
+            &lt;property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform" /&gt;
+            &lt;property name="hibernate.ogm.datastore.provider"
+                      value="infinispan" /&gt;
         &lt;/properties&gt;
     &lt;/persistence-unit&gt;
 &lt;/persistence&gt;</programlisting>
@@ -261,7 +270,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       <title>In a standalone JTA environment</title>
 
       <para>There is a set of common misconceptions in the Java community
-      about JTA</para>
+      about JTA:</para>
 
       <itemizedlist>
         <listitem>
@@ -297,12 +306,13 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         <listitem>
           <para>or <literal>hibernate.transaction.factory_class</literal> to
           <literal>org.hibernate.transaction.JTATransactionFactory</literal>
-          if you only use Hibernate ORM native APIs</para>
+          if you use <classname>OgmConfiguration</classname> to bootstrap
+          Hibernate OGM.</para>
         </listitem>
 
         <listitem>
-          <para><literal>hibernate.transaction.factory_class</literal> to
-          <literal>org.hibernate.transaction.JBossTSStandaloneTransactionManagerLookup</literal><parameter>
+          <para><literal>hibernate.transaction.jta.platform</literal> to
+          <literal>org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform</literal><parameter>
           in both cases.</parameter></para>
         </listitem>
       </itemizedlist>
@@ -316,16 +326,14 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
         <programlisting language="XML" role="XML">&lt;dependency&gt;
     &lt;groupId&gt;org.jboss.jbossts&lt;/groupId&gt;
     &lt;artifactId&gt;jbossjta&lt;/artifactId&gt;
-    &lt;version&gt;&jbossjtaVersion;l&lt;/version&gt;
+    &lt;version&gt;&jbossjtaVersion;&lt;/version&gt;
 &lt;/dependency&gt;</programlisting>
       </example>
 
       <para>The next step is you get access to the transaction manager. The
       easiest solution is to do as followed</para>
 
-      <programlisting language="JAVA" role="JAVA">//accessing JBoss's Transaction can be done differently but this one works nicely
-TransactionManager transactionManager = new JBossTSStandaloneTransactionManagerLookup()
-   .getTransactionManager( null );</programlisting>
+      <programlisting language="JAVA" role="JAVA">TransactionManager transactionManager = com.arjuna.ats.jta.TransactionManager.transactionmanager();</programlisting>
 
       <para>Then use the standard JTA APIs to demarcate your transaction and
       you are done!</para>
@@ -372,38 +380,29 @@ em.close();</programlisting>
       done transactionally and hence won't be able to rollback your work. This
       will change in the future but in the mean time, such an environment is
       not recommended.</para>
+
+      <note>
+        <para>For NoSQL datastores not supporting transactions, this is less
+        of a concern.</para>
+      </note>
     </section>
   </section>
 
   <section id="ogm-configuration-optionsogm-configuration-options">
     <title id="ogm-configuration-options">Configuration options</title>
 
-    <para>Most options from Hibernate ORM and Hibernate Search are applicable
-    to Hibernate OGM. You can pass them as you are used to do either in your
-    <filename>persistence.xml</filename> file, your
+    <para>The most important options when configuring Hibernate OGM are
+    related to the datastore. They are explained in <xref
+    linkend="ogm-datastore-providers"/>.</para>
+
+    <para>Otherwise, most options from Hibernate ORM and Hibernate Search are
+    applicable when using Hibernate OGM. You can pass them as you are used to
+    do either in your <filename>persistence.xml</filename> file, your
     <filename>hibernate.cfg.xml</filename> file or programmatically.</para>
 
-    <para>There are however a couple of Hibernate OGM specific
-    configurations:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>hibernate.ogm.infinispan.configuration_resourcename: the
-        resource path to the Infinispan XML configuration file (eg
-        <filename>com/acme/app/config/infinispan-config.xml</filename>). By
-        default, the configuration used is Hibernate OGM's default
-        configuration (TODO describe its behavior)</para>
-      </listitem>
-
-      <listitem>
-        <para>hibernate.ogm.infinispan.cachemanager_jndiname: the JNDI name
-        containing the Infinispan <classname>CacheManager</classname>. This
-        option is rarely used.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Here is the list of options that do not apply to Hibernate OGM and
-    that should not be set:</para>
+    <para>More interesting is a list of options that do
+    <emphasis>not</emphasis> apply to Hibernate OGM and that should not be
+    set:</para>
 
     <itemizedlist>
       <listitem>
@@ -443,10 +442,13 @@ em.close();</programlisting>
   <section>
     <title>Configuring Hibernate Search</title>
 
-    <para>All Hibernate Search options apply when you use Hibernate OGM. Here
-    is a detailed explanation on how to store your indexes on
-    Infinispan.</para>
+    <para>Hibernate Search integrates with Hibernate OGM just like it does
+    with Hibernate ORM. In other words, configure where you want to store your
+    indexes, map your entities with the relevant index annotations and you are
+    good to go. For more information, simply go check the Hibernate Search
+    documentation.</para>
 
-    <para>TODO explain how to store your indexes on Infinispan</para>
+    <para>We will discuss later in XXX how you can use Infinispan as the
+    storage for your Hibernate Search indexes.</para>
   </section>
 </chapter>
