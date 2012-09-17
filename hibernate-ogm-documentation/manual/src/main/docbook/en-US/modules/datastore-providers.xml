@@ -44,8 +44,8 @@
     </listitem>
 
     <listitem>
-      <para>EHCache: stores data into <ulink
-      url="http://ehcache.org">EhCache</ulink> (cache)</para>
+      <para>Ehcache: stores data into <ulink
+      url="http://ehcache.org">Ehcache</ulink> (cache)</para>
     </listitem>
 
     <listitem>
@@ -93,7 +93,7 @@
 
     <listitem>
       <para>ehcache: stores data into <ulink
-      url="http://ehcache.org">EhCache</ulink> (cache)</para>
+      url="http://ehcache.org">Ehcache</ulink> (cache)</para>
     </listitem>
 
     <listitem>
