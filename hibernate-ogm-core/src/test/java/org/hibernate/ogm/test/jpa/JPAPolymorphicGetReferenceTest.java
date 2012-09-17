@@ -33,19 +33,20 @@ import org.hibernate.ogm.test.simpleentity.Hero;
 import org.hibernate.ogm.test.simpleentity.SuperHero;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.TestHelper;
+import org.hibernate.proxy.HibernateProxy;
 import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Jonathan Wood <jonathanshawwood@gmail.com>
  */
-public class JPAPolymorphicFindTest {
+public class JPAPolymorphicGetReferenceTest {
 
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Hero.class, SuperHero.class );
 
 	@Test
-	public void testJPAPolymorphicFind() throws Exception {
+	public void testJPAPolymorphicGetReference() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 
@@ -65,11 +66,13 @@ public class JPAPolymorphicFindTest {
 		em.clear();
 		
 		transactionManager.begin();
-		Hero lh = em.find( Hero.class, h.getName() );
+		Hero lh = em.getReference( Hero.class, h.getName() );
 		assertThat( lh ).isNotNull();
+		lh = (Hero)((HibernateProxy)lh).getHibernateLazyInitializer().getImplementation();
 		assertThat( lh ).isInstanceOf(Hero.class);
-		Hero lsh = em.find( Hero.class, sh.getName() );
+		Hero lsh = em.getReference( Hero.class, sh.getName() );
 		assertThat( lsh ).isNotNull();
+		lsh = (Hero)((HibernateProxy)lsh).getHibernateLazyInitializer().getImplementation();
 		assertThat( lsh ).isInstanceOf(SuperHero.class);
 		em.remove( lh );
 		em.remove( lsh );
@@ -83,4 +86,3 @@ public class JPAPolymorphicFindTest {
 	}
 
 }
-

@@ -39,13 +39,13 @@ import org.junit.Test;
 /**
  * @author Jonathan Wood <jonathanshawwood@gmail.com>
  */
-public class JPAPolymorphicFindTest {
-
+public class JPAPolymorphicCollectionTest {
+	
 	@Rule
-	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Hero.class, SuperHero.class );
+	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Hero.class, SuperHero.class, HeroClub.class );
 
 	@Test
-	public void testJPAPolymorphicFind() throws Exception {
+	public void testJPAPolymorphicCollection() throws Exception {
 
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 
@@ -60,19 +60,28 @@ public class JPAPolymorphicFindTest {
 		sh.setName( "Batman" );
 		sh.setSpecialPower( "Technology and samurai techniques" );
 		em.persist( sh );
+		HeroClub hc = new HeroClub();
+		hc.setName("My hero club");
+		hc.getMembers().add(h);
+		hc.getMembers().add(sh);
+		em.persist(hc);
 		transactionManager.commit();
 
 		em.clear();
 		
 		transactionManager.begin();
-		Hero lh = em.find( Hero.class, h.getName() );
+		HeroClub lhc = em.find(HeroClub.class, hc.getName());
+		assertThat( lhc ).isNotNull();
+		Hero lh = lhc.getMembers().get(0);
 		assertThat( lh ).isNotNull();
 		assertThat( lh ).isInstanceOf(Hero.class);
-		Hero lsh = em.find( Hero.class, sh.getName() );
+		Hero lsh = lhc.getMembers().get(1);
 		assertThat( lsh ).isNotNull();
 		assertThat( lsh ).isInstanceOf(SuperHero.class);
+		lhc.getMembers().clear();
 		em.remove( lh );
 		em.remove( lsh );
+		em.remove( lhc );
 
 		transactionManager.commit();
 
@@ -83,4 +92,3 @@ public class JPAPolymorphicFindTest {
 	}
 
 }
-
