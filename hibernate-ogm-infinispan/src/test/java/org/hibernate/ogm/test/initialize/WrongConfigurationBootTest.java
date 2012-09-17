@@ -66,7 +66,7 @@ public class WrongConfigurationBootTest {
 	 */
 	private void tryBoot(String configurationResourceName) {
 		Configuration cfg = new OgmConfiguration();
-		cfg.setProperty( "hibernate.ogm.datastore.provider", org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider.class.getName() );
+		cfg.setProperty( "hibernate.ogm.datastore.provider", "infinispan" );
 		cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", configurationResourceName );
 		SessionFactory sessionFactory = cfg.buildSessionFactory();
 		if ( sessionFactory != null ) {

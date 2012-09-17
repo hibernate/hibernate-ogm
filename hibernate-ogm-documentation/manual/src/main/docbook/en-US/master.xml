@@ -59,7 +59,7 @@
     <para>Hibernate Object/Grid Mapper (OGM) is a persistence engine providing
     Java Persistence (JPA) support for NoSQL datastores. It reuses Hibernate
     ORM's object life cycle management and (de)hydration engine but persists
-    entities into a NoSQL store (key/value, document, column-oriented etc)
+    entities into a NoSQL store (key/value, document, column-oriented, etc)
     instead of a relational database. It reuses the Java Persistence Query
     Language (JP-QL) as an interface to querying stored data.</para>
 
@@ -130,11 +130,11 @@
         <listitem>
           <para>key / value stores: essentially Maps but with different
           behaviors and ideas behind various products (data grids, persistent
-          with strong or eventual consistency etc)</para>
+          with strong or eventual consistency, etc)</para>
         </listitem>
 
         <listitem>
-          <para>document based datastores: contains as value semi structured
+          <para>document based datastores: contains as value semi-structured
           documents (think JSON)</para>
         </listitem>
 
@@ -159,13 +159,13 @@
 
       <para>Each have different benefits and drawbacks and one solution might
       fit a use case better than an other. However access patterns and APIs
-      are different from one product to the others.</para>
+      are different from one product to the other.</para>
 
-      <para>Hibernate OGM is not expected to the the Rosetta stone used to
+      <para>Hibernate OGM is not expected to be the Rosetta stone used to
       interact with <emphasis>all</emphasis> NoSQL solution in
       <emphasis>all</emphasis> use cases. But for people modeling their data
       as a domain model, it provides distinctive advantages over raw APIs and
-      has the benefit of providing an API and semantic quite known to Java
+      has the benefit of providing an API and semantic known to Java
       developers. Reusing the same programmatic model and trying different
       (No)SQL engines will hopefully help people to explore alternative
       datastores.</para>
@@ -184,7 +184,7 @@
       <itemizedlist>
         <listitem>
           <para>store data in key/value stores (Infinispan's datagrid and
-          EHCache)</para>
+          Ehcache)</para>
         </listitem>
 
         <listitem>
@@ -277,12 +277,12 @@
   <xi:include href="modules/configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="modules/datastore-providers.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="modules/mapping.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="modules/query.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-  <xi:include href="modules/infinispan.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </book>
