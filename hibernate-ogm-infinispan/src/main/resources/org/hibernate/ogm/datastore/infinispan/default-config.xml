@@ -33,11 +33,11 @@
         <!-- Duplicate domains are allowed so that multiple deployments with default configuration 
             of Hibernate OGM applications work - a better solution would be to use JNDI to share 
             the CacheManager across applications, or use a custom configuration.
-            Only enable if needed - it has a performance impact.
+            Only enable if needed - it has a performance impact. -->
         <globalJmxStatistics
             enabled="true"
             cacheManagerName="HibernateOGM"
-            allowDuplicateDomains="true" /> -->
+            allowDuplicateDomains="true" />
 
         <!-- If the transport is omitted, there is no way to create distributed or clustered 
             caches. There is no added cost to defining a transport but not creating a cache that uses one, 
