@@ -33,69 +33,97 @@
     <section>
         <title>Configuring MongoDB</title>
 
+        <para>
+            This implementation is based upon the MongoDB Java driver, currently the supported version is
+            &mongodbVersion;.
+        </para>
         <para>To use Hibernate OGM with MongoDB there are the properties to
             configure:</para>
 
-        <itemizedlist>
-            <listitem>
-                <para><literal>hibernate.ogm.datastore.provider</literal> to set to
-                    <literal>mongodb</literal></para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.host</literal> which is the
-                    hostname of the mongodb instance. The default value is
-                    <literal>127.0.0.1</literal></para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.port</literal> which is the port
-                    used by the mongodb instance. The default value is
-                    <literal>27017</literal></para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.database</literal> which is the
-                    database to connect to. There is no default value.</para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.username</literal> username to
-                    use when the MongoDB server requires authentication.
-                    There is no default value.</para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.password</literal> password to
-                    use when the MongoDB server requires authentication. Is ignored if
-                    <literal>username</literal> isn't specified.
-                    There is no default value.</para>
-            </listitem>
-
-            <listitem>
-                <para><literal>hibernate.ogm.mongodb.safe</literal> defines the safe
-                    mode of the MongoDB driver (<literal>true</literal> or
-                    <literal>false</literal>). When set to <literal>false</literal>, the
-                    driver does not wait for the write operation to be applied before
-                    returning. This could lead to loss of writes. By default
-                    <literal>hibernate.ogm.mongodb.safe</literal> is set it to
-                    <literal>true</literal> which means the driver will wait for the
-                    operation to succeed before returning. Note that this is slower than
-                    the unsafe mode.</para>
-            </listitem>
-
-            <listitem>
-                <para>
-                    <literal>hibernate.ogm.mongodb.connection_timeout</literal>
-                    defines the timeout used by the driver when the connection to
-                    the MongoDB instance is made. This configuration is expressed in milliseconds and
-                    its default value is <literal>5000</literal>.
-                </para>
-            </listitem>
-        </itemizedlist>
+        <table>
+            <title>MongoDB datastore configuration properties</title>
+            <tgroup cols="3">
+                <colspec colwidth="120px" />
+                <colspec colwidth="350px" />
+                <colspec colwidth="200px" />
+                <thead>
+                    <row>
+                        <entry>Property</entry>
+                        <entry>Description</entry>
+                        <entry>Default value</entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>hibernate.ogm.datastore.provider</entry>
+                        <entry>This property is mandatory to use the MongoDB datastore providers.</entry>
+                        <entry>mongodb</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.host</entry>
+                        <entry>The hostname of the mongodb instance.</entry>
+                        <entry>127.0.0.1</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.port</entry>
+                        <entry>The port used by the mongodb instance.</entry>
+                        <entry>27017</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.database</entry>
+                        <entry>The database to connect to.</entry>
+                        <entry>No default value.</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.username</entry>
+                        <entry>The username to use when the MongoDB server requires authentication.</entry>
+                        <entry>No default value.</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.password</entry>
+                        <entry>
+                            The password to use when the MongoDB server requires authentication.
+                            This property is ignored if the username isn't specified.
+                        </entry>
+                        <entry>No default value.</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.safe</entry>
+                        <entry>
+                            It defines the safe mode of the MongoDB driver. When set to <literal>false</literal>, the
+                            driver does not wait for the write operation to be applied before returning.
+                            This could lead to loss of writes. When set to <literal>true</literal> which means
+                            the driver will wait for the operation to succeed before returning.
+                            Note that this is slower than the unsafe mode.
+                        </entry>
+                        <entry>true</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.connection_timeout</entry>
+                        <entry>
+                            It defines the timeout used by the driver when the connection to the MongoDB instance is
+                            made. This configuration is expressed in milliseconds
+                         </entry>
+                        <entry>5000</entry>
+                    </row>
+                    <row>
+                        <entry>hibernate.ogm.mongodb.associations.store</entry>
+                        <entry>
+                            It defines the way OGM stores association information. There are three way to store
+                            association information.
+                            <literal>GLOBAL_COLLECTION</literal> stores the association information in a unique MongoDB
+                            collection for all associations.
+                            <literal>COLLECTION</literal> stores the association in a dedicated MongoDB collection
+                            per association
+                            <literal>IN_ENTITY</literal> stores association information from within the entity.
+                        </entry>
+                    </row>
+            </tbody>
+        </tgroup>
+        </table>
 
         <note>
-            <para>The general policy in Hibernate OGM tis to not go against the
+            <para>The general policy in Hibernate OGM is to not go against the
                 underlying NoSQL store. We have made an exception for MongoDB's write
                 concern default setting - which is unsafe out of the box. Based on the
                 typical use case of Hibernate OGM (domain models) and based on the
@@ -103,4 +131,5 @@
                 value to be dangerous.</para>
         </note>
     </section>
+
 </section>
