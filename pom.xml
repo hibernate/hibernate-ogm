@@ -189,6 +189,21 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-engine</artifactId>
+                <version>${hibernateSearchVersion}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>hibernate-search-analyzers</artifactId>
+                        <groupId>org.hibernate</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>slf4j-api</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-infinispan</artifactId>
                 <version>${hibernateSearchVersion}</version>
                 <exclusions>

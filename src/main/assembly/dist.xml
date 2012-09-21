@@ -23,6 +23,14 @@
   ~ Boston, MA  02110-1301  USA
   -->
 
+<!--
+  When updating this file, make sure we don't include duplicate jars in different subdirectories.
+  Generate the distribution preview to see how it looks like:
+   mvn clean package assembly:assembly -DskipTests=true -DbuildDocs=true
+
+  To inspect which jars are being distributed and look for duplicates this might be handy:
+  tar -ztvf target/*-dist.tar.gz | grep .jar| sed -e "s/.*\/dist//" -e "s/\(\/lib\/[^\/]*\)\/\(.*\)/\2 \t\t\t\1/" | sort
+ -->
 <assembly>
     <id>dist</id>
     <formats>
@@ -53,34 +61,12 @@
                         <useProjectArtifact>false</useProjectArtifact>
                         <outputDirectory>/dist/lib/required</outputDirectory>
                         <scope>runtime</scope>
-                        <excludes>
-                            <exclude>org.hibernate:hibernate-search</exclude>
-                            <exclude>org.hibernate:hibernate-search-infinispan</exclude>
-                            <exclude>org.apache.lucene:lucene-core</exclude>
-                            <exclude>org.infinispan:infinispan-lucene-directory</exclude>
-                        </excludes>
-                    </dependencySet>
-
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/optional</outputDirectory>
-                        <includes>
-                            <include>org.hibernate:hibernate-search</include>
-                            <include>org.hibernate:hibernate-search-infinispan</include>
-                            <include>org.apache.lucene:lucene-core</include>
-                            <include>org.infinispan:infinispan-lucene-directory</include>
-                        </includes>
                     </dependencySet>
 
                     <dependencySet>
                         <useProjectArtifact>false</useProjectArtifact>
                         <outputDirectory>/dist/lib/provided</outputDirectory>
                         <scope>provided</scope>
-                        <excludes>
-                            <exclude>org.hibernate:hibernate-search</exclude>
-                            <exclude>org.hibernate:hibernate-search-infinispan</exclude>
-                            <exclude>org.apache.lucene:lucene-core</exclude>
-                            <exclude>org.infinispan:infinispan-lucene-directory</exclude>
-                        </excludes>
                     </dependencySet>
 
                 </dependencySets>
@@ -90,7 +76,7 @@
 
     <files>
         <file>
-            <source>readme.txt</source>
+            <source>readme.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
