@@ -126,6 +126,10 @@
                             <name>jbossjtaVersion</name>
                             <value>${jbossjtaVersion}</value>
                         </injection>
+                        <injection>
+                            <name>mongodbVersion</name>
+                            <value>${mongodbVersion}</value>
+                        </injection>
                     </injections>
                     <profiling>
                         <enabled>true</enabled>
