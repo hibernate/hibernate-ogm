@@ -28,6 +28,10 @@ To build the documentation, set the `buildDocs` property to `true`.
 
 If you just want to build the documentation, run it from the `hibernate-ogm-documentation/manual` subdirectory.
 
+For rapid documentation testing, you can limit the generated format to html to speed up the process
+
+    mvn clean install -DbuildDocs=true -s settings-example.xml -Djdocbook.format=html_single
+
 ### MongoDB
 
 If you have MongoDB installed on `localhost` and the default port, use the mongodb profile as well
