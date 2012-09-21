@@ -132,4 +132,61 @@
         </note>
     </section>
 
+
+    <section>
+        <title>Storage principles</title>
+
+        <section>
+            <title>Entities</title>
+            <para>
+                Entities are stored as MongoDB documents and not as BLOBs which means each entity property will be
+                translated into a document field. You can use the name property of @Table and @Column annotation and so
+                rename the collections and the document's field.
+                Document oriented NoSQL solution are powerful
+            </para>
+            <section>
+                <title>Identifiers</title>
+                <para>
+                    The <literal>_id</literal> field of a MongoDB document is directly used to store the ID mapped
+                    in the entities. That means you can use simple IDs (no matter the Java type used) as well as
+                    Embedded ids. Embedded ids are stored as embedded document into the <literal>_id</literal> field.
+                    The dialect is in charge to map the <literal>@Id</literal> entity property with the
+                    <literal>_id</literal> document field so you can name the entity id like you want it will always be
+                    stored into <literal>_id</literal> and so you can benefit from the MongoDB index on _id fields.
+                    For instance if you have an entity like:
+                </para>
+
+                <example>
+                    <title>Example of an entity using Embedded id</title>
+                    <programlisting role="JAVA" language="JAVA">
+@Entity
+public class News {
+    @EmbeddedId
+    private NewsID newsId;
+    //getters, setters ...
+}
+
+@Embeddable
+public class NewsID implements Serializable {
+    private String title;
+    private String author;
+    //getters, setters ...
+}
+                    </programlisting>
+                </example>
+
+                <example>
+                    <title>Representation of an embedded id</title>
+                    <programlisting role="JSON" language="JSON">
+{
+_id :{
+    title: "How does Hibernate OGM MongoDB work?",
+    author: "Guillaume"
+    }
+}
+                    </programlisting>
+                </example>
+            </section>
+        </section>
+    </section>
 </section>
