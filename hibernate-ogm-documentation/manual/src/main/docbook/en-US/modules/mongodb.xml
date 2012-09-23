@@ -188,5 +188,166 @@ _id :{
                 </example>
             </section>
         </section>
+
+        <section>
+            <title>Associations</title>
+            <para>
+                Hibernate OGM MongoDB proposes 3 strategies to store navigation information for associations. To switch
+                between each of these strategies, you have to use the <literal>hibernate.ogm.mongodb.associations.store</literal>
+                configuration property.
+                The three possible values are:
+                <itemizedlist>
+                    <listitem>
+                        <para>GLOBAL_COLLECTION</para>
+                    </listitem>
+                    <listitem>
+                        <para>COLLECTION</para>
+                    </listitem>
+                    <listitem>
+                        <para>IN_ENTITY</para>
+                    </listitem>
+                </itemizedlist>
+                If this property is not explicitly set, the IN_ENTITY strategy is chose by default.
+        </para>
+
+            <section>
+                <title>Global collection strategy</title>
+                <para>
+                    This strategy means that OGM will create a single collection in which it will stores all navigation
+                    information for all associations. Each document of this collection is structure in 2 parts.
+                    The first is the <literal>_id</literal> field which contains ID of the association owner and the name
+                    of the entities that are at each side of the relationship.
+                    The second part is the <literal>rows</literal> field which stores (into an embedded collection) all
+                    ids that the current instance is related to.
+                </para>
+                <example>
+                    <title>Unidirectional relationship</title>
+                    <programlisting role="JSON" language="JSON">
+{
+    "_id": {
+        "owners_id": "owner0001",
+        "table": "AccountOwner_BankAccount"
+    },
+    "rows": [
+        { "bankAccounts_id": "accountXYZ" }
+    ]
+}
+                    </programlisting>
+                </example>
+
+                <para>
+                    In case of bidirectional relationships, another document is created and the IDs are switched which
+                    look like this:
+                </para>
+
+                <example>
+                    <title>Bidirectional relationship</title>
+                    <programlisting role="JSON" language="JSON">
+{
+    "_id": {
+        "owners_id": "owner0001",
+        "table": "AccountOwner_BankAccount"
+    },
+    "rows": [{
+        "bankAccounts_id": "accountXYZ"
+        }]
+}
+{
+    "_id": {
+        "bankAccounts_id": "accountXYZ",
+        "table": "AccountOwner_BankAccount"
+    },
+    "rows": [{
+        "owners_id": "owner0001"
+    }]
+}
+                    </programlisting>
+                </example>
+
+            </section>
+            <section>
+                <title>One collection per association strategy</title>
+                <para>
+                    This strategy means that OGM will create a collection in which it will stores all navigation
+                    information per association. So if an entity A is related to B and C thus 2 collections will be
+                    created. The name of this collection is made by concatening `associations_" with the name of both
+                    entities that participate to the relationship. For example, if the BankAccount and Owner are related,
+                    the collection used to store will be named <literal>associations_Owner_BankAccount</literal>.
+                    Internally, each document of this collection has the following structure:
+                    <itemizedlist>
+                        <listitem>
+                            <para><literal>_id</literal> contains the id of the owner of relationship</para>
+                        </listitem>
+                        <listitem>
+                            <para><literal>rows</literal> contains all the id of the related entities</para>
+                        </listitem>
+                    </itemizedlist>
+                </para>
+
+                <example>
+                    <title>Unidirectional relationship</title>
+                    <programlisting role="JSON" language="JSON">
+{
+    "_id" : { "owners_id" : "owner0001" },
+    "rows" : [
+        { "bankAccounts_id" : "accountXYZ" }
+    ]
+}
+                    </programlisting>
+                </example>
+                <example>
+                    <title>Bidirectional relationship</title>
+                    <programlisting role="JSON" language="JSON">
+{
+    "_id" : { "owners_id" : "owner0001" },
+    "rows" : [
+        { "bankAccounts_id" : "accountXYZ" }
+    ]
+}
+{
+    "_id" : { "bankAccounts_id" : "accountXYZ" },
+    "rows" : [
+        { "owners_id" : "owner0001" }
+    ]
+}
+                    </programlisting>
+                </example>
+            </section>
+            <section>
+                <title>In Entity strategy</title>
+                <para>
+                    This strategy works pretty like the a foreign key in order terms, OGM will directly store the
+                    id of the other side of the association into a field or an embedded document depending if the mapping
+                    concerns a single object or a collection. The field that stores the relationship information is
+                    named like the entity property.
+                </para>
+                <example>
+                <title>Java entity</title>
+                <programlisting role="JAVA" language="JAVA">
+@Entity
+public class AccountOwner {
+@Id
+private String id;
+
+@ManyToMany
+public Set&lt;BankAccount&gt; bankAccounts;
+
+//getters, setters, ...
+                </programlisting>
+                </example>
+                <example>
+                    <title>JSON representation</title>
+                    <programlisting role="JSON" language="JSON">
+{
+    "_id" : "owner0001",
+    "bankAccounts" : [
+        { "bankAccounts_id" : "accountXYZ" }
+    ]
+}
+                    </programlisting>
+                </example>
+
+            </section>
+        </section>
     </section>
 </section>
