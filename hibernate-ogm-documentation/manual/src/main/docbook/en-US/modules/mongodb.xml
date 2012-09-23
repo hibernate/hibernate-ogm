@@ -179,9 +179,9 @@ public class NewsID implements Serializable {
                     <title>Representation of an embedded id</title>
                     <programlisting role="JSON" language="JSON">
 {
-_id :{
-    title: "How does Hibernate OGM MongoDB work?",
-    author: "Guillaume"
+"_id" :{
+    "title": "How does Hibernate OGM MongoDB work?",
+    "author": "Guillaume"
     }
 }
                     </programlisting>
