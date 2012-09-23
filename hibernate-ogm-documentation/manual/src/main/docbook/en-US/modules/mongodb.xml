@@ -42,50 +42,46 @@
 
         <table>
             <title>MongoDB datastore configuration properties</title>
-            <tgroup cols="3">
+            <tgroup cols="2">
                 <colspec colwidth="120px" />
                 <colspec colwidth="350px" />
-                <colspec colwidth="200px" />
                 <thead>
                     <row>
                         <entry>Property</entry>
                         <entry>Description</entry>
-                        <entry>Default value</entry>
                     </row>
                 </thead>
                 <tbody>
                     <row>
                         <entry>hibernate.ogm.datastore.provider</entry>
-                        <entry>This property is mandatory to use the MongoDB datastore providers.</entry>
-                        <entry>mongodb</entry>
+                        <entry>To use MongoDB as a datastore provider, this property must be set to <literal>mongodb</literal></entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.host</entry>
-                        <entry>The hostname of the mongodb instance.</entry>
-                        <entry>127.0.0.1</entry>
+                        <entry>The hostname of the mongodb instance. The default value is <literal>127.0.0.1</literal></entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.port</entry>
-                        <entry>The port used by the mongodb instance.</entry>
-                        <entry>27017</entry>
+                        <entry>The port used by the mongodb instance. The default value is <literal>27017</literal></entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.database</entry>
-                        <entry>The database to connect to.</entry>
-                        <entry>No default value.</entry>
+                        <entry>The database to connect to. There is any default value for this property</entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.username</entry>
-                        <entry>The username to use when the MongoDB server requires authentication.</entry>
-                        <entry>No default value.</entry>
+                        <entry>
+                            The username to use when the MongoDB server requires authentication.
+                            There is any default value for this property
+                        </entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.password</entry>
                         <entry>
                             The password to use when the MongoDB server requires authentication.
+                            There is any default value for this property
                             This property is ignored if the username isn't specified.
                         </entry>
-                        <entry>No default value.</entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.safe</entry>
@@ -95,16 +91,16 @@
                             This could lead to loss of writes. When set to <literal>true</literal> which means
                             the driver will wait for the operation to succeed before returning.
                             Note that this is slower than the unsafe mode.
+                            The default value is <literal>true</literal>
                         </entry>
-                        <entry>true</entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.connection_timeout</entry>
                         <entry>
                             It defines the timeout used by the driver when the connection to the MongoDB instance is
-                            made. This configuration is expressed in milliseconds
-                         </entry>
-                        <entry>5000</entry>
+                            made. This configuration is expressed in milliseconds.
+                            The default value is <literal>5000</literal>
+                        </entry>
                     </row>
                     <row>
                         <entry>hibernate.ogm.mongodb.associations.store</entry>
@@ -114,8 +110,9 @@
                             <literal>GLOBAL_COLLECTION</literal> stores the association information in a unique MongoDB
                             collection for all associations.
                             <literal>COLLECTION</literal> stores the association in a dedicated MongoDB collection
-                            per association
-                            <literal>IN_ENTITY</literal> stores association information from within the entity.
+                            per association.
+                            <literal>IN_ENTITY</literal> stores association information from within the entity. This
+                            strategy is the one chose by default.
                         </entry>
                     </row>
             </tbody>
