@@ -103,13 +103,18 @@
                 <exclude>.git</exclude>
                 <exclude>*.sh</exclude>
                 <exclude>**/.gitignore</exclude>
+                <exclude>**/.gitattributes</exclude>
+                <exclude>**/.bin</exclude>
                 <exclude>**/.settings/**</exclude>
                 <exclude>**/.project</exclude>
                 <exclude>**/.classpath</exclude>
+                <exclude>**/.factorypath</exclude>
+                <exclude>**/bin</exclude>
                 <exclude>**/.externalToolBuilders/**</exclude>
                 <exclude>**/target/**</exclude>
                 <exclude>**/.idea/**</exclude>
                 <exclude>**/*.iml</exclude>
+                <exclude>**/*.log</exclude>
             </excludes>
         </fileSet>
         <fileSet>
