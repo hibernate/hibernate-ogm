@@ -125,7 +125,7 @@
 
     <properties>
         <ehcacheVersion>2.5.1</ehcacheVersion>
-        <infinispanVersion>5.1.5.FINAL</infinispanVersion>
+        <infinispanVersion>5.1.7.Final</infinispanVersion>
         <mongodbVersion>2.8.0</mongodbVersion>
         <hibernateVersion>4.1.4.Final</hibernateVersion>
         <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
