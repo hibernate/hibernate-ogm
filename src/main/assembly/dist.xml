@@ -159,6 +159,33 @@
                 </dependencySets>
             </binaries>
         </moduleSet>
+        <!-- With Infinispan usage we suggest using the Hibernate Search / Infinispan integration too,
+             so add the relevant dependencies to the /infinispan directory too: -->
+        <moduleSet>
+            <includes>
+                <include>org.hibernate:hibernate-search-infinispan</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/infinispan</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
 
         <!--
         #######################################################################
@@ -210,31 +237,6 @@
                             <!-- Ehcache uses slf4j but we have it in the core module as Solr analyzers depend on it too -->
                             <exclude>org.slf4j:*</exclude>
                         </excludes>
-                    </dependencySet>
-                </dependencySets>
-            </binaries>
-        </moduleSet>
-        <moduleSet>
-            <includes>
-                <include>org.hibernate:hibernate-search-infinispan</include>
-            </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
-            </sources>
-            <binaries>
-                <outputDirectory>dist/lib/infinispan</outputDirectory>
-                <unpack>false</unpack>
-                <dependencySets>
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <scope>runtime</scope>
                     </dependencySet>
                 </dependencySets>
             </binaries>
