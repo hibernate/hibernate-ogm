@@ -439,7 +439,36 @@ public Set&lt;BankAccount&gt; bankAccounts;
     <section>
       <title>Queries</title>
 
-      <para>TODO explain how to do queries today</para>
+      <para>Hibernate OGM is a work in progress and we are actively working on
+      JP-QL query support. </para>
+
+      <para>In the mean time, you have two strategies to query entities stored
+      by Hibernate OGM:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>use native MongoDB queries</para>
+        </listitem>
+
+        <listitem>
+          <para>use Hibernate Search</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Because Hibernate OGM stores data in MongoDB in a natural way, you
+      can use the MongoDB driver and execute queries on the datastore directly
+      without involving Hibernate OGM. The benefit of this approach is to use
+      the query capabilities of MongoDB. The drawback is that raw MongoDB
+      documents will be returned and not managed entities.</para>
+
+      <para>The alternative approach, is to index your entities with Hibernate
+      Search. That way, a set of secondary indexes independent of MongoDB is
+      maintained by Hibernate Search and you can write queries on top of them.
+      The benefit of this approach is an nice integration at the JPA /
+      Hibernate API level (managed entities are returned by the queries). The
+      drawback is that you need to store the Lucene indexes somewhere (file
+      system, infinispan grid etc). Have a look at the Infinispan section for
+      more info on how to use Hibernate Search.</para>
     </section>
   </section>
 </section>
