@@ -128,7 +128,7 @@
         <infinispanVersion>5.1.7.Final</infinispanVersion>
         <mongodbVersion>2.8.0</mongodbVersion>
         <hibernateVersion>4.1.4.Final</hibernateVersion>
-        <hibernateSearchVersion>4.1.1.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>4.2.0.Beta1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0-SNAPSHOT</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
