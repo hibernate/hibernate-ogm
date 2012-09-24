@@ -28,134 +28,206 @@
 %BOOK_ENTITIES;
 ]>
 <section>
-    <title>MongoDB</title>
+  <title>MongoDB</title>
+
+  <para><ulink url="http://www.mongodb.org">MongoDB</ulink> is a document
+  oriented datastore written in C++ with strong emphasis on ease of
+  use.</para>
+
+  <section>
+    <title>Configuring MongoDB</title>
+
+    <para>This implementation is based upon the MongoDB Java driver, currently
+    the supported version is &mongodbVersion;.</para>
+
+    <para>The following properties are available to configure MongoDB
+    support:</para>
+
+    <table>
+      <title>MongoDB datastore configuration properties</title>
+
+      <tgroup cols="2">
+        <colspec colwidth="120px"/>
+
+        <colspec colwidth="350px"/>
+
+        <thead>
+          <row>
+            <entry>Property</entry>
+
+            <entry>Description</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>hibernate.ogm.datastore.provider</entry>
+
+            <entry>To use MongoDB as a datastore provider, this property must
+            be set to <literal>mongodb</literal></entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.host</entry>
+
+            <entry>The hostname of the mongodb instance. The default value is
+            <literal>127.0.0.1</literal></entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.port</entry>
+
+            <entry>The port used by the mongodb instance. The default value is
+            <literal>27017</literal></entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.database</entry>
+
+            <entry>The database to connect to. This property has no default
+            value.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.username</entry>
+
+            <entry>The username used when connecting to the MongoDB server.
+            This property has no default value.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.password</entry>
+
+            <entry>The password used to connect to the MongoDB server. This
+            property has no default value. This property is ignored if the
+            username isn't specified.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.safe</entry>
+
+            <entry>Defines the so-called safe mode in MongoDB. When set to
+            <literal>false</literal>, the driver does not wait for the write
+            operation to be applied before returning. This could lead to loss
+            of writes. When set to <literal>true</literal>, the driver waits
+            for the operation to succeed before returning. Note that this is
+            slower than the unsafe mode. The default value is
+            <literal>true</literal>.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.connection_timeout</entry>
+
+            <entry>Defines the timeout used by the driver when the connection
+            to the MongoDB instance is initiated. This configuration is
+            expressed in milliseconds. The default value is
+            <literal>5000</literal>.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.associations.store</entry>
+
+            <entry>Defines the way OGM stores association information. There
+            are three strategies to store association information.
+            <literal>GLOBAL_COLLECTION</literal> stores the association
+            information in a unique MongoDB collection for all associations.
+            <literal>COLLECTION</literal> stores the association in a
+            dedicated MongoDB collection per association.
+            <literal>IN_ENTITY</literal> stores association information from
+            within the entity. <literal>IN_ENTITY</literal> is the
+            default.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <note>
+      <para>The general policy in Hibernate OGM is to not go against the
+      underlying NoSQL store. We have made an exception for MongoDB's write
+      concern default setting - which is unsafe out of the box. Based on the
+      typical use case of Hibernate OGM (domain models) and based on the
+      production feedback we have received, we do consider MongoDB's default
+      value to be dangerous.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Storage principles</title>
+
+    <para>Hibernate OGM tries to make the mapping to the underlying datastore
+    as natural as possible so that third party applications not using
+    Hibernate OGM can still read and update the same datastore. We worked
+    particularly hard on the MongoDB model to offer various classic mappings
+    between your object model and the MongoDB documents.</para>
 
     <section>
-        <title>Configuring MongoDB</title>
+      <title>Entities</title>
 
-        <para>
-            This implementation is based upon the MongoDB Java driver, currently the supported version is
-            &mongodbVersion;.
-        </para>
-        <para>To use Hibernate OGM with MongoDB there are the properties to
-            configure:</para>
+      <para>Entities are stored as MongoDB documents and not as BLOBs which
+      means each entity property will be translated into a document field. You
+      can use the name property of <classname>@Table</classname> and
+      <classname>@Column</classname> annotation and so rename the collections
+      and the document's field.</para>
 
-        <table>
-            <title>MongoDB datastore configuration properties</title>
-            <tgroup cols="2">
-                <colspec colwidth="120px" />
-                <colspec colwidth="350px" />
-                <thead>
-                    <row>
-                        <entry>Property</entry>
-                        <entry>Description</entry>
-                    </row>
-                </thead>
-                <tbody>
-                    <row>
-                        <entry>hibernate.ogm.datastore.provider</entry>
-                        <entry>To use MongoDB as a datastore provider, this property must be set to <literal>mongodb</literal></entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.host</entry>
-                        <entry>The hostname of the mongodb instance. The default value is <literal>127.0.0.1</literal></entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.port</entry>
-                        <entry>The port used by the mongodb instance. The default value is <literal>27017</literal></entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.database</entry>
-                        <entry>The database to connect to. There is any default value for this property</entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.username</entry>
-                        <entry>
-                            The username to use when the MongoDB server requires authentication.
-                            There is any default value for this property
-                        </entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.password</entry>
-                        <entry>
-                            The password to use when the MongoDB server requires authentication.
-                            There is any default value for this property
-                            This property is ignored if the username isn't specified.
-                        </entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.safe</entry>
-                        <entry>
-                            It defines the safe mode of the MongoDB driver. When set to <literal>false</literal>, the
-                            driver does not wait for the write operation to be applied before returning.
-                            This could lead to loss of writes. When set to <literal>true</literal> which means
-                            the driver will wait for the operation to succeed before returning.
-                            Note that this is slower than the unsafe mode.
-                            The default value is <literal>true</literal>
-                        </entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.connection_timeout</entry>
-                        <entry>
-                            It defines the timeout used by the driver when the connection to the MongoDB instance is
-                            made. This configuration is expressed in milliseconds.
-                            The default value is <literal>5000</literal>
-                        </entry>
-                    </row>
-                    <row>
-                        <entry>hibernate.ogm.mongodb.associations.store</entry>
-                        <entry>
-                            It defines the way OGM stores association information. There are three way to store
-                            association information.
-                            <literal>GLOBAL_COLLECTION</literal> stores the association information in a unique MongoDB
-                            collection for all associations.
-                            <literal>COLLECTION</literal> stores the association in a dedicated MongoDB collection
-                            per association.
-                            <literal>IN_ENTITY</literal> stores association information from within the entity. This
-                            strategy is the one chose by default.
-                        </entry>
-                    </row>
-            </tbody>
-        </tgroup>
-        </table>
+      <para>Note that embedded objects are mapped as nested documents.</para>
 
-        <note>
-            <para>The general policy in Hibernate OGM is to not go against the
-                underlying NoSQL store. We have made an exception for MongoDB's write
-                concern default setting - which is unsafe out of the box. Based on the
-                typical use case of Hibernate OGM (domain models) and based on the
-                production feedback we have received, we do consider MongoDB's default
-                value to be dangerous.</para>
-        </note>
-    </section>
+      <example>
+        <title>Example of an entity with an embedded object</title>
 
+        <programlisting language="JAVA" role="JAVA">
+@Entity
+public class News {
+    @Id
+    private String id;
+    private String title;
+    @Column(name="desc")
+    private String description;
+    @Embedded
+    private NewsPaper paper;
+    
+    //getters, setters ...
+}
 
-    <section>
-        <title>Storage principles</title>
+@Embeddable
+public class NewsPaper {
+    private String name;
+    private String owner;
+    //getters, setters ...
+}
+</programlisting>
 
-        <section>
-            <title>Entities</title>
-            <para>
-                Entities are stored as MongoDB documents and not as BLOBs which means each entity property will be
-                translated into a document field. You can use the name property of @Table and @Column annotation and so
-                rename the collections and the document's field.
-                Document oriented NoSQL solution are powerful
-            </para>
-            <section>
-                <title>Identifiers</title>
-                <para>
-                    The <literal>_id</literal> field of a MongoDB document is directly used to store the ID mapped
-                    in the entities. That means you can use simple IDs (no matter the Java type used) as well as
-                    Embedded ids. Embedded ids are stored as embedded document into the <literal>_id</literal> field.
-                    The dialect is in charge to map the <literal>@Id</literal> entity property with the
-                    <literal>_id</literal> document field so you can name the entity id like you want it will always be
-                    stored into <literal>_id</literal> and so you can benefit from the MongoDB index on _id fields.
-                    For instance if you have an entity like:
-                </para>
+        <programlisting language="JSON" role="JSON">
+{
+    "_id" : "1234-5678-0123-4567",
+    "title": "On the merits of NoSQL",
+    "desc": "This paper discuss why NoSQL will save the world for good",
+    "paper": {
+        "name": "NoSQL journal of prophecies",
+        "owner": "Delphy"
+    }
+}
+                    </programlisting>
+      </example>
 
-                <example>
-                    <title>Example of an entity using Embedded id</title>
-                    <programlisting role="JAVA" language="JAVA">
+      <section>
+        <title>Identifiers</title>
+
+        <para>The <literal>_id</literal> field of a MongoDB document is
+        directly used to store the identifier columns mapped in the entities.
+        That means you can use simple identifiers (no matter the Java type
+        used) as well as Embedded identifiers. Embedded identifiers are stored
+        as embedded document into the <literal>_id</literal> field. Hibernate
+        OGM will convert the <literal>@Id</literal> property into a
+        <literal>_id</literal> document field so you can name the entity id
+        like you want it will always be stored into <literal>_id</literal>
+        (the recommended approach in MongoDB). That means in particular that
+        MongoDB will automatically index your _id fields. Let's look at an
+        example:</para>
+
+        <example>
+          <title>Example of an entity using Embedded id</title>
+
+          <programlisting language="JAVA" role="JAVA">
 @Entity
 public class News {
     @EmbeddedId
@@ -170,56 +242,98 @@ public class NewsID implements Serializable {
     //getters, setters ...
 }
                     </programlisting>
-                </example>
 
-                <example>
-                    <title>Representation of an embedded id</title>
-                    <programlisting role="JSON" language="JSON">
+          <programlisting language="JSON" role="JSON">
 {
-"_id" :{
-    "title": "How does Hibernate OGM MongoDB work?",
-    "author": "Guillaume"
+    "_id" :{
+        "title": "How does Hibernate OGM MongoDB work?",
+        "author": "Guillaume"
     }
 }
                     </programlisting>
-                </example>
-            </section>
-        </section>
+        </example>
+      </section>
+    </section>
 
-        <section>
-            <title>Associations</title>
-            <para>
-                Hibernate OGM MongoDB proposes 3 strategies to store navigation information for associations. To switch
-                between each of these strategies, you have to use the <literal>hibernate.ogm.mongodb.associations.store</literal>
-                configuration property.
-                The three possible values are:
-                <itemizedlist>
-                    <listitem>
-                        <para>GLOBAL_COLLECTION</para>
-                    </listitem>
-                    <listitem>
-                        <para>COLLECTION</para>
-                    </listitem>
-                    <listitem>
-                        <para>IN_ENTITY</para>
-                    </listitem>
-                </itemizedlist>
-                If this property is not explicitly set, the IN_ENTITY strategy is chose by default.
-        </para>
+    <section>
+      <title>Associations</title>
 
-            <section>
-                <title>Global collection strategy</title>
-                <para>
-                    This strategy means that OGM will create a single collection in which it will stores all navigation
-                    information for all associations. Each document of this collection is structure in 2 parts.
-                    The first is the <literal>_id</literal> field which contains ID of the association owner and the name
-                    of the entities that are at each side of the relationship.
-                    The second part is the <literal>rows</literal> field which stores (into an embedded collection) all
-                    ids that the current instance is related to.
-                </para>
-                <example>
-                    <title>Unidirectional relationship</title>
-                    <programlisting role="JSON" language="JSON">
+      <para>Hibernate OGM MongoDB proposes 3 strategies to store navigation
+      information for associations. To switch between each of these
+      strategies, use the
+      <literal>hibernate.ogm.mongodb.associations.store</literal>
+      configuration property. The three possible values are: </para>
+
+      <itemizedlist>
+        <listitem>
+          <para>IN_ENTITY (default)</para>
+        </listitem>
+
+        <listitem>
+          <para>GLOBAL_COLLECTION</para>
+        </listitem>
+
+        <listitem>
+          <para>COLLECTION</para>
+        </listitem>
+      </itemizedlist>
+
+      <section>
+        <title>In Entity strategy</title>
+
+        <para>This strategy works pretty like the a foreign key in order
+        terms, OGM will directly store the id of the other side of the
+        association into a field or an embedded document depending if the
+        mapping concerns a single object or a collection. The field that
+        stores the relationship information is named like the entity
+        property.</para>
+
+        <example>
+          <title>Java entity</title>
+
+          <programlisting language="JAVA" role="JAVA">
+@Entity
+public class AccountOwner {
+@Id
+private String id;
+
+@ManyToMany
+public Set&lt;BankAccount&gt; bankAccounts;
+
+//getters, setters, ...
+                </programlisting>
+        </example>
+
+        <example>
+          <title>JSON representation</title>
+
+          <programlisting language="JSON" role="JSON">
+{
+    "_id" : "owner0001",
+    "bankAccounts" : [
+        { "bankAccounts_id" : "accountXYZ" }
+    ]
+}
+                    </programlisting>
+        </example>
+      </section>
+
+      <section>
+        <title>Global collection strategy</title>
+
+        <para>With this strategy, Hibernate OGM creates a single collection in
+        which it will stores all navigation information for all associations.
+        Each document of this collection is structure in 2 parts. The first is
+        the <literal>_id</literal> field which contains the identifier
+        information of the association owner and the name of the association
+        table. The second part is the <literal>rows</literal> field which
+        stores (into an embedded collection) all ids that the current instance
+        is related to.</para>
+
+        <example>
+          <title>Unidirectional relationship</title>
+
+          <programlisting language="JSON" role="JSON">
 {
     "_id": {
         "owners_id": "owner0001",
@@ -230,16 +344,16 @@ public class NewsID implements Serializable {
     ]
 }
                     </programlisting>
-                </example>
+        </example>
 
-                <para>
-                    In case of bidirectional relationships, another document is created and the IDs are switched which
-                    look like this:
-                </para>
+        <para>For a bidirectional relationship, another document is created
+        where ids are reversed. Don't worry, Hibernate OGM takes care of
+        keeping them in sync:</para>
 
-                <example>
-                    <title>Bidirectional relationship</title>
-                    <programlisting role="JSON" language="JSON">
+        <example>
+          <title>Bidirectional relationship</title>
+
+          <programlisting language="JSON" role="JSON">
 {
     "_id": {
         "owners_id": "owner0001",
@@ -259,31 +373,39 @@ public class NewsID implements Serializable {
     }]
 }
                     </programlisting>
-                </example>
+        </example>
+      </section>
 
-            </section>
-            <section>
-                <title>One collection per association strategy</title>
-                <para>
-                    This strategy means that OGM will create a collection in which it will stores all navigation
-                    information per association. So if an entity A is related to B and C thus 2 collections will be
-                    created. The name of this collection is made by concatening `associations_" with the name of both
-                    entities that participate to the relationship. For example, if the BankAccount and Owner are related,
-                    the collection used to store will be named <literal>associations_Owner_BankAccount</literal>.
-                    Internally, each document of this collection has the following structure:
-                    <itemizedlist>
-                        <listitem>
-                            <para><literal>_id</literal> contains the id of the owner of relationship</para>
-                        </listitem>
-                        <listitem>
-                            <para><literal>rows</literal> contains all the id of the related entities</para>
-                        </listitem>
-                    </itemizedlist>
-                </para>
+      <section>
+        <title>One collection per association strategy</title>
 
-                <example>
-                    <title>Unidirectional relationship</title>
-                    <programlisting role="JSON" language="JSON">
+        <para>In this strategy, Hibernate OGM creates a MongoDB collection per
+        association in which it will stores all navigation information for
+        that particular association. This is the strategy closest to the
+        relational model. If an entity A is related to B and C, 2 collections
+        will be created. The name of this collection is made of the
+        association table concatenated with <literal>associations_</literal>.
+        For example, if the <classname>BankAccount</classname> and
+        <classname>Owner</classname> are related, the collection used to store
+        will be named <literal>associations_Owner_BankAccount</literal>. The
+        prefix is useful to quickly identify the association collections from
+        the entity collections. Each document of an association collection has
+        the following structure: <itemizedlist>
+            <listitem>
+              <para><literal>_id</literal> contains the id of the owner of
+              relationship</para>
+            </listitem>
+
+            <listitem>
+              <para><literal>rows</literal> contains all the id of the related
+              entities</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <example>
+          <title>Unidirectional relationship</title>
+
+          <programlisting language="JSON" role="JSON">
 {
     "_id" : { "owners_id" : "owner0001" },
     "rows" : [
@@ -291,10 +413,12 @@ public class NewsID implements Serializable {
     ]
 }
                     </programlisting>
-                </example>
-                <example>
-                    <title>Bidirectional relationship</title>
-                    <programlisting role="JSON" language="JSON">
+        </example>
+
+        <example>
+          <title>Bidirectional relationship</title>
+
+          <programlisting language="JSON" role="JSON">
 {
     "_id" : { "owners_id" : "owner0001" },
     "rows" : [
@@ -308,43 +432,14 @@ public class NewsID implements Serializable {
     ]
 }
                     </programlisting>
-                </example>
-            </section>
-            <section>
-                <title>In Entity strategy</title>
-                <para>
-                    This strategy works pretty like the a foreign key in order terms, OGM will directly store the
-                    id of the other side of the association into a field or an embedded document depending if the mapping
-                    concerns a single object or a collection. The field that stores the relationship information is
-                    named like the entity property.
-                </para>
-                <example>
-                <title>Java entity</title>
-                <programlisting role="JAVA" language="JAVA">
-@Entity
-public class AccountOwner {
-@Id
-private String id;
-
-@ManyToMany
-public Set&lt;BankAccount&gt; bankAccounts;
-
-//getters, setters, ...
-                </programlisting>
-                </example>
-                <example>
-                    <title>JSON representation</title>
-                    <programlisting role="JSON" language="JSON">
-{
-    "_id" : "owner0001",
-    "bankAccounts" : [
-        { "bankAccounts_id" : "accountXYZ" }
-    ]
-}
-                    </programlisting>
-                </example>
-
-            </section>
-        </section>
+        </example>
+      </section>
     </section>
+
+    <section>
+      <title>Queries</title>
+
+      <para>TODO explain how to do queries today</para>
+    </section>
+  </section>
 </section>
