@@ -62,13 +62,6 @@
             <artifactId>hibernate-search-engine</artifactId>
             <optional>true</optional>
         </dependency>
-        <!-- Currently we don't have explicit tests using it, but we still need to define
-            a dependency to include the dependency in the distribution -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
             <artifactId>jboss-transaction-api_1.1_spec</artifactId>
