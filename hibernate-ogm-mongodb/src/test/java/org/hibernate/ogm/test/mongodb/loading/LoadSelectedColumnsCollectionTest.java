@@ -29,6 +29,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.junit.Test;
 
@@ -55,7 +58,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  */
-public class LoadSelectedColumnsTest extends OgmTestCase {
+public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 	@Test
 	public void testLoadSelectedColumns() {
@@ -151,6 +154,15 @@ public class LoadSelectedColumnsTest extends OgmTestCase {
 
 	protected GridDialect getGridDialect(){
 		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
+	}
+
+	@Override
+	protected void configure(Configuration cfg) {
+		super.configure( cfg );
+		cfg.setProperty(
+				Environment.MONGODB_ASSOCIATIONS_STORE,
+				AssociationStorage.COLLECTION.toString().toLowerCase()
+		);
 	}
 
 	@Override

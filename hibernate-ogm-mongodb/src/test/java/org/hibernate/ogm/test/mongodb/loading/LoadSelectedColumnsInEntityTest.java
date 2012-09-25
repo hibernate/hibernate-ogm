@@ -39,7 +39,7 @@ import com.mongodb.DBObject;
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsTest {
+public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollectionTest {
 
 	@Override
 	protected void configure(Configuration cfg) {
