@@ -23,6 +23,14 @@
   ~ Boston, MA  02110-1301  USA
   -->
 
+<!--
+  When updating this file, make sure we don't include duplicate jars in different subdirectories.
+  Generate the distribution preview to see how it looks like:
+   mvn clean package assembly:assembly -DskipTests=true -DbuildDocs=true
+
+  To inspect which jars are being distributed and look for duplicates this might be handy:
+  tar -ztvf target/*-dist.tar.gz | grep .jar| sed -e "s/.*\/dist//" -e "s/\(\/lib\/[^\/]*\)\/\(.*\)/\2 \t\t\t\1/" | sort
+ -->
 <assembly>
     <id>dist</id>
     <formats>
@@ -54,43 +62,249 @@
                         <outputDirectory>/dist/lib/required</outputDirectory>
                         <scope>runtime</scope>
                         <excludes>
-                            <exclude>org.hibernate:hibernate-search</exclude>
+                            <!-- we have this in the Infinispan module already -->
                             <exclude>org.hibernate:hibernate-search-infinispan</exclude>
-                            <exclude>org.apache.lucene:lucene-core</exclude>
-                            <exclude>org.infinispan:infinispan-lucene-directory</exclude>
+                            <!-- we have this in the root directory, don't repeat it -->
+                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude  >
+                            <!-- being pulled in via Hibernate Search, but we want it in the Infinispan module only -->
+                            <exclude>org.infinispan:*</exclude  >
+                            <exclude>org.jboss.marshalling:*</exclude>
+                            <exclude>org.rhq.helpers:*</exclude>
+                            <exclude>org.codehaus.woodstox:*</exclude>
+                            <exclude>net.sf.ehcache:*</exclude>
+                            <exclude>org.mongodb:*</exclude>
                         </excludes>
                     </dependencySet>
-
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/optional</outputDirectory>
-                        <includes>
-                            <include>org.hibernate:hibernate-search</include>
-                            <include>org.hibernate:hibernate-search-infinispan</include>
-                            <include>org.apache.lucene:lucene-core</include>
-                            <include>org.infinispan:infinispan-lucene-directory</include>
-                        </includes>
-                    </dependencySet>
-
                     <dependencySet>
                         <useProjectArtifact>false</useProjectArtifact>
                         <outputDirectory>/dist/lib/provided</outputDirectory>
                         <scope>provided</scope>
-                        <excludes>
-                            <exclude>org.hibernate:hibernate-search</exclude>
-                            <exclude>org.hibernate:hibernate-search-infinispan</exclude>
-                            <exclude>org.apache.lucene:lucene-core</exclude>
-                            <exclude>org.infinispan:infinispan-lucene-directory</exclude>
-                        </excludes>
                     </dependencySet>
-
                 </dependencySets>
             </binaries>
         </moduleSet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-infinispan
+        #######################################################################
+         -->
+
+        <moduleSet>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/infinispan</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                        <excludes>
+                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
+                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate:*</exclude>
+                            <exclude>org.hibernate.common:*</exclude>
+                            <exclude>dom4j:dom4j</exclude>
+                            <exclude>org.antlr:*</exclude>
+                            <exclude>antlr:*</exclude>
+                            <exclude>org.mongodb:*</exclude>
+                            <exclude>org.jboss.logging:*</exclude>
+                            <exclude>org.javassist:*</exclude>
+                            <exclude>org.codehaus.jackson:*</exclude>
+                            <exclude>org.apache.avro:*</exclude>
+                            <exclude>org.apache.lucene:*</exclude>
+                            <exclude>com.thoughtworks.paranamer:*</exclude>
+                            <exclude>org.xerial.snappy:*</exclude>
+                            <exclude>org.slf4j:*</exclude>
+                            <exclude>net.sf.ehcache:*</exclude>
+                            <!-- JGroups is already included via Hibernate Search in the main module -->
+                            <exclude>org.jgroups:*</exclude>
+                        </excludes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+        <moduleSet>
+            <includes>
+                <include>org.hibernate:hibernate-search-infinispan</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/infinispan</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+        <!-- With Infinispan usage we suggest using the Hibernate Search / Infinispan integration too,
+             so add the relevant dependencies to the /infinispan directory too: -->
+        <moduleSet>
+            <includes>
+                <include>org.hibernate:hibernate-search-infinispan</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/infinispan</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-ehcache
+        #######################################################################
+         -->
+
+        <moduleSet>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-ehcache</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/ehcache</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/ehcache</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                        <excludes>
+                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
+                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate:*</exclude>
+                            <exclude>org.hibernate.common:*</exclude>
+                            <exclude>dom4j:dom4j</exclude>
+                            <exclude>org.antlr:*</exclude>
+                            <exclude>antlr:*</exclude>
+                            <exclude>org.mongodb:*</exclude>
+                            <exclude>org.jboss.logging:*</exclude>
+                            <exclude>org.jboss.marshalling:*</exclude>
+                            <exclude>org.javassist:*</exclude>
+                            <exclude>org.apache.avro:*</exclude>
+                            <exclude>org.codehaus.jackson:*</exclude>
+                            <exclude>org.xerial.snappy:*</exclude>
+                            <exclude>org.apache.lucene:*</exclude>
+                            <exclude>org.infinispan:*</exclude>
+                            <exclude>org.jgroups:*</exclude>
+                            <exclude>org.rhq.helpers:*</exclude>
+                            <exclude>org.codehaus.woodstox:*</exclude>
+                            <exclude>com.thoughtworks.paranamer:*</exclude>
+                            <!-- Ehcache uses slf4j but we have it in the core module as Solr analyzers depend on it too -->
+                            <exclude>org.slf4j:*</exclude>
+                        </excludes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+
+        <!--
+        #######################################################################
+        #  hibernate-ogm-mongodb
+        #######################################################################
+         -->
+
+        <moduleSet>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/mongodb</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/mongodb</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                        <excludes>
+                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
+                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate:*</exclude>
+                            <exclude>org.hibernate.common:*</exclude>
+                            <exclude>dom4j:dom4j</exclude>
+                            <exclude>org.antlr:*</exclude>
+                            <exclude>antlr:*</exclude>
+                            <exclude>org.jboss.logging:*</exclude>
+                            <exclude>org.jboss.marshalling:*</exclude>
+                            <exclude>org.javassist:*</exclude>
+                            <exclude>org.apache.avro:*</exclude>
+                            <exclude>org.codehaus.jackson:*</exclude>
+                            <exclude>org.xerial.snappy:*</exclude>
+                            <exclude>org.apache.lucene:*</exclude>
+                            <exclude>org.infinispan:*</exclude>
+                            <exclude>org.jgroups:*</exclude>
+                            <exclude>org.rhq.helpers:*</exclude>
+                            <exclude>org.codehaus.woodstox:*</exclude>
+                            <exclude>com.thoughtworks.paranamer:*</exclude>
+                            <exclude>org.slf4j:*</exclude>
+                            <exclude>net.sf.ehcache:*</exclude>
+                        </excludes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+
     </moduleSets>
 
     <files>
         <file>
-            <source>readme.txt</source>
+            <source>readme.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
@@ -117,13 +331,18 @@
                 <exclude>.git</exclude>
                 <exclude>*.sh</exclude>
                 <exclude>**/.gitignore</exclude>
+                <exclude>**/.gitattributes</exclude>
+                <exclude>**/.bin</exclude>
                 <exclude>**/.settings/**</exclude>
                 <exclude>**/.project</exclude>
                 <exclude>**/.classpath</exclude>
+                <exclude>**/.factorypath</exclude>
+                <exclude>**/bin</exclude>
                 <exclude>**/.externalToolBuilders/**</exclude>
                 <exclude>**/target/**</exclude>
                 <exclude>**/.idea/**</exclude>
                 <exclude>**/*.iml</exclude>
+                <exclude>**/*.log</exclude>
             </excludes>
         </fileSet>
         <fileSet>
