@@ -63,7 +63,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value
-			associationStorage = AssociationStorage.COLLECTION;
+			associationStorage = AssociationStorage.IN_ENTITY;
 		}
 		else {
 			try {
