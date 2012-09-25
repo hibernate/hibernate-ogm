@@ -47,9 +47,9 @@
       <title>MongoDB datastore configuration properties</title>
 
       <tgroup cols="2">
-        <colspec colwidth="120px"/>
+        <colspec colwidth="30%"/>
 
-        <colspec colwidth="350px"/>
+        <colspec colwidth="70%"/>
 
         <thead>
           <row>
