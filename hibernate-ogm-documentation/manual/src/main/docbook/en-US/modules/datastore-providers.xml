@@ -108,14 +108,14 @@
   <programlisting language="XML" role="XML">&lt;dependency&gt;
     &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
     &lt;artifactId&gt;hibernate-ogm-infinispan&lt;/artifactId&gt;
-    &lt;version&gt;&infinispanVersion;&lt;/version&gt;
+    &lt;version&gt;&version;&lt;/version&gt;
 &lt;/dependency&gt;
 </programlisting>
 
   <para>We have respectively <literal>hibernate-ogm-infinispan</literal>,
   <literal>hibernate-ogm-ehcache</literal> and
   <literal>hibernate-ogm-mongodb</literal>. The map datastore is included in
-  Hibernate OGM engine module.</para>
+  the Hibernate OGM engine module.</para>
 
   <para>By default, a datastore provider chooses the best grid dialect
   transparently but you can manually override that setting with the
