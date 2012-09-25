@@ -328,7 +328,7 @@ public class MongoDBDialect implements GridDialect {
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
-				entity = this.prepareIdObject( key );
+				entity = this.prepareIdObject( key.getEntityKey() );
 			}
 			if ( getAssociationFieldOrNull( key, entity ) == null ) {
 				if ( insert ) {
@@ -389,7 +389,7 @@ public class MongoDBDialect implements GridDialect {
 
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			collection = this.getCollection( key.getEntityKey() );
-			query = this.prepareIdObject( key );
+			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
 		}
 		else {
