@@ -57,7 +57,7 @@ public interface Environment {
 	 */
 	public static final String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
 
-	/*
+	/**
 	 * The timeout used at the connection to the MongoDB instance.
 	 * This value is set in milliseconds.
 	 */
@@ -83,13 +83,12 @@ public interface Environment {
 	/**
 	 * Where to store associations.
 	 */
-
 	public static final String MONGODB_ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
 	public static final String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
 
 	/**
 	 * The default value used to set the timeout during the connection to the MongoDB instance (@link MONGODB_TIMEOUT)
-	 * This value is set in millseconds
+	 * This value is set in milliseconds
 	 */
 	public static final int MONGODB_DEFAULT_TIMEOUT = 5000;
 }

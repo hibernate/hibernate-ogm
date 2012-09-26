@@ -141,7 +141,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "MongoDBAssociationSnapshot(" );
 		sb.append( map.size() );
-		sb.append( " RowKey entries)." );
+		sb.append( ") RowKey entries)." );
 		return sb.toString();
 	}
 }
