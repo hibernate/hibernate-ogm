@@ -14,7 +14,7 @@ public class CompositeIdInEmbeddedTest extends CompositeIdTest {
 		super.refineInfo( info );
 		info.getProperties().setProperty(
 				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorage.IN_ENTITY.toString().toLowerCase()
+				AssociationStorage.IN_ENTITY.name()
 		);
 	}
 }
