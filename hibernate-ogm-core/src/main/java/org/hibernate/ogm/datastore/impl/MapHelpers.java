@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -67,8 +67,8 @@ public final class MapHelpers {
 			snapshot = Collections.EMPTY_MAP;
 		}
 		else {
-			//loaded assoc tuples are made of MapBasedTupleSnapshot
-			snapshot = ( ( MapBasedTupleSnapshot) snapshotInstance ).getMap();
+			//loaded assoc tuples are made of MapTupleSnapshot
+			snapshot = ( (MapTupleSnapshot) snapshotInstance ).getMap();
 		}
 		Map<String, Object> map = new HashMap<String, Object>( snapshot );
 		MapHelpers.applyTupleOpsOnMap( tuple, map );

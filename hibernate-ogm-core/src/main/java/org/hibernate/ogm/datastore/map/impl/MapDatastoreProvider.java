@@ -1,4 +1,4 @@
-package org.hibernate.ogm.datastore.mapbased.impl;
+package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,7 +33,7 @@ import org.hibernate.service.spi.Stoppable;
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
+public class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -59,12 +59,12 @@ public class MapBasedDatastoreProvider implements DatastoreProvider, Startable, 
 	@Override
 	public void stop() {
 		entitiesKeyValueStorage.clear();
-		log.debug( "Stopped and cleared MapBasedDatastoreProvider" );
+		log.debug( "Stopped and cleared MapDatastoreProvider" );
 	}
 
 	@Override
 	public void start() {
-		log.debug( "MapBasedDatastoreProvider started" );
+		log.debug( "MapDatastoreProvider started" );
 	}
 
 	/**

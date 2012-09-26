@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mapbased.impl;
+package org.hibernate.ogm.datastore.map.impl;
 
 import java.io.Serializable;
 
@@ -42,7 +42,7 @@ import org.hibernate.persister.entity.Lockable;
  */
 public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
-	private volatile MapBasedDatastoreProvider provider;
+	private volatile MapDatastoreProvider provider;
 	protected final Lockable lockable;
 	protected final LockMode lockMode;
 	protected final GridType identifierGridType;
@@ -58,7 +58,7 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
-		MapBasedDatastoreProvider dataStore = getProvider( session );
+		MapDatastoreProvider dataStore = getProvider( session );
 		EntityKey key = EntityKeyBuilder.fromData(
 				lockable.getRootTableName(),
 				lockable.getRootTableIdentifierColumnNames(),
@@ -70,14 +70,14 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 		// (Comment by Emmanuel)
 	}
 
-	protected final MapBasedDatastoreProvider getProvider(SessionImplementor session) {
+	protected final MapDatastoreProvider getProvider(SessionImplementor session) {
 		if ( provider == null ) {
 			DatastoreProvider service = session.getFactory().getServiceRegistry().getService(DatastoreProvider.class);
-			if ( service instanceof MapBasedDatastoreProvider ) {
-				provider = (MapBasedDatastoreProvider) service;
+			if ( service instanceof MapDatastoreProvider ) {
+				provider = (MapDatastoreProvider) service;
 			}
 			else {
-				log.unexpectedDatastoreProvider(service.getClass(), MapBasedDatastoreProvider.class);
+				log.unexpectedDatastoreProvider(service.getClass(), MapDatastoreProvider.class);
 			}
 		}
 		return provider;

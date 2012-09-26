@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mapbased.impl;
+package org.hibernate.ogm.datastore.map.impl;
 
 import java.io.Serializable;
 
@@ -43,7 +43,7 @@ public class MapPessimisticReadLockingStrategy extends MapPessimisticWriteLockin
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
-		MapBasedDatastoreProvider dataStore = getProvider( session );
+		MapDatastoreProvider dataStore = getProvider( session );
 		EntityKey key = EntityKeyBuilder.fromData(
 				lockable.getRootTableName(),
 				lockable.getRootTableIdentifierColumnNames(),

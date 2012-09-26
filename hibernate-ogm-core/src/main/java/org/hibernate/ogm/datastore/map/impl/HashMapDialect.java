@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mapbased.impl;
+package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +30,7 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
+import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -49,9 +49,9 @@ import org.hibernate.type.Type;
  */
 public class HashMapDialect implements GridDialect {
 
-	private final MapBasedDatastoreProvider provider;
+	private final MapDatastoreProvider provider;
 
-	public HashMapDialect(MapBasedDatastoreProvider provider) {
+	public HashMapDialect(MapDatastoreProvider provider) {
 		this.provider = provider;
 	}
 
@@ -83,7 +83,7 @@ public class HashMapDialect implements GridDialect {
 			return null;
 		}
 		else {
-			return new Tuple( new MapBasedTupleSnapshot( entityMap ) );
+			return new Tuple( new MapTupleSnapshot( entityMap ) );
 		}
 	}
 
@@ -91,12 +91,12 @@ public class HashMapDialect implements GridDialect {
 	public Tuple createTuple(EntityKey key) {
 		HashMap<String,Object> tuple = new HashMap<String,Object>();
 		provider.putEntity( key, tuple );
-		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
+		return new Tuple( new MapTupleSnapshot( tuple ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Map<String,Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
+		Map<String,Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 	}
 

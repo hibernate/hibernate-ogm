@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.mapbased.impl.MapBasedDatastoreProvider;
+import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -51,20 +51,20 @@ public class HashMapTestHelper implements TestableGridDialect {
 	}
 
 	private static Map<EntityKey,Map<String, Object>> getEntityMap(SessionFactory sessionFactory) {
-		MapBasedDatastoreProvider castProvider = getProvider(sessionFactory);
+		MapDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getEntityMap();
 	}
 
-	private static MapBasedDatastoreProvider getProvider(SessionFactory sessionFactory) {
+	private static MapDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
-		if ( !( MapBasedDatastoreProvider.class.isInstance( provider ) ) ) {
-			throw new RuntimeException("Not testing with MapBasedDatastoreProvider, cannot extract underlying map");
+		if ( !( MapDatastoreProvider.class.isInstance( provider ) ) ) {
+			throw new RuntimeException("Not testing with MapDatastoreProvider, cannot extract underlying map");
 		}
-		return MapBasedDatastoreProvider.class.cast(provider);
+		return MapDatastoreProvider.class.cast(provider);
 	}
 
 	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(SessionFactory sessionFactory) {
-		MapBasedDatastoreProvider castProvider = getProvider(sessionFactory);
+		MapDatastoreProvider castProvider = getProvider(sessionFactory);
 		return castProvider.getAssociationsMap();
 	}
 

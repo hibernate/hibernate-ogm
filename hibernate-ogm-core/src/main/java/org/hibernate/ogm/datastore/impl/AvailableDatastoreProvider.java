@@ -26,7 +26,7 @@ package org.hibernate.ogm.datastore.impl;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public enum AvailableDatastoreProvider {
-	MAPBASED(  "org.hibernate.ogm.datastore.mapbased.impl.MapBasedDatastoreProvider" ),
+	MAP(  "org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider" ),
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" );
