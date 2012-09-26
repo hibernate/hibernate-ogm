@@ -157,10 +157,6 @@ public class MongoDBDialect implements GridDialect {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
-	private BasicDBObject prepareIdObject(AssociationKey key){
-		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
-	}
-
 	private BasicDBObject prepareIdObject(RowKey key) {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
@@ -260,22 +256,7 @@ public class MongoDBDialect implements GridDialect {
 	public void removeTuple(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
-		if ( toDelete != null ) {
-			collection.remove( toDelete );
-		}
-		else {
-			if ( log.isDebugEnabled() ) {
-				StringBuilder builder = new StringBuilder( "Unable to remove {" );
-				for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-					builder.append( key.getColumnNames()[i] );
-					builder.append( ":" );
-					builder.append( key.getColumnValues()[i] );
-				}
-
-				builder.append( "} (object not found)" );
-				log.debug( builder.toString() );
-			}
-		}
+		collection.remove( toDelete );
 	}
 
 	//not for embedded
