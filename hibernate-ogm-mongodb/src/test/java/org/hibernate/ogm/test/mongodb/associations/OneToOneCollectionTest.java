@@ -34,7 +34,7 @@ public class OneToOneCollectionTest extends OneToOneTest {
 		super.configure( cfg );
 		cfg.setProperty(
 				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorage.COLLECTION.toString().toLowerCase()
+				AssociationStorage.COLLECTION.name()
 		);
 	}
 }
