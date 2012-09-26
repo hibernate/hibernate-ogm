@@ -34,7 +34,7 @@ public class ManyToManyCollectionTest extends ManyToManyTest {
 		super.configure( cfg );
 		cfg.setProperty(
 				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorage.COLLECTION.toString().toLowerCase()
+				AssociationStorage.COLLECTION.name()
 		);
 	}
 }
