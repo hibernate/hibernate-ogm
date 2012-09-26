@@ -1,6 +1,6 @@
-/*
+/* 
  * Hibernate, Relational Persistence for Idiomatic Java
- *
+ * 
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,38 +18,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
+package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class MapBasedTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class MapAssociationSnapshot implements AssociationSnapshot {
 
-	public MapBasedTupleSnapshot(Map<String,Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	private final Map<RowKey, Map<String, Object>> associationMap;
+
+	public MapAssociationSnapshot(Map<RowKey, Map<String, Object>> associationMap) {
+		this.associationMap = associationMap;
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
+	public Tuple get(RowKey column) {
+		Map<String, Object> rawResult = associationMap.get( column );
+		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ) ) : null;
 	}
 
 	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
+	public boolean containsKey(RowKey column) {
+		return associationMap.containsKey( column );
 	}
 
-	public Map<String, Object> getMap() {
-		return map;
+	@Override
+	public int size() {
+		return associationMap.size();
 	}
+
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return associationMap.keySet();
+	}
+
+	public Map<RowKey, Map<String, Object>> getUnderlyingMap() {
+		return associationMap;
+	}
+
 }

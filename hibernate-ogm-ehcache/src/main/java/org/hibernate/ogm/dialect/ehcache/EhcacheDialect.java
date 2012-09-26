@@ -34,9 +34,9 @@ import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapBasedTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
-import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
@@ -87,7 +87,7 @@ public class EhcacheDialect implements GridDialect {
 		final Cache entityCache = getEntityCache();
 		final Element element = entityCache.get( key );
 		if ( element != null ) {
-			return new Tuple( new MapBasedTupleSnapshot( (Map<String, Object>) element.getValue() ) );
+			return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getValue() ) );
 		}
 		else {
 			return null;
@@ -99,12 +99,12 @@ public class EhcacheDialect implements GridDialect {
 		final Cache entityCache = getEntityCache();
 		final HashMap<String, Object> tuple = new HashMap<String, Object>();
 		entityCache.put( new Element( key, tuple ) );
-		return new Tuple( new MapBasedTupleSnapshot( tuple ) );
+		return new Tuple( new MapTupleSnapshot( tuple ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		Map<String, Object> entityRecord = ( (MapBasedTupleSnapshot) tuple.getSnapshot() ).getMap();
+		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 	}
 

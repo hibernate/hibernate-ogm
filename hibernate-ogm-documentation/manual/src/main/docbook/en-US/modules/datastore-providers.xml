@@ -82,7 +82,7 @@
 
   <itemizedlist>
     <listitem>
-      <para><literal>mapbased</literal>: stores data in an in-memory Java map
+      <para><literal>map</literal>: stores data in an in-memory Java map
       to store data. Use it only for unit tests.</para>
     </listitem>
 

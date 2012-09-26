@@ -23,7 +23,7 @@ package org.hibernate.ogm.util.impl;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.mapbased.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
