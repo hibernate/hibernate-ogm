@@ -30,7 +30,7 @@
 <chapter id="ogm-gettingstarted">
   <title>Getting started with Hibernate OGM</title>
 
-  <para>If you are familiar with JPA, you are almost good to go :) We will
+  <para>If you are familiar with JPA, you are almost good to go :-) We will
   nevertheless walk you through the first few steps of persisting and
   retrieving an entity using Hibernate OGM.</para>
 
@@ -163,7 +163,7 @@ public class Breed {
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0"&gt;
 
-    &lt;persistence-unit name="org.hibernate.ogm.tutorial.jpa" transaction-type="JTA"&gt;
+    &lt;persistence-unit name="ogm-jpa-tutorial" transaction-type="JTA"&gt;
         &lt;!-- Use Hibernate OGM provider: configuration will be transparent --&gt;
         &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
         &lt;properties&gt;
@@ -186,7 +186,7 @@ TransactionManager tm = getTransactionManager();
 
 //build the EntityManagerFactory as you would build in in Hibernate ORM
 EntityManagerFactory emf = Persistence.createEntityManagerFactory(
-    "org.hibernate.ogm.tutorial.jpa");
+    "ogm-jpa-tutorial");
 
 final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
 
@@ -239,10 +239,6 @@ public static TransactionManager getTransactionManager() throws Exception
 
   <para>A working example can be found in Hibernate OGM's distribution under
   <filename>hibernate-ogm-documentation/examples/gettingstarted</filename>.</para>
-
-  <para>TODO: explain how to run a second Infinispan node to show how data
-  does outlive the <classname>EntityManagerFactory</classname>
-  lifecycle.</para>
 
   <para>What have we seen?</para>
 

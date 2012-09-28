@@ -21,7 +21,7 @@ public class DogBreedRunner {
 		TransactionManager tm = getTransactionManager();
 
 		//build the EntityManagerFactory as you would build in in Hibernate Core
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "org.hibernate.ogm.tutorial.jpa" );
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory( "ogm-jpa-tutorial" );
 
 		//Persist entities the way you are used to in plain JPA
 		try {
@@ -66,9 +66,9 @@ public class DogBreedRunner {
 		} catch ( InvocationTargetException e ) {
 			e.printStackTrace();
 		} catch ( NoSuchMethodException e ) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			e.printStackTrace();
 		} catch ( IllegalAccessException e ) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+			e.printStackTrace();
 		}
 		return null;
 	}
