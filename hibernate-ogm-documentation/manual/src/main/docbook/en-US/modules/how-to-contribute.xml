@@ -31,7 +31,7 @@
   <title>How to get help and contribute on Hibernate OGM</title>
 
   <para>Hibernate OGM is a young project. The code, the direction and the
-  documentation are all in flux and being built by the community. Come
+  documentation are all in flux and being built by the community. Join
   and help us shape it!</para>
 
   <section id="ogm-howtocontribute-help">
@@ -134,7 +134,7 @@ mvn clean install -s settings-example.xml</programlisting>
 
       <programlisting>mvn clean install -DbuildDocs=true -s settings-example.xml</programlisting>
 
-      <remark>If you just want to build the documentation, run it from the
+      <remark>If you just want to build the documentation only, run it from the
       <filename>hibernate-ogm-documentation/manual</filename>
       subdirectory.</remark>
     </section>
@@ -152,16 +152,15 @@ mvn clean install -s settings-example.xml</programlisting>
       <itemizedlist>
         <listitem>
           <para>We do small independent commits for each code change. In
-          particular, we do not mix stylistic code changes (import, typo etc)
+          particular, we do not mix stylistic code changes (import, typos, etc)
           and new features in the same commit.</para>
         </listitem>
 
         <listitem>
-          <para>Commit messages follow the following convention: a short
-          commit summary preceded by the JIRA issue number, an empty line, a
-          longer description if needed. Make sure to limit line length to 80
-          characters, even at this day and age it makes for more readable
-          commit comments.</para>
+          <para>Commit messages follow this convention: the JIRA issue number,
+          a short commit summary, an empty line, a longer description if needed.
+          Make sure to limit line length to 80 characters, even at this day and
+          age it makes for more readable commit comments.</para>
 
           <programlisting>OGM-123 Summary of commit operation
 
@@ -171,8 +170,9 @@ added here.</programlisting>
         </listitem>
 
         <listitem>
-          <para>A pull request contains the feature, its unit tests, its
-          documentation</para>
+          <para>A pull request can contain several commits but should be
+          self contained: include the implementation, its unit tests, its
+          documentation and javadoc changes if needed.</para>
         </listitem>
 
         <listitem>

@@ -99,7 +99,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>offers a familiar environment for NoSQL stores</para>
+          <para>offers a familiar programming paradigm to deal with NoSQL stores</para>
         </listitem>
 
         <listitem>
@@ -114,7 +114,7 @@
 
         <listitem>
           <para>helps scale existing applications with a NoSQL front end to a
-          more traditional database</para>
+          traditional database</para>
         </listitem>
       </itemizedlist>
 
@@ -128,7 +128,7 @@
         </listitem>
 
         <listitem>
-          <para>key / value stores: essentially Maps but with different
+          <para>key/value stores: essentially Maps but with different
           behaviors and ideas behind various products (data grids, persistent
           with strong or eventual consistency, etc)</para>
         </listitem>
@@ -178,7 +178,7 @@
     <section>
       <title>What we have today</title>
 
-      <para>Today, Hibernate OGM does not support all these goals. Here is a
+      <para>Today, Hibernate OGM does not support all of these goals. Here is a
       list of what we have:</para>
 
       <itemizedlist>
@@ -206,7 +206,7 @@
         </listitem>
 
         <listitem>
-          <para>basic types support (numbers, String, URL, Date, enums
+          <para>support for basic types (numbers, String, URL, Date, enums,
           etc)</para>
         </listitem>
 
@@ -240,7 +240,7 @@
         </listitem>
 
         <listitem>
-          <para>keep your domain model generic of the underlying datastore
+          <para>keep your domain model independent of the underlying datastore
           technology (RDBMS, Infinispan, NoSQL)</para>
         </listitem>
 

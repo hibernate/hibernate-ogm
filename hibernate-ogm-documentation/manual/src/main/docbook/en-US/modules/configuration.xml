@@ -142,7 +142,7 @@ cfg.setProperty( Environment.TRANSACTION_STRATEGY,
                  "org.hibernate.transaction.JTATransactionFactory" );
 //assuming JBoss TransactionManager in standalone mode
 cfg.setProperty( Environment.JTA_PLATFORM, 
-                 "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" );
+     "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" );
 
 //assuming the default infinispan settings
 cfg.setProperty( "hibernate.ogm.datastore.provider",
@@ -331,7 +331,7 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       </example>
 
       <para>The next step is you get access to the transaction manager. The
-      easiest solution is to do as followed</para>
+      easiest solution is to do as the following example:</para>
 
       <programlisting language="JAVA" role="JAVA">TransactionManager transactionManager = com.arjuna.ats.jta.TransactionManager.transactionmanager();</programlisting>
 

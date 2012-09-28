@@ -270,7 +270,7 @@
         <title>Enabling a FileCacheStore and eviction</title>
 
         <programlisting language="XML" role="XML">&lt;namedCache name="ENTITIES"&gt;
-  &lt;eviction strategy="LIRS" maxEntries="2000"/&gt;
+  &lt;eviction strategy="LIRS" maxEntries="2000" /&gt;
   &lt;loaders
     passivation="true" shared="false"&gt;
     &lt;loader
