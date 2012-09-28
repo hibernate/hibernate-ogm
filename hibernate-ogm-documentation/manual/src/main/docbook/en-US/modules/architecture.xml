@@ -128,13 +128,14 @@
       </listitem>
     </itemizedlist>
 
-    <para>Think of them as the JDBC layer for our NoSQL stores. </para>
+    <para>Think of them as the JDBC layer for our NoSQL stores, just
+    way more flexible and efficient.</para>
 
     <para>Other than these, all the Create/Read/Update/Delete (CRUD)
     operations are implemented by the Hibernate ORM engine (object hydration
     and dehydration, cascading, lifecycle etc).</para>
 
-    <para>As of today, we have implemented four datastore providers:</para>
+    <para>As of today, we have implemented four <classname>DatastoreProvider</classname>s:</para>
 
     <itemizedlist>
       <listitem>
@@ -171,7 +172,7 @@
 
     <para>Hibernate OGM best works in a JTA environment. The easiest solution
     is to deploy it on a Java EE container. Alternatively, you can use a
-    standalone JTA <classname>TransactionManager</classname>. We do explain
+    standalone JTA <classname>TransactionManager</classname>. We explain
     how to in <xref
     linkend="ogm-configuration-environments-standalonejta"/>.</para>
 
@@ -590,9 +591,8 @@
       Search query translator can execute simple queries already. However, we
       do not yet have a NoSQL specific query translator but the approach is
       quite clear to us. Teiid for complex queries is also not integrated but
-      work is being done in the Teiid project to facilitate that integration
-      in the future. Native Hibernate Search queries are fully
-      supported.</para>
+      work is being done to facilitate that integration soon.
+      Native Hibernate Search queries are fully supported.</para>
     </note>
   </section>
 </chapter>
