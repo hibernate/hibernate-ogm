@@ -109,7 +109,7 @@
 
         <listitem>
           <para>encourages new data usage patterns and NoSQL exploration in
-          more "traditional" enterprises</para>
+          more conservative enterprises</para>
         </listitem>
 
         <listitem>
@@ -134,8 +134,8 @@
         </listitem>
 
         <listitem>
-          <para>document based datastores: contains as value semi-structured
-          documents (think JSON)</para>
+          <para>document based datastores: contained values are semi-structured
+          documents (like JSON)</para>
         </listitem>
 
         <listitem>

@@ -128,13 +128,14 @@
       </listitem>
     </itemizedlist>
 
-    <para>Think of them as the JDBC layer for our NoSQL stores. </para>
+    <para>Think of them as the JDBC layer for our NoSQL stores, just
+    way more flexible and efficient.</para>
 
     <para>Other than these, all the Create/Read/Update/Delete (CRUD)
     operations are implemented by the Hibernate ORM engine (object hydration
     and dehydration, cascading, lifecycle etc).</para>
 
-    <para>As of today, we have implemented four datastore providers:</para>
+    <para>As of today, we have implemented four <classname>DatastoreProvider</classname>s:</para>
 
     <itemizedlist>
       <listitem>
