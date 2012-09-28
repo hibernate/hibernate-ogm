@@ -79,7 +79,7 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	 */
 	@Override
 	public boolean backendSupportsTransactions() {
-		return true;
+		return false;
 	}
 
 	@Override
