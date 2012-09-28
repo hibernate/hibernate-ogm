@@ -45,6 +45,7 @@
     <modules>
         <module>manual</module>
         <module>examples</module>
+        <module>javadoc</module>
     </modules>
 
 </project>

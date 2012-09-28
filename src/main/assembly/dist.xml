@@ -46,12 +46,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist</outputDirectory>
@@ -96,12 +90,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist/lib/infinispan</outputDirectory>
@@ -142,12 +130,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist/lib/infinispan</outputDirectory>
@@ -169,12 +151,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist/lib/infinispan</outputDirectory>
@@ -201,12 +177,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist/lib/ehcache</outputDirectory>
@@ -257,12 +227,6 @@
             </includes>
             <sources>
                 <includeModuleDirectory>false</includeModuleDirectory>
-                <fileSets>
-                    <fileSet>
-                        <directory>target/apidocs</directory>
-                        <outputDirectory>docs/api</outputDirectory>
-                    </fileSet>
-                </fileSets>
             </sources>
             <binaries>
                 <outputDirectory>dist/lib/mongodb</outputDirectory>
@@ -298,6 +262,26 @@
                     </dependencySet>
                 </dependencySets>
             </binaries>
+        </moduleSet>
+
+        <!--
+        #######################################################################
+        #  API Javadoc
+        #######################################################################
+         -->
+        <moduleSet>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-javadoc</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+                <fileSets>
+                    <fileSet>
+                        <directory>target/site/apidocs</directory>
+                        <outputDirectory>docs/api</outputDirectory>
+                    </fileSet>
+                </fileSets>
+            </sources>
         </moduleSet>
 
     </moduleSets>
