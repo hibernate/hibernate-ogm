@@ -435,6 +435,7 @@ public Set&lt;BankAccount&gt; bankAccounts;
         </example>
       </section>
     </section>
+  </section>
 
     <section>
       <title>Transactions</title>
@@ -485,5 +486,5 @@ public Set&lt;BankAccount&gt; bankAccounts;
       system, infinispan grid etc). Have a look at the Infinispan section for
       more info on how to use Hibernate Search.</para>
     </section>
-  </section>
+
 </section>
