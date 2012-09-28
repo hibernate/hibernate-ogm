@@ -262,7 +262,7 @@ public class NewsID implements Serializable {
       information for associations. To switch between each of these
       strategies, use the
       <literal>hibernate.ogm.mongodb.associations.store</literal>
-      configuration property. The three possible values are: </para>
+      configuration property. The three possible values are:</para>
 
       <itemizedlist>
         <listitem>
@@ -437,10 +437,25 @@ public Set&lt;BankAccount&gt; bankAccounts;
     </section>
 
     <section>
+      <title>Transactions</title>
+
+      <para>MongoDB does not support transaction. Only changes applied to the
+      same document are done atomically. A change applied to more than one
+      document will not be applied atomically. This problem is slightly
+      mitigated by the fact that Hibernate OGM queues all changes before
+      applying them during flush time. So the window of time used to write to
+      MongoDB is smaller than what you would have done manually.</para>
+
+      <para>We recommend that you still use transaction demarcations with
+      Hibernate OGM to trigger the flush operation transparently (on commit).
+      But do not consider rollback as a possibility, this won't work.</para>
+    </section>
+
+    <section>
       <title>Queries</title>
 
       <para>Hibernate OGM is a work in progress and we are actively working on
-      JP-QL query support. </para>
+      JP-QL query support.</para>
 
       <para>In the mean time, you have two strategies to query entities stored
       by Hibernate OGM:</para>
