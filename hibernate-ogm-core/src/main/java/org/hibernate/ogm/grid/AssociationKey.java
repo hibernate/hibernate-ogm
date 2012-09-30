@@ -84,7 +84,6 @@ public final class AssociationKey implements Serializable {
 
 	/**
 	 * Describe the type of association. May be null but is typically filled for collection of embeddable.
-	 * @return
 	 */
 	public AssociationKind getAssociationKind() {
 		return associationKind;
