@@ -48,12 +48,12 @@ public interface Environment {
 	public static final String MONGODB_HOST = "hibernate.ogm.mongodb.host";
 
 	/**
-	 * The username of the MongoDB admin database with auth enabled.
+	 * The username of the MongoDB admin database with authentication enabled.
 	 */
 	public static final String MONGODB_USERNAME = "hibernate.ogm.mongodb.username";
 
 	/**
-	 * The password of the MongoDB admin database with auth enabled.
+	 * The password of the MongoDB admin database with authentication enabled.
 	 */
 	public static final String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
 
@@ -64,19 +64,19 @@ public interface Environment {
 	public static final String MONGODB_TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
 
 	/**
-	 * The default host used to connect to MongoDB: if the {@link MONGODB_HOST}
+	 * The default host used to connect to MongoDB: if the {@link #MONGODB_HOST}
 	 * property is not set, we'll attempt to connect to localhost.
 	 */
 	public static final String MONGODB_DEFAULT_HOST = "127.0.0.1";
 
 	/**
-	* The default port used to connect to MongoDB: if the {@link MONGODB_PORT}
+	* The default port used to connect to MongoDB: if the {@link #MONGODB_PORT}
 	* property is not set, we'll try this port.
 	*/
 	public static final int MONGODB_DEFAULT_PORT = 27017;
 	
 	/**
-	 * The default value used to configure the safe mode {@link MONGODB_SAFE}
+	 * The default value used to configure the safe mode {@link #MONGODB_SAFE}
 	 */
 	public static final boolean MONGODB_DEFAULT_SAFE = true;
 
@@ -87,7 +87,7 @@ public interface Environment {
 	public static final String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
 
 	/**
-	 * The default value used to set the timeout during the connection to the MongoDB instance (@link MONGODB_TIMEOUT)
+	 * The default value used to set the timeout during the connection to the MongoDB instance (@link #MONGODB_TIMEOUT)
 	 * This value is set in milliseconds
 	 */
 	public static final int MONGODB_DEFAULT_TIMEOUT = 5000;

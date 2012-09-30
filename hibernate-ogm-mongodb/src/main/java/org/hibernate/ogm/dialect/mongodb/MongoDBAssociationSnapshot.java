@@ -52,7 +52,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	private AssociationStorage storage;
 
 	/**
-	 * @param assoc DBObject containing the association information
+	 * @param document DBObject containing the association information
 	 * @param key
 	 */
 	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorage storage) {

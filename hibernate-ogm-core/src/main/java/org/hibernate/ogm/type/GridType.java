@@ -126,7 +126,7 @@ public interface GridType extends Serializable {
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
 	 * state) taking a shortcut for entity references.
 	 * <p/>
-	 * For most types this should equate to {@link #equals} check on the values.  For associations the implication
+	 * For most types this should equate to {@link java.lang.Object#equals} check on the values.  For associations the implication
 	 * is a bit different.  For most types it is conceivable to simply delegate to {@link #isEqual}
 	 *
 	 * @param x The first value
@@ -176,7 +176,7 @@ public interface GridType extends Serializable {
 
 	/**
 	 * Get a hash code, consistent with persistence "equality".  Again for most types the normal usage is to
-	 * delegate to the value's {@link #hashCode}.
+	 * delegate to the value's {@link java.lang.Object#hashCode}.
 	 *
 	 * @param x The value for which to retrieve a hash code
 	 *
@@ -188,7 +188,7 @@ public interface GridType extends Serializable {
 
 	/**
 	 * Get a hash code, consistent with persistence "equality".  Again for most types the normal usage is to
-	 * delegate to the value's {@link #hashCode}.
+	 * delegate to the value's {@link java.lang.Object#hashCode}.
 	 *
 	 * @param x The value for which to retrieve a hash code
 	 * @param factory The session factory
@@ -259,7 +259,7 @@ public interface GridType extends Serializable {
 	 * Retrieve an instance of the mapped class from a grid resultset. Implementors
 	 * should handle possibility of null values.
 	 *
-	 * @see GridType#hydrate(java.sql.ResultSet, String[], org.hibernate.engine.SessionImplementor, Object) alternative, 2-phase property initialization
+	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object) alternative, 2-phase property initialization
 	 * @param rs
 	 * @param names the column names
 	 * @param session
@@ -291,7 +291,7 @@ public interface GridType extends Serializable {
 	 * written to parameters starting from <tt>index</tt>.
 	 * @param resultset to push value into
 	 * @param value the object to write
-	 * @param name the column name
+	 * @param names the column names
 	 * @param settable an array indicating which columns to ignore
 	 * @param session
 	 *
@@ -306,7 +306,7 @@ public interface GridType extends Serializable {
 	 * to parameters starting from <tt>index</tt>.
 	 * @param resultset to push value into
 	 * @param value the object to write
-	 * @param index statement parameter index
+	 * @param names of affected columns
 	 * @param session
 	 *
 	 * @throws HibernateException
@@ -319,7 +319,6 @@ public interface GridType extends Serializable {
 	 *
 	 * @param value
 	 * @param factory
-	 * @return String
 	 * @throws HibernateException
 	 */
 	public void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory)
@@ -402,7 +401,7 @@ public interface GridType extends Serializable {
 	 * from a grid resultset. This is useful for 2-phase property initialization - the second
 	 * phase is a call to <tt>resolveIdentifier()</tt>.
 	 *
-	 * @see Type#resolve(Object, SessionImplementor, Object)
+	 * @see #resolve(Object, SessionImplementor, Object)
 	 * @param rs
 	 * @param names the column names
 	 * @param session the session
@@ -417,7 +416,7 @@ public interface GridType extends Serializable {
 	 * Map identifiers to entities or collections. This is the second phase of 2-phase property
 	 * initialization.
 	 *
-	 * @see GridType#hydrate(java.util.Map, String[], org.hibernate.engine.SessionImplementor, Object)
+	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object)
 	 * @param value an identifier or value returned by <tt>hydrate()</tt>
 	 * @param owner the parent entity
 	 * @param session the session

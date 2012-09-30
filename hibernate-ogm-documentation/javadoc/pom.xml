@@ -41,9 +41,9 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
-    <!-- We need the dependencies having annotations we're using
-        to workaround a javadoc tool bug -->
     <dependencies>
+    	<!-- We need the dependencies having annotations we're using
+        	to workaround a javadoc tool bug -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
@@ -51,6 +51,23 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
+        </dependency>
+        <!-- We also need our own module dependencies so that
+        	we import all types from dependant modules -->
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-ehcache</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-infinispan</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
@@ -66,6 +83,7 @@
                         ${basedir}/../../hibernate-ogm-infinispan/src/main/java;
                         ${basedir}/../../hibernate-ogm-mongodb/src/main/java
                     </sourcepath>
+                    <show>public</show>
                     <tags>
                         <tag>
                             <name>experimental</name>

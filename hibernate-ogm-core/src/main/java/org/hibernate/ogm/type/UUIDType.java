@@ -36,7 +36,7 @@ import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
  * 
  * @see java.util.UUID
  * @see java.util.UUID#toString()
- * @see java.util.UUID#fromString()
+ * @see java.util.UUID#fromString(java.lang.String)
  * 
  * @author Nicolas Helleringer
  */
