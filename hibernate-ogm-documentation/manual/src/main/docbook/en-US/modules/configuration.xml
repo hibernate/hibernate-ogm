@@ -138,15 +138,15 @@
         <programlisting language="JAVA" role="JAVA">Configuration cfg = new OgmConfiguration();
 
 //assuming you are using JTA in a non contained environment
-cfg.setProperty( Environment.TRANSACTION_STRATEGY, 
-                 "org.hibernate.transaction.JTATransactionFactory" );
+cfg.setProperty(environment.TRANSACTION_STRATEGY,
+                 "org.hibernate.transaction.JTATransactionFactory");
 //assuming JBoss TransactionManager in standalone mode
-cfg.setProperty( Environment.JTA_PLATFORM, 
-     "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" );
+cfg.setProperty(Environment.JTA_PLATFORM,
+     "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform");
 
 //assuming the default infinispan settings
-cfg.setProperty( "hibernate.ogm.datastore.provider",
-                 "infinispan" );
+cfg.setProperty("hibernate.ogm.datastore.provider",
+                "infinispan");
 
 //add your annotated classes
 cfg.addAnnotatedClass(Order.class)
@@ -333,7 +333,8 @@ SessionFactory sf = cfg.buildSessionFactory();</programlisting>
       <para>The next step is you get access to the transaction manager. The
       easiest solution is to do as the following example:</para>
 
-      <programlisting language="JAVA" role="JAVA">TransactionManager transactionManager = com.arjuna.ats.jta.TransactionManager.transactionmanager();</programlisting>
+      <programlisting language="JAVA" role="JAVA">TransactionManager transactionManager =
+   com.arjuna.ats.jta.TransactionManager.transactionmanager();</programlisting>
 
       <para>Then use the standard JTA APIs to demarcate your transaction and
       you are done!</para>
@@ -348,8 +349,8 @@ transactionManager.begin();
 final EntityManager em = emf.createEntityManager();
 
 Poem poem = new Poem();
-poem.setName( "L'albatros" );
-em.persist( poem );
+poem.setName("L'albatros");
+em.persist(poem);
 
 transactionManager.commit();
  
@@ -357,10 +358,10 @@ em.clear();
  
 transactionManager.begin();
 
-poem = em.find( Poem.class, poem.getId() );
-assertThat( poem ).isNotNull();
-assertThat( poem.getName() ).isEqualTo( "L'albatros" );
-em.remove( poem );
+poem = em.find(Poem.class, poem.getId());
+assertThat(poem).isNotNull();
+assertThat(poem.getName()).isEqualTo("L'albatros");
+em.remove(poem );
 
 transactionManager.commit();
  
