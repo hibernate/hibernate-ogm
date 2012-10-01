@@ -119,6 +119,10 @@
                             <value>${hibernateVersion}</value>
                         </injection>
                         <injection>
+                            <name>hibernateSearchVersion</name>
+                            <value>${hibernateSearchVersion}</value>
+                        </injection>
+                        <injection>
                             <name>infinispanVersion</name>
                             <value>${infinispanVersion}</value>
                         </injection>
