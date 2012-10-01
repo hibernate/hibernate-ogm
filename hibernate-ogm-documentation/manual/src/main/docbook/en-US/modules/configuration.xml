@@ -444,13 +444,15 @@ em.close();</programlisting>
     <title>Configuring Hibernate Search</title>
 
     <para>Hibernate Search integrates with Hibernate OGM just like it does
-    with Hibernate ORM. In other words, configure where you want to store your
+    with Hibernate ORM.</para>
+    <para>In other words, configure where you want to store your
     indexes, map your entities with the relevant index annotations and you are
     good to go. For more information, simply check the <ulink
     url="http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/">
     Hibernate Search reference documentation</ulink>.</para>
 
-    <para>We will discuss later in XXX how you can use Infinispan as the
-    storage for your Hibernate Search indexes.</para>
+    <para>In <xref linkend="ogm-infinispan-indexstorage"/> we'll
+    discuss how to store your Lucene indexes in Infinispan. This is useful
+    even if you don't plan to use Infinispan as your primary data store.</para>
   </section>
 </chapter>

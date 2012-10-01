@@ -549,11 +549,6 @@
     Hibernate OGM can use Teiid as an intermediary query engine that will
     delegate to Hibernate Search.</para>
 
-    <para>While all these options add some complexity, they also offer a lot
-    of flexibility to address queries in the most tailored way for your
-    project. A detail on the various options will be discussed in XXX (hsearch
-    options chapter).</para>
-
     <para>Note that you can use Hibernate Search even if you do plan to use
     the NoSQL datastore query capabilities. Hibernate Search offers a few
     interesting options:</para>

@@ -455,11 +455,11 @@
     <title>Transactions</title>
     <para>Infinispan supports transactions and integrates with any standard JTA
     <literal>TransactionManager</literal>; this is a great advantage for JPA users
-    as it allows to experience a <emphasis>similar</emphasis> behaviour than what used to when working
-    with RDBMS databases.</para>
+    as it allows to experience a <emphasis>similar</emphasis> behaviour to the one we are used to
+    when we work with RDBMS databases.</para>
     <para>If you're having Hibernate OGM start and manage Infinispan, you can skip this as it
     will inject the same <classname>TransactionManager</classname> instance which you already
-    have setup in the Hibernate / JPA configuration.</para>
+    have set up in the Hibernate / JPA configuration.</para>
     <para>If you are providing an already started Infinispan CacheManager instance by using
     the <acronym>JNDI</acronym> lookup approach, then you have to make sure the CacheManager
     is using the same <classname>TransactionManager</classname> as Hibernate:</para>
@@ -479,6 +479,183 @@
     many more configuration options; see the
     <ulink url="https://docs.jboss.org/author/display/ISPN/User+Guide">Infinispan User Guide
     </ulink> for more advanced configuration options.</para>
+
+  </section>
+
+  <section id="ogm-infinispan-indexstorage">
+    <title>Storing a Lucene index in Infinispan</title>
+
+    <para>Hibernate Search, useful to provide advanced query capabilities to Hibernate,
+    needs some place to store the indexes for its embedded <literal>Apache Lucene</literal>
+    engine.</para>
+
+    <para>A common place to store these indexes is the filesystem, and that is the
+    default option for Hibernate Search; still if your goal is to scale your NoSQL engine
+    on multiple nodes you need to share this index. Network sharing filesystems are
+    a possibility but we don't recommended that at all. Often The best option is to store the index
+    in wathever NoSQL database you have chosen to use (or a different dedicated one).</para>
+
+    <tip><para>You might find this section useful even if you don't intend to store your data
+    in Infinispan.</para></tip>
+
+    <para>The Infinispan project provides an adaptor to plug into Apache Lucene, so that it writes
+    the indexes in Infinispan and searches data in it. Since Infinispan
+    can be used as an application cache to other NoSQL storage engines by using a CacheStore
+    (see <xref linkend="ogm-infinispan-storage" />) you can use this adaptor to store the
+    Lucene indexes in any NoSQL store supported by Infinispan.</para>
+
+    <para>
+    So you can store Lucene indexes in:
+        <itemizedlist>
+            <listitem>
+                <para>Cassandra</para>
+            </listitem>
+            <listitem>
+                <para>Filesystem (but locked correctly at the Infinispan
+                    level)</para>
+            </listitem>
+            <listitem>
+                <para>
+                    MongoDB (coming soon: see
+                    <ulink url="https://issues.jboss.org/browse/ISPN-1797">ISPN-1797</ulink>
+                    )
+                </para>
+            </listitem>
+            <listitem>
+                <para>HBase</para>
+            </listitem>
+            <listitem>
+                <para>JDBC databases</para>
+            </listitem>
+            <listitem>
+                <para>JDBM</para>
+            </listitem>
+            <listitem>
+                <para>BDBJE</para>
+            </listitem>
+            <listitem>
+                <para>A secondary (independent) Infinispan grid</para>
+            </listitem>
+            <listitem>
+                <para>
+                    Any Cloud storage service
+                    <ulink
+                        url="http://www.jclouds.org/documentation/reference/supported-providers/">supported by JClouds</ulink>
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+
+    <para>How to configure it? To get you started, this is the cheat sheet:
+        <itemizedlist>
+            <listitem>
+                <para>
+                    Add
+                    <literal>org.hibernate:hibernate-search-infinispan:&hibernateSearchVersion;
+                    </literal>
+                    to your dependencies
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    set these configuration properties:
+                    <itemizedlist>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.default.directory_provider
+                                    = infinispan</literal>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.default.​exclusive_index_use
+                                    = false</literal>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.infinispan.configuration_resourcename
+                                    =</literal>
+                                [infinispan configuration filename]
+                            </para>
+                        </listitem>
+                    </itemizedlist>
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+
+    <para>
+    The Infinispan configuration pointed to should define a
+    <classname>CacheStore</classname>
+    to load/store the index in the NoSQL engine of choice. It should
+    also define three cache names:
+    </para>
+
+    <table>
+        <title>Infinispan caches used to store indexes</title>
+        <tgroup cols="3">
+            <colspec colwidth="30%" />
+            <colspec colwidth="40%" />
+            <colspec colwidth="30%" />
+            <thead>
+                <row>
+                    <entry>Cache name</entry>
+                    <entry>Description</entry>
+                    <entry>Suggested cluster mode</entry>
+                </row>
+            </thead>
+            <tbody>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesLocking</constant>
+                    </entry>
+                    <entry>Transfers locking information. Does not need a
+                        cache store.</entry>
+                    <entry>
+                        <constant>repl</constant>
+                    </entry>
+                </row>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesData</constant>
+                    </entry>
+                    <entry>Contains the bulk of Lucene data. Needs a cache
+                        store.</entry>
+                    <entry>
+                        <constant>dist + L1</constant>
+                    </entry>
+                </row>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesMetadata</constant>
+                    </entry>
+                    <entry>Stores metadata on the index segments. Needs a
+                        cache store.</entry>
+                    <entry>
+                        <constant>repl</constant>
+                    </entry>
+                </row>
+            </tbody>
+        </tgroup>
+    </table>
+
+    <para>
+    This configuration is not going to scale well on write operations:
+    to do that you should read about the master/slave and sharding
+    options in Hibernate Search. The complete explanation and
+    configuration options can be found in the
+    <ulink
+        url="http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinispan-directories">
+        Hibernate Search Reference Guide
+    </ulink>
+    </para>
+
+    <para>Some NoSQL support storage of Lucene indexes directly, in which
+    case you might skip the Infinispan Lucene integration by implementing
+    a custom <classname>DirectoryProvider</classname> for Hibernate Search.
+    You're very welcome to share the code and have it merged in Hibernate
+    Search for others to use, inspect, improve and maintain.</para>
 
   </section>
 

@@ -20,7 +20,7 @@
   ~ MA  02110-1301, USA.
   -->
 <!--
-    @author Emmanuel Bernard <emmanuel@hibernate.org>
+    @author Sanne Grinovero <sanne@hibernate.org>
 -->
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
@@ -30,21 +30,176 @@
 <chapter id="ogm-query">
   <title>Query your entities</title>
 
-  <para>Hibernate Search works perfectly well with Hibernate OGM. You can wrap
-  an Hibernate OGM <classname>Session</classname> or
-  <classname>EntityManager</classname> with a
-  <classname>FullTextSession</classname> or
-  <classname>FullTextEntityManager</classname> like you would do with
-  Hibernate ORM (via the static methods hosted on
-  <classname>Search</classname>).</para>
+  <para>To query a NoSQL database is a complex feat, especially as not all
+  NoSQL support any form of query. One of the goals of Hibernate OGM is to
+  deal with this complexity so that users don't have to, but that's not all
+  implemented yet and - more importantly - depending on your use case there
+  might be better approaches you can take advantage use of.</para>
 
-  <para>The same configurations options available in Hibernate Search when
-  using Hibernate ORM are also relevant.</para>
+  <para>If you skipped to this section without reading <xref
+  linkend="ogm-architecture"/>, I'd suggest to read at least <xref
+  linkend="ogm-architecture-dataqueried"/> as it will greatly help you
+  choosing a query approach.</para>
 
-  <para>Of course, make sure to add the necessary Hibernate Search mapping
-  annotations on your domain model to properly index your entities.</para>
+  <section>
+  <title>Using JP-QL</title>
+    <para>
+        A brand new
+        <literal>JP-QL</literal>
+        parser is integrated and
+        is able to convert some simple queries using Hibernate Search, provided
+        that:
+        <itemizedlist>
+            <listitem>
+                <para>no join, aggregation, or other relational
+                    operations are implied</para>
+            </listitem>
+            <listitem>
+                <para>you are using the Hibernate Session API (JPA
+                    integration is coming)</para>
+            </listitem>
+            <listitem>
+                <para>the target entities and properties are indexed by
+                    Hibernate Search (no validation is happening today)
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
 
-  <para>TODO: talk about Hibernate Search queries.</para>
+  <para>We do realize these are strong limitations, so while it might be interesting
+  to try it out, for real usage we suggest for now to use either Hibernate Search
+  FullTextQueries or whatever query technology the NoSQL storage exposes "natively".
+  </para>
+  
+  <para>To provide an example of what kind of queries would work:</para>
+  <example>
+        <title>Example of trivial Hibernate Query remapped on Hibernate Search</title>
+        <programlisting language="JAVA" role="JAVA">Query query = session
+    .createQuery("from Hypothesis h where h.description = :desc")
+    .setString("desc", "tomorrow it's going to rain");
+</programlisting>
+<programlisting language="JAVA" role="JAVA">@Entity @Indexed
+public class Hypothesis {
 
-  <para>Talk about the JP-QL parser when we have that integrated.</para>
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.NO)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}</programlisting></example>
+  </section>
+
+  <section>
+     <title>Using Hibernate Search</title>
+
+     <para>We actually did use Hibernate Search already in the previous example; specifically
+     the annotations <classname>@Indexed</classname> and <classname>@Field</classname>
+     are Hibernate Search specific. In this example the query was defined using a
+     <literal>JP-QL</literal> string and then defining parameters; that's useful
+     if all you have a is a <literal>JP-QL</literal> Query, but is limiting.</para>
+
+     <para>Hibernate Search remaps the properties annotated with <classname>@Field</classname>
+     in Lucene Documents, and manages the Lucene indexes so that you can then perform
+     Lucene Queries. So what is this Lucene?</para>
+
+    <para>To be extremely short, Apache Lucene is a fulltext indexing and query engine
+    with excellent query performance. Featurewise, <emphasis>full-text</emphasis> means
+    you can do much more than a simple equality match as we did in the previous example.</para>
+
+    <para>Let's show another example, now creating a Lucene Query instead:</para>
+    <example>
+        <title>Using Hibernate Search for fulltext matching</title>
+        <programlisting language="JAVA" role="JAVA">EntityManager entityManager = ...
+//Add full-text superpowers to any EntityManager:
+FullTextEntityManager ftem = Search.getFullTextEntityManager(entityManager);
+
+//Optionally use the QueryBuilder to simplify Query definition:
+QueryBuilder b = ftem.getSearchFactory()
+   .buildQueryBuilder()
+   .forEntity(Hypothesis.class)
+   .get();
+
+//Create a Lucene Query:
+Query lq = b.keyword().onField("description").matching("tomorrow").createQuery();
+
+//Transform the Lucene Query in a JPA Query:
+FullTextQuery ftQuery = ftem.createFullTextQuery(lq, Hypothesis.class);
+//This is a requirement when using Hibernate OGM instead of ORM:
+ftQuery.initializeObjectsWith(ObjectLookupMethod.SKIP,
+      DatabaseRetrievalMethod.FIND_BY_ID);
+
+//List all matching Hypothesis:
+List&lt;Hypothesis&gt; resultList = ftQuery.getResultList();
+</programlisting>
+</example>
+
+<para>Assuming our database contains an <classname>Hypothesis</classname>
+instance having description "tomorrow we release", the query above will not
+find the entity because we disabled text analysis in the previous mapping.</para>
+
+<para>If we enable text analysis (which is the default):</para>
+<example><title>Entity enabling text analysis</title>
+<programlisting language="JAVA" role="JAVA">@Entity @Indexed
+public class Hypothesis {
+
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.YES)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}</programlisting></example>
+
+     <para>Now the entity would match a query on "tomorrow" as we're unlocking
+     text similarity queries!</para>
+
+    <para>Text similarity can be very powerful as it can be configured for specific
+    languages or domain specific terminology; it can deal with typos and synonyms,
+    and above all it can return results by <emphasis>relevance</emphasis>.</para>
+
+    <para>Worth noting the the Lucene index is a vectorial space of term occurrence
+    statistics: so extracting tags from text, frequencies of strings and correlate
+    this data makes it very easy to build efficient data analisys applications.</para>
+
+    <para>For a full explanation of all its capabilities and configuration options
+    see the <ulink
+    url="http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/">
+    Hibernate Search reference documentation</ulink>.</para>
+
+    <para>
+    While the potential on queries is very high, it's not suited for all
+    use cases.
+    Let's see some of the limitations of Lucene Queries as our
+    main query engine:
+    <itemizedlist>
+        <listitem>
+            <para>Lucene doesn't support Joins. Any <literal>-to-One</literal> relations
+                can be mapped fine, and the Lucene community is making progress
+                on other forms, but restrictions on <literal>OneToMany</literal>or
+                <literal>ManyToMany</literal> can't be implemented today.</para>
+        </listitem>
+        <listitem>
+            <para>Since we apply changes to the index at commit time,
+                your updates won't affect queries until you commit. (we
+                might improve on this)</para>
+        </listitem>
+        <listitem>
+            <para>While queries are extremely fast, write operations are
+                not as quick. (but we can make it scale)</para>
+        </listitem>
+      </itemizedlist>
+    </para>
+    </section>
+
+    <section>
+        <title>Using the Criteria API</title>
+        <para>This is not implemented yet.</para>
+    </section>
 </chapter>
