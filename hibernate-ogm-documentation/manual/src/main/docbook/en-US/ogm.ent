@@ -27,6 +27,7 @@
 <!ENTITY version "WORKING">
 <!ENTITY hibernateVersion "${hibernateVersion}">
 <!ENTITY infinispanVersion "${infinispanVersion}">
+<!ENTITY hibernateSearchVersion "${hibernateSearchVersion}">
 <!ENTITY jbossjtaVersion "${jbossjtaVersion}">
 <!ENTITY mongodbVersion "${mongodbVersion}" >
 <!ENTITY today "TODAY">

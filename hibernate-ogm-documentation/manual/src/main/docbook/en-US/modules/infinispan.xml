@@ -32,7 +32,7 @@
 
   <para>Infinispan is an open source in-memory data grid focusing on high performance.
   As a data grid, you can deploy it on multiple servers - referred to as nodes - and
-  connect to it as it was a single storage engine: it will cleverly distribute both
+  connect to it as if it were a single storage engine: it will cleverly distribute both
   the computation effort and the data storage.</para>
 
   <para>It is trivial to setup on a single node, in your local JVM, so you can easily
@@ -144,7 +144,10 @@
         </tbody>
       </tgroup>
     </table>
+    </section>
 
+    <section>
+    <title>Cache names used by Hibernate OGM</title>
     <para>Hibernate OGM will not use a single Cache but three, and is going to use them for different purposes;
     so that you can configure the Caches meant for each role separately.</para>
     <table>
@@ -291,7 +294,7 @@
     and is configured to keep (approximately) 2000 entries in live memory, and evict
     the remaining as a memory usage control strategy.</para>
     <para>The <literal>CacheStore</literal> is enabling <literal>passivation</literal>,
-    which means that the entries which are evicted are stored in the filesystem.</para>
+    which means that the entries which are evicted are stored on the filesystem.</para>
 
     <warning><para>You could configure an eviction strategy while not configuring a
     passivating CacheStore! That is a valid configuration for Infinispan but will have
@@ -300,7 +303,7 @@
 
     <tip>
     <para>Currently with Infinispan 5.1 the <classname>FileCacheStore</classname> is
-    neither very fast nor very efficient: we picked that one for ease of setup; for
+    neither very fast nor very efficient: we picked it for ease of setup; for
     a production system it's worth looking at the large collection of high performance
     and cloud friendly cachestores provided by the Infinispan distribution.</para>
     </tip>
@@ -336,24 +339,25 @@
                 <entry>Useful for a single VM: networking stack is disabled</entry>
             </row>
             <row>
-                <entry><constant>repl</constant></entry>
-                <entry>Replication: all data is replicated to each node; each node
+                <entry><constant>replication</constant></entry>
+                <entry>All data is replicated to each node; each node
                 contains a full copy of all entries. Consequentially reads are faster
                 but writes don't scale as well. Not suited for very large datasets.</entry>
             </row>
             <row>
-                <entry><constant>dist</constant></entry>
-                <entry>Distribution: each entry is distributed on multiple nodes for
+                <entry><constant>distribution</constant></entry>
+                <entry>Each entry is distributed on multiple nodes for
                 redundancy and failure recovery, but not to all the nodes.
                 Provides linear scalability for both write and read operations.
-                <constant>dist</constant> is the default mode!</entry>
+                <constant>distribution</constant> is the default mode!</entry>
             </row>
         </tbody>
     </tgroup>
 </table>
 
-    <para>To use the <literal>repl</literal> or <literal>dist</literal> cache modes
-    Infinispan will use JGroups to discover and connect to the other nodes.</para>
+    <para>To use the <literal>replication</literal> or <literal>distribution</literal>
+    cache modes Infinispan will use JGroups to discover and connect to the other
+    nodes.</para>
 
     <para>In the default configuration JGroups will attempt to autodetect peer
     nodes using a multicast socket; this works out of the box in the most
@@ -364,7 +368,7 @@
     <emphasis>Discovery Protocols</emphasis> to customize the detection of peer
     nodes.</para>
 
-    <para>Often the <acronym>JVM</acronym> nowadays defaults to use <acronym>IPv6</acronym>
+    <para>Nowadays the <acronym>JVM</acronym> nowadays defaults to use <acronym>IPv6</acronym>
     network stack; this will work fine with JGroups, but only if you configured
     <acronym>IPv6</acronym> correctly. It is often useful to force the <acronym>JVM</acronym>
     to use <acronym>IPv4</acronym>!</para>
@@ -385,7 +389,7 @@
     a placeholder name in your JGroups configuration in case you don't use the
     default one.</para></note>
 
-    <para>The default configuration uses <literal>DIST</literal> as cache mode and
+    <para>The default configuration uses <literal>distribution</literal> as cache mode and
     uses the <literal>jgroups-tcp.xml</literal> configuration for JGroups, which is contained
     in the Infinispan jar as the default configuration for Infinispan users.
     Let's see how to reconfigure this:</para>
@@ -455,11 +459,11 @@
     <title>Transactions</title>
     <para>Infinispan supports transactions and integrates with any standard JTA
     <literal>TransactionManager</literal>; this is a great advantage for JPA users
-    as it allows to experience a <emphasis>similar</emphasis> behaviour than what used to when working
-    with RDBMS databases.</para>
+    as it allows to experience a <emphasis>similar</emphasis> behaviour to the one we are used to
+    when we work with RDBMS databases.</para>
     <para>If you're having Hibernate OGM start and manage Infinispan, you can skip this as it
     will inject the same <classname>TransactionManager</classname> instance which you already
-    have setup in the Hibernate / JPA configuration.</para>
+    have set up in the Hibernate / JPA configuration.</para>
     <para>If you are providing an already started Infinispan CacheManager instance by using
     the <acronym>JNDI</acronym> lookup approach, then you have to make sure the CacheManager
     is using the same <classname>TransactionManager</classname> as Hibernate:</para>
@@ -479,6 +483,180 @@
     many more configuration options; see the
     <ulink url="https://docs.jboss.org/author/display/ISPN/User+Guide">Infinispan User Guide
     </ulink> for more advanced configuration options.</para>
+
+  </section>
+
+  <section id="ogm-infinispan-indexstorage">
+    <title>Storing a Lucene index in Infinispan</title>
+
+    <para>Hibernate Search, which can be used for advanced query capabilities (see <xref
+    linkend="ogm-query" />), needs some place to store the indexes for its embedded
+    <literal>Apache Lucene</literal> engine.</para>
+
+    <para>A common place to store these indexes is the filesystem which is the default
+    for Hibernate Search; however if your goal is to scale your NoSQL engine
+    on multiple nodes you need to share this index. Network sharing filesystems are
+    a possibility but we don't recommended that at all. Often the best option is to store the index
+    in wathever NoSQL database you are using (or a different dedicated one).</para>
+
+    <tip><para>You might find this section useful even if you don't intend to store your data
+    in Infinispan.</para></tip>
+
+    <para>The Infinispan project provides an adaptor to plug into Apache Lucene, so that it writes
+    the indexes in Infinispan and searches data in it. Since Infinispan
+    can be used as an application cache to other NoSQL storage engines by using a CacheStore
+    (see <xref linkend="ogm-infinispan-storage" />) you can use this adaptor to store the
+    Lucene indexes in any NoSQL store supported by Infinispan:
+        <itemizedlist>
+            <listitem>
+                <para>Cassandra</para>
+            </listitem>
+            <listitem>
+                <para>Filesystem (but locked correctly at the Infinispan
+                    level)</para>
+            </listitem>
+            <listitem>
+                <para>
+                    MongoDB (coming soon: see
+                    <ulink url="https://issues.jboss.org/browse/ISPN-1797">ISPN-1797</ulink>
+                    )
+                </para>
+            </listitem>
+            <listitem>
+                <para>HBase</para>
+            </listitem>
+            <listitem>
+                <para>JDBC databases</para>
+            </listitem>
+            <listitem>
+                <para>JDBM</para>
+            </listitem>
+            <listitem>
+                <para>BDBJE</para>
+            </listitem>
+            <listitem>
+                <para>A secondary (independent) Infinispan grid</para>
+            </listitem>
+            <listitem>
+                <para>
+                    Any Cloud storage service
+                    <ulink
+                        url="http://www.jclouds.org/documentation/reference/supported-providers/">supported by JClouds</ulink>
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+
+    <para>How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
+        <itemizedlist>
+            <listitem>
+                <para>
+                    Add
+                    <literal>org.hibernate:hibernate-search-infinispan:&hibernateSearchVersion;
+                    </literal>
+                    to your dependencies
+                </para>
+            </listitem>
+            <listitem>
+                <para>
+                    set these configuration properties:
+                    <itemizedlist>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.default.directory_provider
+                                    = infinispan</literal>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.default.​exclusive_index_use
+                                    = false</literal>
+                            </para>
+                        </listitem>
+                        <listitem>
+                            <para>
+                                <literal>hibernate.search.infinispan.configuration_resourcename
+                                    =</literal>
+                                [infinispan configuration filename]
+                            </para>
+                        </listitem>
+                    </itemizedlist>
+                </para>
+            </listitem>
+        </itemizedlist>
+    </para>
+
+    <para>
+    The referenced Infinispan configuration should define a
+    <classname>CacheStore</classname>
+    to load/store the index in the NoSQL engine of choice. It should
+    also define three cache names:
+    </para>
+
+    <table>
+        <title>Infinispan caches used to store indexes</title>
+        <tgroup cols="3">
+            <colspec colwidth="30%" />
+            <colspec colwidth="40%" />
+            <colspec colwidth="30%" />
+            <thead>
+                <row>
+                    <entry>Cache name</entry>
+                    <entry>Description</entry>
+                    <entry>Suggested cluster mode</entry>
+                </row>
+            </thead>
+            <tbody>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesLocking</constant>
+                    </entry>
+                    <entry>Transfers locking information. Does not need a
+                        cache store.</entry>
+                    <entry>
+                        <constant>replication</constant>
+                    </entry>
+                </row>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesData</constant>
+                    </entry>
+                    <entry>Contains the bulk of Lucene data. Needs a cache
+                        store.</entry>
+                    <entry>
+                        <constant>distribution + L1</constant>
+                    </entry>
+                </row>
+                <row>
+                    <entry>
+                        <constant>LuceneIndexesMetadata</constant>
+                    </entry>
+                    <entry>Stores metadata on the index segments. Needs a
+                        cache store.</entry>
+                    <entry>
+                        <constant>replication</constant>
+                    </entry>
+                </row>
+            </tbody>
+        </tgroup>
+    </table>
+
+    <para>
+    This configuration is not going to scale well on write operations:
+    to do that you should read about the master/slave and sharding
+    options in Hibernate Search. The complete explanation and
+    configuration options can be found in the
+    <ulink
+        url="http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinispan-directories">
+        Hibernate Search Reference Guide
+    </ulink>
+    </para>
+
+    <para>Some NoSQL support storage of Lucene indexes directly, in which
+    case you might skip the Infinispan Lucene integration by implementing
+    a custom <classname>DirectoryProvider</classname> for Hibernate Search.
+    You're very welcome to share the code and have it merged in Hibernate
+    Search for others to use, inspect, improve and maintain.</para>
 
   </section>
 
