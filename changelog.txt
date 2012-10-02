@@ -1,6 +1,138 @@
 Hibernate OGM Changelog
 =======================
 
+
+4.0.0.Beta1 (03-10-2012)
+-------------------------
+
+** Sub-task
+    * [OGM-89] - Convert OGM SessionObserver into an Integrator and/or BasicServiceInitiator
+    * [OGM-202] - Make TestHelper contract more flexible upon answering on the volume of entities / associations
+
+
+** Bug
+    * [OGM-81] - Build uses <scope> optional instead of optional=true
+    * [OGM-90] - Typo in Chapter 3.2
+    * [OGM-97] - Avoid looking up the specific Infinispan Cache at each operation
+    * [OGM-106] - Should not close Infinispan Caches retrieved via JNDI
+    * [OGM-108] - Make Hibernate OGM compile and run tests using JDK 7 (and JDK 6)
+    * [OGM-124] - Errors while starting Infinispan are hidden by a NPE stacktrace
+    * [OGM-134] - Fix logs in BasicGridBinder
+    * [OGM-146] - Intermittent test failures and JVM crashes
+    * [OGM-152] - TimeZone  Not Persisted
+    * [OGM-158] - Hibernate OGM is always activated (even when ORM is used) because OgmIntegrator is always called
+    * [OGM-160] - Invalid persistence unit configuration might result in NullPointerException
+    * [OGM-164] - When persistence provider is not specified the EMF creation taking a PersistenceUnitInfo defaults to OGM instead of plain ORM
+    * [OGM-170] - Make sure test framework drop schema and database in all cases and don't hide previous exceptions
+    * [OGM-174] - Composite id fail on MongoDB: MongoDBDialect only takes the first id column into account and force _id
+    * [OGM-179] - Consider whether or not it is fine to store the same id value in both the identifier column and _id in MongoDB
+    * [OGM-189] - BooleanProperty using instance comparison on strings
+    * [OGM-191] - Avoid writeskew check exceptions on Infinispan when no write skew happened
+    * [OGM-199] - Updates in MongoDBDialect should only use id columns as restriction
+    * [OGM-213] - Avoid storing reverse side association navigation info when association is not bidirectional
+    * [OGM-214] - Inappropriately create an empty association upon load by unique id if the info ins not present
+    * [OGM-216] - After transaction completion listeners invoked with wrong status code
+    * [OGM-217] - After transaction completion listeners invoked with wrong status code
+    * [OGM-223] - Make MongoDBDatastoreProvider raises proper contextual HibernateException upon connection issue
+    * [OGM-224] - Avoid disabling OGM as side-effect of OgmConfiguration#setProperties
+    * [OGM-227] - Documentation does not build on some locale and hangs otherwise
+    * [OGM-246] - Distribution does not contain JavaDoc
+
+** Improvement
+    * [OGM-40] - Make EntityKey use column names / values (not the id)
+    * [OGM-69] - Introduce a Tuple object instead of Map<String,Object> and the equivalent for the association info
+    * [OGM-73] - Log all operations to the datastore as a tool similar to show_sql or the logger equivalent (Sebastien Lorber)
+    * [OGM-77] - Store the reference documentation with its locale in the distribution
+    * [OGM-85] - Build RowKey in a faster way
+    * [OGM-91] - Typo in Chapter 4.3
+    * [OGM-93] - Upgrade to Hibernate Search 4.0.0.CR1
+    * [OGM-94] - JTATransactionManagerTransaction is using a new logger in each instance
+    * [OGM-95] - Performance improvement after profiling analysis
+    * [OGM-96] - Migrate to Infinispan 5.1
+    * [OGM-101] - Improve equals implementations of grid keys
+    * [OGM-102] - Use Infinispan's FineGrainedAtomicMap to reduce locking contention
+    * [OGM-103] - Configuration files need updates
+    * [OGM-111] - Log DatastoreProvider and GridDialect used at startup
+    * [OGM-113] - Improve efficiency of EntityKey, RowKey and Tuple
+    * [OGM-133] - Expose table, column names and column values from EntityKey, RowKey and AssociationKey
+    * [OGM-140] - Expose metamodel to DatastoreProvider
+    * [OGM-148] - support for more types in BuiltinTypeTest
+    * [OGM-149] - Make TupleOperation more debugger friendly by implementing toString()
+    * [OGM-154] - Speedup testsuite: EHCache and Infinispan tests are annoyingly slow in their setup phase
+    * [OGM-156] - Avoid using a table scan with MongoDB nextValue implementation
+    * [OGM-159] - Provide the list of column names to the Dialect for an entity and association operation
+    * [OGM-161] - Avoid the need to set the hibernate.dialect in configuration properties
+    * [OGM-163] - Implement a @SkipByGridDialect test helper annotation
+    * [OGM-168] - Rename AssociationType to AssociationKind
+    * [OGM-169] - configurable where/how associations are stored in MongoDB dialect
+    * [OGM-172] - Create indexes for identifier columns that are not '_id' in mongodb datastore
+    * [OGM-173] - Only load the necessary properties from MongoDB
+    * [OGM-178] - Provide RowKey metadata in AssociationKey and fix various bugs in RowKey columns for associations
+    * [OGM-180] - Make MongoDB safe option defaults true in Hibernate OGM
+    * [OGM-183] - upgrade to ORM 4.1.3.Final
+    * [OGM-184] - Enable automatic setup of annotation processors on Eclipse project import
+    * [OGM-185] - Enable automatic setup of annotation processors on Eclipse project import
+    * [OGM-195] - Harmonize toString implementation of EntityKey, AssociationKey and RowKey
+    * [OGM-201] - Offer shortcuts for datastore providers
+    * [OGM-209] - Migrate MongoDB Driver to 2.8
+    * [OGM-211] - Limit redundancy when storing association information in a non embedded way
+    * [OGM-221] - Avoid table scan on all MongoDB operations
+    * [OGM-222] - Support authentication (username / password)
+    * [OGM-229] - Beef up documentation around MongoDB datastore
+    * [OGM-236] - Switch the default association storage mode in MongoDB from COLLECTION to IN_ENTITY
+    * [OGM-240] - Rename MapBasedDatastoreProvider to MapDatastoreProvider
+    * [OGM-244] - Document Ehcache configuration options
+
+** New Feature
+    * [OGM-19] - Implement Referencable#getReference in OgmSessionFactory (Davide D'Alto)
+    * [OGM-22] - Support Session#createQuery(String) and JP-QL queries
+    * [OGM-33] - Implement JPA SEQUENCE generated value strategy for a grid (Nabeel Ali Memon)
+    * [OGM-34] - Implement JPA AUTO generated value strategy for a grid (Nabeel Ali Memon)
+    * [OGM-35] - Implement JPA IDENTITY generated value strategy for a grid (Nabeel Ali Memon)
+    * [OGM-79] - Abstract GridDialect from Infinispan's Cache API
+    * [OGM-80] - Simplify OGM configuration when Hibernate Core Native APIs are used and wrap into OGMSession* (Davide D'Alto)
+    * [OGM-88] - Move to Hibernate Core 4
+    * [OGM-115] - Add hibernate-ogm-ehcache
+    * [OGM-132] - Support MongoDB as datastore (Guillaume Scheibel)
+    * [OGM-141] - Expose in AssociationKey means to embed collections (of embeddable)
+    * [OGM-142] - Let dialects override the mapping between a java type and it's corresponding grid type
+    * [OGM-143] - Implement dialect.nextValue in MongoDB
+    * [OGM-144] - Support associations in MongoDB (Alan Fitton)
+    * [OGM-147] - Update project documentation with the mongodb implementation
+    * [OGM-165] - Add support for the SafeMode
+    * [OGM-176] - Embed @ElementCollection within the entity owning the collection
+    * [OGM-177] - Make true associations be stored in the entity document in MongoDB
+
+** Task
+    * [OGM-20] - Integrate the JP-QL to HSQuery / Lucene module
+    * [OGM-86] - Update to Hibernate Core version 3.6.6
+    * [OGM-87] - Update to Infinispan version 5.0.0.FINAL
+    * [OGM-99] - JPAResourceLocalStandaloneTest might leak transactions on failures
+    * [OGM-100] - Upgrade JBoss Logging dependencies to 3.1.0.Beta3
+    * [OGM-109] - Upgrade JBoss Logging dependencies to 3.1.0.CR1
+    * [OGM-110] - Split Infinispan integration in a secondary module
+    * [OGM-116] - Upgrade core dependencies
+    * [OGM-121] - Update components to match JBoss AS 7.1.0.Final
+    * [OGM-125] - Avoid usage of deprecated configuration methods in Infinispan
+    * [OGM-135] - Refresh documentation for next release
+    * [OGM-136] - Update architecture schema to reflect DatastoreProvider and GridDialect
+    * [OGM-137] - Have dependency version numbers mentioned in documentation defined by root pom.xml
+    * [OGM-139] - Tests should cleanup the stored state as well
+    * [OGM-155] - change to use org.javassist:javassist:3.15.0-GA
+    * [OGM-162] - Have an option to build the project without requiring a running MongoDB instance
+    * [OGM-166] - Add parameters to build to override MongoDB instance used for tests
+    * [OGM-192] - Update to Hibernate ORM version 4.1.4.Final
+    * [OGM-196] - Update JBoss Logging to 3.1.1.GA
+    * [OGM-205] - Use the inverse side association name instead of the association table when it exists
+    * [OGM-210] - Set a larger timeout on transactions to ease debugging sessions
+    * [OGM-220] - Use .gitattributes to set Java style diffs and enforce proper line endings
+    * [OGM-237] - Review assembly definition to include the new modules in the release distribution
+    * [OGM-238] - Update to Infinispan 5.1.7.Final
+    * [OGM-239] - Update to Hibernate Search 4.2.0.Beta1
+    * [OGM-241] - Depend on Hibernate-JPQL Parser 1.0.0.Alpha1
+    * [OGM-247] - Resolve javadoc warnings
+
+
 3.0.0.Alpha2 (16-06-2011)
 -------------------------
 
