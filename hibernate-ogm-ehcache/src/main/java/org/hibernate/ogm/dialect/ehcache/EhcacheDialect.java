@@ -172,6 +172,12 @@ public class EhcacheDialect implements GridDialect {
 		return null;
 	}
 
+	@Override
+	public void prepareBatch() {}
+
+	@Override
+	public void executeBatch() {}
+
 	private Cache getIdentifierCache() {
 		return datastoreProvider.getCacheManager().getCache( DefaultDatastoreNames.IDENTIFIER_STORE );
 	}
