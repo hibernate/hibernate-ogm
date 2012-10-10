@@ -148,5 +148,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 			// No types to override
 			return null;
 		}
+
+		@Override
+		public void prepareBatch() {}
+
+		@Override
+		public void executeBatch() {}
 	}
 }

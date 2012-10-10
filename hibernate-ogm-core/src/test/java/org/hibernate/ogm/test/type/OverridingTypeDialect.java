@@ -49,4 +49,10 @@ public class OverridingTypeDialect extends HashMapDialect {
 		}
 		return null;
 	}
+
+	@Override
+	public void prepareBatch() {}
+
+	@Override
+	public void executeBatch() {}
 }
