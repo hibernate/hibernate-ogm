@@ -200,4 +200,10 @@ public class InfinispanDialect implements GridDialect {
 		return null;
 	}
 
+	@Override
+	public void prepareBatch() {}
+
+	@Override
+	public void executeBatch() {}
+
 }
