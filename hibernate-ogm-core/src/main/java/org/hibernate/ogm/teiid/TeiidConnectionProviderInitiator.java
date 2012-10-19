@@ -18,32 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.impl;
-
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
+package org.hibernate.ogm.teiid;
 
 import java.util.Map;
 
-/**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- */
-public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactory> {
-	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
+import org.hibernate.service.spi.BasicServiceInitiator;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
+public class TeiidConnectionProviderInitiator implements BasicServiceInitiator<ConnectionProvider>{
+	
+	public static TeiidConnectionProviderInitiator INSTANCE = new TeiidConnectionProviderInitiator();
+	
 	@Override
-	public GridDialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridDialectFactoryImpl(configurationValues, registry);
+	public Class<ConnectionProvider> getServiceInitiated() {
+		return ConnectionProvider.class;
 	}
 
 	@Override
-	protected BasicServiceInitiator<GridDialectFactory> backupInitiator() {
-		return null;
+	public ConnectionProvider initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		return new TeiidConnectionProvider(configurationValues, registry);
 	}
 
-	@Override
-	public Class<GridDialectFactory> getServiceInitiated() {
-		return GridDialectFactory.class;
-	}
 }

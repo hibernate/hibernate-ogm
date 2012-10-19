@@ -39,6 +39,10 @@
     <name>Hibernate Object Grid Mapper</name>
     <description>Persist data in a grid rather than a relational database</description>
 
+    <properties>
+        <teiid.version>8.2.0.Beta1-SNAPSHOT</teiid.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -69,6 +73,32 @@
             <!-- I do hope it is optional but that needs to be verified -->
             <optional>true</optional>
         </dependency>
+        
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-client</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-common-core</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-hibernate-dialect</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>     
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-runtime</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid</groupId>
+          <artifactId>teiid-admin</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>  
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>

@@ -26,8 +26,13 @@ import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.internal.SessionFactoryImpl;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.teiid.TeiidConnectionProvider;
+import org.teiid.deployers.VirtualDatabaseException;
+import org.teiid.dqp.internal.datamgr.ConnectorManagerRepository.ConnectorManagerException;
+import org.teiid.translator.TranslatorException;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -52,7 +57,17 @@ public class OgmConfiguration extends Configuration {
 
 	@Override
 	public SessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactory( (SessionFactoryImplementor ) super.buildSessionFactory() );
+		SessionFactoryImpl sf = (SessionFactoryImpl)super.buildSessionFactory();
+		try {
+			((TeiidConnectionProvider)sf.getConnectionProvider()).addVDB(getTableMappings(), new OgmSessionFactory(sf));
+		} catch (VirtualDatabaseException e) {
+			throw new HibernateException(e);
+		} catch (TranslatorException e) {
+			throw new HibernateException(e);
+		} catch (ConnectorManagerException e) {
+			throw new HibernateException(e);
+		}
+		return sf;
 	}
 
 	@Override

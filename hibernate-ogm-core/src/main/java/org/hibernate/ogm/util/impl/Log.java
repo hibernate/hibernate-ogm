@@ -120,4 +120,19 @@ public interface Log extends BasicLogger {
 	@Message(id = 24, value = "Syntax error in query: [%1$s]")
 	HibernateException querySyntaxException(@Cause QuerySyntaxException qse, String queryString);
 
+	@Message(id = 25, value = "GridTranslator class [%1$s] cannot be found in classpath")
+	HibernateException translatorClassCannotBeFound(String className);
+	
+	@Message(id = 26, value = "%1$s property does not extend GridTranslator class")
+	HibernateException doesNotImplementGridTranslator(String value);	
+	
+	@Message(id = 27, value = "GridTranslator property is of unknown type %1$s")
+	HibernateException gridTranslatorPropertyOfUnknownType(Class<?> type);	
+	
+	@LogMessage(level = INFO)
+	@Message(id = 28, value = "Grid Dialect: %1$s")
+	void useGridTranslator(String translatorClass);
+	
+	@Message(id = 29, value = "Cannot instantiate GridTranslator class [%1$s]")
+	HibernateException cannotInstantiateGridTranslator(Class<?> translatorClazz, @Cause Exception e);	
 }

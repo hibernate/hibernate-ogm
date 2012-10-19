@@ -31,8 +31,10 @@ import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
 import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
+import org.hibernate.ogm.dialect.impl.GridTranslatorInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
+import org.hibernate.ogm.teiid.TeiidConnectionProviderInitiator;
+import org.hibernate.ogm.teiid.TeiidDialectFactoryInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
 import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
@@ -77,8 +79,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
 		serviceRegistryBuilder.addInitiator( ConfigurationServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmConnectionProviderInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( OgmDialectFactoryInitiator.INSTANCE);
+		serviceRegistryBuilder.addInitiator( TeiidConnectionProviderInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( TeiidDialectFactoryInitiator.INSTANCE);
 		serviceRegistryBuilder.addInitiator( OgmTransactionFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJtaPlatformInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmJdbcServicesInitiator.INSTANCE );
