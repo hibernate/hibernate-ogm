@@ -100,8 +100,18 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
+	public Map<String, EntityPersister> getEntityPersisters() {
+		return delegate.getEntityPersisters();
+	}
+
+	@Override
 	public CollectionPersister getCollectionPersister(String role) throws MappingException {
 		return delegate.getCollectionPersister( role );
+	}
+
+	@Override
+	public Map<String, CollectionPersister> getCollectionPersisters() {
+		return delegate.getCollectionPersisters();
 	}
 
 	@Override
@@ -437,5 +447,4 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 				null
 				);
 	}
-	
 }
