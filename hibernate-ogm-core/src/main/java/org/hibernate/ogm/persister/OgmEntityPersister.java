@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
+import org.hibernate.internal.DynamicFilterAliasGenerator;
+import org.hibernate.internal.FilterAliasGenerator;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -388,6 +390,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
 		gridDialect.updateTuple( resultset, key );
 		return nextVersion;
+	}
+
+	@Override
+	public FilterAliasGenerator getFilterAliasGenerator(String rootAlias) {
+		return new DynamicFilterAliasGenerator(new String[] {tableName}, rootAlias);
 	}
 
 	//TODO move that code to the EntityLoader as it is in AbstractEntityPersister?
