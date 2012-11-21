@@ -31,6 +31,10 @@
     xmlns="urn:infinispan:config:5.1">
 
     <global>
+        <globalJmxStatistics
+            enabled="false"
+            cacheManagerName="HibernateOGM-Testsuite"
+            allowDuplicateDomains="true" />
     </global>
 
     <!-- *************************** -->

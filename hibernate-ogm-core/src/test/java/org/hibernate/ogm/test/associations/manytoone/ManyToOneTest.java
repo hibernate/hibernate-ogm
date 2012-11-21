@@ -37,10 +37,6 @@ import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations
  */
 public class ManyToOneTest extends OgmTestCase {
 
-	@SkipByGridDialect( value = GridDialectType.INFINISPAN,
-			comment = "AtomicMap diff algorithm does not take removal into account. " +
-					"This leads to the association entry not being removed despite being empty"
-	)
 	public void testUnidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
