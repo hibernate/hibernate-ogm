@@ -68,12 +68,14 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public Object get(String column) {
+		//if the column requested is from the RowKey metadata, get it form there
 		if ( rowKey != null && ! isEmpty() ) {
 			Object result = getValueFromColumns( column, rowKey.getColumnNames(), rowKey.getColumnValues() );
 			if ( result != null ) {
 				return result;
 			}
 		}
+		//otherwite get it from the object
 		if ( column.contains( "." ) ) {
 			String[] fields = EMBEDDED_FIELDNAME_SEPARATOR.split( column, 0 );
 			return this.getObject( this.dbObject.toMap(), fields, 0 );
@@ -88,6 +90,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		Set<String> columns = this.dbObject.toMap().keySet();
+		//add the columns from the rowKey info as the datastore structure might be incomplete
 		if ( rowKey != null && ! isEmpty() ) {
 			columns = new HashSet<String>(columns);
 			for ( String column : rowKey.getColumnNames() ) {

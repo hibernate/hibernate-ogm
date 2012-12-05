@@ -346,7 +346,7 @@ public class MongoDBDialect implements GridDialect {
 		DBObject rowTupleMap = new BasicDBObject();
 		for ( String valueKeyName : value.getColumnNames() ) {
 			boolean add = true;
-			//exclude columns from the associationKey
+			//exclude columns from the associationKey as they can be guessed via metadata
 			for ( String assocColumn : associationKey.getColumnNames() ) {
 				if ( valueKeyName.equals( assocColumn ) ) {
 					add = false;

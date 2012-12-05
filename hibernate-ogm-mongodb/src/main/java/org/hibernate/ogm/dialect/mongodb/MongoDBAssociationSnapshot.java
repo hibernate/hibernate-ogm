@@ -60,15 +60,17 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		this.dbObject = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
 		this.associationKey = key;
-
+		//for each element in the association property
 		for ( DBObject row : getRows() ) {
 			DBObject mongodbColumnData = row;
 			Collection<String> columnNames = Arrays.asList( key.getRowKeyColumnNames() );
 
+			//build data to construct the associated RowKey is column names and values
 			List<Object> columnValues = new ArrayList<Object>();
 			for ( String columnKey : columnNames ) {
 				boolean getFromMongoData = true;
 				int length = key.getColumnNames().length;
+				// try and find the value in the key metadata
 				for ( int index = 0 ; index < length; index++ ) {
 					String assocColumn = key.getColumnNames()[index];
 					if ( assocColumn.equals( columnKey ) ) {
@@ -77,6 +79,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 						break;
 					}
 				}
+				//otherwise read it from the database structure
 				if ( getFromMongoData == true ) {
 					columnValues.add( mongodbColumnData.get( columnKey ) );
 				}
@@ -85,7 +88,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 					key.getTable(),
 					columnNames.toArray( new String[columnNames.size()] ),
 					columnValues.toArray() );
-
+			//Stock database structure per RowKey
 			this.map.put( rowKey, row );
 		}
 	}
