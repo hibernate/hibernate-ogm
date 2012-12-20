@@ -22,21 +22,20 @@
   ~ 51 Franklin Street, Fifth Floor
   ~ Boston, MA  02110-1301  USA
   -->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate" slot="${hibernate.ogm.module.slot}">
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.ehcache" slot="${hibernate.ogm.ehcache.module.slot}">
     <resources>
-        <resource-root path="hibernate-ogm-core-${project.version}.jar" />
-        <resource-root path="hibernate-ogm-infinispan-${project.version}.jar" />
+        <resource-root path="hibernate-ogm-ehcache-${project.version}.jar" />
+        <resource-root path="ehcache-core-2.5.1.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" slot="${hibernate.orm.module.slot}" />
-        <module name="org.slf4j" />
+        <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />
         <module name="javax.transaction.api" />
         <module name="javax.validation.api" />
+        <module name="org.slf4j" />
         <module name="org.dom4j" />
-        <module name="org.infinispan" export="true" optional="true" />
         <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
         <module name="org.jboss.logging" />
 

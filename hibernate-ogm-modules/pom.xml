@@ -39,6 +39,7 @@
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
+        <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.orm.module.slot>main</hibernate.orm.module.slot>
     </properties>
 
