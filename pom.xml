@@ -40,6 +40,8 @@
         <module>hibernate-ogm-core</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
+        <module>hibernate-ogm-integrationtest</module>
+        <module>hibernate-ogm-modules</module>
     </modules>
 
     <prerequisites>
@@ -753,6 +755,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-help-plugin</artifactId>
                     <version>2.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>2.12.4</version>
                 </plugin>
                 <!-- Unpack test from hibernate-ogm-core to re-run them on each other module database integration -->
                 <plugin>
