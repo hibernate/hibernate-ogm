@@ -45,7 +45,7 @@ import java.util.concurrent.Executor;
 public class NoopConnection implements Connection {
 	@Override
 	public Statement createStatement() throws SQLException {
-		return null;
+		return new NoopStatement();
 	}
 
 	@Override
