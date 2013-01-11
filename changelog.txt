@@ -1,6 +1,21 @@
 Hibernate OGM Changelog
 =======================
 
+4.0.0.Beta2 (14-01-2013)
+-------------------------
+
+** Improvement
+    * [OGM-253] - Upgrade to MongoDB driver 2.9.x
+
+** Task
+    * [OGM-204] - Stop skipping tests once Infinispan has fixed the AtomicMap bug not handling removals in size
+    * [OGM-250] - Update to Infinispan 5.2.0.Beta4
+    * [OGM-252] - Upgrade to Hibernate ORM 4.1.7
+    * [OGM-255] - Assemble as a JBoss Module during releases
+    * [OGM-257] - Update to Hibernate ORM 4.1.9.Final
+    * [OGM-258] - Upgrade to Infinispan 5.2.0.CR1
+    * [OGM-260] - Upgrade to Hibernate Search 4.2.0.CR1
+
 
 4.0.0.Beta1 (03-10-2012)
 -------------------------
