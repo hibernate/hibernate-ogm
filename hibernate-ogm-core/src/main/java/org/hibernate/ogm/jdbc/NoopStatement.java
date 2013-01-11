@@ -233,4 +233,17 @@ public class NoopStatement implements Statement {
 		return false;
 	}
 
+	/*
+	 * Added for compatibility with JDK 1.7
+	 */
+	public void closeOnCompletion() throws SQLException {
+	}
+
+	/*
+	 * Added for compatibility with JDK 1.7
+	 */
+	public boolean isCloseOnCompletion() throws SQLException {
+		return false;
+	}
+
 }
