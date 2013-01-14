@@ -19,19 +19,19 @@
  * MA  02110-1301, USA.
  */
 
-package org.hibernate.ogm.dialect.batch;
+package org.hibernate.ogm.dialect.batch.tuple;
 
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class RemoveTupleOperation extends Operation {
-	private EntityKey key;
-	public EntityKey getKey() { return key; }
+public class CreateTupleOperation extends AbstractTupleOperation {
+	public CreateTupleOperation(EntityKey key) {
+		super( key );
+	}
 
-	public RemoveTupleOperation(EntityKey key) {
-		super(OperationType.REMOVE_TUPLE);
-		this.key = key;
+	public String toString(){
+		return "[CreateTupleOperation] "+key.toString();
 	}
 }

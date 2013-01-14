@@ -19,19 +19,24 @@
  * MA  02110-1301, USA.
  */
 
-package org.hibernate.ogm.dialect.batch;
+package org.hibernate.ogm.dialect.batch.tuple;
 
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class CreateTupleOperation extends Operation {
-	private EntityKey key;
-	public EntityKey getKey() { return key; }
+public class UpdateTupleOperation extends AbstractTupleOperation {
+	private Tuple tuple;
+	public Tuple getTuple() { return tuple; }
 
-	public CreateTupleOperation(EntityKey key) {
-		super(OperationType.CREATE_TUPLE);
-		this.key = key;
+	public UpdateTupleOperation(Tuple tuple, EntityKey key) {
+		super( key );
+		this.tuple = tuple;
+	}
+
+	public String toString(){
+		return "[UpdateTupleOperation] "+key;
 	}
 }
