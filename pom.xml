@@ -130,7 +130,7 @@
         <infinispanVersion>5.2.0.CR1</infinispanVersion>
         <mongodbVersion>2.9.0</mongodbVersion>
         <hibernateVersion>4.1.9.Final</hibernateVersion>
-        <hibernateSearchVersion>4.2.0.Beta1</hibernateSearchVersion>
+        <hibernateSearchVersion>4.2.0.CR1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha1</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
