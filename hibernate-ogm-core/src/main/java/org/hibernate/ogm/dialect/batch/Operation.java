@@ -24,22 +24,4 @@ package org.hibernate.ogm.dialect.batch;
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class Operation {
-	public enum OperationType {
-		CREATE_TUPLE, UPDATE_TUPLE,GET_TUPLE, REMOVE_TUPLE, CREATE_ASSOCIATION, UPDATE_ASSOCIATION, REMOVE_ASSOCIATION;
-	}
-
-	public Operation(OperationType operationType) {
-		this.operationType = operationType;
-	}
-
-	protected OperationType operationType;
-
-	public OperationType getOperationType() {
-		return operationType;
-	}
-
-	public void setOperationType(OperationType operationType) {
-		this.operationType = operationType;
-	}
-}
+public interface Operation {}
