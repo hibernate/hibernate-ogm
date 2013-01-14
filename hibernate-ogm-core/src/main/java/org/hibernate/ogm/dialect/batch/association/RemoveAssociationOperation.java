@@ -19,24 +19,20 @@
  * MA  02110-1301, USA.
  */
 
-package org.hibernate.ogm.dialect.batch;
+package org.hibernate.ogm.dialect.batch.association;
 
-import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.grid.AssociationKey;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class UpdateAssociationOperation extends Operation {
-	private Association association;
-	public Association getAssociation() { return association; }
+public class RemoveAssociationOperation extends AbstractAssociationOperation {
+	public RemoveAssociationOperation(AssociationKey key) {
+		super( key );
+	}
 
-	private AssociationKey key;
-	public AssociationKey getKey() { return key; }
-
-	public UpdateAssociationOperation(Association association, AssociationKey key) {
-		super( OperationType.UPDATE_ASSOCIATION );
-		this.association = association;
-		this.key = key;
+	public String toString(){
+		return "[RemoveAssociationOperation] "+key.toString();
 	}
 }

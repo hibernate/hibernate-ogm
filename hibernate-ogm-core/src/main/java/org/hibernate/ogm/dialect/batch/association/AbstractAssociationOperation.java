@@ -19,19 +19,18 @@
  * MA  02110-1301, USA.
  */
 
-package org.hibernate.ogm.dialect.batch;
+package org.hibernate.ogm.dialect.batch.association;
 
+import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.grid.AssociationKey;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class RemoveAssociationOperation extends Operation {
-	private AssociationKey key;
-	public AssociationKey getKey() { return key; }
-
-	public RemoveAssociationOperation(AssociationKey key) {
-		super( OperationType.REMOVE_ASSOCIATION );
+public abstract class AbstractAssociationOperation implements Operation {
+	protected AssociationKey key;
+	protected AbstractAssociationOperation( AssociationKey key ){
 		this.key = key;
 	}
+	public AssociationKey getKey() { return key; }
 }
