@@ -21,12 +21,10 @@
 
 package org.hibernate.ogm.service.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.jboss.logging.Logger;
 
 import org.hibernate.HibernateException;
-import org.hibernate.event.internal.AbstractFlushingEventListener;
+import org.hibernate.event.internal.DefaultFlushEventListener;
 import org.hibernate.event.spi.AutoFlushEvent;
 import org.hibernate.event.spi.AutoFlushEventListener;
 import org.hibernate.event.spi.EventSource;
@@ -39,7 +37,7 @@ import org.hibernate.ogm.util.impl.Log;
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class OgmEventListener extends AbstractFlushingEventListener implements FlushEventListener, AutoFlushEventListener {
+public class OgmEventListener extends DefaultFlushEventListener implements FlushEventListener, AutoFlushEventListener {
 	private GridDialect gridDialect;
 	private static final Log log = Logger.getMessageLogger(
 			Log.class, CoreLogCategories.DATASTORE_ACCESS.toString()
@@ -52,7 +50,6 @@ public class OgmEventListener extends AbstractFlushingEventListener implements F
 	@Override
 	public void onFlush(FlushEvent event) throws HibernateException {
 		log.trace( "FlushEvent - begin" );
-		log.trace(  event.getSession().getActionQueue() );
 		this.handleFlush( event );
 		log.trace( "FlushEvent - end" );
 	}

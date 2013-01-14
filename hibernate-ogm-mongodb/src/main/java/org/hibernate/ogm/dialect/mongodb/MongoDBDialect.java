@@ -20,9 +20,9 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -40,13 +40,13 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.batch.BatchOperation;
-import org.hibernate.ogm.dialect.batch.CreateTupleOperation;
+import org.hibernate.ogm.dialect.batch.OperationBatcher;
+import org.hibernate.ogm.dialect.batch.tuple.CreateTupleOperation;
 import org.hibernate.ogm.dialect.batch.Operation;
-import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
-import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.association.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.batch.tuple.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.batch.association.UpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.tuple.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -105,7 +105,7 @@ public class MongoDBDialect implements GridDialect {
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
 
-	private ThreadLocal<BatchOperation> threadLocal;
+	private ThreadLocal<OperationBatcher> threadLocal;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
@@ -226,58 +226,65 @@ public class MongoDBDialect implements GridDialect {
 		query.append( operator, subQuery.append( column, value ) );
 	}
 
-	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
-		if ( this.threadLocal != null && this.threadLocal.get().isPreparingBatch() ) {
-			this.threadLocal.get().getOperations().add( new UpdateTupleOperation( tuple, key ) );
-		}
-		else {
-			MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+	private void doUpdateTuple(Tuple tuple, EntityKey key){
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 
-			BasicDBObject updater = new BasicDBObject();
-			for ( TupleOperation operation : tuple.getOperations() ) {
-				String column = operation.getColumn();
-				if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot
-						.columnInIdField(
-								column
-						) ) {
-					switch ( operation.getType() ) {
-						case PUT_NULL:
-						case PUT:
-							this.addSubQuery( "$set", updater, column, operation.getValue() );
-							break;
-						case REMOVE:
-							this.addSubQuery( "$unset", updater, column, ONE );
-							break;
-					}
+		BasicDBObject updater = new BasicDBObject();
+		for ( TupleOperation operation : tuple.getOperations() ) {
+			String column = operation.getColumn();
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot
+					.columnInIdField(
+							column
+					) ) {
+				switch ( operation.getType() ) {
+					case PUT_NULL:
+					case PUT:
+						this.addSubQuery( "$set", updater, column, operation.getValue() );
+						break;
+					case REMOVE:
+						this.addSubQuery( "$unset", updater, column, ONE );
+						break;
 				}
 			}
-			BasicDBObject idObject = this.prepareIdObject( key );
-			/*
-			* Needed because in case of object with only an ID field
-			* the "_id" won't be persisted properly.
-			* With this adjustment, it will work like this:
-			*	if the object (from snapshot) doesn't exist so create the one represented by updater
-			*	so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
-			*	of the custom id
-			 */
-			if ( updater.size() == 0 ) {
-				updater = idObject;
-			}
-			this.getCollection( key ).update( idObject, updater, true, false );
+		}
+		BasicDBObject idObject = this.prepareIdObject( key );
+		/*
+		* Needed because in case of object with only an ID field
+		* the "_id" won't be persisted properly.
+		* With this adjustment, it will work like this:
+		*	if the object (from snapshot) doesn't exist so create the one represented by updater
+		*	so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
+		*	of the custom id
+		 */
+		if ( updater.size() == 0 ) {
+			updater = idObject;
+		}
+		this.getCollection( key ).update( idObject, updater, true, false );
+	}
+	@Override
+	public void updateTuple(Tuple tuple, EntityKey key) {
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new UpdateTupleOperation( tuple, key ) );
+		}
+		else {
+			this.doUpdateTuple( tuple, key );
 		}
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		if ( this.threadLocal != null && this.threadLocal.get().isPreparingBatch() ) {
-			this.threadLocal.get().getOperations().add( new RemoveTupleOperation( key ) );
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new RemoveTupleOperation( key ) );
 		}
 		else {
-			DBCollection collection = this.getCollection( key );
-			DBObject toDelete = this.prepareIdObject( key );
-			collection.remove( toDelete );
+			this.doRemoveTuple( key );
 		}
+	}
+
+	private void doRemoveTuple(EntityKey key) {
+		DBCollection collection = this.getCollection( key );
+		DBObject toDelete = this.prepareIdObject( key );
+		collection.remove( toDelete );
 	}
 
 	//not for embedded
@@ -384,57 +391,69 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		if ( this.threadLocal != null && this.threadLocal.get().isPreparingBatch() ) {
-			this.threadLocal.get().getOperations().add( new UpdateAssociationOperation( association, key ) );
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new UpdateAssociationOperation( association, key ) );
 		}
 		else {
-			DBCollection collection;
-			DBObject query;
-			MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
-			String associationField;
+			this.doUpdateAssociation( association, key );
+		}
+	}
 
-			if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
-				collection = this.getCollection( key.getEntityKey() );
-				query = this.prepareIdObject( key.getEntityKey() );
-				associationField = key.getCollectionRole();
+	private void doUpdateAssociation(Association association, AssociationKey key) {
+		DBCollection collection;
+		DBObject query;
+		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
+		String associationField;
+
+		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+			collection = this.getCollection( key.getEntityKey() );
+			query = this.prepareIdObject( key.getEntityKey() );
+			associationField = key.getCollectionRole();
+		}
+		else {
+			collection = getAssociationCollection( key );
+			query = assocSnapshot.getQueryObject();
+			associationField = ROWS_FIELDNAME;
+		}
+
+		for ( AssociationOperation action : association.getOperations() ) {
+			RowKey rowKey = action.getKey();
+			Tuple rowValue = action.getValue();
+
+			DBObject update = null;
+
+			switch ( action.getType() ) {
+				case CLEAR:
+					update = new BasicDBObject(
+							"$set",
+							new BasicDBObject( associationField, Collections.EMPTY_LIST )
+					);
+					break;
+				case PUT_NULL:
+				case PUT:
+					update = putAssociationRowKey( rowValue, associationField, key );
+					break;
+				case REMOVE:
+					update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
+					break;
 			}
-			else {
-				collection = getAssociationCollection( key );
-				query = assocSnapshot.getQueryObject();
-				associationField = ROWS_FIELDNAME;
-			}
 
-			for ( AssociationOperation action : association.getOperations() ) {
-				RowKey rowKey = action.getKey();
-				Tuple rowValue = action.getValue();
-
-				DBObject update = null;
-
-				switch ( action.getType() ) {
-					case CLEAR:
-						update = new BasicDBObject(
-								"$set",
-								new BasicDBObject( associationField, Collections.EMPTY_LIST )
-						);
-						break;
-					case PUT_NULL:
-					case PUT:
-						update = putAssociationRowKey( rowValue, associationField, key );
-						break;
-					case REMOVE:
-						update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
-						break;
-				}
-
-				if ( update != null ) {
-					collection.update( query, update, true, false );
-				}
+			if ( update != null ) {
+				collection.update( query, update, true, false );
 			}
 		}
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
+		if(this.threadLocal != null) {
+			this.threadLocal.get().addOperation( new RemoveAssociationOperation( key ) );
+		} else {
+			this.doRemoveAssociation( key );
+		}
+	}
+
+	private void doRemoveAssociation(AssociationKey key) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
@@ -506,10 +525,10 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void prepareBatch() {
-		this.threadLocal = new ThreadLocal<BatchOperation>(){
+		this.threadLocal = new ThreadLocal<OperationBatcher>(){
 			@Override
-			protected BatchOperation initialValue() {
-				return new BatchOperation();
+			protected OperationBatcher initialValue() {
+				return new OperationBatcher();
 			}
 		};
 	}
@@ -517,32 +536,32 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void executeBatch() {
-		final BatchOperation batchOperation = this.threadLocal.get();
-		batchOperation.setPreparingBatch( false );
-		final ConcurrentLinkedQueue<Operation> operations = batchOperation.getOperations();
+		final OperationBatcher operationBatcher = this.threadLocal.get();
+		final ArrayList<Operation> operations = operationBatcher.getOperations();
+		log.debug( "Starting to execute batch operations ("+operations.size()+" operations)" );
 		for ( Operation operation : operations ) {
-			switch ( operation.getOperationType() ) {
-				case UPDATE_TUPLE:
-					final UpdateTupleOperation update = (UpdateTupleOperation) operation;
-					this.updateTuple( update.getTuple(), update.getKey() );
-					break;
-				case CREATE_TUPLE:
-					final CreateTupleOperation create = (CreateTupleOperation) operation;
-					this.createTuple( create.getKey() );
-					break;
-				case UPDATE_ASSOCIATION:
-					final UpdateAssociationOperation updateAssoc = (UpdateAssociationOperation) operation;
-					this.updateAssociation( updateAssoc.getAssociation(), updateAssoc.getKey() );
-					break;
-				case REMOVE_TUPLE:
-					final RemoveTupleOperation removeTuple = (RemoveTupleOperation) operation;
-					this.removeTuple( removeTuple.getKey() );
-					break;
-				case REMOVE_ASSOCIATION:
-					final RemoveAssociationOperation removeAssoc = (RemoveAssociationOperation) operation;
-					this.removeAssociation( removeAssoc.getKey() );
-					break;
+			if ( operation instanceof UpdateTupleOperation ) {
+				final UpdateTupleOperation update = (UpdateTupleOperation) operation;
+				this.doUpdateTuple( update.getTuple(), update.getKey() );
+			}
+			else if ( operation instanceof CreateTupleOperation ) {
+				final CreateTupleOperation create = (CreateTupleOperation) operation;
+				this.createTuple( create.getKey() );
+			}
+			else if ( operation instanceof UpdateAssociationOperation ) {
+				final UpdateAssociationOperation updateAssoc = (UpdateAssociationOperation) operation;
+				this.doUpdateAssociation( updateAssoc.getAssociation(), updateAssoc.getKey() );
+			}
+			else if ( operation instanceof RemoveTupleOperation ) {
+				final RemoveTupleOperation remove = (RemoveTupleOperation) operation;
+				this.doRemoveTuple( remove.getKey() );
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				final RemoveAssociationOperation removeAssoc = (RemoveAssociationOperation) operation;
+				this.doRemoveAssociation( removeAssoc.getKey() );
 			}
 		}
+		this.threadLocal = null;
+		log.debug( "End of batched operations execution" );
 	}
 }
