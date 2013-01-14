@@ -37,11 +37,12 @@ import org.hibernate.ogm.util.impl.Log;
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class OgmEventListener extends DefaultFlushEventListener implements FlushEventListener, AutoFlushEventListener {
+public class OgmEventListener implements FlushEventListener, AutoFlushEventListener {
 	private GridDialect gridDialect;
 	private static final Log log = Logger.getMessageLogger(
 			Log.class, CoreLogCategories.DATASTORE_ACCESS.toString()
 	);
+	private Object delegate;
 
 	public OgmEventListener(GridDialect gridDialect) {
 		this.gridDialect = gridDialect;
@@ -50,23 +51,22 @@ public class OgmEventListener extends DefaultFlushEventListener implements Flush
 	@Override
 	public void onFlush(FlushEvent event) throws HibernateException {
 		log.trace( "FlushEvent - begin" );
-		this.handleFlush( event );
+		gridDialect.prepareBatch();
+		( (FlushEventListener) delegate ).onFlush( event );
+		gridDialect.executeBatch();
 		log.trace( "FlushEvent - end" );
 	}
 
 	@Override
 	public void onAutoFlush(AutoFlushEvent event) throws HibernateException {
 		log.trace( "AutoFlushEvent - begin" );
-		this.handleFlush( event );
+		gridDialect.prepareBatch();
+		( (AutoFlushEventListener) delegate ).onAutoFlush( event );
+		gridDialect.executeBatch();
 		log.trace( "AutoFlushEvent - end" );
 	}
 
-	private void handleFlush(FlushEvent event){
-		final EventSource source = event.getSession();
-		gridDialect.prepareBatch();
-		performExecutions(source);
-		gridDialect.executeBatch();
+	public void setDelegate(Object delegate) {
+		this.delegate = delegate;
 	}
-
-
 }

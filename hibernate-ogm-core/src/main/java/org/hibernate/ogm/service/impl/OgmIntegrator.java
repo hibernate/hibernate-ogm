@@ -73,6 +73,8 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		final DatastoreServices datastoreServices = serviceRegistry.getService( DatastoreServices.class );
 		OgmEventListener listener = new OgmEventListener(datastoreServices.getGridDialect());
 		listenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( listener );
+		//need a different wrapper instance as we delegate the work to different delegates
+		listener = new OgmEventListener(datastoreServices.getGridDialect());
 		listenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( listener );
 	}
 
@@ -105,7 +107,11 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 		@Override
 		public boolean areMatch(Object listener, Object original) {
-			return original instanceof AbstractFlushingEventListener && listener instanceof AbstractFlushingEventListener;
+			boolean match = original instanceof AbstractFlushingEventListener && listener instanceof OgmEventListener;
+			if (match) {
+				( (OgmEventListener) listener ).setDelegate(original);
+			}
+			return match;
 		}
 
 		@Override
