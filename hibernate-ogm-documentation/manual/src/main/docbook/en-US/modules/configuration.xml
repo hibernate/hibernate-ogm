@@ -455,4 +455,68 @@ em.close();</programlisting>
     discuss how to store your Lucene indexes in Infinispan. This is useful
     even if you don't plan to use Infinispan as your primary data store.</para>
   </section>
+
+  <section id="ogm-configuration-jbossmodule">
+    <title>How to package Hibernate OGM applications for JBoss AS 7</title>
+
+    <para>Provided you're deploying on JBoss AS 7.1.x or JBoss EAP6, there is an additional way to add the OGM dependencies to your application.</para>
+
+    <para>In JBoss AS 7 class loading is based on modules that have to define explicit dependencies on other modules.
+    Modules allow to share the same artifacts across multiple applications getting you smaller and quicker deloyments.</para>
+
+    <para>More details about modules are described in <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">Class Loading in AS7</ulink>.</para>
+
+    <para>You can download the pre-packaged module from:</para>
+    <itemizedlist>
+      <listitem>
+    <para><ulink url="https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/&version;/hibernate-ogm-modules-&version;-jbossas-71-dist.zip">Sourceforge</ulink></para>
+      </listitem>
+      <listitem>
+    <para>Maven: <ulink url="https://repository.jboss.org/nexus/index.html#nexus-ogm;gav~org.hibernate.ogm~hibernate-ogm-modules~~~">org.hibernate.ogm:hibernate-ogm-modules-&version;-jbossas-71-dist.zip</ulink></para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The compressed archive includes three modules and it has to be extracted into the base JBoss AS 7 home folder. The modules are:</para>
+
+    <itemizedlist>
+      <listitem>
+    <para><emphasis>org.hibernate:ogm</emphasis>, containing the core OGM library and the infinispan datastore provider.</para>
+      </listitem>
+      <listitem>
+    <para><emphasis>org.hibernate.ogm.ehcache:main</emphasis>, containing the ehcache datastore provider.</para>
+      </listitem>
+      <listitem>
+    <para><emphasis>org.hibernate:main</emphasis>, containing the latest hibernate ORM libraries compatible with OGM.</para>
+      </listitem>
+    </itemizedlist>
+
+    <warning><para>The org.hibernate:main module will change the version of Hibernate ORM included in the default JBoss AS 7.1.x</para></warning>
+
+    <para>There are two ways to include the dependencies in your project:</para>
+
+    <variablelist>
+      <varlistentry>
+    <term>Using the manifest</term>
+    <listitem>
+      <para>Add this entry to the MANIFEST.MF in your archive:</para>
+      <programlisting>Dependencies: org.hibernate:ogm services</programlisting>
+    </listitem>
+      </varlistentry>
+      <varlistentry>
+    <term>Using jboss-deployment-structure.xml</term>
+    <listitem>
+      <para>This is a proprietary JBoss AS descriptor. Add a WEB-INF/jboss-deployment-structure.xml in your archive with content:</para>
+      <programlisting language="XML" role="XML">&lt;jboss-deployment-structure&gt;
+      &lt;deployment&gt;
+      &lt;dependencies&gt;
+          &lt;module name="org.hibernate" slot="ogm" services="export" /&gt;
+      &lt;/dependencies&gt;
+      &lt;/deployment&gt;
+  &lt;/jboss-deployment-structure&gt;
+      </programlisting>
+      <para>More information about the descriptor can be found in the  <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">JBoss AS 7 documentation</ulink>.</para>
+    </listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
 </chapter>
