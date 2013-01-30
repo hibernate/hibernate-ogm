@@ -136,6 +136,7 @@
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
+        <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -468,7 +469,19 @@
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
                 <artifactId>shrinkwrap-impl-base</artifactId>
-                <version>1.0.0-beta-2</version>
+                <version>${shrinkwrapVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-api</artifactId>
+                <version>${shrinkwrapVersion}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.shrinkwrap</groupId>
+                <artifactId>shrinkwrap-spi</artifactId>
+                <version>${shrinkwrapVersion}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
