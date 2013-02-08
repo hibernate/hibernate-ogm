@@ -21,13 +21,13 @@
 package org.hibernate.ogm.jpa.impl;
 
 import org.hibernate.mapping.Collection;
-import org.hibernate.mapping.PersistentClass;
-import org.hibernate.metamodel.binding.EntityBinding;
 import org.hibernate.metamodel.binding.PluralAttributeBinding;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.SingleTableOgmEntityPersister;
+import org.hibernate.ogm.persister.UnionSubclassOgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.persister.internal.StandardPersisterClassResolver;
 import org.hibernate.persister.spi.PersisterClassResolver;
 
 /**
@@ -35,16 +35,21 @@ import org.hibernate.persister.spi.PersisterClassResolver;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmPersisterClassResolver implements PersisterClassResolver {
+public class OgmPersisterClassResolver extends StandardPersisterClassResolver implements PersisterClassResolver {
 
 	@Override
-	public Class<? extends EntityPersister> getEntityPersisterClass(PersistentClass metadata) {
+	public Class<? extends EntityPersister> singleTableEntityPersister() {
 		return SingleTableOgmEntityPersister.class;
 	}
 
 	@Override
-	public Class<? extends EntityPersister> getEntityPersisterClass(EntityBinding metadata) {
-		return SingleTableOgmEntityPersister.class;
+	public Class<? extends EntityPersister> joinedSubclassEntityPersister() {
+		throw new UnsupportedOperationException( "Joined subclasses strategy not supported" );
+	}
+
+	@Override
+	public Class<? extends EntityPersister> unionSubclassEntityPersister() {
+		return UnionSubclassOgmEntityPersister.class;
 	}
 
 	@Override
