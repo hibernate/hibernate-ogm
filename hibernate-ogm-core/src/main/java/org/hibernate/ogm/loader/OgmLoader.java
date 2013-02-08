@@ -948,8 +948,14 @@ public class OgmLoader implements UniqueEntityLoader {
 		final Serializable id,
 		final SessionImplementor session)
 	throws HibernateException {
-		//We don't have any discriminator so the class is always the one from the persister
-		return persister.getEntityName();
+		String discriminatorColumnName = persister.getDiscriminatorColumnName();
+		if ( discriminatorColumnName == null ) {
+			return persister.getEntityName();
+		}
+		else {
+			Object value = resultset.get( discriminatorColumnName );
+			return persister.getSubclassForDiscriminatorValue( value );
+		}
 	}
 
 	/**

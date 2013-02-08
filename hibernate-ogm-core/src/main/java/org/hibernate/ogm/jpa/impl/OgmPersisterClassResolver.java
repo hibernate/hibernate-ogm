@@ -25,7 +25,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.metamodel.binding.EntityBinding;
 import org.hibernate.metamodel.binding.PluralAttributeBinding;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.persister.SingleTableOgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.spi.PersisterClassResolver;
@@ -39,12 +39,12 @@ public class OgmPersisterClassResolver implements PersisterClassResolver {
 
 	@Override
 	public Class<? extends EntityPersister> getEntityPersisterClass(PersistentClass metadata) {
-		return OgmEntityPersister.class;
+		return SingleTableOgmEntityPersister.class;
 	}
 
 	@Override
 	public Class<? extends EntityPersister> getEntityPersisterClass(EntityBinding metadata) {
-		return OgmEntityPersister.class;
+		return SingleTableOgmEntityPersister.class;
 	}
 
 	@Override

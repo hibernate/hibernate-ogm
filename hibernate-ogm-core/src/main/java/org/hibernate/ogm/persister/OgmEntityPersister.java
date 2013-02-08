@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.persister;
 
+import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,15 +29,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
-import org.hibernate.internal.DynamicFilterAliasGenerator;
-import org.hibernate.internal.FilterAliasGenerator;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.grid.AssociationKeyMetadata;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -46,6 +39,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.bytecode.instrumentation.spi.LazyPropertyInitializer;
 import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
+import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.cache.spi.entry.CacheEntry;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.OptimisticLockStyle;
@@ -56,16 +50,21 @@ import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.ValueInclusion;
+import org.hibernate.internal.DynamicFilterAliasGenerator;
+import org.hibernate.internal.FilterAliasGenerator;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
-import org.hibernate.mapping.Subclass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -78,36 +77,35 @@ import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.BackrefPropertyAccessor;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.Type;
 
-import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
-
 /**
- * Use a table per concrete class strategy
+ * Basic functionality for persisting an entity using OGM.
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}
  *
+ * @see javax.persistence.InheritanceType
  * @author Emmanuel Bernard
+ * @author Davide D'Alto
  */
-public class OgmEntityPersister extends AbstractEntityPersister implements EntityPersister {
+public abstract class OgmEntityPersister extends AbstractEntityPersister implements EntityPersister {
 
 	private static final Log log = LoggerFactory.make();
 
-	//not per se SQL value but a regular grid value
-	private final String discriminatorSQLValue;
+	private final EntityDiscriminator discriminator;
+
 	private final String tableName;
 	private final String[] constraintOrderedTableNames;
 	private final String[][] constraintOrderedKeyColumnNames;
-	private final Map<Integer, String> subclassByDiscriminatorValue = new HashMap<Integer, String>();
 	private final String[] spaces;
 	private final String[] subclassSpaces;
 	private final GridType[] gridPropertyTypes;
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
-	private Object discriminatorValue;
 	private final TupleContext tupleContext;
 
 	//service references
@@ -116,12 +114,13 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 	private final Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
 
 
-	public OgmEntityPersister(
+	OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
 			final SessionFactoryImplementor factory,
-			final Mapping mapping) throws HibernateException {
+			final Mapping mapping,
+			final EntityDiscriminator discriminator) throws HibernateException {
 		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory );
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
@@ -134,25 +133,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 				factory.getSettings().getDefaultCatalogName(),
 				factory.getSettings().getDefaultSchemaName()
 		);
-		discriminatorValue = persistentClass.getSubclassId();
-		discriminatorSQLValue = String.valueOf( persistentClass.getSubclassId() );
 
-		// SUBCLASSES
-
-		//We do not need a discriminator as each entity type will be in its own key "space" roughly like a
-		//UnionSubclassEntityPersister / table-per-concrete-class implementation
-		subclassByDiscriminatorValue.put(
-				persistentClass.getSubclassId(),
-				persistentClass.getEntityName()
-		);
-		if ( persistentClass.isPolymorphic() ) {
-			@SuppressWarnings( "unchecked" )
-			Iterator<Subclass> iter = persistentClass.getSubclassIterator();
-			while ( iter.hasNext() ) {
-				Subclass sc = iter.next();
-				subclassByDiscriminatorValue.put( sc.getSubclassId(), sc.getEntityName() );
-			}
-		}
+		this.discriminator = discriminator;
 
 		//SPACES
 		//TODO: i'm not sure, but perhaps we should exclude
@@ -234,6 +216,9 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
 				columnNames.add( property[columnCount] );
 			}
+		}
+		if ( discriminator.getColumnName() != null ) {
+			columnNames.add( discriminator.getColumnName() );
 		}
 		this.tupleContext = new TupleContext( columnNames );
 		jpaEntityName = persistentClass.getJpaEntityName();
@@ -922,8 +907,11 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 					throw new HibernateException( "trying to insert an already existing entity: "
 							+  MessageHelper.infoString( this, id, getFactory() ) );
 				}
-				//TODO add discriminator
 
+				if ( discriminator.isNeeded() ) {
+					resultset = createNewResultSetIfNull( key, resultset, id, session );
+					resultset.put( getDiscriminatorColumnName(), getDiscriminatorValue() );
+				}
 			}
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
@@ -932,6 +920,16 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
 			gridDialect.updateTuple( resultset, key );
 		}
+	}
+
+	@Override
+	public String getDiscriminatorColumnName() {
+		return discriminator.getColumnName();
+	}
+
+	@Override
+	protected String getDiscriminatorAlias() {
+		return discriminator.getAlias();
 	}
 
 	private Tuple createNewResultSetIfNull(
@@ -1056,7 +1054,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	@Override
 	public String getDiscriminatorSQLValue() {
-		return discriminatorSQLValue;
+		return discriminator.getSqlValue();
 	}
 
 	@Override
@@ -1177,12 +1175,12 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	@Override
 	public Object getDiscriminatorValue() {
-		return discriminatorValue;
+		return discriminator.getValue();
 	}
 
 	@Override
 	public String getSubclassForDiscriminatorValue(Object value) {
-		return subclassByDiscriminatorValue.get( value );
+		return discriminator.provideClassByValue( value );
 	}
 
 	@Override
