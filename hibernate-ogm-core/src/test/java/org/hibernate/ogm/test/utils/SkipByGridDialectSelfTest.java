@@ -35,8 +35,11 @@ public class SkipByGridDialectSelfTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE
-	})
+		GridDialectType.HASHMAP,
+		GridDialectType.INFINISPAN,
+		GridDialectType.MONGODB,
+		GridDialectType.NEO4J,
+		GridDialectType.EHCACHE })
 	public void testWhichAlwaysFails() {
 		Assert.fail( "This should never be executed" );
 	}
