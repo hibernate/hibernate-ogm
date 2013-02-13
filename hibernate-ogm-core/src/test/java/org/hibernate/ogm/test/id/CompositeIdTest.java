@@ -37,41 +37,25 @@ public class CompositeIdTest extends JpaTestCase {
 
 	@Test
 	public void testCompositeEmbeddedId() throws Exception {
-		final String titleOGM = "How to use Hibernate OGM ?";
-		final String titleAboutJUG = "What is a JUG ?";
-		final String titleCountJUG = "There are more than 20 JUGs in France";
-
 		final String author = "Guillaume";
 
-		final String contentOGM = "Simple, just like ORM but with a NoSQL database";
+		final String titleAboutJUG = "What is a JUG ?";
 		final String contentAboutJUG = "JUG means Java User Group";
+		final List<Label> newsAboutJugLabels = labels( "jug", "question" );
+		final NewsID newsAboutJugID = new NewsID( titleAboutJUG, author );
+		final News newsAboutJUG = new News( newsAboutJugID, contentAboutJUG, newsAboutJugLabels );
+
+		final String titleCountJUG = "There are more than 20 JUGs in France";
 		final String contentCountJUG = "Great! Congratulations folks";
+		final List<Label> newsCountJugLabels = labels( "statJUG" );
+		final NewsID newsCountJugID = new NewsID( titleCountJUG, author );
+		final News newsCountJUG = new News( newsCountJugID, contentCountJUG, newsCountJugLabels );
 
-		Label questionLabel = new Label( "question" );
-		Label jugLabel = new Label( "jug" );
-		Label hibernateLabel = new Label( "hibernate" );
-		Label ogmLabel = new Label( "OGM" );
-		Label statJugLabel = new Label( "statJUG" );
-
-		NewsID newsOgmID = new NewsID( titleOGM, author );
-		NewsID newsAboutJugID = new NewsID( titleAboutJUG, author );
-		NewsID newsCountJugID = new NewsID( titleCountJUG, author );
-
-		final List<Label> newsOgmLabels = new ArrayList<Label>();
-		newsOgmLabels.add( ogmLabel );
-		newsOgmLabels.add( hibernateLabel );
-
-		final List<Label> newsAboutJugLabels = new ArrayList<Label>();
-		newsAboutJugLabels.add( jugLabel );
-		newsAboutJugLabels.add( questionLabel );
-
-		final List<Label> newsCountJugLabels = new ArrayList<Label>();
-		newsCountJugLabels.add( statJugLabel );
-
-
-		News newsAboutJUG = new News( newsAboutJugID, contentAboutJUG, newsAboutJugLabels );
-		News newsOGM = new News( newsOgmID, contentOGM, newsOgmLabels );
-		News newsCountJUG = new News( newsCountJugID, contentCountJUG, newsCountJugLabels );
+		final String titleOGM = "How to use Hibernate OGM ?";
+		final String contentOGM = "Simple, just like ORM but with a NoSQL database";
+		final List<Label> newsOgmLabels = labels( "OGM", "hibernate" );
+		final NewsID newsOgmID = new NewsID( titleOGM, author );
+		final News newsOGM = new News( newsOgmID, contentOGM, newsOgmLabels );
 
 		boolean operationSuccessful = false;
 		getTransactionManager().begin();
@@ -90,34 +74,40 @@ public class CompositeIdTest extends JpaTestCase {
 		getTransactionManager().begin();
 		operationSuccessful = false;
 		try {
-			News news = em.find( News.class, newsOgmID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentOGM );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
-			assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsOgmID ) ).isNull();
+			{
+				News news = em.find( News.class, newsOgmID );
+				assertThat( news ).isNotNull();
+				assertThat( news.getContent() ).isEqualTo( contentOGM );
+				assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+				assertThat( news.getNewsId().getTitle() ).isEqualTo( titleOGM );
+				assertThat( news.getLabels().size() ).isEqualTo( newsOgmLabels.size() );
+				em.remove( news );
 
-			em.clear();
-			news = em.find( News.class, newsAboutJugID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentAboutJUG );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
-			assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsAboutJugID ) ).isNull();
+				assertThat( em.find( News.class, newsOgmID ) ).isNull();
+				em.clear();
+			}
+			{
+				News news = em.find( News.class, newsAboutJugID );
+				assertThat( news ).isNotNull();
+				assertThat( news.getContent() ).isEqualTo( contentAboutJUG );
+				assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+				assertThat( news.getNewsId().getTitle() ).isEqualTo( titleAboutJUG );
+				assertThat( news.getLabels().size() ).isEqualTo( newsAboutJugLabels.size() );
+				em.remove( news );
 
-			em.clear();
-			news = em.find( News.class, newsCountJugID );
-			assertThat( news ).isNotNull();
-			assertThat( news.getContent() ).isEqualTo( contentCountJUG );
-			assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
-			assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
-			assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
-			em.remove( news );
-			assertThat( em.find( News.class, newsCountJugID ) ).isNull();
+				assertThat( em.find( News.class, newsAboutJugID ) ).isNull();
+				em.clear();
+			}
+			{
+				News news = em.find( News.class, newsCountJugID );
+				assertThat( news ).isNotNull();
+				assertThat( news.getContent() ).isEqualTo( contentCountJUG );
+				assertThat( news.getNewsId().getAuthor() ).isEqualTo( author );
+				assertThat( news.getNewsId().getTitle() ).isEqualTo( titleCountJUG );
+				assertThat( news.getLabels().size() ).isEqualTo( newsCountJugLabels.size() );
+				em.remove( news );
+				assertThat( em.find( News.class, newsCountJugID ) ).isNull();
+			}
 		}
 		finally {
 			commitOrRollback( operationSuccessful );
@@ -125,12 +115,16 @@ public class CompositeIdTest extends JpaTestCase {
 		em.close();
 	}
 
+	private List<Label> labels(String... keywords) {
+		List<Label> newsOgmLabels = new ArrayList<Label>();
+		for ( String keyword : keywords ) {
+			newsOgmLabels.add( new Label( keyword ) );
+		}
+		return newsOgmLabels;
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] {
-				News.class,
-				NewsID.class,
-				Label.class
-		};
+		return new Class<?>[] { News.class, NewsID.class, Label.class };
 	}
 }

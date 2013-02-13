@@ -38,7 +38,6 @@ public class Label {
 	private String name;
 
 	public Label() {
-		super();
 	}
 
 	public Label(String name) {

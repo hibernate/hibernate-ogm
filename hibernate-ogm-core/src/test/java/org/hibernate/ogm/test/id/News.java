@@ -38,13 +38,12 @@ public class News {
 	private NewsID newsId;
 	private String content;
 
-	@OneToMany(cascade =  CascadeType.ALL )
+	@OneToMany(cascade = CascadeType.ALL)
 	@JoinColumns({ @JoinColumn(name = "news_topic_fk", referencedColumnName = "newsid.title", nullable = false),
 			@JoinColumn(name = "news_author_fk", referencedColumnName = "newsid.author", nullable = false) })
 	private List<Label> labels;
 
 	public News() {
-		super();
 	}
 
 	public News(NewsID newsId, String content, List<Label> labels) {
@@ -53,15 +52,29 @@ public class News {
 		this.labels = labels;
 	}
 
+	public NewsID getNewsId() {
+		return newsId;
+	}
 
-	public NewsID getNewsId() { return newsId; }
-	public void setNewsId(NewsID newsId) { this.newsId = newsId; }
+	public void setNewsId(NewsID newsId) {
+		this.newsId = newsId;
+	}
 
-	public String getContent() { return content; }
-	public void setContent(String content) { this.content = content; }
+	public String getContent() {
+		return content;
+	}
 
-	public List<Label> getLabels() { return labels;	}
-	public void setLabels(List<Label> labels) {	this.labels = labels; }
+	public void setContent(String content) {
+		this.content = content;
+	}
+
+	public List<Label> getLabels() {
+		return labels;
+	}
+
+	public void setLabels(List<Label> labels) {
+		this.labels = labels;
+	}
 
 	@Override
 	public boolean equals(Object o) {
