@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ JBoss, Home of Professional Open Source
+  ~ Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+  ~ as indicated by the @authors tag. All rights reserved.
+  ~ See the copyright.txt in the distribution for a
+  ~ full listing of individual contributors.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use,
+  ~ modify, copy, or redistribute it subject to the terms and conditions
+  ~ of the GNU Lesser General Public License, v. 2.1.
+  ~ This program is distributed in the hope that it will be useful, but WITHOUT A
+  ~ WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+  ~ PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+  ~ You should have received a copy of the GNU Lesser General Public License,
+  ~ v.2.1 along with this distribution; if not, write to the Free Software
+  ~ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+  ~ MA  02110-1301, USA.
+  -->
+<!--
+    @author Davide D'Alto <davide@hibernate.org>
+-->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+        <!ENTITY % BOOK_ENTITIES SYSTEM "../ogm.ent">
+        %BOOK_ENTITIES;
+        ]>
+<section id="ogm-neo4j">
+  <title>Neo4j</title>
+  <para>
+    <ulink url="http://www.neo4j.org">Neo4j</ulink>
+    is an open-source graph database, it stores data in nodes connected by directed, typed relationships with properties on both, also known as a Property Graph.
+  </para>
+
+    <section id="ogm-neo4j-howto">
+      <title>How to use the Neo4j data store</title>
+      <para>There are two step two follow to use the data store:</para>
+      <itemizedlist>
+        <listitem>
+            <para>add the dependencies to the classpath;</para>
+        </listitem>
+        <listitem>
+          <para>set the properties according to your needs.</para>
+        </listitem>
+    </itemizedlist>
+
+    <example>
+      <title>Configuration example using embedded Neo4j and Maven</title>
+      <programlisting language="XML" role="XML">&lt;dependency&gt;
+  &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+  &lt;artifactId&gt;hibernate-ogm-neo4j&lt;/artifactId&gt;
+  &lt;version&gt;&version;&lt;/version&gt;
+&lt;/dependency&gt;</programlisting>
+
+      <programlisting>hibernate.ogm.datastore.provider = NEO4J_EMBEDDED
+hibernate.ogm.neo4j.database.path = /data/example/neo4jdb
+hibernate.transaction.jta.platform = org.hibernate.ogm.dialect.neo4j.Neo4jJtaPlatform</programlisting>
+    </example>
+
+  </section>
+
+  <section  id="ogm-neo4j-storageprinciples">
+    <title>Storage principles</title>
+    <para>Hibernate OGM tries to make the mapping to the underlying data store
+      as natural as possible so that third party applications not using it can
+      still read and update the same data store.
+    </para>
+
+    <para>An entity is stored as a node, the fields of the entity become the properties of the node. An additional property is added to keep the name of the table mapping the entity.Embedded objects
+      are mapped as a group of additional properties.
+    </para>
+
+    <para>An association between two entities is mapped using an oriented relationship between two nodes.
+      The relationship will start from the owner of the association. Bidirectional associations are
+      mapped as two oriented relationships.
+    </para>
+  </section>
+
+  <section id="ogm-neo4j-properties">
+    <title>Properties</title>
+    <table>
+      <title>Neo4j data store configuration properties</title>
+      <tgroup cols="2">
+        <colspec colwidth="30%"/>
+        <colspec colwidth="70%"/>
+        <thead>
+          <row>
+            <entry>Property</entry>
+            <entry>Description</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>hibernate.ogm.datastore.provider</entry>
+
+            <entry>To use the embedded Neo4j as a data store provider, this property must
+            be set to <literal>neo4j_embedded</literal></entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.database.path</entry>
+
+            <entry>The Neo4j Database name to connect to. Ex: /data/neo4j/example</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.properties.location</entry>
+
+            <entry>Location of the properties file for Neo4j. It can be an URL or an absolute file path.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.graphdb.factoryclass</entry>
+
+            <entry>Qualified class name of the class to use for the creation of a new <literal>org.neo4j.graphdb.GraphDatabaseService</literal>.
+            The class must implement the interface <literal>org.hibernate.ogm.datastore.neo4j.api.GraphDatabaseServiceFactory</literal>. If this value is not set
+            an <literal>EmbeddedGraphDatabase</literal> will be used.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.index.entity</entry>
+
+            <entry>The name of the index that contains the indexed entities as nodes. The default value is <literal>_relationships_ogm_index</literal></entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.index.association</entry>
+
+            <entry>The name of the index that contains the indexed associations as relationships. The default value is <literal>_relationships_ogm_index</literal>.</entry>
+          </row>
+
+          <row>
+            <entry>hibernate.ogm.neo4j.index.sequence</entry>
+
+            <entry>The name of the index that contains the indexed sequence as nodes. The default value is <literal>_sequences_ogm_index</literal>.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+    <para>When using the embedded version you can also set the specific properties describe in the <ulink url="http://docs.neo4j.org/chunked/milestone/embedded-configuration.html">Neo4j documentation</ulink>.</para>
+    </section>
+
+    <section id="ogm-neo4j-customgraphdb">
+      <title>How to use a custom GraphDatabaseService</title>
+      <para>It is possible to use a different implementation of the <literal>org.neo4j.kernel.GraphDatabaseService</literal> interface, you have to:
+      </para>
+      <itemizedlist>
+        <listitem>
+            <para>create an implementation of the <literal>org.hibernate.ogm.datastore.neo4j.api.GraphDatabaseServiceFactory</literal>;</para>
+        </listitem>
+        <listitem>
+          <para>set the <literal>hibernate.ogm.neo4j.graphdb.factoryclass</literal> to the custom factory class qualified name.</para>
+        </listitem>
+    </itemizedlist>
+
+    <example>
+      <title>How to use a custom <literal>GraphDatabaseServiceFactory</literal></title>
+      <programlisting language="Java">package my.custom.factory
+...
+class CustomGraphServiceFactory implements GraphDatabaseServiceFactory {
+
+    @Override
+    public void initialize(Properties properties) {
+      // Here you can read the configuration properties
+    }
+
+    @Override
+    public GraphDatabaseService create() {
+      return new CustomGraphDatabaseService();
+    }
+
+  }</programlisting>
+
+      <programlisting>hibernate.ogm.neo4j.graphdb.factoryclass = my.custom.factory.CustomGraphServiceFactory</programlisting>
+    </example>
+
+    </section>
+
+    <section id="ogm-neo4j-transactions">
+      <title>Transactions</title>
+      <para>Neo4j supports transactions. OGM ships with an implementation of the
+        <literal>org.hibernate.service.jta.platform.spi.JtaPlatform</literal>
+        that can be used to bind Neo4j with your hibernate application by setting the configuration property
+        <literal>hibernate.transaction.jta.platform</literal>
+        to the value <literal>org.hibernate.ogm.dialect.neo4j.Neo4jJtaPlatform</literal>:</para>
+
+        <example>
+          <title>How to enable transaction management in Neo4j</title>
+          <programlisting>hibernate.transaction.jta.platform = org.hibernate.ogm.dialect.neo4j.Neo4jJtaPlatform</programlisting>
+        </example>
+
+        <para>The <literal>org.hibernate.ogm.dialect.neo4j.Neo4jJtaPlatform</literal> can be also used with custom <literal>org.neo4j.kernel.GraphDatabaseService</literal> implementations, as long as they implemenet the <literal>org.neo4j.kernel.GraphDatabaseAPI</literal>
+          interface.</para>
+   </section>
+</section>

@@ -52,6 +52,11 @@
       <para>MongoDB: stores data into <ulink
       url="http://www.mongodb.org">MongoDB</ulink> (document store)</para>
     </listitem>
+
+    <listitem>
+      <para>Neo4j: stores data into <ulink
+      url="http://www.neo4j.org">Neo4j</ulink> (graph database)</para>
+    </listitem>
   </itemizedlist>
 
   <para>More are planned, if you are interested, come talk to us (see <xref
@@ -100,6 +105,11 @@
       <para><literal>mongodb</literal>: stores data into <ulink
       url="http://www.mongodb.org">MongoDB</ulink> (document store)</para>
     </listitem>
+
+    <listitem>
+      <para><literal>neo4j_embedded</literal>: stores data into <ulink
+      url="http://www.neo4j.org">Neo4j</ulink> (embedded graph database)</para>
+    </listitem>
   </itemizedlist>
 
   <para>You also need to add the relevant Hibernate OGM module in your
@@ -113,9 +123,9 @@
 </programlisting>
 
   <para>We have respectively <literal>hibernate-ogm-infinispan</literal>,
-  <literal>hibernate-ogm-ehcache</literal> and
-  <literal>hibernate-ogm-mongodb</literal>. The map datastore is included in
-  the Hibernate OGM engine module.</para>
+  <literal>hibernate-ogm-ehcache</literal>,
+  <literal>hibernate-ogm-mongodb</literal> and <literal>hibernate-ogm-neo4j</literal>.
+  The map datastore is included in the Hibernate OGM engine module.</para>
 
   <para>By default, a datastore provider chooses the best grid dialect
   transparently but you can manually override that setting with the
@@ -129,4 +139,6 @@
   <xi:include href="ehcache.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="mongodb.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="neo4j.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 </chapter>
