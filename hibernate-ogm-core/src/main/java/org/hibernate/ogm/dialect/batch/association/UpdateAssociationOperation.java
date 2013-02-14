@@ -22,7 +22,6 @@
 package org.hibernate.ogm.dialect.batch.association;
 
 import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.grid.AssociationKey;
 
 /**
@@ -38,6 +37,6 @@ public class UpdateAssociationOperation extends AbstractAssociationOperation {
 	}
 
 	public String toString(){
-		return "[RemoveAssociationOperation] "+key.toString();
+		return "[UpdateAssociationOperation] "+key.toString();
 	}
 }
