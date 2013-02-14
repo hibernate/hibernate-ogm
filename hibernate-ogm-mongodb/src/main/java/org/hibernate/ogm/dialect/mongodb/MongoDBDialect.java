@@ -332,7 +332,16 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+      ArrayList<Operation> operations = this.threadLocal.get().getOperations();
+      for(Operation op : operations) {
+         if(op.getClass().equals(UpdateTupleOperation.class)){
+            UpdateTupleOperation uto = (UpdateTupleOperation) op;
+            if(uto.getKey().getTable().equals(key.getTable())){
+               this.doUpdateTuple(uto.getTuple(), uto.getKey());
+            }
+         }
+      }
+      if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			boolean insert = false;
 			if ( entity == null ) {
@@ -358,7 +367,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 		DBCollection associations = getAssociationCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		
+
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
 		
