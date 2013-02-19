@@ -22,12 +22,18 @@ package org.hibernate.ogm.service.impl;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.internal.AbstractFlushingEventListener;
+import org.hibernate.event.internal.DefaultFlushEventListener;
+import org.hibernate.event.service.spi.DuplicationStrategy;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
 import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
@@ -62,6 +68,14 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		Version.touch();
 		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		sessionFactory.addObserver( new DatastoreProviderToSessionFactoryObserverAdaptor(configuration, serviceRegistry) );
+		EventListenerRegistry listenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
+		listenerRegistry.addDuplicationStrategy( new DuplicationStrategyImpl() );
+		final DatastoreServices datastoreServices = serviceRegistry.getService( DatastoreServices.class );
+		OgmEventListener listener = new OgmEventListener(datastoreServices.getGridDialect());
+		listenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( listener );
+		//need a different wrapper instance as we delegate the work to different delegates
+		listener = new OgmEventListener(datastoreServices.getGridDialect());
+		listenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( listener );
 	}
 
 	@Override
@@ -87,5 +101,22 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( GridDialectFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( QueryParserServicesInitiatior.INSTANCE );
+	}
+
+	public static class DuplicationStrategyImpl implements DuplicationStrategy {
+
+		@Override
+		public boolean areMatch(Object listener, Object original) {
+			boolean match = original instanceof AbstractFlushingEventListener && listener instanceof OgmEventListener;
+			if (match) {
+				( (OgmEventListener) listener ).setDelegate(original);
+			}
+			return match;
+		}
+
+		@Override
+		public Action getAction() {
+			return Action.REPLACE_ORIGINAL;
+		}
 	}
 }

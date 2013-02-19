@@ -22,6 +22,8 @@ package org.hibernate.ogm.dialect;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.FlushEvent;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -150,4 +152,15 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.overrideType( type );
 	}
 
+	@Override
+	public void prepareBatch() {
+		log.trace( "Prepare batched operations" );
+		gridDialect.prepareBatch();
+	}
+
+	@Override
+	public void executeBatch() {
+		log.trace( "Execute batched operations" );
+		gridDialect.executeBatch();
+	}
 }

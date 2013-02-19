@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -39,6 +40,13 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.batch.OperationBatcher;
+import org.hibernate.ogm.dialect.batch.tuple.CreateTupleOperation;
+import org.hibernate.ogm.dialect.batch.Operation;
+import org.hibernate.ogm.dialect.batch.association.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.batch.tuple.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.batch.association.UpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.tuple.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -96,6 +104,8 @@ public class MongoDBDialect implements GridDialect {
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
+
+	private ThreadLocal<OperationBatcher> threadLocal;
 
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
@@ -216,24 +226,24 @@ public class MongoDBDialect implements GridDialect {
 		query.append( operator, subQuery.append( column, value ) );
 	}
 
-	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	private void doUpdateTuple(Tuple tuple, EntityKey key){
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
-					column
-			) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot
+					.columnInIdField(
+							column
+					) ) {
 				switch ( operation.getType() ) {
-				case PUT_NULL:
-				case PUT:
-					this.addSubQuery( "$set", updater, column, operation.getValue() );
-					break;
-				case REMOVE:
-					this.addSubQuery( "$unset", updater, column, ONE );
-					break;
+					case PUT_NULL:
+					case PUT:
+						this.addSubQuery( "$set", updater, column, operation.getValue() );
+						break;
+					case REMOVE:
+						this.addSubQuery( "$unset", updater, column, ONE );
+						break;
 				}
 			}
 		}
@@ -251,9 +261,27 @@ public class MongoDBDialect implements GridDialect {
 		}
 		this.getCollection( key ).update( idObject, updater, true, false );
 	}
+	@Override
+	public void updateTuple(Tuple tuple, EntityKey key) {
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new UpdateTupleOperation( tuple, key ) );
+		}
+		else {
+			this.doUpdateTuple( tuple, key );
+		}
+	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new RemoveTupleOperation( key ) );
+		}
+		else {
+			this.doRemoveTuple( key );
+		}
+	}
+
+	private void doRemoveTuple(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
 		collection.remove( toDelete );
@@ -304,7 +332,16 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+      ArrayList<Operation> operations = this.threadLocal.get().getOperations();
+      for(Operation op : operations) {
+         if(op.getClass().equals(UpdateTupleOperation.class)){
+            UpdateTupleOperation uto = (UpdateTupleOperation) op;
+            if(uto.getKey().getTable().equals(key.getTable())){
+               this.doUpdateTuple(uto.getTuple(), uto.getKey());
+            }
+         }
+      }
+      if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			boolean insert = false;
 			if ( entity == null ) {
@@ -330,7 +367,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 		DBCollection associations = getAssociationCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		
+
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
 		
@@ -363,6 +400,15 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
+		if ( this.threadLocal != null ) {
+			this.threadLocal.get().addOperation( new UpdateAssociationOperation( association, key ) );
+		}
+		else {
+			this.doUpdateAssociation( association, key );
+		}
+	}
+
+	private void doUpdateAssociation(Association association, AssociationKey key) {
 		DBCollection collection;
 		DBObject query;
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
@@ -386,16 +432,19 @@ public class MongoDBDialect implements GridDialect {
 			DBObject update = null;
 
 			switch ( action.getType() ) {
-			case CLEAR:
-				update = new BasicDBObject( "$set", new BasicDBObject (associationField, Collections.EMPTY_LIST ) );
-				break;
-			case PUT_NULL:
-			case PUT:
-				update = putAssociationRowKey( rowValue, associationField, key );
-				break;
-			case REMOVE:
-				update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
-				break;
+				case CLEAR:
+					update = new BasicDBObject(
+							"$set",
+							new BasicDBObject( associationField, Collections.EMPTY_LIST )
+					);
+					break;
+				case PUT_NULL:
+				case PUT:
+					update = putAssociationRowKey( rowValue, associationField, key );
+					break;
+				case REMOVE:
+					update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
+					break;
 			}
 
 			if ( update != null ) {
@@ -406,6 +455,14 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
+		if(this.threadLocal != null) {
+			this.threadLocal.get().addOperation( new RemoveAssociationOperation( key ) );
+		} else {
+			this.doRemoveAssociation( key );
+		}
+	}
+
+	private void doRemoveAssociation(AssociationKey key) {
 		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
@@ -473,5 +530,47 @@ public class MongoDBDialect implements GridDialect {
 			return ByteStringType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
+	}
+
+	@Override
+	public void prepareBatch() {
+		this.threadLocal = new ThreadLocal<OperationBatcher>(){
+			@Override
+			protected OperationBatcher initialValue() {
+				return new OperationBatcher();
+			}
+		};
+	}
+
+
+	@Override
+	public void executeBatch() {
+		final OperationBatcher operationBatcher = this.threadLocal.get();
+		final ArrayList<Operation> operations = operationBatcher.getOperations();
+		log.debug( "Starting to execute batch operations ("+operations.size()+" operations)" );
+		for ( Operation operation : operations ) {
+			if ( operation instanceof UpdateTupleOperation ) {
+				final UpdateTupleOperation update = (UpdateTupleOperation) operation;
+				this.doUpdateTuple( update.getTuple(), update.getKey() );
+			}
+			else if ( operation instanceof CreateTupleOperation ) {
+				final CreateTupleOperation create = (CreateTupleOperation) operation;
+				this.createTuple( create.getKey() );
+			}
+			else if ( operation instanceof UpdateAssociationOperation ) {
+				final UpdateAssociationOperation updateAssoc = (UpdateAssociationOperation) operation;
+				this.doUpdateAssociation( updateAssoc.getAssociation(), updateAssoc.getKey() );
+			}
+			else if ( operation instanceof RemoveTupleOperation ) {
+				final RemoveTupleOperation remove = (RemoveTupleOperation) operation;
+				this.doRemoveTuple( remove.getKey() );
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				final RemoveAssociationOperation removeAssoc = (RemoveAssociationOperation) operation;
+				this.doRemoveAssociation( removeAssoc.getKey() );
+			}
+		}
+		this.threadLocal = null;
+		log.debug( "End of batched operations execution" );
 	}
 }

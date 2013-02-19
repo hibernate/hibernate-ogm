@@ -28,6 +28,8 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.FlushEvent;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
@@ -143,5 +145,11 @@ public class HashMapDialect implements GridDialect {
 	public GridType overrideType(Type type) {
 		return null;
 	}
+
+	@Override
+	public void prepareBatch() {}
+
+	@Override
+	public void executeBatch() {}
 
 }

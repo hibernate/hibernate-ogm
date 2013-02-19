@@ -22,6 +22,8 @@ package org.hibernate.ogm.dialect;
 
 import java.util.List;
 
+import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.FlushEvent;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -107,4 +109,14 @@ public interface GridDialect extends Service {
 	 * Experimental: this API might change in the future
 	 */
 	GridType overrideType(Type type);
+
+	/**
+	 * Prepare a batch for all operations during the flush phase
+	 */
+	void prepareBatch();
+
+	/**
+	 * Execute all operations previously stored during preparing phase
+	 */
+	void executeBatch();
 }

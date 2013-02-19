@@ -18,41 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.type;
 
-import org.hibernate.ogm.datastore.map.impl.HashMapDialect;
-import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
+package org.hibernate.ogm.dialect.batch;
 
-import java.util.UUID;
+import java.util.ArrayList;
+
+import org.jboss.logging.Logger;
+
+import org.hibernate.ogm.util.impl.CoreLogCategories;
+import org.hibernate.ogm.util.impl.Log;
 
 /**
-* @author Emmanuel Bernard <emmanuel@hibernate.org>
-*/
-public class OverridingTypeDialect extends HashMapDialect {
-
-	public OverridingTypeDialect(MapDatastoreProvider provider) {
-		super( provider );
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ */
+public class OperationBatcher {
+	private static final Log log = Logger.getMessageLogger( Log.class, CoreLogCategories.DATASTORE_ACCESS.toString() );
+	private ArrayList<Operation> operations;
+	public ArrayList<Operation> getOperations() { return operations; }
+	public OperationBatcher() {
+		this.operations = new ArrayList<Operation>();
 	}
 
-	@Override
-	public GridType overrideType(Type type) {
-		//all UUID properties are mapped with exploding type
-		if ( UUID.class.equals( type.getReturnedClass() ) ) {
-			return ExplodingType.INSTANCE;
-		}
-		//timestamp and time mapping are ignored, only raw dates are handled
-		if ( type == StandardBasicTypes.DATE ) {
-			return CustomDateType.INSTANCE;
-		}
-		return null;
+	public void addOperation( Operation operation){
+		log.debug( "Add batched operation "+operation );
+		this.operations.add( operation );
 	}
-
-	@Override
-	public void prepareBatch() {}
-
-	@Override
-	public void executeBatch() {}
 }

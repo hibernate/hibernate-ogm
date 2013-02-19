@@ -18,41 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.type;
 
-import org.hibernate.ogm.datastore.map.impl.HashMapDialect;
-import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
+package org.hibernate.ogm.dialect.batch.tuple;
 
-import java.util.UUID;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.EntityKey;
 
 /**
-* @author Emmanuel Bernard <emmanuel@hibernate.org>
-*/
-public class OverridingTypeDialect extends HashMapDialect {
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ */
+public class UpdateTupleOperation extends AbstractTupleOperation {
+	private Tuple tuple;
+	public Tuple getTuple() { return tuple; }
 
-	public OverridingTypeDialect(MapDatastoreProvider provider) {
-		super( provider );
+	public UpdateTupleOperation(Tuple tuple, EntityKey key) {
+		super( key );
+		this.tuple = tuple;
 	}
 
-	@Override
-	public GridType overrideType(Type type) {
-		//all UUID properties are mapped with exploding type
-		if ( UUID.class.equals( type.getReturnedClass() ) ) {
-			return ExplodingType.INSTANCE;
-		}
-		//timestamp and time mapping are ignored, only raw dates are handled
-		if ( type == StandardBasicTypes.DATE ) {
-			return CustomDateType.INSTANCE;
-		}
-		return null;
+	public String toString(){
+		return "[UpdateTupleOperation] "+key;
 	}
-
-	@Override
-	public void prepareBatch() {}
-
-	@Override
-	public void executeBatch() {}
 }
