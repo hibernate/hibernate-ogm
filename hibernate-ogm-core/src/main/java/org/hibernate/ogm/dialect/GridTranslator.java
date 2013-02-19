@@ -18,32 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.impl;
+package org.hibernate.ogm.dialect;
 
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
+import org.hibernate.service.Service;
+import org.teiid.translator.BaseDelegatingExecutionFactory;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * The query translator class that converts JP-QL into native source specific
+ * queries. 
  */
-public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactory> {
-	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
-
-	@Override
-	public GridDialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridDialectFactoryImpl(configurationValues, registry);
-	}
-
-	@Override
-	protected BasicServiceInitiator<GridDialectFactory> backupInitiator() {
-		return null;
-	}
-
-	@Override
-	public Class<GridDialectFactory> getServiceInitiated() {
-		return GridDialectFactory.class;
-	}
+@SuppressWarnings("serial")
+public abstract class GridTranslator<F, C> extends BaseDelegatingExecutionFactory<F,C> implements Service {
+	public static final String GRID_TRANSLATOR = "hibernate.ogm.datastore.grid_translator"; //$NON-NLS-1$
 }

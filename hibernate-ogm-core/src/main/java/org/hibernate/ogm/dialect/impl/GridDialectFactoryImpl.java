@@ -20,26 +20,33 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import java.lang.reflect.Constructor;
+import java.util.Map;
+
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
-
-import java.lang.reflect.Constructor;
-import java.util.Map;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class GridDialectFactoryImpl implements GridDialectFactory {
-
+	
 	private static final Log log = LoggerFactory.make();
+	private Map configuration;
+	private ServiceRegistryImplementor registry;
+	
+	public GridDialectFactoryImpl(Map configurationValues, ServiceRegistryImplementor registry) {
+		this.configuration = configurationValues;
+		this.registry = registry;
+	}
 
-	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
-		Object value = configurationValues.get(GRID_DIALECT);
+	public GridDialect buildGridDialect() {
+		Object value = this.configuration.get(GRID_DIALECT);
 		Class<? extends GridDialect> dialectClass = null;
 		if ( value == null ) {
 			dialectClass = registry.getService(DatastoreProvider.class).getDefaultDialect();

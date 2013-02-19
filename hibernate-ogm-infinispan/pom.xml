@@ -39,6 +39,10 @@
     <name>Hibernate OGM Infinispan integration</name>
     <description>Persist data in Infinispan rather than in a relational database</description>
 
+    <properties>
+        <teiid.version>8.2.0.Beta1-SNAPSHOT</teiid.version>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
@@ -75,6 +79,11 @@
             <artifactId>infinispan-lucene-directory</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+          <groupId>org.jboss.teiid.connectors</groupId>
+          <artifactId>translator-object</artifactId>
+          <version>${teiid.version}</version>
+        </dependency>       
         
         <!-- test dependencies -->
         <dependency>
