@@ -37,8 +37,9 @@ import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
-import com.mongodb.Mongo;
-import com.mongodb.MongoOptions;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.WriteConcern;
 import com.mongodb.ServerAddress;
 
 /**
@@ -52,7 +53,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private Map<?, ?> cfg;
 	private boolean isCacheStarted;
-	private Mongo mongo;
+	private MongoClient mongo;
 	private DB mongoDb;
 	private AssociationStorage associationStorage;
 
@@ -129,15 +130,20 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					}
 				}
 
-				MongoOptions options = new MongoOptions();
-				options.safe = safe;
-				options.connectTimeout = timeout;
+				MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
+				optionsBuilder.connectTimeout( timeout );
+				if ( safe ) {
+					optionsBuilder.writeConcern( WriteConcern.ACKNOWLEDGED );
+				}
+				else {
+					optionsBuilder.writeConcern( WriteConcern.NONE );
+				}
 				log.useSafe( safe );
 				log.connectingToMongo( host, port, timeout );
 
 				ServerAddress serverAddress = new ServerAddress( host, port );
 
-				this.mongo = new Mongo( serverAddress, options );
+				this.mongo = new MongoClient( serverAddress, optionsBuilder.build() );
 				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
