@@ -104,15 +104,12 @@
           </row>
 
           <row>
-            <entry>hibernate.ogm.mongodb.safe</entry>
+            <entry>hibernate.ogm.mongodb.writeconcern</entry>
 
-            <entry>Defines the so-called safe mode in MongoDB. When set to
-            <literal>false</literal>, the driver does not wait for the write
-            operation to be applied before returning. This could lead to loss
-            of writes. When set to <literal>true</literal>, the driver waits
-            for the operation to succeed before returning. Note that this is
-            slower than the unsafe mode. The default value is
-            <literal>true</literal>.</entry>
+            <entry>Defines the write concern setting used to control the
+            acknowledgment of write operations. Refer to
+            <xref linkend="omg-mongodb-writeconcern" /> to have the complete list of values.
+            The default value is <literal>ACKNOWLEDGED</literal></entry>
           </row>
 
           <row>
@@ -140,15 +137,30 @@
         </tbody>
       </tgroup>
     </table>
+  </section>
 
-    <note>
-      <para>The general policy in Hibernate OGM is to not go against the
-      underlying NoSQL store. We have made an exception for MongoDB's write
-      concern default setting - which is unsafe out of the box. Based on the
-      typical use case of Hibernate OGM (domain models) and based on the
-      production feedback we have received, we do consider MongoDB's default
-      value to be dangerous.</para>
-    </note>
+  <section id="omg-mongodb-writeconcern">
+    <title>WriteConcern property</title>
+    <para>
+      The possible values for the <literal>hibernate.ogm.mongodb.writeconcern possible values</literal> option are:
+      <itemizedlist>
+        <listitem>ERRORS_IGNORED</listitem>
+        <listitem>ACKNOWLEDGED</listitem>
+        <listitem>UNACKNOWLEDGED</listitem>
+        <listitem>FSYNCED</listitem>
+        <listitem>JOURNALED</listitem>
+        <listitem>NONE</listitem>
+        <listitem>NORMAL</listitem>
+        <listitem>SAFE</listitem>
+        <listitem>MAJORITY</listitem>
+        <listitem>FSYNC_SAFE</listitem>
+        <listitem>JOURNAL_SAFE</listitem>
+        <listitem>REPLICAS_SAFE</listitem>
+      </itemizedlist>
+      For more information, please refer to the
+      <ulink href="http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html">official documentation</ulink>
+      This option is case insensitive and the default value is <literal>ACKNOWLEDGED</literal>
+    </para>
   </section>
 
   <section>
