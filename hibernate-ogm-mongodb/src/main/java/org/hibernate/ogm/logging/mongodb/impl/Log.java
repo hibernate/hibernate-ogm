@@ -74,8 +74,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void removedAssociation(int nAffected);
 
 	@LogMessage(level = INFO)
-	@Message(id = 1211, value = "The configuration property '" + Environment.MONGODB_SAFE + "' is set to %b")
-	void useSafe(boolean safe);
+	@Message(id = 1211, value = "The configuration property '" + Environment.MONGODB_WRITE_CONCERN + "' is set to %s")
+	void useWriteConcern(String writeConcern);
 
 	@Message(id = 1212, value = "Unknown association storage strategy: [%s]. Supported values in enum %s" )
 	HibernateException unknownAssociationStorageStrategy(String databaseName, Class<?> enumType);
@@ -88,4 +88,9 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1215, value = "The value set for the configuration property" + Environment.MONGODB_TIMEOUT + " must be a number greater than 0. Found '[%s]'.")
 	HibernateException mongoDBTimeOutIllegalValue(String value);
+
+	@Message(id = 1216, value = "'%s' cannot be set as an available value for " + Environment.MONGODB_WRITE_CONCERN +
+			" you must choose between [ACKNOWLEDGED, ERRORS_IGNORED, FSYNC_IGNORED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED," +
+			"NONE, NORMAL, SAFE, MAJORITY, FSYNC_SAFE, JOURNAL_SAFE, REPLICAS_SAFE]")
+	HibernateException unableToSetWriteConcern(String value);
 }
