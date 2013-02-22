@@ -104,18 +104,6 @@
           </row>
 
           <row>
-            <entry>hibernate.ogm.mongodb.safe</entry>
-
-            <entry>Defines the so-called safe mode in MongoDB. When set to
-            <literal>false</literal>, the driver does not wait for the write
-            operation to be applied before returning. This could lead to loss
-            of writes. When set to <literal>true</literal>, the driver waits
-            for the operation to succeed before returning. Note that this is
-            slower than the unsafe mode. The default value is
-            <literal>true</literal>.</entry>
-          </row>
-
-          <row>
             <entry>hibernate.ogm.mongodb.connection_timeout</entry>
 
             <entry>Defines the timeout used by the driver when the connection
@@ -137,18 +125,33 @@
             within the entity. <literal>IN_ENTITY</literal> is the
             default.</entry>
           </row>
+
+          <row>
+            <entry>hibernate.ogm.mongodb.writeconcern</entry>
+
+            <entry>
+                Possible values are
+                <literal>ERRORS_IGNORED</literal>,
+                <literal>ACKNOWLEDGED</literal>,
+                <literal>UNACKNOWLEDGED</literal>,
+                <literal>FSYNCED</literal>,
+                <literal>JOURNALED</literal>,
+                <literal>NONE</literal>,
+                <literal>NORMAL</literal>,
+                <literal>SAFE</literal>,
+                <literal>MAJORITY</literal>,
+                <literal>FSYNC_SAFE</literal>,
+                <literal>JOURNAL_SAFE</literal>,
+                <literal>REPLICAS_SAFE</literal>.
+                For more information, please refer to the
+                <ulink url="http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html">official documentation.</ulink>
+                This option is case insensitive and the default value is
+                <literal>ACKNOWLEDGED</literal>.
+            </entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
-
-    <note>
-      <para>The general policy in Hibernate OGM is to not go against the
-      underlying NoSQL store. We have made an exception for MongoDB's write
-      concern default setting - which is unsafe out of the box. Based on the
-      typical use case of Hibernate OGM (domain models) and based on the
-      production feedback we have received, we do consider MongoDB's default
-      value to be dangerous.</para>
-    </note>
   </section>
 
   <section>
