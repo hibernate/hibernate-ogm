@@ -39,6 +39,7 @@
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
+        <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.orm.module.slot>main</hibernate.orm.module.slot>
     </properties>
 
@@ -93,6 +94,17 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-envers</artifactId>
             <version>4.0.1.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-mongodb</artifactId>
+            <version>${project.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-entitymanager</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
