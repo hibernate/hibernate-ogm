@@ -45,6 +45,11 @@
              <outputDirectory>/modules/org/hibernate/ogm/ehcache/main</outputDirectory>
              <filtered>true</filtered>
         </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
+             <outputDirectory>/modules/org/hibernate/ogm/mongodb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
    </files>
 
     <dependencySets>
@@ -66,6 +71,16 @@
              <includes>
                  <include>org.hibernate.ogm:hibernate-ogm-ehcache</include>
                  <include>net.sf.ehcache:ehcache-core</include>
+              </includes>
+        </dependencySet>
+        <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>modules/org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
+                 <include>org.mongodb:mongo-java-driver</include>
               </includes>
        </dependencySet>
        <dependencySet>
