@@ -50,7 +50,7 @@ public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 		}
 		else {
 			if ( log.isTraceEnabled() ) {
-				log.tracef( "found [$s] as column [$s]", javaTypeDescriptor.extractLoggableRepresentation( result ), name );
+				log.tracef( "found [%1$s] as column [%2$s]", javaTypeDescriptor.extractLoggableRepresentation( result ), name );
 			}
 			return result;
 		}
