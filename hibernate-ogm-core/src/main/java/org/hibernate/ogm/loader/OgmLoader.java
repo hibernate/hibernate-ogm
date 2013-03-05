@@ -45,6 +45,7 @@ import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
@@ -142,32 +143,41 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	@Override
 	public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
-		List results = loadEntity( id, optionalObject, session, lockOptions );
-		if ( results.size()==1 ) {
-			return results.get(0);
+		List results = loadEntity( id, optionalObject, session, lockOptions, OgmLoadingContext.EMPTY_CONTEXT );
+		if ( results.size() == 1 ) {
+			return results.get( 0 );
 		}
-		else if ( results.size()==0 ) {
+		else if ( results.size() == 0 ) {
 			return null;
 		}
 		else {
-			//in the relational mode, colelction owner means cartesian product
+			// in the relational mode, collection owner means cartesian product
 			// does not make sense in OGM
-			throw new HibernateException(
-					"More than one row with the given identifier was found: " +
-					id +
-					", for class: " +
-					getEntityPersisters()[0].getEntityName()
-				);
+			throw new HibernateException( "More than one row with the given identifier was found: " + id
+					+ ", for class: " + getEntityPersisters()[0].getEntityName() );
 		}
 	}
 
-	private List<Object> loadEntity(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
+	private List<Object> loadEntity(
+			Serializable id,
+			Object optionalObject,
+			SessionImplementor session,
+			LockOptions lockOptions,
+			OgmLoadingContext ogmLoadingContext) {
 		final OgmEntityPersister currentPersister = entityPersisters[0];
 		if ( log.isDebugEnabled() ) {
-			log.debug(
-					"loading entity: " +
-					MessageHelper.infoString( currentPersister, id, currentPersister.getIdentifierType(), session.getFactory() )
+			if ( id != null ) {
+				log.debug(
+						"loading entity: " +
+						MessageHelper.infoString( currentPersister, id, currentPersister.getIdentifierType(), session.getFactory() )
+					);
+			}
+			else {
+				log.debug(
+						"loading entities from list of tuples: " +
+						MessageHelper.infoString( currentPersister, id, currentPersister.getIdentifierType(), session.getFactory() )
 				);
+			}
 		}
 		QueryParameters qp = new QueryParameters();
 		qp.setPositionalParameterTypes( new Type[] { currentPersister.getIdentifierType() } );
@@ -180,9 +190,18 @@ public class OgmLoader implements UniqueEntityLoader {
 		List<Object> result = doQueryAndInitializeNonLazyCollections(
 				session,
 				qp,
+				ogmLoadingContext,
 				false
 			);
 		return result;
+	}
+
+	/**
+	 * Load a list of entities from a list of tuples
+	 * TODO it sucks that we have to expose Tuple to a public API of OgmLoader
+	 */
+	public List<Object> loadEntities(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
+		return loadEntity( null, null, session, lockOptions, ogmContext );
 	}
 
 	/**
@@ -205,6 +224,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		doQueryAndInitializeNonLazyCollections(
 				session,
 				qp,
+				OgmLoadingContext.EMPTY_CONTEXT,
 				true
 			);
 
@@ -222,6 +242,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private List<Object> doQueryAndInitializeNonLazyCollections(
 			SessionImplementor session,
 			QueryParameters qp,
+			OgmLoadingContext ogmLoadingContext,
 			boolean returnProxies) {
 
 
@@ -235,6 +256,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				result = doQuery(
 						session,
 						qp,
+						ogmLoadingContext,
 						returnProxies
 				);
 			}
@@ -258,14 +280,27 @@ public class OgmLoader implements UniqueEntityLoader {
 	private List<Object> doQuery(
 			SessionImplementor session,
 			QueryParameters qp,
+			OgmLoadingContext ogmLoadingContext,
 			boolean returnProxies) {
 		//TODO support lock timeout
 
 		int entitySpan = entityPersisters.length;
 		final List<Object> hydratedObjects = entitySpan == 0 ? null : new ArrayList<Object>( entitySpan * 10 );
 		//TODO yuk! Is there a cleaner way to access the id?
-		final Serializable id = qp.getOptionalId() != null ? qp.getOptionalId() : ( Serializable ) qp.getCollectionKeys()[0];
-		TupleAsMapResultSet resultset = getResultSet( id, session );
+		final Serializable id;
+		// first look for direct id
+		// then for a tuple based result set we could extract the id
+		// otherwise that's a collection so we use the collection key
+		if ( qp.getOptionalId() != null ) {
+			id = qp.getOptionalId();
+		}
+		else if ( ogmLoadingContext.hasResultSet() ) {
+			id = null;
+		}
+		else {
+			id = qp.getCollectionKeys()[0];
+		}
+		TupleAsMapResultSet resultset = getResultSet( id, ogmLoadingContext, session );
 
 		//Todo implement lockmode
 		//final LockMode[] lockModesArray = getLockModes( queryParameters.getLockOptions() );
@@ -287,6 +322,7 @@ public class OgmLoader implements UniqueEntityLoader {
 						resultset,
 						session,
 						qp,
+						ogmLoadingContext,
 						//lockmodeArray,
 						qp.getOptionalId(),
 						hydratedObjects,
@@ -350,6 +386,7 @@ public class OgmLoader implements UniqueEntityLoader {
 			ResultSet resultset,
 			SessionImplementor session,
 			QueryParameters qp,
+			OgmLoadingContext ogmLoadingContext,
 			Serializable optionalId,
 			List<Object> hydratedObjects,
 			org.hibernate.engine.spi.EntityKey[] keys,
@@ -357,7 +394,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	throws SQLException {
 		final OgmEntityPersister[] persisters = getEntityPersisters();
 		final int entitySpan = persisters.length;
-		extractKeysFromResultSet( session, optionalId, keys );
+		extractKeysFromResultSet( session, optionalId, ogmLoadingContext, keys );
 
 		registerNonExists( keys, persisters, session);
 
@@ -398,19 +435,34 @@ public class OgmLoader implements UniqueEntityLoader {
 		return getResultColumnOrRow( row );
 	}
 
-	private void extractKeysFromResultSet(SessionImplementor session, Serializable optionalId, org.hibernate.engine.spi.EntityKey[] keys) {
+	private void extractKeysFromResultSet(
+			SessionImplementor session,
+			Serializable optionalId,
+			OgmLoadingContext ogmLoadingContext,
+			org.hibernate.engine.spi.EntityKey[] keys) {
 		//TODO Implement all Loader#extractKeysFromResultSet (ie resolution in case of composite ids with associations)
 		//in the mean time the next two lines are the simplified version
+		//we do not handle multiple Loaders but that's OK for now
 		if (keys.length == 0) {
 			//do nothing, this is a collection
 		}
 		else {
+			if (optionalId == null) {
+				final OgmEntityPersister currentPersister = entityPersisters[0];
+				Tuple tuple =  ogmLoadingContext.getResultSet().getTuple();
+				GridType gridIdentifierType = currentPersister.getGridIdentifierType();
+				optionalId = (Serializable) gridIdentifierType.nullSafeGet( tuple, currentPersister.getIdentifierColumnNames(), session, null );
+			}
 			final org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( optionalId,  entityPersisters[0] );
 			keys[0] = key;
 		}
 	}
 
-	private TupleAsMapResultSet getResultSet(Serializable id, SessionImplementor session) {
+	private TupleAsMapResultSet getResultSet(Serializable id, OgmLoadingContext ogmLoadingContext, SessionImplementor session) {
+		if ( id == null && ogmLoadingContext.hasResultSet() ) {
+			return ogmLoadingContext.getResultSet();
+		}
+
 		//TODO this if won't work when we will support collections inside the entity tuple but that will do for now
 		final TupleAsMapResultSet resultset = new TupleAsMapResultSet();
 		if ( getEntityPersisters().length > 0 ) {
