@@ -142,6 +142,26 @@ public class OgmLoader implements UniqueEntityLoader {
 	 */
 	@Override
 	public Object load(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
+		List results = loadEntity( id, optionalObject, session, lockOptions );
+		if ( results.size()==1 ) {
+			return results.get(0);
+		}
+		else if ( results.size()==0 ) {
+			return null;
+		}
+		else {
+			//in the relational mode, colelction owner means cartesian product
+			// does not make sense in OGM
+			throw new HibernateException(
+					"More than one row with the given identifier was found: " +
+					id +
+					", for class: " +
+					getEntityPersisters()[0].getEntityName()
+				);
+		}
+	}
+
+	private List<Object> loadEntity(Serializable id, Object optionalObject, SessionImplementor session, LockOptions lockOptions) {
 		final OgmEntityPersister currentPersister = entityPersisters[0];
 		if ( log.isDebugEnabled() ) {
 			log.debug(
@@ -157,7 +177,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		qp.setOptionalId( id );
 		qp.setLockOptions( lockOptions );
 
-		Object result = doQueryAndInitializeNonLazyCollections(
+		List<Object> result = doQueryAndInitializeNonLazyCollections(
 				session,
 				qp,
 				false
@@ -199,7 +219,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Load the entity activating the persistence context execution boundaries
 	 */
-	private Object doQueryAndInitializeNonLazyCollections(
+	private List<Object> doQueryAndInitializeNonLazyCollections(
 			SessionImplementor session,
 			QueryParameters qp,
 			boolean returnProxies) {
@@ -209,7 +229,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		final PersistenceContext persistenceContext = session.getPersistenceContext();
 		boolean defaultReadOnlyOrig = persistenceContext.isDefaultReadOnly();
 		persistenceContext.beforeLoad();
-		Object result;
+		List<Object> result;
 		try {
 			try {
 				result = doQuery(
@@ -235,7 +255,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	/**
 	 * Execute the physical query and initialize the various entities and collections
 	 */
-	private Object doQuery(
+	private List<Object> doQuery(
 			SessionImplementor session,
 			QueryParameters qp,
 			boolean returnProxies) {
@@ -260,6 +280,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		//for each element in resultset
 		//TODO should we collect List<Object> as result? Not necessary today
 		Object result = null;
+		List<Object> results = new ArrayList<Object>();
 		try {
 			while ( resultset.next() ) {
 				result = getRowFromResultSet(
@@ -271,8 +292,8 @@ public class OgmLoader implements UniqueEntityLoader {
 						hydratedObjects,
 						keys,
 						returnProxies);
+				results.add( result );
 			}
-
 			//TODO collect subselect result key
 		}
 		catch ( SQLException e ) {
@@ -283,7 +304,7 @@ public class OgmLoader implements UniqueEntityLoader {
 
 		initializeEntitiesAndCollections( hydratedObjects, resultset, session, qp.isReadOnly( session ) );
 		//TODO create subselects
-		return result;
+		return results;
 	}
 
 	/**
