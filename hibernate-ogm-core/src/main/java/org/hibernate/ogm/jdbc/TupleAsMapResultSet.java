@@ -71,6 +71,10 @@ public class TupleAsMapResultSet implements ResultSet {
 		this.tuples.add( tuple );
 	}
 
+	public void setTuples(List<Tuple> tuples) {
+		this.tuples = tuples;
+	}
+
 	/**
 	 * Retrieve the current value for the collection entry
 	 */
