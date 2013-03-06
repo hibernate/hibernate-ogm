@@ -24,6 +24,7 @@ import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 
@@ -41,8 +42,7 @@ final public class EntityKeyBuilder {
 			final Serializable id,
 			SessionImplementor session) {
 		return fromData(
-				persister.getTableName(),
-				persister.getIdentifierColumnNames(),
+				persister.getEntityKeyMetadata(),
 				persister.getGridIdentifierType(),
 				id,
 				session );
@@ -50,18 +50,17 @@ final public class EntityKeyBuilder {
 
 	//static method because the builder pattern version was showing up during profiling
 	public static EntityKey fromData(
-			String tableName,
-			String[] identifierColumnNames,
+			EntityKeyMetadata entityKeyMetadata,
 			GridType identifierGridType,
 			final Serializable id,
 			SessionImplementor session) {
 		Object[] values = LogicalPhysicalConverterHelper.getColumnsValuesFromObjectValue(
 				id,
 				identifierGridType,
-				identifierColumnNames,
+				entityKeyMetadata.getColumnNames(),
 				session
 		);
-		return new EntityKey( tableName, identifierColumnNames, values );
+		return new EntityKey( entityKeyMetadata, values );
 	}
 
 }
