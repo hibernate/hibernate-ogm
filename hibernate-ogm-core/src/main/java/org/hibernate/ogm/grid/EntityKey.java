@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -30,20 +30,18 @@ import java.util.Arrays;
  */
 public final class EntityKey implements Serializable {
 
-	private final String table;
+	private final EntityKeyMetadata keyMetadata;
 	private final int hashCode;
-	private String[] columnNames;
 	private Object[] columnValues;
 
-	public EntityKey(String tableName, String[] columnNames, Object[] values) {
-		this.table = tableName;
-		this.columnNames = columnNames;
+	public EntityKey(EntityKeyMetadata keyMetadata, Object[] values) {
+		this.keyMetadata = keyMetadata;
 		this.columnValues = values;
 		this.hashCode = generateHashCode();
 	}
 
 	public String getTable() {
-		return table;
+		return keyMetadata.getTable();
 	}
 
 	/**
@@ -61,14 +59,15 @@ public final class EntityKey implements Serializable {
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
 	public String[] getColumnNames() {
-		return columnNames;
+		return keyMetadata.getColumnNames();
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "EntityKey" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
+		sb.append( "{table='" ).append( keyMetadata.getTable() ).append( '\'' );
+		String[] columnNames = keyMetadata.getColumnNames();
 		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
 		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
@@ -84,8 +83,7 @@ public final class EntityKey implements Serializable {
 
 		//values are more discriminatory, test first
 		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) return false;
-		if ( !Arrays.equals( columnNames, entityKey.columnNames ) ) return false;
-		if ( !table.equals( entityKey.table ) ) return false;
+		if ( !keyMetadata.equals( entityKey.keyMetadata )) return false;
 
 		return true;
 	}
@@ -96,9 +94,7 @@ public final class EntityKey implements Serializable {
 	}
 
 	private int generateHashCode() {
-		//Note we don't hash on the column names as the hash will discriminate enough
-		//with values and Arrays.hashCode is nto cheap
-		int result = table.hashCode();
+		int result = keyMetadata.hashCode();
 		result = 31 * result + Arrays.hashCode( columnValues );
 		return result;
 	}

@@ -33,6 +33,7 @@ import org.hibernate.internal.DynamicFilterAliasGenerator;
 import org.hibernate.internal.FilterAliasGenerator;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import org.hibernate.AssertionFailure;
@@ -110,7 +111,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	//service references
 	private final GridDialect gridDialect;
-
+	private final EntityKeyMetadata entityKeyMetadata;
 
 
 	public OgmEntityPersister(
@@ -234,6 +235,7 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		this.tupleContext = new TupleContext( columnNames );
 		jpaEntityName = persistentClass.getJpaEntityName();
+		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 	}
 
 	//FIXME finish implement postInstantiate
@@ -245,6 +247,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	public GridType getGridIdentifierType() {
 		return gridIdentifierType;
+	}
+
+	public EntityKeyMetadata getEntityKeyMetadata() {
+		return entityKeyMetadata;
+	}
+
+	public EntityKeyMetadata getRootEntityKeyMetadata() {
+		//we only support single table and table per concrete class strategies
+		//in this case the root to lock to is the entity itself
+		//see its use in read locking strategy.
+		return entityKeyMetadata;
 	}
 
 	/**
