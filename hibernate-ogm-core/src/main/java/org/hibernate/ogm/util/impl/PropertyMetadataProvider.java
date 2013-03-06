@@ -163,8 +163,7 @@ public class PropertyMetadataProvider {
 					EntityType entityType = (EntityType) propertyType;
 					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
 					EntityKey entityKey = new EntityKey(
-							associatedPersister.getTableName(),
-							associatedPersister.getIdentifierColumnNames(),
+							associatedPersister.getEntityKeyMetadata(),
 							columnValues
 					);
 					collectionMetadataKey.setOwnerEntityKey( entityKey );
