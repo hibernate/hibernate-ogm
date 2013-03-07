@@ -33,6 +33,8 @@ import org.hibernate.internal.DynamicFilterAliasGenerator;
 import org.hibernate.internal.FilterAliasGenerator;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 import org.hibernate.AssertionFailure;
@@ -110,7 +112,8 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	//service references
 	private final GridDialect gridDialect;
-
+	private final EntityKeyMetadata entityKeyMetadata;
+	private final Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
 
 
 	public OgmEntityPersister(
@@ -234,6 +237,22 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		}
 		this.tupleContext = new TupleContext( columnNames );
 		jpaEntityName = persistentClass.getJpaEntityName();
+		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
+		//load unique key association key metadata
+		associationKeyMetadataPerPropertyName = new HashMap<String,AssociationKeyMetadata>();
+		initAssociationKeyMetadata();
+	}
+
+	private void initAssociationKeyMetadata() {
+		for (int index = 0 ; index < getPropertySpan() ; index++) {
+			final Type uniqueKeyType = getPropertyTypes()[index];
+			if ( uniqueKeyType.isEntityType() ) {
+				String[] propertyColumnNames = getPropertyColumnNames( index );
+				AssociationKeyMetadata metadata = new AssociationKeyMetadata( getTableName(), propertyColumnNames );
+				metadata.setRowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames ) );
+				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
+			}
+		}
 	}
 
 	//FIXME finish implement postInstantiate
@@ -245,6 +264,17 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 
 	public GridType getGridIdentifierType() {
 		return gridIdentifierType;
+	}
+
+	public EntityKeyMetadata getEntityKeyMetadata() {
+		return entityKeyMetadata;
+	}
+
+	public EntityKeyMetadata getRootEntityKeyMetadata() {
+		//we only support single table and table per concrete class strategies
+		//in this case the root to lock to is the entity itself
+		//see its use in read locking strategy.
+		return entityKeyMetadata;
 	}
 
 	/**
@@ -408,16 +438,18 @@ public class OgmEntityPersister extends AbstractEntityPersister implements Entit
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyIndex, propertyName );
 		//get the associated property index (to get its column names)
 		//find the ids per unique property name
+		AssociationKeyMetadata associationKeyMetadata = associationKeyMetadataPerPropertyName.get( propertyName );
+		if ( associationKeyMetadata == null ) {
+			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
+		}
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.tableName( getTableName() )
 				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
-				.keyColumnNames( getPropertyColumnNames( propertyIndex ) )
 				//does not set .collectionPersister as it does not make sense here for an entity
+				.associationMetadataKey( associationKeyMetadata )
 				.session( session )
-				.propertyType( getPropertyTypes()[propertyIndex] )
-				.rowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, getPropertyColumnNames( propertyIndex ) ) );
+				.propertyType( getPropertyTypes()[propertyIndex] );
 		final Association ids = metadataProvider.getCollectionMetadataOrNull();
 
 		if (ids == null || ids.size() == 0 ) {
