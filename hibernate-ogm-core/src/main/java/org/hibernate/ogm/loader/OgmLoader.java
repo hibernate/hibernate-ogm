@@ -481,11 +481,10 @@ public class OgmLoader implements UniqueEntityLoader {
 			final OgmCollectionPersister persister = (OgmCollectionPersister) getCollectionPersisters()[0];
 			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect(gridDialect)
-				.tableName(persister.getTableName())
 				.key( id )
-				.keyColumnNames( persister.getKeyColumnNames() )
 				.keyGridType( persister.getKeyGridType() )
 				.collectionPersister( persister )
+				.associationMetadataKey( persister.getAssociationKeyMetadata() )
 				.session( session );
 			Association assoc = metadataProvider.getCollectionMetadataOrNull();
 			if ( assoc != null ) {

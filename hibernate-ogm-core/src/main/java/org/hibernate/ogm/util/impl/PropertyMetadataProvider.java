@@ -29,6 +29,7 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -76,6 +77,7 @@ public class PropertyMetadataProvider {
 	 * It uses Boolean instead of boolean to make sure it's used only after being calculated
 	 */
 	private Boolean isBidirectional;
+	private AssociationKeyMetadata associationKeyMetadata;
 
 	//fluent methods for populating data
 
@@ -124,8 +126,17 @@ public class PropertyMetadataProvider {
 
 	private AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
+			if ( associationKeyMetadata == null ) {
+				associationKeyMetadata = new AssociationKeyMetadata( tableName, keyColumnNames );
+				associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+			}
+			else {
+				tableName = associationKeyMetadata.getTable();
+				keyColumnNames = associationKeyMetadata.getColumnNames();
+				rowKeyColumnNames = associationKeyMetadata.getRowKeyColumnNames();
+			}
 			final Object[] columnValues = getKeyColumnValues();
-			collectionMetadataKey = new AssociationKey( tableName, keyColumnNames, columnValues );
+			collectionMetadataKey = new AssociationKey( associationKeyMetadata, columnValues );
 			// We have a collection on the main side
 			if (collectionPersister != null) {
 				EntityKey entityKey;
@@ -154,7 +165,6 @@ public class PropertyMetadataProvider {
 
 				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED;
 				collectionMetadataKey.setAssociationKind( type );
-				collectionMetadataKey.setRowKeyColumnNames( collectionPersister.getRowKeyColumnNames() );
 			}
 			// We have a to-one on the main side
 			else if ( propertyType != null ) {
@@ -167,7 +177,6 @@ public class PropertyMetadataProvider {
 							columnValues
 					);
 					collectionMetadataKey.setOwnerEntityKey( entityKey );
-					collectionMetadataKey.setRowKeyColumnNames( rowKeyColumnNames );
 					collectionMetadataKey.setCollectionRole( getCollectionRoleFromToOne( associatedPersister ) );
 				}
 				else {
@@ -383,5 +392,10 @@ public class PropertyMetadataProvider {
 			}
 		}
 		return associationContext;
+	}
+
+	public PropertyMetadataProvider associationMetadataKey(AssociationKeyMetadata associationKeyMetadata) {
+		this.associationKeyMetadata = associationKeyMetadata;
+		return this;
 	}
 }
