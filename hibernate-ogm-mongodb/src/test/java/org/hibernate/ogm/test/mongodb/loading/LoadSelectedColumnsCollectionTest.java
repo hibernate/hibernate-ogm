@@ -32,6 +32,7 @@ import com.mongodb.DBObject;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.junit.Test;
@@ -120,15 +121,15 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 		this.addExtraColumn();
 		GridDialect gridDialect = this.getGridDialect();
+		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
+		metadata.setRowKeyColumnNames( new String[]{ "Project_id", "module_id" } );
 		AssociationKey associationKey = new AssociationKey(
-				"Project_Module",
-				new String[] { "Project_id" },
+				metadata,
 				new Object[] { "projectID" }
 		);
 		associationKey.setAssociationKind( AssociationKind.ASSOCIATION );
 		associationKey.setCollectionRole( "modules" );
 		associationKey.setOwnerEntityKey( new EntityKey( new EntityKeyMetadata( "Project", new String[]{ "id" } ), new String[]{ "projectID" } ) );
-		associationKey.setRowKeyColumnNames( new String[]{ "Project_id", "module_id" } );
 		AssociationContext associationContext = new AssociationContext( Arrays.asList( associationKey.getRowKeyColumnNames() ) );
 		final Association association = gridDialect.getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
