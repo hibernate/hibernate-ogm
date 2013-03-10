@@ -318,12 +318,6 @@ public abstract class OgmTestCase extends TestCase {
 		try {
 			setCfg( new OgmConfiguration() );
 
-			//Grid specific configuration
-			cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-local.xml" );
-			//cfg.setProperty( "hibernate.transaction.default_factory_class", JTATransactionManagerTransactionFactory.class.getName() );
-			//cfg.setProperty( Environment.TRANSACTION_MANAGER_STRATEGY, JBossTSStandaloneTransactionManagerLookup.class.getName() );
-
-
 			//Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
