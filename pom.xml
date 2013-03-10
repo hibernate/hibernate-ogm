@@ -130,7 +130,7 @@
         <infinispanVersion>5.2.1.Final</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <hibernateVersion>4.2.0.CR1</hibernateVersion>
-        <hibernateSearchVersion>4.2.0.Final</hibernateSearchVersion>
+        <hibernateSearchVersion>4.3.0-SNAPSHOT</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha1</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
@@ -204,6 +204,13 @@
                         <groupId>org.slf4j</groupId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-engine</artifactId>
+                <version>${hibernateSearchVersion}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>

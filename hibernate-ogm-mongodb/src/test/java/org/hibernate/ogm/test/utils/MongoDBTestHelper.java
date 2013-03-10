@@ -32,6 +32,7 @@ import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
 
@@ -122,7 +123,19 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );
 		DBObject result = provider.getDatabase().getCollection( key.getTable() ).findOne( finder );
+		replaceIdentifierColumnName( result, key );
 		return result.toMap();
+	}
+
+	/**
+	 * The MongoDB dialect replaces the name of the column identifier, so when the tuple is extracted from the db
+	 * we replace the column name of the identifier with the original one.
+	 * We are assuming the identifier is not embedded and is a single property.
+	 */
+	private void replaceIdentifierColumnName(DBObject result, EntityKey key) {
+		Object idValue = result.get( MongoDBDialect.ID_FIELDNAME );
+		result.removeField( MongoDBDialect.ID_FIELDNAME );
+		result.put( key.getColumnNames()[0], idValue );
 	}
 
 	@Override
@@ -167,4 +180,5 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			envProps.put( environmentVariableName, value );
 		}
 	}
+
 }
