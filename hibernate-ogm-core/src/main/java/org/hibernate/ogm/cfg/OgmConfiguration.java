@@ -28,6 +28,8 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.massindex.OgmMassIndexerFactory;
+import org.hibernate.search.hcore.impl.MassIndexerFactoryIntegrator;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -48,6 +50,9 @@ public class OgmConfiguration extends Configuration {
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		setProperty( OGM_ON, "true" );
+		// This property bind the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
+		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
+		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
 	}
 
 	@Override

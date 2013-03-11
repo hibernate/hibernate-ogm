@@ -54,6 +54,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
+
 	@Override
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
 		if ( ! serviceRegistry.getService( ConfigurationService.class ).isOgmOn() ) {

@@ -41,9 +41,11 @@ import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
@@ -473,5 +475,16 @@ public class MongoDBDialect implements GridDialect {
 			return ByteStringType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
+	}
+
+	@Override
+	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		DB db = provider.getDatabase();
+		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+			DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
+			for ( DBObject dbObject : collection.find() ) {
+				consumer.consume( new Tuple( new MassIndexingMongoDBTupleSnapshot( dbObject, entityKeyMetadata ) ) );
+			}
+		}
 	}
 }
