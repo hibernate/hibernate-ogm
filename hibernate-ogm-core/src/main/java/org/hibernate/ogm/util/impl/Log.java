@@ -120,4 +120,8 @@ public interface Log extends BasicLogger {
 	@Message(id = 24, value = "Syntax error in query: [%1$s]")
 	HibernateException querySyntaxException(@Cause QuerySyntaxException qse, String queryString);
 
+	@LogMessage(level = ERROR)
+	@Message(id = 25, value = "Batch indexing was interrupted")
+	void interruptedBatchIndexing();
+
 }

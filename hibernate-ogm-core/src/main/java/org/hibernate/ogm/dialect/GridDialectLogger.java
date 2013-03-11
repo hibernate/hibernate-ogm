@@ -29,7 +29,9 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
@@ -148,6 +150,11 @@ public class GridDialectLogger implements GridDialect {
 	@Override
 	public GridType overrideType(Type type) {
 		return gridDialect.overrideType( type );
+	}
+
+	@Override
+	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		 gridDialect.forEachTuple( consumer, entityKeyMetadatas );
 	}
 
 }

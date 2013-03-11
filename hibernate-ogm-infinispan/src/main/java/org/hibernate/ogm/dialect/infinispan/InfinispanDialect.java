@@ -24,7 +24,9 @@ import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.IDENTIFIER_STORE;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -43,7 +45,9 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -52,6 +56,10 @@ import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.context.Flag;
+import org.infinispan.distexec.mapreduce.Collector;
+import org.infinispan.distexec.mapreduce.MapReduceTask;
+import org.infinispan.distexec.mapreduce.Mapper;
+import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
  * @author Emmanuel Bernard
@@ -195,9 +203,53 @@ public class InfinispanDialect implements GridDialect {
 		while ( !done );
 	}
 
+
 	@Override
 	public GridType overrideType(Type type) {
 		return null;
 	}
 
+	@Override
+	@SuppressWarnings("unchecked")
+	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
+		Map<EntityKey, Map<String, Object>> queryResult = retrieveKeys( cache, entityKeyMetadatas );
+		for ( Entry<EntityKey, Map<String, Object>> entry : queryResult.entrySet() ) {
+			consumer.consume( getTuple( entry.getKey(), null ) );
+		}
+	}
+
+	private Map<EntityKey, Map<String, Object>> retrieveKeys(Cache<EntityKey, Map<String, Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
+		MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> queryTask = new MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>>( cache );
+		queryTask.mappedWith( new TupleMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer() );
+		return queryTask.execute();
+	}
+
+	static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {
+
+		private final EntityKeyMetadata[] entityKeyMetadatas;
+
+		public TupleMapper(EntityKeyMetadata... entityKeyMetadatas) {
+			this.entityKeyMetadatas = entityKeyMetadatas;
+		}
+
+		@Override
+		public void map(EntityKey key, Map<String, Object> value, Collector<EntityKey, Map<String, Object>> collector) {
+			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {
+					collector.emit( key, value );
+				}
+			}
+		}
+
+	}
+
+	static class TupleReducer implements Reducer<EntityKey, Map<String, Object>> {
+
+		@Override
+		public Map<String, Object> reduce(EntityKey reducedKey, Iterator<Map<String, Object>> iter) {
+			return iter.next();
+		}
+
+	}
 }
