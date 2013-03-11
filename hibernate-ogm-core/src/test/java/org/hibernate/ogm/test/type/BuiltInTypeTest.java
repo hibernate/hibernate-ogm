@@ -173,8 +173,6 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "Entity serial number incorrect", entity.get( "serialNumber" ), serialNumber.toString() );
 		assertEquals( "Entity URL incorrect", entity.get( "url" ), "http://www.hibernate.org/" );
 		assertEquals( "Entity site weight incorrect", entity.get( "site_weight" ), "21.77" );
-		assertEquals( "Entity user id incorrect", entity.get( "userId" ), userId );
-		assertEquals( "Entity stock count incorrect", entity.get( "stockCount" ), stockCount );
 
 		session.delete( b );
 		transaction.commit();
