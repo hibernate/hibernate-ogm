@@ -893,6 +893,12 @@
                 <module>hibernate-ogm-mongodb</module>
             </modules>
         </profile>
+        <profile>
+            <id>cassandra</id>
+            <modules>
+                <module>hibernate-ogm-cassandra</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
 

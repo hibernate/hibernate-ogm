@@ -39,7 +39,9 @@ public enum GridDialectType {
 
 	EHCACHE( "org.hibernate.ogm.test.utils.EhcacheTestHelper" ),
 
-	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper" );
+	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper" ),
+
+	CASSANDRA( "org.hibernate.ogm.test.utils.CassandraTestHelper" );
 
 	private final String testHelperClassName;
 

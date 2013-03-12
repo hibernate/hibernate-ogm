@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,41 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
-
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
-
+package org.hibernate.ogm.datastore.cassandra.impl;
 
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Khanh Tuong Maudoux
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public enum CassandraGenerateSchemaValue {
+	DEFAULT("default"),
+	CREATE_DROP("create-drop"),
+	CREATE("create");
+	
+	private final String value;
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.CASSANDRA,
-		GridDialectType.EHCACHE} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+
+	private CassandraGenerateSchemaValue(String value) {
+		this.value = value;
 	}
 
-	@Test
-	public void testCorrect() {
-		//all fine
+	public String getValue() {
+		return this.value;
 	}
-
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	
+	public static boolean isValid(String value) {
+		return DEFAULT.getValue().equals( value ) || CREATE.getValue().equals( value ) || CREATE_DROP.getValue().equals( value );
 	}
-
 }

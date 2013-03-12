@@ -120,4 +120,14 @@ public interface Log extends BasicLogger {
 	@Message(id = 24, value = "Syntax error in query: [%1$s]")
 	HibernateException querySyntaxException(@Cause QuerySyntaxException qse, String queryString);
 
+	@Message(id = 25, value = "Cannot load %1$s driver")
+	HibernateException unableToLoadDriver(String driverName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 26, value = "Invalid or inexistant configuration value for key: %1$s but will use: %2$s")
+	void unexpectedConfiguration(String key, String defaultValue);
+
+	@Message(id = 27, value = "Cannot access keyspace: %1$s")
+	HibernateException unableToGetKeyspace(String keyspaceName);
+
 }

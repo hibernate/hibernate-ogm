@@ -18,38 +18,34 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
+package org.hibernate.ogm.type.cassandra;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 
 /**
+ * Represents an integer
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class IntegerType extends AbstractGenericBasicType<Integer> {
 
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	public static IntegerType INSTANCE = new IntegerType();
+
+	public IntegerType() {
+		super( PassThroughGridTypeDescriptor.INSTANCE, IntegerTypeDescriptor.INSTANCE );
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 
 	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
-	}
-
-	public Map<String, Object> getMap() {
-		return map;
+	public String getName() {
+		return "int";
 	}
 }

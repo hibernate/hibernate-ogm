@@ -18,38 +18,34 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  *  MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
 
-import java.util.Map;
-import java.util.Set;
+package org.hibernate.ogm.type.cassandra;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import java.util.Date;
+
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.java.DateTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * For {@link java.util.Calendar} objects use a String representation for MongoDB.
+ *
+ * @author Oliver Carr ocarr@redhat.com
+ *
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
+public class StringCalendarType extends StringCalendarDateType {
 
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
+	public static final StringCalendarType INSTANCE = new StringCalendarType();
+
+	public StringCalendarType() {
+		super( );
 	}
 
 	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
-
-	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
-	}
-
-	public Map<String, Object> getMap() {
-		return map;
+	public String getName() {
+		return "text";
 	}
 }

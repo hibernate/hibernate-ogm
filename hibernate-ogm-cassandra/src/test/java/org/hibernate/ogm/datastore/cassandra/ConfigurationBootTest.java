@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -18,41 +18,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.datastore.cassandra;
 
-import junit.framework.Assert;
+import java.util.Properties;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.test.utils.CassandraTestHelper;
+
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
- * Verifies that SkipByGridDialect is applied by the  
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Khanh Tuong Maudoux
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class ConfigurationBootTest {
 
-	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.CASSANDRA,
-		GridDialectType.EHCACHE} )
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	Properties properties;
+
+	@Before
+	public void setup() {
+		this.properties = Environment.getProperties();
 	}
 
 	@Test
-	public void testCorrect() {
-		//all fine
+	public void testSimpleCassandraInitialization() {
+		tryBoot();
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+	private void tryBoot() {
+		Configuration cfg = new OgmConfiguration();
+		cfg.setProperties( properties );
+		SessionFactory sessionFactory = cfg.buildSessionFactory();
+		if ( sessionFactory != null ) {
+			try {
+				// trigger service initialization, and also verifies it actually uses Cassandra:
+				CassandraTestHelper.getProvider( sessionFactory );
+			}
+			finally {
+				sessionFactory.close();
+			}
+		}
 	}
-
 }
