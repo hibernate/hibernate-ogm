@@ -34,7 +34,9 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
@@ -107,4 +109,14 @@ public interface GridDialect extends Service {
 	 * Experimental: this API might change in the future
 	 */
 	GridType overrideType(Type type);
+
+	/**
+	 * A consumer is called for each tuple matching the selected {@link EntityKeyMetadata}.
+	 *
+	 * @param consumer
+	 *            the instance that is going to be called for every {@link Tuple}
+	 * @param entityKeyMetadatas
+	 *            the key metadata of the tables for which we want to apply the costumer
+	 */
+	void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas);
 }

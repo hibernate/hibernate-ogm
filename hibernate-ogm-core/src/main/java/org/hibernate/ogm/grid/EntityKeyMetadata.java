@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -24,33 +24,24 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Entity key
+ * Stores metadata information common to all keys related
+ * to a given entity.
  *
- * @author Emmanuel Bernard
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class EntityKey implements Serializable {
-
-	private final EntityKeyMetadata keyMetadata;
+public class EntityKeyMetadata implements Serializable {
+	private final String table;
 	private final int hashCode;
-	private Object[] columnValues;
+	private String[] columnNames;
 
-	public EntityKey(EntityKeyMetadata keyMetadata, Object[] values) {
-		this.keyMetadata = keyMetadata;
-		this.columnValues = values;
+	public EntityKeyMetadata(String tableName, String[] columnNames) {
+		this.table = tableName;
+		this.columnNames = columnNames;
 		this.hashCode = generateHashCode();
 	}
 
 	public String getTable() {
-		return keyMetadata.getTable();
-	}
-
-	/**
-	 * This class should be treated as immutable. While we expose this array,
-	 * you should never make changes to it!
-	 * This is a design tradeoff vs. raw performance and memory usage.
-	 */
-	public Object[] getColumnValues() {
-		return columnValues;
+		return table;
 	}
 
 	/**
@@ -59,17 +50,15 @@ public final class EntityKey implements Serializable {
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
 	public String[] getColumnNames() {
-		return keyMetadata.getColumnNames();
+		return columnNames;
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "EntityKey" );
-		sb.append( "{table='" ).append( keyMetadata.getTable() ).append( '\'' );
-		String[] columnNames = keyMetadata.getColumnNames();
+		sb.append( "EntityKeyMetadata" );
+		sb.append( "{table='" ).append( table ).append( '\'' );
 		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
 		return sb.toString();
 	}
@@ -77,13 +66,13 @@ public final class EntityKey implements Serializable {
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) return true;
-		if ( o == null || EntityKey.class != o.getClass() ) return false;
+		if ( o == null || EntityKeyMetadata.class != o.getClass() ) return false;
 
-		EntityKey entityKey = (EntityKey) o;
+		EntityKeyMetadata entityKeyMetadata = (EntityKeyMetadata) o;
 
-		//values are more discriminatory, test first
-		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) return false;
-		if ( !keyMetadata.equals( entityKey.keyMetadata )) return false;
+		//table is easier to compare first
+		if ( !table.equals( entityKeyMetadata.table ) ) return false;
+		if ( !Arrays.equals( columnNames, entityKeyMetadata.columnNames ) ) return false;
 
 		return true;
 	}
@@ -94,8 +83,10 @@ public final class EntityKey implements Serializable {
 	}
 
 	private int generateHashCode() {
-		int result = keyMetadata.hashCode();
-		result = 31 * result + Arrays.hashCode( columnValues );
+		//Note we don't hash on the column names as the hash will discriminate enough
+		//with table and Arrays.hashCode is not cheap
+		int result = table.hashCode();
 		return result;
 	}
 }
+

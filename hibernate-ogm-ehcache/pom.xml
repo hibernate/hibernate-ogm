@@ -70,6 +70,12 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-engine</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
             <groupId>javassist</groupId>
