@@ -486,6 +486,9 @@ em.close();</programlisting>
     <para><emphasis>org.hibernate.ogm.ehcache:main</emphasis>, containing the ehcache datastore provider.</para>
       </listitem>
       <listitem>
+    <para><emphasis>org.hibernate.ogm.mongodb:main</emphasis>, containing the mongodb datastore provider.</para>
+      </listitem>
+      <listitem>
     <para><emphasis>org.hibernate:main</emphasis>, containing the latest hibernate ORM libraries compatible with OGM.</para>
       </listitem>
     </itemizedlist>
