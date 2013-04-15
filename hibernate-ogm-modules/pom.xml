@@ -48,6 +48,7 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate.jpql</groupId>
@@ -59,6 +60,7 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-infinispan</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
@@ -74,6 +76,7 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-ehcache</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>
@@ -89,16 +92,19 @@
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-infinispan</artifactId>
             <version>${hibernateVersion}</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-envers</artifactId>
             <version>4.0.1.Final</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-mongodb</artifactId>
             <version>${project.version}</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>org.hibernate</groupId>

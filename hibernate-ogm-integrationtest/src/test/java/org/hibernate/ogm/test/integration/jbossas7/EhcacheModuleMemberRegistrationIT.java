@@ -20,7 +20,6 @@
 */
 package org.hibernate.ogm.test.integration.jbossas7;
 
-import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.test.integration.jbossas7.model.Member;
 import org.hibernate.ogm.test.integration.jbossas7.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -52,7 +51,7 @@ public class EhcacheModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 			.version( "2.0" )
 			.createPersistenceUnit()
 				.name( "primary" )
-				.provider( HibernateOgmPersistence.class.getName() )
+				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "ehcache" ).up()

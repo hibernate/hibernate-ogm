@@ -27,7 +27,6 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
 
-import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.test.integration.jbossas7.model.Member;
 import org.hibernate.ogm.test.integration.jbossas7.util.ModuleMemberRegistrationDeployment;
 
@@ -52,7 +51,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.version( "2.0" )
 				.createPersistenceUnit()
 				.name( "primary" )
-				.provider( HibernateOgmPersistence.class.getName() )
+				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "mongodb" ).up()
