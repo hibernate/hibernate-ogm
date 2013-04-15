@@ -53,7 +53,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private Map<?, ?> cfg;
 	private boolean isCacheStarted;
-	private MongoClient mongo;
+	public MongoClient mongo;
 	private DB mongoDb;
 	private AssociationStorage associationStorage;
 
@@ -109,10 +109,13 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					port = Environment.MONGODB_DEFAULT_PORT;
 				}
 
-				Object cfgSafe = this.cfg.get( Environment.MONGODB_SAFE );
-				boolean safe = Environment.MONGODB_DEFAULT_SAFE;
-				if ( cfgSafe != null ) {
-					safe = Boolean.parseBoolean( cfgSafe.toString() );
+				Object cfgWC = this.cfg.get( Environment.MONGODB_WRITE_CONCERN );
+				WriteConcern writeConcern = cfgWC != null ? WriteConcern.valueOf( cfgWC.toString() ) : WriteConcern.ACKNOWLEDGED;
+				if ( writeConcern == null ) {
+					throw log.unableToSetWriteConcern( cfgWC.toString() );
+				}
+				else {
+					log.useWriteConcern( writeConcern.toString() );
 				}
 
 				Object cfgTimeout = this.cfg.get( Environment.MONGODB_TIMEOUT );
@@ -132,13 +135,8 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 				MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
 				optionsBuilder.connectTimeout( timeout );
-				if ( safe ) {
-					optionsBuilder.writeConcern( WriteConcern.ACKNOWLEDGED );
-				}
-				else {
-					optionsBuilder.writeConcern( WriteConcern.NONE );
-				}
-				log.useSafe( safe );
+				optionsBuilder.writeConcern( writeConcern );
+
 				log.connectingToMongo( host, port, timeout );
 
 				ServerAddress serverAddress = new ServerAddress( host, port );
