@@ -7,6 +7,7 @@
     </parent>
 
     <artifactId>hibernate-ogm-integrationtest</artifactId>
+    <packaging>pom</packaging>
     <name>Hibernate OGM Integration and performance Tests</name>
     <description>Hibernate OGM integration and performance tests</description>
 
@@ -171,4 +172,7 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+    <modules>
+        <module>hibernate-ogm-integrationtest-testcase</module>
+    </modules>
 </project>
