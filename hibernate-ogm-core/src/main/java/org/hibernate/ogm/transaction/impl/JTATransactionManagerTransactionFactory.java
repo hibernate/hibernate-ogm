@@ -40,7 +40,7 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction(coordinator) ;
+		return new JTATransactionManagerTransaction( coordinator );
 	}
 
 	@Override
@@ -54,7 +54,8 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 	}
 
 	@Override
-	public boolean isJoinableJtaTransaction(TransactionCoordinator transactionCoordinator, TransactionImplementor transaction) {
+	public boolean isJoinableJtaTransaction(TransactionCoordinator transactionCoordinator,
+			TransactionImplementor transaction) {
 		try {
 			final JtaPlatform jtaPlatform = transactionCoordinator
 					.getTransactionContext()
@@ -71,7 +72,7 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 				return ut != null && JtaStatusHelper.isActive( ut );
 			}
 		}
-		catch( SystemException se ) {
+		catch ( SystemException se ) {
 			throw new TransactionException( "Unable to check transaction status", se );
 		}
 	}

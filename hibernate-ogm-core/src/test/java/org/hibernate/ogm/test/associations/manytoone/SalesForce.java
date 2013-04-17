@@ -34,18 +34,36 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class SalesForce {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getCorporation() { return corporation; }
-	public void setCorporation(String corporation) {  this.corporation = corporation; }
 	private String corporation;
+	private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+
+	public String getCorporation() {
+		return corporation;
+	}
+
+	public void setCorporation(String corporation) {
+		this.corporation = corporation;
+	}
 
 	@OneToMany(mappedBy = "salesForce")
-	public Set<SalesGuy> getSalesGuys() { return salesGuys; }
-	public void setSalesGuys(Set<SalesGuy> salesGuys) {  this.salesGuys = salesGuys; }
-	private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+	public Set<SalesGuy> getSalesGuys() {
+		return salesGuys;
+	}
+
+	public void setSalesGuys(Set<SalesGuy> salesGuys) {
+		this.salesGuys = salesGuys;
+	}
 }

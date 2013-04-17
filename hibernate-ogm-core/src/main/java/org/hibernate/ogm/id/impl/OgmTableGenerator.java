@@ -140,8 +140,6 @@ import org.hibernate.type.Type;
  */
 public class OgmTableGenerator implements PersistentIdentifierGenerator, Configurable {
 
-	private static final Log log = LoggerFactory.make();
-
 	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
 
 	public static final String TABLE_PARAM = "table_name";
@@ -167,6 +165,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	public static final String OPT_PARAM = "optimizer";
 
+	private static final Log log = LoggerFactory.make();
 
 	private Type identifierType;
 
@@ -350,7 +349,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		String name = ConfigurationHelper.getString( TABLE_PARAM, params, DEF_TABLE );
 		boolean isGivenNameUnqualified = name.indexOf( '.' ) < 0;
 		if ( isGivenNameUnqualified ) {
-			ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
+			ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
 			name = normalizer.normalizeIdentifierQuoting( name );
 			// if the given name is un-qualified we may neen to qualify it
 			String schemaName = normalizer.normalizeIdentifierQuoting( params.getProperty( SCHEMA ) );
@@ -382,7 +381,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getSegmentColumnName()
 	 */
 	protected String determineSegmentColumnName(Properties params, Dialect dialect) {
-		ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
+		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( SEGMENT_COLUMN_PARAM, params, DEF_SEGMENT_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
@@ -400,7 +399,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getValueColumnName()
 	 */
 	protected String determineValueColumnName(Properties params, Dialect dialect) {
-		ObjectNameNormalizer normalizer = ( ObjectNameNormalizer ) params.get( IDENTIFIER_NORMALIZER );
+		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( VALUE_COLUMN_PARAM, params, DEF_VALUE_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
@@ -417,7 +416,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	 * @see #getSegmentValue()
 	 */
 	protected String determineSegmentValue(Properties params) {
-		String segmentValue = params.getProperty(SEGMENT_VALUE_PARAM);
+		String segmentValue = params.getProperty( SEGMENT_VALUE_PARAM );
 		if ( StringHelper.isEmpty( segmentValue ) ) {
 			segmentValue = determineDefaultSegmentValue( params );
 		}
@@ -459,7 +458,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	}
 
 	protected int determineIncrementSize(Properties params) {
-		return ConfigurationHelper.getInt(INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE);
+		return ConfigurationHelper.getInt( INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE );
 	}
 
 	//TODO remove build*Query
@@ -491,7 +490,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return optimizer.generate(
 				new AccessCallback() {
 					public IntegralDataTypeHolder getNextValue() {
-						return ( IntegralDataTypeHolder ) doWorkInIsolationTransaction( session );
+						return (IntegralDataTypeHolder) doWorkInIsolationTransaction( session );
 					}
 				}
 		);
@@ -516,7 +515,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		//we want to work out of transaction
 		boolean workInTransaction = false;
 		Work work = new Work();
-		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork(work, workInTransaction);
+		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork( work, workInTransaction );
 		return generatedValue;
 	}
 
@@ -531,9 +530,9 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				new Object[] { segmentColumnValue }
 		);
 
-		GridDialect dialect = getDialect(session);
+		GridDialect dialect = getDialect( session );
 		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
-		dialect.nextValue(key, value, optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1, initialValue);
+		dialect.nextValue( key, value, optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1, initialValue );
 
 		accessCount++;
 
@@ -542,7 +541,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	private GridDialect getDialect(SessionImplementor session) {
 		if (gridDialect == null) {
-			gridDialect = session.getFactory().getServiceRegistry().getService(DatastoreServices.class).getGridDialect();
+			gridDialect = session.getFactory().getServiceRegistry().getService( DatastoreServices.class ).getGridDialect();
 		}
 		return gridDialect;
 	}
@@ -556,7 +555,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	private void defineGridTypes(SessionImplementor session) {
 		if ( identifierValueGridType == null ) {
 			ServiceRegistryImplementor registry = session.getFactory().getServiceRegistry();
-			identifierValueGridType = registry.getService(TypeTranslator.class).getType(new LongType());
+			identifierValueGridType = registry.getService( TypeTranslator.class ).getType( new LongType() );
 		}
 	}
 

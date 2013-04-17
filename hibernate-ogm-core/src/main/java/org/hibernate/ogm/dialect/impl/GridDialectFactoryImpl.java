@@ -39,20 +39,20 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 	private static final Log log = LoggerFactory.make();
 
 	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
-		Object value = configurationValues.get(GRID_DIALECT);
+		Object value = configurationValues.get( GRID_DIALECT );
 		Class<? extends GridDialect> dialectClass = null;
 		if ( value == null ) {
-			dialectClass = registry.getService(DatastoreProvider.class).getDefaultDialect();
+			dialectClass = registry.getService( DatastoreProvider.class ).getDefaultDialect();
 		}
 		else if ( value instanceof String ) {
 			Class<?> maybeDialectClass;
 			try {
-				maybeDialectClass = registry.getService(ClassLoaderService.class).classForName( value.toString() );
+				maybeDialectClass = registry.getService( ClassLoaderService.class ).classForName( value.toString() );
 			}
-			catch (RuntimeException e) {
+			catch ( RuntimeException e ) {
 				throw log.dialectClassCannotBeFound( value.toString() );
 			}
-			if ( GridDialect.class.isAssignableFrom(maybeDialectClass) ) {
+			if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
 				dialectClass = (Class<? extends GridDialect>) maybeDialectClass;
 			}
 			else {
@@ -63,7 +63,7 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			throw log.gridDialectPropertyOfUnknownType( value.getClass() );
 		}
 		try {
-			//FIXME not sure I like this constructor business. Argue with Sanne
+			// FIXME not sure I like this constructor business. Argue with Sanne
 			// to me that's blocking the doors for future enhancements (ie injecting more things)
 			// an alternative is to pass the ServiceRegistry verbatim but I'm not sure that's enough either
 			Constructor injector = null;
@@ -75,19 +75,21 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 				}
 			}
 			if ( injector == null ) {
-				log.gridDialectHasNoProperConstrutor(dialectClass);
+				log.gridDialectHasNoProperConstrutor( dialectClass );
 			}
-			GridDialect gridDialect = (GridDialect) injector.newInstance(registry.getService(DatastoreProvider.class));
+			GridDialect gridDialect = (GridDialect) injector.newInstance( registry.getService( DatastoreProvider.class ) );
 			log.useGridDialect( gridDialect.getClass().getName() );
-			if (GridDialectLogger.activationNeeded()) {
-				gridDialect = new GridDialectLogger(gridDialect);
-				log.info("Grid dialect logs are active");
-			} else {
-				log.info("Grid dialect logs are disabled");
+			if ( GridDialectLogger.activationNeeded() ) {
+				gridDialect = new GridDialectLogger( gridDialect );
+				log.info( "Grid dialect logs are active" );
+			}
+			else {
+				log.info( "Grid dialect logs are disabled" );
 			}
 			return gridDialect;
-		} catch (Exception e) {
-			throw log.cannotInstantiateGridDialect(dialectClass, e);
+		}
+		catch ( Exception e ) {
+			throw log.cannotInstantiateGridDialect( dialectClass, e );
 		}
 	}
 }

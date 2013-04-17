@@ -96,25 +96,32 @@ public class IndexedNews {
 
 	@Override
 	public boolean equals(Object obj) {
-		if ( this == obj )
+		if ( this == obj ) {
 			return true;
-		if ( obj == null )
+		}
+		if ( obj == null ) {
 			return false;
-		if ( getClass() != obj.getClass() )
+		}
+		if ( getClass() != obj.getClass() ) {
 			return false;
+		}
 		IndexedNews other = (IndexedNews) obj;
 		if ( content == null ) {
-			if ( other.content != null )
+			if ( other.content != null ) {
 				return false;
+			}
 		}
-		else if ( !content.equals( other.content ) )
+		else if ( !content.equals( other.content ) ) {
 			return false;
+		}
 		if ( newsId == null ) {
-			if ( other.newsId != null )
+			if ( other.newsId != null ) {
 				return false;
+			}
 		}
-		else if ( !newsId.equals( other.newsId ) )
+		else if ( !newsId.equals( other.newsId ) ) {
 			return false;
+		}
 		return true;
 	}
 

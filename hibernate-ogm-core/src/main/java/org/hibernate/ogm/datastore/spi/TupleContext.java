@@ -20,9 +20,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents all information used to load an entity
@@ -31,11 +29,11 @@ import java.util.Map;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class TupleContext {
+	private final List<String> selectableColumns;
+
 	public TupleContext(List<String> selectableColumns) {
 		this.selectableColumns = selectableColumns;
 	}
-
-	private final List<String> selectableColumns;
 
 	public List<String> getSelectableColumns() {
 		return selectableColumns;

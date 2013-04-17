@@ -76,14 +76,22 @@ public final class EntityKey implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if ( this == o ) return true;
-		if ( o == null || EntityKey.class != o.getClass() ) return false;
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || EntityKey.class != o.getClass() ) {
+			return false;
+		}
 
 		EntityKey entityKey = (EntityKey) o;
 
 		//values are more discriminatory, test first
-		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) return false;
-		if ( !keyMetadata.equals( entityKey.keyMetadata )) return false;
+		if ( !Arrays.equals( columnValues, entityKey.columnValues ) ) {
+			return false;
+		}
+		if ( !keyMetadata.equals( entityKey.keyMetadata )) {
+			return false;
+		}
 
 		return true;
 	}

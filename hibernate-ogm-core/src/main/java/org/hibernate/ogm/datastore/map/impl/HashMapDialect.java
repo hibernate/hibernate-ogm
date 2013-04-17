@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -59,19 +59,19 @@ public class HashMapDialect implements GridDialect {
 
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		if ( lockMode==LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
+		if ( lockMode == LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
 			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_WRITE ) {
+		else if ( lockMode == LockMode.PESSIMISTIC_WRITE ) {
 			return new MapPessimisticWriteLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_READ ) {
+		else if ( lockMode == LockMode.PESSIMISTIC_READ ) {
 			return new MapPessimisticReadLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC ) {
+		else if ( lockMode == LockMode.OPTIMISTIC ) {
 			return new OptimisticLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
+		else if ( lockMode == LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
 		return new MapPessimisticWriteLockingStrategy( lockable, lockMode );

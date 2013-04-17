@@ -49,7 +49,7 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsCollection
 	 * an extra column is manually added to the association document
 	 */
 	@Override
-	protected void addExtraColumn(){
+	protected void addExtraColumn() {
 		MongoDBDatastoreProvider provider = (MongoDBDatastoreProvider) super.getService( DatastoreProvider.class );
 		DB database = provider.getDatabase();
 		DBCollection collection = database.getCollection( "Associations" );

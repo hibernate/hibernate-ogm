@@ -68,7 +68,7 @@ public class AssociationKeyMetadata {
 			return false;
 		}
 
-		AssociationKeyMetadata that = ( AssociationKeyMetadata ) o;
+		AssociationKeyMetadata that = (AssociationKeyMetadata) o;
 
 		// order of comparison matters on performance:
 		if ( !table.equals( that.table ) ) {

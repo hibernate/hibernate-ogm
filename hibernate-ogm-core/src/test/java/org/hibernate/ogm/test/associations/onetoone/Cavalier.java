@@ -33,18 +33,36 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Cavalier {
-	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
 	private String name;
+	private Horse horse;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	@OneToOne
-	@JoinColumn(name="horse_id")
-	public Horse getHorse() { return horse; }
-	public void setHorse(Horse horse) {  this.horse = horse; }
-	private Horse horse;
+	@JoinColumn(name = "horse_id")
+	public Horse getHorse() {
+		return horse;
+	}
+
+	public void setHorse(Horse horse) {
+		this.horse = horse;
+	}
 }

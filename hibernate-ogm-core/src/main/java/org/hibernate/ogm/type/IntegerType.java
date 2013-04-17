@@ -27,7 +27,7 @@ import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 
 /**
  * Represents a Long type
- * 
+ *
  * @author Emmanuel Bernard
  */
 public class IntegerType extends AbstractGenericBasicType<Integer> {

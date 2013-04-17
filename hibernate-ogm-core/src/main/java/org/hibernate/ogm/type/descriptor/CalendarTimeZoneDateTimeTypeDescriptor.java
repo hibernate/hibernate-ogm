@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -30,10 +30,10 @@ import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 
 /**
  * @author Oliver Carr ocarr@redhat.com
- * 
+ *
  * An extension of the {@link CalendarDateTypeDescriptor} for handling all the different
  * aspects of a {@link Calendar} object.
- * 
+ *
  */
 public class CalendarTimeZoneDateTimeTypeDescriptor extends CalendarDateTypeDescriptor {
 
@@ -67,11 +67,10 @@ public class CalendarTimeZoneDateTimeTypeDescriptor extends CalendarDateTypeDesc
 			return false;
 		}
 
-		return one.get(Calendar.DAY_OF_MONTH) == another.get(Calendar.DAY_OF_MONTH)
-			&& one.get(Calendar.MONTH) == another.get(Calendar.MONTH)
-			&& one.get(Calendar.YEAR) == another.get(Calendar.YEAR)
-			&& one.getTimeZone() == another.getTimeZone()
-			&& one.getTime() == another.getTime();
+		return one.get( Calendar.DAY_OF_MONTH ) == another.get( Calendar.DAY_OF_MONTH )
+				&& one.get( Calendar.MONTH ) == another.get( Calendar.MONTH )
+				&& one.get( Calendar.YEAR ) == another.get( Calendar.YEAR )
+				&& one.getTimeZone() == another.getTimeZone() && one.getTime() == another.getTime();
 	}
 
 	/**
@@ -83,5 +82,5 @@ public class CalendarTimeZoneDateTimeTypeDescriptor extends CalendarDateTypeDesc
 		dateTimeTimeZoneFormat.setLenient( false );
 		return dateTimeTimeZoneFormat;
 	}
-	
+
 }

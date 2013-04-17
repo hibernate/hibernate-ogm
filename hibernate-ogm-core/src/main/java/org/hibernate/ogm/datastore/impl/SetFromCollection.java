@@ -49,7 +49,7 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean contains(Object o) {
-		return delegate.contains(o);
+		return delegate.contains( o );
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public <T> T[] toArray(T[] a) {
-		return (T[]) delegate.toArray(a);
+		return (T[]) delegate.toArray( a );
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean containsAll(Collection<?> c) {
-		return delegate.containsAll(c);
+		return delegate.containsAll( c );
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public final class SetFromCollection<E> implements Set<E> {
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		return delegate.retainAll(c);
+		return delegate.retainAll( c );
 	}
 
 	@Override

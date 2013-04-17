@@ -34,18 +34,36 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class BankAccount {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getAccountNumber() { return accountNumber; }
-	public void setAccountNumber(String accountNumber) {  this.accountNumber = accountNumber; }
 	private String accountNumber;
+	private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getAccountNumber() {
+		return accountNumber;
+	}
+
+	public void setAccountNumber(String accountNumber) {
+		this.accountNumber = accountNumber;
+	}
 
 	@ManyToMany(mappedBy = "bankAccounts")
-	public Set<AccountOwner> getOwners() { return owners; }
-	public void setOwners(Set<AccountOwner> owners) {  this.owners = owners; }
-	private Set<AccountOwner> owners = new HashSet<AccountOwner>(  );
+	public Set<AccountOwner> getOwners() {
+		return owners;
+	}
+
+	public void setOwners(Set<AccountOwner> owners) {
+		this.owners = owners;
+	}
+
 }

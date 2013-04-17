@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -44,30 +44,30 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		 return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
+		return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
 	}
 
 	@Override
-	public Map<String,Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return (Map) getEntityCache( sessionFactory ).get( key );
 	}
 
 	private static Cache getEntityCache(SessionFactory sessionFactory) {
-		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
-		return castProvider.getCache(ENTITY_STORE);
+		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		return castProvider.getCache( ENTITY_STORE );
 	}
 
 	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
-		DatastoreProvider provider = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService(DatastoreProvider.class);
-		if ( ! (InfinispanDatastoreProvider.class.isInstance(provider) ) ) {
-			throw new RuntimeException("Not testing with Infinispan, cannot extract underlying cache");
+		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
+		if ( !( InfinispanDatastoreProvider.class.isInstance( provider ) ) ) {
+			throw new RuntimeException( "Not testing with Infinispan, cannot extract underlying cache" );
 		}
-		return InfinispanDatastoreProvider.class.cast(provider);
+		return InfinispanDatastoreProvider.class.cast( provider );
 	}
 
 	private static Cache getAssociationCache(SessionFactory sessionFactory) {
-		InfinispanDatastoreProvider castProvider = getProvider(sessionFactory);
-		return castProvider.getCache(ASSOCIATION_STORE);
+		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
+		return castProvider.getCache( ASSOCIATION_STORE );
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		//Nothing to do
+		// Nothing to do
 	}
 
 	@Override

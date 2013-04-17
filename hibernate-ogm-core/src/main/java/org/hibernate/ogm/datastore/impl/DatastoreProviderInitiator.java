@@ -40,9 +40,9 @@ import java.util.Map;
 public final class DatastoreProviderInitiator extends OptionalServiceInitiator<DatastoreProvider> {
 
 	public static final String DATASTORE_PROVIDER = "hibernate.ogm.datastore.provider";
-	private static final Log log = LoggerFactory.make();
-
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
+
+	private static final Log log = LoggerFactory.make();
 
 	@Override
 	public DatastoreProvider buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {

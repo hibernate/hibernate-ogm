@@ -20,12 +20,14 @@
  */
 package org.hibernate.ogm.test.associations.collection.manytomany;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.hibernate.ogm.test.utils.TestHelper.get;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.*;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -39,7 +41,7 @@ public class ManyToManyTest extends OgmTestCase {
 		BankAccount soge = new BankAccount();
 		soge.setAccountNumber( "X2345000" );
 		owner.getBankAccounts().add( soge );
-		soge.getOwners().add(owner);
+		soge.getOwners().add( owner );
 		session.persist( owner );
 		tx.commit();
 
@@ -48,26 +50,20 @@ public class ManyToManyTest extends OgmTestCase {
 
 		session.clear();
 
-		//read from inverse side
+		// read from inverse side
 		tx = session.beginTransaction();
 		soge = get( session, BankAccount.class, soge.getId() );
-		assertThat( soge.getOwners() )
-			.hasSize( 1 );
-		assertThat( soge.getOwners() )
-			.onProperty( "id" )
-			.contains( owner.getId() );
+		assertThat( soge.getOwners() ).hasSize( 1 );
+		assertThat( soge.getOwners() ).onProperty( "id" ).contains( owner.getId() );
 		tx.commit();
 
 		session.clear();
 
-		//read from non-inverse side and update data
+		// read from non-inverse side and update data
 		tx = session.beginTransaction();
 		owner = get( session, AccountOwner.class, owner.getId() );
-		assertThat( owner.getBankAccounts() )
-			.hasSize( 1 );
-		assertThat( owner.getBankAccounts() )
-			.onProperty( "id" )
-			.contains( soge.getId() );
+		assertThat( owner.getBankAccounts() ).hasSize( 1 );
+		assertThat( owner.getBankAccounts() ).onProperty( "id" ).contains( soge.getId() );
 		BankAccount barclays = new BankAccount();
 		barclays.setAccountNumber( "ZZZ-009" );
 		barclays.getOwners().add( owner );
@@ -82,14 +78,11 @@ public class ManyToManyTest extends OgmTestCase {
 		assertThat( assertNumberOfAssociations( 2, sessions ) ).isTrue();
 		session.clear();
 
-		//delete data
+		// delete data
 		tx = session.beginTransaction();
 		owner = get( session, AccountOwner.class, owner.getId() );
-		assertThat( owner.getBankAccounts() )
-			.hasSize( 1 );
-		assertThat( owner.getBankAccounts() )
-			.onProperty( "id" )
-			.contains( barclays.getId() );
+		assertThat( owner.getBankAccounts() ).hasSize( 1 );
+		assertThat( owner.getBankAccounts() ).onProperty( "id" ).contains( barclays.getId() );
 		barclays = owner.getBankAccounts().iterator().next();
 		barclays.getOwners().clear();
 		owner.getBankAccounts().clear();
@@ -106,9 +99,6 @@ public class ManyToManyTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				AccountOwner.class,
-				BankAccount.class
-		};
+		return new Class<?>[] { AccountOwner.class, BankAccount.class };
 	}
 }

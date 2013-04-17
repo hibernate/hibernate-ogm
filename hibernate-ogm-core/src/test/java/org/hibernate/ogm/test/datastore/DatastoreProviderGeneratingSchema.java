@@ -44,7 +44,6 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical

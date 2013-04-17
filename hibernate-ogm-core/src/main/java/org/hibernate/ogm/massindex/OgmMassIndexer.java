@@ -177,7 +177,7 @@ public class OgmMassIndexer implements MassIndexer {
 	/**
 	 * From the set of classes a new set is built containing all indexed
 	 * subclasses, but removing then all subtypes of indexed entities.
-	 * 
+	 *
 	 * @return a new set of entities
 	 */
 	private static Set<Class<?>> toRootEntities(SearchFactoryImplementor searchFactoryImplementor, Class<?>... selection) {

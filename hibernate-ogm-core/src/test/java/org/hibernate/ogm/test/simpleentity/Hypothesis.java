@@ -30,17 +30,36 @@ import javax.persistence.Id;
 @Entity
 public class Hypothesis {
 
-	@Id
-	public String getId() { return id; }
-	public void setId(String id) { this.id = id; }
 	private String id;
 
-	public String getDescription() { return description; }
-	public void setDescription(String description) { this.description = description; }
 	private String description;
 
+	private int position;
+
+	@Id
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 	@Column(name = "pos")
-	public int getPosition() { return position; }
-	public void setPosition(int position ) { this.position = position; }
-	private int position; 
+	public int getPosition() {
+		return position;
+	}
+
+	public void setPosition(int position) {
+		this.position = position;
+	}
+
 }

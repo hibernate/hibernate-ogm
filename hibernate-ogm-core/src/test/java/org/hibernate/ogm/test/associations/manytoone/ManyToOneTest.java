@@ -20,17 +20,14 @@
  */
 package org.hibernate.ogm.test.associations.manytoone;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.hibernate.ogm.test.utils.TestHelper.get;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.hibernate.ogm.test.utils.GridDialectType;
-import org.hibernate.ogm.test.utils.SkipByGridDialect;
-import org.hibernate.ogm.test.utils.TestHelper;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
-import static org.hibernate.ogm.test.utils.TestHelper.get;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
 
 /**
  * @author Emmanuel Bernard
@@ -100,8 +97,8 @@ public class ManyToOneTest extends OgmTestCase {
 		assertNotNull( force.getSalesGuys() );
 		assertEquals( 2, force.getSalesGuys().size() );
 		simon = (SalesGuy) session.get( SalesGuy.class, simon.getId() );
-		//purposely faulty
-		//force.getSalesGuys().remove( simon );
+		// purposely faulty
+		// force.getSalesGuys().remove( simon );
 		session.delete( simon );
 		transaction.commit();
 		session.clear();
@@ -132,17 +129,15 @@ public class ManyToOneTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 		hoegaarden = get( session, Beer.class, hoegaarden.getId() );
-		assertThat(hoegaarden)
-			.isNotNull();
-		assertThat(hoegaarden.getBrewery())
-			.isNotNull();
+		assertThat( hoegaarden ).isNotNull();
+		assertThat( hoegaarden.getBrewery() ).isNotNull();
 		assertThat( hoegaarden.getBrewery().getBeers() )
 			.hasSize( 1 )
 			.containsOnly( hoegaarden );
 		Beer citron = new Beer();
 		hoeBrewery = hoegaarden.getBrewery();
 		hoeBrewery.getBeers().remove( hoegaarden );
-		hoeBrewery.getBeers().add(citron);
+		hoeBrewery.getBeers().add( citron );
 		citron.setBrewery( hoeBrewery );
 		session.delete( hoegaarden );
 		tx.commit();
@@ -168,13 +163,6 @@ public class ManyToOneTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				JUG.class,
-				Member.class,
-				SalesForce.class,
-				SalesGuy.class,
-				Beer.class,
-				Brewery.class
-		};
+		return new Class<?>[] { JUG.class, Member.class, SalesForce.class, SalesGuy.class, Beer.class, Brewery.class };
 	}
 }

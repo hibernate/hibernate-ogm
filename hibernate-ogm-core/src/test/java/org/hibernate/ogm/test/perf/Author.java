@@ -20,8 +20,13 @@
  */
 package org.hibernate.ogm.test.perf;
 
-import javax.persistence.*;
 import java.util.Date;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -75,8 +80,9 @@ public class Author {
 		this.bio = bio;
 	}
 
-	@Id @GeneratedValue(strategy = GenerationType.SEQUENCE, generator="auth_seq")
-	@SequenceGenerator(name="auth_seq")
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "auth_seq")
+	@SequenceGenerator(name = "auth_seq")
 	public int getA_id() {
 		return a_id;
 	}

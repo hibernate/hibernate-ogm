@@ -34,15 +34,28 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Beer {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	@Column(name = "beer_pk")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	@ManyToOne @JoinColumn(insertable = false, updatable = false, name = "brewery_id")
-	public Brewery getBrewery() { return brewery; }
-	public void setBrewery(Brewery brewery) {  this.brewery = brewery; }
 	private Brewery brewery;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@Column(name = "beer_pk")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@ManyToOne
+	@JoinColumn(insertable = false, updatable = false, name = "brewery_id")
+	public Brewery getBrewery() {
+		return brewery;
+	}
+
+	public void setBrewery(Brewery brewery) {
+		this.brewery = brewery;
+	}
 }

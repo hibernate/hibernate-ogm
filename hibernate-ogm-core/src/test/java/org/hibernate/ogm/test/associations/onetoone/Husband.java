@@ -34,18 +34,37 @@ import javax.persistence.OneToOne;
  */
 @Entity
 public class Husband {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) { this.id = id; }
 	private String id;
-
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
 	private String name;
-
-	@OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = "wife")
-	public Wife getWife() { return wife; }
-	public void setWife(Wife wife) { this.wife = wife; }
 	private Wife wife;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "wife")
+	public Wife getWife() {
+		return wife;
+	}
+
+	public void setWife(Wife wife) {
+		this.wife = wife;
+	}
+
 }

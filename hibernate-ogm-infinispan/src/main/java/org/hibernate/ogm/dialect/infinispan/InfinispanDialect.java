@@ -83,23 +83,24 @@ public class InfinispanDialect implements GridDialect {
 	 */
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		if ( lockMode==LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
+		if ( lockMode == LockMode.PESSIMISTIC_FORCE_INCREMENT ) {
 			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_WRITE ) {
+		else if ( lockMode == LockMode.PESSIMISTIC_WRITE ) {
 			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.PESSIMISTIC_READ ) {
-			//TODO find a more efficient pessimistic read
+		else if ( lockMode == LockMode.PESSIMISTIC_READ ) {
+			// TODO find a more efficient pessimistic read
 			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC ) {
+		else if ( lockMode == LockMode.OPTIMISTIC ) {
 			return new OptimisticLockingStrategy( lockable, lockMode );
 		}
-		else if ( lockMode==LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
+		else if ( lockMode == LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Infinispan GridDialect" );
+		throw new UnsupportedOperationException( "LockMode " + lockMode
+				+ " is not supported by the Infinispan GridDialect" );
 	}
 
 	@Override
@@ -118,7 +119,7 @@ public class InfinispanDialect implements GridDialect {
 	public Tuple createTuple(EntityKey key) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
 	}
@@ -131,13 +132,13 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCache(ENTITY_STORE);
+		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache( ASSOCIATION_STORE );
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, false );
 		return atomicMap == null ? null : new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
@@ -146,8 +147,8 @@ public class InfinispanDialect implements GridDialect {
 	public Association createAssociation(AssociationKey key) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
-		Map<RowKey, Map<String, Object>> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache( ASSOCIATION_STORE );
+		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, key, true );
 		return new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
 
@@ -158,7 +159,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache(ASSOCIATION_STORE);
+		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache( ASSOCIATION_STORE );
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
@@ -169,7 +170,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		final AdvancedCache<RowKey, Object> identifierCache = provider.getCache(IDENTIFIER_STORE).getAdvancedCache();
+		final AdvancedCache<RowKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
 		boolean done = false;
 		do {
 			//read value
@@ -189,7 +190,7 @@ public class InfinispanDialect implements GridDialect {
 			}
 			else {
 				//read the value from the table
-				value.initialize( ( ( Number ) valueFromDb ).longValue() );
+				value.initialize( ( (Number) valueFromDb ).longValue() );
 			}
 
 			//update value

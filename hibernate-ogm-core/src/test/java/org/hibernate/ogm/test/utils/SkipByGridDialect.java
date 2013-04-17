@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -36,12 +36,14 @@ public @interface SkipByGridDialect {
 
 	/**
 	 * The dialects against which to skip the test
+	 *
 	 * @return The dialects
 	 */
 	GridDialectType[] value();
 
 	/**
 	 * Comment describing the reason for the skip.
+	 *
 	 * @return The comment
 	 */
 	String comment() default "";

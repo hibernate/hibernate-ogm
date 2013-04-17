@@ -76,7 +76,9 @@ public class CRUDTest extends OgmTestCase {
 	private void performanceLoop() throws Exception {
 		long start = 0;
 		for ( int i = 0; i < Integer.MAX_VALUE; i++ ) {
-			if ( i % 10000 == 0 ) start = System.nanoTime();
+			if ( i % 10000 == 0 ) {
+				start = System.nanoTime();
+			}
 			testSimpleCRUD();
 			if ( i % 10000 == 9999 ) {
 				long elapsed = System.nanoTime() - start;

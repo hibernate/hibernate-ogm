@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.mongodb;
 
 /**
  * Configuration options of the MongoDB GridDialect
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public interface Environment {
@@ -41,7 +41,7 @@ public interface Environment {
 	 * Run the driver in safe mode (use WriteConcern.SAFE for all operations)
 	 */
 	public static final String MONGODB_SAFE = "hibernate.ogm.mongodb.safe";
-	
+
 	/**
 	 * The hostname of the MongoDB instance.
 	 */
@@ -74,7 +74,7 @@ public interface Environment {
 	* property is not set, we'll try this port.
 	*/
 	public static final int MONGODB_DEFAULT_PORT = 27017;
-	
+
 	/**
 	 * The default value used to configure the safe mode {@link #MONGODB_SAFE}
 	 */

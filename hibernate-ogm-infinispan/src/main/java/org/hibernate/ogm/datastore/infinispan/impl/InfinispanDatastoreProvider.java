@@ -58,35 +58,33 @@ import org.infinispan.util.FileLookupFactory;
 public class InfinispanDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
-	private JtaPlatform jtaPlatform;
-	private JndiService jndiService;
-	private Map cfg;
-	private Map<String,Cache> caches;
-	private boolean isCacheProvided;
-	private boolean started = false;
-
-	@Override
-	public Class<? extends GridDialect> getDefaultDialect() {
-		return InfinispanDialect.class;
-	}
-
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
 	 */
 	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
-	
+
 	/**
 	 * The key for the configuration property to define the jndi name of the cachemanager.
 	 * If this property is defined, the cachemanager will be looked up via JNDI.
 	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
 	 */
 	public static final String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
-	
 	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
-	
+
 	private static final Log log = LoggerFactory.make();
-	
+
+	private JtaPlatform jtaPlatform;
+	private JndiService jndiService;
+	private Map cfg;
+	private Map<String,Cache> caches;
+	private boolean isCacheProvided;
+	private boolean started = false;
 	private EmbeddedCacheManager cacheManager;
+
+	@Override
+	public Class<? extends GridDialect> getDefaultDialect() {
+		return InfinispanDialect.class;
+	}
 
 	public void start() {
 		if ( started ) {
@@ -101,20 +99,20 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 				if ( StringHelper.isEmpty( cfgName ) ) {
 					cfgName = INFINISPAN_DEFAULT_CONFIG;
 				}
-				log.tracef("Initializing Infinispan from configuration file at %1$s", cfgName);
+				log.tracef( "Initializing Infinispan from configuration file at %1$s", cfgName );
 				cacheManager = createCustomCacheManager( cfgName, jtaPlatform );
 				isCacheProvided = false;
 			}
 			else {
-				log.tracef("Retrieving Infinispan from JNDI at %1$s", jndiProperty);
-				cacheManager = (EmbeddedCacheManager) jndiService.locate(jndiProperty);
+				log.tracef( "Retrieving Infinispan from JNDI at %1$s", jndiProperty );
+				cacheManager = (EmbeddedCacheManager) jndiService.locate( jndiProperty );
 				isCacheProvided = true;
 			}
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeInfinispan( e );
 		}
-		eagerlyInitializeCaches(cacheManager);
+		eagerlyInitializeCaches( cacheManager );
 		//clear resources
 		this.jtaPlatform = null;
 		this.jndiService = null;
@@ -129,17 +127,14 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	 * @param cacheManager
 	 */
 	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
-		caches = new ConcurrentHashMap<String, Cache> (3);
-		putInLocalCache(cacheManager, DefaultDatastoreNames.ASSOCIATION_STORE);
-		putInLocalCache(cacheManager, DefaultDatastoreNames.ENTITY_STORE);
-		putInLocalCache(cacheManager, DefaultDatastoreNames.IDENTIFIER_STORE);
+		caches = new ConcurrentHashMap<String, Cache>( 3 );
+		putInLocalCache( cacheManager, DefaultDatastoreNames.ASSOCIATION_STORE );
+		putInLocalCache( cacheManager, DefaultDatastoreNames.ENTITY_STORE );
+		putInLocalCache( cacheManager, DefaultDatastoreNames.IDENTIFIER_STORE );
 	}
 
 	private void putInLocalCache(EmbeddedCacheManager cacheManager, String cacheName) {
-		caches.put(
-				cacheName,
-				cacheManager.getCache(cacheName)
-		);
+		caches.put( cacheName, cacheManager.getCache( cacheName ) );
 	}
 
 	private EmbeddedCacheManager createCustomCacheManager(String cfgName, JtaPlatform platform) {
@@ -168,7 +163,8 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 					configurationFile.close();
 				}
 			}
-		} catch (RuntimeException re) {
+		}
+		catch ( RuntimeException re ) {
 			throw raiseConfigurationError( re, cfgName );
 		}
 		catch (IOException e) {
@@ -182,7 +178,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 
 	//prefer generic form over specific ones to prepare for flexible cache setting
 	public Cache getCache(String name) {
-		return caches.get(name);
+		return caches.get( name );
 	}
 
 	public void stop() {

@@ -34,19 +34,36 @@ import org.hibernate.annotations.Cascade;
  */
 @Entity
 public class Wheel {
-	@Id
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public double getDiameter() { return diameter; }
-	public void setDiameter(double diameter) {  this.diameter = diameter; }
 	private double diameter;
-
-	@OneToOne( cascade = CascadeType.PERSIST ) @PrimaryKeyJoinColumn
-	@Cascade( org.hibernate.annotations.CascadeType.SAVE_UPDATE )
-	@MapsId
-	public Vehicule getVehicule() { return vehicule; }
-	public void setVehicule(Vehicule vehicule) {  this.vehicule = vehicule; }
 	private Vehicule vehicule;
+
+	@Id
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public double getDiameter() {
+		return diameter;
+	}
+
+	public void setDiameter(double diameter) {
+		this.diameter = diameter;
+	}
+
+	@OneToOne(cascade = CascadeType.PERSIST)
+	@PrimaryKeyJoinColumn
+	@Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+	@MapsId
+	public Vehicule getVehicule() {
+		return vehicule;
+	}
+
+	public void setVehicule(Vehicule vehicule) {
+		this.vehicule = vehicule;
+	}
 }

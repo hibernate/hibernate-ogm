@@ -149,7 +149,7 @@ public class PropertyMetadataProvider {
 							(Serializable) key,
 							session
 					);
-					collectionMetadataKey.setCollectionRole( buildCollectionRole(collectionPersister) );
+					collectionMetadataKey.setCollectionRole( buildCollectionRole( collectionPersister ) );
 				}
 				else {
 					//we are on the right side, use the association property
@@ -221,7 +221,7 @@ public class PropertyMetadataProvider {
 	}
 
 	private boolean isCollectionMatching(CollectionType type, String primarySideTableName) {
-		// Find the reverse side collection and check if the table name and key columns are matching 
+		// Find the reverse side collection and check if the table name and key columns are matching
 		// what we have on the main side
 		String collectionRole = type.getRole();
 		CollectionPhysicalModel reverseCollectionPersister = (CollectionPhysicalModel) session.getFactory().getCollectionPersister( collectionRole );
@@ -325,7 +325,7 @@ public class PropertyMetadataProvider {
 		if ( collectionMetadata == null ) {
 			// Compute bi-directionality first
 			AssociationKey key = getCollectionMetadataKey();
-			if ( isBidirectional == Boolean.FALSE ){
+			if ( isBidirectional == Boolean.FALSE ) {
 				//fake association to prevent unidirectional associations to keep record of the inverse side
 				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
 			}

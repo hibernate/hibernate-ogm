@@ -105,9 +105,9 @@ public class BatchCoordinator implements Runnable {
 	/**
 	 * Will spawn a thread for each type in rootEntities, they will all re-join
 	 * on endAllSignal when finished.
-	 * 
+	 *
 	 * @param backend
-	 * 
+	 *
 	 * @throws InterruptedException
 	 *             if interrupted while waiting for endAllSignal.
 	 */
@@ -123,7 +123,7 @@ public class BatchCoordinator implements Runnable {
 
 	/**
 	 * Operations to do after all subthreads finished their work on index
-	 * 
+	 *
 	 * @param backend
 	 */
 	private void afterBatch(BatchBackend backend) {
@@ -136,7 +136,7 @@ public class BatchCoordinator implements Runnable {
 
 	/**
 	 * Optional operations to do before the multiple-threads start indexing
-	 * 
+	 *
 	 * @param backend
 	 */
 	private void beforeBatch(BatchBackend backend) {

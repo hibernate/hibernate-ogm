@@ -24,7 +24,6 @@ package org.hibernate.ogm.test.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mongodb.MongoException;
 import org.hibernate.SessionFactory;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -32,15 +31,15 @@ import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.logging.mongodb.impl.Log;
+import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
-import org.hibernate.ogm.logging.mongodb.impl.Log;
-import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import com.mongodb.MongoException;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
@@ -74,17 +73,18 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		DB db = provider.getDatabase();
 		int count = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			if ( collectionName.startsWith( "system." ) )
+			if ( collectionName.startsWith( "system." ) ) {
 				continue;
-
+			}
 			if ( storage == AssociationStorage.GLOBAL_COLLECTION
-					&& collectionName.equals( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ) )
+					&& collectionName.equals( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ) ) {
 				continue;
+			}
 
 			if ( storage == AssociationStorage.COLLECTION
-					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) )
+					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
 				continue;
-
+			}
 
 			count += db.getCollection( collectionName ).count();
 		}

@@ -38,16 +38,29 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Brewery {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	@Column(name = "brewery_pk")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
+	private Set<Beer> beers = new HashSet<Beer>();
 
-	@OneToMany @JoinColumn(name = "brewery_id")
-	@Cascade( { CascadeType.PERSIST, CascadeType.SAVE_UPDATE} )
-	public Set<Beer> getBeers() { return beers; }
-	public void setBeers(Set<Beer> beers) {  this.beers = beers; }
-	private Set<Beer> beers = new HashSet<Beer>(  );
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@Column(name = "brewery_pk")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@OneToMany
+	@JoinColumn(name = "brewery_id")
+	@Cascade({ CascadeType.PERSIST, CascadeType.SAVE_UPDATE })
+	public Set<Beer> getBeers() {
+		return beers;
+	}
+
+	public void setBeers(Set<Beer> beers) {
+		this.beers = beers;
+	}
 }

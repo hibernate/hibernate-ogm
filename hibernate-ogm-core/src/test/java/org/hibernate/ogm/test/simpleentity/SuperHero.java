@@ -27,7 +27,13 @@ import javax.persistence.Entity;
  */
 @Entity
 public class SuperHero extends Hero {
-	public String getSpecialPower() { return specialPower; }
-	public void setSpecialPower(String specialPower) { this.specialPower = specialPower; }
 	private String specialPower;
+
+	public String getSpecialPower() {
+		return specialPower;
+	}
+
+	public void setSpecialPower(String specialPower) {
+		this.specialPower = specialPower;
+	}
 }

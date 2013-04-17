@@ -24,7 +24,7 @@ package org.hibernate.ogm.test.utils;
  * The testsuite needs some knowledge on all NoSQL stores it is meant to support.
  * We mainly need the name of it's TestableGridDialect implementation, but this
  * is also used to disable some tests for a specific GridDialect.
- * 
+ *
 * @author Sanne Grinovero <sanne@hibernate.org>
 */
 public enum GridDialectType {
@@ -60,7 +60,7 @@ public enum GridDialectType {
 
 	public static GridDialectType valueFromHelperClass(Class<? extends TestableGridDialect> class1) {
 		for ( GridDialectType type : values() ) {
-			if ( type.testHelperClassName.equals( class1.getName() ) ){
+			if ( type.testHelperClassName.equals( class1.getName() ) ) {
 				return type;
 			}
 		}

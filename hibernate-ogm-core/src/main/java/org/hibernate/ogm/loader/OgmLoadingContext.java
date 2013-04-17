@@ -23,7 +23,6 @@ package org.hibernate.ogm.loader;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 /**

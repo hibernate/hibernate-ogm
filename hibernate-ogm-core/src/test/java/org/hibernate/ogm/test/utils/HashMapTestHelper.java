@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -42,7 +42,7 @@ public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
 	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		 return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
+		return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
 	}
 
 	@Override
@@ -50,21 +50,21 @@ public class HashMapTestHelper implements TestableGridDialect {
 		return getEntityMap( sessionFactory ).get( key );
 	}
 
-	private static Map<EntityKey,Map<String, Object>> getEntityMap(SessionFactory sessionFactory) {
-		MapDatastoreProvider castProvider = getProvider(sessionFactory);
+	private static Map<EntityKey, Map<String, Object>> getEntityMap(SessionFactory sessionFactory) {
+		MapDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getEntityMap();
 	}
 
 	private static MapDatastoreProvider getProvider(SessionFactory sessionFactory) {
 		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( DatastoreProvider.class );
 		if ( !( MapDatastoreProvider.class.isInstance( provider ) ) ) {
-			throw new RuntimeException("Not testing with MapDatastoreProvider, cannot extract underlying map");
+			throw new RuntimeException( "Not testing with MapDatastoreProvider, cannot extract underlying map" );
 		}
-		return MapDatastoreProvider.class.cast(provider);
+		return MapDatastoreProvider.class.cast( provider );
 	}
 
-	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(SessionFactory sessionFactory) {
-		MapDatastoreProvider castProvider = getProvider(sessionFactory);
+	private static Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache( SessionFactory sessionFactory) {
+		MapDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getAssociationsMap();
 	}
 
@@ -75,7 +75,7 @@ public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
 	public void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		//Nothing to do
+		// Nothing to do
 	}
 
 	@Override

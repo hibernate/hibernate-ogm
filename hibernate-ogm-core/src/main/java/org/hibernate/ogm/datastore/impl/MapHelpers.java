@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -43,7 +43,7 @@ public final class MapHelpers {
 	}
 
 	public static void applyTupleOpsOnMap(Tuple tuple, Map<String, Object> map) {
-		for( TupleOperation action : tuple.getOperations() ) {
+		for ( TupleOperation action : tuple.getOperations() ) {
 			switch ( action.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -77,7 +77,7 @@ public final class MapHelpers {
 
 	public static void updateAssociation(Association association, AssociationKey key) {
 		Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
-		for( AssociationOperation action : association.getOperations() ) {
+		for ( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
 				case CLEAR:
 					atomicMap.clear();

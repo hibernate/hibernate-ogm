@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -40,14 +40,11 @@ import org.junit.rules.ExpectedException;
  */
 public class SimpleQueriesTest {
 
+	@ClassRule
+	public static final SessionFactoryRule sessions = new SessionFactoryRule( Hypothesis.class, Helicopter.class );
+
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
-
-	@ClassRule
-	public static final SessionFactoryRule sessions = new SessionFactoryRule(
-			Hypothesis.class,
-			Helicopter.class
-		);
 
 	@Test
 	public void testSimpleQueries() throws Exception {
@@ -97,18 +94,6 @@ public class SimpleQueriesTest {
 		session.close();
 	}
 
-	private void assertQuery(final Session session, final int expectedSize, final Query testedQuery) {
-		Transaction transaction = session.beginTransaction();
-		List list = testedQuery.list();
-		try {
-			assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
-		}
-		finally {
-			transaction.commit();
-			session.clear();
-		}
-	}
-
 	@BeforeClass
 	public static void setUp() throws Exception {
 		final Session session = sessions.openSession();
@@ -144,6 +129,19 @@ public class SimpleQueriesTest {
 
 		transaction.commit();
 		session.close();
+	}
+
+
+	private void assertQuery(final Session session, final int expectedSize, final Query testedQuery) {
+		Transaction transaction = session.beginTransaction();
+		List list = testedQuery.list();
+		try {
+			assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
+		}
+		finally {
+			transaction.commit();
+			session.clear();
+		}
 	}
 
 }

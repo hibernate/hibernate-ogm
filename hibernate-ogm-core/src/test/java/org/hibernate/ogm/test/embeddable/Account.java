@@ -28,16 +28,32 @@ import javax.persistence.Id;
  */
 @Entity
 public class Account {
-	@Id
-	public String getLogin() { return login; }
-	public void setLogin(String login) {  this.login = login; }
 	private String login;
-
-	public String getPassword() { return password; }
-	public void setPassword(String password) {  this.password = password; }
 	private String password;
-
-	public Address getHomeAddress() { return homeAddress; }
-	public void setHomeAddress(Address homeAddress) {  this.homeAddress = homeAddress; }
 	private Address homeAddress;
+
+	@Id
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public Address getHomeAddress() {
+		return homeAddress;
+	}
+
+	public void setHomeAddress(Address homeAddress) {
+		this.homeAddress = homeAddress;
+	}
 }

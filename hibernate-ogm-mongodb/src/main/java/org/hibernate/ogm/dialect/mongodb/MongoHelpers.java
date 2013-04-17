@@ -55,7 +55,7 @@ public class MongoHelpers {
 		if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
-		idObject.put("_id", columns );
+		idObject.put( "_id", columns );
 		return idObject;
 	}
 

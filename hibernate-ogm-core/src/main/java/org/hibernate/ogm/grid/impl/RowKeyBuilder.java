@@ -37,7 +37,7 @@ public class RowKeyBuilder {
 	private Tuple tuple;
 
 	public RowKeyBuilder addColumns(String... columns) {
-		for(String columnName : columns ) {
+		for ( String columnName : columns ) {
 			columnNames.add( columnName );
 		}
 		return this;

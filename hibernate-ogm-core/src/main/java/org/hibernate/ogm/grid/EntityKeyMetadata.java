@@ -65,14 +65,22 @@ public class EntityKeyMetadata implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if ( this == o ) return true;
-		if ( o == null || EntityKeyMetadata.class != o.getClass() ) return false;
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || EntityKeyMetadata.class != o.getClass() ) {
+			return false;
+		}
 
 		EntityKeyMetadata entityKeyMetadata = (EntityKeyMetadata) o;
 
 		//table is easier to compare first
-		if ( !table.equals( entityKeyMetadata.table ) ) return false;
-		if ( !Arrays.equals( columnNames, entityKeyMetadata.columnNames ) ) return false;
+		if ( !table.equals( entityKeyMetadata.table ) ) {
+			return false;
+		}
+		if ( !Arrays.equals( columnNames, entityKeyMetadata.columnNames ) ) {
+			return false;
+		}
 
 		return true;
 	}

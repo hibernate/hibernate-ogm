@@ -42,14 +42,13 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
-	private final DBObject dbObject;
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
+
+	private final DBObject dbObject;
 	private final RowKey rowKey;
 	private final EntityKey entityKey;
-
 	//use it so it avoids multiple calls to Arrays.asList()
 	private final List<String> columnNames;
-
 
 	//consider RowKey columns and values as aprt of the Tuple
 	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
@@ -84,8 +83,6 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 			return this.dbObject.get( column );
 		}
 	}
-
-
 
 	@Override
 	public Set<String> getColumnNames() {

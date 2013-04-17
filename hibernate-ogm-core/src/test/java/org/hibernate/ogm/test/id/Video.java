@@ -31,24 +31,35 @@ import javax.persistence.TableGenerator;
  */
 @Entity
 public class Video {
+
+	private Integer id;
+	private String name;
+	private String director;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
-	@TableGenerator(
-			name = "video",
-			table = "sequences",
-			pkColumnName = "key",
-			pkColumnValue = "video",
-			valueColumnName = "seed"
-		)
-	public Integer getId() { return id; }
-	public void setId(Integer id) {  this.id = id; }
-	private Integer id;
+	@TableGenerator(name = "video", table = "sequences", pkColumnName = "key", pkColumnValue = "video", valueColumnName = "seed")
+	public Integer getId() {
+		return id;
+	}
 
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
-	private String name;
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-	public String getDirector() { return director; }
-	public void setDirector(String director) {  this.director = director; }
-	private String director;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getDirector() {
+		return director;
+	}
+
+	public void setDirector(String director) {
+		this.director = director;
+	}
 }

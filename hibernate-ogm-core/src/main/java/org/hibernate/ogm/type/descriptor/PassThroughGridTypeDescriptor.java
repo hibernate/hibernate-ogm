@@ -26,7 +26,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
  * Use the Java value as is and persist it to the grid
- * 
+ *
  * @author Emmanuel Bernard
  */
 public class PassThroughGridTypeDescriptor implements GridTypeDescriptor {

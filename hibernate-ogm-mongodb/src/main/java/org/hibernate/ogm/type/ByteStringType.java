@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -22,14 +22,13 @@ package org.hibernate.ogm.type;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 
 /**
  * For MongoDB persist a {@link Byte} as a {@link String}.
  * TODO Could be better to persist as an {@link Integer}.
- * 
+ *
  * @author Oliver Carr ocarr@redhat.com
  *
  */

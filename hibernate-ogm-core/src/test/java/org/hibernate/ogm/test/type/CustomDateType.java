@@ -46,9 +46,9 @@ import java.util.Date;
  */
 public class CustomDateType extends AbstractGenericBasicType<Date> {
 
-	private static final Log log = LoggerFactory.make();
+	public static final CustomDateType INSTANCE = new CustomDateType();
 
-	public static CustomDateType INSTANCE = new CustomDateType();
+	private static final Log log = LoggerFactory.make();
 
 	public CustomDateType() {
 		super( CustomDateTypeDescriptor.INSTANCE, JdbcDateTypeDescriptor.INSTANCE );
@@ -92,9 +92,10 @@ public class CustomDateType extends AbstractGenericBasicType<Date> {
 					else {
 						Date date = null;
 						try {
-							date = new SimpleDateFormat(  "yyyyMMdd" ).parse( result );
-						} catch ( ParseException e ) {
-							throw new HibernateException("Unable to read date from datastore " + result, e);
+							date = new SimpleDateFormat( "yyyyMMdd" ).parse( result );
+						}
+						catch ( ParseException e ) {
+							throw new HibernateException( "Unable to read date from datastore " + result, e );
 						}
 						if ( log.isTraceEnabled() ) {
 							log.tracef( "found [$s] as column [$s]", result, name );

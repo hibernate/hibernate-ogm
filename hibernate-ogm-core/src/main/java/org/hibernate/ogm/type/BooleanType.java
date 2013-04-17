@@ -41,7 +41,7 @@ public class BooleanType extends AbstractGenericBasicType<Boolean> {
 	public String getName() {
 		return "boolean";
 	}
-	
+
 	@Override
 	protected boolean registerUnderJavaType() {
 		return true;
@@ -51,15 +51,15 @@ public class BooleanType extends AbstractGenericBasicType<Boolean> {
 	public int getColumnSpan(Mapping mapping) throws MappingException {
 		return 1;
 	}
-	
+
 	@Override
-	public String toString(Boolean value) throws HibernateException{
+	public String toString(Boolean value) throws HibernateException {
 		return value.toString();
 	}
-	
+
 	@Override
 	public Boolean fromStringValue(String value) throws HibernateException {
-		//avoid using Boolean.parse as we want to explicitly check for 'false' literal
+		// avoid using Boolean.parse as we want to explicitly check for 'false' literal
 		if ( Boolean.toString( true ).equals( value ) ) {
 			return Boolean.TRUE;
 		}
@@ -67,7 +67,7 @@ public class BooleanType extends AbstractGenericBasicType<Boolean> {
 			return Boolean.FALSE;
 		}
 		else {
-			throw new HibernateException("Unable to rebuild Boolean from String");
+			throw new HibernateException( "Unable to rebuild Boolean from String" );
 		}
 	}
 }

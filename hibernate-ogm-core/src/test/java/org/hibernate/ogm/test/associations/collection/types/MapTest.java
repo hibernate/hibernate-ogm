@@ -41,14 +41,14 @@ public class MapTest extends OgmTestCase {
 		User user = new User();
 		user.getAddresses().put( "home", home );
 		user.getAddresses().put( "work", work );
-		user.getNicknames().add("idrA");
-		user.getNicknames().add("day[9]");
+		user.getNicknames().add( "idrA" );
+		user.getNicknames().add( "day[9]" );
 		session.persist( home );
 		session.persist( work );
 		session.persist( user );
 		User user2 = new User();
-		user2.getNicknames().add("idrA");
-		user2.getNicknames().add("day[9]");
+		user2.getNicknames().add( "idrA" );
+		user2.getNicknames().add( "day[9]" );
 		session.persist( user2 );
 		tx.commit();
 
@@ -56,12 +56,8 @@ public class MapTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
-		assertThat( user.getNicknames() )
-				.as( "Should have 2 nick1" )
-				.hasSize( 2 );
-		assertThat( user.getNicknames() )
-			.as( "Should contain nicks" )
-			.contains( "idrA", "day[9]" );
+		assertThat( user.getNicknames() ).as( "Should have 2 nick1" ).hasSize( 2 );
+		assertThat( user.getNicknames() ).as( "Should contain nicks" ).contains( "idrA", "day[9]" );
 		user.getNicknames().remove( "idrA" );
 		tx.commit();
 
@@ -69,30 +65,19 @@ public class MapTest extends OgmTestCase {
 
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
-		//TODO do null value
-		assertThat( user.getAddresses() )
-				.as( "List should have 2 elements" )
-				.hasSize( 2 );
-		assertThat( user.getAddresses().get( "home" ).getCity() )
-				.as( "home address should be under home" )
-				.isEqualTo( home.getCity() );
-		assertThat( user.getNicknames() )
-				.as( "Should have 1 nick1" )
-				.hasSize( 1 );
-		assertThat( user.getNicknames() )
-			.as( "Should contain nick" )
-			.contains( "day[9]" );
+		// TODO do null value
+		assertThat( user.getAddresses() ).as( "List should have 2 elements" ).hasSize( 2 );
+		assertThat( user.getAddresses().get( "home" ).getCity() ).as( "home address should be under home" ).isEqualTo(
+				home.getCity() );
+		assertThat( user.getNicknames() ).as( "Should have 1 nick1" ).hasSize( 1 );
+		assertThat( user.getNicknames() ).as( "Should contain nick" ).contains( "day[9]" );
 		session.delete( user );
-		session.delete( session.load(Address.class, home.getId() ) );
-		session.delete( session.load(Address.class, work.getId() ) );
+		session.delete( session.load( Address.class, home.getId() ) );
+		session.delete( session.load( Address.class, work.getId() ) );
 
 		user2 = (User) session.get( User.class, user2.getId() );
-		assertThat( user2.getNicknames() )
-				.as( "Should have 2 nicks" )
-				.hasSize( 2 );
-		assertThat( user2.getNicknames() )
-			.as( "Should contain nick" )
-			.contains( "idrA", "day[9]" );
+		assertThat( user2.getNicknames() ).as( "Should have 2 nicks" ).hasSize( 2 );
+		assertThat( user2.getNicknames() ).as( "Should contain nick" ).contains( "idrA", "day[9]" );
 		session.delete( user2 );
 
 		tx.commit();
@@ -104,9 +89,6 @@ public class MapTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				User.class,
-				Address.class
-		};
+		return new Class<?>[] { User.class, Address.class };
 	}
 }

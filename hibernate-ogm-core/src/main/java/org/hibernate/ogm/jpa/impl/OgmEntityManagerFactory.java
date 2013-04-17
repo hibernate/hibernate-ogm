@@ -53,13 +53,13 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 
 	@Override
 	public EntityManager createEntityManager(Map map) {
-		return new OgmEntityManager( this, hibernateEmf.createEntityManager(map) );
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( map ) );
 	}
 
 	@Override
 	public SessionFactory getSessionFactory() {
-		final SessionFactory sessionFactory = ( ( HibernateEntityManagerFactory ) hibernateEmf ).getSessionFactory();
-		return new OgmSessionFactory( ( SessionFactoryImplementor ) sessionFactory );
+		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEmf ).getSessionFactory();
+		return new OgmSessionFactory( (SessionFactoryImplementor) sessionFactory );
 	}
 
 	//Delegation

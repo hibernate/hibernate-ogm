@@ -26,8 +26,8 @@ import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 
 /**
- * Represents a Double type 
- * 
+ * Represents a Double type
+ *
  * @author Emmanuel Bernard
  */
 public class DoubleType  extends AbstractGenericBasicType<Double> {

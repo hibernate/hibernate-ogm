@@ -38,7 +38,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
 /**
  * This runnable will prepare a pipeline for batch indexing
  * of entities, managing the lifecycle of several ThreadPools.
- * 
+ *
  * @author Sanne Grinovero
  * @author Davide D'Alto <davide@hibernate.org>
  */

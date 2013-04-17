@@ -38,7 +38,7 @@ public class ComponentType extends GridTypeDelegatingToCoreType implements GridT
 	private final GridType[] propertyTypes;
 
 	public ComponentType(org.hibernate.type.ComponentType componentType, TypeTranslator typeTranslator) {
-		super(componentType);
+		super( componentType );
 		this.componentType = componentType;
 		this.propertySpan = componentType.getPropertyNames().length;
 		final Type[] coreSubtypes = componentType.getSubtypes();

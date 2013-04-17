@@ -45,7 +45,7 @@ import org.hibernate.type.descriptor.java.MutabilityPlan;
 /**
  * Not a public API
  * Copied from {@link org.hibernate.type.AbstractStandardBasicType}
- * 
+ *
  * @author Emmanuel Bernard
  */
 public abstract class AbstractGenericBasicType<T>
@@ -312,7 +312,7 @@ public abstract class AbstractGenericBasicType<T>
 	@Override
 	public final Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
-		return nullSafeGet(rs, names, session, owner);
+		return nullSafeGet( rs, names, session, owner );
 	}
 
 	public final Object resolve(Object value, SessionImplementor session, Object owner) throws HibernateException {

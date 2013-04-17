@@ -67,7 +67,7 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Test
 	public void testUndefinedPU() throws Exception {
-		thrown.expect(PersistenceException.class);
+		thrown.expect( PersistenceException.class );
 		Persistence.createEntityManagerFactory( "does-not-exist-PU" );
 	}
 
@@ -84,8 +84,6 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] {
-				Poem.class
-		};
+		return new Class<?>[] { Poem.class };
 	}
 }

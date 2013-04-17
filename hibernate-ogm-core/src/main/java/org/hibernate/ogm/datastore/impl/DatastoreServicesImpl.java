@@ -49,9 +49,9 @@ public final class DatastoreServicesImpl implements DatastoreServices, ServiceRe
 
 	@Override
 	public void configure(Map configurationValues) {
-		GridDialectFactoryImpl dialectFactory = serviceRegistry.getService(GridDialectFactoryImpl.class);
-		DatastoreProvider datastoreProvider = serviceRegistry.getService(DatastoreProvider.class);
-		this.gridDialect = dialectFactory.buildGridDialect(configurationValues, serviceRegistry);
+		GridDialectFactoryImpl dialectFactory = serviceRegistry.getService( GridDialectFactoryImpl.class );
+		DatastoreProvider datastoreProvider = serviceRegistry.getService( DatastoreProvider.class );
+		this.gridDialect = dialectFactory.buildGridDialect( configurationValues, serviceRegistry );
 		this.serviceRegistry = null;
 	}
 }

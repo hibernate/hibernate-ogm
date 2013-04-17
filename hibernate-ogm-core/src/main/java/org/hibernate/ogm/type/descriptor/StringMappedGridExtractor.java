@@ -49,7 +49,7 @@ public class StringMappedGridExtractor<J> implements GridValueExtractor<J> {
 			return null;
 		}
 		else {
-			final J resultJ = javaTypeDescriptor.fromString(result);
+			final J resultJ = javaTypeDescriptor.fromString( result );
 			if ( log.isTraceEnabled() ) {
 				log.tracef( "found [$s] as column [$s]", javaTypeDescriptor.extractLoggableRepresentation( resultJ ), name );
 			}
