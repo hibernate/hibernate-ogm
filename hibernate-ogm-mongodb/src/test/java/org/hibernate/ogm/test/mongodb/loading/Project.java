@@ -35,16 +35,34 @@ import javax.persistence.OrderColumn;
 public class Project {
 	@Id
 	private String id;
-	public String getId() { return id; }
-	public void setId(String id) { this.id = id; }
 
 	private String name;
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
 
-	@OneToMany(cascade = { CascadeType.PERSIST})
-	@OrderColumn(name="ordering")
+	@OneToMany(cascade = { CascadeType.PERSIST })
+	@OrderColumn(name = "ordering")
 	private List<Module> modules;
-	public List<Module> getModules() { return modules; }
-	public void setModules(List<Module> modules) { this.modules = modules; }
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public List<Module> getModules() {
+		return modules;
+	}
+
+	public void setModules(List<Module> modules) {
+		this.modules = modules;
+	}
 }

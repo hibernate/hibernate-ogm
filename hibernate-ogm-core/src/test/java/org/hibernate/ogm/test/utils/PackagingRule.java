@@ -41,10 +41,9 @@ import org.junit.rules.TemporaryFolder;
  */
 public class PackagingRule extends TemporaryFolder {
 
-	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
-
 	protected static ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
 
+	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
 	private final JavaArchive archive;
 	private final File testPackage;
 

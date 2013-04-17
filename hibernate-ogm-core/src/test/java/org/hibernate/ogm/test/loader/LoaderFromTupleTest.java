@@ -59,26 +59,26 @@ public class LoaderFromTupleTest extends OgmTestCase {
 
 		session.clear();
 
-		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[]{ "UUID" } ), new Object[]{ feeling.getUUID() } );
+		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
 		Map<String, Object> entityTuple = (Map<String, Object>) extractEntityTuple( sessions, key );
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
 
-		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() ).getEntityPersister( Feeling.class.getName() );
+		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() )
+				.getEntityPersister( Feeling.class.getName() );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { (OgmEntityPersister) persister } );
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		tuples.add( tuple );
-		ogmLoadingContext.setTuples(tuples);
+		ogmLoadingContext.setTuples( tuples );
 		List<Object> entities = loader.loadEntities( (SessionImplementor) session, LockOptions.NONE, ogmLoadingContext );
-		assertThat(entities.size()).isEqualTo( 1 );
-		assertThat( ( (Feeling) entities.get(0) ).getName() ).isEqualTo( "Moody" );
+		assertThat( entities.size() ).isEqualTo( 1 );
+		assertThat( ( (Feeling) entities.get( 0 ) ).getName() ).isEqualTo( "Moody" );
 
 		session.close();
 	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Feeling.class
-		};
+		return new Class<?>[] { Feeling.class };
 	}
 }

@@ -56,7 +56,7 @@ public class ProducerConsumerQueue<T> {
 	/**
 	 * Blocks until an object is available; when null
 	 * is returned the client thread should quit.
-	 * 
+	 *
 	 * @return the next object in the queue, or null to exit
 	 * @throws InterruptedException
 	 */

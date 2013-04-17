@@ -31,7 +31,8 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 public final class EmptyTupleSnapshot implements TupleSnapshot {
 	public static final TupleSnapshot SINGLETON = new EmptyTupleSnapshot();
 
-	private EmptyTupleSnapshot() {}
+	private EmptyTupleSnapshot() {
+	}
 
 	@Override
 	public Object get(String column) {

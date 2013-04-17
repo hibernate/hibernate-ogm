@@ -26,7 +26,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
  * Map field to string value and persist it to the grid
- * 
+ *
  * @author Nicolas Helleringer
  */
 public class StringMappedGridTypeDescriptor implements GridTypeDescriptor {

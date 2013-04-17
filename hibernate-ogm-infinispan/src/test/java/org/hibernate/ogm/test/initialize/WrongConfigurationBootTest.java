@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -35,7 +35,7 @@ import static junit.framework.Assert.fail;
 
 /**
  * Verify we provide useful information in case Infinispan is not starting correctly.
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public class WrongConfigurationBootTest {
@@ -51,7 +51,7 @@ public class WrongConfigurationBootTest {
 			tryBoot( "does-not-exist-configuration-file.xml" );
 			fail( "should have thrown an exception" );
 		}
-		catch (HibernateException he) {
+		catch ( HibernateException he ) {
 			assertTrue( he.getMessage().contains( "Unable to find or initialize Infinispan CacheManager" ) );
 			Throwable cause = he.getCause();
 			assertTrue( cause.getMessage().contains( "Could not start Infinispan CacheManager using as configuration file: does-not-exist-configuration-file.xml" ) );
@@ -62,7 +62,8 @@ public class WrongConfigurationBootTest {
 	}
 
 	/**
-	 * @param configurationResourceName The Infinispan configuration resource to use to try booting OGM
+	 * @param configurationResourceName
+	 *            The Infinispan configuration resource to use to try booting OGM
 	 */
 	private void tryBoot(String configurationResourceName) {
 		Configuration cfg = new OgmConfiguration();

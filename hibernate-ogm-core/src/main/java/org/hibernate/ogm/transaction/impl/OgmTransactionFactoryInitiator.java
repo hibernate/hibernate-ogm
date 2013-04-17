@@ -27,7 +27,6 @@ import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.ogm.transaction.impl.JTATransactionManagerTransactionFactory;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.BasicServiceInitiator;
@@ -40,12 +39,12 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<TransactionFactory> {
 
-	private static final Log log = LoggerFactory.make();
-
 	public static final OgmTransactionFactoryInitiator INSTANCE = new OgmTransactionFactoryInitiator();
 
+	private static final Log log = LoggerFactory.make();
+
 	@Override
-	@SuppressWarnings( {"unchecked"})
+	@SuppressWarnings({ "unchecked" })
 	public Class<TransactionFactory> getServiceInitiated() {
 		return TransactionFactory.class;
 	}
@@ -53,12 +52,12 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 	@Override
 	protected TransactionFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
-		//Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
-		if ( strategy == null || JdbcTransactionFactory.class.getName().equals(strategy) ) {
+		// Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
+		if ( strategy == null || JdbcTransactionFactory.class.getName().equals( strategy ) ) {
 			log.usingDefaultTransactionFactory();
 			return new JTATransactionManagerTransactionFactory();
 		}
-		return TransactionFactoryInitiator.INSTANCE.initiateService(configurationValues, registry);
+		return TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );
 	}
 
 	@Override

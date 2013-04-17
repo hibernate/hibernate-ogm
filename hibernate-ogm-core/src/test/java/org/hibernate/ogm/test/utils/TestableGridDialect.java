@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -36,18 +36,21 @@ public interface TestableGridDialect {
 
 	/**
 	 * Check that the number of entities present matches expectations
+	 *
 	 * @param sessionFactory
 	 */
 	boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory);
 
 	/**
 	 * Check that the number of entities present matches expectations
+	 *
 	 * @param sessionFactory
 	 */
 	boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory);
 
 	/**
 	 * Loads a specific entity tuple directly from the data store by entity key
+	 *
 	 * @param sessionFactory
 	 * @param key
 	 * @return the loaded tuple, or null of nothing was found
@@ -57,6 +60,7 @@ public interface TestableGridDialect {
 	/**
 	 * Returning false will disable all tests which verify transaction isolation or rollback capabilities.
 	 * No "production" datastore should return false unless its limitation is properly documented.
+	 *
 	 * @return true if the datastore is expected to commit/rollback properly
 	 */
 	boolean backendSupportsTransactions();
@@ -66,14 +70,14 @@ public interface TestableGridDialect {
 	 * the database and/or the schema.
 	 * Each implementor can so define its own way to delete all data inserted by
 	 * the test and remove the schema if that applies.
+	 *
 	 * @param sessionFactory
 	 */
 	void dropSchemaAndDatabase(SessionFactory sessionFactory);
-
 
 	/**
 	 * Properties that needs to be overridden in configuration for tests to run
 	 * This is typical of the host and port defined using an environment variable.
 	 */
-	Map<String,String> getEnvironmentProperties();
+	Map<String, String> getEnvironmentProperties();
 }

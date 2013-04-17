@@ -83,10 +83,6 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
  */
 public class MongoDBDialect implements GridDialect {
 
-	private static final Log log = LoggerFactory.getLogger();
-	private static final Integer ONE = Integer.valueOf( 1 );
-	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
-
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
 	public static final String SEQUENCE_VALUE = "sequence_value";
@@ -94,6 +90,9 @@ public class MongoDBDialect implements GridDialect {
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
+	private static final Log log = LoggerFactory.getLogger();
+	private static final Integer ONE = Integer.valueOf( 1 );
+	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
 	private final MongoDBDatastoreProvider provider;
@@ -110,7 +109,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
-	public  Tuple getTuple(EntityKey key, TupleContext tupleContext){
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
 	}
@@ -135,11 +134,11 @@ public class MongoDBDialect implements GridDialect {
 		return collection.findOne( searchObject, restrictionObject );
 	}
 
-	private BasicDBObject getSearchObject(TupleContext tupleContext){
+	private BasicDBObject getSearchObject(TupleContext tupleContext) {
 		return this.getSearchObject( tupleContext.getSelectableColumns() );
 	}
 
-	private BasicDBObject getSearchObject(List<String> selectedColumns){
+	private BasicDBObject getSearchObject(List<String> selectedColumns) {
 		BasicDBObject searchObject = new BasicDBObject();
 		for ( String column : selectedColumns ) {
 			searchObject.append( column, 1 );
@@ -163,7 +162,7 @@ public class MongoDBDialect implements GridDialect {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
-	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues){
+	private BasicDBObject prepareIdObject(String[] columnNames, Object[] columnValues) {
 		BasicDBObject object;
 		if ( columnNames.length == 1 ) {
 			object = new BasicDBObject( ID_FIELDNAME, columnValues[0] );
@@ -290,7 +289,8 @@ public class MongoDBDialect implements GridDialect {
 		final DBObject result = findAssociation( key );
 		if ( result == null ) {
 			return null;
-		} else {
+		}
+		else {
 			return new Association( new MongoDBAssociationSnapshot( result, key, provider.getAssociationStorage() ) );
 		}
 	}
@@ -332,10 +332,10 @@ public class MongoDBDialect implements GridDialect {
 		}
 		DBCollection associations = getAssociationCollection( key );
 		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
-		
+
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
-		
+
 		return new Association( new MongoDBAssociationSnapshot( assoc, key, provider.getAssociationStorage() ) );
 	}
 
@@ -389,7 +389,7 @@ public class MongoDBDialect implements GridDialect {
 
 			switch ( action.getType() ) {
 			case CLEAR:
-				update = new BasicDBObject( "$set", new BasicDBObject (associationField, Collections.EMPTY_LIST ) );
+				update = new BasicDBObject( "$set", new BasicDBObject( associationField, Collections.EMPTY_LIST ) );
 				break;
 			case PUT_NULL:
 			case PUT:

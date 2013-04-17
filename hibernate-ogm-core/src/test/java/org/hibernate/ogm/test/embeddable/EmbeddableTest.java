@@ -20,11 +20,11 @@
  */
 package org.hibernate.ogm.test.embeddable;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-
-import static org.fest.assertions.Assertions.*;
 
 /**
  * @author Emmanuel Bernard
@@ -54,8 +54,8 @@ public class EmbeddableTest extends OgmTestCase {
 		assertThat( loadedAccount ).as( "Cannot load persisted object" ).isNotNull();
 		final Address loadedAddress = loadedAccount.getHomeAddress();
 		assertThat( loadedAddress ).as( "Embeddable should not be null" ).isNotNull();
-		assertThat( loadedAddress.getCity() ).as("persist and load fails for embeddable").isEqualTo( address.getCity() );
-		assertThat( loadedAddress.getZipCode() ).as("@Column support for embeddable does not work").isEqualTo( address.getZipCode() );
+		assertThat( loadedAddress.getCity() ).as( "persist and load fails for embeddable" ).isEqualTo( address.getCity() );
+		assertThat( loadedAddress.getZipCode() ).as( "@Column support for embeddable does not work" ).isEqualTo( address.getZipCode() );
 		transaction.commit();
 
 		session.clear();
@@ -69,9 +69,7 @@ public class EmbeddableTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		Account secondLoadedAccount = (Account) session.get( Account.class, account.getLogin() );
-		assertThat( loadedAccount.getHomeAddress().getCity() )
-				.as( "Merge fails for embeddable" )
-				.isEqualTo( secondLoadedAccount.getHomeAddress().getCity() );
+		assertThat( loadedAccount.getHomeAddress().getCity() ).as( "Merge fails for embeddable" ).isEqualTo( secondLoadedAccount.getHomeAddress().getCity() );
 		session.delete( secondLoadedAccount );
 		transaction.commit();
 
@@ -86,8 +84,6 @@ public class EmbeddableTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Account.class
-		};
+		return new Class<?>[] { Account.class };
 	}
 }

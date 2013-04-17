@@ -34,7 +34,7 @@ public class JndiHelper {
 	public static Properties extractJndiProperties(Map configurationValues) {
 		final Properties jndiProperties = new Properties();
 
-		for ( Map.Entry entry : (Set<Map.Entry> ) configurationValues.entrySet() ) {
+		for ( Map.Entry entry : (Set<Map.Entry>) configurationValues.entrySet() ) {
 			if ( !String.class.isInstance( entry.getKey() ) ) {
 				continue;
 			}

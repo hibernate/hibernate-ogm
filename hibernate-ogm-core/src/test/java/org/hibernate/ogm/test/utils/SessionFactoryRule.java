@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -28,7 +28,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.junit.rules.TemporaryFolder;
-
 
 /**
  * This helper to manage the SessionFactory as a JUnit Rule is intended only for
@@ -59,7 +58,7 @@ public class SessionFactoryRule extends TemporaryFolder {
 		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
 		// disable warnings about unspecified Lucene version
 		cfg.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
-		for( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 			cfg.setProperty( entry.getKey(), entry.getValue() );
 		}
 	}
@@ -75,7 +74,7 @@ public class SessionFactoryRule extends TemporaryFolder {
 	@Override
 	public void before() throws Throwable {
 		super.before();
-		//start the SessionFactory eagerly so that it's part of the test fixture
+		// start the SessionFactory eagerly so that it's part of the test fixture
 		getSessionFactory();
 	}
 

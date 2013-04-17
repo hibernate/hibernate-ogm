@@ -20,6 +20,10 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import static org.hibernate.ogm.datastore.spi.AssociationOperationType.PUT;
+import static org.hibernate.ogm.datastore.spi.AssociationOperationType.PUT_NULL;
+import static org.hibernate.ogm.datastore.spi.AssociationOperationType.REMOVE;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,8 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.grid.RowKey;
-
-import static org.hibernate.ogm.datastore.spi.AssociationOperationType.*;
 
 /**
  * Represents an Association (think of it as a set of rows)

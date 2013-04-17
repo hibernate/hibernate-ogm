@@ -36,19 +36,37 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class AccountOwner {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getSSN() { return sSN; }
-	public void setSSN(String sSN) {  this.sSN = sSN; }
 	private String sSN;
+	private Set<BankAccount> bankAccounts = new HashSet<BankAccount>();
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getSSN() {
+		return sSN;
+	}
+
+	public void setSSN(String sSN) {
+		this.sSN = sSN;
+	}
 
 	@ManyToMany(cascade = CascadeType.PERSIST)
-	@Cascade( org.hibernate.annotations.CascadeType.SAVE_UPDATE )
-	public Set<BankAccount> getBankAccounts() { return bankAccounts; }
-	public void setBankAccounts(Set<BankAccount> bankAccounts) {  this.bankAccounts = bankAccounts; }
-	private Set<BankAccount> bankAccounts = new HashSet<BankAccount>(  );
+	@Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+	public Set<BankAccount> getBankAccounts() {
+		return bankAccounts;
+	}
+
+	public void setBankAccounts(Set<BankAccount> bankAccounts) {
+		this.bankAccounts = bankAccounts;
+	}
+
 }

@@ -20,7 +20,9 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.datastore.impl.SetFromCollection;
+import static org.hibernate.ogm.datastore.spi.TupleOperationType.PUT;
+import static org.hibernate.ogm.datastore.spi.TupleOperationType.PUT_NULL;
+import static org.hibernate.ogm.datastore.spi.TupleOperationType.REMOVE;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.hibernate.ogm.datastore.spi.TupleOperationType.*;
+import org.hibernate.ogm.datastore.impl.SetFromCollection;
 
 /**
  * Represents a Tuple (think of it as a row)

@@ -70,12 +70,12 @@ public abstract class OgmTestCase extends TestCase {
 		TestHelper.initializeHelpers();
 	}
 
-	private static final Log log = LoggerFactory.make();
-	protected SessionFactory sessions;
-	private Session session;
-
 	protected static Configuration cfg;
 	private static Class<?> lastTestClass;
+	private static final Log log = LoggerFactory.make();
+
+	protected SessionFactory sessions;
+	private Session session;
 
 	@Before
 	public void setUp() throws Exception {
@@ -86,7 +86,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected String[] getXmlFiles() {
-		return new String[] { };
+		return new String[] {};
 	}
 
 	protected static void setCfg(Configuration cfg) {
@@ -113,7 +113,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	protected String[] getAnnotatedPackages() {
-		return new String[] { };
+		return new String[] {};
 	}
 
 	protected SearchFactoryImplementor getSearchFactoryImpl() {
@@ -146,7 +146,7 @@ public abstract class OgmTestCase extends TestCase {
 		buffer.append( dialect.name() );
 		buffer.append( ']' );
 
-		if ( StringHelper.isNotEmpty(comment) ) {
+		if ( StringHelper.isNotEmpty( comment ) ) {
 			buffer.append( "; " ).append( comment );
 		}
 
@@ -201,8 +201,8 @@ public abstract class OgmTestCase extends TestCase {
 			throw t;
 		}
 		catch ( Throwable t ) {
-			if ( t instanceof InvocationTargetException) {
-				t = ( ( InvocationTargetException ) t ).getTargetException();
+			if ( t instanceof InvocationTargetException ) {
+				t = ( (InvocationTargetException) t ).getTargetException();
 			}
 			if ( t instanceof IllegalAccessException ) {
 				t.fillInStackTrace();
@@ -216,9 +216,7 @@ public abstract class OgmTestCase extends TestCase {
 				else {
 					builder.append( "ignoring @FailureExpected test" );
 				}
-				builder.append( " (" )
-						.append( failureExpected.jiraKey() )
-						.append( ")" );
+				builder.append( " (" ).append( failureExpected.jiraKey() ).append( ")" );
 				log.warn( builder.toString(), t );
 			}
 			else {
@@ -246,7 +244,7 @@ public abstract class OgmTestCase extends TestCase {
 		}
 	}
 
-		public String fullTestName() {
+	public String fullTestName() {
 		return this.getClass().getName() + "#" + this.getName();
 	}
 
@@ -260,7 +258,7 @@ public abstract class OgmTestCase extends TestCase {
 		catch ( NoSuchMethodException e ) {
 			fail( "Method \"" + fName + "\" not found" );
 		}
-		if ( !Modifier.isPublic(runMethod.getModifiers()) ) {
+		if ( !Modifier.isPublic( runMethod.getModifiers() ) ) {
 			fail( "Method \"" + fName + "\" should be public" );
 		}
 		return runMethod;
@@ -271,9 +269,6 @@ public abstract class OgmTestCase extends TestCase {
 			super( "Test marked as @FailureExpected, but did not fail!" );
 		}
 	}
-
-
-
 
 	public Session openSession() throws HibernateException {
 		rebuildSessionFactory();
@@ -304,7 +299,7 @@ public abstract class OgmTestCase extends TestCase {
 		return (SessionFactoryImplementor) getSessions();
 	}
 
-	//FIXME clear cache when this happens
+	// FIXME clear cache when this happens
 	protected void runSchemaGeneration() {
 
 	}
@@ -318,11 +313,11 @@ public abstract class OgmTestCase extends TestCase {
 		try {
 			setCfg( new OgmConfiguration() );
 
-			//Other configurations
+			// Other configurations
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
-			for( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+			for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 				cfg.setProperty( entry.getKey(), entry.getValue() );
 			}
 
@@ -341,7 +336,7 @@ public abstract class OgmTestCase extends TestCase {
 				getCfg().addInputStream( is );
 			}
 
-			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */ ) );
+			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */) );
 		}
 		catch ( Exception e ) {
 			e.printStackTrace();
@@ -400,7 +395,7 @@ public abstract class OgmTestCase extends TestCase {
 	}
 
 	public void checkCleanCache() {
-		assertThat( assertNumberOfEntities( 0, sessions ) ).as("Entity cache should be empty").isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).as("Association cache should be empty").isTrue();
+		assertThat( assertNumberOfEntities( 0, sessions ) ).as( "Entity cache should be empty" ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessions ) ).as( "Association cache should be empty" ).isTrue();
 	}
 }

@@ -79,7 +79,7 @@ public class TupleAsMapResultSet implements ResultSet {
 	 * Retrieve the current value for the collection entry
 	 */
 	public Tuple getTuple() {
-		return tuples.get(index);
+		return tuples.get( index );
 	}
 
 	@Override

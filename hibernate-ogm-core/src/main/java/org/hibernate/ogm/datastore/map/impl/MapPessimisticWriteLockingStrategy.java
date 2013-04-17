@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -43,25 +43,26 @@ import org.hibernate.persister.entity.Lockable;
  */
 public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
-	private volatile MapDatastoreProvider provider;
+	private static final Log log = LoggerFactory.make();
+
 	protected final Lockable lockable;
 	protected final LockMode lockMode;
 	protected final GridType identifierGridType;
 
-	private static final Log log = LoggerFactory.make();
+	private volatile MapDatastoreProvider provider;
 
 	public MapPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockable = lockable;
 		this.lockMode = lockMode;
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
-		this.identifierGridType = typeTranslator.getType(lockable.getIdentifierType());
+		this.identifierGridType = typeTranslator.getType( lockable.getIdentifierType() );
 	}
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session) throws StaleObjectStateException, JDBCException {
 		MapDatastoreProvider dataStore = getProvider( session );
 		EntityKey key = EntityKeyBuilder.fromData(
-				( ( OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
+				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
 				identifierGridType,
 				id,
 				session );
@@ -72,12 +73,12 @@ public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 
 	protected final MapDatastoreProvider getProvider(SessionImplementor session) {
 		if ( provider == null ) {
-			DatastoreProvider service = session.getFactory().getServiceRegistry().getService(DatastoreProvider.class);
+			DatastoreProvider service = session.getFactory().getServiceRegistry().getService( DatastoreProvider.class );
 			if ( service instanceof MapDatastoreProvider ) {
 				provider = (MapDatastoreProvider) service;
 			}
 			else {
-				log.unexpectedDatastoreProvider(service.getClass(), MapDatastoreProvider.class);
+				log.unexpectedDatastoreProvider( service.getClass(), MapDatastoreProvider.class );
 			}
 		}
 		return provider;

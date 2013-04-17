@@ -31,23 +31,35 @@ import javax.persistence.TableGenerator;
  */
 @Entity
 public class Music {
-	@Id @GeneratedValue(strategy = GenerationType.TABLE, generator = "music")
-	@TableGenerator(
-			name = "music",
-			table = "sequences",
-			pkColumnName = "key",
-			pkColumnValue = "music",
-			valueColumnName = "seed"
-		)
-	public Long getId() { return id; }
-	public void setId(Long id) {  this.id = id; }
+
 	private Long id;
-
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
 	private String name;
-
-	public String getComposer() { return composer; }
-	public void setComposer(String composer) {  this.composer = composer; }
 	private String composer;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.TABLE, generator = "music")
+	@TableGenerator(name = "music", table = "sequences", pkColumnName = "key", pkColumnValue = "music", valueColumnName = "seed")
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getComposer() {
+		return composer;
+	}
+
+	public void setComposer(String composer) {
+		this.composer = composer;
+	}
 }

@@ -76,7 +76,7 @@ public class GridDialectLogger implements GridDialect {
 
 
 	@Override
-	public Tuple getTuple(EntityKey key, TupleContext tupleContext){
+	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext.toString() );
 		return gridDialect.getTuple( key, tupleContext );
 	}
@@ -91,7 +91,8 @@ public class GridDialectLogger implements GridDialect {
 	public void updateTuple(Tuple tuple, EntityKey key) {
 		if ( tuple.getSnapshot().isEmpty() ) {
 			log.tracef( "Creating Tuple with key %1$s in datastore", key );
-		} else {
+		}
+		else {
 			log.tracef( "Updating Tuple with key %1$s in datastore", key );
 		}
 		gridDialect.updateTuple( tuple, key );
@@ -119,7 +120,8 @@ public class GridDialectLogger implements GridDialect {
 	public void updateAssociation(Association association, AssociationKey key) {
 		if ( association.getSnapshot().size() == 0 ) {
 			log.tracef( "Creating association with key %1$s in datastore", key );
-		} else {
+		}
+		else {
 			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
 		gridDialect.updateAssociation( association, key );

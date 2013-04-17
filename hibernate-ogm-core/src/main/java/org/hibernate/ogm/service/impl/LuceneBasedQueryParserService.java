@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -49,7 +49,7 @@ import org.hibernate.sql.ast.origin.hql.resolve.LuceneJPQLWalker;
  * QueryParserService using the ANTLR3-powered LuceneJPQLWalker.
  * Expects the targeted entities and used attributes to be indexed via Hibernate Search,
  * transforming HQL and JPQL in Lucene Queries.
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public class LuceneBasedQueryParserService implements QueryParserService {

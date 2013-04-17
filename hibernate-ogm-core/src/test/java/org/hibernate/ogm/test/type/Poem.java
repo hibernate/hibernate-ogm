@@ -31,26 +31,49 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
-* @author Emmanuel Bernard <emmanuel@hibernate.org>
-*/
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ */
 @Entity
 public class Poem {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name = "uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
+
 	private String id;
-
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
 	private String name;
-
-	public UUID getPoemSocietyId() { return poemSocietyId; }
-	public void setPoemSocietyId(UUID poemSocietyId) {  this.poemSocietyId =  poemSocietyId; }
 	private UUID poemSocietyId;
-
-	@Temporal( TemporalType.DATE )
-	public Date getCreation() { return creation; }
-	public void setCreation(Date creation) {  this.creation = creation; }
 	private Date creation;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public UUID getPoemSocietyId() {
+		return poemSocietyId;
+	}
+
+	public void setPoemSocietyId(UUID poemSocietyId) {
+		this.poemSocietyId = poemSocietyId;
+	}
+
+	@Temporal(TemporalType.DATE)
+	public Date getCreation() {
+		return creation;
+	}
+
+	public void setCreation(Date creation) {
+		this.creation = creation;
+	}
 }

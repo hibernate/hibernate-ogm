@@ -20,13 +20,14 @@
  */
 package org.hibernate.ogm.test.associations.collection.types;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import static org.fest.assertions.Assertions.*;
 
 /**
- * @author Emmanuel Bernard  <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class ListTest extends OgmTestCase {
 
@@ -51,20 +52,20 @@ public class ListTest extends OgmTestCase {
 		tx = session.beginTransaction();
 		father = (Father) session.get( Father.class, father.getId() );
 		assertThat( father.getOrderedChildren() )
-				.as("List should have 3 elements")
+				.as( "List should have 3 elements" )
 				.hasSize( 3 );
-		assertThat( father.getOrderedChildren().get(0).getName() )
+		assertThat( father.getOrderedChildren().get( 0 ).getName() )
 				.as( "Luke should be first" )
 				.isEqualTo( luke.getName() );
 		assertThat( father.getOrderedChildren().get( 1 ) )
 				.as( "Second born should be null" )
 				.isNull();
-		assertThat( father.getOrderedChildren().get(2).getName() )
+		assertThat( father.getOrderedChildren().get( 2 ).getName() )
 				.as( "Leia should be third" )
 				.isEqualTo( leia.getName() );
 		session.delete( father );
-		session.delete( session.load(Child.class, luke.getId() ) );
-		session.delete( session.load(Child.class, leia.getId() ) );
+		session.delete( session.load( Child.class, luke.getId() ) );
+		session.delete( session.load( Child.class, leia.getId() ) );
 		tx.commit();
 
 		session.close();
@@ -74,9 +75,6 @@ public class ListTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Father.class,
-				Child.class
-		};
+		return new Class<?>[] { Father.class, Child.class };
 	}
 }

@@ -20,49 +20,50 @@
  */
 package org.hibernate.ogm.dialect.infinispan;
 
-import java.io.Serializable;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
 
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.persister.OgmEntityPersister;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.infinispan.AdvancedCache;
+import java.io.Serializable;
 
 import org.hibernate.JDBCException;
 import org.hibernate.LockMode;
 import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
+import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
-
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.*;
+import org.infinispan.AdvancedCache;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class InfinispanPessimisticWriteLockingStrategy implements LockingStrategy {
+	private static final Log log = LoggerFactory.make();
+
+	protected final GridType identifierGridType;
+
+	private volatile InfinispanDatastoreProvider provider;
 	private final LockMode lockMode;
 	private final Lockable lockable;
-	private volatile InfinispanDatastoreProvider provider;
-	private static final Log log = LoggerFactory.make();
-	protected final GridType identifierGridType;
 
 	public InfinispanPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockMode = lockMode;
 		this.lockable = lockable;
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
-		this.identifierGridType = typeTranslator.getType(lockable.getIdentifierType());
+		this.identifierGridType = typeTranslator.getType( lockable.getIdentifierType() );
 	}
 
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
-		AdvancedCache advCache = getProvider(session).getCache(ENTITY_STORE).getAdvancedCache();
+		AdvancedCache advCache = getProvider( session ).getCache( ENTITY_STORE ).getAdvancedCache();
 		EntityKey key = EntityKeyBuilder.fromData(
 				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
 				identifierGridType,
@@ -74,12 +75,12 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 
 	private InfinispanDatastoreProvider getProvider(SessionImplementor session) {
 		if ( provider == null ) {
-			DatastoreProvider service = session.getFactory().getServiceRegistry().getService(DatastoreProvider.class);
+			DatastoreProvider service = session.getFactory().getServiceRegistry().getService( DatastoreProvider.class );
 			if ( service instanceof InfinispanDatastoreProvider ) {
-				provider = InfinispanDatastoreProvider.class.cast(service);
+				provider = InfinispanDatastoreProvider.class.cast( service );
 			}
 			else {
-				log.unexpectedDatastoreProvider(service.getClass(), InfinispanDatastoreProvider.class);
+				log.unexpectedDatastoreProvider( service.getClass(), InfinispanDatastoreProvider.class );
 			}
 		}
 		return provider;

@@ -186,7 +186,7 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridDialect(gridDialect)
+				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( newColumnValue )
 				.session( session )
@@ -206,12 +206,12 @@ class EntityDehydrator {
 							includeColumns[propertyIndex],
 							session
 					);
-		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(tuple, rowKeyColumnNames);
+		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, rowKeyColumnNames );
 		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues );
 
 		Tuple assocEntryTuple = metadataProvider.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
-			assocEntryTuple.put(column, tuple.get(column) );
+			assocEntryTuple.put( column, tuple.get( column ) );
 		}
 		metadataProvider.flushToCache();
 	}
@@ -234,7 +234,7 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
-				.gridDialect(gridDialect)
+				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
@@ -267,7 +267,9 @@ class EntityDehydrator {
 
 	private boolean isEmptyOrAllColumnsNull(Object[] objects) {
 		for ( Object object : objects ) {
-			if ( object != null ) return false;
+			if ( object != null ) {
+				return false;
+			}
 		}
 		return true;
 	}

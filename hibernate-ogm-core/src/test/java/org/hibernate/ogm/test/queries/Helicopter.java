@@ -31,15 +31,29 @@ import org.hibernate.search.annotations.Indexed;
 /**
  * @author Emmanuel Bernard
  */
-@Entity @Indexed
+@Entity
+@Indexed
 public class Helicopter {
-	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getUUID() { return uuid; }
-	public void setUUID(String uuid) { this.uuid = uuid; }
 	private String uuid;
+	private String name;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getUUID() {
+		return uuid;
+	}
+
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
 
 	@Field
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
-	private String name;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

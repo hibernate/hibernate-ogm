@@ -89,7 +89,7 @@ public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 
 	@Override
 	public SharedSessionBuilder interceptor(Interceptor interceptor) {
-		builder.interceptor(interceptor);
+		builder.interceptor( interceptor );
 		return this;
 	}
 
@@ -101,37 +101,37 @@ public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 
 	@Override
 	public SharedSessionBuilder connection(Connection connection) {
-		builder.connection(connection);
+		builder.connection( connection );
 		return this;
 	}
 
 	@Override
 	public SharedSessionBuilder connectionReleaseMode(ConnectionReleaseMode connectionReleaseMode) {
-		builder.connectionReleaseMode(connectionReleaseMode);
+		builder.connectionReleaseMode( connectionReleaseMode );
 		return this;
 	}
 
 	@Override
 	public SharedSessionBuilder autoJoinTransactions(boolean autoJoinTransactions) {
-		builder.autoJoinTransactions(autoJoinTransactions);
+		builder.autoJoinTransactions( autoJoinTransactions );
 		return this;
 	}
 
 	@Override
 	public SharedSessionBuilder autoClose(boolean autoClose) {
-		builder.autoClose(autoClose);
+		builder.autoClose( autoClose );
 		return this;
 	}
 
 	@Override
 	public SharedSessionBuilder flushBeforeCompletion(boolean flushBeforeCompletion) {
-		builder.flushBeforeCompletion(flushBeforeCompletion);
+		builder.flushBeforeCompletion( flushBeforeCompletion );
 		return this;
 	}
 
 	@Override
 	public SessionBuilder tenantIdentifier(String tenantIdentifier) {
-		builder.tenantIdentifier(tenantIdentifier);
+		builder.tenantIdentifier( tenantIdentifier );
 		return this;
 	}
 }

@@ -73,7 +73,7 @@ public abstract class JpaTestCase extends BaseOGMTest {
 	public void createFactory() throws MalformedURLException {
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
-		//we explicitly list them to avoid scanning
+		// we explicitly list them to avoid scanning
 		info.setExcludeUnlistedClasses( true );
 		info.setJtaDataSource( new NoopDatasource() );
 		List<String> classNames = new ArrayList<String>();
@@ -84,29 +84,24 @@ public abstract class JpaTestCase extends BaseOGMTest {
 		info.setNonJtaDataSource( null );
 		info.setPersistenceProviderClassName( HibernateOgmPersistence.class.getName() );
 		info.setPersistenceUnitName( "default" );
-		final URL persistenceUnitRootUrl = new File("").toURL();
+		final URL persistenceUnitRootUrl = new File( "" ).toURL();
 		info.setPersistenceUnitRootUrl( persistenceUnitRootUrl );
 		info.setPersistenceXMLSchemaVersion( "2.0" );
 		info.setProperties( new Properties() );
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
 		info.setTransactionType( PersistenceUnitTransactionType.JTA );
 		info.setValidationMode( ValidationMode.AUTO );
-		info.getProperties().setProperty( Environment.JTA_PLATFORM,
-				JBossStandAloneJtaPlatform.class.getName()
-		);
+		info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
 		info.getProperties().setProperty( MassIndexerFactoryIntegrator.MASS_INDEXER_FACTORY_CLASSNAME, OgmMassIndexerFactory.class.getName() );
-		for ( Map.Entry<String,String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 			info.getProperties().setProperty( entry.getKey(), entry.getValue() );
 		}
 		refineInfo( info );
-		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory(
-				info,
-				Collections.EMPTY_MAP
-		);
-		transactionManager = extractJBossTransactionManager(factory);
+		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory( info, Collections.EMPTY_MAP );
+		transactionManager = extractJBossTransactionManager( factory );
 	}
 
-	//can be overridden by subclasses
+	// can be overridden by subclasses
 	protected void refineInfo(GetterPersistenceUnitInfo info) {
 
 	}
@@ -115,15 +110,16 @@ public abstract class JpaTestCase extends BaseOGMTest {
 	 * Get JBoss TM out of Hibernate
 	 */
 	public static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory )
-				.getSessionFactory();
+		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
 		return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
 	}
 
 	/**
 	 * We need to make sure failing tests cleanup their association with the transaction manager
 	 * so that they don't affect subsequent tests.
-	 * @param operationSuccessfull when false, use rollback instead
+	 *
+	 * @param operationSuccessfull
+	 *            when false, use rollback instead
 	 * @throws Exception
 	 */
 	protected final void commitOrRollback(boolean operationSuccessfull) throws Exception {

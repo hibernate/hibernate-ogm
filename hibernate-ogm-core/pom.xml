@@ -128,6 +128,10 @@
                 <artifactId>maven-processor-plugin</artifactId>
             </plugin>
             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.jboss.maven.plugins</groupId>
                 <artifactId>maven-injection-plugin</artifactId>
                 <executions>

@@ -34,7 +34,7 @@ public abstract class OptionalServiceInitiator<S extends Service> implements Bas
 	@Override
 	public S initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		if ( registry.getService( ConfigurationService.class ).isOgmOn() ) {
-			return buildServiceInstance(configurationValues, registry);
+			return buildServiceInstance( configurationValues, registry );
 		}
 		else {
 			BasicServiceInitiator<S> initiator = backupInitiator();

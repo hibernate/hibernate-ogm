@@ -54,7 +54,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 	private boolean isInitiator;
 
 	public JTATransactionManagerTransaction(TransactionCoordinator coordinator) {
-		super(coordinator);
+		super( coordinator );
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
 					.getTransactionEnvironment()

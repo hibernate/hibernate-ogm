@@ -28,8 +28,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
-import org.hibernate.ogm.massindex.OgmMassIndexerFactory;
-import org.hibernate.search.hcore.impl.MassIndexerFactoryIntegrator;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -57,7 +55,7 @@ public class OgmConfiguration extends Configuration {
 
 	@Override
 	public SessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactory( (SessionFactoryImplementor ) super.buildSessionFactory() );
+		return new OgmSessionFactory( (SessionFactoryImplementor) super.buildSessionFactory() );
 	}
 
 	@Override

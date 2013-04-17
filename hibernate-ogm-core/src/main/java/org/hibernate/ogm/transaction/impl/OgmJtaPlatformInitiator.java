@@ -47,7 +47,7 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 		if ( ! hasExplicitPlatform( configurationValues ) ) {
 			return new JBossStandAloneJtaPlatform();
 		}
-		return JtaPlatformInitiator.INSTANCE.initiateService(configurationValues, registry);
+		return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 	}
 
 	@Override

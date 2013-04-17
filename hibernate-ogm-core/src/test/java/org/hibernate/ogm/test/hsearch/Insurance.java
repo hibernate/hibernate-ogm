@@ -31,17 +31,29 @@ import org.hibernate.search.annotations.Indexed;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-@Entity @Indexed
+@Entity
+@Indexed
 public class Insurance {
+	private String id;
+	private String name;
+
 	@Id
 	@GeneratedValue(generator = "uuid")
-	@GenericGenerator( name = "uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
-	private String id;
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	@Field
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
-	private String name;
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

@@ -33,19 +33,37 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Member {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	@Column(name = "member_id")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getName() { return name; }
-	public void setName(String name) {  this.name = name; }
 	private String name;
+	private JUG memberOf;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@Column(name = "member_id")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	@ManyToOne
-	public JUG getMemberOf() { return memberOf; }
-	public void setMemberOf(JUG memberOf) {  this.memberOf = memberOf; }
-	private JUG memberOf;
+	public JUG getMemberOf() {
+		return memberOf;
+	}
+
+	public void setMemberOf(JUG memberOf) {
+		this.memberOf = memberOf;
+	}
+
 }

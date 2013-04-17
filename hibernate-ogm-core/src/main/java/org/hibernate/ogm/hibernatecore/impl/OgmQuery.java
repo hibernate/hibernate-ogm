@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -38,15 +38,14 @@ import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.service.impl.QueryParserService;
 
-
 /**
  * Custom Query implementation for Hibernate OGM.
  * Splits input of parameter phases from execution, stage at which it will
  * delegate to a different Query as defined by the installed
  * {@link QueryParserService}.
- * 
+ *
  * Only supports read queries, and without locking options.
- * 
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public class OgmQuery extends AbstractQueryImpl {

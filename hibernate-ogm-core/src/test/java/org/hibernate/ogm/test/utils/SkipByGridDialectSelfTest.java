@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -26,32 +26,29 @@ import org.hibernate.ogm.test.simpleentity.Hypothesis;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.junit.Test;
 
-
 /**
- * Verifies that SkipByGridDialect is applied by the  
+ * Verifies that SkipByGridDialect is applied by the
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
 public class SkipByGridDialectSelfTest extends OgmTestCase {
 
 	@Test
-	@SkipByGridDialect( {GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.EHCACHE} )
+	@SkipByGridDialect({
+		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE
+	})
 	public void testWhichAlwaysFails() {
 		Assert.fail( "This should never be executed" );
 	}
 
 	@Test
 	public void testCorrect() {
-		//all fine
+		// all fine
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Hypothesis.class
-		};
+		return new Class<?>[] { Hypothesis.class };
 	}
 
 }

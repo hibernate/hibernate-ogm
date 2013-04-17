@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.type.descriptor;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 
 import org.hibernate.engine.jdbc.LobCreator;
@@ -35,10 +34,8 @@ import org.hibernate.type.descriptor.sql.SqlTypeDescriptor;
 /**
  * @author Emmanuel Bernard
  */
-public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
+public abstract class BasicGridBinder<X> implements GridValueBinder<X> {
 	private static final Log log = LoggerFactory.make();
-	private final JavaTypeDescriptor<X> javaDescriptor;
-	private final GridTypeDescriptor gridDescriptor;
 	private static final WrapperOptions DEFAULT_OPTIONS = new WrapperOptions() {
 
 		@Override
@@ -57,6 +54,9 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 			return sqlTypeDescriptor;
 		}
 	};
+
+	private final JavaTypeDescriptor<X> javaDescriptor;
+	private final GridTypeDescriptor gridDescriptor;
 
 	public BasicGridBinder(JavaTypeDescriptor<X> javaDescriptor, GridTypeDescriptor gridDescriptor) {
 		this.javaDescriptor = javaDescriptor;
@@ -87,7 +87,7 @@ public abstract class BasicGridBinder<X> implements GridValueBinder<X>{
 	 * @param index The index at which to bind
 	 * @param options The binding options
 	 *
-	 * @throws SQLException Indicates a problem binding to the prepared statement.
+	 * @throws java.sql.SQLException Indicates a problem binding to the prepared statement.
 	 */
 	protected abstract void doBind(Tuple resultset, X value, String[] names, WrapperOptions options);
 }

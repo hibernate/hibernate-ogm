@@ -37,8 +37,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
- *
- *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
@@ -48,7 +46,7 @@ public class TestHelper {
 	private static final TestableGridDialect helper = createStoreSpecificHelper();
 
 	static {
-		//set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
+		// set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
 		TxControl.setDefaultTimeout( 60 * 60 * 2 );
 	}
 
@@ -66,7 +64,7 @@ public class TestHelper {
 					return attempt;
 				}
 				catch ( Exception e ) {
-					//but other errors are not expected:
+					// but other errors are not expected:
 					log.errorf( e, "Could not load TestGridDialect by name from %s", gridType );
 				}
 			}
@@ -101,9 +99,9 @@ public class TestHelper {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T get(Session session, Class<T> clazz, Serializable id) {
-		return (T) session.get(clazz, id);
+		return (T) session.get( clazz, id );
 	}
-	
+
 	public static void dropSchemaAndDatabase(Session session) {
 		if ( session != null ) {
 			dropSchemaAndDatabase( session.getSessionFactory() );
@@ -111,12 +109,12 @@ public class TestHelper {
 	}
 
 	public static void dropSchemaAndDatabase(EntityManagerFactory emf) {
-		dropSchemaAndDatabase( ( ( HibernateEntityManagerFactory) emf ).getSessionFactory() );
+		dropSchemaAndDatabase( ( (HibernateEntityManagerFactory) emf ).getSessionFactory() );
 	}
 
 	public static void dropSchemaAndDatabase(SessionFactory sessionFactory) {
-		//if the factory is closed, we don't have access to the service registry
-		if ( sessionFactory != null && ! sessionFactory.isClosed() ) {
+		// if the factory is closed, we don't have access to the service registry
+		if ( sessionFactory != null && !sessionFactory.isClosed() ) {
 			try {
 				helper.dropSchemaAndDatabase( sessionFactory );
 			}
@@ -128,7 +126,7 @@ public class TestHelper {
 
 	public static Map<String, String> getEnvironmentProperties() {
 		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
-		return environmentProperties == null ? new HashMap<String,String>(0) : environmentProperties;
+		return environmentProperties == null ? new HashMap<String, String>( 0 ) : environmentProperties;
 	}
 
 	public static void initializeHelpers() {

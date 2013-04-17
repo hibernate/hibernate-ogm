@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -37,11 +37,10 @@ import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.search.query.dsl.QueryBuilder;
 import org.junit.Test;
 
-
 /**
  * Verifies basic integration of Hibernate Search works
  * as expected. Indirectly tests transaction synchronizations (OGM-216)
- * 
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
@@ -75,7 +74,7 @@ public class SearchOnStandaloneOGMTest extends OgmTestCase {
 		ftQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		final List<Insurance> resultList = ftQuery.list();
 		assertThat( resultList ).hasSize( 1 );
-		for (Object e : resultList) {
+		for ( Object e : resultList ) {
 			fts.delete( e );
 		}
 		transaction.commit();
@@ -84,9 +83,7 @@ public class SearchOnStandaloneOGMTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] {
-				Insurance.class
-		};
+		return new Class<?>[] { Insurance.class };
 	}
 
 }

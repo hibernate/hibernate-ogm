@@ -31,7 +31,7 @@ import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-final public class EntityKeyBuilder {
+public final class EntityKeyBuilder {
 
 	private EntityKeyBuilder() {
 	}

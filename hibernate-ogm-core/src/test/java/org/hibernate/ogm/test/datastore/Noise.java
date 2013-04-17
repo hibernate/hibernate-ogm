@@ -31,12 +31,25 @@ import javax.persistence.Id;
  */
 @Entity
 public class Noise {
-	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name = "uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public Double getFrequency() { return frequency; }
-	public void setFrequency(Double frequency) {  this.frequency = frequency; }
 	private Double frequency;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public Double getFrequency() {
+		return frequency;
+	}
+
+	public void setFrequency(Double frequency) {
+		this.frequency = frequency;
+	}
 }

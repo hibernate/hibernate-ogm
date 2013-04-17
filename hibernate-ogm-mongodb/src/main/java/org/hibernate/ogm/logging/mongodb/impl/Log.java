@@ -1,6 +1,6 @@
-/* 
+/*
  * Hibernate, Relational Persistence for Idiomatic Java
- * 
+ *
  * JBoss, Home of Professional Open Source
  * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
@@ -22,15 +22,15 @@ package org.hibernate.ogm.logging.mongodb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
-import static org.jboss.logging.Logger.Level.WARN;
 
-import com.mongodb.MongoException;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.Environment;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
+
+import com.mongodb.MongoException;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
@@ -86,6 +86,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1214, value = "Unable to connect to MongoDB instance %1$s:%2$d" )
 	HibernateException unableToConnectToDatastore(String host, int port, @Cause Exception e);
 
-	@Message( id = 1215, value = "The value set for the configuration property" + Environment.MONGODB_TIMEOUT +" must be a number greater than 0. Found '[%s]'.")
+	@Message(id = 1215, value = "The value set for the configuration property" + Environment.MONGODB_TIMEOUT + " must be a number greater than 0. Found '[%s]'.")
 	HibernateException mongoDBTimeOutIllegalValue(String value);
 }

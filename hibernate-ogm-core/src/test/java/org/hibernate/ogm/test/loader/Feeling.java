@@ -31,13 +31,25 @@ import javax.persistence.Id;
  */
 @Entity
 public class Feeling {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getUUID() { return uuid; }
-	public void setUUID(String uuid) { this.uuid = uuid; }
 	private String uuid;
-
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
 	private String name;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getUUID() {
+		return uuid;
+	}
+
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

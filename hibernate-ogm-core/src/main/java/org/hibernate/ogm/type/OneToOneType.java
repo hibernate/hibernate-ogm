@@ -40,7 +40,7 @@ public class OneToOneType extends GridTypeDelegatingToCoreType implements GridTy
 	@Override
 	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
-		return resolve( hydrate(rs, names, session, owner), session, owner );
+		return resolve( hydrate( rs, names, session, owner ), session, owner );
 	}
 
 	@Override
@@ -64,6 +64,6 @@ public class OneToOneType extends GridTypeDelegatingToCoreType implements GridTy
 	@Override
 	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
-		return session.getContextEntityIdentifier(owner);
+		return session.getContextEntityIdentifier( owner );
 	}
 }

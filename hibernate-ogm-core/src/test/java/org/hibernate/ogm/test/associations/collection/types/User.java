@@ -40,23 +40,39 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class User {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
+	private Map<String, Address> addresses = new HashMap<String, Address>();
+	private Set<String> nicknames = new HashSet<String>();
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	@OneToMany
 	@JoinTable(name = "User_Address")
 	@MapKeyColumn(name = "nick")
-	public Map<String,Address> getAddresses() { return addresses; }
-	public void setAddresses(Map<String,Address> addresses) {  this.addresses = addresses; }
-	private Map<String,Address> addresses = new HashMap<String,Address>();
+	public Map<String, Address> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(Map<String, Address> addresses) {
+		this.addresses = addresses;
+	}
 
 	@ElementCollection
-	@JoinTable(name = "Nicks", joinColumns = @JoinColumn(name = "user_id") )
-	public Set<String> getNicknames() { return nicknames; }
-	public void setNicknames(Set<String> nicknames) {  this.nicknames = nicknames; }
-	private Set<String> nicknames = new HashSet<String>();
+	@JoinTable(name = "Nicks", joinColumns = @JoinColumn(name = "user_id"))
+	public Set<String> getNicknames() {
+		return nicknames;
+	}
 
+	public void setNicknames(Set<String> nicknames) {
+		this.nicknames = nicknames;
+	}
 }

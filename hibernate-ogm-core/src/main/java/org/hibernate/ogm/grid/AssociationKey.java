@@ -99,7 +99,7 @@ public final class AssociationKey implements Serializable {
 			return false;
 		}
 
-		AssociationKey that = ( AssociationKey ) o;
+		AssociationKey that = (AssociationKey) o;
 
 		// order of comparison matters on performance:
 		if ( !metadata.getTable().equals( that.metadata.getTable() ) ) {

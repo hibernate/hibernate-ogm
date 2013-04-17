@@ -48,7 +48,7 @@ public class ManyToOneType extends GridTypeDelegatingToCoreType implements GridT
 	@Override
 	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 			throws HibernateException {
-		return resolve( hydrate(rs, names, session, owner), session, owner );
+		return resolve( hydrate( rs, names, session, owner ), session, owner );
 	}
 
 	@Override

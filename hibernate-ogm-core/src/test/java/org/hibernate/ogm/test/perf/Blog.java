@@ -20,31 +20,63 @@
  */
 package org.hibernate.ogm.test.perf;
 
-import javax.persistence.*;
 import java.util.Set;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 @Entity
 public class Blog {
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator="blog_seq")
-	@SequenceGenerator(name="blog_seq")
-	public Integer getId() { return id; }
-	public void setId(Integer id) {  this.id = id; }
+
 	private Integer id;
 
-	public String getTitle() { return title; }
-	public void setTitle(String title) {  this.title = title; }
 	private String title;
 
-	public String getDescription() { return description; }
-	public void setDescription(String description) {  this.description = description; }
 	private String description;
 
-	@OneToMany(mappedBy = "blog")
-	public Set<BlogEntry> getEntries() { return entries; }
-	public void setEntries(Set<BlogEntry> entries) {  this.entries = entries; }
 	private Set<BlogEntry> entries;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "blog_seq")
+	@SequenceGenerator(name = "blog_seq")
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@OneToMany(mappedBy = "blog")
+	public Set<BlogEntry> getEntries() {
+		return entries;
+	}
+
+	public void setEntries(Set<BlogEntry> entries) {
+		this.entries = entries;
+	}
+
 }

@@ -40,7 +40,7 @@ public class ByteType extends AbstractGenericBasicType<Byte> {
 	public String getName() {
 		return "byte";
 	}
-	
+
 	@Override
 	protected boolean registerUnderJavaType() {
 		return true;

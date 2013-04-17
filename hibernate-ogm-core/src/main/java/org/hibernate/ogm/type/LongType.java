@@ -27,7 +27,7 @@ import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 
 /**
  * Represents a Long type
- * 
+ *
  * @author Emmanuel Bernard
  */
 public class LongType extends AbstractGenericBasicType<Long> {

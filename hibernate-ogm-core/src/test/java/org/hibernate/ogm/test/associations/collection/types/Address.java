@@ -31,13 +31,25 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Address {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getCity() { return city; }
-	public void setCity(String city) {  this.city = city; }
 	private String city;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
 }

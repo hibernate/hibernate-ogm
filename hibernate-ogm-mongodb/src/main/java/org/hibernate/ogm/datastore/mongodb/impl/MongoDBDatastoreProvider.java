@@ -60,7 +60,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public void configure(Map configurationValues) {
 		cfg = configurationValues;
-		
+
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value

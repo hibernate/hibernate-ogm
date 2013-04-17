@@ -36,15 +36,28 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Father {
-	@Id
-	@GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
+	private List<Child> orderedChildren = new ArrayList<Child>();
 
-	@OneToMany @JoinTable(name = "Father_child")
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@OneToMany
+	@JoinTable(name = "Father_child")
 	@OrderColumn(name = "birthorder")
-	public List<Child> getOrderedChildren() { return orderedChildren; }
-	public void setOrderedChildren(List<Child> orderedChildren) {  this.orderedChildren = orderedChildren; }
-	private List<Child> orderedChildren = new ArrayList<Child>(  );
+	public List<Child> getOrderedChildren() {
+		return orderedChildren;
+	}
+
+	public void setOrderedChildren(List<Child> orderedChildren) {
+		this.orderedChildren = orderedChildren;
+	}
 }

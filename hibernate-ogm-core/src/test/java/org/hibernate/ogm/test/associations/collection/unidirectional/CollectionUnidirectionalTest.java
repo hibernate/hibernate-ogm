@@ -23,7 +23,6 @@ package org.hibernate.ogm.test.associations.collection.unidirectional;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestHelper;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;

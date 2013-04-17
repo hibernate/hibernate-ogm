@@ -31,12 +31,25 @@ import org.hibernate.annotations.GenericGenerator;
  */
 @Entity
 public class Vehicule {
-	@Id @GeneratedValue(generator = "uuid") @GenericGenerator( name="uuid", strategy = "uuid2")
-	public String getId() { return id; }
-	public void setId(String id) {  this.id = id; }
 	private String id;
-
-	public String getBrand() { return brand; }
-	public void setBrand(String brand) {  this.brand = brand; }
 	private String brand;
+
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getBrand() {
+		return brand;
+	}
+
+	public void setBrand(String brand) {
+		this.brand = brand;
+	}
 }
