@@ -179,9 +179,7 @@ class EntityDehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(int tableIndex,
-									   int propertyIndex,
-									   Object[] newColumnValue) {
+	private void doAddPropertyMetadata(int tableIndex, int propertyIndex, Object[] newColumnValue) {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
