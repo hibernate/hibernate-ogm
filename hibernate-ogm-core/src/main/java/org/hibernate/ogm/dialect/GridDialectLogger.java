@@ -156,7 +156,7 @@ public class GridDialectLogger implements GridDialect {
 
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		 gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
 	}
 
 }

@@ -102,7 +102,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.defaultLockModes = ArrayHelper.fillArray( LockMode.NONE, fromSize );
 		this.collectionAliases = new CollectionAliases[collectionPersisters.length];
 		for ( int i = 0; i < collectionPersisters.length; i++ ) {
-		 	collectionAliases[i] = new OgmColumnCollectionAliases( collectionPersisters[i] );
+			collectionAliases[i] = new OgmColumnCollectionAliases( collectionPersisters[i] );
 		}
 	}
 
