@@ -643,6 +643,7 @@
                         <failsOnError>true</failsOnError>
                         <violationSeverity>error</violationSeverity>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <excludes>**/target/generated-sources/**/*.java</excludes>
                     </configuration>
                     <executions>
                         <execution>
