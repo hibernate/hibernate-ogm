@@ -97,4 +97,3 @@ public class EntityKeyMetadata implements Serializable {
 		return result;
 	}
 }
-
