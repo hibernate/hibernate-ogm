@@ -86,6 +86,11 @@
         <property name="message" value="Missing new line at the end of file" />
     </module>
 
+    <module name="RegexpMultiline">
+        <property name="format" value="\S\s\s\z" />
+        <property name="message" value="Only one new line is allowed at the end of a file" />
+    </module>
+
     <module name="RegexpSingleline">
         <property name="format" value="\s+$" />
         <property name="message" value="White spaces at the end of line" />
