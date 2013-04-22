@@ -861,4 +861,3 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 }
-
