@@ -265,6 +265,55 @@
         </moduleSet>
 
         <!--
+       #######################################################################
+       #  hibernate-ogm-couchdb
+       #######################################################################
+        -->
+
+        <moduleSet>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
+            </includes>
+            <sources>
+                <includeModuleDirectory>false</includeModuleDirectory>
+            </sources>
+            <binaries>
+                <outputDirectory>dist/lib/couchdb</outputDirectory>
+                <unpack>false</unpack>
+                <dependencySets>
+                    <dependencySet>
+                        <outputDirectory>/dist/lib/couchdb</outputDirectory>
+                        <useProjectArtifact>false</useProjectArtifact>
+                        <scope>runtime</scope>
+                        <excludes>
+                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
+                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate:*</exclude>
+                            <exclude>org.hibernate.common:*</exclude>
+                            <exclude>dom4j:dom4j</exclude>
+                            <exclude>org.antlr:*</exclude>
+                            <exclude>antlr:*</exclude>
+                            <exclude>org.jboss.logging:*</exclude>
+                            <exclude>org.jboss.marshalling:*</exclude>
+                            <exclude>org.javassist:*</exclude>
+                            <exclude>org.apache.avro:*</exclude>
+                            <exclude>org.codehaus.jackson:*</exclude>
+                            <exclude>org.xerial.snappy:*</exclude>
+                            <exclude>org.apache.lucene:*</exclude>
+                            <exclude>org.infinispan:*</exclude>
+                            <exclude>org.jgroups:*</exclude>
+                            <exclude>org.rhq.helpers:*</exclude>
+                            <exclude>org.codehaus.woodstox:*</exclude>
+                            <exclude>com.thoughtworks.paranamer:*</exclude>
+                            <exclude>org.slf4j:*</exclude>
+                            <exclude>net.sf.ehcache:*</exclude>
+                        </excludes>
+                    </dependencySet>
+                </dependencySets>
+            </binaries>
+        </moduleSet>
+
+        <!--
         #######################################################################
         #  API Javadoc
         #######################################################################
@@ -301,7 +350,7 @@
             <outputDirectory>/</outputDirectory>
         </file>
     </files>
-    
+
     <fileSets>
         <!-- Include all sources -->
         <fileSet>
