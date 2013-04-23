@@ -18,37 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.type.descriptor;
 
-import junit.framework.Assert;
+import org.hibernate.ogm.logging.couchdb.impl.Log;
+import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
+import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class CouchDBDateTypeDescriptor extends DateTypeDescriptor {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	public static final CouchDBDateTypeDescriptor INSTANCE = new CouchDBDateTypeDescriptor();
+
+	private static final String DATE_TIME_TIMEZONE_FORMAT = "yyyy/MM/dd HH:mm:ss:SSS Z";
+
+	private static final Log logger = LoggerFactory.getLogger();
+
+	public String toString(Date value) {
+		return new SimpleDateFormat( DATE_TIME_TIMEZONE_FORMAT ).format( value );
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public Date fromString(String value) {
+		try {
+			return new SimpleDateFormat( DATE_TIME_TIMEZONE_FORMAT ).parse( value );
+		}
+		catch ( ParseException pe ) {
+			throw logger.errorParsingStringToDate( pe, value );
+		}
 	}
-
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
-	}
-
 }
