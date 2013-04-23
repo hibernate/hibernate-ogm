@@ -33,7 +33,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;

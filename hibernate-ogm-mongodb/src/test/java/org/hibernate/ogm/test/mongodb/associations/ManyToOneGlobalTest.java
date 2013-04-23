@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.mongodb.associations;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.test.associations.manytoone.ManyToOneTest;
 
 /**

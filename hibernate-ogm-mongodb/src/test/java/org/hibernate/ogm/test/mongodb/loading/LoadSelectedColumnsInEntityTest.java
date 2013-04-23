@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
