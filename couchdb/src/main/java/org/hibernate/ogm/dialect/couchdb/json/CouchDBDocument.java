@@ -18,37 +18,41 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.json;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Every Json document in CouchDB contains, The field '_id' representing the id of the document and '_rev' representing
+ * the revision number of the document
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public abstract class CouchDBDocument {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	@JsonProperty("_id")
+	private String id;
+
+	@JsonProperty("_rev")
+	private String revision;
+
+	@JsonIgnore
+	public String getId() {
+		return id;
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public void setId(String id) {
+		this.id = id;
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	@JsonIgnore
+	public String getRevision() {
+		return revision;
+	}
+
+	public void setRevision(String revision) {
+		this.revision = revision;
 	}
 
 }

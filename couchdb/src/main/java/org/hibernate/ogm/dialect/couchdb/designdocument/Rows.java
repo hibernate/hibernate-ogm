@@ -18,37 +18,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.designdocument;
 
-import junit.framework.Assert;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import java.util.List;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Represents the Result of the REST call associated with the {@link AssociationsDesignDocument} and
+ * {@link EntitiesDesignDocument}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class Rows {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private List<Row> rows;
+
+	List<Row> getRows() {
+		return rows;
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	void setRows(List<Row> rows) {
+		this.rows = rows;
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	@JsonIgnore
+	public int size() {
+		if ( rows.size() == 0 ) {
+			return 0;
+		}
+		else {
+			return rows.get( 0 ).getValue();
+		}
 	}
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private static class Row {
+		private int value;
+
+		public int getValue() {
+			return value;
+		}
+
+		public void setValue(int value) {
+			this.value = value;
+		}
+	}
 }

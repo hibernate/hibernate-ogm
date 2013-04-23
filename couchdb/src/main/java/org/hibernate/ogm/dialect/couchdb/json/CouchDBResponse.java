@@ -18,37 +18,61 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.json;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Used to serialize and deserialized a REST CouchDB response to a PUT and a DELETE
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CouchDBResponse {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private boolean ok;
+	private String rev;
+	private String error;
+	private String reason;
+	private String id;
+
+	public boolean getOk() {
+		return ok;
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public void setOk(boolean ok) {
+		this.ok = ok;
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public String getRev() {
+		return rev;
 	}
 
+	public void setRev(String rev) {
+		this.rev = rev;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

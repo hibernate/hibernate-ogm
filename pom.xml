@@ -1012,6 +1012,22 @@
 
     <profiles>
         <profile>
+            <id>couchdb</id>
+            <!--
+              To activate and use the couchdb profile you need to define the
+              environment property:
+                 COUCHDB_HOSTNAME
+            -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <modules>
+                <module>couchdb</module>
+            </modules>
+        </profile>
+        <profile>
             <id>integrationtest</id>
             <activation>
                 <property>
