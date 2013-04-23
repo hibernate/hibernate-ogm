@@ -18,37 +18,47 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.model;
 
-import junit.framework.Assert;
+import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.couchdb.resteasy.CouchDBAssociation;
+import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.RowKey;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import java.util.Set;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	private final CouchDBAssociation association;
+	private final AssociationKey key;
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
+		this.association = association;
+		this.key = key;
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public boolean containsKey(RowKey column) {
+		return association.containsKey( column );
+	}
+
+	@Override
+	public Tuple get(RowKey column) {
+		return association.getTuple( column );
+	}
+
+	@Override
+	public int size() {
+		return association.size();
+	}
+
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return association.getRowKeys( key );
 	}
 
 }
