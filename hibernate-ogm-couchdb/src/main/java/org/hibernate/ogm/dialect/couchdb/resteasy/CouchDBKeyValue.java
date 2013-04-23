@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,36 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.resteasy;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
 /**
- * Verifies that SkipByGridDialect is applied by the
+ * Used to serialize and deserialize the CouchDBKeyValue
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+@JsonSerialize(include = Inclusion.NON_NULL)
+public class CouchDBKeyValue extends CouchDBDocument {
 
-	@Test
-	@SkipByGridDialect({ GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB,
-			GridDialectType.EHCACHE, GridDialectType.COUCHDB })
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private long value;
+
+	public CouchDBKeyValue() {
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public CouchDBKeyValue(int initialValue) {
+		value = initialValue;
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+	public long getValue() {
+		return value;
 	}
 
+	public void setValue(long value) {
+		this.value = value;
+	}
+
+	public void increase(int increment) {
+		value += increment;
+	}
 }

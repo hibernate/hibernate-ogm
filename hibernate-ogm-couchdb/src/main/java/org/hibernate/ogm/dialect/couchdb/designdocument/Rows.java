@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,36 +18,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.designdocument;
 
-import junit.framework.Assert;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
+import java.util.List;
 
 /**
- * Verifies that SkipByGridDialect is applied by the
+ * Represents the Result of the REST call associated with the {@link AssociationsDesignDocument} and
+ * {@link EntitiesDesignDocument}
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class Rows {
 
-	@Test
-	@SkipByGridDialect({ GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB,
-			GridDialectType.EHCACHE, GridDialectType.COUCHDB })
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private List<Row> rows;
+
+	List<Row> getRows() {
+		return rows;
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	void setRows(List<Row> rows) {
+		this.rows = rows;
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+	@JsonIgnore
+	public int size() {
+		if ( rows.size() == 0 ) {
+			return 0;
+		}
+		else {
+			return rows.get( 0 ).getValue();
+		}
 	}
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private static class Row {
+		private int value;
+
+		public int getValue() {
+			return value;
+		}
+
+		public void setValue(int value) {
+			this.value = value;
+		}
+	}
 }
