@@ -34,6 +34,8 @@ import net.sf.ehcache.config.FactoryConfiguration;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
+import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
+import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
@@ -50,15 +52,13 @@ import org.hibernate.service.spi.Stoppable;
 public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
 
-	public static final String EHCACHE_CONFIG = "hibernate.ogm.ehcache.configuration_resourcename";
-
-	private Map cfg;
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
+	private final EhcacheConfiguration config = new EhcacheConfiguration();
 
 	@Override
 	public void configure(Map map) {
-		this.cfg = map;
+		this.config.initConfiguration( map );
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void start() {
-		final String configUrl = (String) this.cfg.get( EHCACHE_CONFIG );
+		final String configUrl = this.config.getUrl();
 		final URL url;
 		if ( configUrl != null ) {
 			try {
@@ -84,7 +84,7 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 			}
 		}
 		else {
-			url = this.getClass().getResource( "/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml" );
+			url = this.getClass().getResource( Environment.DEFAULT_CONFIG );
 		}
 		final Configuration configuration = ConfigurationFactory.parseConfiguration( url );
 		if ( jtaPlatform != null ) {
