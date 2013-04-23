@@ -50,6 +50,11 @@
              <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
              <filtered>true</filtered>
         </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/couchdb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
    </files>
 
     <dependencySets>
@@ -82,6 +87,17 @@
                  <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
                  <include>org.mongodb:mongo-java-driver</include>
               </includes>
+       </dependencySet>
+        <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
+             <useTransitiveFiltering>true</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
+                 <include>org.jboss.resteasy:resteasy-jaxrs</include>
+                 <include>org.jboss.resteasy:resteasy-jackson-provider</include>
+             </includes>
        </dependencySet>
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
