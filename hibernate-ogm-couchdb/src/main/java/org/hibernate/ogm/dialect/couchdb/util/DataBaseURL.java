@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,36 +18,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.util;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
- * Verifies that SkipByGridDialect is applied by the
+ * Represent the URL pointing to an instance of the CouchDB
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class DataBaseURL {
 
-	@Test
-	@SkipByGridDialect({ GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB,
-			GridDialectType.EHCACHE, GridDialectType.COUCHDB })
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private static final String PROTOCOL = "http";
+	private static final String SLASH = "/";
+
+	private URL databaseURL;
+
+	public DataBaseURL(String host, int port, String databaseName) throws MalformedURLException {
+		databaseURL = new URL( PROTOCOL, host, port, SLASH + databaseName );
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	/**
+	 * The name of the database
+	 *
+	 * @return the name of the database
+	 */
+	public String getDataBaseName() {
+		return databaseURL.getPath().substring( 1 );
+	}
+
+	/**
+	 * The server URL
+	 *
+	 * @return the server Url
+	 */
+	public String getServerUrl() {
+		return toString().replace( SLASH + getDataBaseName(), "" );
 	}
 
 	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+	public String toString() {
+		return databaseURL.toString();
 	}
 
 }
