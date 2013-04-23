@@ -18,37 +18,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.model;
 
-import junit.framework.Assert;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class CouchDBTupleSnapshot implements TupleSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private final CouchDBTuple tuple;
+
+	public CouchDBTupleSnapshot() {
+		tuple = new CouchDBTuple();
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public CouchDBTupleSnapshot(CouchDBTuple tuple) {
+		this.tuple = tuple;
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public Object get(String column) {
+		return tuple.getColumnValue( getColumnPosition( column ) );
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return tuple.isEmpty();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		if ( tuple.getColumnNames() != null ) {
+			return new HashSet<String>( Arrays.asList( tuple.getColumnNames() ) );
+		}
+		else {
+			return new HashSet<String>();
+		}
+	}
+
+	private int getColumnPosition(String column) {
+		return tuple.getColumNamePosition( column );
 	}
 
 }

@@ -41,7 +41,9 @@ public enum GridDialectType {
 
 	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper" ),
 
-	NEO4J( "org.hibernate.ogm.test.utils.Neo4jTestHelper" );
+	NEO4J( "org.hibernate.ogm.test.utils.Neo4jTestHelper" ),
+
+	COUCHDB( "org.hibernate.ogm.test.utils.CouchDBTestHelper" );
 
 	private final String testHelperClassName;
 
