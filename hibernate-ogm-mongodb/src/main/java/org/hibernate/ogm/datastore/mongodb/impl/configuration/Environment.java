@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
+package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
 /**
- * Configuration options of the MongoDB GridDialect
+ * Configuration options for {@link org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider}.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */

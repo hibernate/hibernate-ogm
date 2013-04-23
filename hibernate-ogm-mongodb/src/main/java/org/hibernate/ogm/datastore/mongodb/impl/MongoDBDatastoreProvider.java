@@ -21,12 +21,11 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import java.net.UnknownHostException;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
@@ -38,8 +37,6 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.WriteConcern;
 import com.mongodb.ServerAddress;
 
 /**
@@ -51,33 +48,18 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private Map<?, ?> cfg;
 	private boolean isCacheStarted;
 	private MongoClient mongo;
 	private DB mongoDb;
-	private AssociationStorage associationStorage;
+	private final MongoDBConfiguration config = new MongoDBConfiguration();
 
 	@Override
 	public void configure(Map configurationValues) {
-		cfg = configurationValues;
-
-		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
-		if ( assocStoreString == null ) {
-			//default value
-			associationStorage = AssociationStorage.IN_ENTITY;
-		}
-		else {
-			try {
-				associationStorage = AssociationStorage.valueOf( assocStoreString.toUpperCase( Locale.ENGLISH ) );
-			}
-			catch ( IllegalArgumentException e ) {
-				log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorage.class );
-			}
-		}
+		this.config.initialize( configurationValues );
 	}
 
 	public AssociationStorage getAssociationStorage() {
-		return associationStorage;
+		return config.getAssociationStorage();
 	}
 
 	@Override
@@ -88,66 +70,13 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public void start() {
 		if ( !isCacheStarted ) {
-			Object cfgHost = this.cfg.get( Environment.MONGODB_HOST );
-			String host = cfgHost != null ? cfgHost.toString() : Environment.MONGODB_DEFAULT_HOST;
 			try {
-				final int port;
-				Object cfgPort = this.cfg.get( Environment.MONGODB_PORT );
-				if ( cfgPort != null ) {
-					try {
-						int temporaryPort = Integer.valueOf( cfgPort.toString() ).intValue();
-						if ( temporaryPort < 1 || temporaryPort > 65535 ) {
-							throw log.mongoPortIllegalValue( cfgPort.toString() );
-						}
-						port = temporaryPort;
-					}
-					catch ( NumberFormatException e ) {
-						throw log.mongoPortIllegalValue( cfgPort.toString() );
-					}
-				}
-				else {
-					port = Environment.MONGODB_DEFAULT_PORT;
-				}
-
-				Object cfgSafe = this.cfg.get( Environment.MONGODB_SAFE );
-				boolean safe = Environment.MONGODB_DEFAULT_SAFE;
-				if ( cfgSafe != null ) {
-					safe = Boolean.parseBoolean( cfgSafe.toString() );
-				}
-
-				Object cfgTimeout = this.cfg.get( Environment.MONGODB_TIMEOUT );
-				int timeout = Environment.MONGODB_DEFAULT_TIMEOUT;
-				if ( cfgTimeout != null ) {
-					try {
-						int temporaryTimeout = Integer.valueOf( cfgTimeout.toString() ).intValue();
-						if ( temporaryTimeout < 0 ) {
-							throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
-						}
-						timeout = temporaryTimeout;
-					}
-					catch ( NumberFormatException e ) {
-						throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
-					}
-				}
-
-				MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
-				optionsBuilder.connectTimeout( timeout );
-				if ( safe ) {
-					optionsBuilder.writeConcern( WriteConcern.ACKNOWLEDGED );
-				}
-				else {
-					optionsBuilder.writeConcern( WriteConcern.NONE );
-				}
-				log.useSafe( safe );
-				log.connectingToMongo( host, port, timeout );
-
-				ServerAddress serverAddress = new ServerAddress( host, port );
-
-				this.mongo = new MongoClient( serverAddress, optionsBuilder.build() );
+				ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
+				this.mongo = new MongoClient( serverAddress, config.buildOptions() );
 				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
-				throw log.mongoOnUnknownHost( host );
+				throw log.mongoOnUnknownHost( config.getHost() );
 			}
 			catch ( RuntimeException e ) {
 				throw log.unableToInitializeMongoDB( e );
@@ -168,34 +97,23 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private DB extractDatabase() {
 		try {
-			Object dbNameObject = this.cfg.get( Environment.MONGODB_DATABASE );
-			if ( dbNameObject == null ) {
-				throw log.mongoDbNameMissing();
-			}
-			String dbName = (String) dbNameObject;
-			log.connectingToMongoDatabase( dbName );
-			Object usernameObject = this.cfg.get( Environment.MONGODB_USERNAME );
-			if ( usernameObject != null ) {
+			if ( config.getUsername() != null ) {
 				DB admin = this.mongo.getDB( "admin" );
-				String username = usernameObject.toString();
-				Object passwordObject = this.cfg.get( Environment.MONGODB_PASSWORD );
-				String password = passwordObject != null ? passwordObject.toString() : "";
-				boolean auth = admin.authenticate( username, password.toCharArray() );
+				boolean auth = admin.authenticate( config.getUsername(), config.getPassword().toCharArray() );
 				if ( !auth ) {
-					throw log.authenticationFailed( username );
+					throw log.authenticationFailed( config.getUsername() );
 				}
 			}
-			if ( !this.mongo.getDatabaseNames().contains( dbName ) ) {
-				log.creatingDatabase( dbName );
+			if ( !this.mongo.getDatabaseNames().contains( config.getDatabaseName() ) ) {
+				log.creatingDatabase( config.getDatabaseName() );
 			}
-			return this.mongo.getDB( dbName );
+			return this.mongo.getDB( config.getDatabaseName() );
 		}
 		catch ( HibernateException e ) {
 			throw e;
 		}
 		catch ( Exception e ) {
-			throw log.unableToConnectToDatastore( this.mongo.getAddress().getHost(), this.mongo.getAddress().getPort(), e );
+			throw log.unableToConnectToDatastore( this.config.getHost(), this.config.getPort(), e );
 		}
 	}
-
 }
