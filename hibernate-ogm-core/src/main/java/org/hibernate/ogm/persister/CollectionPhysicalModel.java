@@ -30,29 +30,29 @@ public interface CollectionPhysicalModel extends CollectionPersister {
 	/**
 	 * The table to join to.
 	 */
-	public String getTableName();
+	String getTableName();
 
 	/**
 	 * The columns to join on
 	 */
-	public String[] getKeyColumnNames();
+	String[] getKeyColumnNames();
 
 	/**
 	 * Get the names of the collection index columns if
 	 * this is an indexed collection (optional operation)
 	 */
-	public String[] getIndexColumnNames();
+	String[] getIndexColumnNames();
 
 	/**
 	 * Get the names of the collection element columns (or the primary
 	 * key columns in the case of a one-to-many association)
 	 */
-	public String[] getElementColumnNames();
+	String[] getElementColumnNames();
 
-	public String getIdentifierColumnName();
+	String getIdentifierColumnName();
 
 	//The following should really be moved somewhere else or the interface renamed
-	public GridType getKeyGridType();
+	GridType getKeyGridType();
 
-	public GridType getElementGridType();
+	GridType getElementGridType();
 }

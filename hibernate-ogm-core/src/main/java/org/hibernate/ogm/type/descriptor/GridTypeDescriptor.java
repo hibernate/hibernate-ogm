@@ -30,7 +30,7 @@ import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
  * @author Emmanuel Bernard
  */
 public interface GridTypeDescriptor extends Serializable {
-	public <X> GridValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor);
+	<X> GridValueBinder<X> getBinder(JavaTypeDescriptor<X> javaTypeDescriptor);
 
-	public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor);
+	<X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor);
 }
