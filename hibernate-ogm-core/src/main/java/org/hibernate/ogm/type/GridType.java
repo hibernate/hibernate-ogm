@@ -57,7 +57,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return True if this type is also an {@link org.hibernate.type.AssociationType} implementor; false otherwise.
 	 */
-	public boolean isAssociationType();
+	boolean isAssociationType();
 
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.CollectionType}. Essentially a polymorphic version of
@@ -68,7 +68,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return True if this type is also an {@link org.hibernate.type.CollectionType} implementor; false otherwise.
 	 */
-	public boolean isCollectionType();
+	boolean isCollectionType();
 
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.EntityType}. Essentially a polymorphic
@@ -79,7 +79,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return True if this type is also an {@link org.hibernate.type.EntityType} implementor; false otherwise.
 	 */
-	public boolean isEntityType();
+	boolean isEntityType();
 
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.AnyType}. Essentially a polymorphic
@@ -90,7 +90,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return True if this type is also an {@link org.hibernate.type.AnyType} implementor; false otherwise.
 	 */
-	public boolean isAnyType();
+	boolean isAnyType();
 
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.CompositeType}. Essentially a polymorphic
@@ -99,7 +99,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return True if this type is also an {@link org.hibernate.type.CompositeType} implementor; false otherwise.
 	 */
-	public boolean isComponentType();
+	boolean isComponentType();
 
 	/**
 	 * How many columns are used to persist this type.  Always the same as {@code sqlTypes(mapping).length}
@@ -110,7 +110,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws MappingException Generally indicates an issue accessing the passed mapping object.
 	 */
-	public int getColumnSpan(Mapping mapping) throws MappingException;
+	int getColumnSpan(Mapping mapping) throws MappingException;
 
 	/**
 	 * The class returned by {@link #nullSafeGet} methods. This is used to  establish the class of an array of
@@ -118,9 +118,9 @@ public interface GridType extends Serializable {
 	 *
 	 * @return The java type class handled by this type.
 	 */
-	public Class<?> getReturnedClass();
+	Class<?> getReturnedClass();
 
-	public boolean isXMLElement();
+	boolean isXMLElement();
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -136,7 +136,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws org.hibernate.HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isSame(Object x, Object y) throws HibernateException;
+	boolean isSame(Object x, Object y) throws HibernateException;
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -153,7 +153,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isEqual(Object x, Object y) throws HibernateException;
+	boolean isEqual(Object x, Object y) throws HibernateException;
 
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
@@ -171,7 +171,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the comparison
 	 */
-	public boolean isEqual(Object x, Object y, SessionFactoryImplementor factory)
+	boolean isEqual(Object x, Object y, SessionFactoryImplementor factory)
 			throws HibernateException;
 
 	/**
@@ -184,7 +184,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred calculating the hash code
 	 */
-	public int getHashCode(Object x) throws HibernateException;
+	int getHashCode(Object x) throws HibernateException;
 
 	/**
 	 * Get a hash code, consistent with persistence "equality".  Again for most types the normal usage is to
@@ -197,7 +197,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred calculating the hash code
 	 */
-	public int getHashCode(Object x, SessionFactoryImplementor factory) throws HibernateException;
+	int getHashCode(Object x, SessionFactoryImplementor factory) throws HibernateException;
 
 	/**
 	 * Perform a {@link java.util.Comparator} style comparison between values
@@ -207,7 +207,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return The comparison result.  See {@link java.util.Comparator#compare} for a discussion.
 	 */
-	public int compare(Object x, Object y);
+	int compare(Object x, Object y);
 
 	/**
 	 * Should the parent be considered dirty, given both the old and current value?
@@ -220,7 +220,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	public boolean isDirty(Object old, Object current, SessionImplementor session) throws HibernateException;
+	boolean isDirty(Object old, Object current, SessionImplementor session) throws HibernateException;
 
 	/**
 	 * Should the parent be considered dirty, given both the old and current value?
@@ -234,7 +234,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	public boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SessionImplementor session)
+	boolean isDirty(Object oldState, Object currentState, boolean[] checkable, SessionImplementor session)
 			throws HibernateException;
 
 	/**
@@ -252,7 +252,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException A problem occurred performing the checking
 	 */
-	public boolean isModified(Object dbState, Object currentState, boolean[] checkable, SessionImplementor session)
+	boolean isModified(Object dbState, Object currentState, boolean[] checkable, SessionImplementor session)
 			throws HibernateException;
 
 	/**
@@ -267,7 +267,7 @@ public interface GridType extends Serializable {
 	 * @return Object
 	 * @throws HibernateException
 	 */
-	public Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -282,7 +282,7 @@ public interface GridType extends Serializable {
 	 * @return Object
 	 * @throws HibernateException
 	 */
-	public Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
+	Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -297,7 +297,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
+	void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 	throws HibernateException;
 
 	/**
@@ -311,7 +311,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @throws HibernateException
 	 */
-	public void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
+	void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 	throws HibernateException;
 
 	/**
@@ -321,7 +321,7 @@ public interface GridType extends Serializable {
 	 * @param factory
 	 * @throws HibernateException
 	 */
-	public void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory)
+	void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
 
 	/**
@@ -332,7 +332,7 @@ public interface GridType extends Serializable {
 	 * @return String
 	 * @throws HibernateException
 	 */
-	public String toLoggableString(Object value, SessionFactoryImplementor factory)
+	String toLoggableString(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
 
 	/**
@@ -343,14 +343,14 @@ public interface GridType extends Serializable {
 	 * @return an instance of the type
 	 * @throws HibernateException
 	 */
-	public Object fromXMLNode(Node xml, Mapping factory) throws HibernateException;
+	Object fromXMLNode(Node xml, Mapping factory) throws HibernateException;
 
 	/**
 	 * Returns the abbreviated name of the type.
 	 *
 	 * @return String the Hibernate type name
 	 */
-	public String getName();
+	String getName();
 
 	/**
 	 * Return a deep copy of the persistent state, stopping at entities and at
@@ -359,7 +359,7 @@ public interface GridType extends Serializable {
 	 * @param factory
 	 * @return Object a copy
 	 */
-	public Object deepCopy(Object value, SessionFactoryImplementor factory)
+	Object deepCopy(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
 
 	/**
@@ -369,7 +369,7 @@ public interface GridType extends Serializable {
 	 *
 	 * @return boolean
 	 */
-	public boolean isMutable();
+	boolean isMutable();
 
 	/**
 	 * Return a cacheable "disassembled" representation of the object.
@@ -378,7 +378,7 @@ public interface GridType extends Serializable {
 	 * @param owner optional parent entity object (needed for collections)
 	 * @return the disassembled, deep cloned state
 	 */
-	public Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException;
+	Serializable disassemble(Object value, SessionImplementor session, Object owner) throws HibernateException;
 
 	/**
 	 * Reconstruct the object from its cached "disassembled" state.
@@ -387,14 +387,14 @@ public interface GridType extends Serializable {
 	 * @param owner the parent entity object
 	 * @return the the object
 	 */
-	public Object assemble(Serializable cached, SessionImplementor session, Object owner)
+	Object assemble(Serializable cached, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
 	 * Called before assembling a query result set from the query cache, to allow batch fetching
 	 * of entities missing from the second-level cache.
 	 */
-	public void beforeAssemble(Serializable cached, SessionImplementor session);
+	void beforeAssemble(Serializable cached, SessionImplementor session);
 
 	/**
 	 * Retrieve an instance of the mapped class, or the identifier of an entity or collection,
@@ -409,7 +409,7 @@ public interface GridType extends Serializable {
 	 * @return Object an identifier or actual value
 	 * @throws HibernateException
 	 */
-	public Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
+	Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
@@ -423,20 +423,20 @@ public interface GridType extends Serializable {
 	 * @return the given value, or the value associated with the identifier
 	 * @throws HibernateException
 	 */
-	public Object resolve(Object value, SessionImplementor session, Object owner)
+	Object resolve(Object value, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
 	 * Given a hydrated, but unresolved value, return a value that may be used to
 	 * reconstruct property-ref associations.
 	 */
-	public Object semiResolve(Object value, SessionImplementor session, Object owner)
+	Object semiResolve(Object value, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
 	 * Get the type of a semi-resolved value.
 	 */
-	public GridType getSemiResolvedType(SessionFactoryImplementor factory);
+	GridType getSemiResolvedType(SessionFactoryImplementor factory);
 
 	/**
 	 * During merge, replace the existing (target) value in the entity we are merging to
@@ -449,7 +449,7 @@ public interface GridType extends Serializable {
 	 * @param target the value in the managed entity
 	 * @return the value to be merged
 	 */
-	public Object replace(
+	Object replace(
 			Object original,
 			Object target,
 			SessionImplementor session,
@@ -468,7 +468,7 @@ public interface GridType extends Serializable {
 	 * @param target the value in the managed entity
 	 * @return the value to be merged
 	 */
-	public Object replace(
+	Object replace(
 			Object original,
 			Object target,
 			SessionImplementor session,
@@ -483,6 +483,6 @@ public interface GridType extends Serializable {
 	 *
 	 * @param value an instance of the type
 	 */
-	public boolean[] toColumnNullness(Object value, Mapping mapping);
+	boolean[] toColumnNullness(Object value, Mapping mapping);
 
 }

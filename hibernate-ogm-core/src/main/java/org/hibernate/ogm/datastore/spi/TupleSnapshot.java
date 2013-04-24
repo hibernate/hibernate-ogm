@@ -35,9 +35,9 @@ public interface TupleSnapshot {
 	/**
 	 * Returns the value set in a column or null if not set
 	 */
-	public Object get(String column);
+	Object get(String column);
 
-	public boolean isEmpty();
+	boolean isEmpty();
 
-	public Set<String> getColumnNames();
+	Set<String> getColumnNames();
 }

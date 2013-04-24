@@ -24,7 +24,7 @@ package org.hibernate.ogm.datastore.spi;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public interface DefaultDatastoreNames {
-	public static final String ENTITY_STORE = "ENTITIES";
-	public static final String ASSOCIATION_STORE = "ASSOCIATIONS";
-	public static final String IDENTIFIER_STORE = "IDENTIFIERS";
+	String ENTITY_STORE = "ENTITIES";
+	String ASSOCIATION_STORE = "ASSOCIATIONS";
+	String IDENTIFIER_STORE = "IDENTIFIERS";
 }

@@ -37,11 +37,11 @@ public interface AssociationSnapshot {
 	/**
 	 * Returns the value set in a column or null if not set
 	 */
-	public Tuple get(RowKey column);
+	Tuple get(RowKey column);
 
-	public boolean containsKey(RowKey column);
+	boolean containsKey(RowKey column);
 
-	public int size();
+	int size();
 
-	public Set<RowKey> getRowKeys();
+	Set<RowKey> getRowKeys();
 }

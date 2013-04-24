@@ -30,65 +30,65 @@ public interface Environment {
 	/**
 	 * The MongoDB Database name to connect to.
 	 */
-	public static final String MONGODB_DATABASE = "hibernate.ogm.mongodb.database";
+	String MONGODB_DATABASE = "hibernate.ogm.mongodb.database";
 
 	/**
 	 * The port of the MongoDB instance.
 	 */
-	public static final String MONGODB_PORT = "hibernate.ogm.mongodb.port";
+	String MONGODB_PORT = "hibernate.ogm.mongodb.port";
 
 	/**
 	 * Run the driver in safe mode (use WriteConcern.SAFE for all operations)
 	 */
-	public static final String MONGODB_SAFE = "hibernate.ogm.mongodb.safe";
+	String MONGODB_SAFE = "hibernate.ogm.mongodb.safe";
 
 	/**
 	 * The hostname of the MongoDB instance.
 	 */
-	public static final String MONGODB_HOST = "hibernate.ogm.mongodb.host";
+	String MONGODB_HOST = "hibernate.ogm.mongodb.host";
 
 	/**
 	 * The username of the MongoDB admin database with authentication enabled.
 	 */
-	public static final String MONGODB_USERNAME = "hibernate.ogm.mongodb.username";
+	String MONGODB_USERNAME = "hibernate.ogm.mongodb.username";
 
 	/**
 	 * The password of the MongoDB admin database with authentication enabled.
 	 */
-	public static final String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
+	String MONGODB_PASSWORD = "hibernate.ogm.mongodb.password";
 
 	/**
 	 * The timeout used at the connection to the MongoDB instance.
 	 * This value is set in milliseconds.
 	 */
-	public static final String MONGODB_TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
+	String MONGODB_TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
 
 	/**
 	 * The default host used to connect to MongoDB: if the {@link #MONGODB_HOST}
 	 * property is not set, we'll attempt to connect to localhost.
 	 */
-	public static final String MONGODB_DEFAULT_HOST = "127.0.0.1";
+	String MONGODB_DEFAULT_HOST = "127.0.0.1";
 
 	/**
 	* The default port used to connect to MongoDB: if the {@link #MONGODB_PORT}
 	* property is not set, we'll try this port.
 	*/
-	public static final int MONGODB_DEFAULT_PORT = 27017;
+	int MONGODB_DEFAULT_PORT = 27017;
 
 	/**
 	 * The default value used to configure the safe mode {@link #MONGODB_SAFE}
 	 */
-	public static final boolean MONGODB_DEFAULT_SAFE = true;
+	boolean MONGODB_DEFAULT_SAFE = true;
 
 	/**
 	 * Where to store associations.
 	 */
-	public static final String MONGODB_ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
-	public static final String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
+	String MONGODB_ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
+	String MONGODB_DEFAULT_ASSOCIATION_STORE = "Associations";
 
 	/**
 	 * The default value used to set the timeout during the connection to the MongoDB instance (@link #MONGODB_TIMEOUT)
 	 * This value is set in milliseconds
 	 */
-	public static final int MONGODB_DEFAULT_TIMEOUT = 5000;
+	int MONGODB_DEFAULT_TIMEOUT = 5000;
 }

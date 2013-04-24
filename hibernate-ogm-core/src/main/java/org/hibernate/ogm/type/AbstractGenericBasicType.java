@@ -227,7 +227,7 @@ public abstract class AbstractGenericBasicType<T>
 		return nullSafeGet( rs, name, session );
 	}
 
-	private final T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
+	private T nullSafeGet(Tuple rs, String name, final SessionImplementor session) {
 		return nullSafeGet( rs, name, (WrapperOptions) null );
 	}
 
