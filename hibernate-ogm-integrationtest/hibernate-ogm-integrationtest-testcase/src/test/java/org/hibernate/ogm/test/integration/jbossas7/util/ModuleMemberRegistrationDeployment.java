@@ -50,12 +50,12 @@ public class ModuleMemberRegistrationDeployment {
 
 		public Builder persistenceXml(PersistenceDescriptor descriptor) {
 			String persistenceXml = descriptor.exportAsString();
-			archive.addAsResource( new StringAsset(persistenceXml), "META-INF/persistence.xml" );
+			archive.addAsResource( new StringAsset( persistenceXml ), "META-INF/persistence.xml" );
 			return this;
 		}
 
 		public Builder manifestDependencies(String dependencies) {
-			archive.add( manifest(dependencies), "META-INF/MANIFEST.MF" );
+			archive.add( manifest( dependencies ), "META-INF/MANIFEST.MF" );
 			return this;
 		}
 
