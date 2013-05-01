@@ -457,26 +457,26 @@ em.close();</programlisting>
   </section>
 
   <section id="ogm-configuration-jbossmodule">
-    <title>How to package Hibernate OGM applications for JBoss AS 7</title>
+    <title>How to package Hibernate OGM applications for JBoss AS 7.2</title>
 
-    <para>Provided you're deploying on JBoss AS 7.1.x or JBoss EAP6, there is an additional way to add the OGM dependencies to your application.</para>
+    <para>Provided you're deploying on JBoss AS 7.2 or JBoss EAP6, there is an additional way to add the OGM dependencies to your application.</para>
 
-    <para>In JBoss AS 7 class loading is based on modules that have to define explicit dependencies on other modules.
+    <para>In JBoss AS 7.2 class loading is based on modules that have to define explicit dependencies on other modules.
     Modules allow to share the same artifacts across multiple applications getting you smaller and quicker deloyments.</para>
 
-    <para>More details about modules are described in <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">Class Loading in AS7</ulink>.</para>
+    <para>More details about modules are described in <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">Class Loading in AS 7.2</ulink>.</para>
 
     <para>You can download the pre-packaged module from:</para>
     <itemizedlist>
       <listitem>
-    <para><ulink url="https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/&version;/hibernate-ogm-modules-&version;-jbossas-71-dist.zip">Sourceforge</ulink></para>
+    <para><ulink url="https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/&version;/hibernate-ogm-modules-&version;-jbossas-72-dist.zip">Sourceforge</ulink></para>
       </listitem>
       <listitem>
-    <para>Maven: <ulink url="https://repository.jboss.org/nexus/index.html#nexus-ogm;gav~org.hibernate.ogm~hibernate-ogm-modules~~~">org.hibernate.ogm:hibernate-ogm-modules-&version;-jbossas-71-dist.zip</ulink></para>
+    <para>Maven: <ulink url="https://repository.jboss.org/nexus/index.html#nexus-ogm;gav~org.hibernate.ogm~hibernate-ogm-modules~~~">org.hibernate.ogm:hibernate-ogm-modules-&version;-jbossas-72-dist.zip</ulink></para>
       </listitem>
     </itemizedlist>
 
-    <para>The compressed archive includes three modules and it has to be extracted into the base JBoss AS 7 home folder. The modules are:</para>
+    <para>Unpack the compress archive into the <literal>modules</literal> folder of your JBoss AS 7.2 installation. The modules included in the archive are:</para>
 
     <itemizedlist>
       <listitem>
@@ -493,7 +493,7 @@ em.close();</programlisting>
       </listitem>
     </itemizedlist>
 
-    <warning><para>The org.hibernate:main module will change the version of Hibernate ORM included in the default JBoss AS 7.1.x</para></warning>
+    <warning><para>The org.hibernate:main module will change the version of Hibernate ORM included in the default JBoss AS 7.2</para></warning>
 
     <para>There are two ways to include the dependencies in your project:</para>
 
@@ -508,7 +508,7 @@ em.close();</programlisting>
       <varlistentry>
     <term>Using jboss-deployment-structure.xml</term>
     <listitem>
-      <para>This is a proprietary JBoss AS descriptor. Add a WEB-INF/jboss-deployment-structure.xml in your archive with content:</para>
+      <para>This is a proprietary JBoss AS descriptor. Add a <literal>WEB-INF/jboss-deployment-structure.xml</literal> in your archive with content:</para>
       <programlisting language="XML" role="XML">&lt;jboss-deployment-structure&gt;
       &lt;deployment&gt;
       &lt;dependencies&gt;
@@ -517,7 +517,7 @@ em.close();</programlisting>
       &lt;/deployment&gt;
   &lt;/jboss-deployment-structure&gt;
       </programlisting>
-      <para>More information about the descriptor can be found in the  <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">JBoss AS 7 documentation</ulink>.</para>
+      <para>More information about the descriptor can be found in the  <ulink url="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7">JBoss AS 7.2 documentation</ulink>.</para>
     </listitem>
       </varlistentry>
     </variablelist>

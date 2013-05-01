@@ -22,7 +22,7 @@
   ~ Boston, MA  02110-1301  USA
   -->
 <assembly>
-    <id>jbossas-71-dist</id>
+    <id>jbossas-72-dist</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -32,22 +32,22 @@
     <files>
         <file>
             <source>${module.xml.basedir}/ogm/core/module.xml</source>
-            <outputDirectory>/modules/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
             <source>${module.xml.basedir}/hibernate/module.xml</source>
-            <outputDirectory>/modules/org/hibernate/main</outputDirectory>
+            <outputDirectory>/org/hibernate/main</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/ehcache/module.xml</source>
-             <outputDirectory>/modules/org/hibernate/ogm/ehcache/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/ehcache/main</outputDirectory>
              <filtered>true</filtered>
         </file>
         <file>
              <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
-             <outputDirectory>/modules/org/hibernate/ogm/mongodb/main</outputDirectory>
+             <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
              <filtered>true</filtered>
         </file>
    </files>
@@ -55,7 +55,7 @@
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>modules/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
@@ -65,7 +65,7 @@
         </dependencySet>
         <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
-             <outputDirectory>modules/org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}</outputDirectory>
+             <outputDirectory>org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}</outputDirectory>
              <useTransitiveFiltering>false</useTransitiveFiltering>
              <unpack>false</unpack>
              <includes>
@@ -75,7 +75,7 @@
         </dependencySet>
         <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
-             <outputDirectory>modules/org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
+             <outputDirectory>org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
              <useTransitiveFiltering>false</useTransitiveFiltering>
              <unpack>false</unpack>
              <includes>
@@ -85,7 +85,7 @@
        </dependencySet>
        <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>modules/org/hibernate/${hibernate.orm.module.slot}</outputDirectory>
+            <outputDirectory>org/hibernate/${hibernate.orm.module.slot}</outputDirectory>
             <useTransitiveFiltering>false</useTransitiveFiltering>
             <unpack>false</unpack>
             <includes>
