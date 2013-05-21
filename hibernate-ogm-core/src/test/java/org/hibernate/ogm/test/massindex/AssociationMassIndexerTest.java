@@ -34,11 +34,11 @@ import org.hibernate.ogm.test.hsearch.Insurance;
 import org.hibernate.ogm.test.id.NewsID;
 import org.hibernate.ogm.test.massindex.model.IndexedLabel;
 import org.hibernate.ogm.test.massindex.model.IndexedNews;
+import org.hibernate.ogm.test.utils.IndexDirectoryManager;
 import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
-import org.hibernate.search.test.TestConstants;
 import org.junit.After;
 import org.junit.Test;
 
@@ -159,7 +159,7 @@ public class AssociationMassIndexerTest extends JpaTestCase {
 		// the constructor File(File, String) is broken too, see :
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
 		// So make sure to use File(String, String) in this case as TestConstants works with absolute paths!
-		baseDir = new File( TestConstants.getIndexDirectory(), shortTestName );
+		baseDir = new File( IndexDirectoryManager.getIndexDirectory( AssociationMassIndexerTest.class ), shortTestName );
 		return baseDir;
 	}
 

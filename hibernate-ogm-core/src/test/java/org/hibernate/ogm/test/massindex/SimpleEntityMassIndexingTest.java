@@ -32,9 +32,9 @@ import org.hibernate.ogm.test.id.NewsID;
 import org.hibernate.ogm.test.massindex.model.IndexedLabel;
 import org.hibernate.ogm.test.massindex.model.IndexedNews;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.IndexDirectoryManager;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
-import org.hibernate.search.test.TestConstants;
 import org.hibernate.search.util.impl.FileHelper;
 import org.junit.After;
 import org.junit.Test;
@@ -137,7 +137,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		// the constructor File(File, String) is broken too, see :
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
 		// So make sure to use File(String, String) in this case as TestConstants works with absolute paths!
-		File indexPath = new File( TestConstants.getIndexDirectory(), shortTestName );
+		File indexPath = new File( IndexDirectoryManager.getIndexDirectory( SimpleEntityMassIndexingTest.class ), shortTestName );
 		return indexPath;
 	}
 
