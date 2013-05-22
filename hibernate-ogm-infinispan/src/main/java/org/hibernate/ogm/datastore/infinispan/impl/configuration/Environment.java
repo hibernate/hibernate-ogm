@@ -18,21 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.mongodb.associations;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
-import org.hibernate.ogm.test.id.CompositeIdTest;
-import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
+package org.hibernate.ogm.datastore.infinispan.impl.configuration;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * All the configuration properties used by the
+ * {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}
+ *
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class CompositeIdInEmbeddedTest extends CompositeIdTest {
-	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
-		info.getProperties()
-			.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorage.IN_ENTITY.name() );
-	}
+public interface Environment {
+	/**
+	 * The configuration property to use as key to define a custom configuration for Infinispan.
+	 */
+	String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
+
+	/**
+	 * The key for the configuration property to define the jndi name of the cachemanager.
+	 * If this property is defined, the cachemanager will be looked up via JNDI.
+	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
+	 */
+	String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
+	String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
 }

@@ -21,7 +21,7 @@
 package org.hibernate.ogm.test.mongodb.datastore;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Rule;

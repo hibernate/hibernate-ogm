@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.service.jndi.spi.JndiService;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
@@ -58,28 +58,15 @@ import org.infinispan.util.FileLookupFactory;
 public class InfinispanDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
-	/**
-	 * The configuration property to use as key to define a custom configuration for Infinispan.
-	 */
-	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
-
-	/**
-	 * The key for the configuration property to define the jndi name of the cachemanager.
-	 * If this property is defined, the cachemanager will be looked up via JNDI.
-	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
-	 */
-	public static final String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
-	public static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
-
 	private static final Log log = LoggerFactory.make();
 
 	private JtaPlatform jtaPlatform;
 	private JndiService jndiService;
-	private Map cfg;
 	private Map<String,Cache> caches;
 	private boolean isCacheProvided;
 	private boolean started = false;
 	private EmbeddedCacheManager cacheManager;
+	private final InfinispanConfiguration config = new InfinispanConfiguration();
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -93,14 +80,9 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 			return;
 		}
 		try {
-			String jndiProperty = (String) cfg.get( CACHE_MANAGER_RESOURCE_PROP );
+			String jndiProperty = config.getJndi();
 			if ( jndiProperty == null ) {
-				String cfgName = (String) cfg.get( INFINISPAN_CONFIGURATION_RESOURCENAME );
-				if ( StringHelper.isEmpty( cfgName ) ) {
-					cfgName = INFINISPAN_DEFAULT_CONFIG;
-				}
-				log.tracef( "Initializing Infinispan from configuration file at %1$s", cfgName );
-				cacheManager = createCustomCacheManager( cfgName, jtaPlatform );
+				cacheManager = createCustomCacheManager( config.getConfigName(), jtaPlatform );
 				isCacheProvided = false;
 			}
 			else {
@@ -116,7 +98,6 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		//clear resources
 		this.jtaPlatform = null;
 		this.jndiService = null;
-		this.cfg = null;
 		this.started = true;
 	}
 
@@ -201,6 +182,6 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 
 	@Override
 	public void configure(Map configurationValues) {
-		cfg = configurationValues;
+		this.config.initConfiguration( configurationValues );
 	}
 }

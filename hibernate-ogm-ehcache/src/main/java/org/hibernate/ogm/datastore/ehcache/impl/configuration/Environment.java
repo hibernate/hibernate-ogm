@@ -18,21 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.mongodb.associations;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
-import org.hibernate.ogm.test.id.CompositeIdTest;
-import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
+package org.hibernate.ogm.datastore.ehcache.impl.configuration;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * Configuration options of the Ehcache datastore provider
+ *
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class CompositeIdInEmbeddedTest extends CompositeIdTest {
-	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
-		info.getProperties()
-			.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorage.IN_ENTITY.name() );
-	}
+public interface Environment {
+
+	String RESOURCE_NAME = "hibernate.ogm.ehcache.configuration_resourcename";
+	String DEFAULT_CONFIG = "/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml";
 }

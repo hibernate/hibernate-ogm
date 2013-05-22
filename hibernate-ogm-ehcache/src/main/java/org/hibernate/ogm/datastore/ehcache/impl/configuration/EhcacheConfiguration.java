@@ -18,21 +18,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.mongodb.associations;
+package org.hibernate.ogm.datastore.ehcache.impl.configuration;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
-import org.hibernate.ogm.test.id.CompositeIdTest;
-import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
+import java.util.Map;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * It contains all the configuration properties required to instanciate the
+ * {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}
+ *
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class CompositeIdInEmbeddedTest extends CompositeIdTest {
-	@Override
-	protected void refineInfo(GetterPersistenceUnitInfo info) {
-		super.refineInfo( info );
-		info.getProperties()
-			.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorage.IN_ENTITY.name() );
+public class EhcacheConfiguration {
+
+	private String url;
+
+	/**
+	 * Initialize all the configuration properties used by the datastore provider
+	 *
+	 * @param configurationMap all the properties from the configuration files and the environment
+	 */
+	public void initConfiguration(Map configurationMap) {
+		this.url = (String) configurationMap.get( Environment.RESOURCE_NAME );
+	}
+
+	public String getUrl() {
+		return url;
 	}
 }
