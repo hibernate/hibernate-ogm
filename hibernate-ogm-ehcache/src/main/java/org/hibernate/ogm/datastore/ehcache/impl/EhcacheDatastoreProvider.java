@@ -116,12 +116,16 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 		}
 
 		@Override
-		public void register(EhcacheXAResource resource) {
+		public void init() {
+		}
+
+		@Override
+		public void register(EhcacheXAResource resource, boolean forRecovery) {
 			// noop
 		}
 
 		@Override
-		public void unregister(EhcacheXAResource resource) {
+		public void unregister(EhcacheXAResource resource, boolean forRecovery) {
 			// noop
 		}
 

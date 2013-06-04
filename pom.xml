@@ -126,11 +126,11 @@
     </mailingLists>
 
     <properties>
-        <ehcacheVersion>2.5.1</ehcacheVersion>
-        <infinispanVersion>5.2.1.Final</infinispanVersion>
+        <ehcacheVersion>2.6.6</ehcacheVersion>
+        <infinispanVersion>5.3.0.CR1</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <hibernateVersion>4.2.0.CR1</hibernateVersion>
-        <hibernateSearchVersion>4.3.0-SNAPSHOT</hibernateSearchVersion>
+        <hibernateSearchVersion>4.3.0.CR1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha1</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
