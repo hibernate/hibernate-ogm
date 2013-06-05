@@ -29,7 +29,8 @@ public enum AvailableDatastoreProvider {
 	MAP(  "org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider" ),
 	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider" ),
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
-	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" );
+	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
+	COUCHDB( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" );
 
 	private String datastoreProviderClassName;
 	private AvailableDatastoreProvider(String datastoreProviderClassName) { this.datastoreProviderClassName = datastoreProviderClassName; }
