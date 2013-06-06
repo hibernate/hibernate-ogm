@@ -46,7 +46,7 @@ public class MongoDBConfiguration {
 	private String username;
 	private String password;
 	private int timeout;
-	private boolean safe;
+	private WriteConcern writeConcern;
 
 	/**
 	 * @see Environment#MONGODB_HOST
@@ -110,18 +110,18 @@ public class MongoDBConfiguration {
 		log.connectingToMongo( host, port, timeout );
 
 		this.associationStorage = this.buildAssociationStorage( configurationMap );
-		this.safe = this.buildSafe( configurationMap );
+		this.writeConcern = this.buildWriteConcern( configurationMap );
 		this.databaseName = this.buildDatabase( configurationMap );
 		this.username = this.buildUsername( configurationMap );
 		this.password = this.buildPassword( configurationMap );
 	}
 
-	protected String buildHost(Map<?, ?> cfg) {
+	private String buildHost(Map<?, ?> cfg) {
 		Object cfgHost = cfg.get( Environment.MONGODB_HOST );
 		return cfgHost != null ? cfgHost.toString() : Environment.MONGODB_DEFAULT_HOST;
 	}
 
-	protected int buildPort(Map<?, ?> cfg) {
+	private int buildPort(Map<?, ?> cfg) {
 		Object cfgPort = cfg.get( Environment.MONGODB_PORT );
 		if ( cfgPort != null ) {
 			try {
@@ -140,7 +140,7 @@ public class MongoDBConfiguration {
 		}
 	}
 
-	protected AssociationStorage buildAssociationStorage(Map<?, ?> cfg) {
+	private AssociationStorage buildAssociationStorage(Map<?, ?> cfg) {
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value
@@ -156,14 +156,25 @@ public class MongoDBConfiguration {
 		}
 	}
 
-	protected boolean buildSafe(Map<?, ?> cfg) {
-		Object cfgSafe = cfg.get( Environment.MONGODB_SAFE );
-		boolean safe = Environment.MONGODB_DEFAULT_SAFE;
-		if ( cfgSafe != null ) {
-			safe = Boolean.parseBoolean( cfgSafe.toString() );
+	private WriteConcern buildWriteConcern(Map<?, ?> cfg) {
+		Object cfgWriteConcern = cfg.get( Environment.MONGODB_WRITE_CONCERN );
+		WriteConcern writeConcern = Environment.MONGODB_DEFAULT_WRITE_CONCERN;
+		String wcLogMessage = "ACKNOWLEDGED";
+		if ( cfgWriteConcern != null ) {
+			final String confWC = cfgWriteConcern.toString();
+			writeConcern = WriteConcern.valueOf( confWC );
+
+			if ( writeConcern == null ) {
+				writeConcern = Environment.MONGODB_DEFAULT_WRITE_CONCERN;
+				wcLogMessage = "ACKNOWLEDGED";
+			}
+			else {
+				wcLogMessage = confWC;
+			}
 		}
-		log.useSafe( safe );
-		return safe;
+		//using a custom string representation because neither toString() nor getWString() return a user-friendly message
+		log.useWriteConcern( wcLogMessage );
+		return writeConcern;
 	}
 
 	private int buildTimeout(Map<?, ?> cfg) {
@@ -185,7 +196,7 @@ public class MongoDBConfiguration {
 		}
 	}
 
-	protected String buildDatabase(Map<?, ?> cfg) {
+	private String buildDatabase(Map<?, ?> cfg) {
 		Object dbNameObject = cfg.get( Environment.MONGODB_DATABASE );
 		if ( dbNameObject == null ) {
 			throw log.mongoDbNameMissing();
@@ -195,11 +206,11 @@ public class MongoDBConfiguration {
 		return dbName;
 	}
 
-	protected String buildUsername(Map<?, ?> cfg) {
+	private String buildUsername(Map<?, ?> cfg) {
 		return (String) cfg.get( Environment.MONGODB_USERNAME );
 	}
 
-	protected String buildPassword(Map<?, ?> cfg) {
+	private String buildPassword(Map<?, ?> cfg) {
 		Object passwordObject = cfg.get( Environment.MONGODB_PASSWORD );
 		return passwordObject != null ? passwordObject.toString() : "";
 	}
@@ -212,12 +223,7 @@ public class MongoDBConfiguration {
 	public MongoClientOptions buildOptions() {
 		MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
 		optionsBuilder.connectTimeout( timeout );
-		if ( safe ) {
-			optionsBuilder.writeConcern( WriteConcern.ACKNOWLEDGED );
-		}
-		else {
-			optionsBuilder.writeConcern( WriteConcern.NONE );
-		}
+		optionsBuilder.writeConcern( writeConcern );
 
 		return optionsBuilder.build();
 	}

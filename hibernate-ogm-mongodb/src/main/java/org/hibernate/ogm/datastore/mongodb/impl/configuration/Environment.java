@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
+import com.mongodb.WriteConcern;
+
 /**
  * Configuration options for {@link org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider}.
  *
@@ -38,9 +40,14 @@ public interface Environment {
 	String MONGODB_PORT = "hibernate.ogm.mongodb.port";
 
 	/**
-	 * Run the driver in safe mode (use WriteConcern.SAFE for all operations)
+	 * Define the acknowledgment of write operations
 	 */
-	String MONGODB_SAFE = "hibernate.ogm.mongodb.safe";
+	String MONGODB_WRITE_CONCERN = "hibernate.ogm.mongodb.writeconcern";
+
+	/**
+	 * The default value used to set up the acknowledgment of write operations {@link #MONGODB_WRITE_CONCERN}
+	 */
+	WriteConcern MONGODB_DEFAULT_WRITE_CONCERN = WriteConcern.ACKNOWLEDGED;
 
 	/**
 	 * The hostname of the MongoDB instance.
@@ -70,15 +77,10 @@ public interface Environment {
 	String MONGODB_DEFAULT_HOST = "127.0.0.1";
 
 	/**
-	* The default port used to connect to MongoDB: if the {@link #MONGODB_PORT}
-	* property is not set, we'll try this port.
-	*/
-	int MONGODB_DEFAULT_PORT = 27017;
-
-	/**
-	 * The default value used to configure the safe mode {@link #MONGODB_SAFE}
+	 * The default port used to connect to MongoDB: if the {@link #MONGODB_PORT}
+	 * property is not set, we'll try this port.
 	 */
-	boolean MONGODB_DEFAULT_SAFE = true;
+	int MONGODB_DEFAULT_PORT = 27017;
 
 	/**
 	 * Where to store associations.
