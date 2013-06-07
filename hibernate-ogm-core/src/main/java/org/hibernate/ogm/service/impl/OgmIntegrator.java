@@ -33,6 +33,7 @@ import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
 import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
+import org.hibernate.ogm.mapping.impl.MappingServiceInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
 import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
@@ -63,6 +64,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		Version.touch();
 		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		sessionFactory.addObserver( new DatastoreProviderToSessionFactoryObserverAdaptor(configuration, serviceRegistry) );
+		sessionFactory.addObserver( new MappingServiceToSessionFactoryObserver(configuration, serviceRegistry) );
 	}
 
 	@Override
@@ -88,5 +90,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( GridDialectFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( QueryParserServicesInitiatior.INSTANCE );
+		serviceRegistryBuilder.addInitiator( MappingServiceInitiator.INSTANCE );
 	}
 }

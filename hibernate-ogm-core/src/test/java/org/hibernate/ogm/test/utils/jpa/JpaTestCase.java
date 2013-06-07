@@ -93,8 +93,8 @@ public abstract class JpaTestCase extends BaseOGMTest {
 		info.setValidationMode( ValidationMode.AUTO );
 		info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
 		info.getProperties().setProperty( MassIndexerFactoryIntegrator.MASS_INDEXER_FACTORY_CLASSNAME, OgmMassIndexerFactory.class.getName() );
-		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
-			info.getProperties().setProperty( entry.getKey(), entry.getValue() );
+		for ( Map.Entry<String, Object> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+			info.getProperties().put( entry.getKey(), entry.getValue() );
 		}
 		refineInfo( info );
 		factory = new HibernateOgmPersistence().createContainerEntityManagerFactory( info, Collections.EMPTY_MAP );

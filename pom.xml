@@ -304,6 +304,11 @@
             </dependency>
 
             <!-- utils -->
+            <dependency>
+              <groupId>com.fasterxml</groupId>
+              <artifactId>classmate</artifactId>
+              <version>0.8.0</version>
+            </dependency>
 
             <!-- Tests -->
             <dependency>

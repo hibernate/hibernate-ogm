@@ -164,9 +164,9 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
+	public Map<String, Object> getEnvironmentProperties() {
 		//read variables from the System properties set in the static initializer
-		Map<String,String> envProps = new HashMap<String, String>(2);
+		Map<String, Object> envProps = new HashMap<String, Object>(2);
 		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_PORT, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_USERNAME, envProps );
@@ -174,7 +174,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return envProps;
 	}
 
-	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
+	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, Object> envProps) {
 		String value = System.getProperties().getProperty( environmentVariableName );
 		if ( value != null && value.length() > 0 ) {
 			envProps.put( environmentVariableName, value );

@@ -21,6 +21,7 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.mapping.impl.MappingFactory;
 import org.hibernate.service.Service;
 
 /**
@@ -34,4 +35,6 @@ import org.hibernate.service.Service;
  */
 public interface DatastoreProvider extends Service {
 	Class<? extends GridDialect> getDefaultDialect();
+
+	Class<? extends MappingFactory<?>> getDefaultMappingServiceFactory();
 }

@@ -58,8 +58,8 @@ public class SessionFactoryRule extends TemporaryFolder {
 		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
 		// disable warnings about unspecified Lucene version
 		cfg.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
-		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
-			cfg.setProperty( entry.getKey(), entry.getValue() );
+		for ( Map.Entry<String, Object> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+			cfg.getProperties().put( entry.getKey(), entry.getValue() );
 		}
 	}
 

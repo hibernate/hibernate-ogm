@@ -88,7 +88,7 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public Map<String, String> getEnvironmentProperties() {
+	public Map<String, Object> getEnvironmentProperties() {
 		return null;
 	}
 }
