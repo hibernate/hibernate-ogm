@@ -18,34 +18,55 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+package org.hibernate.ogm.options;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
+ * A configuration value.
  *
- * @see OgmSessionFactoryServiceRegistryImpl
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmSessionFactoryServiceInitiators {
+public abstract class Option<I, T extends Option<I, T>> {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.asList(
-			TypeTranslatorInitiator.INSTANCE,
-			MappingServiceInitiator.INSTANCE ,
-			DatastoreServicesInitiator.INSTANCE,
-			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE
-	) );
+	private final Class<T> type;
+
+	@SuppressWarnings("unchecked")
+	public Option() {
+		type = (Class<T>) getClass();
+	}
+
+	public abstract I getOptionIdentifier();
+
+	public Class<T> getOptionType() {
+		return type;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if ( this == o ) {
+			return true;
+		}
+		if ( o == null || getClass() != o.getClass() ) {
+			return false;
+		}
+
+		@SuppressWarnings("unchecked")
+		Option<I, T> option = (Option<I, T>) o;
+
+		if ( !getOptionIdentifier().equals( option.getOptionIdentifier() ) ) {
+			return false;
+		}
+		if ( !type.equals( option.type ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = type.hashCode();
+		result = 31 * result + getOptionIdentifier().hashCode();
+		return result;
+	}
 
 }
