@@ -25,6 +25,7 @@ import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
+import org.hibernate.service.classloading.spi.ClassLoadingException;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -36,6 +37,7 @@ import java.util.Map;
  * If the property is not set, Infinispan is used by default.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Davide D'Alto <davide@hibernate.org>
  */
 public final class DatastoreProviderInitiator extends OptionalServiceInitiator<DatastoreProvider> {
 
@@ -43,51 +45,103 @@ public final class DatastoreProviderInitiator extends OptionalServiceInitiator<D
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
 	private static final Log log = LoggerFactory.make();
+	private static final String DEFAULT_DATASTORE_PROVIDER_CLASS = "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider";
 
 	@Override
 	public DatastoreProvider buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		Object managerProperty = configurationValues.get( DATASTORE_PROVIDER );
-		Class<?> managerClass = null;
-		if ( managerProperty instanceof String ) {
-			final String managerPropertyValue = (String) managerProperty;
-			String datastoreProviderClass;
-			try {
-				if ( isValidShortcut( managerPropertyValue ) ) {
-					datastoreProviderClass = AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() )
-							.getDatastoreProviderClassName();
-				}
-				else {
-					datastoreProviderClass = managerPropertyValue;
-				}
-				managerClass = registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClass );
-			}
-			catch ( Exception e ) {
-				throw log.datastoreClassCannotBeFound( managerPropertyValue, Arrays.toString( AvailableDatastoreProvider.values() ) );
-			}
+		Object datastoreProviderProperty = configurationValues.get( DATASTORE_PROVIDER );
+		if ( datastoreProviderProperty == null ) {
+			return read( registry );
 		}
-		else if ( managerProperty instanceof Class ) {
-			managerClass = (Class<?>) managerProperty;
+		else if ( datastoreProviderProperty instanceof DatastoreProvider ) {
+			return read( registry, (DatastoreProvider) datastoreProviderProperty );
 		}
-		if ( managerClass != null ) {
-			if ( !( DatastoreProvider.class.isAssignableFrom( managerClass ) ) ) {
-				throw log.notADatastoreManager( managerClass.getName() );
-			}
-			try {
-				return logAndReturn( (DatastoreProvider) managerClass.newInstance() );
-			}
-			catch ( Exception e ) {
-				throw log.unableToInstantiateDatastoreManager( managerClass.getName(), e );
-			}
+		else if ( datastoreProviderProperty instanceof String ) {
+			return read( registry, (String) datastoreProviderProperty );
 		}
+		else if ( datastoreProviderProperty instanceof Class<?> ) {
+			return read( registry, (Class<?>) datastoreProviderProperty );
+		}
+		throw log.unknownDatastoreManagerType( datastoreProviderProperty.getClass().getName() );
+	}
 
-		if ( managerProperty instanceof DatastoreProvider ) {
-			return logAndReturn( (DatastoreProvider) managerProperty );
+	@Override
+	protected BasicServiceInitiator<DatastoreProvider> backupInitiator() {
+		return null;
+	}
+
+	@Override
+	public Class<DatastoreProvider> getServiceInitiated() {
+		return DatastoreProvider.class;
+	}
+
+	private DatastoreProvider read(ServiceRegistryImplementor registry) {
+		return logAndReturn( guessDatastoreProvider( registry ) );
+	}
+
+	private DatastoreProvider read(ServiceRegistryImplementor registry, DatastoreProvider datastoreProvider) {
+		return logAndReturn( (DatastoreProvider) datastoreProvider );
+	}
+
+	private DatastoreProvider read(ServiceRegistryImplementor registry, String managerProperty) {
+		Class<?> dataStoreProviderClass = findDataStoreProviderClass( registry, managerProperty );
+		return read( registry, dataStoreProviderClass );
+	}
+
+	private DatastoreProvider read(ServiceRegistryImplementor registry, Class<?> datastoreProviderClass) {
+		try {
+			validate( datastoreProviderClass );
+			return logAndReturn( (DatastoreProvider) datastoreProviderClass.newInstance() );
 		}
-		else if ( managerProperty == null ) {
-			return logAndReturn( guessDatastoreProvider( registry.getService( ClassLoaderService.class ) ) );
+		catch ( InstantiationException e ) {
+			throw log.unableToInstantiateDatastoreManager( datastoreProviderClass.getName(), e );
+		}
+		catch ( IllegalAccessException e ) {
+			throw log.unableToInstantiateDatastoreManager( datastoreProviderClass.getName(), e );
+		}
+	}
+
+	private DatastoreProvider guessDatastoreProvider(ServiceRegistryImplementor registry) {
+		try {
+			ClassLoaderService service = registry.getService( ClassLoaderService.class );
+			Class<?> datastoreProviderClass = service.classForName( DEFAULT_DATASTORE_PROVIDER_CLASS );
+			return (DatastoreProvider) datastoreProviderClass.newInstance();
+		}
+		catch ( ClassLoadingException e ) {
+			throw log.noDatastoreConfigured();
+		}
+		catch ( InstantiationException e ) {
+			throw log.unableToInstantiateDatastoreManager( DEFAULT_DATASTORE_PROVIDER_CLASS, e );
+		}
+		catch ( IllegalAccessException e ) {
+			throw log.unableToInstantiateDatastoreManager( DEFAULT_DATASTORE_PROVIDER_CLASS, e );
+		}
+	}
+
+	private void validate(Class<?> datastoreProviderClass) {
+		if ( !( DatastoreProvider.class.isAssignableFrom( datastoreProviderClass ) ) ) {
+			throw log.notADatastoreManager( datastoreProviderClass.getName() );
+		}
+	}
+
+	private Class<?> findDataStoreProviderClass(ServiceRegistryImplementor registry, final String managerPropertyValue) {
+		try {
+			String datastoreProviderClassName = dataStoreProviderClassName( managerPropertyValue );
+			return registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClassName );
+		}
+		catch ( Exception e ) {
+			throw log.datastoreClassCannotBeFound( managerPropertyValue,
+					Arrays.toString( AvailableDatastoreProvider.values() ) );
+		}
+	}
+
+	private String dataStoreProviderClassName(final String managerPropertyValue) {
+		if ( isValidShortcut( managerPropertyValue ) ) {
+			return AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() )
+					.getDatastoreProviderClassName();
 		}
 		else {
-			throw log.unknownDatastoreManagerType( managerProperty.getClass().getName() );
+			return managerPropertyValue;
 		}
 	}
 
@@ -100,39 +154,9 @@ public final class DatastoreProviderInitiator extends OptionalServiceInitiator<D
 		return false;
 	}
 
-	@Override
-	protected BasicServiceInitiator<DatastoreProvider> backupInitiator() {
-		return null;
-	}
-
 	private DatastoreProvider logAndReturn(DatastoreProvider datastoreProvider) {
 		log.useDatastoreProvider( datastoreProvider.getClass().getName() );
 		return datastoreProvider;
 	}
 
-	private DatastoreProvider guessDatastoreProvider(ClassLoaderService service) {
-		Class<?> managerClass = null;
-		try {
-			managerClass = service.classForName(
-					"org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"
-			);
-		}
-		catch ( Exception e ) {
-
-		}
-		if ( managerClass != null ) {
-			try {
-				return (DatastoreProvider) managerClass.newInstance();
-			}
-			catch ( Exception e ) {
-				throw log.unableToInstantiateDatastoreManager( managerClass.getName(), e );
-			}
-		}
-		throw log.noDatastoreConfigured();
-	}
-
-	@Override
-	public Class<DatastoreProvider> getServiceInitiated() {
-		return DatastoreProvider.class;
-	}
 }
