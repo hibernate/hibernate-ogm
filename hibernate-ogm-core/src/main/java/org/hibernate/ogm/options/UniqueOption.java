@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,23 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
-
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.service.Service;
+package org.hibernate.ogm.options;
 
 /**
- * Provides datastore centric configurations and native access.
- *
- * Implementations of this service offer native interfaces to access the
- * underlying datastore. It is also responsible for starting and stopping
- * the connection to the datastore.
- *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * Specialized class used by options that are defined only once.
+ * Most options should subclass this class
  */
-public interface DatastoreProvider extends Service {
-	Class<? extends GridDialect> getDefaultDialect();
+public abstract class UniqueOption<Type extends UniqueOption<Type>> extends Option<Object, Type> {
+	private static final Object IDENTITY = new Object();
 
-	Class<? extends MappingFactory<?>> getMappingFactoryType();
+	@Override
+	public Object getOptionIdentifier() {
+		return IDENTITY;
+	}
+
 }

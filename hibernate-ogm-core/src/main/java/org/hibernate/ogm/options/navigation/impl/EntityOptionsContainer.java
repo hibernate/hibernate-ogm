@@ -18,34 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
+package org.hibernate.ogm.options.navigation.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
+ * A container for options that can be applied to an entity.
  *
- * @see OgmSessionFactoryServiceRegistryImpl
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmSessionFactoryServiceInitiators {
+public class EntityOptionsContainer extends GlobalOptionsContainer implements OptionsContainer {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.asList(
-			TypeTranslatorInitiator.INSTANCE,
-			MappingServiceInitiator.INSTANCE ,
-			DatastoreServicesInitiator.INSTANCE,
-			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE
-	) );
+	private final Class<?> entityClass;
+
+	/**
+	 * Create a new container for options that can be applied to an entity.
+	 *
+	 * @param entityClass
+	 *            identifying the entity
+	 */
+	public EntityOptionsContainer(Class<?> entityClass) {
+		super();
+		this.entityClass = entityClass;
+	}
+
+	public Class<?> getEntityClass() {
+		return entityClass;
+	}
 
 }

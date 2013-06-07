@@ -18,34 +18,46 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
+package org.hibernate.ogm.options.navigation.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+import org.hibernate.ogm.options.Option;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
- *
- * @see OgmSessionFactoryServiceRegistryImpl
+ * A container for options that are not specific of an entity or a property.
+ * <p>
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmSessionFactoryServiceInitiators {
+public class GlobalOptionsContainer implements OptionsContainer {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.asList(
-			TypeTranslatorInitiator.INSTANCE,
-			MappingServiceInitiator.INSTANCE ,
-			DatastoreServicesInitiator.INSTANCE,
-			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE
-	) );
+	private final Set<Option<?, ?>> options;
+
+	public GlobalOptionsContainer() {
+		this.options = new HashSet<Option<?, ?>>();
+	}
+
+	@Override
+	public Iterator<Option<?, ?>> iterator() {
+		return options.iterator();
+	}
+
+	@Override
+	public void add(Option<?, ?> option) {
+		options.add( option );
+	}
+
+	@Override
+	public void remove(Option<?, ?> option) {
+		options.remove( option );
+	}
+
+	@Override
+	public boolean contains(Option<?, ?> option) {
+		return options.contains( option );
+	}
 
 }

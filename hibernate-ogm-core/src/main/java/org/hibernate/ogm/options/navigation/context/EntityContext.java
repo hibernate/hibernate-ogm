@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,23 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.options.navigation.context;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.service.Service;
+import org.hibernate.ogm.options.spi.EntityOptions;
+
+import java.lang.annotation.ElementType;
 
 /**
- * Provides datastore centric configurations and native access.
- *
- * Implementations of this service offer native interfaces to access the
- * underlying datastore. It is also responsible for starting and stopping
- * the connection to the datastore.
+ * Entity level to the mapping API
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface DatastoreProvider extends Service {
-	Class<? extends GridDialect> getDefaultDialect();
+public interface EntityContext<G extends GlobalContext<G,E,P>, E extends EntityContext<G,E,P>, P extends PropertyContext<G,E,P>>
+		extends EntityOptions<E> {
 
-	Class<? extends MappingFactory<?>> getMappingFactoryType();
+	/**
+	 * Specify mapping for the entity {@code type}
+	 */
+	E entity(Class<?> type);
+
+	/**
+	 * Specify mapping for the property named {@code propertyName} and for the target {@code target}
+	 */
+	P property(String propertyName, ElementType target);
+
 }

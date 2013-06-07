@@ -18,34 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
+package org.hibernate.ogm.options.mongodb;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import org.hibernate.ogm.options.Option;
+import org.hibernate.ogm.options.mongodb.AssociationStorage.AssociationStorageConverter;
+import org.hibernate.ogm.options.spi.AnnotationConverter;
+import org.hibernate.ogm.options.spi.MappingOption;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
- *
- * @see OgmSessionFactoryServiceRegistryImpl
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmSessionFactoryServiceInitiators {
+@Target(FIELD)
+@Retention(RUNTIME)
+@MappingOption(AssociationStorageConverter.class)
+public @interface AssociationStorage {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.asList(
-			TypeTranslatorInitiator.INSTANCE,
-			MappingServiceInitiator.INSTANCE ,
-			DatastoreServicesInitiator.INSTANCE,
-			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE
-	) );
+	String value();
+
+	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {
+
+		@Override
+		public Option<?, ?> convert(AssociationStorage annotation) {
+			return new AssociationStorageOption(
+					org.hibernate.ogm.datastore.mongodb.AssociationStorage.valueOf( annotation.value() ) );
+		}
+
+	}
 
 }
