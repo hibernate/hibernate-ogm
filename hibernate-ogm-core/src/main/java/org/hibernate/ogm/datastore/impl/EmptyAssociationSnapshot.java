@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,40 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.datastore.impl;
 
-import junit.framework.Assert;
+import java.util.Collections;
+import java.util.Set;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.junit.Test;
+import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Verifies that SkipByGridDialect is applied by the
+ * Represents an empty {@link AssociationSnapshot}.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public final class EmptyAssociationSnapshot implements AssociationSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.NEO4J,
-		GridDialectType.EHCACHE })
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	public static final EmptyAssociationSnapshot SINGLETON = new EmptyAssociationSnapshot();
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	private EmptyAssociationSnapshot() {
 	}
 
 	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+	public Tuple get(RowKey column) {
+		return null;
+	}
+
+	@Override
+	public boolean containsKey(RowKey column) {
+		return false;
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return Collections.emptySet();
 	}
 
 }

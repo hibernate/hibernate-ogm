@@ -42,6 +42,7 @@
         <module>hibernate-ogm-infinispan</module>
         <module>hibernate-ogm-integrationtest</module>
         <module>hibernate-ogm-modules</module>
+        <module>hibernate-ogm-neo4j</module>
     </modules>
 
     <prerequisites>

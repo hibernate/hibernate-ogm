@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,40 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.test.descriptor;
 
-import junit.framework.Assert;
+import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.type.StringDateTypeDescriptor;
 import org.junit.Test;
 
 /**
- * Verifies that SkipByGridDialect is applied by the
- *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfTest extends OgmTestCase {
+public class StringDateTypeDescriptorTest {
 
 	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP,
-		GridDialectType.INFINISPAN,
-		GridDialectType.MONGODB,
-		GridDialectType.NEO4J,
-		GridDialectType.EHCACHE })
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	public void testDescriptorName() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getName() ).as( StringDateTypeDescriptor.class.getSimpleName() )
+				.isEqualTo( "string_date" );
 	}
 
 	@Test
-	public void testCorrect() {
-		// all fine
+	public void testColumnSpanForNull() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( null ) ).as( "Column span for null" )
+				.isEqualTo( 1 );
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class };
+	@Test
+	public void testColumnSpanForOgmSessionFactory() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( new OgmSessionFactory( null ) ) )
+				.as( "Column span" ).isEqualTo( 1 );
 	}
-
 }
