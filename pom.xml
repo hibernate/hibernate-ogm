@@ -138,7 +138,7 @@
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- 
+        <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
              may be problems with multicast on the interface JGroups uses by default on your machine. You can
              try to resolve setting 'jgroups.bind_addr' as a system-property to the jvm launching maven and
@@ -919,6 +919,22 @@
             </activation>
             <modules>
                 <module>hibernate-ogm-mongodb</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>couchdb</id>
+            <!--
+              To activate and use the couchdb profile you need to define the
+              environment property:
+                 COUCHDB_HOSTNAME
+            -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate-ogm-couchdb</module>
             </modules>
         </profile>
     </profiles>
