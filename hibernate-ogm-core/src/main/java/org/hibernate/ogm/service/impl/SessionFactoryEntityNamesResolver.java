@@ -22,8 +22,8 @@ package org.hibernate.ogm.service.impl;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
-import org.hibernate.sql.ast.origin.hql.resolve.EntityNamesResolver;
 
 /**
  * Resolves entity names into Class references using the metadata
@@ -43,8 +43,7 @@ public class SessionFactoryEntityNamesResolver implements EntityNamesResolver {
 	}
 
 	@Override
-	public Class getClassFromName(String entityName) {
+	public Class<?> getClassFromName(String entityName) {
 		return classLoaderService.classForName( sessionFactory.getImportedClassName( entityName ) );
 	}
-
 }

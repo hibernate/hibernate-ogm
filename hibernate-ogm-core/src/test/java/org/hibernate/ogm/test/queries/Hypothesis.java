@@ -20,14 +20,22 @@
  */
 package org.hibernate.ogm.test.queries;
 
+import java.util.Date;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.Store;
 
 /**
  * @author Emmanuel Bernard
@@ -38,6 +46,8 @@ public class Hypothesis {
 	private String id;
 	private String description;
 	private int position;
+	private Date date;
+	private Author author;
 
 	@Id
 	public String getId() {
@@ -48,7 +58,7 @@ public class Hypothesis {
 		this.id = id;
 	}
 
-	@Field(analyze = Analyze.NO)
+	@Field(analyze = Analyze.NO, store = Store.YES)
 	public String getDescription() {
 		return description;
 	}
@@ -58,7 +68,7 @@ public class Hypothesis {
 	}
 
 	@Column(name = "pos")
-	@Field
+	@Field(analyze = Analyze.NO)
 	@NumericField
 	public int getPosition() {
 		return position;
@@ -66,5 +76,73 @@ public class Hypothesis {
 
 	public void setPosition(int position) {
 		this.position = position;
+	}
+
+	@Field(analyze = Analyze.NO)
+	@DateBridge(resolution=Resolution.DAY)
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	@OneToOne( cascade = { CascadeType.PERSIST, CascadeType.REMOVE } )
+	@IndexedEmbedded
+	public Author getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(Author author) {
+		this.author = author;
+	}
+
+	@Override
+	public String toString() {
+		return "Hypothesis [id=" + id + ", description=" + description + ", position=" + position  + ", date=" + date + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ( ( date == null ) ? 0 : date.hashCode() );
+		result = prime * result + ( ( description == null ) ? 0 : description.hashCode() );
+		result = prime * result + ( ( id == null ) ? 0 : id.hashCode() );
+		result = prime * result + position;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ( this == obj )
+			return true;
+		if ( obj == null )
+			return false;
+		if ( getClass() != obj.getClass() )
+			return false;
+		Hypothesis other = (Hypothesis) obj;
+		if ( date == null ) {
+			if ( other.date != null )
+				return false;
+		}
+		else if ( !date.equals( other.date ) )
+			return false;
+		if ( description == null ) {
+			if ( other.description != null )
+				return false;
+		}
+		else if ( !description.equals( other.description ) )
+			return false;
+		if ( id == null ) {
+			if ( other.id != null )
+				return false;
+		}
+		else if ( !id.equals( other.id ) )
+			return false;
+		if ( position != other.position )
+			return false;
+		return true;
 	}
 }
