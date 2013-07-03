@@ -124,4 +124,10 @@ public interface Log extends BasicLogger {
 	@Message(id = 25, value = "Batch indexing was interrupted")
 	void interruptedBatchIndexing();
 
+	@Message(id = 26, value = "Illegal discriminator type: '%1$s'")
+	HibernateException illegalDiscrimantorType(String name);
+
+	@Message(id = 27, value = "Could not convert string to discriminator object")
+	HibernateException unableToConvertStringToDiscriminator(@Cause Exception e);
+
 }
