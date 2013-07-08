@@ -255,12 +255,34 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+
+            <!-- OGM modules -->
             <dependency>
-                <groupId>org.hibernate.ogm</groupId>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
                 <artifactId>hibernate-ogm-core</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-ehcache</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-mongodb</artifactId>
+                <version>${project.version}</version>
             </dependency>
 
             <!-- Logging -->
