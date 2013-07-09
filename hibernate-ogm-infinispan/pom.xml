@@ -43,7 +43,6 @@
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -54,15 +53,6 @@
             <artifactId>hibernate-search-orm</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-search-infinispan</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
-        </dependency>
         <!-- Currently we don't have explicit tests using it, but we still need to define
             a dependency to include the dependency in the distribution -->
         <dependency>
@@ -72,10 +62,14 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-lucene-directory</artifactId>
             <optional>true</optional>
         </dependency>
-        
+
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>

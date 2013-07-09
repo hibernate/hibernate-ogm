@@ -34,17 +34,26 @@ For rapid documentation testing, you can limit the generated format to html to s
 
 ### MongoDB
 
-If you have MongoDB installed on `localhost` and the default port, use the mongodb profile as well
+For executing the tests in the _hibernate-ogm-mongodb_ and _hibernate-ogm-integrationtest-mongodb_ modules, the
+[embedmongo-maven-plugin](https://github.com/joelittlejohn/embedmongo-maven-plugin) is used which downloads the MongoDB
+distribution, extracts it, starts a _mongod_ process and shuts it down after test execution.
 
-    mvn clean install -s settings-example.xml -Pmongodb
+If required, you can configure the port to which the MongoDB instance binds to (by default 27018)
+and the target directory for the extracted binary (defaults to _${project.build.directory}/embeddedMongoDb/extracted_) like this:
 
-If you have MongoDB installed in a non default host / port, you can set the environment variables
-and then run the test suite
+    mvn clean install -s settings-example.xml -DembeddedMongoDbTempDir=<my-temp-dir> -DembeddedMongoDbPort=<my-port>
+
+To work with a separately installed MongoDB instance instead, specify the 'useExternalMongoDb' property:
+
+    mvn clean install -s settings-example.xml -DuseExternalMongoDb
+
+This assumes MongoDB to be installed on `localhost`, using the default port. If you have MongoDB
+installed on another host or use a different port, you can set the environment variables
+`MONGODB_HOSTNAME` `MONGODB_PORT` and then run the test suite:
 
     export MONGODB_HOSTNAME=mongodb-machine
     export MONGODB_PORT=1234
-    mvn clean install -s settings-example.xml -Pmongodb
-
+    mvn clean install -s settings-example.xml
 
 ## Contact
 

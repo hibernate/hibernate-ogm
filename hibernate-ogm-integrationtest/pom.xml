@@ -169,26 +169,7 @@
 
     <modules>
         <module>hibernate-ogm-integrationtest-testcase</module>
+        <module>hibernate-ogm-integrationtest-mongodb</module>
     </modules>
-
-    <profiles>
-        <profile>
-            <id>mongodb</id>
-            <!--
-              To activate and use the mongodb profile you need to define the
-              two environment properties:
-                 MONGODB_HOSTNAME
-                 MONGODB_PORT
-            -->
-            <activation>
-                <property>
-                    <name>env.MONGODB_HOSTNAME</name>
-                </property>
-            </activation>
-            <modules>
-                <module>hibernate-ogm-integrationtest-mongodb</module>
-            </modules>
-        </profile>
-    </profiles>
 
 </project>
