@@ -42,6 +42,7 @@
         <module>hibernate-ogm-infinispan</module>
         <module>hibernate-ogm-integrationtest</module>
         <module>hibernate-ogm-modules</module>
+        <module>hibernate-ogm-mongodb</module>
     </modules>
 
     <prerequisites>
@@ -144,8 +145,15 @@
              try to resolve setting 'jgroups.bind_addr' as a system-property to the jvm launching maven and
              setting the value to an interface where you know multicast works
           -->
-      <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
-      <skipUnitTests>false</skipUnitTests>
+        <jgroups.bind_addr>127.0.0.1</jgroups.bind_addr>
+        <skipUnitTests>false</skipUnitTests>
+
+        <!-- The following properties configure the embedded MongoDB instance used for tests -->
+        <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
+        <embeddedMongoDbTempDir>${project.build.directory}/embeddedMongoDb/extracted</embeddedMongoDbTempDir>
+        <embeddedMongoDbLogDir>${project.build.directory}/embeddedMongoDb/logs</embeddedMongoDbLogDir>
+        <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
+        <embeddedMongoDbPort>27018</embeddedMongoDbPort>
     </properties>
 
     <dependencyManagement>
@@ -862,9 +870,52 @@
                                         <ignore />
                                     </action>
                                 </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                                        <artifactId>embedmongo-maven-plugin</artifactId>
+                                        <versionRange>[0.1.9,)</versionRange>
+                                        <goals>
+                                            <goal>start</goal>
+                                            <goal>stop</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.gmaven</groupId>
+                                        <artifactId>gmaven-plugin</artifactId>
+                                        <versionRange>[1.4,)</versionRange>
+                                        <goals>
+                                            <goal>execute</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.joelittlejohn.embedmongo</groupId>
+                    <artifactId>embedmongo-maven-plugin</artifactId>
+                    <version>0.1.9</version>
+                    <configuration>
+                        <port>${embeddedMongoDbPort}</port>
+                        <logging>file</logging>
+                        <logFile>${embeddedMongoDbLogDir}/embedded-mongodb.log</logFile>
+                        <bindIp>${embeddedMongoDbBindIp}</bindIp>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.gmaven</groupId>
+                    <artifactId>gmaven-plugin</artifactId>
+                    <version>1.4</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -902,23 +953,6 @@
             </activation>
             <modules>
                 <module>hibernate-ogm-documentation</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>mongodb</id>
-            <!--
-              To activate and use the mongodb profile you need to define the
-              two environment properties:
-                 MONGODB_HOSTNAME
-                 MONGODB_PORT
-            -->
-            <activation>
-                <property>
-                    <name>env.MONGODB_HOSTNAME</name>
-                </property>
-            </activation>
-            <modules>
-                <module>hibernate-ogm-mongodb</module>
             </modules>
         </profile>
     </profiles>
