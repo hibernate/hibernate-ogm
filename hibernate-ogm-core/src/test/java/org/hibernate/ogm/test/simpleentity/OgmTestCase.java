@@ -77,11 +77,17 @@ public abstract class OgmTestCase extends TestCase {
 	protected SessionFactory sessions;
 	private Session session;
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		if ( cfg == null || lastTestClass != getClass() ) {
 			buildConfiguration();
 			lastTestClass = getClass();
+		}
+
+		// OGM-300: re-build session factory if it has been discarded by a previous test method
+		if ( sessions == null ) {
+			rebuildSessionFactory();
 		}
 	}
 
@@ -100,6 +106,7 @@ public abstract class OgmTestCase extends TestCase {
 	protected void configure(Configuration cfg) {
 	}
 
+	@Override
 	@After
 	public void tearDown() throws Exception {
 		handleUnclosedResources();
@@ -339,7 +346,6 @@ public abstract class OgmTestCase extends TestCase {
 			setSessions( getCfg().buildSessionFactory( /* new TestInterceptor() */) );
 		}
 		catch ( Exception e ) {
-			e.printStackTrace();
 			throw e;
 		}
 	}
