@@ -324,8 +324,8 @@ public abstract class OgmTestCase extends TestCase {
 			// by default use the new id generator scheme...
 			cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
-			for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
-				cfg.setProperty( entry.getKey(), entry.getValue() );
+			for ( Map.Entry<String, Object> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+				cfg.getProperties().put( entry.getKey(), entry.getValue() );
 			}
 
 			configure( cfg );

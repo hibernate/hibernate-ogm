@@ -124,9 +124,9 @@ public class TestHelper {
 		}
 	}
 
-	public static Map<String, String> getEnvironmentProperties() {
-		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
-		return environmentProperties == null ? new HashMap<String, String>( 0 ) : environmentProperties;
+	public static Map<String, Object> getEnvironmentProperties() {
+		Map<String, Object> environmentProperties = helper.getEnvironmentProperties();
+		return environmentProperties == null ? new HashMap<String, Object>( 0 ) : environmentProperties;
 	}
 
 	public static void initializeHelpers() {

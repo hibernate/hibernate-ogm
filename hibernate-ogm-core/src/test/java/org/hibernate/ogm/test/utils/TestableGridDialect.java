@@ -79,5 +79,5 @@ public interface TestableGridDialect {
 	 * Properties that needs to be overridden in configuration for tests to run
 	 * This is typical of the host and port defined using an environment variable.
 	 */
-	Map<String, String> getEnvironmentProperties();
+	Map<String, Object> getEnvironmentProperties();
 }

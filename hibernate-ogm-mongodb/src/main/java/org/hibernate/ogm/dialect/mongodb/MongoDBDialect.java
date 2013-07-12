@@ -115,7 +115,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject toSave = this.prepareIdObject( key );
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
 	}
@@ -218,7 +218,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
@@ -254,7 +254,7 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
 		collection.remove( toDelete );

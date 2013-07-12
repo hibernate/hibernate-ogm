@@ -75,6 +75,13 @@
             <!-- I do hope it is optional but that needs to be verified -->
             <optional>true</optional>
         </dependency>
+
+        <!-- utilities -->
+        <dependency>
+          <groupId>com.fasterxml</groupId>
+          <artifactId>classmate</artifactId>
+        </dependency>
+
         <!-- test dependencies -->
         <dependency>
             <groupId>org.hibernate</groupId>

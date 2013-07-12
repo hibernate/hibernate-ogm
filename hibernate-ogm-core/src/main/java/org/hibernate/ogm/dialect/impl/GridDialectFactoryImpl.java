@@ -40,56 +40,84 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 
 	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
 		Object value = configurationValues.get( GRID_DIALECT );
-		Class<? extends GridDialect> dialectClass = null;
-		if ( value == null ) {
-			dialectClass = registry.getService( DatastoreProvider.class ).getDefaultDialect();
-		}
-		else if ( value instanceof String ) {
-			Class<?> maybeDialectClass;
-			try {
-				maybeDialectClass = registry.getService( ClassLoaderService.class ).classForName( value.toString() );
-			}
-			catch ( RuntimeException e ) {
-				throw log.dialectClassCannotBeFound( value.toString() );
-			}
-			if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
-				dialectClass = (Class<? extends GridDialect>) maybeDialectClass;
-			}
-			else {
-				throw log.doesNotImplementGridDialect( value.toString() );
-			}
-		}
-		else {
-			throw log.gridDialectPropertyOfUnknownType( value.getClass() );
-		}
+		Class<? extends GridDialect> dialectClass = dialectClass( registry, value );
 		try {
-			// FIXME not sure I like this constructor business. Argue with Sanne
-			// to me that's blocking the doors for future enhancements (ie injecting more things)
-			// an alternative is to pass the ServiceRegistry verbatim but I'm not sure that's enough either
-			Constructor injector = null;
-			for ( Constructor constructor : dialectClass.getConstructors() ) {
-				Class[] parameterTypes = constructor.getParameterTypes();
-				if ( parameterTypes.length == 1 && DatastoreProvider.class.isAssignableFrom( parameterTypes[0] ) ) {
-					injector = constructor;
-					break;
-				}
-			}
-			if ( injector == null ) {
-				log.gridDialectHasNoProperConstrutor( dialectClass );
-			}
-			GridDialect gridDialect = (GridDialect) injector.newInstance( registry.getService( DatastoreProvider.class ) );
+			Constructor dialectConstructor = findConstructor( dialectClass );
+			GridDialect gridDialect = (GridDialect) dialectConstructor.newInstance( dataStoreProvider( registry ) );
 			log.useGridDialect( gridDialect.getClass().getName() );
-			if ( GridDialectLogger.activationNeeded() ) {
-				gridDialect = new GridDialectLogger( gridDialect );
-				log.info( "Grid dialect logs are active" );
-			}
-			else {
-				log.info( "Grid dialect logs are disabled" );
-			}
+			gridDialect = activateLogIfNeeded( gridDialect );
 			return gridDialect;
 		}
 		catch ( Exception e ) {
 			throw log.cannotInstantiateGridDialect( dialectClass, e );
 		}
+	}
+
+	private GridDialect activateLogIfNeeded(GridDialect gridDialect) {
+		if ( GridDialectLogger.activationNeeded() ) {
+			gridDialect = new GridDialectLogger( gridDialect );
+			log.info( "Grid dialect logs are active" );
+		}
+		else {
+			log.info( "Grid dialect logs are disabled" );
+		}
+		return gridDialect;
+	}
+
+	private Constructor findConstructor(Class<? extends GridDialect> dialectClass) {
+		// FIXME not sure I like this constructor business. Argue with Sanne
+		// to me that's blocking the doors for future enhancements (ie injecting more things)
+		// an alternative is to pass the ServiceRegistry verbatim but I'm not sure that's enough either
+		Constructor injector = null;
+		for ( Constructor constructor : dialectClass.getConstructors() ) {
+			Class[] parameterTypes = constructor.getParameterTypes();
+			if ( parameterTypes.length == 1 && DatastoreProvider.class.isAssignableFrom( parameterTypes[0] ) ) {
+				injector = constructor;
+				break;
+			}
+		}
+		if ( injector == null ) {
+			log.gridDialectHasNoProperConstrutor( dialectClass );
+		}
+		return injector;
+	}
+
+	private Class<? extends GridDialect> dialectClass(ServiceRegistry registry, Object value) {
+		if ( value == null ) {
+			return dataStoreProvider( registry ).getDefaultDialect();
+		}
+		else if ( value instanceof String ) {
+			return dialectClassFromString( registry, value.toString() );
+		}
+		else {
+			throw log.gridDialectPropertyOfUnknownType( value.getClass() );
+		}
+	}
+
+	private Class<? extends GridDialect> dialectClassFromString(ServiceRegistry registry, String dialectClassName) {
+		Class<?> maybeDialectClass = loadClass( registry, dialectClassName );
+		if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
+			return (Class<? extends GridDialect>) maybeDialectClass;
+		}
+		else {
+			throw log.doesNotImplementGridDialect( dialectClassName );
+		}
+	}
+
+	private Class<?> loadClass(ServiceRegistry registry, String className) {
+		try {
+			return classLoaderService( registry ).classForName( className );
+		}
+		catch ( RuntimeException e ) {
+			throw log.dialectClassCannotBeFound( className );
+		}
+	}
+
+	private DatastoreProvider dataStoreProvider(ServiceRegistry registry) {
+		return registry.getService( DatastoreProvider.class );
+	}
+
+	private ClassLoaderService classLoaderService(ServiceRegistry registry) {
+		return registry.getService( ClassLoaderService.class );
 	}
 }

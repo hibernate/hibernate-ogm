@@ -30,6 +30,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.mapping.impl.MappingFactory;
+import org.hibernate.ogm.options.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -129,5 +131,20 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 27, value = "Could not convert string to discriminator object")
 	HibernateException unableToConvertStringToDiscriminator(@Cause Exception e);
+
+	@Message(id = 28, value = "Unable to support mapping subtypes that are not interfaces: %1$s")
+	HibernateException mappingSubtypeNotInterface(Class<?> mappingType);
+
+	@Message(id = 29, value = "Unable to create new proxy instance")
+	HibernateException cannotCreateNewProxyInstance(@Cause Exception e);
+
+	@Message(id = 30, value = "Annotation cannot be converted using %1$s")
+	HibernateException cannotConvertAnnotation(Class<? extends AnnotationConverter> converterClass, @Cause Exception e);
+
+	@Message(id = 31, value = "Unable to create MappingServiceFactory using %1$s")
+	HibernateException cannotCreateMappingFactory(Class<? extends MappingFactory> factoryClass, @Cause Exception e);
+
+	@Message(id = 32, value = "Unable to load %1$s method from %2$s ")
+	HibernateException unableToLoadContext(String methodName, Class<?> contextClass, @Cause Exception e);
 
 }

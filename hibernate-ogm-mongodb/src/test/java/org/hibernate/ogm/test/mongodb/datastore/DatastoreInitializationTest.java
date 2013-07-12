@@ -45,7 +45,7 @@ public class DatastoreInitializationTest {
 
 	@Test
 	public void testAuthentication() throws Exception {
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		Map<String, Object> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( Environment.MONGODB_DATABASE, "test" );
 		cfg.put( Environment.MONGODB_USERNAME, "notauser" );
 		cfg.put( Environment.MONGODB_PASSWORD, "test" );
@@ -60,7 +60,7 @@ public class DatastoreInitializationTest {
 	public void testConnectionErrorWrappedInHibernateException() throws Exception {
 		Properties properties = new Properties();
 		properties.load( DatastoreInitializationTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
-		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		Map<String, Object> cfg = TestHelper.getEnvironmentProperties();
 		for ( Map.Entry<?,?> entry : properties.entrySet() ) {
 			cfg.put( (String) entry.getKey(), (String) entry.getValue() );
 		}
