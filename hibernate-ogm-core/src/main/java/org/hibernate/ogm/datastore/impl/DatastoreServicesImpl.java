@@ -20,38 +20,22 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryImpl;
-import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class DatastoreServicesImpl implements DatastoreServices, ServiceRegistryAwareService, Configurable {
+public final class DatastoreServicesImpl implements DatastoreServices {
 
-	private ServiceRegistryImplementor serviceRegistry;
-	private GridDialect gridDialect;
+	private final GridDialect gridDialect;
+
+	public DatastoreServicesImpl(GridDialect gridDialect) {
+		this.gridDialect = gridDialect;
+	}
 
 	@Override
 	public GridDialect getGridDialect() {
 		return gridDialect;
 	}
 
-	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		this.serviceRegistry = serviceRegistry;
-	}
-
-	@Override
-	public void configure(Map configurationValues) {
-		GridDialectFactoryImpl dialectFactory = serviceRegistry.getService( GridDialectFactoryImpl.class );
-		DatastoreProvider datastoreProvider = serviceRegistry.getService( DatastoreProvider.class );
-		this.gridDialect = dialectFactory.buildGridDialect( configurationValues, serviceRegistry );
-		this.serviceRegistry = null;
-	}
 }

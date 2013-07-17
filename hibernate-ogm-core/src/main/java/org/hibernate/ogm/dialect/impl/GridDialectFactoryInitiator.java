@@ -20,30 +20,38 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.spi.BasicServiceInitiator;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
+import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class GridDialectFactoryInitiator extends OptionalServiceInitiator<GridDialectFactoryImpl> {
+public class GridDialectFactoryInitiator implements SessionFactoryServiceInitiator<GridDialectFactory> {
+
 	public static final GridDialectFactoryInitiator INSTANCE = new GridDialectFactoryInitiator();
 
 	@Override
-	public GridDialectFactoryImpl buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new GridDialectFactoryImpl();
+	public Class<GridDialectFactory> getServiceInitiated() {
+		return GridDialectFactory.class;
 	}
 
 	@Override
-	protected BasicServiceInitiator<GridDialectFactoryImpl> backupInitiator() {
-		return null;
+	public GridDialectFactory initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+		return createDialect( registry );
 	}
 
 	@Override
-	public Class<GridDialectFactoryImpl> getServiceInitiated() {
-		return GridDialectFactoryImpl.class;
+	public GridDialectFactory initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
+		return createDialect( registry );
 	}
+
+	private GridDialectFactory createDialect(ServiceRegistryImplementor registry) {
+		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
+		return new GridDialectFactoryImpl( datastore );
+	}
+
 }
