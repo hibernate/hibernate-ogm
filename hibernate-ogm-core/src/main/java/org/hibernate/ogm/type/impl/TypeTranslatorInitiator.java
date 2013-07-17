@@ -20,34 +20,40 @@
  */
 package org.hibernate.ogm.type.impl;
 
+import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
+import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class TypeTranslatorInitiator extends OptionalServiceInitiator<TypeTranslator> {
+public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<TypeTranslator> {
+
 	public static final TypeTranslatorInitiator INSTANCE = new TypeTranslatorInitiator();
-
-	@Override
-	public TypeTranslator buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		GridDialect dialect = registry.getService( DatastoreServices.class ).getGridDialect();
-		return new TypeTranslatorImpl(dialect);
-	}
-
-	@Override
-	protected BasicServiceInitiator<TypeTranslator> backupInitiator() {
-		return null;
-	}
 
 	@Override
 	public Class<TypeTranslator> getServiceInitiated() {
 		return TypeTranslator.class;
 	}
+
+	@Override
+	public TypeTranslator initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+		return createService( registry );
+	}
+
+	@Override
+	public TypeTranslator initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
+		return createService( registry );
+	}
+
+	private TypeTranslator createService(ServiceRegistryImplementor registry) {
+		GridDialect dialect = registry.getService( DatastoreServices.class ).getGridDialect();
+		return new TypeTranslatorImpl( dialect );
+	}
+
 }

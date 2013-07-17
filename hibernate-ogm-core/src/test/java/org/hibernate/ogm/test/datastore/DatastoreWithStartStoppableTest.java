@@ -20,18 +20,16 @@
  */
 package org.hibernate.ogm.test.datastore;
 
-import static org.fest.assertions.Assertions.assertThat;
-
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.hibernate.ogm.test.utils.PackagingRule;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Test that DatastoreProvider implementing StartStoppable are properly receiving
- * events.
+ * Test that DatastoreProvider implementing StartStoppable are properly receiving events.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
@@ -44,10 +42,19 @@ public class DatastoreWithStartStoppableTest {
 	public void testObserver() throws Exception {
 		try {
 			final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-datastoreobserver" );
+			Assert.fail( "StartStoppable provider not executed" );
 		}
-		catch ( RuntimeException e ) {
-			assertThat( e.getCause() ).isNotNull();
-			assertThat( e.getCause().getMessage() ).isEqualTo( "STARTED!" );
+		catch (RuntimeException e) {
+			Throwable cause = e;
+			do {
+				if ( cause.getMessage().equals( "STARTED!" ) ) {
+					break;
+				}
+				cause = cause.getCause();
+			} while ( cause != null );
+			if ( cause == null ) {
+				Assert.fail( "StartStoppable provider not executed" );
+			}
 		}
 	}
 }

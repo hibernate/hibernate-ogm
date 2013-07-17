@@ -37,31 +37,19 @@ import java.util.Map;
 public class GridDialectFactoryImpl implements GridDialectFactory {
 
 	private static final Log log = LoggerFactory.make();
+	private DatastoreProvider datastore;
+
+	public GridDialectFactoryImpl(DatastoreProvider datastore) {
+		this.datastore = datastore;
+	}
 
 	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
 		Object value = configurationValues.get( GRID_DIALECT );
-		Class<? extends GridDialect> dialectClass = null;
-		if ( value == null ) {
-			dialectClass = registry.getService( DatastoreProvider.class ).getDefaultDialect();
-		}
-		else if ( value instanceof String ) {
-			Class<?> maybeDialectClass;
-			try {
-				maybeDialectClass = registry.getService( ClassLoaderService.class ).classForName( value.toString() );
-			}
-			catch ( RuntimeException e ) {
-				throw log.dialectClassCannotBeFound( value.toString() );
-			}
-			if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
-				dialectClass = (Class<? extends GridDialect>) maybeDialectClass;
-			}
-			else {
-				throw log.doesNotImplementGridDialect( value.toString() );
-			}
-		}
-		else {
-			throw log.gridDialectPropertyOfUnknownType( value.getClass() );
-		}
+		Class<? extends GridDialect> dialectClass = dialectClass( registry, value );
+		return buildDialect( registry, dialectClass );
+	}
+
+	private GridDialect buildDialect(ServiceRegistry registry, Class<? extends GridDialect> dialectClass) {
 		try {
 			// FIXME not sure I like this constructor business. Argue with Sanne
 			// to me that's blocking the doors for future enhancements (ie injecting more things)
@@ -77,7 +65,7 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			if ( injector == null ) {
 				log.gridDialectHasNoProperConstrutor( dialectClass );
 			}
-			GridDialect gridDialect = (GridDialect) injector.newInstance( registry.getService( DatastoreProvider.class ) );
+			GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 			log.useGridDialect( gridDialect.getClass().getName() );
 			if ( GridDialectLogger.activationNeeded() ) {
 				gridDialect = new GridDialectLogger( gridDialect );
@@ -92,4 +80,36 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			throw log.cannotInstantiateGridDialect( dialectClass, e );
 		}
 	}
+
+	private Class<? extends GridDialect> dialectClass(ServiceRegistry registry, Object value) {
+		if ( value == null ) {
+			return datastore.getDefaultDialect();
+		}
+		else if ( value instanceof String ) {
+			return findGridDialect( registry, value.toString() );
+		}
+		else {
+			throw log.gridDialectPropertyOfUnknownType( value.getClass() );
+		}
+	}
+
+	private Class<? extends GridDialect> findGridDialect(ServiceRegistry registry, String value) {
+		Class<?> maybeDialectClass = loadClass( registry, value );
+		if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
+			return (Class<? extends GridDialect>) maybeDialectClass;
+		}
+		else {
+			throw log.doesNotImplementGridDialect( value.toString() );
+		}
+	}
+
+	private Class<? extends GridDialect> loadClass(ServiceRegistry registry, String value) {
+		try {
+			return registry.getService( ClassLoaderService.class ).classForName( value );
+		}
+		catch (RuntimeException e) {
+			throw log.dialectClassCannotBeFound( value.toString() );
+		}
+	}
+
 }

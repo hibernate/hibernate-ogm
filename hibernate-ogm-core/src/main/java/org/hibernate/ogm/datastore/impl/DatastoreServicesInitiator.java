@@ -20,31 +20,36 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.spi.BasicServiceInitiator;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.impl.GridDialectFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
+import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class DatastoreServicesInitiator extends OptionalServiceInitiator<DatastoreServices> {
+public final class DatastoreServicesInitiator implements SessionFactoryServiceInitiator<DatastoreServices> {
 
 	public static final DatastoreServicesInitiator INSTANCE = new DatastoreServicesInitiator();
-
-	@Override
-	protected DatastoreServices buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new DatastoreServicesImpl();
-	}
-
-	@Override
-	protected BasicServiceInitiator<DatastoreServices> backupInitiator() {
-		return null;
-	}
 
 	@Override
 	public Class<DatastoreServices> getServiceInitiated() {
 		return DatastoreServices.class;
 	}
+
+	@Override
+	public DatastoreServices initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+		GridDialectFactory dialectFactory = registry.getService( GridDialectFactory.class );
+		GridDialect gridDialect = dialectFactory.buildGridDialect( configuration.getProperties(), registry );
+		return new DatastoreServicesImpl( gridDialect );
+	}
+
+	@Override
+	public DatastoreServices initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
+		throw new UnsupportedOperationException( "Cannot create " + DatastoreServices.class.getName() + " service using metadata" );
+	}
+
 }
