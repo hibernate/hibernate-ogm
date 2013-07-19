@@ -28,7 +28,7 @@ import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;

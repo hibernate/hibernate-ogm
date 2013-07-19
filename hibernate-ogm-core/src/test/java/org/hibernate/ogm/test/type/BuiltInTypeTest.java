@@ -38,7 +38,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.Test;

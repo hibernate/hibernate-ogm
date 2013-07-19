@@ -27,7 +27,6 @@ import java.lang.reflect.Modifier;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;

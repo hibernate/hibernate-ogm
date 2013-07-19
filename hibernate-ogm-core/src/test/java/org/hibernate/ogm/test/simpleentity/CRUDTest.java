@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Test;
 

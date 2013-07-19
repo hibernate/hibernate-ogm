@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.simpleentity;
+package org.hibernate.ogm.test.utils;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
@@ -28,10 +28,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.test.utils.OgmTestRunner;
-import org.hibernate.ogm.test.utils.SessionFactoryConfiguration;
-import org.hibernate.ogm.test.utils.TestEntities;
-import org.hibernate.ogm.test.utils.TestSessionFactory;
 import org.junit.runner.RunWith;
 
 /**

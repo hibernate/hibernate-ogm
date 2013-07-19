@@ -23,7 +23,6 @@ package org.hibernate.ogm.test.utils;
 import junit.framework.Assert;
 
 import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.junit.Test;
 
 /**
