@@ -27,7 +27,7 @@ import static org.hibernate.ogm.test.utils.TestHelper.get;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.junit.Test;
 
 /**
