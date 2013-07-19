@@ -27,10 +27,11 @@ import java.util.List;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.test.utils.SessionFactoryRule;
+import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.test.utils.TestSessionFactory;
 import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,10 +39,10 @@ import org.junit.rules.ExpectedException;
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
-public class SimpleQueriesTest {
+public class SimpleQueriesTest extends OgmTestCase {
 
-	@ClassRule
-	public static final SessionFactoryRule sessions = new SessionFactoryRule( Hypothesis.class, Helicopter.class );
+	@TestSessionFactory
+	public static SessionFactory sessions;
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
@@ -131,10 +132,9 @@ public class SimpleQueriesTest {
 		session.close();
 	}
 
-
 	private void assertQuery(final Session session, final int expectedSize, final Query testedQuery) {
 		Transaction transaction = session.beginTransaction();
-		List list = testedQuery.list();
+		List<?> list = testedQuery.list();
 		try {
 			assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
 		}
@@ -144,4 +144,8 @@ public class SimpleQueriesTest {
 		}
 	}
 
+	@Override
+	protected Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { Hypothesis.class, Helicopter.class };
+	}
 }

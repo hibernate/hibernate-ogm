@@ -137,10 +137,6 @@ public class TestHelper {
 		return environmentProperties == null ? new HashMap<String, String>( 0 ) : environmentProperties;
 	}
 
-	public static void initializeHelpers() {
-		// just to make sure helper is initialized
-	}
-
 	public static void checkCleanCache(SessionFactory sessionFactory) {
 		assertThat( assertNumberOfEntities( 0, sessionFactory ) ).as( "Entity cache should be empty" ).isTrue();
 		assertThat( assertNumberOfAssociations( 0, sessionFactory ) ).as( "Association cache should be empty" ).isTrue();
@@ -163,6 +159,11 @@ public class TestHelper {
 		}
 
 		configuration.setProperty( Environment.HBM2DDL_AUTO, "none" );
+
+		// volatile indexes for Hibernate Search (if used)
+		configuration.setProperty( "hibernate.search.default.directory_provider", "ram" );
+		// disable warnings about unspecified Lucene version
+		configuration.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
 
 		for ( Class<?> aClass : entityTypes ) {
 			configuration.addAnnotatedClass( aClass );
