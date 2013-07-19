@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.test.utils.jpa;
 
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,7 +42,6 @@ import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.massindex.OgmMassIndexerFactory;
-import org.hibernate.ogm.test.utils.BaseOGMTest;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.search.hcore.impl.MassIndexerFactoryIntegrator;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
@@ -48,13 +49,11 @@ import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
 import org.junit.Before;
 
-import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
-
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Sanne Grinovero <sanne@hibernate.org>
  */
-public abstract class JpaTestCase extends BaseOGMTest {
+public abstract class JpaTestCase {
 
 	private EntityManagerFactory factory;
 	private TransactionManager transactionManager;
