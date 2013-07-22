@@ -40,9 +40,9 @@
         <module>hibernate-ogm-core</module>
         <module>hibernate-ogm-ehcache</module>
         <module>hibernate-ogm-infinispan</module>
-        <module>hibernate-ogm-integrationtest</module>
-        <module>hibernate-ogm-modules</module>
         <module>hibernate-ogm-mongodb</module>
+        <module>hibernate-ogm-modules</module>
+        <module>hibernate-ogm-integrationtest</module>
     </modules>
 
     <prerequisites>
