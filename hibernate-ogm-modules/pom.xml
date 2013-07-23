@@ -40,6 +40,7 @@
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
+        <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
         <hibernate.orm.module.slot>main</hibernate.orm.module.slot>
     </properties>
 
@@ -129,4 +130,28 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>couchdb</id>
+            <!--
+              To activate and use the couchdb profile you need to define the
+              environment property:
+                COUCHDB_HOSTNAME
+            -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.hibernate.ogm</groupId>
+                    <artifactId>hibernate-ogm-couchdb</artifactId>
+                    <version>${project.version}</version>
+                    <optional>true</optional>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
