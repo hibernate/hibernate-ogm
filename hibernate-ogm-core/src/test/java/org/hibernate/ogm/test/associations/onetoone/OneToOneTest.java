@@ -20,14 +20,20 @@
  */
 package org.hibernate.ogm.test.associations.onetoone;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
 public class OneToOneTest extends OgmTestCase {
+
+	@Test
 	public void testUnidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -53,6 +59,7 @@ public class OneToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
 	public void testUnidirectionalOneToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -74,6 +81,7 @@ public class OneToOneTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
 	public void testBidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();

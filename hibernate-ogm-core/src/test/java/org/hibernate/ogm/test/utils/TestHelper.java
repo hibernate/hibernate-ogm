@@ -20,14 +20,7 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
-
-import com.arjuna.ats.arjuna.coordinator.TxControl;
+import static org.fest.assertions.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -35,6 +28,18 @@ import java.util.Map;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.Environment;
+import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+
+import com.arjuna.ats.arjuna.coordinator.TxControl;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -48,6 +53,9 @@ public class TestHelper {
 	static {
 		// set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
 		TxControl.setDefaultTimeout( 60 * 60 * 2 );
+	}
+
+	private TestHelper() {
 	}
 
 	public static boolean assertNumberOfEntities(int numberOfEntities, EntityManager em) {
@@ -84,7 +92,7 @@ public class TestHelper {
 		return helper.assertNumberOfEntities( numberOfEntities, sessionFactory );
 	}
 
-	public static Map extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
+	public static Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return helper.extractEntityTuple( sessionFactory, key );
 	}
 
@@ -131,5 +139,35 @@ public class TestHelper {
 
 	public static void initializeHelpers() {
 		// just to make sure helper is initialized
+	}
+
+	public static void checkCleanCache(SessionFactory sessionFactory) {
+		assertThat( assertNumberOfEntities( 0, sessionFactory ) ).as( "Entity cache should be empty" ).isTrue();
+		assertThat( assertNumberOfAssociations( 0, sessionFactory ) ).as( "Association cache should be empty" ).isTrue();
+	}
+
+	/**
+	 * Provides a default {@link OgmConfiguration} for tests, using the given set of annotated entity types.
+	 *
+	 * @param entityTypes the entity types for which to build a configuration
+	 * @return a default configuration based on the given types
+	 */
+	public static OgmConfiguration getDefaultTestConfiguration(Class<?>... entityTypes) {
+		OgmConfiguration configuration = new OgmConfiguration();
+
+		// by default use the new id generator scheme...
+		configuration.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
+		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
+			configuration.setProperty( entry.getKey(), entry.getValue() );
+		}
+
+		configuration.setProperty( Environment.HBM2DDL_AUTO, "none" );
+
+		for ( Class<?> aClass : entityTypes ) {
+			configuration.addAnnotatedClass( aClass );
+		}
+
+		return configuration;
 	}
 }

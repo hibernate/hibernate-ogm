@@ -37,12 +37,17 @@ import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.util.impl.FileHelper;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
+
+	@Rule
+	public TestName name = new TestName();
 
 	@Test
 	public void testSimpleEntityMassIndexing() throws Exception {
@@ -105,7 +110,6 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
 	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		FileHelper.delete( getBaseIndexDir() );
 	};
 
@@ -132,7 +136,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		// Make sure no directory is ever reused across the testsuite as Windows might not be able
 		// to delete the files after usage. See also
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154
-		String shortTestName = this.getClass().getSimpleName() + "." + this.getName();
+		String shortTestName = this.getClass().getSimpleName() + "." + name.getMethodName();
 
 		// the constructor File(File, String) is broken too, see :
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
@@ -141,6 +145,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		return indexPath;
 	}
 
+	@Override
 	protected void configure(org.hibernate.cfg.Configuration cfg) {
 		super.configure( cfg );
 		cfg.setProperty( "hibernate.search.default.indexBase", getBaseIndexDir().getAbsolutePath() );

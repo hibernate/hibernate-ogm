@@ -20,14 +20,8 @@
  */
 package org.hibernate.ogm.test.type;
 
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.junit.Test;
+import static org.hibernate.ogm.test.utils.TestHelper.extractEntityTuple;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -40,7 +34,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import static org.hibernate.ogm.test.utils.TestHelper.extractEntityTuple;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -169,7 +170,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		//Check directly in the cache the values stored
 		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "Bookmark", new String[]{ "id" } );
 		EntityKey key = new EntityKey( keyMetadata, new Object[]{ "42" } );
-		Map<String, String> entity = (Map<String, String>) extractEntityTuple( sessions, key );
+		Map<String, Object> entity = extractEntityTuple( sessions, key );
 
 		assertEquals( "Entity visits count incorrect", entity.get( "visits_count" ), "444" );
 		assertEquals( "Entity serial number incorrect", entity.get( "serialNumber" ), serialNumber.toString() );

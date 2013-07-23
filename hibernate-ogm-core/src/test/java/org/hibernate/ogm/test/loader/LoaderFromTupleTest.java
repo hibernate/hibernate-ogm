@@ -20,6 +20,13 @@
  */
 package org.hibernate.ogm.test.loader;
 
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.extractEntityTuple;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -35,13 +42,6 @@ import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
 import org.hibernate.persister.entity.EntityPersister;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.extractEntityTuple;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -60,7 +60,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		session.clear();
 
 		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
-		Map<String, Object> entityTuple = (Map<String, Object>) extractEntityTuple( sessions, key );
+		Map<String, Object> entityTuple = extractEntityTuple( sessions, key );
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
 
 		EntityPersister persister = ( (SessionFactoryImplementor) session.getSessionFactory() )
