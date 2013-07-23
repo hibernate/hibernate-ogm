@@ -25,12 +25,14 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
 public class EmbeddableTest extends OgmTestCase {
 
+	@Test
 	public void testEmbeddable() throws Exception {
 		final Session session = openSession();
 

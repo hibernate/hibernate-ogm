@@ -20,12 +20,8 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import java.util.Map;
-
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.junit.rules.TemporaryFolder;
 
@@ -41,8 +37,7 @@ public class SessionFactoryRule extends TemporaryFolder {
 		TestHelper.initializeHelpers();
 	}
 
-	private final Class<?>[] entities;
-	private final OgmConfiguration cfg = new OgmConfiguration();
+	private final OgmConfiguration cfg;
 	private SessionFactory sessions;
 	private Session session;
 
@@ -50,17 +45,13 @@ public class SessionFactoryRule extends TemporaryFolder {
 		if ( entities == null || entities.length == 0 ) {
 			throw new IllegalArgumentException( "Define at least a single annotated entity" );
 		}
-		this.entities = entities;
-		cfg.setProperty( Environment.HBM2DDL_AUTO, "none" );
-		// by default use the new id generator scheme...
-		cfg.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
+		cfg = TestHelper.getDefaultTestConfiguration( entities );
+
 		// volatile indexes for Hibernate Search (if used)
 		cfg.setProperty( "hibernate.search.default.directory_provider", "ram" );
 		// disable warnings about unspecified Lucene version
 		cfg.setProperty( "hibernate.search.lucene_version", "LUCENE_35" );
-		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
-			cfg.setProperty( entry.getKey(), entry.getValue() );
-		}
 	}
 
 	public SessionFactoryRule setProperty(String key, String value) {
@@ -101,12 +92,8 @@ public class SessionFactoryRule extends TemporaryFolder {
 
 	public SessionFactory getSessionFactory() {
 		if ( sessions == null ) {
-			for ( Class<?> annotatedClass : entities ) {
-				cfg.addAnnotatedClass( annotatedClass );
-			}
 			sessions = cfg.buildSessionFactory();
 		}
 		return sessions;
 	}
-
 }

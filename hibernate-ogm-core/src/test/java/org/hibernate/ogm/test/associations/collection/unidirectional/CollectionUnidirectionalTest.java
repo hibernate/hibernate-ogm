@@ -19,20 +19,24 @@
  * MA  02110-1301, USA.
  */
 package org.hibernate.ogm.test.associations.collection.unidirectional;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
 public class CollectionUnidirectionalTest extends OgmTestCase {
 
+	@Test
 	public void testUnidirectionalCollection() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();

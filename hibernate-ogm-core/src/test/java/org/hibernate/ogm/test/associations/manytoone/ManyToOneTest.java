@@ -24,16 +24,20 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.get;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
 public class ManyToOneTest extends OgmTestCase {
 
+	@Test
 	public void testUnidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -73,6 +77,7 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
 	public void testBidirectionalManyToOneRegular() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -116,6 +121,7 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
 	public void testBiDirManyToOneInsertUpdateFalse() throws Exception {
 		final Session session = openSession();
 		Transaction tx = session.beginTransaction();

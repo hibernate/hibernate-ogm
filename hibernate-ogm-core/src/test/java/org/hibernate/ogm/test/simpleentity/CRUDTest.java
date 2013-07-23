@@ -20,8 +20,14 @@
  */
 package org.hibernate.ogm.test.simpleentity;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
@@ -29,6 +35,7 @@ import org.hibernate.Transaction;
  */
 public class CRUDTest extends OgmTestCase {
 
+	@Test
 	public void testSimpleCRUD() throws Exception {
 		final Session session = openSession();
 
@@ -89,15 +96,20 @@ public class CRUDTest extends OgmTestCase {
 
 	public static void main(String[] args) throws Exception {
 		CRUDTest test = new CRUDTest();
-		test.setUp();
+
+		test.sessions = TestHelper
+				.getDefaultTestConfiguration( test.getAnnotatedClasses() )
+				.buildSessionFactory();
+
 		try {
 			test.performanceLoop();
 		}
 		finally {
-			test.tearDown();
+			test.sessions.close();
 		}
 	}
 
+	@Test
 	public void testGeneratedValue() throws Exception {
 		final Session session = openSession();
 

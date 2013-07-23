@@ -20,14 +20,19 @@
  */
 package org.hibernate.ogm.test.simpleentity;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard
  */
 public class InheritanceTest extends OgmTestCase {
 
+	@Test
 	public void testInheritance() throws Exception {
 		final Session session = openSession();
 

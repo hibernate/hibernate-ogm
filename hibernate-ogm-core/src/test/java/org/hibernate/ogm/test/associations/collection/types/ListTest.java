@@ -25,12 +25,14 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class ListTest extends OgmTestCase {
 
+	@Test
 	public void testOrderedList() throws Exception {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();

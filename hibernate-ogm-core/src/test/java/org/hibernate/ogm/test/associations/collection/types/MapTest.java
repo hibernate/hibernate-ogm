@@ -20,17 +20,19 @@
  */
 package org.hibernate.ogm.test.associations.collection.types;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class MapTest extends OgmTestCase {
 
+	@Test
 	public void testMapAndElementCollection() throws Exception {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();

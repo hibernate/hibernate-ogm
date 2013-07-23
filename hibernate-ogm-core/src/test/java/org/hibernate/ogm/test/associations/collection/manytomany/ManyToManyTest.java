@@ -28,11 +28,14 @@ import static org.hibernate.ogm.test.utils.TestHelper.get;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.test.simpleentity.OgmTestCase;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class ManyToManyTest extends OgmTestCase {
+
+	@Test
 	public void testManyToMany() {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();
