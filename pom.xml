@@ -131,8 +131,8 @@
         <infinispanVersion>5.3.0.CR1</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <hibernateVersion>4.2.0.CR1</hibernateVersion>
-        <hibernateSearchVersion>4.3.0.CR1</hibernateSearchVersion>
-        <hibernateParserVersion>1.0.0.Alpha1</hibernateParserVersion>
+        <hibernateSearchVersion>4.3.0.Final</hibernateSearchVersion>
+        <hibernateParserVersion>1.0.0-SNAPSHOT</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
@@ -298,10 +298,15 @@
                 <version>${jbossLoggingVersion}</version>
             </dependency>
 
-            <!-- JPQL Parsing support -->
+            <!-- HQL Parsing and Lucene Query creation support -->
             <dependency>
-                <groupId>org.hibernate.jpql</groupId>
-                <artifactId>hibernate-jpql-parser</artifactId>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-parser</artifactId>
+                <version>${hibernateParserVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-lucene</artifactId>
                 <version>${hibernateParserVersion}</version>
             </dependency>
 

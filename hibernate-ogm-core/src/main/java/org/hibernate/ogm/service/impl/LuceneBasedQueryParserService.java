@@ -20,18 +20,20 @@
  */
 package org.hibernate.ogm.service.impl;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.antlr.runtime.ANTLRStringStream;
-import org.antlr.runtime.CommonTokenStream;
-import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.TokenStream;
-import org.antlr.runtime.tree.CommonTree;
-import org.antlr.runtime.tree.CommonTreeNodeStream;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.TypedValue;
+import org.hibernate.hql.QueryParser;
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
+import org.hibernate.hql.lucene.LuceneProcessingChain;
+import org.hibernate.hql.lucene.LuceneQueryParsingResult;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
@@ -39,11 +41,6 @@ import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
 import org.hibernate.search.query.ObjectLookupMethod;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.sql.ast.origin.hql.parse.HQLLexer;
-import org.hibernate.sql.ast.origin.hql.parse.HQLParser;
-import org.hibernate.sql.ast.origin.hql.resolve.EntityNamesResolver;
-import org.hibernate.sql.ast.origin.hql.resolve.LuceneJPQLWalker;
-
 
 /**
  * QueryParserService using the ANTLR3-powered LuceneJPQLWalker.
@@ -54,48 +51,57 @@ import org.hibernate.sql.ast.origin.hql.resolve.LuceneJPQLWalker;
  */
 public class LuceneBasedQueryParserService implements QueryParserService {
 
+	private static final Log log = LoggerFactory.make();
+
 	private final ServiceRegistryImplementor registry;
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
 	public LuceneBasedQueryParserService(ServiceRegistryImplementor registry, Map configurationValues) {
 		this.registry = registry;
-		//TODO: make it possible to lookup the SearchFactoryImplementor at initialization time
-		//searchFactoryImplementor = lookupSearchFactory( registry );
+		// TODO: make it possible to lookup the SearchFactoryImplementor at initialization time
+		// searchFactoryImplementor = lookupSearchFactory( registry );
 	}
 
 	@Override
 	public Query getParsedQueryExecutor(Session session, String queryString, Map<String, Object> namedParameters) {
-		HQLLexer lexed = new HQLLexer( new ANTLRStringStream( queryString ) );
-		TokenStream tokens = new CommonTokenStream( lexed );
-		HQLParser parser = new HQLParser( tokens );
-		try {
-			//TODO move the following logic into the hibernate-jpql-parser project?
-			//needs to consider usage of a parsed query plans cache
+		FullTextSession fullTextSession = Search.getFullTextSession( session );
 
-			// parser#statement() is the entry point for evaluation of any kind of statement
-			HQLParser.statement_return r = parser.statement();
-			CommonTree tree = (CommonTree) r.getTree();
-			// To walk the resulting tree we need a treenode stream:
-			CommonTreeNodeStream treeStream = new CommonTreeNodeStream( tree );
-			// AST nodes have payloads referring to the tokens from the Lexer:
-			treeStream.setTokenStream( tokens );
-			EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
-			FullTextSession fullTextSession = Search.getFullTextSession( session );
-			SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
-			// Finally create the treewalker:
-			LuceneJPQLWalker walker = new LuceneJPQLWalker( treeStream, searchFactory, entityNamesResolver, namedParameters );
-			walker.statement();
-			org.apache.lucene.search.Query luceneQuery = walker.getLuceneQuery();
-			Class targetEntity = walker.getTargetEntity();
-			FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( luceneQuery, targetEntity );
-			//Following options are mandatory to load matching entities without using a query
-			//(chicken and egg problem)
-			fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
-			return fullTextQuery;
+		LuceneQueryParsingResult parsingResult = new QueryParser().parseQuery( queryString,
+				createProcessingChain( session, unwrap( namedParameters ), fullTextSession ) );
+
+		log.createdLuceneQuery( queryString, parsingResult.getQuery().toString() );
+
+		FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( parsingResult.getQuery(), parsingResult.getTargetEntity() );
+		fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
+
+		// Following options are mandatory to load matching entities without using a query
+		// (chicken and egg problem)
+		fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
+		return fullTextQuery;
+	}
+
+	/**
+	 * Unwrappes the given named parameters if they are wrapped into {@link TypedValue}s.
+	 *
+	 * @param namedParameters the original named parameters
+	 * @return the unwrapped named parameters
+	 */
+	private Map<String, Object> unwrap(Map<String, Object> namedParameters) {
+		Map<String, Object> unwrapped = new HashMap<String, Object>( namedParameters.size() );
+
+		for ( Entry<String, Object> entry : namedParameters.entrySet() ) {
+			Object value = entry.getValue();
+			unwrapped.put( entry.getKey(), value instanceof TypedValue ? ( (TypedValue) value ).getValue() : value );
 		}
-		catch (RecognitionException e) {
-			throw new HibernateException( "Invalid query syntax", e );
-		}
+
+		return unwrapped;
+	}
+
+	private LuceneProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters, FullTextSession fullTextSession) {
+		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
+		SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
+
+		return new LuceneProcessingChain( searchFactory, entityNamesResolver, namedParameters );
 	}
 
 	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {
@@ -104,5 +110,4 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		}
 		return entityNamesResolver;
 	}
-
 }

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,41 +20,64 @@
  */
 package org.hibernate.ogm.test.queries;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import java.util.Set;
 
-import org.hibernate.annotations.GenericGenerator;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
+import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 /**
- * @author Emmanuel Bernard
+ * @author Gunnar Morling
  */
 @Entity
-@Indexed
-public class Helicopter {
-
-	private String uuid;
-	private String name;
+public class Address {
 
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
-	public String getUUID() {
-		return uuid;
-	}
+	private Long id;
 
-	public void setUUID(String uuid) {
-		this.uuid = uuid;
-	}
+	@Field(store = Store.YES)
+	private String street;
 
 	@Field
-	public String getName() {
-		return name;
+	private String city;
+
+	@ContainedIn
+	@OneToMany(mappedBy = "address")
+	private Set<Author> authors;
+
+	public Long getId() {
+		return id;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getStreet() {
+		return street;
+	}
+
+	public void setStreet(String street) {
+		this.street = street;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public Set<Author> getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(Set<Author> authors) {
+		this.authors = authors;
 	}
 }

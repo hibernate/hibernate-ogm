@@ -20,14 +20,22 @@
  */
 package org.hibernate.ogm.test.queries;
 
+import java.util.Date;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.DateBridge;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.NumericField;
+import org.hibernate.search.annotations.Resolution;
+import org.hibernate.search.annotations.Store;
 
 /**
  * @author Emmanuel Bernard
@@ -35,9 +43,12 @@ import org.hibernate.search.annotations.NumericField;
 @Entity
 @Indexed
 public class Hypothesis {
+
 	private String id;
 	private String description;
 	private int position;
+	private Date date;
+	private Author author;
 
 	@Id
 	public String getId() {
@@ -48,7 +59,7 @@ public class Hypothesis {
 		this.id = id;
 	}
 
-	@Field(analyze = Analyze.NO)
+	@Field(analyze = Analyze.NO, store = Store.YES)
 	public String getDescription() {
 		return description;
 	}
@@ -58,7 +69,7 @@ public class Hypothesis {
 	}
 
 	@Column(name = "pos")
-	@Field
+	@Field(analyze = Analyze.NO)
 	@NumericField
 	public int getPosition() {
 		return position;
@@ -66,5 +77,30 @@ public class Hypothesis {
 
 	public void setPosition(int position) {
 		this.position = position;
+	}
+
+	@Field(analyze = Analyze.NO)
+	@DateBridge(resolution = Resolution.DAY)
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
+	}
+
+	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
+	@IndexedEmbedded
+	public Author getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(Author author) {
+		this.author = author;
+	}
+
+	@Override
+	public String toString() {
+		return "Hypothesis [id=" + id + ", description=" + description + ", position=" + position + ", date=" + date + "]";
 	}
 }
