@@ -20,9 +20,10 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
-import static org.jboss.logging.Logger.Level.ERROR;
 
 import javax.transaction.SystemException;
 
@@ -130,4 +131,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 27, value = "Could not convert string to discriminator object")
 	HibernateException unableToConvertStringToDiscriminator(@Cause Exception e);
 
+	@LogMessage(level = DEBUG)
+	@Message(id = 28, value = "Created Lucene query '%2$s' from HQL/JP-QL query '%1$s'.")
+	void createdLuceneQuery(String jpqlQuery, String luceneQuery);
 }

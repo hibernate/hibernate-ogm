@@ -49,8 +49,12 @@
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hibernate.jpql</groupId>
-            <artifactId>hibernate-jpql-parser</artifactId>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-parser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.hql</groupId>
+            <artifactId>hibernate-hql-lucene</artifactId>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
