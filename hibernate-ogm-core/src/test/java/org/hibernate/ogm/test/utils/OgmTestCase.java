@@ -24,10 +24,15 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 
 /**
@@ -45,6 +50,8 @@ public abstract class OgmTestCase {
 	 */
 	@TestSessionFactory
 	protected SessionFactory sessions;
+
+	private List<Session> openedSessions;
 
 	@TestEntities
 	private Class<?>[] getTestEntities() {
@@ -72,7 +79,30 @@ public abstract class OgmTestCase {
 	}
 
 	protected Session openSession() {
-		return sessions.openSession();
+		Session session = sessions.openSession();
+		openedSessions.add( session );
+		return session;
+	}
+
+	@Before
+	public void setUp() {
+		openedSessions = new ArrayList<Session>();
+	}
+
+	/**
+	 * Closes all sessions opened via {@link #openSession()} which are still open and rolls back their transaction if it
+	 * is still open.
+	 */
+	@After
+	public void closeOpenedSessions() {
+		for ( Session session : openedSessions ) {
+			if ( session.isOpen() ) {
+				if ( session.getTransaction().isActive() ) {
+					session.getTransaction().rollback();
+				}
+				session.close();
+			}
+		}
 	}
 
 	protected SessionFactoryImplementor sfi() {
