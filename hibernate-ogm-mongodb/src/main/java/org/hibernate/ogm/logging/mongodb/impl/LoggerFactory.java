@@ -23,12 +23,23 @@ package org.hibernate.ogm.logging.mongodb.impl;
 import org.jboss.logging.Logger;
 
 /**
+ * Factory for obtaining {@link Logger} instances.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Gunnar Morling
  */
 public class LoggerFactory {
 
+	private static final CallerProvider callerProvider = new CallerProvider();
+
 	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, "MongoDB" );
+		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
 	}
 
+	private static class CallerProvider extends SecurityManager {
+
+		public Class<?> getCallerClass() {
+			return getClassContext()[2];
+		}
+	}
 }
