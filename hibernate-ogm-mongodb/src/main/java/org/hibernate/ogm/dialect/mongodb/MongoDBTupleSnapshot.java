@@ -50,7 +50,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	//use it so it avoids multiple calls to Arrays.asList()
 	private final List<String> columnNames;
 
-	//consider RowKey columns and values as aprt of the Tuple
+	//consider RowKey columns and values as part of the Tuple
 	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
 		this.dbObject = dbObject;
 		this.rowKey = rowKey;
@@ -74,7 +74,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 				return result;
 			}
 		}
-		//otherwite get it from the object
+		//otherwise get it from the object
 		if ( column.contains( "." ) ) {
 			String[] fields = EMBEDDED_FIELDNAME_SEPARATOR.split( column, 0 );
 			return this.getObject( this.dbObject.toMap(), fields, 0 );

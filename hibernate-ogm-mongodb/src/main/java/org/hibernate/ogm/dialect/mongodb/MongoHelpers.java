@@ -20,16 +20,16 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKind;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.hibernate.ogm.grid.AssociationKind;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -55,7 +55,7 @@ public class MongoHelpers {
 		if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
-		idObject.put( "_id", columns );
+		idObject.put( MongoDBDialect.ID_FIELDNAME, columns );
 		return idObject;
 	}
 
