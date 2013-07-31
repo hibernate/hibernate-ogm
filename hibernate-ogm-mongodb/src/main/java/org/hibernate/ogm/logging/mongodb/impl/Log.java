@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.logging.mongodb.impl;
 
+import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 
@@ -30,6 +31,7 @@ import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
 import org.jboss.logging.MessageLogger;
 
+import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
 /**
@@ -93,4 +95,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 			" you must choose between [ACKNOWLEDGED, ERRORS_IGNORED, FSYNC_IGNORED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED," +
 			"NONE, NORMAL, SAFE, MAJORITY, FSYNC_SAFE, JOURNAL_SAFE, REPLICAS_SAFE]")
 	HibernateException unableToSetWriteConcern(String value);
+
+	@LogMessage(level = DEBUG)
+	@Message(id = 1217, value = "Created MongoDB query '%2$s' with projections '%3$s' from HQL/JP-QL query '%1$s'.")
+	void createdMongoDBQuery(String jpqlQuery, DBObject mongoDBQuery, DBObject projections);
 }
