@@ -41,10 +41,14 @@ import java.util.Map;
  *   <li>a {@code DatastoreProvider} instance</li>
  *   <li>a {@code DatastoreProvider} class</li>
  *   <li>a string representing the {@code DatastoreProvider} class</li>
- *   <li>a string reprenseting one of the datastore provider shortcuts</li>
+ *   <li>a string representing one of the datastore provider shortcuts</li>
  * </ul>
  *
  * If the property is not set, Infinispan is used by default.
+ *
+ * This is a {@link SessionFactoryServiceInitiator} because a {@code DatastoreProvider} can be a
+ * {@link org.hibernate.ogm.datastore.StartStoppable} service - the {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
+ * calls {@code StartStoppable} and passes the {@link org.hibernate.SessionFactory}
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Davide D'Alto <davide@hibernate.org>
