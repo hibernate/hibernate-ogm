@@ -131,6 +131,7 @@ public class OneToOneTest extends OgmTestCase {
 		husband.setWife( null );
 		session.delete( husband );
 		session.delete( wife );
+		session.delete( bea2 );
 		transaction.commit();
 		session.close();
 	}

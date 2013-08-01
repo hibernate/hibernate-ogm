@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.service.spi.Stoppable;
 
 /**
  * DatastoreProvider implementations can be started and stopped.
@@ -29,7 +30,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface StartStoppable {
+public interface StartStoppable extends Stoppable {
 	void start(Configuration configuration, SessionFactoryImplementor sessionFactoryImplementor);
-	void stop();
 }
