@@ -36,8 +36,8 @@
     <artifactId>hibernate-ogm-ehcache</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate OGM Ehcache integration</name>
-    <description>Persist data in Ehcache rather than in a relational database</description>
+    <name>Hibernate OGM for Ehcache</name>
+    <description>Persist objects in Ehcache</description>
 
     <dependencies>
         <dependency>

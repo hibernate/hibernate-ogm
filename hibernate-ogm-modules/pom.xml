@@ -32,7 +32,7 @@
     <artifactId>hibernate-ogm-modules</artifactId>
     <packaging>pom</packaging>
 
-    <name>Hibernate OGM Module</name>
+    <name>Hibernate OGM JBoss AS Module</name>
     <description>Build the module to add to JBoss AS</description>
 
     <properties>
