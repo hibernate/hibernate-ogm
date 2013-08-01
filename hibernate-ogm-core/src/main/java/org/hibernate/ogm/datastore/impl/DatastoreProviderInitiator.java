@@ -35,7 +35,15 @@ import java.util.Arrays;
 import java.util.Map;
 
 /**
- * Load DatastoreManager from DATASTORE_MANAGER as string, class or DatastoreManager instance.
+ * Loads the appropriate {@link DatastoreProvider}. Driven by the {@link #DATASTORE_PROVIDER}
+ * property which can receive
+ * <ul>
+ *   <li>a {@code DatastoreProvider} instance</li>
+ *   <li>a {@code DatastoreProvider} class</li>
+ *   <li>a string representing the {@code DatastoreProvider} class</li>
+ *   <li>a string reprenseting one of the datastore provider shortcuts</li>
+ * </ul>
+ *
  * If the property is not set, Infinispan is used by default.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
