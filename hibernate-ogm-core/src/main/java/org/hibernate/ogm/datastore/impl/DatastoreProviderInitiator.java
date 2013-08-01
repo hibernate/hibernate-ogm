@@ -86,17 +86,17 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 			return createDatastore( registry, (String) datastoreProviderProperty );
 		}
 		else if ( datastoreProviderProperty instanceof Class<?> ) {
-			return create( registry, (Class<?>) datastoreProviderProperty );
+			return create( (Class<?>) datastoreProviderProperty );
 		}
 		throw log.unknownDatastoreManagerType( datastoreProviderProperty.getClass().getName() );
 	}
 
 	private DatastoreProvider createDatastore(ServiceRegistryImplementor registry, String managerProperty) {
 		Class<?> dataStoreProviderClass = findDataStoreProviderClass( registry, managerProperty );
-		return create( registry, dataStoreProviderClass );
+		return create( dataStoreProviderClass );
 	}
 
-	private DatastoreProvider create(ServiceRegistryImplementor registry, Class<?> datastoreProviderClass) {
+	private DatastoreProvider create(Class<?> datastoreProviderClass) {
 		try {
 			validate( datastoreProviderClass );
 			return (DatastoreProvider) datastoreProviderClass.newInstance();
