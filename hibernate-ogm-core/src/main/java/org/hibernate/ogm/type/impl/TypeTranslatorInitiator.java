@@ -30,6 +30,11 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
+ * Inialize {@link TypeTranslator}.
+ *
+ * This is a {@linl SessionFactoryServiceInitiator} since it depends on {@link DatastoreServices}
+ * which itself is a {@code SessionFactoryServiceInitiator}.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<TypeTranslator> {

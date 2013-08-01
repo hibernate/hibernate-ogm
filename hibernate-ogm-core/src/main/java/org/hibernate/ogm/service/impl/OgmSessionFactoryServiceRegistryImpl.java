@@ -34,6 +34,9 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 /**
  * Bind services requiring a {@link org.hibernate.SessionFactory}.
  *
+ * Specifically customize the list of SessionFactory services and
+ * execute the {@link StartStoppable} start calls.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
  *
  */

@@ -29,6 +29,11 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
+ * Initialize {@link DatastoreServices}.
+ *
+ * This is a {@link SessionFactoryServiceInitiator} since it depends on {@link GridDialectFactory}
+ * which itself is a {@code SessionFactoryServiceInitiator}.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public final class DatastoreServicesInitiator implements SessionFactoryServiceInitiator<DatastoreServices> {
