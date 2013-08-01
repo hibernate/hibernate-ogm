@@ -36,8 +36,8 @@
     <artifactId>hibernate-ogm-infinispan</artifactId>
     <packaging>jar</packaging>
 
-    <name>Hibernate OGM Infinispan integration</name>
-    <description>Persist data in Infinispan rather than in a relational database</description>
+    <name>Hibernate OGM for Infinispan</name>
+    <description>Persist objects in Infinispan</description>
 
     <dependencies>
         <dependency>

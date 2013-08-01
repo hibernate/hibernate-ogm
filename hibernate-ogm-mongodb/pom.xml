@@ -9,8 +9,8 @@
 
     <artifactId>hibernate-ogm-mongodb</artifactId>
 
-    <name>Hibernate OGM MongoDB integration</name>
-    <description>Persist data in MongoDB system</description>
+    <name>Hibernate OGM for MongoDB</name>
+    <description>Persist objects in MongoDB</description>
 
     <build>
         <plugins>
