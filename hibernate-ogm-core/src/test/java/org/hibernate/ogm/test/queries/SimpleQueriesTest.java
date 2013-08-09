@@ -137,7 +137,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testSelectingCompleteEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
-		thrown.expectMessage( "HQLLUCN000008" );
+		thrown.expectMessage( "HQLLUCN000005" );
 
 		session.createQuery( "select h.author from Hypothesis h" ).list();
 	}
