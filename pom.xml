@@ -132,7 +132,7 @@
         <mongodbVersion>2.10.1</mongodbVersion>
         <hibernateVersion>4.2.0.CR1</hibernateVersion>
         <hibernateSearchVersion>4.4.0.Alpha1</hibernateSearchVersion>
-        <hibernateParserVersion>1.0.0-SNAPSHOT</hibernateParserVersion>
+        <hibernateParserVersion>1.0.0.Alpha3</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
