@@ -72,9 +72,9 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testSimpleQueries() throws Exception {
-		assertQuery( session, 7, session.createQuery(
+		assertQuery( session, 8, session.createQuery(
 				"from Hypothesis" ) );
-		assertQuery( session, 7, session.createQuery(
+		assertQuery( session, 8, session.createQuery(
 				"from org.hibernate.ogm.test.queries.Hypothesis" ) );
 		assertQuery( session, 1, session.createQuery(
 				"from Helicopter" ) );
@@ -82,7 +82,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 8, session.createQuery(
+		assertQuery( session, 9, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -143,7 +143,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testNegatedQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where not h.id = '13'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19", "20" );
 	}
 
 	@Test
@@ -245,19 +245,19 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testGreaterOrEqualsQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position >= 2" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19", "20" );
 	}
 
 	@Test
 	public void testGreaterQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position > 2" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19", "20" );
 	}
 
 	@Test
 	public void testInQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position IN (2, 3, 4)" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "20" );
 	}
 
 	@Test
@@ -285,9 +285,46 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testLikeQueryOnMultiwords() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE 'There are more than%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "20" );
+	}
+
+	@Test
+	public void testLikeQueryOnMultiwordsNoMatch() throws Exception {
+		//It is case-sensitive, as Analysis is disabled on wildcard queries:
+		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE 'there are more than%'" ).list();
+		assertThat( result ).isEmpty();
+	}
+
+	@Test
+	public void testLikeQueryOnMultiwordsAsPrefix() throws Exception {
+		//It is case-sensitive, as Analysis is disabled on wildcard queries:
+		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%e'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
+	}
+
+	@Test
+	public void testLikeQueryOnMultiwordsPrefixed() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%the cave'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13" );
+	}
+
+	@Test
+	public void testNegatedLikeQueryOnMultiwords() throws Exception {
+		//Matching out:
+		// "13" - "There are more than two dimensions over the shadows we see out of the cave"
+		// "17" - "Is the truth out there?"
+		// "18" - "The truth out there."
+		// (first match gets excluded by multi-word negation)
+		List<?> result = session.createQuery( "from Hypothesis h where h.description NOT LIKE '%out of%' and h.description LIKE '%out%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "17", "18" );
+	}
+
+	@Test
 	public void testNotLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description NOT LIKE '%dimensions%'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "17", "18", "19" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "17", "18", "19", "20" );
 	}
 
 	@Test
@@ -305,7 +342,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testIsNotNullQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15", "16", "17", "18" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15", "16", "17", "18", "20" );
 	}
 
 	@Test
@@ -408,6 +445,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 		Helicopter helicopter = new Helicopter();
 		helicopter.setName( "No creative clue " );
 		session.persist( helicopter );
+
+		Hypothesis fool = new Hypothesis();
+		fool.setId( "20" );
+		fool.setDescription( "There are more than two fools in our team." );
+		fool.setPosition( 4 );
+		fool.setDate( calendar.getTime() );
+		session.persist( fool );
 
 		transaction.commit();
 		session.close();
