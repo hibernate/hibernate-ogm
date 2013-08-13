@@ -40,7 +40,6 @@ import org.hibernate.ogm.test.utils.TestSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,18 +72,17 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testSimpleQueries() throws Exception {
-		assertQuery( session, 4, session.createQuery(
+		assertQuery( session, 7, session.createQuery(
 				"from Hypothesis" ) );
-		assertQuery( session, 4, session.createQuery(
+		assertQuery( session, 7, session.createQuery(
 				"from org.hibernate.ogm.test.queries.Hypothesis" ) );
 		assertQuery( session, 1, session.createQuery(
 				"from Helicopter" ) );
 	}
 
 	@Test
-	@Ignore("Requires HSEARCH 4.4 (see HSEARCH-703)")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 5, session.createQuery(
+		assertQuery( session, 8, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -145,7 +143,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testNegatedQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where not h.id = '13'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19" );
+	}
+
+	@Test
+	public void testNegatedQueryOnNumericProperty() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position <> 4" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15", "17", "18", "19" );
 	}
 
 	@Test
@@ -186,7 +190,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		List<?> result = session
 				.createQuery( "from Hypothesis h where h.description BETWEEN 'H' and 'Q'" )
 				.list();
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "17" );
 	}
 
 	@Test
@@ -197,7 +201,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 				.setString( "end", "Peanq" )
 				.list();
 
-		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15" );
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "17" );
 	}
 
 	@Test
@@ -226,6 +230,90 @@ public class SimpleQueriesTest extends OgmTestCase {
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
 	}
 
+	@Test
+	public void testLessQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position < 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
+	}
+
+	@Test
+	public void testLessOrEqualsQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position <= 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15" );
+	}
+
+	@Test
+	public void testGreaterOrEqualsQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position >= 2" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19" );
+	}
+
+	@Test
+	public void testGreaterQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position > 2" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19" );
+	}
+
+	@Test
+	public void testInQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position IN (2, 3, 4)" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16" );
+	}
+
+	@Test
+	public void testInQueryOnEmbeddedEntity() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IN ('alma', 'alfred')" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16" );
+	}
+
+	@Test
+	public void testNotInQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.position NOT IN (3, 4)" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "17", "18", "19" );
+	}
+
+	@Test
+	public void testLikeQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
+	}
+
+	@Test
+	public void testLikeQueryWithSingleCharacterWildCard() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.author.name LIKE 'al_red'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
+	}
+
+	@Test
+	public void testNotLikeQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description NOT LIKE '%dimensions%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "17", "18", "19" );
+	}
+
+	@Test
+	public void testIsNullQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description IS null" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
+	}
+
+	@Test
+	public void testIsNullQueryOnPropertyEmbeddedEntity() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IS null" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
+	}
+
+	@Test
+	public void testIsNotNullQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15", "16", "17", "18" );
+	}
+
+	@Test
+	public void testIsNotNullQueryOnEmbeddedEntity() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.author IS NOT null" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
+	}
+
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		final Session session = sessions.openSession();
@@ -242,6 +330,18 @@ public class SimpleQueriesTest extends OgmTestCase {
 		alfred.setName( "alfred" );
 		alfred.setAddress( mainStreet );
 		session.persist( alfred );
+
+		Author alma = new Author();
+		alma.setId( 2L );
+		alma.setName( "alma" );
+		alma.setAddress( mainStreet );
+		session.persist( alma );
+
+		Author withoutName = new Author();
+		withoutName.setId( 3L );
+		withoutName.setName( null );
+		withoutName.setAddress( mainStreet );
+		session.persist( withoutName );
 
 		Calendar calendar = Calendar.getInstance( TimeZone.getTimeZone( "GMT" ) );
 		calendar.clear();
@@ -260,6 +360,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		peano.setDescription( "Peano's curve and then Hilbert's space filling curve proof the connection from mono-dimensional to bi-dimensional space" );
 		peano.setPosition( 2 );
 		peano.setDate( calendar.getTime() );
+		peano.setAuthor( alma );
 		session.persist( peano );
 
 		calendar.set( Calendar.YEAR, 2010 );
@@ -278,6 +379,31 @@ public class SimpleQueriesTest extends OgmTestCase {
 		shortOne.setDate( calendar.getTime() );
 		shortOne.setAuthor( alfred );
 		session.persist( shortOne );
+
+		calendar.set( Calendar.YEAR, 2008 );
+		Hypothesis truth = new Hypothesis();
+		truth.setId( "17" );
+		truth.setDescription( "Is the truth out there?" );
+		truth.setPosition( 5 );
+		truth.setDate( calendar.getTime() );
+		session.persist( truth );
+
+		calendar.set( Calendar.YEAR, 2007 );
+		Hypothesis truthAnswer = new Hypothesis();
+		truthAnswer.setId( "18" );
+		truthAnswer.setDescription( "The truth out there." );
+		truthAnswer.setPosition( 6 );
+		truthAnswer.setDate( calendar.getTime() );
+		session.persist( truthAnswer );
+
+		calendar.set( Calendar.YEAR, 2006 );
+		Hypothesis noDescription = new Hypothesis();
+		noDescription.setId( "19" );
+		noDescription.setDescription( null );
+		noDescription.setAuthor( withoutName );
+		noDescription.setPosition( 7 );
+		noDescription.setDate( calendar.getTime() );
+		session.persist( noDescription );
 
 		Helicopter helicopter = new Helicopter();
 		helicopter.setName( "No creative clue " );

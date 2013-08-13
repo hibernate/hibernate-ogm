@@ -43,7 +43,7 @@ public class Author {
 	@Id
 	private Long id;
 
-	@Field(store = Store.YES, analyze = Analyze.NO)
+	@Field(store = Store.YES, analyze = Analyze.NO, indexNullAs = "NULL_VALUE")
 	private String name;
 
 	@ContainedIn

@@ -59,7 +59,7 @@ public class Hypothesis {
 		this.id = id;
 	}
 
-	@Field(analyze = Analyze.NO, store = Store.YES)
+	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = Field.DEFAULT_NULL_TOKEN)
 	public String getDescription() {
 		return description;
 	}
@@ -90,7 +90,7 @@ public class Hypothesis {
 	}
 
 	@OneToOne(cascade = { CascadeType.PERSIST, CascadeType.REMOVE })
-	@IndexedEmbedded
+	@IndexedEmbedded(indexNullAs = Field.DEFAULT_NULL_TOKEN)
 	public Author getAuthor() {
 		return author;
 	}
