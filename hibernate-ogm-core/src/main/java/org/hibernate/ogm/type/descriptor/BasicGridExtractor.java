@@ -45,7 +45,7 @@ public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 		@SuppressWarnings( "unchecked" )
 		final J result = (J) resultset.get( name );
 		if ( result == null ) {
-			log.tracef( "found [null] as column [$s]", name );
+			log.tracef( "found [null] as column [%s]", name );
 			return null;
 		}
 		else {

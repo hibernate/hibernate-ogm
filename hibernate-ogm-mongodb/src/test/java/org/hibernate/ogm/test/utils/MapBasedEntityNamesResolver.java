@@ -18,28 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.logging.mongodb.impl;
+package org.hibernate.ogm.test.utils;
 
-import org.jboss.logging.Logger;
+import java.util.Map;
+
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
 
 /**
- * Factory for obtaining {@link Logger} instances.
- *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
- * @author Gunnar Morling
  */
-public class LoggerFactory {
+public class MapBasedEntityNamesResolver implements EntityNamesResolver {
 
-	private static final CallerProvider callerProvider = new CallerProvider();
+	private final Map<String, Class<?>> entityNames;
 
-	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
+	public MapBasedEntityNamesResolver(Map<String, Class<?>> entityNames) {
+		this.entityNames = entityNames;
 	}
 
-	private static class CallerProvider extends SecurityManager {
-
-		public Class<?> getCallerClass() {
-			return getClassContext()[2];
-		}
+	@Override
+	public Class<?> getClassFromName(String entityName) {
+		return entityNames.get( entityName );
 	}
 }

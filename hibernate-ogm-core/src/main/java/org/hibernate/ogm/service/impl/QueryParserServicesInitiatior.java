@@ -22,16 +22,25 @@ package org.hibernate.ogm.service.impl;
 
 import java.util.Map;
 
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
-
 /**
+ * Initiator which contributes a {@link QueryParserService} implementation. The implementation can be configured via
+ * {@link OgmConfiguration#OGM_QUERY_PARSER_SERVICE}.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Gunnar Morling
  */
 class QueryParserServicesInitiatior extends OptionalServiceInitiator<QueryParserService> {
 
-	public static final BasicServiceInitiator INSTANCE = new QueryParserServicesInitiatior();
+	public static final BasicServiceInitiator<QueryParserService> INSTANCE = new QueryParserServicesInitiatior();
+
+	private static final Log log = LoggerFactory.make();
 
 	@Override
 	public Class<QueryParserService> getServiceInitiated() {
@@ -40,13 +49,39 @@ class QueryParserServicesInitiatior extends OptionalServiceInitiator<QueryParser
 
 	@Override
 	protected QueryParserService buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		// TODO pick a service implementation by configuration options?
-		return new LuceneBasedQueryParserService( registry, configurationValues );
+		Object queryParserOption = configurationValues.get( OgmConfiguration.OGM_QUERY_PARSER_SERVICE );
+
+		if ( queryParserOption == null ) {
+			return new LuceneBasedQueryParserService( registry, configurationValues );
+		}
+
+		Class<?> queryParserServiceClass = null;
+
+		if ( queryParserOption instanceof String ) {
+			queryParserServiceClass = registry.getService( ClassLoaderService.class ).classForName( (String) queryParserOption );
+		}
+		else if ( queryParserOption instanceof Class<?> ) {
+			queryParserServiceClass = (Class<?>) queryParserOption;
+		}
+		else {
+			throw log.givenValueForParserServiceConfigurationOptionHasWrongType( queryParserOption );
+		}
+
+		if ( !QueryParserService.class.isAssignableFrom( queryParserServiceClass ) ) {
+			throw log.givenImplementationClassIsOfWrongType( QueryParserService.class.getName(), queryParserServiceClass.getName() );
+		}
+		else {
+			try {
+				return (QueryParserService) queryParserServiceClass.newInstance();
+			}
+			catch (Exception e) {
+				throw log.unableToInstantiateQueryParserService( queryParserServiceClass.getName(), e );
+			}
+		}
 	}
 
 	@Override
 	protected BasicServiceInitiator<QueryParserService> backupInitiator() {
-		return null; //nothing
+		return null; // nothing
 	}
-
 }

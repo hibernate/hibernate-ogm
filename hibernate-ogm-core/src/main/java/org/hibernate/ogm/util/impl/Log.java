@@ -30,6 +30,7 @@ import javax.transaction.SystemException;
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -134,4 +135,13 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = DEBUG)
 	@Message(id = 28, value = "Created Lucene query '%2$s' from HQL/JP-QL query '%1$s'.")
 	void createdLuceneQuery(String jpqlQuery, String luceneQuery);
+
+	@Message(id = 29, value = "Value for option " + OgmConfiguration.OGM_QUERY_PARSER_SERVICE + " must either be of type String or Class<?> but '%s' isn't.")
+	HibernateException givenValueForParserServiceConfigurationOptionHasWrongType(Object queryParserOptionValue);
+
+	@Message(id = 30, value = "Given class %2$s is no implementation/sub-type of %1$s.")
+	HibernateException givenImplementationClassIsOfWrongType(String expectedClassName, String actualClassName);
+
+	@Message(id = 31, value = "Cannot instantiate query parser service %s.")
+	HibernateException unableToInstantiateQueryParserService(String parserServiceClassName, @Cause Exception e);
 }

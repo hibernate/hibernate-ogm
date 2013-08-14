@@ -18,28 +18,63 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.logging.mongodb.impl;
+package org.hibernate.ogm.test.mongodb.query.parsing.model;
 
-import org.jboss.logging.Logger;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
- * Factory for obtaining {@link Logger} instances.
- *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
- * @author Gunnar Morling
  */
-public class LoggerFactory {
+@Entity
+public class IndexedEntity {
 
-	private static final CallerProvider callerProvider = new CallerProvider();
+	private String id;
+	private String name;
+	private long position;
+	private int size;
+	private String title;
 
-	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
+	@Id
+	public String getId() {
+		return id;
 	}
 
-	private static class CallerProvider extends SecurityManager {
+	public void setId(String id) {
+		this.id = id;
+	}
 
-		public Class<?> getCallerClass() {
-			return getClassContext()[2];
-		}
+	@Column(name = "entityName")
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public long getPosition() {
+		return position;
+	}
+
+	public void setPosition(long position) {
+		this.position = position;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 }

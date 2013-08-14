@@ -71,6 +71,7 @@ import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
@@ -107,6 +108,10 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	@Override
 	public OgmSessionFactory getSessionFactory() {
 		return factory;
+	}
+
+	public DatastoreProvider getDataStoreProvider() {
+		return getSessionFactory().getServiceRegistry().getService( DatastoreProvider.class );
 	}
 
 	@Override

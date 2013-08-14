@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,28 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.logging.mongodb.impl;
+package org.hibernate.ogm.dialect.mongodb.query.parsing.predicate;
 
-import org.jboss.logging.Logger;
+import org.hibernate.hql.ast.spi.predicate.EqualsPredicate;
+import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
- * Factory for obtaining {@link Logger} instances.
+ * MongoDB-based implementation of {@link EqualsPredicate}.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
  */
-public class LoggerFactory {
+public class MongoDBEqualsPredicate extends EqualsPredicate<DBObject> implements NegatablePredicate<DBObject> {
 
-	private static final CallerProvider callerProvider = new CallerProvider();
-
-	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
+	public MongoDBEqualsPredicate(String propertyName, Object value) {
+		super( propertyName, value );
 	}
 
-	private static class CallerProvider extends SecurityManager {
+	@Override
+	public DBObject getQuery() {
+		return new BasicDBObject( propertyName, value );
+	}
 
-		public Class<?> getCallerClass() {
-			return getClassContext()[2];
-		}
+	@Override
+	public DBObject getNegatedQuery() {
+		return new BasicDBObject( propertyName, new BasicDBObject( "$ne", value ) );
 	}
 }

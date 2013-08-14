@@ -40,6 +40,13 @@ public class OgmConfiguration extends Configuration {
 
 	public static final String OGM_ON = "hibernate.ogm._activate";
 
+	/**
+	 * Name of the configuration option for specifying the {@link QueryParserService} to be used. Accepts either a
+	 * fully-qualified class name or a class object. If not specified, {@link LuceneBasedQueryParserService} will be
+	 * used.
+	 */
+	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
+
 	public OgmConfiguration() {
 		super();
 		resetOgm();
@@ -68,5 +75,4 @@ public class OgmConfiguration extends Configuration {
 		}
 		return this;
 	}
-
 }
