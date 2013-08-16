@@ -31,8 +31,6 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
@@ -117,10 +115,5 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		catch ( Exception e ) {
 			throw log.unableToConnectToDatastore( this.config.getHost(), this.config.getPort(), e );
 		}
-	}
-
-	@Override
-	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
-		return MongoDBMappingServiceFactory.class;
 	}
 }
