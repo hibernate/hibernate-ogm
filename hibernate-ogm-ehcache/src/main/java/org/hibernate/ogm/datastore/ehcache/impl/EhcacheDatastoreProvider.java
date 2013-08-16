@@ -39,6 +39,8 @@ import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
+import org.hibernate.ogm.options.navigation.impl.NoSqlMappingFactory;
+import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -133,5 +135,10 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 		public void setProperties(Properties properties) {
 			// noop
 		}
+	}
+
+	@Override
+	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
+		return NoSqlMappingFactory.class;
 	}
 }
