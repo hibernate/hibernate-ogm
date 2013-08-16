@@ -39,8 +39,6 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMappingFactory;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -155,10 +153,5 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		@Override
 		public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
-	}
-
-	@Override
-	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
-		return DefaultNoSqlMappingFactory.class;
 	}
 }
