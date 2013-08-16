@@ -20,16 +20,21 @@
  */
 package org.hibernate.ogm.options.spi;
 
-/**
- * Specialized class used by options that are defined only once.
- * Most options should subclass this class
- */
-public abstract class UniqueOption<Type extends UniqueOption<Type>> extends Option<Object, Type> {
-	private static final Object IDENTITY = new Object();
+import java.lang.annotation.Annotation;
 
-	@Override
-	public Object getOptionIdentifier() {
-		return IDENTITY;
-	}
+/**
+ * Convert an {@link Annotation} into an {@link Option} that can be added to an {@link OptionsContainer}.
+ *
+ * @author Davide D'Alto <davide@hibernate.org>
+ */
+public interface AnnotationConverter<T extends Annotation> {
+
+	/**
+	 * The annotation is converted in an Option that can be added to the OptionContainer.
+	 *
+	 * @param annotation
+	 *            representing an option
+	 */
+	Option<?, ?> convert(T annotation);
 
 }

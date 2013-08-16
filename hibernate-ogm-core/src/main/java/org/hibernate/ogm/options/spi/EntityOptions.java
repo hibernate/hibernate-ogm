@@ -21,15 +21,13 @@
 package org.hibernate.ogm.options.spi;
 
 /**
- * Specialized class used by options that are defined only once.
- * Most options should subclass this class
+ * Mapping options specific to an entity and generic to all NoSQL.
+ *
+ * {@code <T>} is the return type of all these methods and is either:
+ * - the mapping context type when used in the mapping declaration API
+ * - the internal mapping model object when used in the mapping generation API
+ *
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class UniqueOption<Type extends UniqueOption<Type>> extends Option<Object, Type> {
-	private static final Object IDENTITY = new Object();
-
-	@Override
-	public Object getOptionIdentifier() {
-		return IDENTITY;
-	}
-
+public interface EntityOptions<T> {
 }

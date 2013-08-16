@@ -20,16 +20,24 @@
  */
 package org.hibernate.ogm.options.spi;
 
-/**
- * Specialized class used by options that are defined only once.
- * Most options should subclass this class
- */
-public abstract class UniqueOption<Type extends UniqueOption<Type>> extends Option<Object, Type> {
-	private static final Object IDENTITY = new Object();
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-	@Override
-	public Object getOptionIdentifier() {
-		return IDENTITY;
-	}
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/**
+ * Identify annotations that can be used as {@link org.hibernate.ogm.options.spi.Option}
+ *
+ * @author Davide D'Alto <davide@hibernate.org>
+ */
+@Target(ANNOTATION_TYPE)
+@Retention(RUNTIME)
+public @interface MappingOption {
+
+	/**
+	 * @return the converter class to use to convert the annotation into an {@link org.hibernate.ogm.options.spi.Option}
+	 */
+	Class<? extends AnnotationConverter<?>> value();
 
 }

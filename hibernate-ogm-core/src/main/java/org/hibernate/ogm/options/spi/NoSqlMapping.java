@@ -20,16 +20,27 @@
  */
 package org.hibernate.ogm.options.spi;
 
-/**
- * Specialized class used by options that are defined only once.
- * Most options should subclass this class
- */
-public abstract class UniqueOption<Type extends UniqueOption<Type>> extends Option<Object, Type> {
-	private static final Object IDENTITY = new Object();
+import org.hibernate.ogm.options.navigation.context.EntityContext;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.context.PropertyContext;
 
-	@Override
-	public Object getOptionIdentifier() {
-		return IDENTITY;
+/**
+ * Mapping programmatic API to set NoSQL generic mapping options.
+ *
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ */
+public interface NoSqlMapping {
+
+	public interface NoSqlGlobalContext<G extends GlobalContext<G, E, P>, E extends EntityContext<G, E, P>, P extends PropertyContext<G, E, P>> extends
+			org.hibernate.ogm.options.navigation.context.GlobalContext<G, E, P> {
+	}
+
+	public interface NoSqlEntityContext<G extends GlobalContext<G, E, P>, E extends EntityContext<G, E, P>, P extends PropertyContext<G, E, P>> extends
+			org.hibernate.ogm.options.navigation.context.EntityContext<G, E, P> {
+	}
+
+	public interface NoSqlPropertyContext<G extends GlobalContext<G, E, P>, E extends EntityContext<G, E, P>, P extends PropertyContext<G, E, P>> extends
+			org.hibernate.ogm.options.navigation.context.PropertyContext<G, E, P> {
 	}
 
 }
