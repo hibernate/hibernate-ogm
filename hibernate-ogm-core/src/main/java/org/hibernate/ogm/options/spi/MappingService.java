@@ -20,53 +20,37 @@
  */
 package org.hibernate.ogm.options.spi;
 
+import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.service.Service;
+
 /**
- * A configuration value.
+ * Provide OGM specific metadata information.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * TODO
+ * Need to access the global options, and the entity specific options
+ * Should be able to provide basic options as well as per name
+ * options (later) and an api to override options (ie per session)
+ *
+ * probably add the bility to set the per session option
+ * at the service level so that it's visible when you need it in the right
+ * context. Need to pass the session as unique id and needs to remove
+ * it once the operation is done. how to do that when sessions are not closed???
+ * Weak HasMp but concurrent???
+ *
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class Option<I, T extends Option<I, T>> {
+public interface MappingService extends Service {
 
-	private final Class<T> type;
+	MappingServiceContext context();
 
-	@SuppressWarnings("unchecked")
-	public Option() {
-		type = (Class<T>) getClass();
-	}
+	MappingServiceContext context(SessionImplementor session);
 
-	public abstract I getOptionIdentifier();
+	public interface MappingServiceContext {
+		OptionsContainer getGlobalOptions();
 
-	public Class<T> getOptionType() {
-		return type;
-	}
+		OptionsContainer getEntityOptions(Class<?> entityType);
 
-	@Override
-	public boolean equals(Object o) {
-		if ( this == o ) {
-			return true;
-		}
-		if ( o == null || getClass() != o.getClass() ) {
-			return false;
-		}
-
-		@SuppressWarnings("unchecked")
-		Option<I, T> option = (Option<I, T>) o;
-
-		if ( !getOptionIdentifier().equals( option.getOptionIdentifier() ) ) {
-			return false;
-		}
-		if ( !type.equals( option.type ) ) {
-			return false;
-		}
-
-		return true;
-	}
-
-	@Override
-	public int hashCode() {
-		int result = type.hashCode();
-		result = 31 * result + getOptionIdentifier().hashCode();
-		return result;
+		OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName);
 	}
 
 }
