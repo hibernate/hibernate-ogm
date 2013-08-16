@@ -33,6 +33,8 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMappingFactory;
+import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.jndi.spi.JndiService;
@@ -192,5 +194,10 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	@Override
 	public void configure(Map configurationValues) {
 		this.config.initConfiguration( configurationValues );
+	}
+
+	@Override
+	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
+		return DefaultNoSqlMappingFactory.class;
 	}
 }
