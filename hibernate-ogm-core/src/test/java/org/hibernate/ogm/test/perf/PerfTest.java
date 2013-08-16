@@ -20,13 +20,15 @@
  */
 package org.hibernate.ogm.test.perf;
 
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
+import static org.fest.assertions.Assertions.assertThat;
 
-import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.Random;
 
-import static org.fest.assertions.Assertions.assertThat;
+import javax.persistence.EntityManager;
+
+import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
+import org.junit.Ignore;
 
 /**
  * Fire up jconsole and make sure the end of the populating phase does not go over the amount of RAM you
@@ -34,6 +36,7 @@ import static org.fest.assertions.Assertions.assertThat;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
+@Ignore
 public class PerfTest extends JpaTestCase {
 
 	private static Random rand = new Random();
