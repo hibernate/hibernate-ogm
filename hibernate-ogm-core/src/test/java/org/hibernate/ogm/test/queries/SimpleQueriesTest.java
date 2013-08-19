@@ -245,28 +245,36 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLessQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position < 3" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
+	public void testNotLessQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where NOT h.position < 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19", "20" );
+	}
+
+	@Test
 	public void testLessOrEqualsQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position <= 3" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
+	public void testNotLessOrEqualsQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where NOT h.position <= 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "16", "17", "18", "19", "20" );
+	}
+
+	@Test
 	public void testGreaterOrEqualsQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position >= 2" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "17", "18", "19", "20" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testGreaterQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position > 2" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19", "20" );

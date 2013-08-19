@@ -95,6 +95,13 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	}
 
 	@Test
+	public void shouldCreateLessOrEqualQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.position <= 20",
+				"{ \"position\" : { \"$lte\" : 20}}" );
+	}
+
+	@Test
 	public void shouldCreateQueryWithNegationInWhereClause() {
 		assertMongoDbQuery(
 				"select e from IndexedEntity e where e.name <> 'Bob'",
