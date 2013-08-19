@@ -29,7 +29,7 @@ import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSq
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class DefaultNoSqlEntityContextImpl extends NoSqlEntityContextImpl<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlEntityContext {
+public class DefaultNoSqlEntityContextImpl extends NoSqlEntityContextImpl<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlEntityContext {
 
 	public DefaultNoSqlEntityContextImpl(MappingContext context, DefaultNoSqlGlobalContext global, Class<?> type) {
 		super( context, global, type );

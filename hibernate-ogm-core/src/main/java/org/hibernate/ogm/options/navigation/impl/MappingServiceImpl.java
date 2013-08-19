@@ -43,9 +43,9 @@ public class MappingServiceImpl implements MappingService {
 
 	private final MappingFactory<?> mappingServiceFactory;
 
-	private ServiceRegistryImplementor registry;
+	private final ServiceRegistryImplementor registry;
 
-	private SessionFactoryImplementor sessionFactoryImplementor;
+	private final SessionFactoryImplementor sessionFactoryImplementor;
 
 	public MappingServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.mappingServiceFactory = factory;
@@ -67,12 +67,12 @@ public class MappingServiceImpl implements MappingService {
 
 	private MappingContext createContext(ClassLoaderService classLoaderService) {
 		MappingContext context = new MappingContext();
-		GlobalContext<?, ?, ?> globalContext = mappingServiceFactory.createMapping( context );
+		GlobalContext<?, ?> globalContext = mappingServiceFactory.createMapping( context );
 		initializeContext( classLoaderService, globalContext );
 		return context;
 	}
 
-	private void initializeContext(ClassLoaderService classLoaderService, GlobalContext<?, ?, ?> globalContext) {
+	private void initializeContext(ClassLoaderService classLoaderService, GlobalContext<?, ?> globalContext) {
 		Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
 		for ( EntityPersister persister : entityPersisters.values() ) {
 			String entityName = persister.getEntityName();

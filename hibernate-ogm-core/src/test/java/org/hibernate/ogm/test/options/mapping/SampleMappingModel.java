@@ -25,10 +25,10 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
+import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.navigation.impl.NoSqlEntityContextImpl;
 import org.hibernate.ogm.options.navigation.impl.NoSqlGlobalContextImpl;
 import org.hibernate.ogm.options.navigation.impl.NoSqlPropertyContextImpl;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -38,41 +38,23 @@ import org.hibernate.ogm.test.options.examples.NameExampleOption;
  */
 public class SampleMappingModel {
 
-	public interface SampleGlobalOptions<G> {
-
-		G force(boolean force);
-
+	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
+		SampleGlobalContext force(boolean force);
 	}
 
-	public interface SampleEntityOptions<E> {
-
+	public interface SampleEntityContext extends EntityContext<SampleEntityContext, SamplePropertyContext> {
 		// inherited
-		E force(boolean force);
+		SampleEntityContext force(boolean force);
 
-		E name(String name);
-
+		SampleEntityContext name(String name);
 	}
 
-	public interface SamplePropertyOptions<P> {
-
-		P embed(Object object);
-
-	}
-
-	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>,
-			SampleGlobalOptions<SampleGlobalContext> {
-	}
-
-	public interface SampleEntityContext extends EntityContext<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>,
-			SampleEntityOptions<SampleEntityContext> {
-	}
-
-	public interface SamplePropertyContext extends PropertyContext<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>,
-			SamplePropertyOptions<SamplePropertyContext> {
+	public interface SamplePropertyContext extends PropertyContext<SampleEntityContext, SamplePropertyContext> {
+		SamplePropertyContext embed(Object object);
 	}
 
 	public static class SampleGlobalContextImpl
-			extends NoSqlGlobalContextImpl<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>
+			extends NoSqlGlobalContextImpl<SampleGlobalContext, SampleEntityContext>
 			implements SampleGlobalContext {
 
 		public SampleGlobalContextImpl(MappingContext context) {
@@ -93,7 +75,7 @@ public class SampleMappingModel {
 	}
 
 	public static class SampleEntityContextImpl
-			extends NoSqlEntityContextImpl<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>
+			extends NoSqlEntityContextImpl<SampleEntityContext, SamplePropertyContext>
 			implements SampleEntityContext {
 
 		public SampleEntityContextImpl(MappingContext context, SampleGlobalContext global, Class<?> type) {
@@ -120,7 +102,7 @@ public class SampleMappingModel {
 	}
 
 	public static class SamplePropertyContextImpl
-			extends NoSqlPropertyContextImpl<SampleGlobalContext, SampleEntityContext, SamplePropertyContext>
+			extends NoSqlPropertyContextImpl<SampleEntityContext, SamplePropertyContext>
 			implements SamplePropertyContext {
 
 		public SamplePropertyContextImpl(MappingContext context, SampleEntityContext entity, Class<?> type, String propertyName) {

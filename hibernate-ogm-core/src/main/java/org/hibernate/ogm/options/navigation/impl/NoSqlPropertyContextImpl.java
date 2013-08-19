@@ -23,18 +23,16 @@ package org.hibernate.ogm.options.navigation.impl;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
+import org.hibernate.ogm.options.spi.Option;
 
 /**
  * Container the common parts of different implementation of {@link PropertyContext}
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class NoSqlPropertyContextImpl<G extends GlobalContext<G, E, P>, E extends EntityContext<G, E, P>, P extends PropertyContext<G, E, P>>
-		implements NoSqlPropertyContext<G, E, P> {
+public abstract class NoSqlPropertyContextImpl<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> implements NoSqlPropertyContext<E, P> {
 
 	private final MappingContext context;
 	private final E entity;
@@ -48,10 +46,12 @@ public abstract class NoSqlPropertyContextImpl<G extends GlobalContext<G, E, P>,
 		this.context = context;
 	}
 
+	@Override
 	public E entity(Class<?> type) {
 		return this.entity.entity( type );
 	}
 
+	@Override
 	public P property(String propertyName, ElementType target) {
 		return this.entity.property( propertyName, target );
 	}

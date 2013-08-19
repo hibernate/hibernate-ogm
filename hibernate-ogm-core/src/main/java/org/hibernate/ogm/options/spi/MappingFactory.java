@@ -29,7 +29,7 @@ import org.hibernate.service.Service;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface MappingFactory<G extends GlobalContext<?, ?, ?>> extends Service {
+public interface MappingFactory<G extends GlobalContext<?, ?>> extends Service {
 
 	/**
 	 * @return a new instance of a {@link MappingContext}

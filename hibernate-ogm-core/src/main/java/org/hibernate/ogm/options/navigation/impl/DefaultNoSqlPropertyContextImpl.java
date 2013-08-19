@@ -21,14 +21,13 @@
 package org.hibernate.ogm.options.navigation.impl;
 
 import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlEntityContext;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlPropertyContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class DefaultNoSqlPropertyContextImpl extends
-		NoSqlPropertyContextImpl<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlPropertyContext {
+		NoSqlPropertyContextImpl<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlPropertyContext {
 
 	public DefaultNoSqlPropertyContextImpl(MappingContext context, DefaultNoSqlEntityContext entity, Class<?> type, String propertyName) {
 		super( context, entity, type, propertyName );

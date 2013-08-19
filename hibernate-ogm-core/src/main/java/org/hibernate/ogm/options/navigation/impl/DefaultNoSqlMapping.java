@@ -34,19 +34,19 @@ public interface DefaultNoSqlMapping {
 	/**
 	 * A generic {@link NoSqlGlobalContext} that can be used with every provider
 	 */
-	public interface DefaultNoSqlGlobalContext extends NoSqlGlobalContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+	public interface DefaultNoSqlGlobalContext extends NoSqlGlobalContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext> {
 	}
 
 	/**
 	 * A generic {@link NoSqlEntityContext} that can be used with every provider
 	 */
-	public interface DefaultNoSqlEntityContext extends NoSqlEntityContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+	public interface DefaultNoSqlEntityContext extends NoSqlEntityContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
 	}
 
 	/**
 	 * A generic {@link NoSqlPropertyContext} that can be used with every provider
 	 */
-	public interface DefaultNoSqlPropertyContext extends NoSqlPropertyContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+	public interface DefaultNoSqlPropertyContext extends NoSqlPropertyContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
 	}
 
 }

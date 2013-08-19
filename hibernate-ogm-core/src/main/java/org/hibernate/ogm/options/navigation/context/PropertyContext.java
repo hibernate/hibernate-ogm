@@ -20,17 +20,16 @@
  */
 package org.hibernate.ogm.options.navigation.context;
 
-import org.hibernate.ogm.options.spi.PropertyOptions;
-
 import java.lang.annotation.ElementType;
+
+import org.hibernate.ogm.options.spi.PropertyOptions;
 
 /**
  * Property level to the mapping API
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface PropertyContext<G extends GlobalContext<G,E,P>, E extends EntityContext<G,E,P>, P extends PropertyContext<G,E,P>>
-		extends PropertyOptions<P> {
+public interface PropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends PropertyOptions<P> {
 
 	/**
 	 * Specify mapping for the entity {@code type}
