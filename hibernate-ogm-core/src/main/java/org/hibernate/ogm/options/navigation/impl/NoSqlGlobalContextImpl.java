@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.options.generic.NamedQueryOption;
-import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
 import org.hibernate.ogm.options.spi.Option;
 
@@ -34,7 +34,7 @@ import org.hibernate.ogm.options.spi.Option;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class NoSqlGlobalContextImpl<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> implements NoSqlGlobalContext<G, E> {
+public abstract class NoSqlGlobalContextImpl<G extends NoSqlGlobalContext<G, E>, E extends NoSqlEntityContext<E, ?>> implements NoSqlGlobalContext<G, E> {
 
 	private final Map<Class<?>, E> entities = new HashMap<Class<?>, E>();
 	private final MappingContext context;

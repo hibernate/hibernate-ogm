@@ -31,13 +31,13 @@ import org.hibernate.ogm.options.navigation.context.PropertyContext;
  */
 public interface NoSqlMapping {
 
-	public interface NoSqlGlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalContext<G, E> {
+	public interface NoSqlGlobalContext<G extends NoSqlGlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalContext<G, E> {
 	}
 
-	public interface NoSqlEntityContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends EntityContext<E, P> {
+	public interface NoSqlEntityContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends EntityContext<E, P> {
 	}
 
-	public interface NoSqlPropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends PropertyContext<E, P> {
+	public interface NoSqlPropertyContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends PropertyContext<E, P> {
 	}
 
 }
