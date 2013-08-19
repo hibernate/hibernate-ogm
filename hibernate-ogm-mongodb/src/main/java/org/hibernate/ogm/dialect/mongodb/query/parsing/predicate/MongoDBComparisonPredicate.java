@@ -39,12 +39,12 @@ public class MongoDBComparisonPredicate extends ComparisonPredicate<DBObject> im
 
 	@Override
 	protected DBObject getStrictlyLessQuery() {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		return new BasicDBObject( propertyName, new BasicDBObject( "$lt", value ) );
 	}
 
 	@Override
 	protected DBObject getLessOrEqualsQuery() {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		return new BasicDBObject( propertyName, new BasicDBObject( "$lte", value ) );
 	}
 
 	@Override
@@ -54,16 +54,29 @@ public class MongoDBComparisonPredicate extends ComparisonPredicate<DBObject> im
 
 	@Override
 	protected DBObject getGreaterOrEqualsQuery() {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		return new BasicDBObject( propertyName, new BasicDBObject( "$gte", value ) );
 	}
 
 	@Override
 	protected DBObject getStrictlyGreaterQuery() {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		return new BasicDBObject( propertyName, new BasicDBObject( "$gt", value ) );
 	}
 
 	@Override
 	public DBObject getNegatedQuery() {
-		return new BasicDBObject( propertyName, new BasicDBObject( "$ne", value ) );
+		switch ( type ) {
+			case LESS:
+				return new BasicDBObject( propertyName, new BasicDBObject( "$gte", value ) );
+			case LESS_OR_EQUAL:
+				return new BasicDBObject( propertyName, new BasicDBObject( "$gt", value ) );
+			case EQUALS:
+				return new BasicDBObject( propertyName, new BasicDBObject( "$ne", value ) );
+			case GREATER_OR_EQUAL:
+				return new BasicDBObject( propertyName, new BasicDBObject( "$lt", value ) );
+			case GREATER:
+				return new BasicDBObject( propertyName, new BasicDBObject( "$lte", value ) );
+			default:
+				throw new UnsupportedOperationException( "Unsupported comparison type: " + type );
+		}
 	}
 }
