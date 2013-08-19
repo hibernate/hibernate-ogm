@@ -28,7 +28,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.junit.runner.notification.RunNotifier;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -79,7 +78,7 @@ import org.junit.runners.model.InitializationError;
  * @see OgmTestCase Base class for tests which is configured with this runner for ease of use
  * @author Gunnar Morling
  */
-public class OgmTestRunner extends BlockJUnit4ClassRunner {
+public class OgmTestRunner extends GridDialectSkippableTestRunner {
 
 	private SessionFactory sessionFactory;
 
@@ -99,22 +98,6 @@ public class OgmTestRunner extends BlockJUnit4ClassRunner {
 			TestHelper.dropSchemaAndDatabase( sessionFactory );
 			sessionFactory.close();
 		}
-	}
-
-	@Override
-	protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
-		SkipByGridDialect skipByGridDialect = method.getAnnotation( SkipByGridDialect.class );
-
-		if ( skipByGridDialect != null ) {
-			for ( GridDialectType gridDialectType : skipByGridDialect.value() ) {
-				if ( gridDialectType.equals( TestHelper.getCurrentDialectType() ) ) {
-					notifier.fireTestIgnored( describeChild( method ) );
-					return;
-				}
-			}
-		}
-
-		super.runChild( method, notifier );
 	}
 
 	protected SessionFactory buildSessionFactory() {
