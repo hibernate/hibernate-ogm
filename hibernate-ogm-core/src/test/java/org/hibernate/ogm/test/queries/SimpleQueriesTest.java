@@ -368,7 +368,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testIsNullQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description IS null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
@@ -382,7 +381,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testIsNotNullQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15", "16", "17", "18", "20" );
