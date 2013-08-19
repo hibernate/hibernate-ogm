@@ -22,8 +22,8 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
+import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 
@@ -32,7 +32,7 @@ import org.hibernate.ogm.options.spi.Option;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class NoSqlPropertyContextImpl<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> implements NoSqlPropertyContext<E, P> {
+public abstract class NoSqlPropertyContextImpl<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> implements NoSqlPropertyContext<E, P> {
 
 	private final MappingContext context;
 	private final E entity;
