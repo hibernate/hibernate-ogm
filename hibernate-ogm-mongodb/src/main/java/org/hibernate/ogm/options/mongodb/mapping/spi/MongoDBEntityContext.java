@@ -27,7 +27,7 @@ import com.mongodb.WriteConcern;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface MongoDBEntityContext extends NoSqlEntityContext<MongoDBGlobalContext, MongoDBEntityContext, MongoDBPropertyContext> {
+public interface MongoDBEntityContext extends NoSqlEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
 
 	MongoDBEntityContext writeConcern(WriteConcern concern);
 

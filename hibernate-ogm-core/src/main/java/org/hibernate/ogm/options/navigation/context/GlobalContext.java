@@ -27,8 +27,7 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface GlobalContext<G extends GlobalContext<G,E,P>, E extends EntityContext<G,E,P>, P extends PropertyContext<G,E,P>>
-		extends GlobalOptions<G> {
+public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalOptions<G> {
 
 	/**
 	 * Specify mapping for the entity {@code type}

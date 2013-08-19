@@ -25,31 +25,33 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
+import org.hibernate.ogm.options.spi.Option;
 
 /**
  * Container the common parts of different implementation of {@link EntityContext}
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class NoSqlEntityContextImpl<G extends GlobalContext<G, E, P>, E extends EntityContext<G, E, P>, P extends PropertyContext<G, E, P>> implements
-		NoSqlEntityContext<G, E, P> {
+public abstract class NoSqlEntityContextImpl<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> implements
+		NoSqlEntityContext<E, P> {
 
-	private final G global;
+	private final GlobalContext<?, E> global;
 	private final Class<?> type;
 	private final MappingContext context;
 
-	public NoSqlEntityContextImpl(MappingContext context, G global, Class<?> type) {
+	public NoSqlEntityContextImpl(MappingContext context, GlobalContext<?, E> global, Class<?> type) {
 		this.global = global;
 		this.type = type;
 		this.context = context;
 	}
 
+	@Override
 	public E entity(Class<?> type) {
 		return global.entity( type );
 	}
 
+	@Override
 	public abstract P property(String propertyName, ElementType field);
 
 	protected final void addOption(Option<?, ?> option) {

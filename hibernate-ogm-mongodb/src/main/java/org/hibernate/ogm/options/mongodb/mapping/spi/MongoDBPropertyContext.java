@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface MongoDBPropertyContext extends NoSqlPropertyContext<MongoDBGlobalContext, MongoDBEntityContext, MongoDBPropertyContext> {
+public interface MongoDBPropertyContext extends NoSqlPropertyContext<MongoDBEntityContext, MongoDBPropertyContext> {
 
 	MongoDBPropertyContext associationStorage(AssociationStorage storage);
 

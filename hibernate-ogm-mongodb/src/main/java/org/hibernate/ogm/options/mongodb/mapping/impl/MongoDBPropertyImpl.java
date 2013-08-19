@@ -23,15 +23,14 @@ package org.hibernate.ogm.options.mongodb.mapping.impl;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
-import org.hibernate.ogm.options.navigation.impl.NoSqlPropertyContextImpl;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.NoSqlPropertyContextImpl;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class MongoDBPropertyImpl extends NoSqlPropertyContextImpl<MongoDBGlobalContext, MongoDBEntityContext, MongoDBPropertyContext> implements MongoDBPropertyContext {
+public class MongoDBPropertyImpl extends NoSqlPropertyContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements MongoDBPropertyContext {
 
 	public MongoDBPropertyImpl(MappingContext context, MongoDBEntityContext entity, Class<?> type, String propertyName) {
 		super( context, entity, type, propertyName );

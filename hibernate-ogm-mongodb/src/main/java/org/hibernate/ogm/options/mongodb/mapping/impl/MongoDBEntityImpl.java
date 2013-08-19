@@ -26,15 +26,15 @@ import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
-import org.hibernate.ogm.options.navigation.impl.NoSqlEntityContextImpl;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.NoSqlEntityContextImpl;
 
 import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class MongoDBEntityImpl extends NoSqlEntityContextImpl<MongoDBGlobalContext, MongoDBEntityContext, MongoDBPropertyContext> implements MongoDBEntityContext {
+public class MongoDBEntityImpl extends NoSqlEntityContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements MongoDBEntityContext {
 
 	public MongoDBEntityImpl(MappingContext context, MongoDBGlobalContext global, Class<?> type) {
 		super( context, global, type );

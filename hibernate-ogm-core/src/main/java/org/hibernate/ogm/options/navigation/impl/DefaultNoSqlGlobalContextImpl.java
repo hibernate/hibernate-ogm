@@ -22,12 +22,11 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlEntityContext;
 import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlPropertyContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class DefaultNoSqlGlobalContextImpl extends NoSqlGlobalContextImpl<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlGlobalContext {
+public class DefaultNoSqlGlobalContextImpl extends NoSqlGlobalContextImpl<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext> implements DefaultNoSqlGlobalContext {
 
 	public DefaultNoSqlGlobalContextImpl(MappingContext context) {
 		super( context );
