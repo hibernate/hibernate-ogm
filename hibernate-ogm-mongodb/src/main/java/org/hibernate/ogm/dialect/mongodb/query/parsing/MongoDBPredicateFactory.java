@@ -37,6 +37,7 @@ import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBComparis
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBConjunctionPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBDisjunctionPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBInPredicate;
+import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBIsNullPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBLikePredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBNegationPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBRangePredicate;
@@ -98,7 +99,8 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public IsNullPredicate<DBObject> getIsNullPredicate(Class<?> entityType, List<String> propertyPath) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		return new MongoDBIsNullPredicate( columnName );
 	}
 
 	@Override

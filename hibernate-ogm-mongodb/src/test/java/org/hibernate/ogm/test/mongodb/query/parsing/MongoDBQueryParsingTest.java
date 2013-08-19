@@ -218,6 +218,24 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"}");
 	}
 
+	@Test
+	public void shouldCreateIsNullQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title is null",
+				"{ \"title\" : " +
+					"{ \"$exists\" : false}" +
+				"}" );
+	}
+
+	@Test
+	public void shouldCreateIsNotNullQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title is not null",
+				"{ \"title\" : " +
+					"{ \"$exists\" : true}" +
+				"}" );
+	}
+
 	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery) {
 		assertMongoDbQuery( queryString, null, expectedMongoDbQuery );
 	}
