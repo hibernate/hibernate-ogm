@@ -87,12 +87,6 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-        <!-- this is optional on core :( and needed for testing -->
-        <dependency>
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
             <artifactId>jbossjta</artifactId>
