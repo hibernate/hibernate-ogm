@@ -339,6 +339,11 @@
             </dependency>
 
             <!-- utils -->
+            <dependency>
+                <groupId>org.hibernate.common</groupId>
+                <artifactId>hibernate-commons-annotations</artifactId>
+                <version>4.0.2.Final</version>
+            </dependency>
 
             <!-- Tests -->
             <dependency>
@@ -582,7 +587,7 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>enforce-java</id>
+                        <id>enforce-rules</id>
                         <goals>
                             <goal>enforce</goal>
                         </goals>
@@ -594,6 +599,7 @@
                             <!-- require JDK 1.6 to run the build -->
                             <version>[1.6,)</version>
                         </requireJavaVersion>
+                        <DependencyConvergence/>
                     </rules>
                 </configuration>
             </plugin>
