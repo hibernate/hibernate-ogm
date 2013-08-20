@@ -17,6 +17,10 @@
         <version.arquillian>1.0.3.Final</version.arquillian>
         <version.arquillian.jboss.as>7.2.0.Final</version.arquillian.jboss.as>
         <version.shrinkwrapResolver>2.0.0-alpha-1</version.shrinkwrapResolver>
+
+        <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
+            convergence issues -->
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <dependencyManagement>
