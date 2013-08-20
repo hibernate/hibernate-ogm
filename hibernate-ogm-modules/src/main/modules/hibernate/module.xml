@@ -27,7 +27,7 @@
         <resource-root path="hibernate-core-${hibernateVersion}.jar" />
         <resource-root path="hibernate-entitymanager-${hibernateVersion}.jar" />
         <resource-root path="hibernate-infinispan-${hibernateVersion}.jar" />
-        <resource-root path="hibernate-commons-annotations-4.0.1.Final.jar" />
+        <resource-root path="hibernate-commons-annotations-4.0.2.Final.jar" />
         <resource-root path="hibernate-envers-4.0.1.Final.jar" />
     </resources>
 
