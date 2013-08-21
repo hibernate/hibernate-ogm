@@ -21,10 +21,9 @@
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.GlobalOptionsImpl;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.NoSqlGlobalContextImpl;
 
 import com.mongodb.WriteConcern;
 
@@ -32,21 +31,15 @@ import com.mongodb.WriteConcern;
  * @author Davide D'Alto <davide@hibernate.org>
  *
  */
-public class MongoDBGlobalImpl extends NoSqlGlobalContextImpl<MongoDBGlobalContext, MongoDBEntityContext> implements MongoDBGlobalContext {
+public abstract class MongoDBGlobalImpl extends GlobalOptionsImpl<MongoDBGlobalContext> implements MongoDBGlobalContext {
 
 	public MongoDBGlobalImpl(MappingContext context) {
 		super( context );
 	}
 
 	@Override
-	public MongoDBEntityContext entity(Class<?> type) {
-		return entity( type, new MongoDBEntityImpl( context(), this, type ) );
-	}
-
-	@Override
 	public MongoDBGlobalContext writeConcern(WriteConcern concern) {
-		addOption( new WriteConcernOption( concern ) );
+		addGlobalOption( new WriteConcernOption( concern ) );
 		return this;
 	}
-
 }

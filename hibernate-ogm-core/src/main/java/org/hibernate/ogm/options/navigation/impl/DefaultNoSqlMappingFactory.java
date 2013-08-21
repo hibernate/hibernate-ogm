@@ -20,19 +20,43 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlGlobalContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
+import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
+import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
+import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
 
 /**
- * Factory for the {@link DefaultNoSqlGlobalContext}
+ * A {@link MappingFactory} implementation which returns a default {@link NoSqlGlobalContext} that provides no
+ * store-specific options.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public class DefaultNoSqlMappingFactory implements MappingFactory<DefaultNoSqlGlobalContext> {
+@SuppressWarnings("unused")
+public class DefaultNoSqlMappingFactory implements MappingFactory<NoSqlGlobalContext<?, ?>> {
 
 	@Override
-	public DefaultNoSqlGlobalContext createMapping(MappingContext context) {
-		return new DefaultNoSqlGlobalContextImpl( context );
+	public NoSqlGlobalContext<?, ?> createMapping(MappingContext context) {
+		return context.createGlobalContext( DefaultNoSqlGlobalContext.class, DefaultNoSqlEntityContext.class, DefaultNoSqlPropertyContext.class );
 	}
 
+	private abstract static class DefaultNoSqlGlobalContext extends GlobalOptionsImpl<DefaultNoSqlGlobalContext> implements
+			NoSqlGlobalContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext> {
+
+		public DefaultNoSqlGlobalContext(MappingContext context) {
+			super( context );
+		}
+	}
+
+	private abstract static class DefaultNoSqlEntityContext implements NoSqlEntityContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+
+		public DefaultNoSqlEntityContext(MappingContext context) {
+		}
+	}
+
+	private abstract static class DefaultNoSqlPropertyContext implements NoSqlPropertyContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+
+		public DefaultNoSqlPropertyContext(MappingContext context) {
+		}
+	}
 }

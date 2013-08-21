@@ -20,17 +20,24 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlEntityContext;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMapping.DefaultNoSqlPropertyContext;
+import org.hibernate.ogm.options.generic.NamedQueryOption;
+import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
+ * Implementation for options declared by {@link GlobalOptions}.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public class DefaultNoSqlPropertyContextImpl extends
-		NoSqlPropertyContextImpl<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> implements DefaultNoSqlPropertyContext {
+public abstract class GlobalOptionsImpl<G extends GlobalOptions<G>> extends OptionSupport implements GlobalOptions<G> {
 
-	public DefaultNoSqlPropertyContextImpl(MappingContext context, DefaultNoSqlEntityContext entity, Class<?> type, String propertyName) {
-		super( context, entity, type, propertyName );
+	public GlobalOptionsImpl(MappingContext context) {
+		super( context );
 	}
 
+	@Override
+	public G namedQuery(String name, String hql) {
+		addGlobalOption( new NamedQueryOption( name, hql ) );
+		return (G) this;
+	}
 }

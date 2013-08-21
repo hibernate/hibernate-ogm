@@ -31,7 +31,6 @@ public class MongoDBMappingServiceFactory implements MappingFactory<MongoDBGloba
 
 	@Override
 	public MongoDBGlobalContext createMapping(MappingContext context) {
-		return new MongoDBGlobalImpl(context);
+		return context.createGlobalContext( MongoDBGlobalImpl.class, MongoDBEntityImpl.class, MongoDBPropertyImpl.class );
 	}
-
 }

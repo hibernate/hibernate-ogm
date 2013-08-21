@@ -48,12 +48,13 @@ public class AnnotationProcessor {
 	 * @param entityClass class of the entity annotated with the options
 	 */
 	public static void saveEntityOptions(final MappingContext context, final Class<?> entityClass) {
+		context.configureEntity( entityClass );
 		Annotation[] annotations = entityClass.getAnnotations();
 		saveOptions( new ContextCommand() {
 
 			@Override
 			public void add(Option<?, ?> option) {
-				context.addEntityOption( entityClass, option );
+				context.addEntityOption( option );
 			}
 
 		}, annotations );
@@ -66,22 +67,25 @@ public class AnnotationProcessor {
 	 * @param entityClass class containing the option annotation
 	 */
 	public static void savePropertyOptions(final MappingContext context, final Class<?> entityClass) {
+		context.configureEntity( entityClass );
 		for ( final Method method : entityClass.getMethods() ) {
+			context.configureProperty( method.getName() );
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?, ?> option) {
-					context.addPropertyOption( entityClass, method.getName(), option );
+					context.addPropertyOption( option );
 				}
 
 			}, method.getAnnotations() );
 		}
 		for ( final Field field : entityClass.getFields() ) {
+			context.configureProperty( field.getName() );
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?, ?> option) {
-					context.addPropertyOption( entityClass, field.getName(), option );
+					context.addPropertyOption( option );
 				}
 
 			}, field.getAnnotations() );

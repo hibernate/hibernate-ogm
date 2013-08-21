@@ -56,7 +56,8 @@ public class MappingContextTest {
 	@Test
 	public void shouldBeAbleToAddEntityOption() throws Exception {
 		MappingContext context = new MappingContext();
-		context.addEntityOption( ContextExample.class, ForceExampleOption.TRUE );
+		context.configureEntity( ContextExample.class );
+		context.addEntityOption( ForceExampleOption.TRUE );
 		OptionsContainer optionsContainer = context.getOptionsPerEntity().get( ContextExample.class );
 		Iterator<Option<?, ?>> iterator = optionsContainer.iterator();
 
@@ -67,7 +68,9 @@ public class MappingContextTest {
 	@Test
 	public void shouldBeAbleToAddPropertyOption() throws Exception {
 		MappingContext context = new MappingContext();
-		context.addPropertyOption( ContextExample.class, "property", ForceExampleOption.TRUE );
+		context.configureEntity( ContextExample.class );
+		context.configureProperty( "property" );
+		context.addPropertyOption( ForceExampleOption.TRUE );
 		OptionsContainer optionsContainer = context.getOptionsPerProperty().get( new PropertyKey( ContextExample.class, "property" ) );
 		Iterator<Option<?, ?>> iterator = optionsContainer.iterator();
 
