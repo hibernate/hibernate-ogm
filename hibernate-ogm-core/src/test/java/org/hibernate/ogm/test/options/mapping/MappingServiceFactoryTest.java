@@ -49,12 +49,14 @@ import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.MappingService;
-import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.MappingService.MappingServiceContext;
+import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleEntityContextImpl;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContextImpl;
+import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SamplePropertyContextImpl;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -82,6 +84,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 		return ( (SessionFactoryImplementor) sessions ).getServiceRegistry();
 	}
 
+	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { SampleEntity.class };
 	}
@@ -93,7 +96,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 
 		@Override
 		public SampleGlobalContext createMapping(MappingContext context) {
-			SampleGlobalContext mapping = new SampleGlobalContextImpl( context );
+			SampleGlobalContext mapping = context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
 			mapping.entity( SampleEntity.class ).name( "PROGRAMMATIC" );
 			return mapping;
 		}

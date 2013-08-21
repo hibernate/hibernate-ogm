@@ -25,6 +25,7 @@ import static org.hibernate.ogm.test.utils.OptionContainerHelper.options;
 
 import java.lang.annotation.ElementType;
 
+import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -44,6 +45,7 @@ public class ProxyFactoryTest {
 		MappingContext context = new MappingContext();
 		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( context );
 		sampleMapping
+				.namedQuery( "foo", "from Foo" )
 				.force( true )
 				.entity( Example.class )
 					.force( true )
@@ -56,8 +58,9 @@ public class ProxyFactoryTest {
 					.name( "Batman" );
 
 		assertThat( options( context ) )
-			.hasSize( 1 )
-			.contains( ForceExampleOption.TRUE );
+			.hasSize( 2 )
+			.contains( ForceExampleOption.TRUE )
+			.contains( new NamedQueryOption( "foo", "from Foo" ) );
 		assertThat( options( context, Example.class ) )
 			.hasSize( 2 )
 			.contains( ForceExampleOption.TRUE, new NameExampleOption( "Batman" ) );

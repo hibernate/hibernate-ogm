@@ -20,35 +20,25 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
-import java.lang.annotation.ElementType;
-
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.NoSqlEntityContextImpl;
+import org.hibernate.ogm.options.navigation.impl.OptionSupport;
 
 import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class MongoDBEntityImpl extends NoSqlEntityContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements MongoDBEntityContext {
+public abstract class MongoDBEntityImpl extends OptionSupport implements MongoDBEntityContext {
 
-	public MongoDBEntityImpl(MappingContext context, MongoDBGlobalContext global, Class<?> type) {
-		super( context, global, type );
-	}
-
-	@Override
-	public MongoDBPropertyContext property(String propertyName, ElementType target) {
-		return new MongoDBPropertyImpl( context(), this, type(), propertyName );
+	public MongoDBEntityImpl(MappingContext context ) {
+		super( context );
 	}
 
 	@Override
 	public MongoDBEntityContext writeConcern(WriteConcern concern) {
-		addOption( new WriteConcernOption( concern ) );
+		addEntityOption( new WriteConcernOption( concern ) );
 		return this;
 	}
-
 }

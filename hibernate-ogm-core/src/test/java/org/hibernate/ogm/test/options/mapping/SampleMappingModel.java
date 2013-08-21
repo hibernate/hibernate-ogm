@@ -20,12 +20,9 @@
  */
 package org.hibernate.ogm.test.options.mapping;
 
-import java.lang.annotation.ElementType;
-
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.NoSqlEntityContextImpl;
-import org.hibernate.ogm.options.navigation.impl.NoSqlGlobalContextImpl;
-import org.hibernate.ogm.options.navigation.impl.NoSqlPropertyContextImpl;
+import org.hibernate.ogm.options.navigation.impl.GlobalOptionsImpl;
+import org.hibernate.ogm.options.navigation.impl.OptionSupport;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
@@ -53,68 +50,48 @@ public class SampleMappingModel {
 		SamplePropertyContext embed(Object object);
 	}
 
-	public static class SampleGlobalContextImpl
-			extends NoSqlGlobalContextImpl<SampleGlobalContext, SampleEntityContext>
-			implements SampleGlobalContext {
+	public abstract static class SampleGlobalContextImpl extends GlobalOptionsImpl<SampleGlobalContext> implements SampleGlobalContext {
 
 		public SampleGlobalContextImpl(MappingContext context) {
 			super( context );
 		}
 
 		@Override
-		public SampleEntityContext entity(Class<?> type) {
-			return entity( type, new SampleEntityContextImpl( context(), this, type ) );
-		}
-
-		@Override
 		public SampleGlobalContext force(boolean force) {
-			addOption( ForceExampleOption.valueOf( force ) );
+			addGlobalOption( ForceExampleOption.valueOf( force ) );
 			return this;
 		}
-
 	}
 
-	public static class SampleEntityContextImpl
-			extends NoSqlEntityContextImpl<SampleEntityContext, SamplePropertyContext>
-			implements SampleEntityContext {
+	public abstract static class SampleEntityContextImpl extends OptionSupport implements SampleEntityContext {
 
-		public SampleEntityContextImpl(MappingContext context, SampleGlobalContext global, Class<?> type) {
-			super( context, global, type );
-		}
-
-		@Override
-		public SamplePropertyContext property(String propertyName, ElementType target) {
-			return new SamplePropertyContextImpl( context(), this, type(), propertyName );
+		public SampleEntityContextImpl(MappingContext context) {
+			super( context );
 		}
 
 		@Override
 		public SampleEntityContext force(boolean force) {
-			addOption( ForceExampleOption.valueOf( force ) );
+			addEntityOption( ForceExampleOption.valueOf( force ) );
 			return this;
 		}
 
 		@Override
 		public SampleEntityContext name(String name) {
-			addOption( new NameExampleOption( name ) );
+			addEntityOption( new NameExampleOption( name ) );
 			return this;
 		}
-
 	}
 
-	public static class SamplePropertyContextImpl
-			extends NoSqlPropertyContextImpl<SampleEntityContext, SamplePropertyContext>
-			implements SamplePropertyContext {
+	public abstract static class SamplePropertyContextImpl extends OptionSupport implements SamplePropertyContext {
 
-		public SamplePropertyContextImpl(MappingContext context, SampleEntityContext entity, Class<?> type, String propertyName) {
-			super( context, entity, type, propertyName );
+		public SamplePropertyContextImpl(MappingContext context) {
+			super( context );
 		}
 
 		@Override
 		public SamplePropertyContext embed(Object object) {
-			addOption( new EmbedExampleOption( object ) );
+			addPropertyOption( new EmbedExampleOption( object ) );
 			return this;
 		}
-
 	}
-
 }

@@ -22,8 +22,10 @@ package org.hibernate.ogm.test.options.mapping;
 
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
+import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleEntityContextImpl;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContextImpl;
+import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SamplePropertyContextImpl;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
@@ -31,8 +33,7 @@ import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalCon
 public class SampleMappingFactory implements MappingFactory<SampleGlobalContext> {
 
 	@Override
-	public SampleGlobalContext createMapping(MappingContext context) {
-		return new SampleGlobalContextImpl( context );
+	public SampleGlobalContext createMapping(final MappingContext context) {
+		return context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
 	}
-
 }

@@ -20,44 +20,33 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import java.lang.annotation.ElementType;
-
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 
 /**
- * Container the common parts of different implementation of {@link PropertyContext}
+ * Base class for {@link org.hibernate.ogm.options.navigation.context.GlobalContext},
+ * {@link org.hibernate.ogm.options.navigation.context.EntityContext} and
+ * {@link org.hibernate.ogm.options.navigation.context.PropertyContext} implementations which allows to add options for
+ * the different kinds of context.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public abstract class NoSqlPropertyContextImpl<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> implements NoSqlPropertyContext<E, P> {
+public class OptionSupport {
 
 	private final MappingContext context;
-	private final E entity;
-	private final String propertyName;
-	private final Class<?> type;
 
-	public NoSqlPropertyContextImpl(MappingContext context, E entity, Class<?> type, String propertyName) {
-		this.entity = entity;
-		this.type = type;
-		this.propertyName = propertyName;
+	public OptionSupport(MappingContext context) {
 		this.context = context;
 	}
 
-	@Override
-	public E entity(Class<?> type) {
-		return this.entity.entity( type );
+	protected final void addGlobalOption(Option<?, ?> option) {
+		context.addGlobalOption( option );
 	}
 
-	@Override
-	public P property(String propertyName, ElementType target) {
-		return this.entity.property( propertyName, target );
+	protected final void addEntityOption(Option<?, ?> option) {
+		context.addEntityOption( option );
 	}
 
-	protected final void addOption(Option<?, ?> option) {
-		context.addPropertyOption( type, propertyName, option );
+	protected final void addPropertyOption(Option<?, ?> option) {
+		context.addPropertyOption( option );
 	}
-
 }
