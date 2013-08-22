@@ -643,7 +643,7 @@
               </listitem>
 
               <listitem>
-                <para><literal>hibernate.search.default.​exclusive_index_use =
+                <para><literal>hibernate.search.default.exclusive_index_use =
                 false</literal></para>
               </listitem>
 
