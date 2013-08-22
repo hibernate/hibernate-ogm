@@ -129,38 +129,40 @@ mvn clean install -s settings-example.xml</programlisting>
         this jboss.org wiki page</ulink>.</para>
       </note>
 
-      <para>To build the documentation, set the <literal>buildDocs</literal> property to
-      true:</para>
+      <para>To build the documentation, set the <literal>buildDocs</literal>
+      property to true:</para>
 
       <programlisting>mvn clean install -DbuildDocs=true -s settings-example.xml</programlisting>
 
-      <remark>If you just want to build the documentation only, run it from the
-      <filename>hibernate-ogm-documentation/manual</filename>
-      subdirectory.</remark>
+      <tip>
+        <para>If you just want to build the documentation only, run it from
+        the <filename>hibernate-ogm-documentation/manual</filename>
+        subdirectory.</para>
+      </tip>
     </section>
 
     <section>
       <title>How to contribute code effectively</title>
 
       <para>The best way to share code is to fork the Hibernate OGM repository
-      on GitHub, create a branch and open a pull request when you are ready. Make
-      sure to rebase your pull request on the latest version of the master
-      branch before offering it.</para>
+      on GitHub, create a branch and open a pull request when you are ready.
+      Make sure to rebase your pull request on the latest version of the
+      master branch before offering it.</para>
 
       <para>Here are a couple of approaches the team follows:</para>
 
       <itemizedlist>
         <listitem>
           <para>We do small independent commits for each code change. In
-          particular, we do not mix stylistic code changes (import, typos, etc)
-          and new features in the same commit.</para>
+          particular, we do not mix stylistic code changes (import, typos,
+          etc) and new features in the same commit.</para>
         </listitem>
 
         <listitem>
           <para>Commit messages follow this convention: the JIRA issue number,
-          a short commit summary, an empty line, a longer description if needed.
-          Make sure to limit line length to 80 characters, even at this day and
-          age it makes for more readable commit comments.</para>
+          a short commit summary, an empty line, a longer description if
+          needed. Make sure to limit line length to 80 characters, even at
+          this day and age it makes for more readable commit comments.</para>
 
           <programlisting>OGM-123 Summary of commit operation
 
