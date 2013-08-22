@@ -1,0 +1,45 @@
+<!--<subtitle>Some subtitle</subtitle -->
+<releaseinfo>FIX Version interpolation in docinfo</releaseinfo>
+<corpauthor>
+   <inlinemediaobject>
+      <imageobject>
+         <imagedata fileref="./images/hibernate_ogm_600px.png"
+                    format="PNG"
+                    scalefit="1"
+                    width="444"/>
+      </imageobject>
+      <textobject>
+         <phrase>Logo</phrase>
+      </textobject>
+   </inlinemediaobject>
+</corpauthor>
+<!-- copyright>
+   <year/>
+   <holder/>
+</copyright -->
+<authorgroup xml:base="Author_Group.xml">
+   <author>
+      <firstname>Emmanuel</firstname>
+      <surname>Bernard</surname>
+      <affiliation>
+         <shortaffil>Red Hat</shortaffil>
+      </affiliation>
+   </author>
+   <author>
+      <firstname>Sanne</firstname>
+      <surname>Grinovero</surname>
+      <affiliation>
+         <shortaffil>Red Hat</shortaffil>
+      </affiliation>
+   </author>
+   <collab>
+     <collabname>Guillaume Scheibel</collabname>
+   </collab>
+   <!-- collab>
+      <collabname>Svetlana Mukhina</collabname>
+      <affiliation>
+         <orgname>Exadel</orgname>
+         <orgdiv>Documentation</orgdiv>
+      </affiliation>
+   </collab -->
+</authorgroup>

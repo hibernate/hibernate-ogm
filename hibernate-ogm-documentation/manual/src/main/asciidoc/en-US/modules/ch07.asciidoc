@@ -1,0 +1,144 @@
+[[ogm-query]]
+
+== Query your entities
+
+To query a NoSQL database is a complex feat, especially as not all NoSQL solutions support any form of query. One of the goals of Hibernate OGM is to deal with this complexity so that users don't have to, However, that's not yet all implemented and depending on your use case there might be better approaches you can take advantage of.
+
+If you skipped to this section without reading <<ogm-architecture>>, I'd suggest to read at least <<ogm-architecture-dataqueried>> as it will greatly help you choosing a query approach.
+
+=== Using JP-QL
+
+For Hibernate OGM we developed a brand new JP-QL parser which is already able to convert simple queries using Hibernate Search under the precondition that:
+
+* no join, aggregation, or other relational operations are implied
+* you are using the Hibernate Session API (JPA integration is coming)
+* the target entities and properties are indexed by Hibernate Search (no validation is happening today)
+
+
+
+
+We do realize these are strong limitations, so while it might be interesting to try it out, for real usage we suggest for now to use either Hibernate Search FullTextQueries or the native query technology of the NoSQL storage you are using.
+
+To provide an example of what kind of queries would work:
+
+.Example of trivial Hibernate Query remapped on Hibernate Search
+====
+
+
+[source, JAVA]
+----
+Query query = session
+    .createQuery("from Hypothesis h where h.description = :desc")
+    .setString("desc", "tomorrow it's going to rain");
+
+----
+
+
+[source, JAVA]
+----
+@Entity @Indexed
+public class Hypothesis {
+
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.NO)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}
+----
+
+====
+
+=== Using Hibernate Search
+
+We actually did use Hibernate Search already in the previous example; specifically the annotations [classname]+@Indexed+ and [classname]+@Field+ are Hibernate Search specific. In this example the query was defined using a +JP-QL+ string and then defining parameters; that's useful if all you have a is a +JP-QL+ Query, but it is limiting.
+
+Hibernate Search remaps the properties annotated with [classname]+@Field+ in Lucene Documents, and manages the Lucene indexes so that you can then perform Lucene Queries.
+
+To be extremely short, Apache Lucene is a fulltext indexing and query engine with excellent query performance. Featurewise, _full-text_ means you can do much more than a simple equality match as we did in the previous example.
+
+Let's show another example, now creating a Lucene Query instead:
+
+.Using Hibernate Search for fulltext matching
+====
+
+
+[source, JAVA]
+----
+EntityManager entityManager = ...
+//Add full-text superpowers to any EntityManager:
+FullTextEntityManager ftem = Search.getFullTextEntityManager(entityManager);
+
+//Optionally use the QueryBuilder to simplify Query definition:
+QueryBuilder b = ftem.getSearchFactory()
+   .buildQueryBuilder()
+   .forEntity(Hypothesis.class)
+   .get();
+
+//Create a Lucene Query:
+Query lq = b.keyword().onField("description").matching("tomorrow").createQuery();
+
+//Transform the Lucene Query in a JPA Query:
+FullTextQuery ftQuery = ftem.createFullTextQuery(lq, Hypothesis.class);
+//This is a requirement when using Hibernate OGM instead of ORM:
+ftQuery.initializeObjectsWith(ObjectLookupMethod.SKIP,
+      DatabaseRetrievalMethod.FIND_BY_ID);
+
+//List all matching Hypothesis:
+List<Hypothesis> resultList = ftQuery.getResultList();
+
+----
+
+====
+
+Assuming our database contains an [classname]+Hypothesis+ instance having description "tomorrow we release", the query above will not find the entity because we disabled text analysis in the previous mapping.
+
+If we enable text analysis (which is the default):
+
+.Entity enabling text analysis
+====
+
+
+[source, JAVA]
+----
+@Entity @Indexed
+public class Hypothesis {
+
+    @Id
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    @Field(analyze=Analyze.YES)
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    private String description;
+}
+----
+
+====
+
+Now the entity would match a query on "tomorrow" as we're unlocking text similarity queries!
+
+Text similarity can be very powerful as it can be configured for specific languages or domain specific terminology; it can deal with typos and synonyms, and above all it can return results by _relevance_.
+
+Worth noting the the Lucene index is a vectorial space of term occurrence statistics: so extracting tags from text, frequencies of strings and correlate this data makes it very easy to build efficient data analisys applications.
+
+For a full explanation of all its capabilities and configuration options see the link:$$http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/$$[Hibernate Search reference documentation].
+
+While the potential of Lucene queries is very high, it's not suited for all use cases. Let's see some of the limitations of Lucene Queries as our main query engine:
+
+* Lucene doesn't support Joins. Any +to-One+ relations can be mapped fine, and the Lucene community is making progress on other forms, but restrictions on +OneToMany+ or +ManyToMany+ can't be implemented today.
+* Since we apply changes to the index at commit time, your updates won't affect queries until you commit. (we might improve on this)
+* While queries are extremely fast, write operations are not as fast. (but we can make it scale)
+
+
+
+
+=== Using the Criteria API
+
+This is not implemented yet.
