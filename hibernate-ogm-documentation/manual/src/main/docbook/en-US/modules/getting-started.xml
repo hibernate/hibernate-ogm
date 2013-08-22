@@ -190,8 +190,8 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory(
 
 final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
 
-<lineannotation>
-[..]</lineannotation>
+
+[..]
 
 //Persist entities the way you are used to in plain JPA
 tm.begin();
@@ -209,8 +209,7 @@ em.flush();
 em.close();
 tm.commit();
 
-<lineannotation>
-[..]</lineannotation>
+[..]
 
 //Retrieve your entities the way you are used to in plain JPA
 tm.begin();
@@ -222,8 +221,8 @@ em.flush();
 em.close();
 tm.commit();
 
-<lineannotation>
-[..]</lineannotation>
+
+[..]
 
 emf.close();
 
