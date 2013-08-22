@@ -1,0 +1,331 @@
+[[ogm-configuration]]
+
+== Configure and start Hibernate OGM
+
+Hibernate OGM favors ease of use and convention over configuration. This makes its configuration quite simple by default.
+
+=== Bootstrapping Hibernate OGM
+
+Hibernate OGM can be used via the Hibernate native APIs ( [classname]+Session+) or via the JPA APIs ( [classname]+EntityManager+). Depending of your choice, the bootstrapping strategy is slightly different.
+
+==== Using JPA
+
+The good news is that if you use JPA as your primary API, the configuration is extremely simple. Hibernate OGM is seen as a persistence provider which you need to configure in your [filename]+persistence.xml+. That's it! The provider name is [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+.
+
+.persistence.xml file
+====
+
+
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="org.hibernate.ogm.tutorial.jpa" transaction-type="JTA">
+        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" />
+            <property name="hibernate.ogm.datastore.provider"
+                      value="infinispan" />
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+====
+
+There are a couple of things to notice:
+
+* there is no JDBC dialect setting
+* there is no JDBC setting except sometimes a +jta-data-source+ (check <<ogm-configuration-environments-javaee>> for more info)
+* there is no DDL scheme generation options ( +hbm2ddl+) as NoSQL generally do not require schemas
+* if you use JTA (which we recommend), you will need to set the JTA platform
+
+
+You also need to configure which NoSQL datastore you want to use and how to connect to it. We will detail how to do that later in <<ogm-datastore-providers>>. In this case, we have used the defaults settings for Infinispan.
+
+From there, simply bootstrap JPA the way you are used to with Hibernate ORM:
+
+* via [classname]+Persistence.createEntityManagerFactory+
+* by injecting the [classname]+EntityManager+ / [classname]+EntityManagerFactory+ in a Java EE container
+* by using your favorite injection framework (CDI - Weld, Spring, Guice)
+
+
+==== Using Hibernate ORM native APIs
+
+If you want to bootstrap Hibernate OGM using the native Hibernate APIs, use the class [classname]+org.hibernate.ogm.cfg.OgmConfiguration+.
+
+.Bootstrap Hibernate OGM with Hibernate ORM native APIs
+====
+
+
+[source, JAVA]
+----
+Configuration cfg = new OgmConfiguration();
+
+//assuming you are using JTA in a non contained environment
+cfg.setProperty(environment.TRANSACTION_STRATEGY,
+                 "org.hibernate.transaction.JTATransactionFactory");
+//assuming JBoss TransactionManager in standalone mode
+cfg.setProperty(Environment.JTA_PLATFORM,
+     "org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform");
+
+//assuming the default infinispan settings
+cfg.setProperty("hibernate.ogm.datastore.provider",
+                "infinispan");
+
+//add your annotated classes
+cfg.addAnnotatedClass(Order.class)
+   .addAnnotatedClass(Item.class)
+
+//build the SessionFactory
+SessionFactory sf = cfg.buildSessionFactory();
+----
+
+====
+
+There are a couple of things to notice:
+
+* there is no DDL schema generation options ( +hbm2ddl+) as Infinispan does not require schemas
+* you need to set the right transaction strategy and the right transaction manager lookup strategy if you use a JTA based transaction strategy (see <<ogm-configuration-environments>>)
+
+
+You also need to configure which NoSQL datastore you want to use and how to connect to it. We will detail how to do that later in <<ogm-datastore-providers>>. In this case, we have used the defaults settings for Infinispan.
+
+[[ogm-configuration-environments]]
+
+=== Environments
+
+Hibernate OGM runs in various environments, pretty much what you are used to with Hibernate ORM. There are however environments where it works better and has been more thoroughly tested.
+
+[[ogm-configuration-environments-javaee]]
+
+==== In a Java EE container
+
+You don't have to do much in this case. You need three specific settings:
+
+* the transaction factory
+* the JTA platform
+* a JTA datasource
+
+
+If you use JPA, simply set the +transaction-type+ to +JTA+ and the transaction factory will be set for you.
+
+If you use Hibernate ORM native APIs only, then set +hibernate.transaction.factory_class+ to either:
+
+* +org.hibernate.transaction.CMTTransactionFactory+ if you use declarative transaction demarcation.
+* or +org.hibernate.transaction.JTATransactionFactory+ if you manually demarcate transaction boundaries
+
+
+Set the JTA platform to the right Java EE container. The property is +hibernate.transaction.transaction.jta.platform+ and must contain the fully qualified class name of the lookup implementation. The list of available values are listed in link:$$http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform$$[Hibernate ORM's configuration section]. For example, in JBoss AS, use +org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform+.
+
+In your [filename]+persistence.xml+, you also need to define an existing datasource. It is not needed by Hibernate OGM and won't be used but the JPA specification mandates this setting.
+
+.persistence.xml file
+====
+
+
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="org.hibernate.ogm.tutorial.jpa" transaction-type="JTA">
+        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <jta-data-source>java:/DefaultDS</jta-data-source>
+        <properties>
+            <property name="hibernate.transaction.jta.platform"
+                      value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform" />
+            <property name="hibernate.ogm.datastore.provider"
+                      value="infinispan" />
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+====
+
++java:DefaultDS+ will work for out of the box JBoss AS deployments.
+
+[[ogm-configuration-environments-standalonejta]]
+
+==== In a standalone JTA environment
+
+There is a set of common misconceptions in the Java community about JTA:
+
+* JTA is hard to use
+* JTA is only needed when you need transactions spanning several databases
+* JTA works in Java EE only
+* JTA is slower than "simple" transactions
+
+
+None of that is true of course, let me show you how to use JBoss Transaction in a standalone environment with Hibernate OGM.
+
+In Hibernate OGM, make sure to set the following properties:
+
+* +transaction-type+ to +JTA+ in your persistence.xml if you use JPA
+* or +hibernate.transaction.factory_class+ to +org.hibernate.transaction.JTATransactionFactory+ if you use [classname]+OgmConfiguration+ to bootstrap Hibernate OGM.
+* +hibernate.transaction.jta.platform+ to +org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform+[parameter]+in both cases.+
+
+
+On the JBoss Transaction side, add JBoss Transaction in your classpath, if you use maven, it should look like this:
+
+.JBoss Transaction dependency declaration
+====
+
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.jboss.jbossts</groupId>
+    <artifactId>jbossjta</artifactId>
+    <version>{jboss-jta-version}</version>
+</dependency>
+----
+
+====
+
+The next step is you get access to the transaction manager. The easiest solution is to do as the following example:
+
+
+[source, JAVA]
+----
+TransactionManager transactionManager =
+   com.arjuna.ats.jta.TransactionManager.transactionmanager();
+----
+
+Then use the standard JTA APIs to demarcate your transaction and you are done!
+
+.Demarcate your transaction with standalone JTA
+====
+
+
+[source, JAVA]
+----
+//note that you must start the transaction before creating the EntityManager 
+//or else call entityManager.joinTransaction() 
+transactionManager.begin();
+
+final EntityManager em = emf.createEntityManager();
+
+Poem poem = new Poem();
+poem.setName("L'albatros");
+em.persist(poem);
+
+transactionManager.commit();
+ 
+em.clear();
+ 
+transactionManager.begin();
+
+poem = em.find(Poem.class, poem.getId());
+assertThat(poem).isNotNull();
+assertThat(poem.getName()).isEqualTo("L'albatros");
+em.remove(poem );
+
+transactionManager.commit();
+ 
+em.close();
+----
+
+====
+
+That was not too hard, was it? Note that application frameworks like Seam or Spring Framework should be able to initialize the transaction manager and call it to demarcate transactions for you. Check their respective documentation.
+
+==== Without JTA
+
+While this approach works today, it does not ensure that works are done transactionally and hence won't be able to rollback your work. This will change in the future but in the mean time, such an environment is not recommended.
+
+[NOTE]
+====
+For NoSQL datastores not supporting transactions, this is less of a concern.
+====
+
+[[ogm-configuration-optionsogm-configuration-options]]
+
+=== Configuration options
+
+The most important options when configuring Hibernate OGM are related to the datastore. They are explained in <<ogm-datastore-providers>>.
+
+Otherwise, most options from Hibernate ORM and Hibernate Search are applicable when using Hibernate OGM. You can pass them as you are used to do either in your [filename]+persistence.xml+ file, your [filename]+hibernate.cfg.xml+ file or programmatically.
+
+More interesting is a list of options that do _not_ apply to Hibernate OGM and that should not be set:
+
+* +hibernate.dialect+
+* +hibernate.connection.\*+ and in particular +hibernate.connection.provider_class+
+* +hibernate.show_sql+ and +hibernate.format_sql+
+* +hibernate.default_schema+ and +hibernate.default_catalog+
+* +hibernate.use_sql_comments+
+* +hibernate.jdbc.\*+
+* +hibernate.hbm2ddl.auto+ and +hibernate.hbm2ddl.import_file+
+
+
+=== Configuring Hibernate Search
+
+Hibernate Search integrates with Hibernate OGM just like it does with Hibernate ORM.
+
+In other words, configure where you want to store your indexes, map your entities with the relevant index annotations and you are good to go. For more information, simply check the link:$$http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/$$[Hibernate Search reference documentation].
+
+In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan. This is useful even if you don't plan to use Infinispan as your primary data store.
+
+[[ogm-configuration-jbossmodule]]
+
+=== How to package Hibernate OGM applications for JBoss AS 7.2
+
+Provided you're deploying on JBoss AS 7.2 or JBoss EAP6, there is an additional way to add the OGM dependencies to your application.
+
+In JBoss AS 7 class loading is based on modules that have to define explicit dependencies on other modules. Modules allow to share the same artifacts across multiple applications getting you smaller and quicker deloyments.
+
+More details about modules are described in link:$$https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7$$[Class Loading in AS 7.2].
+
+You can download the pre-packaged module from:
+
+* link:https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[Sourceforge]
+* link:https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules&v={hibernate-ogm-version}&e=zip&c=jbossas-72-dist[JBoss's Maven repository]
+
+Unpack the archive into the +modules+ folder of your JBoss AS 7.2 installation. The modules included are:
+
+* _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
+* _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
+* _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
+* _org.hibernate:main_, containing the latest hibernate ORM libraries compatible with OGM.
+
+
+[WARNING]
+====
+The +org.hibernate:main+ module will change the version of Hibernate ORM included in the default JBoss AS 7.2
+====
+
+There are two ways to include the dependencies in your project:
+
+Using the manifest:: Add this entry to the MANIFEST.MF in your archive:
+
+----
+Dependencies: org.hibernate:ogm services
+----
+
+Using jboss-deployment-structure.xml:: This is a proprietary JBoss AS descriptor. Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with content:
+
+[source, XML]
+----
+<jboss-deployment-structure>
+      <deployment>
+      <dependencies>
+          <module name="org.hibernate" slot="ogm" services="export" />
+      </dependencies>
+      </deployment>
+  </jboss-deployment-structure>
+      
+----
+
+More information about the descriptor can be found in the link:$$https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7$$[JBoss AS 7.2 documentation].
