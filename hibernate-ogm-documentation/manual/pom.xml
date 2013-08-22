@@ -40,6 +40,8 @@
     <properties>
         <!-- Skip artifact deployment -->
         <maven.deploy.skip>true</maven.deploy.skip>
+        <docname>master</docname>
+        <bookname>Hibernate OGM</bookname>
     </properties>
 
     <build>
@@ -63,6 +65,7 @@
                 </executions>
 
                 <configuration>
+                    <sourceDirectory>${project.basedir}/target/docbook</sourceDirectory>
                     <sourceDocumentName>master.xml</sourceDocumentName>
                     <masterTranslation>en-US</masterTranslation>
                     <translations>
@@ -74,9 +77,11 @@
                         <translation>zh-CN</translation> -->
                     </translations>
                     <imageResource>
-                        <directory>${basedir}/src/main/docbook/en-US</directory>
+                        <directory>${basedir}/src/main/asciidoc/en-US</directory>
                         <excludes>
                             <exclude>*.xml</exclude>
+                            <exclude>*.asciidoc</exclude>
+                            <exclude>**/*.asciidoc</exclude>
                             <exclude>*.ent</exclude>
                             <exclude>**/*.xml</exclude>
                             <exclude>*.zargo</exclude>
@@ -135,10 +140,14 @@
                             <value>${mongodbVersion}</value>
                         </injection>
                     </injections>
-                    <profiling>
+                    <!-- profiling>
                         <enabled>true</enabled>
-                    </profiling>
+                    </profiling -->
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
