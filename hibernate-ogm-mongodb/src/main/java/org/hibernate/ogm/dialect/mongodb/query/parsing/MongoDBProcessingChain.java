@@ -36,7 +36,7 @@ import org.hibernate.hql.ast.spi.QueryResolverProcessor;
  *
  * @author Gunnar Morling
  */
-public class MongoDBProcessingChain implements AstProcessingChain<MongoDBQueryParsingResult> {
+public class MongoDBProcessingChain implements AstProcessingChain<MongoDBQuery> {
 
 	private final QueryResolverProcessor resolverProcessor;
 	private final QueryRendererProcessor rendererProcessor;
@@ -60,7 +60,7 @@ public class MongoDBProcessingChain implements AstProcessingChain<MongoDBQueryPa
 	}
 
 	@Override
-	public MongoDBQueryParsingResult getResult() {
+	public MongoDBQuery getResult() {
 		return rendererDelegate.getResult();
 	}
 }

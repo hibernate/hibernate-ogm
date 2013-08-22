@@ -35,7 +35,7 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
-public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
+public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQuery> {
 
 	private final MongoDBPropertyHelper propertyHelper;
 
@@ -49,8 +49,8 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	}
 
 	@Override
-	public MongoDBQueryParsingResult getResult() {
-		return new MongoDBQueryParsingResult( targetType, builder.build(), getProjectionDBObject() );
+	public MongoDBQuery getResult() {
+		return new MongoDBQuery( targetType, builder.build(), getProjectionDBObject() );
 	}
 
 	@Override

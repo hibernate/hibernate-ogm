@@ -28,12 +28,13 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
-import org.hibernate.ogm.dialect.mongodb.query.MongoDBQueryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.loader.OgmQueryLoader;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.service.impl.BaseQueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
+import org.hibernate.ogm.service.impl.BackendQueryBasedQueryImpl;
 
 /**
  * {@link org.hibernate.ogm.service.impl.QueryParserService} implementation which creates MongoDB queries in form of
@@ -52,10 +53,10 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		QueryParser queryParser = new QueryParser();
 		MongoDBProcessingChain processingChain = createProcessingChain( session, unwrap( namedParameters ) );
 
-		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
-		log.createdQuery( queryString, result );
+		MongoDBQuery parsedQuery = queryParser.parseQuery( queryString, processingChain );
+		log.createdQuery( queryString, parsedQuery );
 
-		return new MongoDBQueryImpl( result.getEntityType(), result.getQuery(), result.getProjection(), session );
+		return new BackendQueryBasedQueryImpl( session, new OgmQueryLoader( session.getFactory(), parsedQuery ) );
 	}
 
 	private MongoDBProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters) {

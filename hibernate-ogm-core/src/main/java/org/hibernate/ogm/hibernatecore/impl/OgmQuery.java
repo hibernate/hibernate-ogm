@@ -60,7 +60,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public Iterator iterate() throws HibernateException {
+	public Iterator<?> iterate() throws HibernateException {
 		return getExecutingQuery().iterate();
 	}
 
@@ -75,7 +75,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public List list() throws HibernateException {
+	public List<?> list() throws HibernateException {
 		return getExecutingQuery().list();
 	}
 

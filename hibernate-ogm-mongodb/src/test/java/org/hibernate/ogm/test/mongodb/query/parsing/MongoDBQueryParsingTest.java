@@ -29,7 +29,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBProcessingChain;
-import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBQueryParsingResult;
+import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBQuery;
 import org.hibernate.ogm.test.mongodb.query.parsing.model.IndexedEntity;
 import org.hibernate.ogm.test.utils.MapBasedEntityNamesResolver;
 import org.hibernate.ogm.test.utils.OgmTestCase;
@@ -81,7 +81,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 
 	@Test
 	public void shouldCreateProjectionQuery() {
-		MongoDBQueryParsingResult parsingResult = parseQuery( "select e.id, e.name, e.position from IndexedEntity e" );
+		MongoDBQuery parsingResult = parseQuery( "select e.id, e.name, e.position from IndexedEntity e" );
 
 		assertThat( parsingResult.getQuery().toString() ).isEqualTo( "{ }" );
 		assertThat( parsingResult.getProjection().toString() ).isEqualTo( "{ \"_id\" : 1 , \"entityName\" : 1 , \"position\" : 1}" );
@@ -241,7 +241,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	}
 
 	private void assertMongoDbQuery(String queryString, Map<String, Object> namedParameters, String expectedMongoDbQuery) {
-		MongoDBQueryParsingResult parsingResult = parseQuery( queryString, namedParameters );
+		MongoDBQuery parsingResult = parseQuery( queryString, namedParameters );
 		assertThat( parsingResult ).isNotNull();
 		assertThat( parsingResult.getEntityType() ).isSameAs( IndexedEntity.class );
 
@@ -254,11 +254,11 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		}
 	}
 
-	private MongoDBQueryParsingResult parseQuery(String queryString) {
+	private MongoDBQuery parseQuery(String queryString) {
 		return parseQuery( queryString, null );
 	}
 
-	private MongoDBQueryParsingResult parseQuery(String queryString, Map<String, Object> namedParameters) {
+	private MongoDBQuery parseQuery(String queryString, Map<String, Object> namedParameters) {
 		return queryParser.parseQuery(
 				queryString,
 				setUpMongoDbProcessingChain( namedParameters )
