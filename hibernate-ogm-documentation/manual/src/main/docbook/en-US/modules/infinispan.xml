@@ -435,7 +435,7 @@
     <example>
       <title>JVM properties to set for clustering</title>
 
-      <programlisting><lineannotation>#192.168.122.1 is an example IPv4 address</lineannotation>
+      <programlisting>#192.168.122.1 is an example IPv4 address
 -Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=192.168.122.1</programlisting>
     </example>
 

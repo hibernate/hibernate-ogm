@@ -110,13 +110,13 @@
 
       <para>Clone the git repository from GitHub:</para>
 
-      <programlisting><lineannotation>#get the sources</lineannotation>
+      <programlisting>#get the sources
 git clone https://github.com/hibernate/hibernate-ogm
 cd hibernate-ogm</programlisting>
 
       <para>Run maven</para>
 
-      <programlisting><lineannotation>#build project</lineannotation>
+      <programlisting>#build project
 mvn clean install -s settings-example.xml</programlisting>
 
       <note>
