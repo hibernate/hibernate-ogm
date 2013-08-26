@@ -138,30 +138,10 @@
                         <!--     could also locate the docbook dependency and inspect its version... -->
                         <docbookVersion>1.72.0</docbookVersion>
                         <localeSeparator>-</localeSeparator>
-                        <injectionDateFormat>yyyy-MM-dd</injectionDateFormat>
+                        <applyStandardInjectionValues>false</applyStandardInjectionValues>
                     </options>
-                    <injections>
-                        <injection>
-                            <name>hibernateVersion</name>
-                            <value>${hibernateVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>hibernateSearchVersion</name>
-                            <value>${hibernateSearchVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>infinispanVersion</name>
-                            <value>${infinispanVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>jbossjtaVersion</name>
-                            <value>${jbossjtaVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>mongodbVersion</name>
-                            <value>${mongodbVersion}</value>
-                        </injection>
-                    </injections>
+                    <!-- Always need an "injections" element to avoid an NPE in the maven-jdocbook-plugin -->
+                    <injections/>
                     <!-- profiling>
                         <enabled>true</enabled>
                     </profiling -->
