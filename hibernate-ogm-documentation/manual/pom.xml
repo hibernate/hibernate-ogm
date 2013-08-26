@@ -52,7 +52,7 @@
                 <executions>
                     <execution>
                         <id>filter-asciidoc-resources</id>
-                        <phase>initialize</phase>
+                        <phase>generate-resources</phase>
                         <goals>
                             <goal>copy-resources</goal>
                         </goals>
@@ -67,6 +67,49 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-docbook-xml</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.build.directory}/asciidoc-prepared/en-US</sourceDirectory>
+                    <sourceDocumentName>${project.build.directory}/asciidoc-prepared/en-US/master.asciidoc</sourceDocumentName>
+                    <outputDirectory>${basedir}/target/docbook/en-US</outputDirectory>
+                    <!-- templateDir>${basedir}/../asciidoc/src/main/backend/slim/docbook45</templateDir>
+                    <templateEngine>slim</templateEngine -->
+                    <headerFooter>true</headerFooter>
+                    <compact>false</compact>
+                    <imagesDir>images</imagesDir>  <!-- TODO: Remove this config when the image/ prefix is removed from image paths -->
+                    <toc>true</toc>
+                    <backend>docbook45</backend>
+                    <doctype>book</doctype>
+                    <goalPrefix>asciidoctor</goalPrefix>
+                    <sourceHighlighter>coderay</sourceHighlighter>
+                    <attributes>
+                        <idprefix></idprefix>
+                        <sectanchors>true</sectanchors>
+                        <toclevels>3</toclevels>
+                        <numbered>true</numbered>
+                        <icons>font</icons>
+                        <docinfo>true</docinfo>
+                        <experimental>true</experimental>
+                        <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
+                        <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
+                        <infinispan-version>${infinispanVersion}</infinispan-version>
+                        <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
+                        <mongodb-version>${mongodbVersion}</mongodb-version>
+                    </attributes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jboss.maven.plugins</groupId>
@@ -146,10 +189,6 @@
                         <enabled>true</enabled>
                     </profiling -->
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.asciidoctor</groupId>
-                <artifactId>asciidoctor-maven-plugin</artifactId>
             </plugin>
         </plugins>
         <pluginManagement>
