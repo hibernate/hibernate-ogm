@@ -1,5 +1,5 @@
 <!--<subtitle>Some subtitle</subtitle -->
-<releaseinfo>FIX Version interpolation in docinfo</releaseinfo>
+<releaseinfo>${project.version}</releaseinfo>
 <corpauthor>
    <inlinemediaobject>
       <imageobject>

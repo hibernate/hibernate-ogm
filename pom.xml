@@ -784,8 +784,8 @@
                         </execution>
                     </executions>
                     <configuration>
-                      <sourceDirectory>${basedir}/src/main/asciidoc/en-US</sourceDirectory>
-                      <sourceDocumentName>${basedir}/src/main/asciidoc/en-US/master.asciidoc</sourceDocumentName>
+                      <sourceDirectory>${project.build.directory}/asciidoc-prepared/en-US</sourceDirectory>
+                      <sourceDocumentName>${project.build.directory}/asciidoc-prepared/en-US/master.asciidoc</sourceDocumentName>
                       <outputDirectory>${basedir}/target/docbook/en-US</outputDirectory>
                       <!-- templateDir>${basedir}/../asciidoc/src/main/backend/slim/docbook45</templateDir>
                       <templateEngine>slim</templateEngine -->
