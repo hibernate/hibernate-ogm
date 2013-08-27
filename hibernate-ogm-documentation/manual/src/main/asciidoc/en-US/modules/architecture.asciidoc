@@ -27,10 +27,12 @@ Hibernate OGM is really made possible by the reuse of a few key components:
 * Hibernate OGM itself
 
 
+// On native Asciidoctor, remove width=15cm to have it work
+
 .General architecture
 image::images/ogm-architecture.png[align="center", depth="", scalefit="1", width="15cm"]
 
-Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure. There is no need to rewrite an entirely new JPA engine. The [classname]++Persister++ s and the [classname]++Loader++ s (two interfaces used by Hibernate ORM) have been rewritten to persist data in the NoSQL store. These implementations are the core of Hibernate OGM. We will see in <<ogm-architecture-datapersisted>> how the data is structured.
+Hibernate OGM reuses as much as possible from the Hibernate ORM infrastructure. There is no need to rewrite an entirely new JPA engine. The [classname]++Persister++s and the [classname]++Loader++s (two interfaces used by Hibernate ORM) have been rewritten to persist data in the NoSQL store. These implementations are the core of Hibernate OGM. We will see in <<ogm-architecture-datapersisted>> how the data is structured.
 
 The particularities between NoSQL stores are abstracted by the notion of a [classname]+DatastoreProvider+ and a [classname]+GridDialect+.
 
@@ -90,9 +92,6 @@ Hint: this can be quite big!
 It might make sense to store the same object graph from different root objects.
 * What happens in case of class schema change?
 If you add or remove a property or include a superclass, you must migrate all entities in your datastore to avoid deserialization issues.
-
-
-
 ====
 
 Entities are stored as tuples of values by Hibernate OGM. More specifically, each entity is conceptually represented by a [classname]+Map<String,Object>+ where the key represents the column name (often the property name but not always) and the value represents the column value as a basic type. We favor basic types over complex ones to increase portability (across platforms and across type / class schema evolution over time). For example a URL object is stored as its String representation.
@@ -124,6 +123,7 @@ The key in which association data are stored is composed of:
 
 Using this approach, we favor fast read and (slightly) slower writes.
 
+// On native Asciidoctor, remove width=15cm to have it work
 .Storing associations
 image::images/data-association.png[align="center", depth="", scalefit="1", width="15cm"]
 
@@ -182,6 +182,7 @@ Some of the JP-QL features are not supported by NoSQL solutions. Two typical exa
 
 Finally some NoSQL stores have poor query support, or none at all. In this case Hibernate OGM can use Hibernate Search as its indexing and query engine. Hibernate Search is able to index and query objects - entities - and run full-text queries. It uses the well known Apache Lucene to do that but adds a few interesting characteristics like clustering support and an object oriented abstraction including an object oriented query DSL. Let's have a look at the architecture of Hibernate OGM when using Hibernate Search:
 
+// On native Asciidoctor, remove width=15cm to have it work
 .Using Hibernate Search as query engine - greyed areas are blocks already present in Hibernate OGM's architecture
 image::images/ogm-architecture-with-hsearch.png[align="center", depth="", scalefit="1", width="15cm"]
 

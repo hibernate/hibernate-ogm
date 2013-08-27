@@ -53,7 +53,7 @@ public class Breed {
 
 === Supported Types
 
-Most Java built-in types as supported at this stage. However, custom types ( [classname]+@Type+) are not supported.
+Most Java built-in types as supported at this stage. However, custom types ([classname]+@Type+) are not supported.
 
 [[ogm-mapping-supported-types-native-mapped]]
 
@@ -92,6 +92,6 @@ For non basic Java types support, OGM stores the data of the object as a String 
 
 === Supported association mapping
 
-All association types are supported ( [classname]+@OneToOne+, [classname]+@OneToMany+, [classname]+@ManyToOne+, [classname]+@ManyToMany+). Likewise, all collection types are supported ( [classname]+Set+, [classname]+Map+, [classname]+List+). The way Hibernate OGM stores association information is however quite different than the traditional RDBMS representation. Check <<ogm-architecture-datapersisted>> for more information.
+All association types are supported ([classname]+@OneToOne+, [classname]+@OneToMany+, [classname]+@ManyToOne+, [classname]+@ManyToMany+). Likewise, all collection types are supported ([classname]+Set+, [classname]+Map+, [classname]+List+). The way Hibernate OGM stores association information is however quite different than the traditional RDBMS representation. Check <<ogm-architecture-datapersisted>> for more information.
 
 Keep in mind that collections with many entries won't perform very well in Hibernate OGM (at least today) as all of the association navigation for a given entity is stored in a single key. If your collection is made of 1 million elements, Hibernate OGM stores 1 million tuples in the association key.

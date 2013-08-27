@@ -1,0 +1,352 @@
+[[ogm-infinispan]]
+
+=== Infinispan
+
+Infinispan is an open source in-memory data grid focusing on high performance. As a data grid, you can deploy it on multiple servers - referred to as nodes - and connect to it as if it were a single storage engine: it will cleverly distribute both the computation effort and the data storage.
+
+It is trivial to setup on a single node, in your local JVM, so you can easily try Hibernate OGM. But Infinispan really shines in multiple node deployments: you will need to configure some networking details but nothing changes in terms of application behaviour, while performance and data size can scale linearly.
+
+From all its features we'll only describe those relevant to Hibernate OGM; for a complete description of all its capabilities and configuration options refer to the Infinispan project documentation at link:http://infinispan.org[www.infinispan.org].
+
+[[ogm-infinispan-configuration]]
+
+==== Configure Infinispan
+
+Two steps basically:
+
+* Add the dependencies to classpath
+* And then choose one of:
+
+** Use the default Infinispan configuration (no action needed)
+** Point to your own configuration resource name
+** Point to a [acronym]+JNDI+ name of an existing Infinispan instance
+
+
+[[ogm-infinispan-adddepencies]]
+
+===== Adding Infinispan dependencies
+
+To add the dependencies via some Maven-definitions-using tool, add the following module:
+
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <version>{hibernate-ogm-version}</version>
+</dependency>
+----
+
+If you're not using a dependency management tool, copy all the dependencies from the distribution in the directories:
+
+* +/lib/required+
+* +/lib/infinispan+
+* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
+
+
+
+
+[[ogm-infinispan-configuration-properties]]
+
+===== Infinispan specific configuration properties
+
+The advanced configuration details of an Infinispan Cache are defined in an Infinispan specific XML configuration file; the Hibernate OGM properties are simple and usually just point to this external resource.
+
+To use the default configuration provided by Hibernate OGM - which is a good starting point for new users - you don't have to set any property.
+
+.Infinispan datastore configuration properties
++hibernate.ogm.datastore.provider+::
+To use Infinispan as a datastore provider set it to +infinispan+.
++hibernate.ogm.infinispan.cachemanager_jndiname+::
+If you have an Infinispan [classname]+EmbeddedCacheManager+  registered in JNDI, provide the JNDI name and Hibernate OGM will use this instance instead of starting a new +CacheManager+.
+This will ignore any further configuration properties as Infinispan is assumed being already configured.
++hibernate.ogm.infinispan.configuration_resourcename+::
+Should point to the resource name of an Infinispan configuration file. This is ignored in case [acronym]+JNDI+  lookup is set. Defaults to +org/hibernate/ogm/datastore/infinispan/default-config.xml+.
+
+===== Cache names used by Hibernate OGM
+
+Hibernate OGM will not use a single Cache but three, and is going to use them for different purposes; so that you can configure the Caches meant for each role separately.
+
+.Infinispan cache names and purpose
++ENTITIES+::
+Is going to be used to store the main attributed of your entities.
++ASSOCIATIONS+::
+Stores the association information which maps to the relations between your entities.
++IDENTIFIER_STORE+::
+Contains internal metadata that Hibernate OGM needs to provide sequences and auto-incremental numbers for primary key generation.
+
+We'll explain in the following paragraphs how you can take advantage of this, and which aspects of Infinispan you're likely to want to reconfigure from their defaults. All attributes and elements from Infinispan which we don't mention are safe to ignore, or refer to the link:https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide] for the guru level performance tuning and customizations.
+
+An Infinispan configuration file is an XML file complying with the Infinispan schema; the basic structure is shown in the following example:
+
+.Simple structure of an infinispan xml configuration file
+====
+
+
+[source, XML]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
+    xmlns="urn:infinispan:config:5.1">
+
+    <global>
+    </global>
+
+    <default>
+    </default>
+
+    <namedCache name="ENTITIES">
+    </namedCache>
+
+    <namedCache name="ASSOCIATIONS">
+    </namedCache>
+
+    <namedCache name="IDENTIFIERS">
+    </namedCache>
+
+</infinispan>
+----
+
+====
+
+The +global+ section contains elements which affect the whole instance; mainly of interest for Hibernate OGM users is the +transport+ element, in which we'll set JGroups configuration overrides.
+
+In the +namedCache+ section (or in +default+ if we want to affect all named caches) we'll likely want to configure clustering modes, eviction policies and ++CacheStore++s.
+
+[[ogm-infinispan-storage]]
+
+==== Manage data size
+
+In its default configuration Infinispan stores all data in the heap of the JVM; in this barebone mode it is conceptually not very different than using a HashMap: the size of the data should fit in the heap of your VM, and stopping/killing/crashing your application will get all data lost, with no way to recover it.
+
+To store data permanently (out of the JVM memory) a +CacheStore+ should be enabled. The +infinispan-core.jar+ includes a simple implementation able to store data in simple binary files, on any read/write mounted filesystem; this is an easy starting point, but the real stuff is to be found in the additional modules found in the Infinispan distribution. Here you can find many more implementations to store your data in anything from JDBC connected relational databases, other NoSQL engines, to cloud storage services or other Infinispan clusters. Finally, implementing a custom +CacheStore+ is a trivial programming exercise.
+
+To limit the memory consumption of the precious heap space you can activate a +passivation+ or an +eviction+ policy; again there are several strategies to play with, for now let's just consider you'll likely need one to avoid running out of memory when storing too many entries in the bounded JVM memory space; of course you don't need to choose one while experimenting with limited data sizes: enabling such a strategy doesn't have any other impact in the functionality of your Hibernate OGM application (other than performance: entries stored in the Infinispan in-memory space is accessed much quicker than from any CacheStore).
+
+A +CacheStore+ can be configured as write-through, committing all changes to the +CacheStore+ before returning (and in the same transaction) or as write-behind. A write-behind configuration is normally not encouraged in storage engines, as a failure of the node implies some data might be lost without receiving any notification about it, but this problem is mitigated in Infinispan because of its capability to combine CacheStore write-behind with a synchronous replication to other Infinispan nodes.
+
+.Enabling a FileCacheStore and eviction
+====
+
+
+[source, XML]
+----
+<namedCache name="ENTITIES">
+  <eviction strategy="LIRS" maxEntries="2000" />
+  <loaders
+    passivation="true" shared="false">
+    <loader
+      class="org.infinispan.loaders.file.FileCacheStore"
+      fetchPersistentState="false"
+      purgeOnStartup="false">
+      <properties>
+        <property name="location" value="/var/hibernate-ogm/myapp/entities-data" />
+      </properties>
+    </loader>
+  </loaders>
+</namedCache>
+----
+
+====
+
+In this example we enabled both +eviction+ and a +CacheStore+ (the +loader+ element). +LIRS+ is one of the choices we have for eviction strategies, and is configured to keep (approximately) 2000 entries in live memory, and evict the remaining as a memory usage control strategy.
+
+The +CacheStore+ is enabling +passivation+, which means that the entries which are evicted are stored on the filesystem.
+
+[WARNING]
+====
+You could configure an eviction strategy while not configuring a passivating CacheStore! That is a valid configuration for Infinispan but will have the evictor permanently remove entries. Hibernate OGM will break in such a configuration.
+====
+
+[TIP]
+====
+Currently with Infinispan 5.1 the [classname]+FileCacheStore+ is neither very fast nor very efficient: we picked it for ease of setup; for a production system it's worth looking at the large collection of high performance and cloud friendly cachestores provided by the Infinispan distribution.
+====
+
+[[ogm-infinispan-clustering]]
+
+==== Clustering: deploy multiple Infinispan nodes
+
+The best thing about Infinispan is that all nodes are treated equally, and it requires almost no beforehand capacity planning: to add more nodes to the cluster you just have to start new JVMs, on the same or different physical server, having your same Infinispan configuration and your same application.
+
+Infinispan supports several clustering _cache modes_; each mode provides the same API and functionality but with different performance, scalability and availability options:
+
+.Infinispan cache modes
+local::
+Useful for a single VM: networking stack is disabled
+replication::
+All data is replicated to each node; each node contains a full copy of all entries. Consequentially reads are faster but writes don't scale as well. Not suited for very large datasets.
+distribution::
+Each entry is distributed on multiple nodes for redundancy and failure recovery, but not to all the nodes. Provides linear scalability for both write and read operations. distribution is the default mode!
+
+To use the +replication+ or +distribution+ cache modes Infinispan will use JGroups to discover and connect to the other nodes.
+
+In the default configuration JGroups will attempt to autodetect peer nodes using a multicast socket; this works out of the box in the most network environments but will require some extra configuration in cloud environments (which often block multicast packets) or in case of strict firewalls. See the link:http://www.jgroups.org/manual/html_single/[JGroups reference documentation], specifically look for _Discovery Protocols_ to customize the detection of peer nodes.
+
+Nowadays the [acronym]+JVM+ nowadays defaults to use [acronym]+IPv6+ network stack; this will work fine with JGroups, but only if you configured [acronym]+IPv6+ correctly. It is often useful to force the [acronym]+JVM+ to use [acronym]+IPv4+!
+
+It is also useful to let JGroups know which networking interface you want it to use; especially if you have multiple interfaces it might not guess correctly.
+
+.JVM properties to set for clustering
+====
+[source]
+----
+#192.168.122.1 is an example IPv4 address
+-Djava.net.preferIPv4Stack=true -Djgroups.bind_addr=192.168.122.1
+----
+====
+
+[NOTE]
+====
+You don't need to use [acronym]+IPv4+: JGroups is compatible with [acronym]+IPv6+ provided you have routing properly configured and valid addresses assigned.
+
+The +jgroups.bind_addr+ needs to match a placeholder name in your JGroups configuration in case you don't use the default one.
+====
+
+The default configuration uses +distribution+ as cache mode and uses the +jgroups-tcp.xml+ configuration for JGroups, which is contained in the Infinispan jar as the default configuration for Infinispan users. Let's see how to reconfigure this:
+
+.Reconfiguring cache mode and override JGroups configuration
+====
+
+
+[source, XML]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
+    xmlns="urn:infinispan:config:5.1">
+
+    <global>
+        <transport
+            clusterName="HibernateOGM-Infinispan-cluster">
+            <properties>
+                <property name="configurationFile" value="my-jgroups-conf.xml" />
+            </properties>
+        </transport>
+    </global>
+
+    <default>
+        <clustering
+            mode="distribution" />
+    </default>
+
+    <!-- Cache to store the OGM entities -->
+    <namedCache
+        name="ENTITIES">
+    </namedCache>
+
+    <!-- Cache to store the relations across entities -->
+    <namedCache
+        name="ASSOCIATIONS">
+    </namedCache>
+
+    <!-- Cache to store identifiers -->
+    <namedCache
+        name="IDENTIFIERS">
+        <!-- Override the cache mode: -->
+        <clustering
+            mode="replication" />
+    </namedCache>
+
+</infinispan>
+----
+
+====
+
+In the example above we specify a custom JGroups configuration file and set the cache mode for the default cache to +distribution+; this is going to be inherited by the +ENTITIES+ and the +ASSOCIATIONS+ caches, but for +IDENTIFIERS+ we have chosen (for the sake of this example) to use +replication+.
+
+Now that you have clustering configured, all what is needed is to start the service on multiple nodes. Each node will need the same configuration and jars.
+
+[TIP]
+====
+We have just shown how to override the clustering mode and the networking stack for the sake of completeness, but you don't have to!
+
+Start with the default configuration and see if that fits you. You can fine tune these setting when you are closer to going in production.
+====
+
+[[ogm-infinispan-transactions]]
+
+==== Transactions
+
+Infinispan supports transactions and integrates with any standard JTA +TransactionManager+; this is a great advantage for JPA users as it allows to experience a _similar_ behaviour to the one we are used to when we work with RDBMS databases.
+
+If you're having Hibernate OGM start and manage Infinispan, you can skip this as it will inject the same [classname]+TransactionManager+ instance which you already have set up in the Hibernate / JPA configuration.
+
+If you are providing an already started Infinispan CacheManager instance by using the [acronym]+JNDI+ lookup approach, then you have to make sure the CacheManager is using the same [classname]+TransactionManager+ as Hibernate:
+
+.Configuring a JBoss Standalone TransactionManager lookup
+====
+
+
+[source, XML]
+----
+<default>
+   <transaction
+      transactionMode="TRANSACTIONAL"
+      transactionManagerLookupClass=
+    "org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+</default>
+----
+
+====
+
+Infinispan supports different transaction modes, like +PESSIMISTIC+ and +OPTIMISTIC+, supports [acronym]+XA+, recovery and provides many more configuration options; see the link:https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide] for more advanced configuration options.
+
+[[ogm-infinispan-indexstorage]]
+
+==== Storing a Lucene index in Infinispan
+
+Hibernate Search, which can be used for advanced query capabilities (see <<ogm-query>>), needs some place to store the indexes for its embedded +Apache Lucene+ engine.
+
+A common place to store these indexes is the filesystem which is the default for Hibernate Search; however if your goal is to scale your NoSQL engine on multiple nodes you need to share this index. Network sharing filesystems are a possibility but we don't recommended that at all. Often the best option is to store the index in wathever NoSQL database you are using (or a different dedicated one).
+
+[TIP]
+====
+You might find this section useful even if you don't intend to store your data in Infinispan.
+====
+
+The Infinispan project provides an adaptor to plug into Apache Lucene, so that it writes the indexes in Infinispan and searches data in it. Since Infinispan can be used as an application cache to other NoSQL storage engines by using a CacheStore (see <<ogm-infinispan-storage>>) you can use this adaptor to store the Lucene indexes in any NoSQL store supported by Infinispan:
+
+* Cassandra
+* Filesystem (but locked correctly at the Infinispan level)
+* MongoDB (coming soon: see link:https://issues.jboss.org/browse/ISPN-1797[ISPN-1797])
+* HBase
+* JDBC databases
+* JDBM
+* BDBJE
+* A secondary (independent) Infinispan grid
+* Any Cloud storage service link:http://www.jclouds.org/documentation/reference/supported-providers/[supported by JClouds]
+
+
+How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
+
+* Add +org.hibernate:hibernate-search-infinispan:${hibernate-search-version}+ to your dependencies
+* set these configuration properties:
+
+** +hibernate.search.default.directory_provider = infinispan+
+** +hibernate.search.default.exclusive_index_use = false+
+** +hibernate.search.infinispan.configuration_resourcename =+ [infinispan configuration filename]
+
+
+The referenced Infinispan configuration should define a [classname]+CacheStore+ to load/store the index in the NoSQL engine of choice. It should also define three cache names:
+
+.Infinispan caches used to store indexes
+[cols="1,2,1", options="header"]
+|===============
+|Cache name|Description|Suggested cluster mode
+|LuceneIndexesLocking|Transfers locking information. Does not need a cache
+            store.|replication
+|LuceneIndexesData|Contains the bulk of Lucene data. Needs a cache
+            store.|distribution + L1
+|LuceneIndexesMetadata|Stores metadata on the index segments. Needs a cache
+            store.|replication
+|===============
+
+This configuration is not going to scale well on write operations: to do that you should read about the master/slave and sharding options in Hibernate Search. The complete explanation and configuration options can be found in the link:http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinispan-directories[Hibernate Search Reference Guide]
+
+Some NoSQL support storage of Lucene indexes directly, in which case you might skip the Infinispan Lucene integration by implementing a custom [classname]+DirectoryProvider+ for Hibernate Search. You're very welcome to share the code and have it merged in Hibernate Search for others to use, inspect, improve and maintain.

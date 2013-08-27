@@ -39,6 +39,8 @@ NoSQL can be very disconcerting as it is composed of many disparate solutions wi
 * column based datastores
 
 
+// On native Asciidoctor, remove width=15cm to have it work
+
 .Various NoSQL families
 image::images/nosql.png[align="center", depth="", scalefit="1", width="15cm"]
 

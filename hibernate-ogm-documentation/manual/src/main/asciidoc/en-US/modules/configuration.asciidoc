@@ -6,7 +6,7 @@ Hibernate OGM favors ease of use and convention over configuration. This makes i
 
 === Bootstrapping Hibernate OGM
 
-Hibernate OGM can be used via the Hibernate native APIs ( [classname]+Session+) or via the JPA APIs ( [classname]+EntityManager+). Depending of your choice, the bootstrapping strategy is slightly different.
+Hibernate OGM can be used via the Hibernate native APIs ([classname]+Session+) or via the JPA APIs ([classname]+EntityManager+). Depending of your choice, the bootstrapping strategy is slightly different.
 
 ==== Using JPA
 
@@ -14,8 +14,6 @@ The good news is that if you use JPA as your primary API, the configuration is e
 
 .persistence.xml file
 ====
-
-
 [source, XML]
 ----
 <?xml version="1.0"?>
@@ -36,14 +34,13 @@ The good news is that if you use JPA as your primary API, the configuration is e
     </persistence-unit>
 </persistence>
 ----
-
 ====
 
 There are a couple of things to notice:
 
 * there is no JDBC dialect setting
 * there is no JDBC setting except sometimes a +jta-data-source+ (check <<ogm-configuration-environments-javaee>> for more info)
-* there is no DDL scheme generation options ( +hbm2ddl+) as NoSQL generally do not require schemas
+* there is no DDL scheme generation options (+hbm2ddl+) as NoSQL generally do not require schemas
 * if you use JTA (which we recommend), you will need to set the JTA platform
 
 
@@ -62,8 +59,6 @@ If you want to bootstrap Hibernate OGM using the native Hibernate APIs, use the 
 
 .Bootstrap Hibernate OGM with Hibernate ORM native APIs
 ====
-
-
 [source, JAVA]
 ----
 Configuration cfg = new OgmConfiguration();
@@ -86,12 +81,11 @@ cfg.addAnnotatedClass(Order.class)
 //build the SessionFactory
 SessionFactory sf = cfg.buildSessionFactory();
 ----
-
 ====
 
 There are a couple of things to notice:
 
-* there is no DDL schema generation options ( +hbm2ddl+) as Infinispan does not require schemas
+* there is no DDL schema generation options (+hbm2ddl+) as Infinispan does not require schemas
 * you need to set the right transaction strategy and the right transaction manager lookup strategy if you use a JTA based transaction strategy (see <<ogm-configuration-environments>>)
 
 
@@ -122,14 +116,12 @@ If you use Hibernate ORM native APIs only, then set +hibernate.transaction.facto
 * or +org.hibernate.transaction.JTATransactionFactory+ if you manually demarcate transaction boundaries
 
 
-Set the JTA platform to the right Java EE container. The property is +hibernate.transaction.transaction.jta.platform+ and must contain the fully qualified class name of the lookup implementation. The list of available values are listed in link:$$http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform$$[Hibernate ORM's configuration section]. For example, in JBoss AS, use +org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform+.
+Set the JTA platform to the right Java EE container. The property is +hibernate.transaction.transaction.jta.platform+ and must contain the fully qualified class name of the lookup implementation. The list of available values are listed in link:http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform[Hibernate ORM's configuration section]. For example, in JBoss AS, use +org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform+.
 
 In your [filename]+persistence.xml+, you also need to define an existing datasource. It is not needed by Hibernate OGM and won't be used but the JPA specification mandates this setting.
 
 .persistence.xml file
 ====
-
-
 [source, XML]
 ----
 <?xml version="1.0"?>
@@ -151,7 +143,6 @@ In your [filename]+persistence.xml+, you also need to define an existing datasou
     </persistence-unit>
 </persistence>
 ----
-
 ====
 
 +java:DefaultDS+ will work for out of the box JBoss AS deployments.
@@ -181,8 +172,6 @@ On the JBoss Transaction side, add JBoss Transaction in your classpath, if you u
 
 .JBoss Transaction dependency declaration
 ====
-
-
 [source, XML]
 [subs="verbatim,attributes"]
 ----
@@ -192,7 +181,6 @@ On the JBoss Transaction side, add JBoss Transaction in your classpath, if you u
     <version>{jboss-jta-version}</version>
 </dependency>
 ----
-
 ====
 
 The next step is you get access to the transaction manager. The easiest solution is to do as the following example:
@@ -262,11 +250,11 @@ Otherwise, most options from Hibernate ORM and Hibernate Search are applicable w
 More interesting is a list of options that do _not_ apply to Hibernate OGM and that should not be set:
 
 * +hibernate.dialect+
-* +hibernate.connection.\*+ and in particular +hibernate.connection.provider_class+
+* +hibernate.connection.*+ and in particular +hibernate.connection.provider_class+
 * +hibernate.show_sql+ and +hibernate.format_sql+
 * +hibernate.default_schema+ and +hibernate.default_catalog+
 * +hibernate.use_sql_comments+
-* +hibernate.jdbc.\*+
+* +hibernate.jdbc.*+
 * +hibernate.hbm2ddl.auto+ and +hibernate.hbm2ddl.import_file+
 
 
@@ -274,7 +262,7 @@ More interesting is a list of options that do _not_ apply to Hibernate OGM and t
 
 Hibernate Search integrates with Hibernate OGM just like it does with Hibernate ORM.
 
-In other words, configure where you want to store your indexes, map your entities with the relevant index annotations and you are good to go. For more information, simply check the link:$$http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/$$[Hibernate Search reference documentation].
+In other words, configure where you want to store your indexes, map your entities with the relevant index annotations and you are good to go. For more information, simply check the link:http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan. This is useful even if you don't plan to use Infinispan as your primary data store.
 
@@ -286,12 +274,13 @@ Provided you're deploying on JBoss AS 7.2 or JBoss EAP6, there is an additional 
 
 In JBoss AS 7 class loading is based on modules that have to define explicit dependencies on other modules. Modules allow to share the same artifacts across multiple applications getting you smaller and quicker deloyments.
 
-More details about modules are described in link:$$https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7$$[Class Loading in AS 7.2].
+More details about modules are described in link:https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[Class Loading in AS 7.2].
 
 You can download the pre-packaged module from:
 
 * link:https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[Sourceforge]
 * link:https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules&v={hibernate-ogm-version}&e=zip&c=jbossas-72-dist[JBoss's Maven repository]
+
 
 Unpack the archive into the +modules+ folder of your JBoss AS 7.2 installation. The modules included are:
 
@@ -309,7 +298,7 @@ The +org.hibernate:main+ module will change the version of Hibernate ORM include
 There are two ways to include the dependencies in your project:
 
 Using the manifest:: Add this entry to the MANIFEST.MF in your archive:
-
+[source]
 ----
 Dependencies: org.hibernate:ogm services
 ----
@@ -319,13 +308,12 @@ Using jboss-deployment-structure.xml:: This is a proprietary JBoss AS descriptor
 [source, XML]
 ----
 <jboss-deployment-structure>
-      <deployment>
-      <dependencies>
-          <module name="org.hibernate" slot="ogm" services="export" />
-      </dependencies>
-      </deployment>
-  </jboss-deployment-structure>
-
+    <deployment>
+        <dependencies>
+            <module name="org.hibernate" slot="ogm" services="export" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
 ----
 
-More information about the descriptor can be found in the link:$$https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7$$[JBoss AS 7.2 documentation].
+More information about the descriptor can be found in the link:https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[JBoss AS 7.2 documentation].

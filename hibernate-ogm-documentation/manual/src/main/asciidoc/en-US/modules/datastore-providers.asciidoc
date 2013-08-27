@@ -1,0 +1,51 @@
+[[ogm-datastore-providers]]
+
+== Datastores
+
+Currently Hibernate OGM supports the following datastores:
+
+* Map: stores data in an in-memory Java map to store data. Use it only for unit tests.
+* Infinispan: stores data into link:http://infinispan.org[Infinispan] (data grid)
+* Ehcache: stores data into link:http://ehcache.org[Ehcache] (cache)
+* MongoDB: stores data into link:http://www.mongodb.org[MongoDB] (document store)
+
+
+More are planned, if you are interested, come talk to us (see <<ogm-howtocontribute>>).
+
+Hibernate OGM interacts with NoSQL datastores via two contracts:
+
+* a datastore provider which is responsible for starting and stopping the connection(s) with the datastore and prop up the datastore if needed
+* a grid dialect which is responsible for converting an Hibernate OGM operation into a datastore specific operation
+
+
+The main thing you need to do is to configure which datastore provider you wan to you. This is done via the +hibernate.ogm.datastore.provider+ option. Possible values are the fully qualified class name of a [classname]+DatastoreProvider+ implementation or one preferably of the following shortcuts:
+
+* +map+: stores data in an in-memory Java map to store data. Use it only for unit tests.
+* +infinispan+: stores data into link:http://infinispan.org[Infinispan] (data grid)
+* +ehcache+: stores data into link:http://ehcache.org[Ehcache] (cache)
+* +mongodb+: stores data into link:http://www.mongodb.org[MongoDB] (document store)
+
+
+You also need to add the relevant Hibernate OGM module in your classpath. In maven that would look like:
+
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <version>{hibernate-ogm-version}</version>
+</dependency>
+
+----
+
+We have respectively +hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+ and +hibernate-ogm-mongodb+. The map datastore is included in the Hibernate OGM engine module.
+
+By default, a datastore provider chooses the best grid dialect transparently but you can manually override that setting with the +hibernate.ogm.datastore.grid_dialect+ option. Use the fully qualified class name of the [classname]+GridDialect+ implementation. Most users should ignore this setting entirely and live happy.
+
+include::modules/infinispan.asciidoc[]
+
+include::modules/ehcache.asciidoc[]
+
+include::modules/mongodb.asciidoc[]
