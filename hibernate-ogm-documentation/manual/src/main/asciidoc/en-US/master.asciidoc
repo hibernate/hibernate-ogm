@@ -1,29 +1,17 @@
-
-
-//////////////////////////////////////
-
-//////////////////////////////////////
-
-
-
-//////////////////////////////////////
-
-//////////////////////////////////////
-
 = Hibernate OGM Reference Guide
 
-include::modules/pr01.asciidoc[]
+include::modules/preface.asciidoc[]
 
-include::modules/ch01.asciidoc[]
+include::modules/how-to-contribute.asciidoc[]
 
-include::modules/ch02.asciidoc[]
+include::modules/getting-started.asciidoc[]
 
-include::modules/ch03.asciidoc[]
+include::modules/architecture.asciidoc[]
 
-include::modules/ch04.asciidoc[]
+include::modules/configuration.asciidoc[]
 
-include::modules/ch05.asciidoc[]
+include::modules/datastore-providers.asciidoc[]
 
-include::modules/ch06.asciidoc[]
+include::modules/mapping.asciidoc[]
 
-include::modules/ch07.asciidoc[]
+include::modules/query.asciidoc[]

@@ -55,7 +55,7 @@ public class Hypothesis {
 
 === Using Hibernate Search
 
-We actually did use Hibernate Search already in the previous example; specifically the annotations [classname]+@Indexed+ and [classname]+@Field+ are Hibernate Search specific. In this example the query was defined using a +JP-QL+ string and then defining parameters; that's useful if all you have a is a +JP-QL+ Query, but it is limiting.
+We actually did use Hibernate Search already in the previous example; specifically the annotations [classname]+@Indexed+ and [classname]+@Field+ are Hibernate Search specific. In this example the query was defined using a JP-QL string and then defining parameters; that's useful if all you have a is a +JP-QL+ Query, but it is limiting.
 
 Hibernate Search remaps the properties annotated with [classname]+@Field+ in Lucene Documents, and manages the Lucene indexes so that you can then perform Lucene Queries.
 
@@ -128,7 +128,7 @@ Text similarity can be very powerful as it can be configured for specific langua
 
 Worth noting the the Lucene index is a vectorial space of term occurrence statistics: so extracting tags from text, frequencies of strings and correlate this data makes it very easy to build efficient data analisys applications.
 
-For a full explanation of all its capabilities and configuration options see the link:$$http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/$$[Hibernate Search reference documentation].
+For a full explanation of all its capabilities and configuration options see the link:http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 While the potential of Lucene queries is very high, it's not suited for all use cases. Let's see some of the limitations of Lucene Queries as our main query engine: 
 
