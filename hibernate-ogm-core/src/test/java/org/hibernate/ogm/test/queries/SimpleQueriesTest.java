@@ -78,14 +78,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 				"from Hypothesis" ) );
 		assertQuery( session, 8, session.createQuery(
 				"from org.hibernate.ogm.test.queries.Hypothesis" ) );
-		assertQuery( session, 1, session.createQuery(
+		assertQuery( session, 3, session.createQuery(
 				"from Helicopter" ) );
 	}
 
 	@Test
 	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 9, session.createQuery(
+		assertQuery( session, 11, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -281,10 +281,15 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testInQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position IN (2, 3, 4)" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "15", "16", "20" );
+	}
+
+	@Test
+	public void testInQueryOnStringProperty() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.id IN ('15', '16')" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16" );
 	}
 
 	@Test
@@ -295,10 +300,15 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testNotInQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position NOT IN (3, 4)" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "17", "18", "19" );
+	}
+
+	@Test
+	public void testNotInQueryReturnsEntityWithQueriedPropertySetToNull() throws Exception {
+		List<?> result = session.createQuery( "from Helicopter h where h.name NOT IN ('No creative clue')" ).list();
+		assertThat( result ).onProperty( "name" ).containsOnly( null, "Lama" );
 	}
 
 	@Test
@@ -484,8 +494,15 @@ public class SimpleQueriesTest extends OgmTestCase {
 		session.persist( noDescription );
 
 		Helicopter helicopter = new Helicopter();
-		helicopter.setName( "No creative clue " );
+		helicopter.setName( "No creative clue" );
 		session.persist( helicopter );
+
+		Helicopter anotherHelicopter = new Helicopter();
+		anotherHelicopter.setName( "Lama" );
+		session.persist( anotherHelicopter );
+
+		Helicopter helicopterWithoutName = new Helicopter();
+		session.persist( helicopterWithoutName );
 
 		Hypothesis fool = new Hypothesis();
 		fool.setId( "20" );
