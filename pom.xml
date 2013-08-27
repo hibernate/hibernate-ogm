@@ -309,6 +309,11 @@
                 <artifactId>hibernate-hql-lucene</artifactId>
                 <version>${hibernateParserVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-mongodb</artifactId>
+                <version>${hibernateParserVersion}</version>
+            </dependency>
 
             <!-- NoSQL databases -->
 
