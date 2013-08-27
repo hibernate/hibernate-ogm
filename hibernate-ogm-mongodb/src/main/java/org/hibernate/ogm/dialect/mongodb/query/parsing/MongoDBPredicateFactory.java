@@ -37,6 +37,7 @@ import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBComparis
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBConjunctionPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBDisjunctionPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBInPredicate;
+import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBLikePredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBNegationPredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBRangePredicate;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.predicate.MongoDBRootPredicate;
@@ -102,6 +103,7 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public LikePredicate<DBObject> getLikePredicate(Class<?> entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
-		throw new UnsupportedOperationException( "Not implemented yet" );
+		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		return new MongoDBLikePredicate( columnName, patternValue, escapeCharacter );
 	}
 }
