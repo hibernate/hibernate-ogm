@@ -28,9 +28,25 @@
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>extract-as</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
