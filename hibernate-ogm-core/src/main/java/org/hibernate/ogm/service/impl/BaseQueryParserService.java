@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,24 +20,33 @@
  */
 package org.hibernate.ogm.service.impl;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.hibernate.Query;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
-import org.hibernate.service.Service;
-
+import org.hibernate.engine.spi.TypedValue;
 
 /**
- * There should be a single QueryParserService implementation registered,
- * but we expect to support multiple types using different or hybrid
- * strategies.
+ * Common base functionality for {@link QueryParserService} implementations.
+ *
+ * @author Gunnar Morling
  */
-public interface QueryParserService extends Service {
+public abstract class BaseQueryParserService implements QueryParserService {
 
 	/**
-	 * Experimental!
-	 * Parameters will very likely need to change.
+	 * Unwraps the given named parameters if they are wrapped into {@link TypedValue}s.
+	 *
+	 * @param namedParameters the original named parameters
+	 * @return the unwrapped named parameters
 	 */
-	Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters);
+	protected Map<String, Object> unwrap(Map<String, Object> namedParameters) {
+		Map<String, Object> unwrapped = new HashMap<String, Object>( namedParameters.size() );
 
+		for ( Entry<String, Object> entry : namedParameters.entrySet() ) {
+			Object value = entry.getValue();
+			unwrapped.put( entry.getKey(), value instanceof TypedValue ? ( (TypedValue) value ).getValue() : value );
+		}
+
+		return unwrapped;
+	}
 }
