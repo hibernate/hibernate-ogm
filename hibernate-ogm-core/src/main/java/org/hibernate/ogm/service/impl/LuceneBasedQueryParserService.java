@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -69,7 +69,7 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		LuceneQueryParsingResult parsingResult = new QueryParser().parseQuery( queryString,
 				createProcessingChain( session, unwrap( namedParameters ), fullTextSession ) );
 
-		log.createdLuceneQuery( queryString, parsingResult.getQuery().toString() );
+		log.createdQuery( queryString, parsingResult.getQuery() );
 
 		FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( parsingResult.getQuery(), parsingResult.getTargetEntity() );
 		fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
