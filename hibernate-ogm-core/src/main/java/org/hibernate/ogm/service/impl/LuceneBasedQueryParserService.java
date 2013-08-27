@@ -38,7 +38,6 @@ import org.hibernate.search.Search;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
 import org.hibernate.search.query.ObjectLookupMethod;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * QueryParserService using the ANTLR3-powered LuceneJPQLWalker.
@@ -51,11 +50,9 @@ public class LuceneBasedQueryParserService extends BaseQueryParserService {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ServiceRegistryImplementor registry;
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
-	public LuceneBasedQueryParserService(ServiceRegistryImplementor registry, Map configurationValues) {
-		this.registry = registry;
+	public LuceneBasedQueryParserService() {
 		// TODO: make it possible to lookup the SearchFactoryImplementor at initialization time
 		// searchFactoryImplementor = lookupSearchFactory( registry );
 	}

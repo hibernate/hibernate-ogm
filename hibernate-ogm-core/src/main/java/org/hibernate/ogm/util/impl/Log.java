@@ -134,4 +134,10 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = DEBUG)
 	@Message(id = 28, value = "Created query object '%2$s' from HQL/JP-QL query '%1$s'.")
 	void createdQuery(String hqlQuery, Object queryObject);
+
+	@Message(id = 29, value = "Given class %2$s is no implementation/sub-type of %1$s.")
+	HibernateException givenImplementationClassIsOfWrongType(String expectedClassName, String actualClassName);
+
+	@Message(id = 30, value = "Cannot instantiate query parser service %s.")
+	HibernateException unableToInstantiateQueryParserService(String parserServiceClassName, @Cause Exception e);
 }
