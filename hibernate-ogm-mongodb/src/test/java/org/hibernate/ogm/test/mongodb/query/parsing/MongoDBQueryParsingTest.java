@@ -176,6 +176,24 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"]}");
 	}
 
+	@Test
+	public void shouldCreateInQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title IN ( 'foo', 'bar', 'same')",
+				"{ \"title\" : " +
+					"{ \"$in\" : [ \"foo\" , \"bar\" , \"same\"]}" +
+				"}" );
+	}
+
+	@Test
+	public void shouldCreateNotInQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title NOT IN ( 'foo', 'bar', 'same')",
+				"{ \"title\" : " +
+					"{ \"$nin\" : [ \"foo\" , \"bar\" , \"same\"]}" +
+				"}" );
+	}
+
 	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery) {
 		assertMongoDbQuery( queryString, null, expectedMongoDbQuery );
 	}
