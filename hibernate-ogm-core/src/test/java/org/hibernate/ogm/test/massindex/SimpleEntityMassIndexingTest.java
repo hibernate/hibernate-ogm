@@ -31,8 +31,10 @@ import org.hibernate.ogm.test.hsearch.Insurance;
 import org.hibernate.ogm.test.id.NewsID;
 import org.hibernate.ogm.test.massindex.model.IndexedLabel;
 import org.hibernate.ogm.test.massindex.model.IndexedNews;
+import org.hibernate.ogm.test.utils.GridDialectType;
 import org.hibernate.ogm.test.utils.IndexDirectoryManager;
 import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.util.impl.FileHelper;
@@ -44,6 +46,7 @@ import org.junit.rules.TestName;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
+@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Uses embedded key which is currently not supported by the MongoDB query parser")
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
 	@Rule
