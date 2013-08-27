@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -19,6 +19,8 @@
  * MA  02110-1301, USA.
  */
 package org.hibernate.ogm.test.datastore;
+
+import java.util.Iterator;
 
 import org.hibernate.LockMode;
 import org.hibernate.cfg.Configuration;
@@ -39,11 +41,11 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
+import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
-
-import java.util.Iterator;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical
@@ -52,9 +54,15 @@ import java.util.Iterator;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DatastoreProviderGeneratingSchema implements DatastoreProvider, StartStoppable {
+
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return Dialect.class;
+	}
+
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return LuceneBasedQueryParserService.class;
 	}
 
 	@Override
@@ -65,7 +73,7 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 			if ( table.isPhysicalTable() ) {
 				String tableName = table.getQuotedName();
 				// do something with table
-				Iterator<Column> columns = (Iterator<Column>) table.getColumnIterator();
+				Iterator<Column> columns = table.getColumnIterator();
 				while ( columns.hasNext() ) {
 					Column column = columns.next();
 					String columnName = column.getCanonicalName();

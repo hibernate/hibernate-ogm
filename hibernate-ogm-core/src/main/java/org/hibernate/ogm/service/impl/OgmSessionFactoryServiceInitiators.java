@@ -39,11 +39,12 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  */
 public class OgmSessionFactoryServiceInitiators {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.asList(
+	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.<SessionFactoryServiceInitiator<?>>asList(
 			TypeTranslatorInitiator.INSTANCE,
 			DatastoreServicesInitiator.INSTANCE,
 			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE
+			GridDialectFactoryInitiator.INSTANCE,
+			QueryParserServicesInitiator.INSTANCE
 	) );
 
 }

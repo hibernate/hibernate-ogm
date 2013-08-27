@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -39,6 +39,8 @@ import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
+import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
+import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -64,6 +66,11 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return EhcacheDialect.class;
+	}
+
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return LuceneBasedQueryParserService.class;
 	}
 
 	@Override

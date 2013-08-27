@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -40,6 +40,14 @@ public class OgmConfiguration extends Configuration {
 
 	public static final String OGM_ON = "hibernate.ogm._activate";
 
+	/**
+	 * Name of the configuration option for specifying the {@link org.hibernate.ogm.service.impl.QueryParserService} to
+	 * be used. Accepts a fully-qualified class name. If not specified, the parser type returned by
+	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider.DatastoreProvider#getDefaultQueryParserServiceType()}
+	 * will be used.
+	 */
+	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
+
 	public OgmConfiguration() {
 		super();
 		resetOgm();
@@ -68,5 +76,4 @@ public class OgmConfiguration extends Configuration {
 		}
 		return this;
 	}
-
 }
