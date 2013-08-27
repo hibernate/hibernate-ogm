@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -30,8 +33,8 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -46,20 +49,17 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
-import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.type.StandardBasicTypes;
+import org.hibernate.type.Type;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import org.hibernate.type.Type;
-
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -244,7 +244,7 @@ public class MongoDBDialect implements GridDialect {
 		* the "_id" won't be persisted properly.
 		* With this adjustment, it will work like this:
 		*	if the object (from snapshot) doesn't exist so create the one represented by updater
-		*	so if at this moment the "_id" is not enforce properly an ObjectID will be crated by the server instead
+		*	so if at this moment the "_id" is not enforce properly an ObjectID will be created by the server instead
 		*	of the custom id
 		 */
 		if ( updater.size() == 0 ) {

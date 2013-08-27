@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,16 +20,16 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKind;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import org.hibernate.ogm.grid.AssociationKind;
-
-import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -55,7 +55,7 @@ public class MongoHelpers {
 		if ( storage == AssociationStorage.GLOBAL_COLLECTION ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
-		idObject.put( "_id", columns );
+		idObject.put( MongoDBDialect.ID_FIELDNAME, columns );
 		return idObject;
 	}
 
