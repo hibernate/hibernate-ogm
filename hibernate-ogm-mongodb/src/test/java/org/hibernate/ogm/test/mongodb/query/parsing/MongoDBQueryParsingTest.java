@@ -194,6 +194,30 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 				"}" );
 	}
 
+	@Test
+	public void shouldCreateLikeQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title like 'Ali_e%')",
+				"{ \"title\" : " +
+					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
+					"\"$options\" : \"s\"" +
+					"}" +
+				"}");
+	}
+
+	@Test
+	public void shouldCreateNotLikeQuery() {
+		assertMongoDbQuery(
+				"select e from IndexedEntity e where e.title not like 'Ali_e%')",
+				"{ \"title\" : " +
+					"{ \"$not\" : " +
+						"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
+						"\"$options\" : \"s\"" +
+						"}" +
+					"}" +
+				"}");
+	}
+
 	private void assertMongoDbQuery(String queryString, String expectedMongoDbQuery) {
 		assertMongoDbQuery( queryString, null, expectedMongoDbQuery );
 	}

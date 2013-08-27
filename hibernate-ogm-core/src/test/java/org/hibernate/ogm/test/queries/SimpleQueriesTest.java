@@ -312,7 +312,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
@@ -326,14 +325,12 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLikeQueryOnMultiwords() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE 'There are more than%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "20" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLikeQueryOnMultiwordsNoMatch() throws Exception {
 		//It is case-sensitive, as Analysis is disabled on wildcard queries:
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE 'there are more than%'" ).list();
@@ -341,7 +338,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLikeQueryOnMultiwordsAsPrefix() throws Exception {
 		//It is case-sensitive, as Analysis is disabled on wildcard queries:
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%e'" ).list();
@@ -349,14 +345,12 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testLikeQueryOnMultiwordsPrefixed() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%the cave'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13" );
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testNegatedLikeQueryOnMultiwords() throws Exception {
 		//Matching out:
 		// "13" - "There are more than two dimensions over the shadows we see out of the cave"
@@ -368,7 +362,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Not implemented yet.")
 	public void testNotLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description NOT LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "17", "18", "19", "20" );
