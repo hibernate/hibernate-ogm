@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -132,6 +132,6 @@ public interface Log extends BasicLogger {
 	HibernateException unableToConvertStringToDiscriminator(@Cause Exception e);
 
 	@LogMessage(level = DEBUG)
-	@Message(id = 28, value = "Created Lucene query '%2$s' from HQL/JP-QL query '%1$s'.")
-	void createdLuceneQuery(String jpqlQuery, String luceneQuery);
+	@Message(id = 28, value = "Created query object '%2$s' from HQL/JP-QL query '%1$s'.")
+	void createdQuery(String hqlQuery, Object queryObject);
 }
