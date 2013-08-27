@@ -50,8 +50,8 @@
             <optional>true</optional>
             <exclusions>
                 <exclusion>
-                    <groupId>org.hibernate.jpql</groupId>
-                    <artifactId>hibernate-jpql-parser</artifactId>
+                    <groupId>org.hibernate.hpql</groupId>
+                    <artifactId>hibernate-hql-parser</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
