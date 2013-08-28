@@ -2,34 +2,35 @@
 
 === Ehcache
 
-When combined with Hibernate ORM, Ehcache is commonly used as a 2nd level cache, so caching data which is stored in a relational database. When used with Hibernate OGM it is not "just a cache" but is the main storage engine for your data.
+When combined with Hibernate ORM, Ehcache is commonly used as a 2nd level cache,
+so caching data which is stored in a relational database.
+When used with Hibernate OGM it is not "just a cache"
+but is the main storage engine for your data.
 
-This is not the reference manual for Ehcache itself: we're going to list only how Hibernate OGM should be configured to use Ehcache; for all the tuning and advanced options please refer to the link:http://www.ehcache.org/documentation[Ehcache Documentation.]
+This is not the reference manual for Ehcache itself:
+we're going to list only how Hibernate OGM should be configured to use Ehcache;
+for all the tuning and advanced options please refer to the
+link:http://www.ehcache.org/documentation[Ehcache Documentation].
 
 [[ogm-ehcache-configuration]]
 
 ==== Configure Ehcache
 
-Two steps: 
+Two steps:
 
 * Add the dependencies to classpath
-* And then choose one of: 
+* And then choose one of:
 
 ** Use the default Ehcache configuration (no action needed)
 ** Point to your own configuration resource name
-
-
-
-
-
 
 
 [[ogm-ehcache-adddepencies]]
 
 ===== Adding Ehcache dependencies
 
-To add the dependencies via some Maven-definitions-using tool, add the following module:
-
+To add the dependencies via some Maven-definitions-using tool,
+add the following module:
 
 [source, XML]
 [subs="verbatim,attributes"]
@@ -39,36 +40,42 @@ To add the dependencies via some Maven-definitions-using tool, add the following
     <artifactId>hibernate-ogm-ehcache</artifactId>
     <version>{hibernate-ogm-version}</version>
 </dependency>
-
 ----
 
-If you're not using a dependency management tool, copy all the dependencies from the distribution in the directories: 
+If you're not using a dependency management tool,
+copy all the dependencies from the distribution in the directories:
 
 * +/lib/required+
 * +/lib/ehcache+
-* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
-
-
+* Optionally - depending on your container -
+  you might need some of the jars from +/lib/provided+
 
 
 [[ogm-ehcache-configuration-properties]]
 
 ===== Ehcache specific configuration properties
 
-Hibernate OGM expects you to define an Ehcache configuration in its own configuration resource; all what we need to set it the resource name.
+Hibernate OGM expects you to define an Ehcache configuration
+in its own configuration resource;
+all what we need to set it the resource name.
 
-To use the default configuration provided by Hibernate OGM - which is a good starting point for new users - you don't have to set any property.
+To use the default configuration provided by Hibernate OGM -
+which is a good starting point for new users - you don't have to set any property.
 
 .Ehcache datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use Ehcache as a datastore provider set it to +ehcache+.
 hibernate.ogm.ehcache.configuration_resourcename::
-Should point to the resource name of an Ehcache configuration file. Defaults to +/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
+Should point to the resource name of an Ehcache configuration file.
+Defaults to +/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
 
 [[ogm-ehcache-transactions]]
 
 ==== Transactions
 
-While Ehcache technically supports transactions, Hibernate OGM is currently unable to use them. Careful!
+While Ehcache technically supports transactions,
+Hibernate OGM is currently unable to use them. Careful!
 
-If you need this feature, it should be easy to implement: contributions welcome! See link:https://hibernate.onjira.com/browse/OGM-243[JIRA OGM-243].
+If you need this feature, it should be easy to implement:
+contributions welcome! See
+link:https://hibernate.onjira.com/browse/OGM-243[JIRA OGM-243].

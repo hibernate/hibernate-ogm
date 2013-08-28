@@ -2,11 +2,13 @@
 
 === MongoDB
 
-link:http://www.mongodb.org[MongoDB] is a document oriented datastore written in C++ with strong emphasis on ease of use.
+link:http://www.mongodb.org[MongoDB] is a document oriented datastore
+written in C++ with strong emphasis on ease of use.
 
 ==== Configuring MongoDB
 
-This implementation is based upon the MongoDB Java driver, currently the supported version is {mongodb-version}.
+This implementation is based upon the MongoDB Java driver.
+The currently supported version is {mongodb-version}.
 
 The following properties are available to configure MongoDB support:
 
@@ -14,36 +16,58 @@ The following properties are available to configure MongoDB support:
 hibernate.ogm.datastore.provider::
 To use MongoDB as a datastore provider, this property must be set to +mongodb+
 hibernate.ogm.mongodb.host::
-The hostname of the mongodb instance. The default value is +127.0.0.1+
+The hostname of the mongodb instance. The default value is +127.0.0.1+.
 hibernate.ogm.mongodb.port::
 The port used by the mongodb instance. The default value is +27017+
 hibernate.ogm.mongodb.database::
 The database to connect to. This property has no default value.
 hibernate.ogm.mongodb.username::
-The username used when connecting to the MongoDB server.  This property has no default value.
+The username used when connecting to the MongoDB server.
+This property has no default value.
 hibernate.ogm.mongodb.password::
-The password used to connect to the MongoDB server. This property has no default value. This property is ignored if the username isn't specified.
+The password used to connect to the MongoDB server.
+This property has no default value.
+This property is ignored if the username isn't specified.
 hibernate.ogm.mongodb.connection_timeout::
-Defines the timeout used by the driver when the connection to the MongoDB instance is initiated. This configuration is expressed in milliseconds. The default value is +5000+.
+Defines the timeout used by the driver
+when the connection to the MongoDB instance is initiated.
+This configuration is expressed in milliseconds.
+The default value is +5000+.
 hibernate.ogm.mongodb.associations.store::
-Defines the way OGM stores association information. There are three strategies to store association information. +GLOBAL_COLLECTION+  stores the association information in a unique MongoDB collection for all associations.  +COLLECTION+  stores the association in a dedicated MongoDB collection per association.  +IN_ENTITY+  stores association information from within the entity. +IN_ENTITY+  is the default.
+Defines the way OGM stores association information.
+There are three strategies to store association information.
++GLOBAL_COLLECTION+ stores the association information in a unique MongoDB collection for all associations.
++COLLECTION+ stores the association in a dedicated MongoDB collection per association.
++IN_ENTITY+ stores association information from within the entity.
++IN_ENTITY+  is the default.
 hibernate.ogm.mongodb.writeconcern::
-Possible values are +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +NONE+, +NORMAL+, +SAFE+, +MAJORITY+, +FSYNC_SAFE+, +JOURNAL_SAFE+, +REPLICAS_SAFE+.  For more information, please refer to the link:http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation.] This option is case insensitive and the default value is +ACKNOWLEDGED+.
+Possible values are +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+,
++FSYNCED+, +JOURNALED+, +NONE+, +NORMAL+, +SAFE+, +MAJORITY+, +FSYNC_SAFE+,
++JOURNAL_SAFE+, +REPLICAS_SAFE+.
+For more information, please refer to the
+link:http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
+This option is case insensitive and the default value is +ACKNOWLEDGED+.
 
 ==== Storage principles
 
-Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible so that third party applications not using Hibernate OGM can still read and update the same datastore. We worked particularly hard on the MongoDB model to offer various classic mappings between your object model and the MongoDB documents.
+Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
+so that third party applications not using Hibernate OGM can still read
+and update the same datastore.
+We worked particularly hard on the MongoDB model
+to offer various classic mappings between your object model
+and the MongoDB documents.
 
 ===== Entities
 
-Entities are stored as MongoDB documents and not as BLOBs which means each entity property will be translated into a document field. You can use the name property of [classname]+@Table+ and [classname]+@Column+ annotation and so rename the collections and the document's field.
+Entities are stored as MongoDB documents and not as BLOBs
+which means each entity property will be translated into a document field.
+You can use the name property of [classname]+@Table+ and [classname]+@Column+ annotation
+to rename the collections and the document's field if you need to.
 
 Note that embedded objects are mapped as nested documents.
 
 .Example of an entity with an embedded object
 ====
-
-
 [source, JAVA]
 ----
 @Entity
@@ -65,13 +89,10 @@ public class NewsPaper {
     private String owner;
     //getters, setters ...
 }
-
 ----
-
 
 [source, JSON]
 ----
-
 {
     "_id" : "1234-5678-0123-4567",
     "title": "On the merits of NoSQL",
@@ -81,19 +102,24 @@ public class NewsPaper {
         "owner": "Delphy"
     }
 }
-                    
 ----
-
 ====
 
 ====== Identifiers
 
-The +_id+ field of a MongoDB document is directly used to store the identifier columns mapped in the entities. That means you can use simple identifiers (no matter the Java type used) as well as Embedded identifiers. Embedded identifiers are stored as embedded document into the +_id+ field. Hibernate OGM will convert the +@Id+ property into a +_id+ document field so you can name the entity id like you want it will always be stored into +_id+ (the recommended approach in MongoDB). That means in particular that MongoDB will automatically index your _id fields. Let's look at an example:
+The +_id+ field of a MongoDB document is directly used
+to store the identifier columns mapped in the entities.
+That means you can use simple identifiers (no matter the Java type used)
+as well as Embedded identifiers.
+Embedded identifiers are stored as embedded document into the +_id+ field.
+Hibernate OGM will convert the +@Id+ property into a +_id+ document field
+so you can name the entity id like you want it will always be stored into +_id+
+(the recommended approach in MongoDB).
+That means in particular that MongoDB will automatically index your _id fields.
+Let's look at an example:
 
 .Example of an entity using Embedded id
 ====
-
-
 [source, JAVA]
 ----
 @Entity
@@ -111,10 +137,8 @@ public class NewsID implements Serializable {
 }
 ----
 
-
 [source, JSON]
 ----
-
 {
     "_id" :{
         "title": "How does Hibernate OGM MongoDB work?",
@@ -122,26 +146,29 @@ public class NewsID implements Serializable {
     }
 }
 ----
-
 ====
 
 ===== Associations
 
-Hibernate OGM MongoDB proposes 3 strategies to store navigation information for associations. To switch between each of these strategies, use the +hibernate.ogm.mongodb.associations.store+ configuration property. The three possible values are:
+Hibernate OGM MongoDB proposes 3 strategies to store navigation information for associations.
+To switch between each of these strategies,
+use the +hibernate.ogm.mongodb.associations.store+ configuration property.
+The three possible values are:
 
 * IN_ENTITY (default)
 * GLOBAL_COLLECTION
 * COLLECTION
 
-
 ====== In Entity strategy
 
-This strategy works pretty like the a foreign key in order terms, OGM will directly store the id of the other side of the association into a field or an embedded document depending if the mapping concerns a single object or a collection. The field that stores the relationship information is named like the entity property.
+In this strategy, Hibernate OGM directly stores the id(s)
+of the other side of the association
+into a field or an embedded document
+depending if the mapping concerns a single object or a collection.
+The field that stores the relationship information is named like the entity property.
 
 .Java entity
 ====
-
-
 [source, JAVA]
 ----
 @Entity
@@ -154,13 +181,10 @@ public Set<BankAccount> bankAccounts;
 
 //getters, setters, ...
 ----
-
 ====
 
 .JSON representation
 ====
-
-
 [source, JSON]
 ----
 {
@@ -170,17 +194,20 @@ public Set<BankAccount> bankAccounts;
     ]
 }
 ----
-
 ====
 
 ====== Global collection strategy
 
-With this strategy, Hibernate OGM creates a single collection in which it will stores all navigation information for all associations. Each document of this collection is structure in 2 parts. The first is the +_id+ field which contains the identifier information of the association owner and the name of the association table. The second part is the +rows+ field which stores (into an embedded collection) all ids that the current instance is related to.
+With this strategy, Hibernate OGM creates a single collection
+in which it will stores all navigation information for all associations.
+Each document of this collection is structure in 2 parts.
+The first is the +_id+ field which contains the identifier information
+of the association owner and the name of the association table.
+The second part is the +rows+ field which stores (into an embedded collection) all ids
+that the current instance is related to.
 
 .Unidirectional relationship
 ====
-
-
 [source, JSON]
 ----
 {
@@ -193,15 +220,13 @@ With this strategy, Hibernate OGM creates a single collection in which it will s
     ]
 }
 ----
-
 ====
 
-For a bidirectional relationship, another document is created where ids are reversed. Don't worry, Hibernate OGM takes care of keeping them in sync:
+For a bidirectional relationship, another document is created where ids are reversed.
+Don't worry, Hibernate OGM takes care of keeping them in sync:
 
 .Bidirectional relationship
 ====
-
-
 [source, JSON]
 ----
 {
@@ -223,23 +248,25 @@ For a bidirectional relationship, another document is created where ids are reve
     }]
 }
 ----
-
 ====
 
 ====== One collection per association strategy
 
-In this strategy, Hibernate OGM creates a MongoDB collection per association in which it will stores all navigation information for that particular association. This is the strategy closest to the relational model. If an entity A is related to B and C, 2 collections will be created. The name of this collection is made of the association table concatenated with +associations_+. For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related, the collection used to store will be named +associations_Owner_BankAccount+. The prefix is useful to quickly identify the association collections from the entity collections. Each document of an association collection has the following structure: 
+In this strategy, Hibernate OGM creates a MongoDB collection per association
+in which it will stores all navigation information for that particular association.
+This is the strategy closest to the relational model.
+If an entity A is related to B and C, 2 collections will be created.
+The name of this collection is made of the association table concatenated with +associations_+.
+For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related,
+the collection used to store will be named +associations_Owner_BankAccount+.
+The prefix is useful to quickly identify the association collections from the entity collections.
+Each document of an association collection has the following structure: 
 
 * +_id+ contains the id of the owner of relationship
 * +rows+ contains all the id of the related entities
 
-
-
-
 .Unidirectional relationship
 ====
-
-
 [source, JSON]
 ----
 {
@@ -249,13 +276,10 @@ In this strategy, Hibernate OGM creates a MongoDB collection per association in 
     ]
 }
 ----
-
 ====
 
 .Bidirectional relationship
 ====
-
-
 [source, JSON]
 ----
 {
@@ -271,26 +295,43 @@ In this strategy, Hibernate OGM creates a MongoDB collection per association in 
     ]
 }
 ----
-
 ====
 
 ==== Transactions
 
-MongoDB does not support transaction. Only changes applied to the same document are done atomically. A change applied to more than one document will not be applied atomically. This problem is slightly mitigated by the fact that Hibernate OGM queues all changes before applying them during flush time. So the window of time used to write to MongoDB is smaller than what you would have done manually.
+MongoDB does not support transaction.
+Only changes applied to the same document are done atomically.
+A change applied to more than one document will not be applied atomically.
+This problem is slightly mitigated by the fact that Hibernate OGM queues all changes
+before applying them during flush time.
+So the window of time used to write to MongoDB is smaller than what you would have done manually.
 
-We recommend that you still use transaction demarcations with Hibernate OGM to trigger the flush operation transparently (on commit). But do not consider rollback as a possibility, this won't work.
+We recommend that you still use transaction demarcations with Hibernate OGM
+to trigger the flush operation transparently (on commit).
+But do not consider rollback as a possibility, this won't work.
 
 ==== Queries
 
-Hibernate OGM is a work in progress and we are actively working on JP-QL query support.
+Hibernate OGM is a work in progress
+and we are actively working on JP-QL query support.
 
 In the mean time, you have two strategies to query entities stored by Hibernate OGM:
 
 * use native MongoDB queries
 * use Hibernate Search
 
+Because Hibernate OGM stores data in MongoDB in a natural way,
+you can use the MongoDB driver and execute queries on the datastore directly
+without involving Hibernate OGM.
+The benefit of this approach is to use the query capabilities of MongoDB.
+The drawback is that raw MongoDB documents will be returned and not managed entities.
 
-Because Hibernate OGM stores data in MongoDB in a natural way, you can use the MongoDB driver and execute queries on the datastore directly without involving Hibernate OGM. The benefit of this approach is to use the query capabilities of MongoDB. The drawback is that raw MongoDB documents will be returned and not managed entities.
-
-The alternative approach, is to index your entities with Hibernate Search. That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search and you can write queries on top of them. The benefit of this approach is an nice integration at the JPA / Hibernate API level (managed entities are returned by the queries). The drawback is that you need to store the Lucene indexes somewhere (file system, infinispan grid etc). Have a look at the Infinispan section for more info on how to use Hibernate Search.
+The alternative approach is to index your entities with Hibernate Search.
+That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search
+and you can write queries on top of them.
+The benefit of this approach is an nice integration at the JPA / Hibernate API level
+(managed entities are returned by the queries).
+The drawback is that you need to store the Lucene indexes somewhere
+(file system, infinispan grid etc).
+Have a look at the Infinispan section for more info on how to use Hibernate Search.
 
