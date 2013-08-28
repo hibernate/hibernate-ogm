@@ -101,7 +101,7 @@
                         <scope>runtime</scope>
                         <excludes>
                             <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate.hql:*</exclude>
                             <exclude>org.hibernate:*</exclude>
                             <exclude>org.hibernate.common:*</exclude>
                             <exclude>dom4j:dom4j</exclude>
@@ -188,7 +188,7 @@
                         <scope>runtime</scope>
                         <excludes>
                             <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate.hql:*</exclude>
                             <exclude>org.hibernate:*</exclude>
                             <exclude>org.hibernate.common:*</exclude>
                             <exclude>dom4j:dom4j</exclude>
@@ -238,7 +238,7 @@
                         <scope>runtime</scope>
                         <excludes>
                             <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.jpql:*</exclude>
+                            <exclude>org.hibernate.hql:*</exclude>
                             <exclude>org.hibernate:*</exclude>
                             <exclude>org.hibernate.common:*</exclude>
                             <exclude>dom4j:dom4j</exclude>
