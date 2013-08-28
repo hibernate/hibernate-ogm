@@ -40,10 +40,77 @@
     <properties>
         <!-- Skip artifact deployment -->
         <maven.deploy.skip>true</maven.deploy.skip>
+        <docname>master</docname>
+        <bookname>Hibernate OGM</bookname>
     </properties>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>filter-asciidoc-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/asciidoc-prepared</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/asciidoc</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-docbook-xml</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <sourceDirectory>${project.build.directory}/asciidoc-prepared/en-US</sourceDirectory>
+                    <sourceDocumentName>${project.build.directory}/asciidoc-prepared/en-US/master.asciidoc</sourceDocumentName>
+                    <outputDirectory>${basedir}/target/docbook/en-US</outputDirectory>
+                    <!-- templateDir>${basedir}/../asciidoc/src/main/backend/slim/docbook45</templateDir>
+                    <templateEngine>slim</templateEngine -->
+                    <headerFooter>true</headerFooter>
+                    <compact>false</compact>
+                    <imagesDir>images</imagesDir>  <!-- TODO: Remove this config when the image/ prefix is removed from image paths -->
+                    <toc>true</toc>
+                    <backend>docbook45</backend>
+                    <doctype>book</doctype>
+                    <goalPrefix>asciidoctor</goalPrefix>
+                    <sourceHighlighter>coderay</sourceHighlighter>
+                    <attributes>
+                        <idprefix></idprefix>
+                        <sectanchors>true</sectanchors>
+                        <toclevels>3</toclevels>
+                        <numbered>true</numbered>
+                        <icons>font</icons>
+                        <docinfo>true</docinfo>
+                        <experimental>true</experimental>
+                        <hibernate-ogm-version>${project.version}</hibernate-ogm-version>
+                        <hibernate-orm-version>${hibernateVersion}</hibernate-orm-version>
+                        <hibernate-search-version>${hibernateSearchVersion}</hibernate-search-version>
+                        <infinispan-version>${infinispanVersion}</infinispan-version>
+                        <jboss-jta-version>${jbossjtaVersion}</jboss-jta-version>
+                        <mongodb-version>${mongodbVersion}</mongodb-version>
+                    </attributes>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.jboss.maven.plugins</groupId>
                 <artifactId>maven-jdocbook-plugin</artifactId>
@@ -63,6 +130,7 @@
                 </executions>
 
                 <configuration>
+                    <sourceDirectory>${project.basedir}/target/docbook</sourceDirectory>
                     <sourceDocumentName>master.xml</sourceDocumentName>
                     <masterTranslation>en-US</masterTranslation>
                     <translations>
@@ -74,9 +142,11 @@
                         <translation>zh-CN</translation> -->
                     </translations>
                     <imageResource>
-                        <directory>${basedir}/src/main/docbook/en-US</directory>
+                        <directory>${basedir}/src/main/asciidoc/en-US</directory>
                         <excludes>
                             <exclude>*.xml</exclude>
+                            <exclude>*.asciidoc</exclude>
+                            <exclude>**/*.asciidoc</exclude>
                             <exclude>*.ent</exclude>
                             <exclude>**/*.xml</exclude>
                             <exclude>*.zargo</exclude>
@@ -111,33 +181,13 @@
                         <!--     could also locate the docbook dependency and inspect its version... -->
                         <docbookVersion>1.72.0</docbookVersion>
                         <localeSeparator>-</localeSeparator>
-                        <injectionDateFormat>yyyy-MM-dd</injectionDateFormat>
+                        <applyStandardInjectionValues>false</applyStandardInjectionValues>
                     </options>
-                    <injections>
-                        <injection>
-                            <name>hibernateVersion</name>
-                            <value>${hibernateVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>hibernateSearchVersion</name>
-                            <value>${hibernateSearchVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>infinispanVersion</name>
-                            <value>${infinispanVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>jbossjtaVersion</name>
-                            <value>${jbossjtaVersion}</value>
-                        </injection>
-                        <injection>
-                            <name>mongodbVersion</name>
-                            <value>${mongodbVersion}</value>
-                        </injection>
-                    </injections>
-                    <profiling>
+                    <!-- Always need an "injections" element to avoid an NPE in the maven-jdocbook-plugin -->
+                    <injections/>
+                    <!-- profiling>
                         <enabled>true</enabled>
-                    </profiling>
+                    </profiling -->
                 </configuration>
             </plugin>
         </plugins>
@@ -153,15 +203,22 @@
                             <pluginExecutions>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.jboss.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-jdocbook-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [2.3.4,)
-                                        </versionRange>
+                                        <groupId>org.asciidoctor</groupId>
+                                        <artifactId>asciidoctor-maven-plugin</artifactId>
+                                        <versionRange>[0.1.3,)</versionRange>
+                                        <goals>
+                                            <goal>process-asciidoc</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.jboss.maven.plugins</groupId>
+                                        <artifactId>maven-jdocbook-plugin</artifactId>
+                                        <versionRange>[2.3.4,)</versionRange>
                                         <goals>
                                             <goal>generate</goal>
                                             <goal>resources</goal>

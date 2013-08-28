@@ -1,0 +1,127 @@
+[[ogm-howtocontribute]]
+
+== How to get help and contribute on Hibernate OGM
+
+Hibernate OGM is a young project.
+The code, the direction and the documentation are all in flux
+and being built by the community.
+Join and help us shape it!
+
+[[ogm-howtocontribute-help]]
+
+=== How to get help
+
+First of all, make sure to read this reference documentation.
+This is the most comprehensive formal source of information.
+Of course, it is not perfect:
+feel free to come and ask for help,
+comment or propose improvements in our
+https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM forum].
+
+You can also:
+
+* open bug reports in https://hibernate.atlassian.net/browse/OGM[JIRA]
+* propose improvements on the
+  http://www.hibernate.org/community/mailinglists[development mailing list]
+* join us on IRC to discuss developments and improvements 
+  (+#hibernate-dev+ on +freenode.net+;
+  you need to be registered on freenode:
+  the room does not accept "anonymous" users).
+
+[[ogm-howtocontribute-contribute]]
+
+=== How to contribute
+
+Welcome!
+
+There are many ways to contribute:
+
+* report bugs in https://hibernate.atlassian.net/browse/OGM[JIRA]
+* give feedback in the forum, IRC or the development mailing list
+* improve the documentation
+* fix bugs or contribute new features
+* propose and code a datastore dialect for your favorite NoSQL engine
+
+
+Hibernate OGM's code is available on GitHub at
+https://github.com/hibernate/hibernate-ogm.
+
+==== How to build Hibernate OGM
+
+Hibernate OGM uses Git and Maven 3,
+make sure to have both installed on your system.
+
+Clone the git repository from GitHub:
+
+[source]
+----
+#get the sources
+git clone https://github.com/hibernate/hibernate-ogm
+cd hibernate-ogm
+----
+
+Run maven
+
+[source]
+----
+#build project
+mvn clean install -s settings-example.xml
+----
+
+[NOTE]
+====
+Note that Hibernate OGM uses artifacts from the Maven repository hosted by JBoss.
+Make sure to either use the [code]+-s settings-example.xml+ option
+or adjust your [filename]+$$~/.m2/settings.xml$$+
+according to the descriptions available
+http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
+====
+
+To build the documentation, set the +buildDocs+ property to true:
+
+[source]
+----
+mvn clean install -DbuildDocs=true -s settings-example.xml
+----
+
+[TIP]
+====
+If you just want to build the documentation only,
+run it from the [filename]+hibernate-ogm-documentation/manual+ subdirectory.
+====
+
+==== How to contribute code effectively
+
+The best way to share code is to fork the Hibernate OGM repository on GitHub,
+create a branch and open a pull request when you are ready.
+Make sure to rebase your pull request
+on the latest version of the master branch before offering it.
+
+Here are a couple of approaches the team follows:
+
+* We do small independent commits for each code change.
+  In particular, we do not mix stylistic code changes (import, typos, etc)
+  and new features in the same commit.
+* Commit messages follow this convention:
+  the JIRA issue number, a short commit summary, an empty line,
+  a longer description if needed.
+  Make sure to limit line length to 80 characters, even at this day and age
+  it makes for more readable commit comments.
+[source]
+----
+OGM-123 Summary of commit operation
+
+Optional details on the commit
+and a longer description can be
+added here.
+----
+
+* A pull request can contain several commits but should be self contained:
+  include the implementation, its unit tests, its documentation
+  and javadoc changes if needed.
+* All commits are proposed via pull requests
+  and reviewed by another member of the team
+  before being pushed to the reference repository.
+  That's right, we never commit directly upstream without code review.
+
+

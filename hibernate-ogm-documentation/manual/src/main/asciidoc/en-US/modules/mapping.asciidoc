@@ -1,0 +1,130 @@
+[[ogm-mapping]]
+
+== Map your entities
+
+TODO:
+
+* Talk about supported approaches (properties, embedded objects, inheritance)
+* Talk about associations
+* Talk about identifier recommendations
+
+=== Supported entity mapping
+
+This section is a work in progress,
+if you find something that does not work as expected,
+let us know and we will update it (and fix the problem of course).
+
+Pretty much all entity related constructs should work out of the box in Hibernate OGM.
+[classname]+@Entity+, [classname]+@Table+, [classname]+@Column+,
+[classname]+@Enumarated+, [classname]+@Temporal+, [classname]+@Cacheable+
+and the like will work as expected.
+If you want an example,
+check out <<ogm-gettingstarted>> or the documentation of Hibernate ORM.
+Let's concentrate of the features that differ
+or are simply not supported by Hibernate OGM.
+
+The various inheritance strategies are not supported by Hibernate OGM,
+only the table per concrete class strategy is used.
+f This is not so much a limitation
+but rather an acknowledgment of the dynamic nature of NoSQL schemas.
+If you feel the need to support other strategies,
+let us know (see <<ogm-howtocontribute-contribute>>).
+Simply do not use [classname]+@Inheritance+ nor [classname]+@DiscriminatorColumn+.
+
+Secondary tables are not supported by Hibernate OGM at the moment.
+If you have needs for this feature, let us know (see <<ogm-howtocontribute-contribute>>).
+
+All SQL related constructs
+as well as HQL centered mapping are not supported in Hibernate OGM.
+Here is a list of feature that will not work:
+
+* Named queries
+* Native queries
+
+All standard JPA id generators are supported: IDENTITY, SEQUENCE, TABLE and AUTO.
+If you need support for additional generators,
+let us know (see <<ogm-howtocontribute-contribute>>).
+We recommend you use a UUID based generator
+as this type of generator allows maximum scalability to the underlying data grid
+as no cluster-wide counter is necessary.
+
+.Using a UUID generator
+====
+[source, JAVA]
+----
+@Entity
+public class Breed {
+
+    @Id @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name="uuid", strategy="uuid2")
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    private String id;
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    private String name;
+}
+----
+====
+
+[[ogm-mapping-supported-types]]
+
+=== Supported Types
+
+Most Java built-in types as supported at this stage.
+However, custom types ([classname]+@Type+) are not supported.
+
+[[ogm-mapping-supported-types-native-mapped]]
+
+==== Types mapped as native Java Types
+
+A few types are supported natively (ie serialized as is in the tuple data structure):
+
+* Boolean
+* Byte
+* Calendar (this may change)
+* Class (this may change)
+* Date (this may change)
+* Double
+* Integer
+* Long
+* Byte Array
+* String
+
+
+[WARNING]
+====
+This list is subject to change and specifically be reduced to a smaller set of core types.
+====
+
+[[ogm-mapping-supported-types-string-mapped]]
+
+==== Types mapped as Strings
+
+For non basic Java types support,
+OGM stores the data of the object as a String in the data store.
+Serialisation to a String value is done
+with cross platform compatibility in mind when required.
+
+* BigDecimal (mapped as scientific notation)
+* BigInteger
+* Url (as described by RFC 1738 and returned by toString of the Java URL type)
+* UUID stored as described by RFC 4122
+
+
+=== Supported association mapping
+
+All association types are supported ([classname]+@OneToOne+,
+[classname]+@OneToMany+, [classname]+@ManyToOne+, [classname]+@ManyToMany+).
+Likewise, all collection types are supported ([classname]+Set+, [classname]+Map+,
+[classname]+List+).
+The way Hibernate OGM stores association information is however quite different
+than the traditional RDBMS representation.
+Check <<ogm-architecture-datapersisted>> for more information.
+
+Keep in mind that collections with many entries won't perform very well
+in Hibernate OGM (at least today)
+as all of the association navigation for a given entity is stored in a single key.
+If your collection is made of 1 million elements,
+Hibernate OGM stores 1 million tuples in the association key.
