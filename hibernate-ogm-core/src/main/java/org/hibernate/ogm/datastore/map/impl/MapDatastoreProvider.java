@@ -39,6 +39,8 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
+import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Startable;
@@ -60,7 +62,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	private final ConcurrentMap<EntityKey,Map<String, Object>> entitiesKeyValueStorage = new ConcurrentHashMap<EntityKey,Map<String, Object>>();
 	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = new ConcurrentHashMap<AssociationKey, Map<RowKey, Map<String, Object>>>();
 	private final ConcurrentMap<RowKey, AtomicInteger> sequencesStorage = new ConcurrentHashMap<RowKey, AtomicInteger>();
-	private final ConcurrentMap<Object,ReadWriteLock> dataLocks = new ConcurrentHashMap();
+	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = new ConcurrentHashMap<Object, ReadWriteLock>();
 
 	/**
 	 * This simplistic data store only supports thread-bound transactions:
@@ -74,6 +76,11 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return HashMapDialect.class;
+	}
+
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return LuceneBasedQueryParserService.class;
 	}
 
 	@Override

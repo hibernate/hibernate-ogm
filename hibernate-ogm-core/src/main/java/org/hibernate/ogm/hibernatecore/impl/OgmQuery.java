@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -32,7 +32,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
-import org.hibernate.Session;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -50,7 +49,7 @@ import org.hibernate.ogm.service.impl.QueryParserService;
  */
 public class OgmQuery extends AbstractQueryImpl {
 
-	private final Session session;
+	private final OgmSession session;
 	private final QueryParserService queryParserService;
 
 	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session,
@@ -61,7 +60,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public Iterator iterate() throws HibernateException {
+	public Iterator<?> iterate() throws HibernateException {
 		return getExecutingQuery().iterate();
 	}
 
@@ -76,7 +75,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public List list() throws HibernateException {
+	public List<?> list() throws HibernateException {
 		return getExecutingQuery().list();
 	}
 

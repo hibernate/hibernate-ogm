@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,44 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.queries;
+package org.hibernate.ogm.test.utils;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import java.util.Map;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Indexed;
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
 
 /**
- * @author Emmanuel Bernard
+ * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
-@Entity
-@Indexed
-public class Helicopter {
+public class MapBasedEntityNamesResolver implements EntityNamesResolver {
 
-	private String uuid;
-	private String name;
+	private final Map<String, Class<?>> entityNames;
 
-	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
-	public String getUUID() {
-		return uuid;
+	public MapBasedEntityNamesResolver(Map<String, Class<?>> entityNames) {
+		this.entityNames = entityNames;
 	}
 
-	public void setUUID(String uuid) {
-		this.uuid = uuid;
-	}
-
-	@Field(analyze = Analyze.NO)
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	@Override
+	public Class<?> getClassFromName(String entityName) {
+		return entityNames.get( entityName );
 	}
 }

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -31,6 +31,8 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
+import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
+import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.jndi.spi.JndiService;
@@ -73,6 +75,12 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		return InfinispanDialect.class;
 	}
 
+	@Override
+	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
+		return LuceneBasedQueryParserService.class;
+	}
+
+	@Override
 	public void start() {
 		if ( started ) {
 			// ServiceRegistry might invoke start multiple times, but always from the same initialization thread.
@@ -162,6 +170,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		return caches.get( name );
 	}
 
+	@Override
 	public void stop() {
 		if ( !isCacheProvided && cacheManager != null ) {
 			cacheManager.stop();

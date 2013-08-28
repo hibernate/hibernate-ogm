@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -28,15 +28,17 @@ import org.jboss.logging.Logger;
  * @author Hardy Ferentschik
  */
 public class LoggerFactory {
+
+	private static final CallerProvider callerProvider = new CallerProvider();
+
 	public static Log make() {
-		Throwable t = new Throwable();
-		StackTraceElement directCaller = t.getStackTrace()[1];
-		return Logger.getMessageLogger( Log.class, directCaller.getClassName() );
+		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
 	}
 
-	public static <T> T make(Class<T> logClass) {
-		Throwable t = new Throwable();
-		StackTraceElement directCaller = t.getStackTrace()[1];
-		return Logger.getMessageLogger( logClass, directCaller.getClassName() );
+	private static class CallerProvider extends SecurityManager {
+
+		public Class<?> getCallerClass() {
+			return getClassContext()[2];
+		}
 	}
 }

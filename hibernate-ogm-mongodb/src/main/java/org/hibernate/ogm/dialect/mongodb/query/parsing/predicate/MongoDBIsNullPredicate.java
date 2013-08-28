@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,35 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.service.impl;
+package org.hibernate.ogm.dialect.mongodb.query.parsing.predicate;
 
-import java.util.Map;
+import org.hibernate.hql.ast.spi.predicate.IsNullPredicate;
+import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * MongoDB-based implementation of {@link IsNullPredicate}.
+ *
+ * @author Gunnar Morling
  */
-class QueryParserServicesInitiatior extends OptionalServiceInitiator<QueryParserService> {
+public class MongoDBIsNullPredicate extends IsNullPredicate<DBObject> implements NegatablePredicate<DBObject> {
 
-	public static final BasicServiceInitiator INSTANCE = new QueryParserServicesInitiatior();
-
-	@Override
-	public Class<QueryParserService> getServiceInitiated() {
-		return QueryParserService.class;
+	public MongoDBIsNullPredicate(String propertyName) {
+		super( propertyName );
 	}
 
 	@Override
-	protected QueryParserService buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		// TODO pick a service implementation by configuration options?
-		return new LuceneBasedQueryParserService( registry, configurationValues );
+	public DBObject getQuery() {
+		return new BasicDBObject( propertyName, new BasicDBObject( "$exists", false ) );
 	}
 
 	@Override
-	protected BasicServiceInitiator<QueryParserService> backupInitiator() {
-		return null; //nothing
+	public DBObject getNegatedQuery() {
+		return new BasicDBObject( propertyName, new BasicDBObject( "$exists", true ) );
 	}
-
 }

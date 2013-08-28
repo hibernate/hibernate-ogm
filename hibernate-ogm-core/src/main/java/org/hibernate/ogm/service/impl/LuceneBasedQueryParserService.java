@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,18 +20,16 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.lucene.LuceneProcessingChain;
 import org.hibernate.hql.lucene.LuceneQueryParsingResult;
+import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextQuery;
@@ -40,7 +38,6 @@ import org.hibernate.search.Search;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
 import org.hibernate.search.query.ObjectLookupMethod;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * QueryParserService using the ANTLR3-powered LuceneJPQLWalker.
@@ -49,27 +46,25 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  */
-public class LuceneBasedQueryParserService implements QueryParserService {
+public class LuceneBasedQueryParserService extends BaseQueryParserService {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ServiceRegistryImplementor registry;
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
-	public LuceneBasedQueryParserService(ServiceRegistryImplementor registry, Map configurationValues) {
-		this.registry = registry;
+	public LuceneBasedQueryParserService() {
 		// TODO: make it possible to lookup the SearchFactoryImplementor at initialization time
 		// searchFactoryImplementor = lookupSearchFactory( registry );
 	}
 
 	@Override
-	public Query getParsedQueryExecutor(Session session, String queryString, Map<String, Object> namedParameters) {
+	public Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters) {
 		FullTextSession fullTextSession = Search.getFullTextSession( session );
 
 		LuceneQueryParsingResult parsingResult = new QueryParser().parseQuery( queryString,
 				createProcessingChain( session, unwrap( namedParameters ), fullTextSession ) );
 
-		log.createdLuceneQuery( queryString, parsingResult.getQuery().toString() );
+		log.createdQuery( queryString, parsingResult.getQuery() );
 
 		FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( parsingResult.getQuery(), parsingResult.getTargetEntity() );
 		fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
@@ -78,23 +73,6 @@ public class LuceneBasedQueryParserService implements QueryParserService {
 		// (chicken and egg problem)
 		fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		return fullTextQuery;
-	}
-
-	/**
-	 * Unwrappes the given named parameters if they are wrapped into {@link TypedValue}s.
-	 *
-	 * @param namedParameters the original named parameters
-	 * @return the unwrapped named parameters
-	 */
-	private Map<String, Object> unwrap(Map<String, Object> namedParameters) {
-		Map<String, Object> unwrapped = new HashMap<String, Object>( namedParameters.size() );
-
-		for ( Entry<String, Object> entry : namedParameters.entrySet() ) {
-			Object value = entry.getValue();
-			unwrapped.put( entry.getKey(), value instanceof TypedValue ? ( (TypedValue) value ).getValue() : value );
-		}
-
-		return unwrapped;
 	}
 
 	private LuceneProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters, FullTextSession fullTextSession) {

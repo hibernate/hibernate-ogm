@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -35,7 +35,9 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.hql.ParsingException;
+import org.hibernate.ogm.test.utils.GridDialectType;
 import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
 import org.hibernate.ogm.test.utils.TestSessionFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -76,13 +78,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 				"from Hypothesis" ) );
 		assertQuery( session, 8, session.createQuery(
 				"from org.hibernate.ogm.test.queries.Hypothesis" ) );
-		assertQuery( session, 1, session.createQuery(
+		assertQuery( session, 3, session.createQuery(
 				"from Helicopter" ) );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 9, session.createQuery(
+		assertQuery( session, 11, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -112,18 +115,21 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Selecting from embedded entities is not yet implemented.")
 	public void testSelectingAttributeFromEmbeddedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.name from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "alfred" ) );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Selecting from embedded entities is not yet implemented.")
 	public void testSelectingAttributeFromNestedEmbeddedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.address.street from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "Main Street" ) );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Projecting complete entity is not yet implemented.")
 	public void testSelectingCompleteEntityInProjectionQuery() throws Exception {
 		List<?> projectionResult = session.createQuery( "select h, h.id from Hypothesis h where h.id = 16" ).list();
 		assertThat( projectionResult ).hasSize( 1 );
@@ -133,11 +139,18 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Doesn't apply to MongoDB queries.")
 	public void testSelectingCompleteEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
 		thrown.expectMessage( "HQLLUCN000005" );
 
 		session.createQuery( "select h.author from Hypothesis h" ).list();
+	}
+
+	@Test
+	public void testRestrictingOnPropertyWithConfiguredColumnName() throws Exception {
+		List<?> results = session.createQuery( "from Hypothesis h where h.position = '2'" ).list();
+		assertThat( results ).onProperty( "id" ).containsOnly( "14" );
 	}
 
 	@Test
@@ -165,6 +178,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Selecting from embedded entities is not yet implemented.")
 	public void testQueryWithEmbeddedPropertyInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -237,9 +251,21 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNotLessQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where NOT h.position < 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17", "18", "19", "20" );
+	}
+
+	@Test
 	public void testLessOrEqualsQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.position <= 3" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "14", "15" );
+	}
+
+	@Test
+	public void testNotLessOrEqualsQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where NOT h.position <= 3" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "16", "17", "18", "19", "20" );
 	}
 
 	@Test
@@ -261,6 +287,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testInQueryOnStringProperty() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.id IN ('15', '16')" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16" );
+	}
+
+	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Selecting from embedded entities is not yet implemented.")
 	public void testInQueryOnEmbeddedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IN ('alma', 'alfred')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16" );
@@ -273,12 +306,19 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNotInQueryReturnsEntityWithQueriedPropertySetToNull() throws Exception {
+		List<?> result = session.createQuery( "from Helicopter h where h.name NOT IN ('No creative clue')" ).list();
+		assertThat( result ).onProperty( "name" ).containsOnly( null, "Lama" );
+	}
+
+	@Test
 	public void testLikeQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.description LIKE '%dimensions%'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13", "15" );
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on embedded entities is not yet implemented.")
 	public void testLikeQueryWithSingleCharacterWildCard() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name LIKE 'al_red'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -334,6 +374,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on embedded entities is not yet implemented.")
 	public void testIsNullQueryOnPropertyEmbeddedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IS null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
@@ -346,6 +387,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on embedded entities is not yet implemented.")
 	public void testIsNotNullQueryOnEmbeddedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author IS NOT null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
@@ -443,8 +485,15 @@ public class SimpleQueriesTest extends OgmTestCase {
 		session.persist( noDescription );
 
 		Helicopter helicopter = new Helicopter();
-		helicopter.setName( "No creative clue " );
+		helicopter.setName( "No creative clue" );
 		session.persist( helicopter );
+
+		Helicopter anotherHelicopter = new Helicopter();
+		anotherHelicopter.setName( "Lama" );
+		session.persist( anotherHelicopter );
+
+		Helicopter helicopterWithoutName = new Helicopter();
+		session.persist( helicopterWithoutName );
 
 		Hypothesis fool = new Hypothesis();
 		fool.setId( "20" );

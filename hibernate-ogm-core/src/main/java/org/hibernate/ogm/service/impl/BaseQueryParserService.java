@@ -20,31 +20,33 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+import org.hibernate.engine.spi.TypedValue;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
+ * Common base functionality for {@link QueryParserService} implementations.
  *
- * @see OgmSessionFactoryServiceRegistryImpl
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public class OgmSessionFactoryServiceInitiators {
+public abstract class BaseQueryParserService implements QueryParserService {
 
-	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.<SessionFactoryServiceInitiator<?>>asList(
-			TypeTranslatorInitiator.INSTANCE,
-			DatastoreServicesInitiator.INSTANCE,
-			DatastoreProviderInitiator.INSTANCE,
-			GridDialectFactoryInitiator.INSTANCE,
-			QueryParserServicesInitiator.INSTANCE
-	) );
+	/**
+	 * Unwraps the given named parameters if they are wrapped into {@link TypedValue}s.
+	 *
+	 * @param namedParameters the original named parameters
+	 * @return the unwrapped named parameters
+	 */
+	protected Map<String, Object> unwrap(Map<String, Object> namedParameters) {
+		Map<String, Object> unwrapped = new HashMap<String, Object>( namedParameters.size() );
 
+		for ( Entry<String, Object> entry : namedParameters.entrySet() ) {
+			Object value = entry.getValue();
+			unwrapped.put( entry.getKey(), value instanceof TypedValue ? ( (TypedValue) value ).getValue() : value );
+		}
+
+		return unwrapped;
+	}
 }

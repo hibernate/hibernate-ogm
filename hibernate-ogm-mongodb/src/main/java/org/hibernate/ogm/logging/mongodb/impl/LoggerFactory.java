@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -23,12 +23,23 @@ package org.hibernate.ogm.logging.mongodb.impl;
 import org.jboss.logging.Logger;
 
 /**
+ * Factory for obtaining {@link Logger} instances.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Gunnar Morling
  */
 public class LoggerFactory {
 
+	private static final CallerProvider callerProvider = new CallerProvider();
+
 	public static Log getLogger() {
-		return Logger.getMessageLogger( Log.class, "MongoDB" );
+		return Logger.getMessageLogger( Log.class, callerProvider.getCallerClass().getCanonicalName() );
 	}
 
+	private static class CallerProvider extends SecurityManager {
+
+		public Class<?> getCallerClass() {
+			return getClassContext()[2];
+		}
+	}
 }

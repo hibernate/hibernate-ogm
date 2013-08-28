@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,21 +21,20 @@
 
 package org.hibernate.ogm.dialect.mongodb;
 
-import java.util.HashSet;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
+
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-
-import com.mongodb.DBObject;
-
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
+import com.mongodb.DBObject;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
@@ -50,7 +49,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	//use it so it avoids multiple calls to Arrays.asList()
 	private final List<String> columnNames;
 
-	//consider RowKey columns and values as aprt of the Tuple
+	//consider RowKey columns and values as part of the Tuple
 	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
 		this.dbObject = dbObject;
 		this.rowKey = rowKey;
@@ -74,7 +73,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 				return result;
 			}
 		}
-		//otherwite get it from the object
+		//otherwise get it from the object
 		if ( column.contains( "." ) ) {
 			String[] fields = EMBEDDED_FIELDNAME_SEPARATOR.split( column, 0 );
 			return this.getObject( this.dbObject.toMap(), fields, 0 );

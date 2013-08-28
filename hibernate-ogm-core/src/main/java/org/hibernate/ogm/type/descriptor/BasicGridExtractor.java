@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -45,7 +45,7 @@ public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 		@SuppressWarnings( "unchecked" )
 		final J result = (J) resultset.get( name );
 		if ( result == null ) {
-			log.tracef( "found [null] as column [$s]", name );
+			log.tracef( "found [null] as column [%s]", name );
 			return null;
 		}
 		else {
