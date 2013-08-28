@@ -56,7 +56,7 @@ by the notion of a [classname]+DatastoreProvider+ and a [classname]+GridDialect+
 Think of them as the JDBC layer for our NoSQL stores.
 
 Other than these, all the Create/Read/Update/Delete (CRUD) operations
-are implementedby the Hibernate ORM engine
+are implemented by the Hibernate ORM engine
 (object hydration and dehydration, cascading, lifecycle etc).
 
 As of today, we have implemented four datastore providers:

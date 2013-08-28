@@ -14,7 +14,7 @@ Before we can start, make sure you have the following tools configured:
 Hibernate OGM is published in the JBoss hosted Maven repository.
 Adjust your [filename]+$$~/.m2/settings.xml$$+ file
 according to the guidelines found
-link:http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
+http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
 In this example we will use Infinispan as the targeted datastore.
 
 Add +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+
@@ -213,7 +213,7 @@ public static TransactionManager getTransactionManager() throws Exception
 [NOTE]
 ====
 Some JVM do not handle mixed IPv4/IPv6 stacks properly (older
-link:http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]),
+http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]),
 if you experience trouble starting the Infinispan cluster,
 pass the following property: +-Djava.net.preferIPv4Stack=true+
 to your JVM or upgrade to a recent JDK version.

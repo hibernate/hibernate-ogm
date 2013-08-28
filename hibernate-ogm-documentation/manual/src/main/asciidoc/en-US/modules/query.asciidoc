@@ -149,7 +149,7 @@ so extracting tags from text, frequencies of strings
 and correlate this data makes it very easy to build efficient data analysis applications.
 
 For a full explanation of all its capabilities and configuration options,
-see the link:http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
+see the http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 While the potential of Lucene queries is very high,
 it's not suited for all use cases
