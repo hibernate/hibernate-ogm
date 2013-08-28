@@ -148,7 +148,7 @@ Set the JTA platform to the right Java EE container.
 The property is +hibernate.transaction.transaction.jta.platform+
 and must contain the fully qualified class name of the lookup implementation.
 The list of available values are listed in
-link:http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform[Hibernate ORM's configuration section].
+http://docs.jboss.org/hibernate/orm/4.1/devguide/en-US/html_single/#services-JtaPlatform[Hibernate ORM's configuration section].
 For example, in JBoss AS,
 use +org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform+.
 
@@ -314,7 +314,7 @@ Hibernate Search integrates with Hibernate OGM just like it does with Hibernate 
 In other words, configure where you want to store your indexes,
 map your entities with the relevant index annotations and you are good to go.
 For more information, simply check the
-link:http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
+http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
 
 In <<ogm-infinispan-indexstorage>> we'll discuss how to store your Lucene indexes in Infinispan.
 This is useful even if you don't plan to use Infinispan as your primary data store.
@@ -332,12 +332,12 @@ Modules allow to share the same artifacts across multiple applications,
 getting you smaller and quicker deployments.
 
 More details about modules are described in
-link:https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[Class Loading in AS 7.2].
+https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[Class Loading in AS 7.2].
 
 You can download the pre-packaged module from:
 
-* link:https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[Sourceforge]
-* link:https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules&v={hibernate-ogm-version}&e=zip&c=jbossas-72-dist[JBoss's Maven repository]
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[Sourceforge]
+* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules&v={hibernate-ogm-version}&e=zip&c=jbossas-72-dist[JBoss's Maven repository]
 
 Unpack the archive into the +modules+ folder of your JBoss AS 7.2 installation.
 The modules included are:
@@ -379,4 +379,4 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with content:
 ----
 
 More information about the descriptor can be found in the
-link:https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[JBoss AS 7.2 documentation].
+https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7[JBoss AS 7.2 documentation].

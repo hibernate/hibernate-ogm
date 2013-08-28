@@ -17,7 +17,7 @@ while performance and data size can scale linearly.
 From all its features we'll only describe those relevant to Hibernate OGM;
 for a complete description of all its capabilities and configuration options,
 refer to the Infinispan project documentation at
-link:http://infinispan.org[infinispan.org].
+http://infinispan.org[infinispan.org].
 
 [[ogm-infinispan-configuration]]
 
@@ -103,7 +103,7 @@ to provide sequences and auto-incremental numbers for primary key generation.
 We'll explain in the following paragraphs how you can take advantage of this
 and which aspects of Infinispan you're likely to want to reconfigure from their defaults.
 All attributes and elements from Infinispan which we don't mention are safe to ignore.
-Refer to the link:https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
+Refer to the https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
 for the guru level performance tuning and customizations.
 
 An Infinispan configuration file is an XML file complying with the Infinispan schema;
@@ -271,7 +271,7 @@ JGroups will attempt to autodetect peer nodes using a multicast socket;
 this works out of the box in the most network environments
 but will require some extra configuration in cloud environments
 (which often block multicast packets) or in case of strict firewalls.
-See the link:http://www.jgroups.org/manual/html_single/[JGroups reference documentation],
+See the http://www.jgroups.org/manual/html_single/[JGroups reference documentation],
 specifically look for _Discovery Protocols_ to customize the detection of peer nodes.
 
 Nowadays, the [acronym]+JVM+ defaults to use [acronym]+IPv6+ network stack;
@@ -400,7 +400,7 @@ as Hibernate:
 
 Infinispan supports different transaction modes like +PESSIMISTIC+ and +OPTIMISTIC+,
 supports [acronym]+XA+ recovery and provides many more configuration options;
-see the link:https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
+see the https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
 for more advanced configuration options.
 
 [[ogm-infinispan-indexstorage]]
@@ -439,7 +439,7 @@ in any NoSQL store supported by Infinispan:
 * BDBJE
 * A secondary (independent) Infinispan grid
 * Any Cloud storage service
-  link:http://www.jclouds.org/documentation/reference/supported-providers/[supported by JClouds]
+  http://www.jclouds.org/documentation/reference/supported-providers/[supported by JClouds]
 
 
 How to configure it? Here is a simple cheat sheet to get you started with this type of setup:
@@ -471,7 +471,7 @@ It should also define three cache names:
 This configuration is not going to scale well on write operations:
 to do that you should read about the master/slave and sharding options in Hibernate Search.
 The complete explanation and configuration options can be found in the
-link:http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinispan-directories[Hibernate Search Reference Guide]
+http://docs.jboss.org/hibernate/search/4.2/reference/en-US/html_single/#infinispan-directories[Hibernate Search Reference Guide]
 
 Some NoSQL support storage of Lucene indexes directly,
 in which case you might skip the Infinispan Lucene integration

@@ -10,7 +10,7 @@ but is the main storage engine for your data.
 This is not the reference manual for Ehcache itself:
 we're going to list only how Hibernate OGM should be configured to use Ehcache;
 for all the tuning and advanced options please refer to the
-link:http://www.ehcache.org/documentation[Ehcache Documentation].
+http://www.ehcache.org/documentation[Ehcache Documentation].
 
 [[ogm-ehcache-configuration]]
 
@@ -78,4 +78,4 @@ Hibernate OGM is currently unable to use them. Careful!
 
 If you need this feature, it should be easy to implement:
 contributions welcome! See
-link:https://hibernate.onjira.com/browse/OGM-243[JIRA OGM-243].
+https://hibernate.onjira.com/browse/OGM-243[JIRA OGM-243].

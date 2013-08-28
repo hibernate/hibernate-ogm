@@ -6,9 +6,9 @@ Currently Hibernate OGM supports the following datastores:
 
 * Map: stores data in an in-memory Java map to store data.
   Use it only for unit tests.
-* Infinispan: stores data into link:http://infinispan.org[Infinispan] (data grid)
-* Ehcache: stores data into link:http://ehcache.org[Ehcache] (cache)
-* MongoDB: stores data into link:http://www.mongodb.org[MongoDB] (document store)
+* Infinispan: stores data into http://infinispan.org[Infinispan] (data grid)
+* Ehcache: stores data into http://ehcache.org[Ehcache] (cache)
+* MongoDB: stores data into http://www.mongodb.org[MongoDB] (document store)
 
 
 More are planned, if you are interested,
@@ -31,9 +31,9 @@ or one preferably of the following shortcuts:
 
 * +map+: stores data in an in-memory Java map to store data.
   Use it only for unit tests.
-* +infinispan+: stores data into link:http://infinispan.org[Infinispan] (data grid)
-* +ehcache+: stores data into link:http://ehcache.org[Ehcache] (cache)
-* +mongodb+: stores data into link:http://www.mongodb.org[MongoDB] (document store)
+* +infinispan+: stores data into http://infinispan.org[Infinispan] (data grid)
+* +ehcache+: stores data into http://ehcache.org[Ehcache] (cache)
+* +mongodb+: stores data into http://www.mongodb.org[MongoDB] (document store)
 
 
 You also need to add the relevant Hibernate OGM module in your classpath.

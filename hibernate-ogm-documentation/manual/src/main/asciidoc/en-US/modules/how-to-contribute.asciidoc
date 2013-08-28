@@ -16,13 +16,13 @@ This is the most comprehensive formal source of information.
 Of course, it is not perfect:
 feel free to come and ask for help,
 comment or propose improvements in our
-link:https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM forum].
+https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM forum].
 
 You can also:
 
-* open bug reports in link:https://hibernate.atlassian.net/browse/OGM[JIRA]
+* open bug reports in https://hibernate.atlassian.net/browse/OGM[JIRA]
 * propose improvements on the
-  link:http://www.hibernate.org/community/mailinglists[development mailing list]
+  http://www.hibernate.org/community/mailinglists[development mailing list]
 * join us on IRC to discuss developments and improvements
   (+#hibernate-dev+ on +freenode.net+;
   you need to be registered on freenode:
@@ -36,7 +36,7 @@ Welcome!
 
 There are many ways to contribute:
 
-* report bugs in link:https://hibernate.atlassian.net/browse/OGM[JIRA]
+* report bugs in https://hibernate.atlassian.net/browse/OGM[JIRA]
 * give feedback in the forum, IRC or the development mailing list
 * improve the documentation
 * fix bugs or contribute new features
@@ -74,7 +74,7 @@ Note that Hibernate OGM uses artifacts from the Maven repository hosted by JBoss
 Make sure to either use the [code]+-s settings-example.xml+ option
 or adjust your [filename]+$$~/.m2/settings.xml$$+
 according to the descriptions available
-link:http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
+http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
 ====
 
 To build the documentation, set the +buildDocs+ property to true:
