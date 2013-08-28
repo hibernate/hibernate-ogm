@@ -22,15 +22,15 @@ To build the project, run
 
 ### Documentation
 
-To build the documentation, set the `buildDocs` property to `true`.
+The documentation is built by default as part of the project build. You can skip it by specifying the `skipDocs` property:
 
-    mvn clean install -DbuildDocs=true -s settings-example.xml
+    mvn clean install -DskipDocs=true -s settings-example.xml
 
 If you just want to build the documentation, run it from the `hibernate-ogm-documentation/manual` subdirectory.
 
 For rapid documentation testing, you can limit the generated format to html to speed up the process
 
-    mvn clean install -DbuildDocs=true -s settings-example.xml -Djdocbook.format=html_single
+    mvn clean install -f hibernate-ogm-documentation/manual/pom.xml -s settings-example.xml -Djdocbook.format=html_single
 
 ### MongoDB
 
