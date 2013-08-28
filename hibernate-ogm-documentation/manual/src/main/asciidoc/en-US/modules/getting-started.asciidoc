@@ -2,17 +2,23 @@
 
 == Getting started with Hibernate OGM
 
-If you are familiar with JPA, you are almost good to go :-) We will nevertheless walk you through the first few steps of persisting and retrieving an entity using Hibernate OGM.
+If you are familiar with JPA, you are almost good to go :-)
+We will nevertheless walk you through the first few steps of persisting
+and retrieving an entity using Hibernate OGM.
 
 Before we can start, make sure you have the following tools configured:
 
 * Java JDK 6 or above
 * Maven 3.x
 
+Hibernate OGM is published in the JBoss hosted Maven repository.
+Adjust your [filename]+$$~/.m2/settings.xml$$+ file
+according to the guidelines found
+link:http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
+In this example we will use Infinispan as the targeted datastore.
 
-Hibernate OGM is published in the JBoss hosted Maven repositories. Adjust your [filename]+$$~/.m2/settings.xml$$+ file according to the guidelines found link:http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage]. In this example we will use Infinispan as the targeted datastore.
-
-Add +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+ to your project dependencies.
+Add +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+
+to your project dependencies.
 
 
 [source, XML]
@@ -32,13 +38,15 @@ Add +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+ to your
 
 [NOTE]
 ====
-While Hibernate OGM depends on JPA 2.0, it is marked as provided in the Maven POM file. If you run outside a Java EE container, make sure to explicitly add the dependency.
+While Hibernate OGM depends on JPA 2.0,
+it is marked as provided in the Maven POM file.
+If you run outside a Java EE container,
+make sure to explicitly add the dependency.
 ====
 
 We will use the JPA APIs in this tutorial.
 
 Let's now map our first Hibernate OGM entity.
-
 
 [source, JAVA]
 ----
@@ -81,10 +89,12 @@ public class Breed {
 }
 ----
 
-I lied to you, we have already mapped two entities! If you are familiar with JPA, you can see that there is nothing specific to Hibernate OGM in our mapping.
+I lied to you, we have already mapped two entities!
+If you are familiar with JPA,
+you can see that there is nothing specific to Hibernate OGM in our mapping.
 
-In this tutorial, we will use JBoss Transactions for our JTA transaction manager. The final list of dependencies should look like this:
-
+In this tutorial, we will use JBoss Transactions for our JTA transaction manager.
+The final list of dependencies should look like this:
 
 [source, XML]
 [subs="verbatim,attributes"]
@@ -119,8 +129,8 @@ In this tutorial, we will use JBoss Transactions for our JTA transaction manager
 </dependencies>
 ----
 
-Next we need to define the persistence unit. Create a [filename]+META-INF/persistence.xml+ file
-
+Next we need to define the persistence unit.
+Create a [filename]+META-INF/persistence.xml+ file.
 
 [source, XML]
 ----
@@ -149,7 +159,6 @@ Next we need to define the persistence unit. Create a [filename]+META-INF/persis
 
 Let's now persist a set of entities and retrieve them.
 
-
 [source, JAVA]
 ----
 //accessing JBoss's Transaction can be done differently but this one works nicely
@@ -160,7 +169,6 @@ EntityManagerFactory emf = Persistence.createEntityManagerFactory(
     "ogm-jpa-tutorial");
 
 final Logger logger = LoggerFactory.getLogger(DogBreedRunner.class);
-
 
 [..]
 
@@ -192,7 +200,6 @@ em.flush();
 em.close();
 tm.commit();
 
-
 [..]
 
 emf.close();
@@ -205,15 +212,22 @@ public static TransactionManager getTransactionManager() throws Exception
 
 [NOTE]
 ====
-Some JVM do not handle mixed IPv4/IPv6 stacks properly (older link:http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]), if you experience trouble starting the Infinispan cluster, pass the following property: +-Djava.net.preferIPv4Stack=true+ to your JVM or upgrade to a recent JDK version. jdk7u6 (b22) is known to work on Max OS X.
+Some JVM do not handle mixed IPv4/IPv6 stacks properly (older
+link:http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7144274[Mac OS X JDK in particular]),
+if you experience trouble starting the Infinispan cluster,
+pass the following property: +-Djava.net.preferIPv4Stack=true+
+to your JVM or upgrade to a recent JDK version.
+jdk7u6 (b22) is known to work on Max OS X.
 ====
 
-A working example can be found in Hibernate OGM's distribution under [filename]+hibernate-ogm-documentation/examples/gettingstarted+.
+A working example can be found in Hibernate OGM's distribution under
+[filename]+hibernate-ogm-documentation/examples/gettingstarted+.
 
 What have we seen?
 
-* Hibernate OGM is a JPA implementation and is used as such both for mapping and in API usage
-* It is configured as a specific JPA provider: [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+
-
+* Hibernate OGM is a JPA implementation
+  and is used as such both for mapping and in API usage
+* It is configured as a specific JPA provider:
+  [classname]+org.hibernate.ogm.jpa.HibernateOgmPersistence+
 
 Let's explore more in the next chapters.

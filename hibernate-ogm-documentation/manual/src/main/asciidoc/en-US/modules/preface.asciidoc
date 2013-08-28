@@ -3,20 +3,28 @@
 [preface]
 == Preface
 
-Hibernate Object/Grid Mapper (OGM) is a persistence engine providing Java Persistence (JPA) support for NoSQL datastores. It reuses Hibernate ORM's object life cycle management and (de)hydration engine but persists entities into a NoSQL store (key/value, document, column-oriented, etc) instead of a relational database. It reuses the Java Persistence Query Language (JP-QL) as an interface to querying stored data.
+Hibernate Object/Grid Mapper (OGM) is a persistence engine
+providing Java Persistence (JPA) support for NoSQL datastores.
+It reuses Hibernate ORM's object life cycle management and (de)hydration engine
+but persists entities into a NoSQL store (key/value, document, column-oriented, etc)
+instead of a relational database.
+It reuses the Java Persistence Query Language (JP-QL)
+as an interface to querying stored data.
 
-The project is still very young and very ambitious at the same time. Many things are on the roadmap (more NoSQL, query, denormalization engine, etc). If you wish to help, please check <<ogm-howtocontribute>>.
+The project is still very young and very ambitious at the same time.
+Many things are on the roadmap (more NoSQL, query, denormalization engine, etc).
+If you wish to help, please check <<ogm-howtocontribute>>.
 
 Hibernate OGM is released under the LGPL open source license.
 
 [WARNING]
 ====
-This documentation and this project are work in progress. Please give us feedback on
+This documentation and this project are work in progress.
+Please give us feedback on
 
 * what you like
 * what you don't like
 * what is confusing
-
 
 Check <<ogm-howtocontribute-contribute>> on how to contact us.
 ====
@@ -26,16 +34,24 @@ Check <<ogm-howtocontribute-contribute>> on how to contact us.
 Hibernate OGM:
 
 * offers a familiar programming paradigm to deal with NoSQL stores
-* moves model denormalization from a manual imperative work to a declarative approach handled by the engine
-* encourages new data usage patterns and NoSQL exploration in more "traditional" enterprises
-* helps scale existing applications with a NoSQL front end to a traditional database
+* moves model denormalization from a manual imperative work
+  to a declarative approach handled by the engine
+* encourages new data usage patterns
+  and NoSQL exploration in more "traditional" enterprises
+* helps scale existing applications with a NoSQL front end
+  to a traditional database
 
 
-NoSQL can be very disconcerting as it is composed of many disparate solutions with different benefits and drawbacks. Speaking only of the main ones, NoSQL is at least categorized in four families:
+NoSQL can be very disconcerting as it is composed of many disparate solutions
+with different benefits and drawbacks.
+Speaking only of the main ones, NoSQL is at least categorized in four families:
 
 * graph oriented databases
-* key/value stores: essentially Maps but with different behaviors and ideas behind various products (data grids, persistent with strong or eventual consistency, etc)
-* document based datastores: contains as value semi-structured documents (think JSON)
+* key/value stores: essentially Maps
+  but with different behaviors and ideas behind various products
+  (data grids, persistent with strong or eventual consistency, etc)
+* document based datastores:
+  contains as value semi-structured documents (think JSON)
 * column based datastores
 
 
@@ -44,15 +60,25 @@ NoSQL can be very disconcerting as it is composed of many disparate solutions wi
 .Various NoSQL families
 image::images/nosql.png[align="center", depth="", scalefit="1", width="15cm"]
 
-Each have different benefits and drawbacks and one solution might fit a use case better than an other. However access patterns and APIs are different from one product to the other.
+Each have different benefits and drawbacks
+and one solution might fit a use case better than an other.
+However access patterns and APIs are different from one product to the other.
 
-Hibernate OGM is not expected to be the Rosetta stone used to interact with _all_ NoSQL solution in _all_ use cases. But for people modeling their data as a domain model, it provides distinctive advantages over raw APIs and has the benefit of providing an API and semantic known to Java developers. Reusing the same programmatic model and trying different (No)SQL engines will hopefully help people to explore alternative datastores.
+Hibernate OGM is not expected to be the Rosetta stone
+used to interact with _all_ NoSQL solution in _all_ use cases.
+But for people modeling their data as a domain model,
+it provides distinctive advantages over raw APIs
+and has the benefit of providing an API and semantic known to Java developers.
+Reusing the same programmatic model and trying different (No)SQL engines
+will hopefully help people to explore alternative datastores.
 
-Hibernate OGM also aims at helping people scale traditional relational databases by providing a NoSQL front-end and keeping the same JPA APIs and domain model.
+Hibernate OGM also aims at helping people scale traditional relational databases
+by providing a NoSQL front-end and keeping the same JPA APIs and domain model.
 
 === What we have today
 
-Today, Hibernate OGM does not support all of these goals. Here is a list of what we have:
+Today, Hibernate OGM does not support all of these goals.
+Here is a list of what we have:
 
 * store data in key/value stores (Infinispan's datagrid and Ehcache)
 * store data in document stores (MongoDB)
@@ -70,11 +96,16 @@ Today, Hibernate OGM does not support all of these goals. Here is a list of what
 
 Here are a few areas where Hibernate OGM can be beneficial:
 
-* need to scale your data store up and down rapidly (via the underlying NoSQL datastore capability)
-* keep your domain model independent of the underlying datastore technology (RDBMS, Infinispan, NoSQL)
-* explore the best tool for the use case while using a familiar programming model
+* need to scale your data store up and down rapidly
+  (via the underlying NoSQL datastore capability)
+* keep your domain model independent of the underlying datastore technology
+  (RDBMS, Infinispan, NoSQL)
+* explore the best tool for the use case
+  while using a familiar programming model
 * use a familiar JPA front end to datagrids (in particular Infinispan)
-* use Hibernate Search full-text search / text analysis capabilities and store the data set in an elastic grid
+* use Hibernate Search full-text search / text analysis capabilities
+  and store the data set in an elastic grid
 
 
-These are a few ideas and the list will grow when we will add more capabilities to Hibernate OGM.
+These are a few ideas and the list will grow
+as we add more capabilities to Hibernate OGM.
