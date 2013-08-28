@@ -755,12 +755,26 @@
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
                     </configuration>
                 </plugin>
+                <!-- Generate the docbook xml from the asciidoc -->
+                <plugin>
+                    <groupId>org.asciidoctor</groupId>
+                    <artifactId>asciidoctor-maven-plugin</artifactId>
+                    <version>0.1.3</version>
+                </plugin>
+                <!-- Process the docbook xml -->
                 <plugin>
                     <groupId>org.jboss.maven.plugins</groupId>
                     <artifactId>maven-jdocbook-plugin</artifactId>
                     <version>2.3.6</version>
                     <extensions>true</extensions>
                     <dependencies>
+                        <!-- used for code highlighting -->
+                        <dependency>
+                            <groupId>org.jboss.pressgang</groupId>
+                            <artifactId>pressgang-xslt</artifactId>
+                            <version>2.0.2</version>
+                        </dependency>
+                        <!-- Hibernate look -->
                         <dependency>
                             <groupId>org.hibernate</groupId>
                             <artifactId>hibernate-jdocbook-style</artifactId>

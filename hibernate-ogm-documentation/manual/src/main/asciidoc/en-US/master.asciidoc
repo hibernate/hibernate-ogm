@@ -1,0 +1,17 @@
+= Hibernate OGM Reference Guide
+
+include::modules/preface.asciidoc[]
+
+include::modules/how-to-contribute.asciidoc[]
+
+include::modules/getting-started.asciidoc[]
+
+include::modules/architecture.asciidoc[]
+
+include::modules/configuration.asciidoc[]
+
+include::modules/datastore-providers.asciidoc[]
+
+include::modules/mapping.asciidoc[]
+
+include::modules/query.asciidoc[]
