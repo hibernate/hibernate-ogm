@@ -28,7 +28,7 @@ using Hibernate Search under the precondition that:
 
 We do realize these are strong limitations,
 so while it might be interesting to try it out,
-for real usage we suggest for now to use either Hibernate Search fill-text queries
+for real usage we suggest for now to use either Hibernate Search full-text queries
 or the native query technology of the NoSQL storage you are using.
 
 To provide an example of what kind of queries would work:
@@ -75,7 +75,7 @@ so that you can then perform Lucene Queries.
 
 To be extremely short, Apache Lucene is a full-text indexing and query engine
 with excellent query performance.
-Featur ewise, _full-text_ means
+Featurewise, _full-text_ means
 you can do much more than a simple equality match
 as we did in the previous example.
 

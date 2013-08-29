@@ -199,7 +199,7 @@ public Set<BankAccount> bankAccounts;
 ====== Global collection strategy
 
 With this strategy, Hibernate OGM creates a single collection
-in which it will stores all navigation information for all associations.
+in which it will store all navigation information for all associations.
 Each document of this collection is structure in 2 parts.
 The first is the +_id+ field which contains the identifier information
 of the association owner and the name of the association table.
@@ -253,7 +253,7 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
 ====== One collection per association strategy
 
 In this strategy, Hibernate OGM creates a MongoDB collection per association
-in which it will stores all navigation information for that particular association.
+in which it will store all navigation information for that particular association.
 This is the strategy closest to the relational model.
 If an entity A is related to B and C, 2 collections will be created.
 The name of this collection is made of the association table concatenated with +associations_+.
