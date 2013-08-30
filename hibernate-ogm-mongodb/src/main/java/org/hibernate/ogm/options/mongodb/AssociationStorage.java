@@ -26,6 +26,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorage.AssociationStorageConverter;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
@@ -41,14 +42,13 @@ import org.hibernate.ogm.options.spi.Option;
 @MappingOption(AssociationStorageConverter.class)
 public @interface AssociationStorage {
 
-	String value();
+	AssociationStorageType value();
 
 	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {
 
 		@Override
 		public Option<?, ?> convert(AssociationStorage annotation) {
-			return new AssociationStorageOption(
-					org.hibernate.ogm.datastore.mongodb.AssociationStorageType.valueOf( annotation.value() ) );
+			return new AssociationStorageOption( annotation.value() );
 		}
 
 	}
