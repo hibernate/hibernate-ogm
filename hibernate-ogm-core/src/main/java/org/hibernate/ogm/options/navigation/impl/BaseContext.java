@@ -30,11 +30,11 @@ import org.hibernate.ogm.options.spi.Option;
  *
  * @author Gunnar Morling
  */
-public class OptionSupport {
+public class BaseContext {
 
 	private final MappingContext context;
 
-	public OptionSupport(MappingContext context) {
+	public BaseContext(MappingContext context) {
 		this.context = context;
 	}
 

@@ -29,7 +29,7 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class GlobalOptionsImpl<G extends GlobalOptions<G>> extends OptionSupport implements GlobalOptions<G> {
+public abstract class GlobalOptionsImpl<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
 
 	public GlobalOptionsImpl(MappingContext context) {
 		super( context );

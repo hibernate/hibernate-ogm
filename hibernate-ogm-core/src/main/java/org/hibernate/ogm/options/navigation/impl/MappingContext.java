@@ -104,7 +104,7 @@ public class MappingContext {
 	 * {@code property()} - are implemented following the dynamic proxy pattern, the implementation types therefore can
 	 * be declared abstract, avoiding the need to implement these methods themselves.
 	 * <p>
-	 * By convention, the implementation types should directly or indirectly extend {@link OptionSupport}.
+	 * By convention, the implementation types should directly or indirectly extend {@link BaseContext}.
 	 *
 	 * @param globalContextImplType the provider-specific global context implementation type
 	 * @param entityContextImplType the provider-specific entity context implementation type

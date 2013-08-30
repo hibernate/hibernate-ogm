@@ -23,14 +23,14 @@ package org.hibernate.ogm.options.mongodb.mapping.impl;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.OptionSupport;
+import org.hibernate.ogm.options.navigation.impl.BaseContext;
 
 import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class MongoDBEntityImpl extends OptionSupport implements MongoDBEntityContext {
+public abstract class MongoDBEntityImpl extends BaseContext implements MongoDBEntityContext {
 
 	public MongoDBEntityImpl(MappingContext context ) {
 		super( context );
