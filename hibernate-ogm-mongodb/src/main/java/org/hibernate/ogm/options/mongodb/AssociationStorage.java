@@ -48,7 +48,7 @@ public @interface AssociationStorage {
 		@Override
 		public Option<?, ?> convert(AssociationStorage annotation) {
 			return new AssociationStorageOption(
-					org.hibernate.ogm.datastore.mongodb.AssociationStorage.valueOf( annotation.value() ) );
+					org.hibernate.ogm.datastore.mongodb.AssociationStorageType.valueOf( annotation.value() ) );
 		}
 
 	}

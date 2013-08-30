@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.options.mongodb;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
@@ -28,13 +28,13 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  */
 public class AssociationStorageOption extends UniqueOption<AssociationStorageOption> {
 
-	private final AssociationStorage associationStorage;
+	private final AssociationStorageType associationStorage;
 
-	public AssociationStorageOption(AssociationStorage associationStorage) {
+	public AssociationStorageOption(AssociationStorageType associationStorage) {
 		this.associationStorage = associationStorage;
 	}
 
-	public AssociationStorage getAssociationStorage() {
+	public AssociationStorageType getAssociationStorage() {
 		return associationStorage;
 	}
 

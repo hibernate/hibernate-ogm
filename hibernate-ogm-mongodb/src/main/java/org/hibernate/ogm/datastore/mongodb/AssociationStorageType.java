@@ -26,7 +26,7 @@ package org.hibernate.ogm.datastore.mongodb;
  * @author Alan Fitton <alan at eth0.org.uk>
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public enum AssociationStorage {
+public enum AssociationStorageType {
 	/**
 	 * Store the association info in a unique MongoDB collection for all associations
 	 */

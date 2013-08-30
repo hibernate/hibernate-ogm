@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
@@ -36,7 +36,7 @@ public abstract class MongoDBPropertyImpl extends OptionSupport implements Mongo
 	}
 
 	@Override
-	public MongoDBPropertyContext associationStorage(AssociationStorage storage) {
+	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
 		addPropertyOption( new AssociationStorageOption( storage ) );
 		return this;
 	}

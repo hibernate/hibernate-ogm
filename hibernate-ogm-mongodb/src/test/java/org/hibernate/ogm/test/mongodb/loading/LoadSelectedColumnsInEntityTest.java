@@ -25,7 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -46,7 +46,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 		super.configure( cfg );
 		cfg.setProperty(
 				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorage.IN_ENTITY.toString().toLowerCase()
+				AssociationStorageType.IN_ENTITY.toString().toLowerCase()
 		);
 	}
 

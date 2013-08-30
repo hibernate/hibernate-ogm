@@ -26,7 +26,7 @@ import java.util.Map;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class MongoDBConfiguration {
 
 	private String host;
 	private int port;
-	private AssociationStorage associationStorage;
+	private AssociationStorageType associationStorage;
 	private String databaseName;
 	private String username;
 	private String password;
@@ -84,7 +84,7 @@ public class MongoDBConfiguration {
 	 * @see Environment#MONGODB_ASSOCIATIONS_STORE
 	 * @return where to store associations
 	 */
-	public AssociationStorage getAssociationStorage() {
+	public AssociationStorageType getAssociationStorage() {
 		return associationStorage;
 	}
 
@@ -140,18 +140,18 @@ public class MongoDBConfiguration {
 		}
 	}
 
-	private AssociationStorage buildAssociationStorage(Map<?, ?> cfg) {
+	private AssociationStorageType buildAssociationStorage(Map<?, ?> cfg) {
 		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value
-			return AssociationStorage.IN_ENTITY;
+			return AssociationStorageType.IN_ENTITY;
 		}
 		else {
 			try {
-				return AssociationStorage.valueOf( assocStoreString.toUpperCase( Locale.ENGLISH ) );
+				return AssociationStorageType.valueOf( assocStoreString.toUpperCase( Locale.ENGLISH ) );
 			}
 			catch ( IllegalArgumentException e ) {
-				throw log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorage.class );
+				throw log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorageType.class );
 			}
 		}
 	}

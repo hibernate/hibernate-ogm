@@ -25,7 +25,7 @@ import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptions
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
@@ -41,8 +41,8 @@ public class AssociationStorageOptionTest {
 
 	@Test
 	public void testGetter() throws Exception {
-		AssociationStorageOption option = new AssociationStorageOption( AssociationStorage.GLOBAL_COLLECTION );
-		assertThat( option.getAssociationStorage() ).isEqualTo( AssociationStorage.GLOBAL_COLLECTION );
+		AssociationStorageOption option = new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION );
+		assertThat( option.getAssociationStorage() ).isEqualTo( AssociationStorageType.GLOBAL_COLLECTION );
 	}
 
 	@Test
@@ -53,11 +53,11 @@ public class AssociationStorageOptionTest {
 		mapping
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
-					.associationStorage( AssociationStorage.COLLECTION );
+					.associationStorage( AssociationStorageType.COLLECTION );
 
 		assertThat( retrieveOptionsFor( context, ExampleForMongoDBMapping.class, "content" ) )
 			.hasSize( 1 )
-			.contains( new AssociationStorageOption( AssociationStorage.COLLECTION) );
+			.contains( new AssociationStorageOption( AssociationStorageType.COLLECTION) );
 	}
 
 	@SuppressWarnings("unused")
