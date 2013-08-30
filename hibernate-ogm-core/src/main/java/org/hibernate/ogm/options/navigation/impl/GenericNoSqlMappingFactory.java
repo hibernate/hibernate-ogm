@@ -33,30 +33,30 @@ import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
  * @author Gunnar Morling
  */
 @SuppressWarnings("unused")
-public class DefaultNoSqlMappingFactory implements MappingFactory<NoSqlGlobalContext<?, ?>> {
+public class GenericNoSqlMappingFactory implements MappingFactory<NoSqlGlobalContext<?, ?>> {
 
 	@Override
 	public NoSqlGlobalContext<?, ?> createMapping(MappingContext context) {
-		return context.createGlobalContext( DefaultNoSqlGlobalContext.class, DefaultNoSqlEntityContext.class, DefaultNoSqlPropertyContext.class );
+		return context.createGlobalContext( GenericNoSqlGlobalContext.class, GenericNoSqlEntityContext.class, GenericNoSqlPropertyContext.class );
 	}
 
-	private abstract static class DefaultNoSqlGlobalContext extends GlobalOptionsImpl<DefaultNoSqlGlobalContext> implements
-			NoSqlGlobalContext<DefaultNoSqlGlobalContext, DefaultNoSqlEntityContext> {
+	private abstract static class GenericNoSqlGlobalContext extends GlobalOptionsImpl<GenericNoSqlGlobalContext> implements
+			NoSqlGlobalContext<GenericNoSqlGlobalContext, GenericNoSqlEntityContext> {
 
-		public DefaultNoSqlGlobalContext(MappingContext context) {
+		public GenericNoSqlGlobalContext(MappingContext context) {
 			super( context );
 		}
 	}
 
-	private abstract static class DefaultNoSqlEntityContext implements NoSqlEntityContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+	private abstract static class GenericNoSqlEntityContext implements NoSqlEntityContext<GenericNoSqlEntityContext, GenericNoSqlPropertyContext> {
 
-		public DefaultNoSqlEntityContext(MappingContext context) {
+		public GenericNoSqlEntityContext(MappingContext context) {
 		}
 	}
 
-	private abstract static class DefaultNoSqlPropertyContext implements NoSqlPropertyContext<DefaultNoSqlEntityContext, DefaultNoSqlPropertyContext> {
+	private abstract static class GenericNoSqlPropertyContext implements NoSqlPropertyContext<GenericNoSqlEntityContext, GenericNoSqlPropertyContext> {
 
-		public DefaultNoSqlPropertyContext(MappingContext context) {
+		public GenericNoSqlPropertyContext(MappingContext context) {
 		}
 	}
 }

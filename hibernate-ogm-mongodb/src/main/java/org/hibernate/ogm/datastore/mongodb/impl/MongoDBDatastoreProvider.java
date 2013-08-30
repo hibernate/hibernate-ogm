@@ -33,7 +33,7 @@ import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBBasedQueryParserSe
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMappingFactory;
+import org.hibernate.ogm.options.navigation.impl.GenericNoSqlMappingFactory;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Startable;
@@ -78,7 +78,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
-		return DefaultNoSqlMappingFactory.class;
+		return GenericNoSqlMappingFactory.class;
 	}
 
 	@Override

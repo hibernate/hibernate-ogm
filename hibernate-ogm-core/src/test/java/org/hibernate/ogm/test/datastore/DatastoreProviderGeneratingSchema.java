@@ -43,7 +43,7 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.DefaultNoSqlMappingFactory;
+import org.hibernate.ogm.options.navigation.impl.GenericNoSqlMappingFactory;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
@@ -167,6 +167,6 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 
 	@Override
 	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
-		return DefaultNoSqlMappingFactory.class;
+		return GenericNoSqlMappingFactory.class;
 	}
 }
