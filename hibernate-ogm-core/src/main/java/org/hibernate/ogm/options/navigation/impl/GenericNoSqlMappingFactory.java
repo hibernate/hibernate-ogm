@@ -37,26 +37,26 @@ public class GenericNoSqlMappingFactory implements MappingFactory<NoSqlGlobalCon
 
 	@Override
 	public NoSqlGlobalContext<?, ?> createMapping(MappingContext context) {
-		return context.createGlobalContext( GenericNoSqlGlobalContext.class, GenericNoSqlEntityContext.class, GenericNoSqlPropertyContext.class );
+		return context.createGlobalContext( GenericNoSqlGlobalOptions.class, GenericNoSqlEntityOptions.class, GenericNoSqlPropertyOptions.class );
 	}
 
-	private abstract static class GenericNoSqlGlobalContext extends BaseGlobalOptions<GenericNoSqlGlobalContext> implements
-			NoSqlGlobalContext<GenericNoSqlGlobalContext, GenericNoSqlEntityContext> {
+	private abstract static class GenericNoSqlGlobalOptions extends BaseGlobalOptions<GenericNoSqlGlobalOptions> implements
+			NoSqlGlobalContext<GenericNoSqlGlobalOptions, GenericNoSqlEntityOptions> {
 
-		public GenericNoSqlGlobalContext(MappingContext context) {
+		public GenericNoSqlGlobalOptions(MappingContext context) {
 			super( context );
 		}
 	}
 
-	private abstract static class GenericNoSqlEntityContext implements NoSqlEntityContext<GenericNoSqlEntityContext, GenericNoSqlPropertyContext> {
+	private abstract static class GenericNoSqlEntityOptions implements NoSqlEntityContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
 
-		public GenericNoSqlEntityContext(MappingContext context) {
+		public GenericNoSqlEntityOptions(MappingContext context) {
 		}
 	}
 
-	private abstract static class GenericNoSqlPropertyContext implements NoSqlPropertyContext<GenericNoSqlEntityContext, GenericNoSqlPropertyContext> {
+	private abstract static class GenericNoSqlPropertyOptions implements NoSqlPropertyContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
 
-		public GenericNoSqlPropertyContext(MappingContext context) {
+		public GenericNoSqlPropertyOptions(MappingContext context) {
 		}
 	}
 }
