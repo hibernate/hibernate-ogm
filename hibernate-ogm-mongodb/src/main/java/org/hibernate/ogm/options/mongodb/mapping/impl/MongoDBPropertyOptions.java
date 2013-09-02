@@ -20,24 +20,25 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
-import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.navigation.impl.BaseContext;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
+import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.BaseContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class MongoDBEntityImpl extends BaseContext implements MongoDBEntityContext {
+public abstract class MongoDBPropertyOptions extends BaseContext implements MongoDBPropertyContext {
 
-	public MongoDBEntityImpl(MappingContext context ) {
+	public MongoDBPropertyOptions(MappingContext context ) {
 		super( context );
 	}
 
 	@Override
-	public MongoDBEntityContext writeConcern(WriteConcernType concern) {
-		addEntityOption( new WriteConcernOption( concern ) );
+	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
+		addPropertyOption( new AssociationStorageOption( storage ) );
 		return this;
 	}
+
 }
