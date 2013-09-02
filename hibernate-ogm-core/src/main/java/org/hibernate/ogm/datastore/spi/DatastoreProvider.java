@@ -53,6 +53,6 @@ public interface DatastoreProvider extends Service {
 	 *
 	 * @return the {@link MappingFactory} for the creation for the creation of a mapping context
 	 */
-	Class<? extends MappingFactory<?>> getMappingFactoryType();
+	Class<? extends MappingFactory<?>> getConfigurationBuilder();
 
 }

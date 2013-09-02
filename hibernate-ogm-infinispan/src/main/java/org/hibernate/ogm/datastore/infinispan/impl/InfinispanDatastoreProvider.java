@@ -197,7 +197,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	}
 
 	@Override
-	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
+	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
 		return GenericNoSqlMappingFactory.class;
 	}
 }

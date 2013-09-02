@@ -166,7 +166,7 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 	}
 
 	@Override
-	public Class<? extends MappingFactory<?>> getMappingFactoryType() {
+	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
 		return GenericNoSqlMappingFactory.class;
 	}
 }

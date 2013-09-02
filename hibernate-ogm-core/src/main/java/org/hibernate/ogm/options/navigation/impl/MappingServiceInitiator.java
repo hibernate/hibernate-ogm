@@ -73,7 +73,7 @@ public final class MappingServiceInitiator implements SessionFactoryServiceIniti
 
 	private MappingFactory<?> factory(ServiceRegistryImplementor registry) {
 		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-		return factory( datastoreProvider.getMappingFactoryType() );
+		return factory( datastoreProvider.getConfigurationBuilder() );
 	}
 
 	private MappingFactory<?> factory(ServiceRegistryImplementor registry, String factoryClassName) {
