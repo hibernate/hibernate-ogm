@@ -40,7 +40,7 @@ public class GenericNoSqlMappingFactory implements MappingFactory<NoSqlGlobalCon
 		return context.createGlobalContext( GenericNoSqlGlobalContext.class, GenericNoSqlEntityContext.class, GenericNoSqlPropertyContext.class );
 	}
 
-	private abstract static class GenericNoSqlGlobalContext extends GlobalOptionsImpl<GenericNoSqlGlobalContext> implements
+	private abstract static class GenericNoSqlGlobalContext extends BaseGlobalOptions<GenericNoSqlGlobalContext> implements
 			NoSqlGlobalContext<GenericNoSqlGlobalContext, GenericNoSqlEntityContext> {
 
 		public GenericNoSqlGlobalContext(MappingContext context) {

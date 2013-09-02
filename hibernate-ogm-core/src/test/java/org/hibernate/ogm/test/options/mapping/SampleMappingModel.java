@@ -21,7 +21,7 @@
 package org.hibernate.ogm.test.options.mapping;
 
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.GlobalOptionsImpl;
+import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.BaseContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
@@ -50,7 +50,7 @@ public class SampleMappingModel {
 		SamplePropertyContext embed(Object object);
 	}
 
-	public abstract static class SampleGlobalContextImpl extends GlobalOptionsImpl<SampleGlobalContext> implements SampleGlobalContext {
+	public abstract static class SampleGlobalContextImpl extends BaseGlobalOptions<SampleGlobalContext> implements SampleGlobalContext {
 
 		public SampleGlobalContextImpl(MappingContext context) {
 			super( context );

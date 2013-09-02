@@ -23,14 +23,14 @@ package org.hibernate.ogm.options.mongodb.mapping.impl;
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.GlobalOptionsImpl;
+import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  *
  */
-public abstract class MongoDBGlobalImpl extends GlobalOptionsImpl<MongoDBGlobalContext> implements MongoDBGlobalContext {
+public abstract class MongoDBGlobalImpl extends BaseGlobalOptions<MongoDBGlobalContext> implements MongoDBGlobalContext {
 
 	public MongoDBGlobalImpl(MappingContext context) {
 		super( context );

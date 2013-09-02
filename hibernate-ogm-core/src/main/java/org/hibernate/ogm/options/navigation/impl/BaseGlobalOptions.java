@@ -29,9 +29,9 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class GlobalOptionsImpl<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
+public abstract class BaseGlobalOptions<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
 
-	public GlobalOptionsImpl(MappingContext context) {
+	public BaseGlobalOptions(MappingContext context) {
 		super( context );
 	}
 
