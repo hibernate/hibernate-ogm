@@ -59,7 +59,7 @@ public class MappingContextTest {
 		context.configureEntity( ContextExample.class );
 		context.addEntityOption( ForceExampleOption.TRUE );
 		OptionsContainer optionsContainer = context.getOptionsPerEntity().get( ContextExample.class );
-		Iterator<Option<?, ?>> iterator = optionsContainer.iterator();
+		Iterator<Option> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
 		assertThat( iterator.hasNext() ).as( "Only one option should have been added per entity" ).isFalse();
@@ -72,7 +72,7 @@ public class MappingContextTest {
 		context.configureProperty( "property" );
 		context.addPropertyOption( ForceExampleOption.TRUE );
 		OptionsContainer optionsContainer = context.getOptionsPerProperty().get( new PropertyKey( ContextExample.class, "property" ) );
-		Iterator<Option<?, ?>> iterator = optionsContainer.iterator();
+		Iterator<Option> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
 		assertThat( iterator.hasNext() ).as( "Only one options should have been added per property" ).isFalse();
