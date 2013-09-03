@@ -34,6 +34,8 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Contain all the options set using the mapping API, all the options are separated in different context: global, per
@@ -43,6 +45,8 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
  * @author Gunnar Morling
  */
 public class MappingContext {
+
+	private static final Log log = LoggerFactory.make();
 
 	private final OptionsContainer globaloptions = new OptionsContainer();
 
@@ -126,7 +130,7 @@ public class MappingContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw new RuntimeException( e );
+			throw log.cannotCreateGlobalContextProxy( globalContextImplType, e);
 		}
 	}
 
@@ -145,7 +149,7 @@ public class MappingContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw new RuntimeException( e );
+			throw log.cannotCreateEntityContextProxy( entityContextImplType, e);
 		}
 	}
 
@@ -164,7 +168,7 @@ public class MappingContext {
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
 		catch (Exception e) {
-			throw new RuntimeException( e );
+			throw log.cannotCreateEntityContextProxy( propertyContextImplType, e);
 		}
 	}
 
