@@ -20,22 +20,21 @@
  */
 package org.hibernate.ogm.options.mongodb;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.spi.UniqueOption;
-
-import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class WriteConcernOption extends UniqueOption<WriteConcernOption> {
 
-	private final WriteConcern writeConcern;
+	private final WriteConcernType writeConcern;
 
-	public WriteConcernOption(WriteConcern writeConcern) {
+	public WriteConcernOption(WriteConcernType writeConcern) {
 		this.writeConcern = writeConcern;
 	}
 
-	public WriteConcern getWriteConcern() {
+	public WriteConcernType getWriteConcern() {
 		return writeConcern;
 	}
 
@@ -45,7 +44,7 @@ public class WriteConcernOption extends UniqueOption<WriteConcernOption> {
 			return "writeConcern: null";
 		}
 		else {
-			return "writeConcern: " + writeConcern.getWString();
+			return "writeConcern: " + writeConcern;
 		}
 	}
 

@@ -24,7 +24,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.mongodb.WriteConcern;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
@@ -32,8 +31,6 @@ import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.junit.Test;
 
 /**
- * Test the {@link WriteConcern} annotation used to set the {@link WriteConcernType} in MongoDB.
- *
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class WriteConcernAnnotationTest {
@@ -89,18 +86,18 @@ public class WriteConcernAnnotationTest {
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
 
-	@WriteConcern(WriteConcernType.ERRORS_IGNORED)
+	@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.ERRORS_IGNORED)
 	private static final class EntityWriteConcernExample {
 	}
 
 	private static final class FieldWriteConcernExample {
-		@WriteConcern(WriteConcernType.FSYNCED)
+		@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.FSYNCED)
 		public String content;
 	}
 
-	@WriteConcern(WriteConcernType.ACKNOWLEDGED)
+	@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.ACKNOWLEDGED)
 	private static final class AnnotatedClass {
-		@WriteConcern(WriteConcernType.ERRORS_IGNORED)
+		@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.ERRORS_IGNORED)
 		public String title;
 	}
 

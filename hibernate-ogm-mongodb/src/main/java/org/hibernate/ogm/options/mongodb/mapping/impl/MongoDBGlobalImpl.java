@@ -20,12 +20,11 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.GlobalOptionsImpl;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-
-import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
@@ -38,7 +37,7 @@ public abstract class MongoDBGlobalImpl extends GlobalOptionsImpl<MongoDBGlobalC
 	}
 
 	@Override
-	public MongoDBGlobalContext writeConcern(WriteConcern concern) {
+	public MongoDBGlobalContext writeConcern(WriteConcernType concern) {
 		addGlobalOption( new WriteConcernOption( concern ) );
 		return this;
 	}

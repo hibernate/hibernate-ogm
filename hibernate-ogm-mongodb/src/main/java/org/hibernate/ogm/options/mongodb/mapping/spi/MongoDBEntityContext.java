@@ -20,15 +20,14 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.spi;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
-
-import com.mongodb.WriteConcern;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public interface MongoDBEntityContext extends NoSqlEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
 
-	MongoDBEntityContext writeConcern(WriteConcern concern);
+	MongoDBEntityContext writeConcern(WriteConcernType concern);
 
 }

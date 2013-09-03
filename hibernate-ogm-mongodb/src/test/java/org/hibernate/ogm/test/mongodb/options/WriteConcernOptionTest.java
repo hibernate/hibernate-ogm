@@ -23,13 +23,12 @@ package org.hibernate.ogm.test.mongodb.options;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.junit.Test;
-
-import com.mongodb.WriteConcern;
 
 /**
  * Test the {@link WriteConcernOption} used to set the {@link WriteConcernType} in MongoDB.
@@ -40,8 +39,8 @@ public class WriteConcernOptionTest {
 
 	@Test
 	public void testGetter() throws Exception {
-		WriteConcernOption option = new WriteConcernOption( WriteConcern.REPLICA_ACKNOWLEDGED );
-		assertThat( option.getWriteConcern() ).isEqualTo( WriteConcern.REPLICA_ACKNOWLEDGED );
+		WriteConcernOption option = new WriteConcernOption( WriteConcernType.ACKNOWLEDGED );
+		assertThat( option.getWriteConcern() ).isEqualTo( WriteConcernType.ACKNOWLEDGED );
 	}
 
 	@Test
@@ -49,11 +48,11 @@ public class WriteConcernOptionTest {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MappingContext context = new MappingContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping.writeConcern( WriteConcern.ERRORS_IGNORED );
+		mapping.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
 		assertThat( retrieveOptionsFor( context ) )
 			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcern.ERRORS_IGNORED ) );
+			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
 
 	@Test
@@ -62,17 +61,17 @@ public class WriteConcernOptionTest {
 		MappingContext context = new MappingContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
-			.writeConcern( WriteConcern.ERRORS_IGNORED )
+			.writeConcern( WriteConcernType.ERRORS_IGNORED )
 			.entity( ExampleForMongoDBMapping.class )
-				.writeConcern( WriteConcern.MAJORITY );
+				.writeConcern( WriteConcernType.MAJORITY );
 
 		assertThat( retrieveOptionsFor( context ) )
 			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcern.ERRORS_IGNORED) );
+			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED) );
 
 		assertThat( retrieveOptionsFor( context, ExampleForMongoDBMapping.class ) )
 			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcern.MAJORITY ) );
+			.contains( new WriteConcernOption( WriteConcernType.MAJORITY ) );
 	}
 
 	@SuppressWarnings("unused")

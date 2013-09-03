@@ -27,6 +27,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcern.WriteConcernConverter;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
@@ -42,13 +43,13 @@ import org.hibernate.ogm.options.spi.Option;
 @MappingOption(WriteConcernConverter.class)
 public @interface WriteConcern {
 
-	String value();
+	WriteConcernType value();
 
 	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
 
 		@Override
 		public Option<?, ?> convert(WriteConcern annotation) {
-			return new WriteConcernOption( com.mongodb.WriteConcern.valueOf( annotation.value() ) );
+			return new WriteConcernOption( annotation.value() );
 		}
 	}
 

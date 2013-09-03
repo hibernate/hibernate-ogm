@@ -20,12 +20,11 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
+import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.navigation.impl.BaseContext;
-
-import com.mongodb.WriteConcern;
+import org.hibernate.ogm.options.navigation.impl.MappingContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
@@ -37,7 +36,7 @@ public abstract class MongoDBEntityImpl extends BaseContext implements MongoDBEn
 	}
 
 	@Override
-	public MongoDBEntityContext writeConcern(WriteConcern concern) {
+	public MongoDBEntityContext writeConcern(WriteConcernType concern) {
 		addEntityOption( new WriteConcernOption( concern ) );
 		return this;
 	}
