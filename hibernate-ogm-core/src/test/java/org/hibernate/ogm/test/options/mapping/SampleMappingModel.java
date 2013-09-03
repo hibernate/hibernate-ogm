@@ -20,9 +20,10 @@
  */
 package org.hibernate.ogm.test.options.mapping;
 
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.BaseEntityOptions;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
-import org.hibernate.ogm.options.navigation.impl.BaseContext;
+import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
+import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
 import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
@@ -63,7 +64,7 @@ public class SampleMappingModel {
 		}
 	}
 
-	public abstract static class SampleEntityContextImpl extends BaseContext implements SampleEntityContext {
+	public abstract static class SampleEntityContextImpl extends BaseEntityOptions<SampleEntityContext> implements SampleEntityContext {
 
 		public SampleEntityContextImpl(MappingContext context) {
 			super( context );
@@ -82,7 +83,7 @@ public class SampleMappingModel {
 		}
 	}
 
-	public abstract static class SamplePropertyContextImpl extends BaseContext implements SamplePropertyContext {
+	public abstract static class SamplePropertyContextImpl extends BasePropertyOptions<SamplePropertyContext> implements SamplePropertyContext {
 
 		public SamplePropertyContextImpl(MappingContext context) {
 			super( context );

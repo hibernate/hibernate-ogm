@@ -48,15 +48,17 @@ public class GenericNoSqlMappingFactory implements MappingFactory<NoSqlGlobalCon
 		}
 	}
 
-	private abstract static class GenericNoSqlEntityOptions implements NoSqlEntityContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
+	private abstract static class GenericNoSqlEntityOptions extends BaseEntityOptions<GenericNoSqlEntityOptions> implements NoSqlEntityContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
 
 		public GenericNoSqlEntityOptions(MappingContext context) {
+			super( context );
 		}
 	}
 
-	private abstract static class GenericNoSqlPropertyOptions implements NoSqlPropertyContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
+	private abstract static class GenericNoSqlPropertyOptions extends BasePropertyOptions<GenericNoSqlPropertyOptions> implements NoSqlPropertyContext<GenericNoSqlEntityOptions, GenericNoSqlPropertyOptions> {
 
 		public GenericNoSqlPropertyOptions(MappingContext context) {
+			super( context );
 		}
 	}
 }

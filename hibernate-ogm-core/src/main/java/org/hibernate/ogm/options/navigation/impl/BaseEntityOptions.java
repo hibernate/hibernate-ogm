@@ -18,27 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.mongodb.mapping.impl;
+package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.spi.EntityOptions;
 
 /**
+ * Implementation for options declared by {@link EntityOptions}.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public abstract class MongoDBPropertyOptions extends BasePropertyOptions<MongoDBPropertyContext> implements MongoDBPropertyContext {
+public abstract class BaseEntityOptions<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
 
-	public MongoDBPropertyOptions(MappingContext context ) {
+	public BaseEntityOptions(MappingContext context) {
 		super( context );
-	}
-
-	@Override
-	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption( storage ) );
-		return this;
 	}
 
 }
