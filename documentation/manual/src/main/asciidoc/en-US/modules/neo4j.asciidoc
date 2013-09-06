@@ -1,0 +1,131 @@
+[[ogm-neo4j]]
+
+=== Neo4j
+
+http://www.neo4j.org[Neo4j] is a robust (fully ACID) transactional property graph database.
+This kind of databases are suited for those type of problems that can be represented with a graph 
+like social relationships or road maps for example.
+
+At the moment only the support for the embeedded Neo4j is included in OGM.
+
+This is our first version and a bit experimental. In particular we plan on using node navigation much more than index lookup in a future version.
+
+==== How to add Neo4j integration
+
+.1. Add the dependencies to your project
+If your project uses Maven you can add this to the pom.xml: 
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-neo4j</artifactId>
+    <version>{hibernate-ogm-version}</version>
+</dependency>
+----
+Alternatively you can find the required libraries in the distribution package on https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[SourceForge]
+
+.2. Add the following properties:
+
+[source, properties]
+[subs="verbatim,attributes"]
+----
+hibernate.ogm.datastore.provider = neo4j_embedded
+hibernate.ogm.neo4j.database.path = C:\example\mydb
+----
+
+==== Configuring Neo4j
+
+The following properties are available to configure Neo4j support:
+
+.Neo4j datastore configuration properties
+hibernate.ogm.neo4j.database.path::
+The absolute path representing the location of the Neo4j database. Example: +C:\neo4jdb\mydb+
+hibernate.ogm.neo4j.properties.location (optional)::
+Location of the Neo4j embedded properties file. It can be an URL or an absolute file path.
+hibernate.ogm.neo4j.index.entity (optional)::
+Name of the neo4j index containing the stored entities. Default to +_nodes_ogm_index+
+hibernate.ogm.neo4j.index.association (optional)::
+Name of the Neo4j index containing the stored associations. Default to +_relationships_ogm_index+
+hibernate.ogm.neo4j.index.sequence (optional)::
+Name of the index that stores the next available value for a sequence. Default to +_sequences_ogm_index+
+
+==== Storage principles
+
+===== Entities
+
+Entities are stored as Neo4j nodes, which means each entity property will be translated into a property of the node.
+An additional property is added to the node and it contains the name of the table representing the entity.
+
+.Example of entities and the list of properties contained in the corresponding node
+====
+[source, JAVA]
+----
+@Entity
+class Account {
+
+    @Id
+    String login;
+    String password;
+    Address homeAddress;
+
+    //...
+}
+
+@Embeddable
+class Address {
+    String city;
+    String zipCode;
+
+  //...
+}
+----
+
+[subs="verbatim,attributes"]
+----
+Node properties:
+   _table
+   id
+   login
+   password
+   homeAddress_city
+   homeAddress_zipCode
+----
+====
+The +_table+ property has been added by OGM and it contains the name of the table representing the entity (+Account+ in this simple case).
+
+===== Associations
+
+Associations are mapped using Neo4j relationships.
+A unidirectional association is mapped with a relationship between two nodes that start from the node representing the owner of the association.
+The name of the association is saved as type of the relationship.
+A bidirectional association is represented by two relationships, one per direction, between the two nodes.
+
+==== Transactions
+
+Neo4j operations can be executed only inside a transaction.
+Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will integrate with the Neo4j transaction mechanism,
+this means that you should start and commit transaction using the hibernate session.
+
+.Example of starting and committing transactions
+====
+[source, JAVA]
+----
+Session session = factory.openSession();
+Transaction tx = session.beginTransaction();
+
+Account account = new Account();
+account.setLogin( "myAccount" );
+session.persist( account );
+
+tx.commit();
+
+...
+
+tx = session.beginTransaction();
+Account savedAccount =  (Account) session.get( Account.class, account.getId() );
+tx.commit();
+----
+====
+

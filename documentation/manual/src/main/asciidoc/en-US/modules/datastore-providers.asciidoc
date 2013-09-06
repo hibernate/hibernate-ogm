@@ -34,6 +34,7 @@ or one preferably of the following shortcuts:
 * +infinispan+: stores data into http://infinispan.org[Infinispan] (data grid)
 * +ehcache+: stores data into http://ehcache.org[Ehcache] (cache)
 * +mongodb+: stores data into http://www.mongodb.org[MongoDB] (document store)
+* +neo4j+: stores data into http://http://www.neo4j.org/[Neo4j] (graph)
 
 
 You also need to add the relevant Hibernate OGM module in your classpath.
@@ -50,7 +51,7 @@ In maven that would look like:
 ----
 
 We have respectively
-+hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+ and +hibernate-ogm-mongodb+.
++hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+, +hibernate-ogm-mongodb+ and +hibernate-ogm-neo4j+.
 The map datastore is included in the Hibernate OGM engine module.
 
 By default, a datastore provider chooses the best grid dialect transparently
@@ -64,3 +65,5 @@ include::modules/infinispan.asciidoc[]
 include::modules/ehcache.asciidoc[]
 
 include::modules/mongodb.asciidoc[]
+
+include::modules/neo4j.asciidoc[]
