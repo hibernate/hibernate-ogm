@@ -42,7 +42,6 @@
         <module>hibernate-ogm-infinispan</module>
         <module>hibernate-ogm-mongodb</module>
         <module>hibernate-ogm-modules</module>
-        <module>hibernate-ogm-integrationtest</module>
     </modules>
 
     <prerequisites>
@@ -975,6 +974,18 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>integrationtest</id>
+            <activation>
+                <property>
+                    <name>skipITs</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>hibernate-ogm-integrationtest</module>
+            </modules>
+        </profile>
         <profile>
             <id>doc</id>
             <activation>

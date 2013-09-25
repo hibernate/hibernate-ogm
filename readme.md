@@ -20,6 +20,16 @@ To build the project, run
 
     mvn clean install -s settings-example.xml
 
+### Integration tests
+
+You can skip integration tests by specifying the `skipITs` property:
+
+    mvn clean install -DskipITs -s settings-example.xml
+
+or
+
+    mvn clean install -DskipITs=true -s settings-example.xml
+
 ### Documentation
 
 The documentation is built by default as part of the project build. You can skip it by specifying the `skipDocs` property:

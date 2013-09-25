@@ -20,44 +20,20 @@
         </testResources>
         <plugins>
             <plugin>
-                 <artifactId>maven-checkstyle-plugin</artifactId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-deploy-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>build-test-jar</id>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>extract-as</id>
-            <activation>
-                <property>
-                    <name>skipTests</name>
-                    <value>!true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>
