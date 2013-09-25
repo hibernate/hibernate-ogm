@@ -1,6 +1,65 @@
 Hibernate OGM Changelog
 =======================
 
+4.0.0.Beta3 (25-09-2013)
+-------------------------
+
+** Sub-task
+    * [OGM-308] - Convert JP-QL to MongoDB queries and return managed object
+    * [OGM-312] - Add support for <, <=, >=, >, IN and LIKE operators
+    * [OGM-316] - Extract separate module for building distribution and JavaDoc
+    * [OGM-318] - Don't prepare JBoss AS for integration tests if tests are skipped
+
+** Bug
+    * [OGM-228] - Hibernate Search MassIndexer should work with OGM
+    * [OGM-233] - OGM is not polymorphic
+    * [OGM-254] - PersistentTableBulkIdStrategy.exportTableDefinitions() throws NullPointerException with OGM
+    * [OGM-256] - Add support for InheritanceType.TABLE_PER_CLASS
+    * [OGM-272] - Fix BasicGridExtractor logging message
+    * [OGM-281] - Checkstyle NewlineAtEndOfFile rule fails in windows
+    * [OGM-284] - Checkstyle not working in the integrationtest submodule
+    * [OGM-297] - MongoDBModuleMemberRegistrationIT does not honor MONGODB_HOSTNAME
+    * [OGM-300] - Make LoadSelectedColumnsCollectionTest run reliably on JDK 7
+
+** Improvement
+    * [OGM-45] - Rewrite OgmTestCase: broken in a few ways
+    * [OGM-151] - Reduce memory consumption by sharing the metadata information of Key objects
+    * [OGM-263] - Upgrade Shrinkwrap to version 1.1.1
+    * [OGM-270] - Expose the WriteConcern settings to the configuration
+    * [OGM-282] - Configuration parsing
+    * [OGM-288] - Mass indexing tests should not use the utility class in Search to create Index direcotries
+    * [OGM-299] - Use SessionFactoryServiceInitiator instead of sessionFactory.addObserver to inject SessionFactory in DatastoreProvider
+    * [OGM-301] - Set priority build order between integration tests and module projects using the modules tag instead of specify a dependency
+    * [OGM-319] - Update to Hibernate Search 4.4.0.Alpha1
+    * [OGM-320] - Update to HQL Parser 1.0.0.Alpha3
+    * [OGM-326] - Make JpaTestCase support @SkipByGridDialect
+    * [OGM-327] - Have only one Javassist dependency
+    * [OGM-330] - Add CheckStyle check for whitespaces after type casts
+
+** New Feature
+    * [OGM-271] - Create dedicated MongoDB module file for AS7
+    * [OGM-273] - Offer ability to load all entities of a given table from GridDialect
+
+** Task
+    * [OGM-259] - Upgrade to Hibernate Search 4.2.0.Final
+    * [OGM-261] - Document usage of the JBoss AS 7 modules package
+    * [OGM-267] - Upgrade MongoDB-java-driver version to 2.10.1
+    * [OGM-276] - Update integration tests to JBoss AS 7.2 alpha1
+    * [OGM-277] - Remove dependencies from integration test module
+    * [OGM-278] - MongoDB integration tests should be disabled when the profile is disabled
+    * [OGM-279] - We should use the checkstyle maven plugin to check coding convention during the build
+    * [OGM-280] - Checkstyle: Indentation should be performed wit tabs only
+    * [OGM-283] - Add checkstyle rule: RedundantModifier
+    * [OGM-286] - The integration test parent module should not have a resource folder
+    * [OGM-287] - Adapt to current version of parser project
+    * [OGM-289] - Update Hibernate Search, Ehcache and Infinispan dependency versions
+    * [OGM-295] - Facilitate project setup by using Embedded MongoDB
+    * [OGM-302] - Run checkstyle in the verification phase
+    * [OGM-315] - OneToOneTest does not completly clear the datastore when  the test is finished
+    * [OGM-329] - Convert documentation to asciidoc
+    * [OGM-339] - Integration test module should not be built when -DskipTests is specified
+
+
 4.0.0.Beta2 (14-01-2013)
 -------------------------
 
