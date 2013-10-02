@@ -32,13 +32,16 @@ import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.test.utils.Neo4jTestHelper;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.event.KernelEventHandler;
 import org.neo4j.graphdb.event.TransactionEventHandler;
 import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -168,6 +171,21 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public IndexManager index() {
+			return null;
+		}
+
+		@Override
+		public Node createNode(Label... labels) {
+			return null;
+		}
+
+		@Override
+		public ResourceIterable<Node> findNodesByLabelAndProperty(Label label, String key, Object value) {
+			return null;
+		}
+
+		@Override
+		public Schema schema() {
 			return null;
 		}
 
