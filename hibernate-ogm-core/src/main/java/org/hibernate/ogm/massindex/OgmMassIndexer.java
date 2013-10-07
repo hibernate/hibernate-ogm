@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.hibernate.CacheMode;
-import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.massindex.batchindexing.BatchCoordinator;
 import org.hibernate.ogm.massindex.batchindexing.Executors;
@@ -49,7 +49,7 @@ public class OgmMassIndexer implements MassIndexer {
 	private static final Log log = LoggerFactory.make();
 
 	private final SearchFactoryImplementor searchFactory;
-	private final SessionFactory sessionFactory;
+	private final SessionFactoryImplementor sessionFactory;
 	private final GridDialect gridDialect;
 
 	private MassIndexerProgressMonitor monitor;
@@ -61,7 +61,7 @@ public class OgmMassIndexer implements MassIndexer {
 
 	private final Set<Class<?>> rootEntities;
 
-	public OgmMassIndexer(GridDialect gridDialect, SearchFactoryImplementor searchFactory, SessionFactory sessionFactory, Class<?>... entities) {
+	public OgmMassIndexer(GridDialect gridDialect, SearchFactoryImplementor searchFactory, SessionFactoryImplementor sessionFactory, Class<?>... entities) {
 		this.gridDialect = gridDialect;
 		this.searchFactory = searchFactory;
 		this.sessionFactory = sessionFactory;

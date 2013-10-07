@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 import org.hibernate.CacheMode;
-import org.hibernate.SessionFactory;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -49,7 +49,7 @@ public class BatchCoordinator implements Runnable {
 
 	private final Class<?>[] rootEntities; // entity types to reindex excluding all subtypes of each-other
 	private final SearchFactoryImplementor searchFactoryImplementor;
-	private final SessionFactory sessionFactory;
+	private final SessionFactoryImplementor sessionFactory;
 	private final int typesToIndexInParallel;
 	private final CacheMode cacheMode;
 	private final boolean optimizeAtEnd;
@@ -62,7 +62,7 @@ public class BatchCoordinator implements Runnable {
 	private final GridDialect gridDialect;
 
 	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, SearchFactoryImplementor searchFactoryImplementor,
-			SessionFactory sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
+			SessionFactoryImplementor sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
 			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor) {
 		this.gridDialect = gridDialect;
 		this.rootEntities = rootEntities.toArray( new Class<?>[rootEntities.size()] );
