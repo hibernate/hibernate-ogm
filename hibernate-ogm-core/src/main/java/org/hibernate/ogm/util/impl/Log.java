@@ -140,4 +140,8 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 30, value = "Cannot instantiate query parser service %s.")
 	HibernateException unableToInstantiateQueryParserService(String parserServiceClassName, @Cause Exception e);
+
+	@LogMessage(level = WARN)
+	@Message(id = 31, value = "OgmMassIndexer doesn't support the configuration option '%s'. Its setting will be ignored.")
+	void unsupportedIndexerConfigurationOption(String optionName);
 }
