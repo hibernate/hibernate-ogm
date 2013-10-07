@@ -50,6 +50,7 @@ public class BatchCoordinator implements Runnable {
 	private final Class<?>[] rootEntities; // entity types to reindex excluding all subtypes of each-other
 	private final SearchFactoryImplementor searchFactoryImplementor;
 	private final SessionFactory sessionFactory;
+	private final int typesToIndexInParallel;
 	private final CacheMode cacheMode;
 	private final boolean optimizeAtEnd;
 	private final boolean purgeAtStart;
@@ -61,12 +62,13 @@ public class BatchCoordinator implements Runnable {
 	private final GridDialect gridDialect;
 
 	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, SearchFactoryImplementor searchFactoryImplementor,
-			SessionFactory sessionFactory, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart, boolean optimizeAfterPurge,
-			MassIndexerProgressMonitor monitor) {
+			SessionFactory sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
+			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor) {
 		this.gridDialect = gridDialect;
 		this.rootEntities = rootEntities.toArray( new Class<?>[rootEntities.size()] );
 		this.searchFactoryImplementor = searchFactoryImplementor;
 		this.sessionFactory = sessionFactory;
+		this.typesToIndexInParallel = typesToIndexInParallel;
 		this.cacheMode = cacheMode;
 		this.optimizeAtEnd = optimizeAtEnd;
 		this.purgeAtStart = purgeAtStart;
@@ -111,7 +113,7 @@ public class BatchCoordinator implements Runnable {
 	 *             if interrupted while waiting for endAllSignal.
 	 */
 	private void doBatchWork(BatchBackend backend) throws InterruptedException {
-		ExecutorService executor = Executors.newFixedThreadPool( rootEntities.length, "BatchIndexingWorkspace" );
+		ExecutorService executor = Executors.newFixedThreadPool( typesToIndexInParallel, "BatchIndexingWorkspace" );
 		for ( Class<?> type : rootEntities ) {
 			executor.execute( new BatchIndexingWorkspace( gridDialect, searchFactoryImplementor, sessionFactory, type,
 					cacheMode, endAllSignal, monitor, backend ) );

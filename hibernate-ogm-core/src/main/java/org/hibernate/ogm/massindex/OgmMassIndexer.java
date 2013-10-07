@@ -57,6 +57,7 @@ public class OgmMassIndexer implements MassIndexer {
 	private boolean optimizeOnFinish = true;
 	private boolean optimizeAfterPurge = true;
 	private boolean purgeAllOnStart = true;
+	private int typesToIndexInParallel = 1;
 
 	private final Set<Class<?>> rootEntities;
 
@@ -139,6 +140,13 @@ public class OgmMassIndexer implements MassIndexer {
 	}
 
 	@Override
+	public MassIndexer typesToIndexInParallel(int threadsToIndexObjects) {
+		atLeastOneValidation( threadsToIndexObjects );
+		this.typesToIndexInParallel = Math.min( threadsToIndexObjects, rootEntities.size() );
+		return this;
+	}
+
+	@Override
 	public Future<?> start() {
 		ExecutorService executor = Executors.newFixedThreadPool( 1, "batch coordinator" );
 		try {
@@ -156,8 +164,8 @@ public class OgmMassIndexer implements MassIndexer {
 	}
 
 	protected BatchCoordinator createCoordinator() {
-		return new BatchCoordinator( gridDialect, rootEntities, searchFactory, sessionFactory, cacheMode, optimizeOnFinish, purgeAllOnStart,
-				optimizeAfterPurge, monitor );
+		return new BatchCoordinator( gridDialect, rootEntities, searchFactory, sessionFactory, typesToIndexInParallel, cacheMode, optimizeOnFinish,
+				purgeAllOnStart, optimizeAfterPurge, monitor );
 	}
 
 	private void atLeastOneValidation(int numberOfThreads) {
@@ -206,5 +214,4 @@ public class OgmMassIndexer implements MassIndexer {
 		log.debugf( "Targets for indexing job: %s", cleaned );
 		return cleaned;
 	}
-
 }
