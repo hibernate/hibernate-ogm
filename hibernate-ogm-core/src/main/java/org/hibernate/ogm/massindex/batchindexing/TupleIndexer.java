@@ -30,7 +30,6 @@ import org.hibernate.CacheMode;
 import org.hibernate.FlushMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -68,7 +67,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final SessionFactory sessionFactory;
+	private final SessionFactoryImplementor sessionFactory;
 	private final Map<Class<?>, EntityIndexBinder> entityIndexBinders;
 	private final MassIndexerProgressMonitor monitor;
 	private final CacheMode cacheMode;
@@ -78,7 +77,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private final Class<?> indexedType;
 
 	public TupleIndexer(Class<?> indexedType, MassIndexerProgressMonitor monitor,
-			SessionFactory sessionFactory, SearchFactoryImplementor searchFactory,
+			SessionFactoryImplementor sessionFactory, SearchFactoryImplementor searchFactory,
 			CacheMode cacheMode, BatchBackend backend, ErrorHandler errorHandler) {
 		this.indexedType = indexedType;
 		this.monitor = monitor;
@@ -208,7 +207,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 	}
 
 	private Object entity(Session session, Tuple tuple) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( (SessionFactoryImplementor) sessionFactory ).getEntityPersister( indexedType.getName() );
+		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
 		List<Tuple> tuples = new ArrayList<Tuple>();
 		tuples.add( tuple );

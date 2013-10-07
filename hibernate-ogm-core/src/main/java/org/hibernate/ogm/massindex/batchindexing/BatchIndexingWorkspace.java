@@ -23,7 +23,6 @@ package org.hibernate.ogm.massindex.batchindexing;
 import java.util.concurrent.CountDownLatch;
 
 import org.hibernate.CacheMode;
-import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -47,7 +46,7 @@ public class BatchIndexingWorkspace implements Runnable {
 	private static final Log log = LoggerFactory.make();
 
 	private final SearchFactoryImplementor searchFactory;
-	private final SessionFactory sessionFactory;
+	private final SessionFactoryImplementor sessionFactory;
 
 	private final Class<?> indexedType;
 
@@ -64,7 +63,7 @@ public class BatchIndexingWorkspace implements Runnable {
 	private final CountDownLatch endAllSignal;
 
 	public BatchIndexingWorkspace(GridDialect gridDialect, SearchFactoryImplementor searchFactoryImplementor,
-			SessionFactory sessionFactory, Class<?> entityType, CacheMode cacheMode, CountDownLatch endAllSignal,
+			SessionFactoryImplementor sessionFactory, Class<?> entityType, CacheMode cacheMode, CountDownLatch endAllSignal,
 			MassIndexerProgressMonitor monitor, BatchBackend backend) {
 		this.gridDialect = gridDialect;
 		this.indexedType = entityType;
@@ -76,15 +75,16 @@ public class BatchIndexingWorkspace implements Runnable {
 		this.monitor = monitor;
 	}
 
-	private EntityKeyMetadata metadata(SessionFactory sessionFactory, Class<?> indexedType) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( (SessionFactoryImplementor) sessionFactory ).getEntityPersister( indexedType.getName() );
+	private EntityKeyMetadata getEntityKeyMetadata() {
+		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
 		return new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 	}
 
+	@Override
 	public void run() {
 		ErrorHandler errorHandler = searchFactory.getErrorHandler();
 		try {
-			final EntityKeyMetadata keyMetadata = metadata( sessionFactory, indexedType );
+			final EntityKeyMetadata keyMetadata = getEntityKeyMetadata();
 			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchFactory, cacheMode, batchBackend, errorHandler );
 			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), keyMetadata );
 		}

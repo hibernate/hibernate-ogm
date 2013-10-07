@@ -46,7 +46,7 @@ public class OgmMassIndexerFactory implements MassIndexerFactory {
 	public MassIndexer createMassIndexer(SearchFactoryImplementor searchFactory, SessionFactory sessionFactory,
 			Class<?>... entities) {
 		DatastoreServices service = service( sessionFactory, DatastoreServices.class );
-		return new OgmMassIndexer( service.getGridDialect(), searchFactory, sessionFactory, entities );
+		return new OgmMassIndexer( service.getGridDialect(), searchFactory, (SessionFactoryImplementor) sessionFactory, entities );
 	}
 
 	private static <T extends Service> T service(SessionFactory sessionFactory, Class<T> serviceClass) {
