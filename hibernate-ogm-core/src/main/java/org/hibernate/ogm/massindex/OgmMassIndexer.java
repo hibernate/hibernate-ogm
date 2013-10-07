@@ -52,16 +52,11 @@ public class OgmMassIndexer implements MassIndexer {
 	private final SessionFactory sessionFactory;
 	private final GridDialect gridDialect;
 
-	private int threadsToLoad = 2;
-	private int batchSizeToLoad = 10;
-	private int threadForSubsequentFetching = 4;
 	private MassIndexerProgressMonitor monitor;
 	private CacheMode cacheMode = CacheMode.IGNORE;
 	private boolean optimizeOnFinish = true;
 	private boolean optimizeAfterPurge = true;
 	private boolean purgeAllOnStart = true;
-	private long maximumIndexedObjects = 10;
-	private int idFetchSize = 100;
 
 	private final Set<Class<?>> rootEntities;
 
@@ -79,21 +74,19 @@ public class OgmMassIndexer implements MassIndexer {
 
 	@Override
 	public MassIndexer threadsToLoadObjects(int numberOfThreads) {
-		atLeastOneValidation( numberOfThreads );
-		this.threadsToLoad = numberOfThreads;
+		log.unsupportedIndexerConfigurationOption( "threadsToLoadObjects" );
 		return this;
 	}
 
 	@Override
 	public MassIndexer batchSizeToLoadObjects(int batchSize) {
-		this.batchSizeToLoad = batchSize;
+		log.unsupportedIndexerConfigurationOption( "batchSizeToLoadObjects" );
 		return this;
 	}
 
 	@Override
 	public MassIndexer threadsForSubsequentFetching(int numberOfThreads) {
-		atLeastOneValidation( numberOfThreads );
-		this.threadForSubsequentFetching = numberOfThreads;
+		log.unsupportedIndexerConfigurationOption( "threadForSubsequentFetching" );
 		return this;
 	}
 
@@ -135,13 +128,13 @@ public class OgmMassIndexer implements MassIndexer {
 
 	@Override
 	public MassIndexer limitIndexedObjectsTo(long maximum) {
-		this.maximumIndexedObjects = maximum;
+		log.unsupportedIndexerConfigurationOption( "limitIndexedObjectsTo" );
 		return this;
 	}
 
 	@Override
 	public MassIndexer idFetchSize(int idFetchSize) {
-		this.idFetchSize = idFetchSize;
+		log.unsupportedIndexerConfigurationOption( "idFetchSize" );
 		return this;
 	}
 
@@ -163,9 +156,8 @@ public class OgmMassIndexer implements MassIndexer {
 	}
 
 	protected BatchCoordinator createCoordinator() {
-		return new BatchCoordinator( gridDialect, rootEntities, searchFactory, sessionFactory, threadsToLoad,
-				threadForSubsequentFetching, cacheMode, batchSizeToLoad, maximumIndexedObjects, optimizeOnFinish,
-				purgeAllOnStart, optimizeAfterPurge, monitor, idFetchSize );
+		return new BatchCoordinator( gridDialect, rootEntities, searchFactory, sessionFactory, cacheMode, optimizeOnFinish, purgeAllOnStart,
+				optimizeAfterPurge, monitor );
 	}
 
 	private void atLeastOneValidation(int numberOfThreads) {

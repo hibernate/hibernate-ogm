@@ -60,11 +60,9 @@ public class BatchCoordinator implements Runnable {
 
 	private final GridDialect gridDialect;
 
-	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities,
-			SearchFactoryImplementor searchFactoryImplementor, SessionFactory sessionFactory, int objectLoadingThreads,
-			int collectionLoadingThreads, CacheMode cacheMode, int objectLoadingBatchSize, long objectsLimit,
-			boolean optimizeAtEnd, boolean purgeAtStart, boolean optimizeAfterPurge,
-			MassIndexerProgressMonitor monitor, int idFetchSize) {
+	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, SearchFactoryImplementor searchFactoryImplementor,
+			SessionFactory sessionFactory, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart, boolean optimizeAfterPurge,
+			MassIndexerProgressMonitor monitor) {
 		this.gridDialect = gridDialect;
 		this.rootEntities = rootEntities.toArray( new Class<?>[rootEntities.size()] );
 		this.searchFactoryImplementor = searchFactoryImplementor;
@@ -78,6 +76,7 @@ public class BatchCoordinator implements Runnable {
 		this.errorHandler = searchFactoryImplementor.getErrorHandler();
 	}
 
+	@Override
 	public void run() {
 		try {
 			final BatchBackend backend = searchFactoryImplementor.makeBatchBackend( monitor );
