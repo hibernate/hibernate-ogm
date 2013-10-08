@@ -23,6 +23,7 @@ package org.hibernate.ogm.dialect.mongodb.query.parsing;
 import java.util.List;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -37,18 +38,20 @@ import org.hibernate.type.Type;
 public class MongoDBPropertyHelper implements PropertyHelper {
 
 	private final SessionFactoryImplementor sessionFactory;
+	private final EntityNamesResolver entityNames;
 
-	public MongoDBPropertyHelper(SessionFactoryImplementor sessionFactory) {
+	public MongoDBPropertyHelper(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames) {
 		this.sessionFactory = sessionFactory;
+		this.entityNames = entityNames;
 	}
 
 	@Override
-	public Object convertToPropertyType(Class<?> entityType, List<String> propertyPath, String value) {
+	public Object convertToPropertyType(String entityType, List<String> propertyPath, String value) {
 		if ( propertyPath.size() > 1 ) {
 			throw new UnsupportedOperationException( "Queries on embedded/associated entities are not supported yet." );
 		}
 
-		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( entityType.getName() );
+		OgmEntityPersister persister = getPersister( entityType );
 
 		Type propertyType = persister.getPropertyType( propertyPath.get( propertyPath.size() - 1 ) );
 
@@ -60,8 +63,8 @@ public class MongoDBPropertyHelper implements PropertyHelper {
 		}
 	}
 
-	public String getColumnName(Class<?> entityType, String propertyName) {
-		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( entityType.getName() );
+	public String getColumnName(String entityType, String propertyName) {
+		OgmEntityPersister persister = getPersister( entityType );
 
 		String columnName = propertyName;
 
@@ -75,4 +78,14 @@ public class MongoDBPropertyHelper implements PropertyHelper {
 
 		return columnName;
 	}
+
+	private OgmEntityPersister getPersister(String entityType) {
+		Class<?> targetedType = entityNames.getClassFromName( entityType );
+		if ( targetedType == null ) {
+			throw new IllegalStateException( "Unknown entity name " + entityType );
+		}
+
+		return (OgmEntityPersister) sessionFactory.getEntityPersister( targetedType.getName() );
+	}
+
 }
