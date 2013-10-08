@@ -45,7 +45,7 @@ public class MongoDBProcessingChain implements AstProcessingChain<MongoDBQueryPa
 	public MongoDBProcessingChain(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames, Map<String, Object> namedParameters) {
 		this.resolverProcessor = new QueryResolverProcessor( new MongoDBQueryResolverDelegate() );
 
-		MongoDBPropertyHelper propertyHelper = new MongoDBPropertyHelper( sessionFactory );
+		MongoDBPropertyHelper propertyHelper = new MongoDBPropertyHelper( sessionFactory, entityNames );
 		MongoDBQueryRendererDelegate rendererDelegate = new MongoDBQueryRendererDelegate(
 				entityNames,
 				propertyHelper,

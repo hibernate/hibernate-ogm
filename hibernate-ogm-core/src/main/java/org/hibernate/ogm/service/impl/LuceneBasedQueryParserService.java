@@ -79,7 +79,9 @@ public class LuceneBasedQueryParserService extends BaseQueryParserService {
 		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
 		SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
 
-		return new LuceneProcessingChain( searchFactory, entityNamesResolver, namedParameters );
+		return new LuceneProcessingChain.Builder( searchFactory, entityNamesResolver )
+				.namedParameters( namedParameters )
+				.buildProcessingChainForClassBasedEntities();
 	}
 
 	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {

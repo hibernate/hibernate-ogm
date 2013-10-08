@@ -59,7 +59,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 			//currently only support selecting non-nested properties (either qualified or unqualified)
 			if ( ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
 					|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() ) ) {
-				projections.add( propertyHelper.getColumnName( targetType, propertyPath.asStringPathWithoutAlias() ) );
+				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
 			}
 			else if ( propertyPath.getNodes().size() != 1 ) {
 				throw new UnsupportedOperationException( "Selecting nested/associated properties not yet implemented." );
