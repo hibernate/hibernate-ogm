@@ -67,6 +67,22 @@ public class WriteConcernAnnotationTest {
 	}
 
 	@Test
+	public void testWriteConcernForMethod() throws Exception {
+		MappingContext context = new MappingContext();
+		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
+		MongoDBGlobalContext mapping = factory.createMapping( context );
+		mapping
+			.entity( MethodWriteConcernExample.class );
+
+		assertThat( retrieveOptionsFor( context ) )
+			.isEmpty();
+
+		assertThat( retrieveOptionsFor( context, MethodWriteConcernExample.class, "getContent" ) )
+			.hasSize( 1 )
+			.contains( new WriteConcernOption( WriteConcernType.JOURNALED ) );
+	}
+
+	@Test
 	public void testWriteConcernAnnotationPriorities() throws Exception {
 		MappingContext context = new MappingContext();
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
@@ -93,6 +109,15 @@ public class WriteConcernAnnotationTest {
 	private static final class FieldWriteConcernExample {
 		@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.FSYNCED)
 		public String content;
+	}
+
+	private static final class MethodWriteConcernExample {
+		public String content;
+
+		@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.JOURNALED)
+		public String getContent() {
+			return content;
+		}
 	}
 
 	@org.hibernate.ogm.options.mongodb.WriteConcern(WriteConcernType.ACKNOWLEDGED)

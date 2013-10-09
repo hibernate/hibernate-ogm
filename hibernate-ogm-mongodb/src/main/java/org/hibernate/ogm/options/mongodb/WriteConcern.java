@@ -21,6 +21,7 @@
 package org.hibernate.ogm.options.mongodb;
 
 import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -38,7 +39,7 @@ import org.hibernate.ogm.options.spi.Option;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-@Target({ TYPE, FIELD })
+@Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)
 @MappingOption(WriteConcernConverter.class)
 public @interface WriteConcern {
