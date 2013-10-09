@@ -39,23 +39,46 @@ import org.junit.Test;
 public class AssociationStorageAnnotationTest {
 
 	@Test
-	public void testAssociationStorageMappingOption() throws Exception {
+	public void testAssociationStorageMappingOptionOnField() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MappingContext context = new MappingContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
-			.entity( EntityAnnotated.class );
+			.entity( EntityAnnotatedOnField.class );
 
-		assertThat( retrieveOptionsFor( context, EntityAnnotated.class, "content" ) )
+		assertThat( retrieveOptionsFor( context, EntityAnnotatedOnField.class, "field" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.IN_ENTITY ) );
 	}
 
-	private static final class EntityAnnotated {
+	@Test
+	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
+		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
+		MappingContext context = new MappingContext();
+		MongoDBGlobalContext mapping = factory.createMapping( context );
+		mapping
+			.entity( EntityAnnotatedOnMethod.class );
+
+		assertThat( retrieveOptionsFor( context, EntityAnnotatedOnMethod.class, "getMethod" ) )
+			.hasSize( 1 )
+			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
+	}
+
+	private static final class EntityAnnotatedOnField {
 
 		@AssociationStorage(AssociationStorageType.IN_ENTITY)
-		public String content;
+		public String field;
 
 	}
 
+	private static final class EntityAnnotatedOnMethod {
+
+		public String method;
+
+		@AssociationStorage(AssociationStorageType.GLOBAL_COLLECTION)
+		public String getMethod() {
+			return method;
+		}
+
+	}
 }
