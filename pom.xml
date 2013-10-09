@@ -592,7 +592,7 @@
                     <rules>
                         <requireJavaVersion>
                             <!-- require JDK 1.6 to run the build -->
-                            <version>[1.6,)</version>
+                            <version>[1.7,)</version>
                         </requireJavaVersion>
                         <DependencyConvergence />
                     </rules>
