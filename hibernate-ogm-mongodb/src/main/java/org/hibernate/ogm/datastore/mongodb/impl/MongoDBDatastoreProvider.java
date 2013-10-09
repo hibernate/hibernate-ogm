@@ -24,7 +24,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -33,6 +33,8 @@ import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBBasedQueryParserSe
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
+import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
@@ -60,7 +62,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		this.config.initialize( configurationValues );
 	}
 
-	public AssociationStorage getAssociationStorage() {
+	public AssociationStorageType getAssociationStorage() {
 		return config.getAssociationStorage();
 	}
 
@@ -72,6 +74,11 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return MongoDBBasedQueryParserService.class;
+	}
+
+	@Override
+	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
+		return GenericMappingFactory.class;
 	}
 
 	@Override
@@ -123,4 +130,5 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			throw log.unableToConnectToDatastore( this.config.getHost(), this.config.getPort(), e );
 		}
 	}
+
 }

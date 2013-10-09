@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,25 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
+package org.hibernate.ogm.options.generic;
+
+import org.hibernate.ogm.options.spi.Option;
 
 /**
- * Defines the various association storage strategies
+ * An {@link Option} representing a named query.
  *
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Davide D'Alto <davide@hibernate.org>
  */
-public enum AssociationStorage {
-	/**
-	 * Store the association info in a unique MongoDB collection for all associations
-	 */
-	GLOBAL_COLLECTION,
-	/**
-	 * Store the association in a dedicated MongoDB collection per association
-	 */
-	COLLECTION,
-	/**
-	 * Store association information from within the entity
-	 */
-	IN_ENTITY
+public class NamedQueryOption extends Option<String, NamedQueryOption> {
+
+	private final String name;
+	private final String hql;
+
+	public NamedQueryOption(String name, String hql) {
+		this.name = name;
+		this.hql = hql;
+	}
+
+	@Override
+	public String getOptionIdentifier() {
+		return name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public String getHql() {
+		return hql;
+	}
+
 }

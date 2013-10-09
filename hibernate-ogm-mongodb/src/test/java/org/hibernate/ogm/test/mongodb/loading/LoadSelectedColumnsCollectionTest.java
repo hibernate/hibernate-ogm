@@ -35,7 +35,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -163,7 +163,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorage.COLLECTION.name() );
+		cfg.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorageType.COLLECTION.name() );
 	}
 
 	@Override

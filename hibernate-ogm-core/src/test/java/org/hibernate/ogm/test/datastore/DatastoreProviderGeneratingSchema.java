@@ -43,6 +43,8 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
+import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -161,5 +163,10 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		@Override
 		public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
+	}
+
+	@Override
+	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
+		return GenericMappingFactory.class;
 	}
 }

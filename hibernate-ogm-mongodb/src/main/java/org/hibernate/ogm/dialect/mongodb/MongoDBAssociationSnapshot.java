@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorage;
+import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -49,13 +49,13 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	private final Map<RowKey, DBObject> map;
 	private final DBObject dbObject;
 	private AssociationKey associationKey;
-	private AssociationStorage storage;
+	private AssociationStorageType storage;
 
 	/**
 	 * @param document DBObject containing the association information
 	 * @param key
 	 */
-	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorage storage) {
+	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorageType storage) {
 		this.storage = storage;
 		this.dbObject = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
