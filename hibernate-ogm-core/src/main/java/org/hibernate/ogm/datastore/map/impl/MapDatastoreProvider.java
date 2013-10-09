@@ -41,7 +41,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.GenericNoSqlMappingFactory;
+import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -193,7 +193,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-		return GenericNoSqlMappingFactory.class;
+		return GenericMappingFactory.class;
 	}
 
 }

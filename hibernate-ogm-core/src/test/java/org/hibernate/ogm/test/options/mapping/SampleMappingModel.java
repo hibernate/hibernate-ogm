@@ -20,13 +20,13 @@
  */
 package org.hibernate.ogm.test.options.mapping;
 
+import org.hibernate.ogm.options.navigation.context.EntityContext;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.navigation.impl.BaseEntityOptions;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.spi.NoSqlEntityContext;
-import org.hibernate.ogm.options.spi.NoSqlGlobalContext;
-import org.hibernate.ogm.options.spi.NoSqlPropertyContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -36,18 +36,18 @@ import org.hibernate.ogm.test.options.examples.NameExampleOption;
  */
 public class SampleMappingModel {
 
-	public interface SampleGlobalContext extends NoSqlGlobalContext<SampleGlobalContext, SampleEntityContext> {
+	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
 		SampleGlobalContext force(boolean force);
 	}
 
-	public interface SampleEntityContext extends NoSqlEntityContext<SampleEntityContext, SamplePropertyContext> {
+	public interface SampleEntityContext extends EntityContext<SampleEntityContext, SamplePropertyContext> {
 		// inherited
 		SampleEntityContext force(boolean force);
 
 		SampleEntityContext name(String name);
 	}
 
-	public interface SamplePropertyContext extends NoSqlPropertyContext<SampleEntityContext, SamplePropertyContext> {
+	public interface SamplePropertyContext extends PropertyContext<SampleEntityContext, SamplePropertyContext> {
 		SamplePropertyContext embed(Object object);
 	}
 

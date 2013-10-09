@@ -45,7 +45,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.options.navigation.impl.GenericNoSqlMappingFactory;
+import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
 import org.hibernate.ogm.options.spi.MappingFactory;
@@ -222,7 +222,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 
 		@Override
 		public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-			return GenericNoSqlMappingFactory.class;
+			return GenericMappingFactory.class;
 		}
 
 	}

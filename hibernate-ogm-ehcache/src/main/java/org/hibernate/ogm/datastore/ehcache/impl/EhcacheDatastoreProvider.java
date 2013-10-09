@@ -41,7 +41,7 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.GenericNoSqlMappingFactory;
+import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
@@ -146,6 +146,6 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-		return GenericNoSqlMappingFactory.class;
+		return GenericMappingFactory.class;
 	}
 }
