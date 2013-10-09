@@ -29,7 +29,7 @@ import org.junit.Test;
  */
 public class OptionTest {
 
-	private static class FirstOption extends Option<String, FirstOption> {
+	private static class FirstOption extends Option<String> {
 		@Override
 		public String getOptionIdentifier() {
 			return "id1";

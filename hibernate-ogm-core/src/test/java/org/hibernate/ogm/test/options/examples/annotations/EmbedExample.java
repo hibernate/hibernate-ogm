@@ -48,7 +48,7 @@ public @interface EmbedExample {
 	static class EmbedExampleOptionConverter implements AnnotationConverter<EmbedExample> {
 
 		@Override
-		public Option<?, ?> convert(EmbedExample annotation) {
+		public Option<?> convert(EmbedExample annotation) {
 			return new EmbedExampleOption( annotation.value() );
 		}
 

@@ -27,7 +27,7 @@ import org.hibernate.ogm.options.spi.Option;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class NamedQueryOption extends Option<String, NamedQueryOption> {
+public class NamedQueryOption extends Option<String> {
 
 	private final String name;
 	private final String hql;

@@ -48,7 +48,7 @@ public @interface AssociationStorage {
 	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {
 
 		@Override
-		public Option<?, ?> convert(AssociationStorage annotation) {
+		public Option<?> convert(AssociationStorage annotation) {
 			return new AssociationStorageOption( annotation.value() );
 		}
 

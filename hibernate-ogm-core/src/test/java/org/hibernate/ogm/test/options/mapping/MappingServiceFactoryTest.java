@@ -113,9 +113,9 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 		cfg.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, LeakingDataStoreProvider.class.getName() );
 	}
 
-	private Set<Option<?, ?>> asSet(OptionsContainer container) {
-		Set<Option<?, ?>> options = new HashSet<Option<?, ?>>();
-		for ( Option<?, ?> option : container ) {
+	private Set<Option<?>> asSet(OptionsContainer container) {
+		Set<Option<?>> options = new HashSet<Option<?>>();
+		for ( Option<?> option : container ) {
 			options.add( option );
 		}
 		return options;

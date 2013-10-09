@@ -29,7 +29,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class EmbedExampleOption extends UniqueOption<EmbedExampleOption> {
+public class EmbedExampleOption extends UniqueOption {
 
 	private final Object embed;
 

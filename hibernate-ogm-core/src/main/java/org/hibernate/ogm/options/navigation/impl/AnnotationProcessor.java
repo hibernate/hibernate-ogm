@@ -53,7 +53,7 @@ public class AnnotationProcessor {
 		saveOptions( new ContextCommand() {
 
 			@Override
-			public void add(Option<?, ?> option) {
+			public void add(Option<?> option) {
 				context.addEntityOption( option );
 			}
 
@@ -73,7 +73,7 @@ public class AnnotationProcessor {
 			saveOptions( new ContextCommand() {
 
 				@Override
-				public void add(Option<?, ?> option) {
+				public void add(Option<?> option) {
 					context.addPropertyOption( option );
 				}
 
@@ -84,7 +84,7 @@ public class AnnotationProcessor {
 			saveOptions( new ContextCommand() {
 
 				@Override
-				public void add(Option<?, ?> option) {
+				public void add(Option<?> option) {
 					context.addPropertyOption( option );
 				}
 
@@ -99,7 +99,7 @@ public class AnnotationProcessor {
 			for ( Annotation qualifier : qualifiers ) {
 				if ( qualifier.annotationType().equals( MappingOption.class ) ) {
 					Class<? extends AnnotationConverter<?>> converterClass = ( (MappingOption) qualifier ).value();
-					Option<?, ?> option = convert( annotation, converterClass );
+					Option<?> option = convert( annotation, converterClass );
 					command.add( option );
 					break;
 				}
@@ -107,7 +107,7 @@ public class AnnotationProcessor {
 		}
 	}
 
-	private static Option<?, ?> convert(Annotation annotation, Class<? extends AnnotationConverter<?>> converterClass) {
+	private static Option<?> convert(Annotation annotation, Class<? extends AnnotationConverter<?>> converterClass) {
 		try {
 			AnnotationConverter converter = converterClass.newInstance();
 			return converter.convert( annotation );
@@ -121,7 +121,7 @@ public class AnnotationProcessor {
 	}
 
 	private interface ContextCommand {
-		void add(Option<?, ?> option);
+		void add(Option<?> option);
 	}
 
 }

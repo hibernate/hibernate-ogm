@@ -29,7 +29,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class NameExampleOption extends UniqueOption<NameExampleOption> {
+public class NameExampleOption extends UniqueOption {
 	private final String name;
 
 	public NameExampleOption(String name) {

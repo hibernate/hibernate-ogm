@@ -49,7 +49,7 @@ public @interface WriteConcern {
 	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
 
 		@Override
-		public Option<?, ?> convert(WriteConcern annotation) {
+		public Option<?> convert(WriteConcern annotation) {
 			return new WriteConcernOption( annotation.value() );
 		}
 	}

@@ -57,15 +57,15 @@ public class MappingContext {
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
-	public void addGlobalOption(Option<?, ?> option) {
+	public void addGlobalOption(Option<?> option) {
 		globaloptions.add( option );
 	}
 
-	public void addEntityOption(Option<?, ?> option) {
+	public void addEntityOption(Option<?> option) {
 		optionsPerEntity.get( currentEntityType ).add( option );
 	}
 
-	public void addPropertyOption(Option<?, ?> option) {
+	public void addPropertyOption(Option<?> option) {
 		PropertyKey key = new PropertyKey( currentEntityType, currentPropertyName );
 		if ( !optionsPerProperty.containsKey( key ) ) {
 			optionsPerProperty.put( key, new OptionsContainer() );

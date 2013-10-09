@@ -29,20 +29,20 @@ import java.util.Set;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OptionsContainer implements Iterable<Option<?, ?>> {
+public class OptionsContainer implements Iterable<Option<?>> {
 
-	private final Set<Option<?, ?>> options;
+	private final Set<Option<?>> options;
 
 	public OptionsContainer() {
-		this( new HashSet<Option<?, ?>>() );
+		this( new HashSet<Option<?>>() );
 	}
 
-	protected OptionsContainer(Set<Option<?, ?>> options) {
+	protected OptionsContainer(Set<Option<?>> options) {
 		this.options = options;
 	}
 
 	@Override
-	public Iterator<Option<?, ?>> iterator() {
+	public Iterator<Option<?>> iterator() {
 		return options.iterator();
 	}
 
@@ -51,7 +51,7 @@ public class OptionsContainer implements Iterable<Option<?, ?>> {
 	 *
 	 * @param option to add to the container.
 	 */
-	public void add(Option<?, ?> option) {
+	public void add(Option<?> option) {
 		options.add( option );
 	}
 
@@ -60,7 +60,7 @@ public class OptionsContainer implements Iterable<Option<?, ?>> {
 	 *
 	 * @param option to remove from the container.
 	 */
-	public void remove(Option<?, ?> option) {
+	public void remove(Option<?> option) {
 		options.remove( option );
 	}
 
@@ -70,7 +70,7 @@ public class OptionsContainer implements Iterable<Option<?, ?>> {
 	 * @param option to find in the container
 	 * @return true if the option is in the container, false otherwise
 	 */
-	public boolean contains(Option<?, ?> option) {
+	public boolean contains(Option<?> option) {
 		return options.contains( option );
 	}
 

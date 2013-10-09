@@ -29,7 +29,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class ForceExampleOption extends UniqueOption<ForceExampleOption> {
+public class ForceExampleOption extends UniqueOption {
 
 	public static final ForceExampleOption TRUE = new ForceExampleOption( true );
 	public static final ForceExampleOption FALSE = new ForceExampleOption( false );
