@@ -32,7 +32,6 @@ import org.hibernate.ogm.options.spi.MappingFactory;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-@SuppressWarnings("unused")
 public class GenericMappingFactory implements MappingFactory<GlobalContext<?, ?>> {
 
 	@Override

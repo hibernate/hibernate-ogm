@@ -25,14 +25,19 @@ import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.service.Service;
 
 /**
- * Contain the information for the initial setup of the {@link MappingContext}.
+ * Factory for the creation of {@link GlobalContext}s, providing the entry point into the fluent API for provider-specific
+ * configurations, on a global, per-entity and per-property level.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ *
+ * @param <G> The type of {@link GlobalContext} created by this factory
  */
 public interface MappingFactory<G extends GlobalContext<?, ?>> extends Service {
 
 	/**
-	 * @return a new instance of a {@link MappingContext}
+	 * Returns a new global configuration context for configuring the current datastore provider
+	 *
+	 * @return a new global configuration context, of the provider-specific {@link GlobalContext} sub-type
 	 */
 	G createMapping(MappingContext context);
 

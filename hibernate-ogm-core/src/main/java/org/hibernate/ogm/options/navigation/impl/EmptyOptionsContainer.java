@@ -34,7 +34,7 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
 public class EmptyOptionsContainer extends OptionsContainer {
 
 	public static final EmptyOptionsContainer INSTANCE = new EmptyOptionsContainer();
-	private static final Set<Option> EMPTY_OPTIONS = Collections.emptySet();
+	private static final Set<Option<?, ?>> EMPTY_OPTIONS = Collections.emptySet();
 
 	private EmptyOptionsContainer() {
 		super( EMPTY_OPTIONS );

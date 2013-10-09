@@ -26,6 +26,9 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  * Global level and entry point to the mapping API.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @param <G> the type of a provider-specific global context definition, following the self-referential generic type
+ * pattern
+ * @param <E> the type of provider-specific entity context definition, associated with the specific global context type
  */
 public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalOptions<G> {
 

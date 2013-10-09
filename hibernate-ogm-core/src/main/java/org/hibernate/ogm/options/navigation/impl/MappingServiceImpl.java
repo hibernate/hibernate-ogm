@@ -41,14 +41,14 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class MappingServiceImpl implements MappingService {
 
-	private final MappingFactory<?> mappingServiceFactory;
+	private final MappingFactory<?> mappingFactory;
 
 	private final ServiceRegistryImplementor registry;
 
 	private final SessionFactoryImplementor sessionFactoryImplementor;
 
 	public MappingServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
-		this.mappingServiceFactory = factory;
+		this.mappingFactory = factory;
 		this.registry = registry;
 		this.sessionFactoryImplementor = sessionFactoryImplementor;
 	}
@@ -67,7 +67,7 @@ public class MappingServiceImpl implements MappingService {
 
 	private MappingContext createContext(ClassLoaderService classLoaderService) {
 		MappingContext context = new MappingContext();
-		GlobalContext<?, ?> globalContext = mappingServiceFactory.createMapping( context );
+		GlobalContext<?, ?> globalContext = mappingFactory.createMapping( context );
 		initializeContext( classLoaderService, globalContext );
 		return context;
 	}
