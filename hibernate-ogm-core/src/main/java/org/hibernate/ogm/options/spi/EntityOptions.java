@@ -21,12 +21,10 @@
 package org.hibernate.ogm.options.spi;
 
 /**
- * Mapping options specific to an entity and generic to all NoSQL.
+ * Entity-level mapping options common to all NoSQL stores.
  *
- * {@code <T>} is the return type of all these methods and is either:
- * - the mapping context type when used in the mapping declaration API
- * - the internal mapping model object when used in the mapping generation API
- *
+ * @param <T> the type of specific implementations, following the "self-referential generic type" pattern; returned by
+ * all methods of this interface to allow for a fluent invocation chain on specific implementation types.
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public interface EntityOptions<T> {

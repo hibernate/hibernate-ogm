@@ -28,6 +28,10 @@ import org.hibernate.ogm.options.spi.EntityOptions;
  * Entity level to the mapping API
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @param <E> the type of a provider-specific entity context definition, following the self-referential generic type
+ * pattern
+ * @param <P> the type of provider-specific property context definition, associated with the specific entity context
+ * type
  */
 public interface EntityContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends EntityOptions<E> {
 
@@ -37,7 +41,8 @@ public interface EntityContext<E extends EntityContext<E, P>, P extends Property
 	E entity(Class<?> type);
 
 	/**
-	 * Specify mapping for the property named {@code propertyName} and for the target {@code target}
+	 * Specify mapping for the property named {@code propertyName} and for the target {@code target} (must either be
+	 * {@link ElementType#FIELD} or {@link ElementType#METHOD}).
 	 */
 	P property(String propertyName, ElementType target);
 

@@ -40,7 +40,7 @@ public interface DatastoreProvider extends Service {
 
 	/**
 	 * Returns the type of {@link QueryParserService} to be used for executing queries against the underlying datastore
-	 * if no parser service type was explicitely configured by the user via the
+	 * if no parser service type was explicitly configured by the user via the
 	 * {@link org.hibernate.ogm.cfg.OgmConfiguration#OGM_QUERY_PARSER_SERVICE} option.
 	 *
 	 * @return the default {@link QueryParserService} for the underlying datastore; never {@code null}
@@ -51,7 +51,7 @@ public interface DatastoreProvider extends Service {
 	 * Returns the {@link MappingFactory} for the creation of the mapping class used to assign options for a specific
 	 * datastore provider.
 	 *
-	 * @return the {@link MappingFactory} for the creation for the creation of a mapping context
+	 * @return the {@link MappingFactory} for the creation of a mapping context
 	 */
 	Class<? extends MappingFactory<?>> getConfigurationBuilder();
 

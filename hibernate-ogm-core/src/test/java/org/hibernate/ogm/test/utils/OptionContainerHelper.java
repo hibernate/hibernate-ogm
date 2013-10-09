@@ -20,8 +20,8 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.options.navigation.impl.PropertyKey;
@@ -33,24 +33,23 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
  */
 public class OptionContainerHelper {
 
-	public static List<Option<?, ?>> retrieveOptionsFor(MappingContext context) {
+	public static Set<Option<?, ?>> retrieveOptionsFor(MappingContext context) {
 		return retrieveOptionsFor( context.getGlobalOptions() );
 	}
 
-	public static List<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type) {
+	public static Set<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type) {
 		return retrieveOptionsFor( context.getOptionsPerEntity().get( type ) );
 	}
 
-	public static List<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type, String property) {
+	public static  Set<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type, String property) {
 		return retrieveOptionsFor( context.getOptionsPerProperty().get( new PropertyKey( type, property ) ) );
 	}
 
-	public static List<Option<?, ?>> retrieveOptionsFor(OptionsContainer optionsContainer) {
-		List<Option<?, ?>> options = new ArrayList<Option<?, ?>>();
-		for ( Option<?, ?> option : optionsContainer ) {
+	public static Set<Option<?, ?>> retrieveOptionsFor(OptionsContainer globalOptions) {
+		Set<Option<?, ?>> options = new HashSet<Option<?,?>>();
+		for ( Option<?, ?> option : globalOptions ) {
 			options.add( option );
 		}
 		return options;
 	}
-
 }

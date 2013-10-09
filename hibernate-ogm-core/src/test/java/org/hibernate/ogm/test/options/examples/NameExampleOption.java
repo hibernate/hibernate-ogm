@@ -23,7 +23,7 @@ package org.hibernate.ogm.test.options.examples;
 import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * An optoin that can be used to set the name of something.
+ * An option that can be used to set the name of something.
  * <p>
  * This is a {@link UniqueOption} that can be used for testing.
  *
