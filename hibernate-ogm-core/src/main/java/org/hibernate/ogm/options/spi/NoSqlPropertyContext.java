@@ -18,16 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.mongodb.mapping.spi;
+package org.hibernate.ogm.options.spi;
 
-import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.spi.NoSqlEntityContext;
+import org.hibernate.ogm.options.navigation.context.PropertyContext;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * Mapping programmatic API to set NoSQL property mapping options.
+ *
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface MongoDBEntityContext extends NoSqlEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
-
-	MongoDBEntityContext writeConcern(WriteConcernType concern);
-
+public interface NoSqlPropertyContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends PropertyContext<E, P> {
 }

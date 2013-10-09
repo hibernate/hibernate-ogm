@@ -21,9 +21,9 @@
 package org.hibernate.ogm.options.navigation.impl;
 
 import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlEntityContext;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlPropertyContext;
+import org.hibernate.ogm.options.spi.NoSqlEntityContext;
+import org.hibernate.ogm.options.spi.NoSqlGlobalContext;
+import org.hibernate.ogm.options.spi.NoSqlPropertyContext;
 
 /**
  * A {@link MappingFactory} implementation which returns a default {@link NoSqlGlobalContext} that provides no

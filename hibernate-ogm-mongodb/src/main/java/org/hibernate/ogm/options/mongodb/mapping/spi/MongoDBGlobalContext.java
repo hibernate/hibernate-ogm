@@ -21,7 +21,7 @@
 package org.hibernate.ogm.options.mongodb.mapping.spi;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.spi.NoSqlMapping.NoSqlGlobalContext;
+import org.hibernate.ogm.options.spi.NoSqlGlobalContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>

@@ -21,23 +21,11 @@
 package org.hibernate.ogm.options.spi;
 
 import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
 
 /**
- * Mapping programmatic API to set NoSQL generic mapping options.
+ * Mapping programmatic API to set NoSQL entity mapping options.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface NoSqlMapping {
-
-	public interface NoSqlGlobalContext<G extends NoSqlGlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalContext<G, E> {
-	}
-
-	public interface NoSqlEntityContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends EntityContext<E, P> {
-	}
-
-	public interface NoSqlPropertyContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends PropertyContext<E, P> {
-	}
-
+public interface NoSqlEntityContext<E extends NoSqlEntityContext<E, P>, P extends NoSqlPropertyContext<E, P>> extends EntityContext<E, P> {
 }

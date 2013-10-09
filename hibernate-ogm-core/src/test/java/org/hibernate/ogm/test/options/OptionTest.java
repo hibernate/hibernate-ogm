@@ -44,13 +44,6 @@ public class OptionTest {
 	}
 
 	@Test
-	public void testGetType() {
-		FirstOption option1 = new FirstOption();
-		Class<FirstOption> optionType = option1.getOptionType();
-		Assertions.assertThat( optionType ).isEqualTo( FirstOption.class );
-	}
-
-	@Test
 	public void testEqualsForDifferentOptions() throws Exception {
 		FirstOption option1 = new FirstOption();
 		SecondOption option2 = new SecondOption();
