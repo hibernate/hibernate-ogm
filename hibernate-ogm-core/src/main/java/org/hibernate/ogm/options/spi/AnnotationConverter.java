@@ -35,6 +35,6 @@ public interface AnnotationConverter<T extends Annotation> {
 	 * @param annotation
 	 *            representing an option
 	 */
-	Option<?, ?> convert(T annotation);
+	Option<?> convert(T annotation);
 
 }

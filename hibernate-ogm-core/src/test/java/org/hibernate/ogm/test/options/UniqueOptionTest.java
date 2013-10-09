@@ -29,10 +29,10 @@ import org.junit.Test;
  */
 public class UniqueOptionTest {
 
-	private static class FirstOption extends UniqueOption<FirstOption> {
+	private static class FirstOption extends UniqueOption {
 	}
 
-	private static class SecondOption extends UniqueOption<SecondOption> {
+	private static class SecondOption extends UniqueOption {
 	}
 
 	@Test

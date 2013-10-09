@@ -33,21 +33,21 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
  */
 public class OptionContainerHelper {
 
-	public static Set<Option<?, ?>> retrieveOptionsFor(MappingContext context) {
+	public static Set<Option<?>> retrieveOptionsFor(MappingContext context) {
 		return retrieveOptionsFor( context.getGlobalOptions() );
 	}
 
-	public static Set<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type) {
+	public static Set<Option<?>> retrieveOptionsFor(MappingContext context, Class<?> type) {
 		return retrieveOptionsFor( context.getOptionsPerEntity().get( type ) );
 	}
 
-	public static  Set<Option<?, ?>> retrieveOptionsFor(MappingContext context, Class<?> type, String property) {
+	public static  Set<Option<?>> retrieveOptionsFor(MappingContext context, Class<?> type, String property) {
 		return retrieveOptionsFor( context.getOptionsPerProperty().get( new PropertyKey( type, property ) ) );
 	}
 
-	public static Set<Option<?, ?>> retrieveOptionsFor(OptionsContainer globalOptions) {
-		Set<Option<?, ?>> options = new HashSet<Option<?,?>>();
-		for ( Option<?, ?> option : globalOptions ) {
+	public static Set<Option<?>> retrieveOptionsFor(OptionsContainer globalOptions) {
+		Set<Option<?>> options = new HashSet<Option<?>>();
+		for ( Option<?> option : globalOptions ) {
 			options.add( option );
 		}
 		return options;

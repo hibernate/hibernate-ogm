@@ -47,7 +47,7 @@ public @interface NameExample {
 	static class NameExampleOptionConverter implements AnnotationConverter<NameExample> {
 
 		@Override
-		public Option<?, ?> convert(NameExample annotation) {
+		public Option<?> convert(NameExample annotation) {
 			return new NameExampleOption( annotation.value() );
 		}
 

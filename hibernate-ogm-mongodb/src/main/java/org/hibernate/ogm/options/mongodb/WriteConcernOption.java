@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class WriteConcernOption extends UniqueOption<WriteConcernOption> {
+public class WriteConcernOption extends UniqueOption {
 
 	private final WriteConcernType writeConcern;
 

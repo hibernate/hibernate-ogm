@@ -28,7 +28,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * @author Davide D'Alto <davide@hibernate.org>
  *
  */
-public class QuorumOption extends UniqueOption<QuorumOption> {
+public class QuorumOption extends UniqueOption {
 
 	private final int read;
 	private final int write;

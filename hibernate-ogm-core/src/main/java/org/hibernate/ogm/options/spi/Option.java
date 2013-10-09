@@ -24,8 +24,9 @@ package org.hibernate.ogm.options.spi;
  * A configuration value.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @param <I> The type of this option's identifier
  */
-public abstract class Option<I, T extends Option<I, T>> {
+public abstract class Option<I> {
 
 	public abstract I getOptionIdentifier();
 
@@ -38,8 +39,7 @@ public abstract class Option<I, T extends Option<I, T>> {
 			return false;
 		}
 
-		@SuppressWarnings("unchecked")
-		Option<I, T> option = (Option<I, T>) o;
+		Option<?> option = (Option<?>) o;
 
 		if ( !getOptionIdentifier().equals( option.getOptionIdentifier() ) ) {
 			return false;

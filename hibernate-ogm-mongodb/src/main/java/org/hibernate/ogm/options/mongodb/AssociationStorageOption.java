@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class AssociationStorageOption extends UniqueOption<AssociationStorageOption> {
+public class AssociationStorageOption extends UniqueOption {
 
 	private final AssociationStorageType associationStorage;
 
