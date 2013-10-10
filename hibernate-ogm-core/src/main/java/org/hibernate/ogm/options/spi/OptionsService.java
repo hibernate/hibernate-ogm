@@ -28,14 +28,14 @@ import org.hibernate.service.Service;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface MappingService extends Service {
+public interface OptionsService extends Service {
 
 	/**
 	 * The context containing all the options
 	 *
 	 * @return the context containing all the options that do not depend from the session
 	 */
-	MappingServiceContext context();
+	OptionsServiceContext context();
 
 	/**
 	 * The context containing all the session dependent options
@@ -43,14 +43,14 @@ public interface MappingService extends Service {
 	 * @param session the session to use to obtain the value of the options
 	 * @return the context containing all the options that are session dependent
 	 */
-	MappingServiceContext context(SessionImplementor session);
+	OptionsServiceContext context(SessionImplementor session);
 
 	/**
-	 * Contain a group of options separted in different scopes
+	 * Contain a group of options separated in different scopes
 	 *
 	 * @author Davide D'Alto <davide@hibernate.org>
 	 */
-	public interface MappingServiceContext {
+	public interface OptionsServiceContext {
 
 		/**
 		 * @return the {@link OptionsContainer} with all the global options
