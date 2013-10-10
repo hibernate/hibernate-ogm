@@ -79,12 +79,12 @@ public class MappingContext {
 
 	public OptionsContainer getEntityOptions(Class<?> entityType) {
 		OptionsContainer options = optionsPerEntity.get( entityType );
-		return options != null ? options : EmptyOptionsContainer.INSTANCE;
+		return options != null ? options : OptionsContainer.EMPTY;
 	}
 
 	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
 		OptionsContainer options = optionsPerProperty.get( new PropertyKey( entityType, propertyName ) );
-		return options != null ? options : EmptyOptionsContainer.INSTANCE;
+		return options != null ? options : OptionsContainer.EMPTY;
 	}
 
 	public void configureEntity(Class<?> entityType) {
