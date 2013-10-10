@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorage;
@@ -46,7 +45,7 @@ public class AssociationStorageAnnotationTest {
 		mapping
 			.entity( EntityAnnotatedOnField.class );
 
-		assertThat( retrieveOptionsFor( context, EntityAnnotatedOnField.class, "field" ) )
+		assertThat( context.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.IN_ENTITY ) );
 	}
@@ -59,7 +58,7 @@ public class AssociationStorageAnnotationTest {
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );
 
-		assertThat( retrieveOptionsFor( context, EntityAnnotatedOnMethod.class, "getMethod" ) )
+		assertThat( context.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
 	}

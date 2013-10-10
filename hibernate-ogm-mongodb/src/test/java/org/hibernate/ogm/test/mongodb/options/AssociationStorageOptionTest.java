@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import java.lang.annotation.ElementType;
 
@@ -55,7 +54,7 @@ public class AssociationStorageOptionTest {
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.COLLECTION );
 
-		assertThat( retrieveOptionsFor( context, ExampleForMongoDBMapping.class, "content" ) )
+		assertThat( context.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.COLLECTION) );
 	}

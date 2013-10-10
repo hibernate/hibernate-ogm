@@ -22,9 +22,6 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -51,8 +48,6 @@ import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.MappingService;
 import org.hibernate.ogm.options.spi.MappingService.MappingServiceContext;
-import org.hibernate.ogm.options.spi.Option;
-import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -80,7 +75,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 		LeakingDataStoreProvider leakingProvider = (LeakingDataStoreProvider) registry().getService( DatastoreProvider.class );
 		MappingServiceContext context = leakingProvider.context;
 		assertThat( context ).as( "MappingContext not injected" ).isNotNull();
-		assertThat( asSet( context.getEntityOptions( SampleEntity.class ) ) ).containsOnly( new NameExampleOption( "PROGRAMMATIC" ) );
+		assertThat( context.getEntityOptions( SampleEntity.class ) ).containsOnly( new NameExampleOption( "PROGRAMMATIC" ) );
 	}
 
 	private ServiceRegistryImplementor registry() {
@@ -111,14 +106,6 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 		super.configure( cfg );
 		cfg.getProperties().put( MappingServiceInitiator.MAPPING, LeakingMappingFactory.class.getName() );
 		cfg.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, LeakingDataStoreProvider.class.getName() );
-	}
-
-	private Set<Option<?>> asSet(OptionsContainer container) {
-		Set<Option<?>> options = new HashSet<Option<?>>();
-		for ( Option<?> option : container ) {
-			options.add( option );
-		}
-		return options;
 	}
 
 	@Entity

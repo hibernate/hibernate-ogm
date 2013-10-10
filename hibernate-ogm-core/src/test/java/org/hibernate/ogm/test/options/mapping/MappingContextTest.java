@@ -25,7 +25,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Iterator;
 
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.PropertyKey;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -41,8 +40,8 @@ public class MappingContextTest {
 		MappingContext context = new MappingContext();
 
 		assertThat( context.getGlobalOptions() ).isEmpty();
-		assertThat( context.getOptionsPerEntity() ).isEmpty();
-		assertThat( context.getOptionsPerProperty() ).isEmpty();
+		assertThat( context.getEntityOptions( ContextExample.class ) ).isEmpty();
+		assertThat( context.getPropertyOptions( ContextExample.class, "property" ) ).isEmpty();
 	}
 
 	@Test
@@ -58,7 +57,7 @@ public class MappingContextTest {
 		MappingContext context = new MappingContext();
 		context.configureEntity( ContextExample.class );
 		context.addEntityOption( ForceExampleOption.TRUE );
-		OptionsContainer optionsContainer = context.getOptionsPerEntity().get( ContextExample.class );
+		OptionsContainer optionsContainer = context.getEntityOptions( ContextExample.class );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
@@ -71,7 +70,7 @@ public class MappingContextTest {
 		context.configureEntity( ContextExample.class );
 		context.configureProperty( "property" );
 		context.addPropertyOption( ForceExampleOption.TRUE );
-		OptionsContainer optionsContainer = context.getOptionsPerProperty().get( new PropertyKey( ContextExample.class, "property" ) );
+		OptionsContainer optionsContainer = context.getPropertyOptions( ContextExample.class, "property" );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );

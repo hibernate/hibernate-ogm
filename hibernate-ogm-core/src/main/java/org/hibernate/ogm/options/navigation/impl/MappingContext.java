@@ -38,7 +38,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Contain all the options set using the mapping API, all the options are separated in different context: global, per
+ * Contains all the options set using the mapping API; All the options are separated in different contexts: global, per
  * entity and per property.
  *
  * @author Davide D'Alto <davide@hibernate.org>
@@ -77,12 +77,14 @@ public class MappingContext {
 		return globaloptions;
 	}
 
-	public Map<Class<?>, OptionsContainer> getOptionsPerEntity() {
-		return optionsPerEntity;
+	public OptionsContainer getEntityOptions(Class<?> entityType) {
+		OptionsContainer options = optionsPerEntity.get( entityType );
+		return options != null ? options : EmptyOptionsContainer.INSTANCE;
 	}
 
-	public Map<PropertyKey, OptionsContainer> getOptionsPerProperty() {
-		return optionsPerProperty;
+	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
+		OptionsContainer options = optionsPerProperty.get( new PropertyKey( entityType, propertyName ) );
+		return options != null ? options : EmptyOptionsContainer.INSTANCE;
 	}
 
 	public void configureEntity(Class<?> entityType) {

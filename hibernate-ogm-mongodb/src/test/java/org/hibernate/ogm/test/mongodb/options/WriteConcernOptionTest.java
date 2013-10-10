@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
@@ -50,7 +49,7 @@ public class WriteConcernOptionTest {
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
-		assertThat( retrieveOptionsFor( context ) )
+		assertThat( context.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
@@ -65,11 +64,11 @@ public class WriteConcernOptionTest {
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY );
 
-		assertThat( retrieveOptionsFor( context ) )
+		assertThat( context.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED) );
 
-		assertThat( retrieveOptionsFor( context, ExampleForMongoDBMapping.class ) )
+		assertThat( context.getEntityOptions( ExampleForMongoDBMapping.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.MAJORITY ) );
 	}

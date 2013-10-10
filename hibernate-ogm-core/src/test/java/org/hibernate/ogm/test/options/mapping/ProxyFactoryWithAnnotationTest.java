@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -40,7 +39,7 @@ public class ProxyFactoryWithAnnotationTest {
 		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( context );
 		sampleMapping.entity( Example.class );
 
-		assertThat( retrieveOptionsFor( context, Example.class ) )
+		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 1 )
 			.contains( new NameExampleOption( "Batman" ) );
 	}
@@ -53,7 +52,7 @@ public class ProxyFactoryWithAnnotationTest {
 			.entity( Example.class )
 				.name( "Name replaced" );
 
-		assertThat( retrieveOptionsFor( context, Example.class ) )
+		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 1 )
 			.contains( new NameExampleOption( "Name replaced" ) );
 	}
