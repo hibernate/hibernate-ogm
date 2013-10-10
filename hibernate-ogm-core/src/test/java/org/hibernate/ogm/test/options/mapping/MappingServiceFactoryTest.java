@@ -44,10 +44,10 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
 import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
+import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
 import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.ogm.options.spi.MappingService;
-import org.hibernate.ogm.options.spi.MappingService.MappingServiceContext;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -73,7 +73,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 	@Test
 	public void testMappingContextAsProperty() throws Exception {
 		LeakingDataStoreProvider leakingProvider = (LeakingDataStoreProvider) registry().getService( DatastoreProvider.class );
-		MappingServiceContext context = leakingProvider.context;
+		OptionsServiceContext context = leakingProvider.context;
 		assertThat( context ).as( "MappingContext not injected" ).isNotNull();
 		assertThat( context.getEntityOptions( SampleEntity.class ) ).containsOnly( new NameExampleOption( "PROGRAMMATIC" ) );
 	}
@@ -104,7 +104,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.getProperties().put( MappingServiceInitiator.MAPPING, LeakingMappingFactory.class.getName() );
+		cfg.getProperties().put( OptionsServiceInitiator.MAPPING, LeakingMappingFactory.class.getName() );
 		cfg.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, LeakingDataStoreProvider.class.getName() );
 	}
 
@@ -188,7 +188,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 	 */
 	public static class LeakingDataStoreProvider implements DatastoreProvider, ServiceRegistryAwareService {
 
-		private MappingServiceContext context;
+		private OptionsServiceContext context;
 
 		@Override
 		public Class<? extends GridDialect> getDefaultDialect() {
@@ -198,7 +198,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 
 		@Override
 		public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-			MappingService mappingService = serviceRegistry.getService( MappingService.class );
+			OptionsService mappingService = serviceRegistry.getService( OptionsService.class );
 			context = mappingService.context();
 		}
 

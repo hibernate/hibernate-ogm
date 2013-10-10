@@ -25,7 +25,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.ogm.options.spi.MappingService;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
@@ -33,32 +33,32 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Initialize the {@link MappingService} so that other components can access it using the {@link org.hibernate.service.ServiceRegistry}.
+ * Initialize the {@link OptionsService} so that other components can access it using the {@link org.hibernate.service.ServiceRegistry}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public final class MappingServiceInitiator implements SessionFactoryServiceInitiator<MappingService> {
+public final class OptionsServiceInitiator implements SessionFactoryServiceInitiator<OptionsService> {
 
 	public static final String MAPPING = "hibernate.ogm.mapping";
 
-	public static final MappingServiceInitiator INSTANCE = new MappingServiceInitiator();
+	public static final OptionsServiceInitiator INSTANCE = new OptionsServiceInitiator();
 
 	private static final Log log = LoggerFactory.make();
 
 	@Override
-	public Class<MappingService> getServiceInitiated() {
-		return MappingService.class;
+	public Class<OptionsService> getServiceInitiated() {
+		return OptionsService.class;
 	}
 
 	@Override
-	public MappingService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		Object mapping = configuration.getProperties().getProperty( MAPPING );
 		MappingFactory<?> mappingFactory = findFactory( registry, mapping );
-		return new MappingServiceImpl( mappingFactory, registry, sessionFactory );
+		return new OptionsServiceImpl( mappingFactory, registry, sessionFactory );
 	}
 
 	@Override
-	public MappingService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
+	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
 		return null;
 	}
 

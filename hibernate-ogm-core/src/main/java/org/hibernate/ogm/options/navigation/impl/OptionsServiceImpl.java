@@ -26,7 +26,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.ogm.options.spi.MappingService;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
@@ -39,7 +39,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MappingServiceImpl implements MappingService {
+public class OptionsServiceImpl implements OptionsService {
 
 	private final MappingFactory<?> mappingFactory;
 
@@ -47,22 +47,22 @@ public class MappingServiceImpl implements MappingService {
 
 	private final SessionFactoryImplementor sessionFactoryImplementor;
 
-	public MappingServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
+	public OptionsServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.mappingFactory = factory;
 		this.registry = registry;
 		this.sessionFactoryImplementor = sessionFactoryImplementor;
 	}
 
 	@Override
-	public MappingServiceContext context() {
+	public OptionsServiceContext context() {
 		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
 		MappingContext context = createContext( classLoaderService );
-		return new MappingServiceContextImpl( context );
+		return new OptionsServiceContextImpl( context );
 	}
 
 	@Override
-	public MappingServiceContext context(SessionImplementor session) {
-		return new MappingServiceContextWithSession( session );
+	public OptionsServiceContext context(SessionImplementor session) {
+		return new OptionsServiceContextWithSession( session );
 	}
 
 	private MappingContext createContext(ClassLoaderService classLoaderService) {
@@ -81,10 +81,10 @@ public class MappingServiceImpl implements MappingService {
 		}
 	}
 
-	private static final class MappingServiceContextImpl implements MappingServiceContext {
+	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
 		private final MappingContext context;
 
-		public MappingServiceContextImpl(MappingContext context) {
+		public OptionsServiceContextImpl(MappingContext context) {
 			this.context = context;
 		}
 
@@ -104,9 +104,9 @@ public class MappingServiceImpl implements MappingService {
 		}
 	}
 
-	private static final class MappingServiceContextWithSession implements MappingServiceContext {
+	private static final class OptionsServiceContextWithSession implements OptionsServiceContext {
 
-		public MappingServiceContextWithSession(SessionImplementor session) {
+		public OptionsServiceContextWithSession(SessionImplementor session) {
 		}
 
 		@Override

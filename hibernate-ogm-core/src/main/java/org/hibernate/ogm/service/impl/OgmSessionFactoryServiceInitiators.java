@@ -27,7 +27,7 @@ import java.util.List;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.impl.DatastoreServicesInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectFactoryInitiator;
-import org.hibernate.ogm.options.navigation.impl.MappingServiceInitiator;
+import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
 import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
@@ -42,7 +42,7 @@ public class OgmSessionFactoryServiceInitiators {
 
 	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.<SessionFactoryServiceInitiator<?>>asList(
 			TypeTranslatorInitiator.INSTANCE,
-			MappingServiceInitiator.INSTANCE ,
+			OptionsServiceInitiator.INSTANCE ,
 			DatastoreServicesInitiator.INSTANCE,
 			DatastoreProviderInitiator.INSTANCE,
 			GridDialectFactoryInitiator.INSTANCE,
