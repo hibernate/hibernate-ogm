@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.options.spi;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -31,6 +32,12 @@ import java.util.Set;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class OptionsContainer implements Iterable<Option<?>> {
+
+	/**
+	 * An immutable empty options container. A {@link java.lang.UnsupportedOperationException} will be raised when
+	 * adding or removing elements to/from this container.
+	 */
+	public static final OptionsContainer EMPTY = new OptionsContainer( Collections.<Option<?>>emptySet() );
 
 	private final Set<Option<?>> options;
 
