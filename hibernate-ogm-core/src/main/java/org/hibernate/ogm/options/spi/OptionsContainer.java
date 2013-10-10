@@ -25,7 +25,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Container for a group of options
+ * Container for a group of options. Carries set semantics, i.e. the same option can not be contained more than once in
+ * one given container instance.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */

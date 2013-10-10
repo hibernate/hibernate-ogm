@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import java.lang.annotation.ElementType;
 
@@ -57,17 +56,17 @@ public class ProxyFactoryTest {
 				.entity( Example.class )
 					.name( "Batman" );
 
-		assertThat( retrieveOptionsFor( context ) )
+		assertThat( context.getGlobalOptions() )
 			.hasSize( 2 )
 			.contains( ForceExampleOption.TRUE )
 			.contains( new NamedQueryOption( "foo", "from Foo" ) );
-		assertThat( retrieveOptionsFor( context, Example.class ) )
+		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 2 )
 			.contains( ForceExampleOption.TRUE, new NameExampleOption( "Batman" ) );
-		assertThat( retrieveOptionsFor( context, Sample.class ) )
+		assertThat( context.getEntityOptions( Sample.class ) )
 			.hasSize( 2 )
 			.contains( ForceExampleOption.FALSE, new NameExampleOption( "Joker" ) );
-		assertThat( retrieveOptionsFor( context, Example.class, "title" ) )
+		assertThat( context.getPropertyOptions( Example.class, "title" ) )
 			.hasSize( 1 )
 			.contains( new EmbedExampleOption( embedded ) );
 	}

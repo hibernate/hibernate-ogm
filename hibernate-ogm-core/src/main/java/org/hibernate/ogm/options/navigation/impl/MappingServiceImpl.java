@@ -95,27 +95,13 @@ public class MappingServiceImpl implements MappingService {
 
 		@Override
 		public OptionsContainer getEntityOptions(Class<?> entityType) {
-			Map<Class<?>, OptionsContainer> optionsPerEntity = context.getOptionsPerEntity();
-			if ( optionsPerEntity.containsKey( entityType ) ) {
-				return optionsPerEntity.get( entityType );
-			}
-			else {
-				return EmptyOptionsContainer.INSTANCE;
-			}
+			return context.getEntityOptions( entityType );
 		}
 
 		@Override
 		public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-			Map<PropertyKey, OptionsContainer> optionsPerProperty = this.context.getOptionsPerProperty();
-			PropertyKey key = new PropertyKey( entityType, propertyName );
-			if ( optionsPerProperty.containsKey( key ) ) {
-				return optionsPerProperty.get( key );
-			}
-			else {
-				return EmptyOptionsContainer.INSTANCE;
-			}
+			return context.getPropertyOptions( entityType, propertyName );
 		}
-
 	}
 
 	private static final class MappingServiceContextWithSession implements MappingServiceContext {

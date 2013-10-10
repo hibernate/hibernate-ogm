@@ -21,7 +21,6 @@
 package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.OptionContainerHelper.retrieveOptionsFor;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
@@ -42,10 +41,9 @@ public class WriteConcernAnnotationTest {
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping.entity( EntityWriteConcernExample.class );
 
-		assertThat( retrieveOptionsFor( context ) )
-			.isEmpty();
+		assertThat( context.getGlobalOptions() ).isEmpty();
 
-		assertThat( retrieveOptionsFor( context, EntityWriteConcernExample.class ) )
+		assertThat( context.getEntityOptions( EntityWriteConcernExample.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
@@ -58,10 +56,9 @@ public class WriteConcernAnnotationTest {
 		mapping
 			.entity( FieldWriteConcernExample.class );
 
-		assertThat( retrieveOptionsFor( context ) )
-			.isEmpty();
+		assertThat( context.getGlobalOptions() ).isEmpty();
 
-		assertThat( retrieveOptionsFor( context, FieldWriteConcernExample.class, "content" ) )
+		assertThat( context.getPropertyOptions( FieldWriteConcernExample.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.FSYNCED ) );
 	}
@@ -74,10 +71,9 @@ public class WriteConcernAnnotationTest {
 		mapping
 			.entity( MethodWriteConcernExample.class );
 
-		assertThat( retrieveOptionsFor( context ) )
-			.isEmpty();
+		assertThat( context.getGlobalOptions() ).isEmpty();
 
-		assertThat( retrieveOptionsFor( context, MethodWriteConcernExample.class, "getContent" ) )
+		assertThat( context.getPropertyOptions( MethodWriteConcernExample.class, "getContent" ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.JOURNALED ) );
 	}
@@ -90,14 +86,13 @@ public class WriteConcernAnnotationTest {
 		mapping
 			.entity( AnnotatedClass.class );
 
-		assertThat( retrieveOptionsFor( context ) )
-			.isEmpty();
+		assertThat( context.getGlobalOptions() ).isEmpty();
 
-		assertThat( retrieveOptionsFor( context, AnnotatedClass.class ) )
+		assertThat( context.getEntityOptions( AnnotatedClass.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ACKNOWLEDGED ) );
 
-		assertThat( retrieveOptionsFor( context, AnnotatedClass.class, "title") )
+		assertThat( context.getPropertyOptions( AnnotatedClass.class, "title") )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
