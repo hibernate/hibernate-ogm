@@ -37,11 +37,11 @@
     <inceptionYear>2010</inceptionYear>
 
     <modules>
-        <module>hibernate-ogm-core</module>
-        <module>hibernate-ogm-ehcache</module>
-        <module>hibernate-ogm-infinispan</module>
-        <module>hibernate-ogm-mongodb</module>
-        <module>hibernate-ogm-modules</module>
+        <module>core</module>
+        <module>ehcache</module>
+        <module>infinispan</module>
+        <module>mongodb</module>
+        <module>modules</module>
     </modules>
 
     <prerequisites>
@@ -988,7 +988,7 @@
                 </property>
             </activation>
             <modules>
-                <module>hibernate-ogm-integrationtest</module>
+                <module>integrationtest</module>
             </modules>
         </profile>
         <profile>
@@ -1000,7 +1000,7 @@
                 </property>
             </activation>
             <modules>
-                <module>hibernate-ogm-documentation</module>
+                <module>documentation</module>
             </modules>
         </profile>
     </profiles>

@@ -186,8 +186,8 @@
     </dependencies>
 
     <modules>
-        <module>hibernate-ogm-integrationtest-testcase</module>
-        <module>hibernate-ogm-integrationtest-mongodb</module>
+        <module>testcase</module>
+        <module>mongodb</module>
     </modules>
 
 </project>
