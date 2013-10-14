@@ -23,13 +23,13 @@ package org.hibernate.ogm.options.mongodb.mapping.impl;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
+import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class MongoDBPropertyOptions extends BasePropertyOptions<MongoDBPropertyContext> implements MongoDBPropertyContext {
+public abstract class MongoDBPropertyOptions extends BasePropertyContext<MongoDBPropertyContext> implements MongoDBPropertyContext {
 
 	public MongoDBPropertyOptions(ConfigurationContext context ) {
 		super( context );

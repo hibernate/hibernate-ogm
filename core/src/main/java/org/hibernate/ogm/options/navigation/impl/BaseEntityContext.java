@@ -23,14 +23,14 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.ogm.options.spi.EntityOptions;
 
 /**
- * Implementation for options declared by {@link EntityOptions}.
+ * Base implementation for options declared by {@link EntityOptions}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BaseEntityOptions<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
+public abstract class BaseEntityContext<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
 
-	public BaseEntityOptions(ConfigurationContext context) {
+	public BaseEntityContext(ConfigurationContext context) {
 		super( context );
 	}
 

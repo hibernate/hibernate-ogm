@@ -23,7 +23,9 @@ package org.hibernate.ogm.options.navigation.context;
 import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
- * Global level and entry point to the mapping API.
+ * Global level and entry point to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.navigation.impl.BaseGlobalContext}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @param <G> the type of a provider-specific global context definition, following the self-referential generic type

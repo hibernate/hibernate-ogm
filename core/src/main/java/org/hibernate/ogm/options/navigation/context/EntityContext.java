@@ -25,7 +25,9 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.options.spi.EntityOptions;
 
 /**
- * Entity level to the mapping API
+ * Entity level to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.navigation.impl.BaseEntityContext}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @param <E> the type of a provider-specific entity context definition, following the self-referential generic type

@@ -20,29 +20,18 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.generic.NamedQueryOption;
-import org.hibernate.ogm.options.spi.GlobalOptions;
+import org.hibernate.ogm.options.spi.PropertyOptions;
 
 /**
- * Implementation for options declared by {@link GlobalOptions}.
+ * Base implementation for options declared by {@link PropertyOptions}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BaseGlobalOptions<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
+public abstract class BasePropertyContext<P extends PropertyOptions<P>> extends BaseContext implements PropertyOptions<P> {
 
-	public BaseGlobalOptions(ConfigurationContext context) {
+	public BasePropertyContext(ConfigurationContext context) {
 		super( context );
 	}
 
-	@Override
-	public G namedQuery(String name, String hql) {
-		addGlobalOption( new NamedQueryOption( name, hql ) );
-
-		// safe unless a provider developer screwed up the specific context definition
-		@SuppressWarnings("unchecked")
-		G globalContext = (G) this;
-
-		return globalContext;
-	}
 }
