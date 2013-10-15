@@ -22,6 +22,8 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import org.hibernate.ogm.options.navigation.impl.AnnotationProcessor;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
@@ -36,8 +38,7 @@ public class ProxyFactoryWithAnnotationTest {
 	@Test
 	public void testAnnotatedEntity() throws Exception {
 		OptionsContext context = new OptionsContext();
-		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( context );
-		sampleMapping.entity( Example.class );
+		AnnotationProcessor.saveEntityOptions( context, Example.class );
 
 		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 1 )
@@ -47,7 +48,11 @@ public class ProxyFactoryWithAnnotationTest {
 	@Test
 	public void testAnnotationIsOverridenByAPI() throws Exception {
 		OptionsContext context = new OptionsContext();
-		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( context );
+		ConfigurationContext configurationContext = new ConfigurationContext( context );
+
+		AnnotationProcessor.saveEntityOptions( context, Example.class );
+
+		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( configurationContext );
 		sampleMapping
 			.entity( Example.class )
 				.name( "Name replaced" );
@@ -60,5 +65,4 @@ public class ProxyFactoryWithAnnotationTest {
 	@NameExample("Batman")
 	private static final class Example {
 	}
-
 }

@@ -42,10 +42,10 @@ public class OptionsContainer implements Iterable<Option<?>> {
 	private final Set<Option<?>> options;
 
 	public OptionsContainer() {
-		this( new HashSet<Option<?>>() );
+		this( Collections.synchronizedSet( new HashSet<Option<?>>() ) );
 	}
 
-	protected OptionsContainer(Set<Option<?>> options) {
+	private OptionsContainer(Set<Option<?>> options) {
 		this.options = options;
 	}
 

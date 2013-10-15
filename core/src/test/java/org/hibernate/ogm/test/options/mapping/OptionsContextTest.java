@@ -24,10 +24,12 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Iterator;
 
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -35,29 +37,34 @@ import org.junit.Test;
  */
 public class OptionsContextTest {
 
+	private OptionsContext optionsContext;
+	private ConfigurationContext context;
+
+	@Before
+	public void setupContexts() {
+		optionsContext = new OptionsContext();
+		context = new ConfigurationContext( optionsContext );
+	}
+
 	@Test
 	public void contextShouldBeEmptyWhenCreated() throws Exception {
-		OptionsContext context = new OptionsContext();
-
-		assertThat( context.getGlobalOptions() ).isEmpty();
-		assertThat( context.getEntityOptions( ContextExample.class ) ).isEmpty();
-		assertThat( context.getPropertyOptions( ContextExample.class, "property" ) ).isEmpty();
+		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
+		assertThat( optionsContext.getEntityOptions( ContextExample.class ) ).isEmpty();
+		assertThat( optionsContext.getPropertyOptions( ContextExample.class, "property" ) ).isEmpty();
 	}
 
 	@Test
 	public void shouldBeAbleToAddGlobalOption() throws Exception {
-		OptionsContext context = new OptionsContext();
 		context.addGlobalOption( ForceExampleOption.TRUE );
 
-		assertThat( context.getGlobalOptions() ).containsOnly( ForceExampleOption.TRUE );
+		assertThat( optionsContext.getGlobalOptions() ).containsOnly( ForceExampleOption.TRUE );
 	}
 
 	@Test
 	public void shouldBeAbleToAddEntityOption() throws Exception {
-		OptionsContext context = new OptionsContext();
 		context.configureEntity( ContextExample.class );
 		context.addEntityOption( ForceExampleOption.TRUE );
-		OptionsContainer optionsContainer = context.getEntityOptions( ContextExample.class );
+		OptionsContainer optionsContainer = optionsContext.getEntityOptions( ContextExample.class );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
@@ -66,11 +73,10 @@ public class OptionsContextTest {
 
 	@Test
 	public void shouldBeAbleToAddPropertyOption() throws Exception {
-		OptionsContext context = new OptionsContext();
 		context.configureEntity( ContextExample.class );
 		context.configureProperty( "property" );
 		context.addPropertyOption( ForceExampleOption.TRUE );
-		OptionsContainer optionsContainer = context.getPropertyOptions( ContextExample.class, "property" );
+		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
 		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );

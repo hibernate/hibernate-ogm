@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.junit.Test;
 
@@ -46,15 +47,17 @@ public class AssociationStorageOptionTest {
 
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
+		OptionsContext optionsContext = new OptionsContext();
+		ConfigurationContext context = new ConfigurationContext( optionsContext );
+
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.COLLECTION );
 
-		assertThat( context.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
+		assertThat( optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.COLLECTION) );
 	}

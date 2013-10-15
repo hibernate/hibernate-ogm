@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.navigation.impl.BaseEntityOptions;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -53,7 +53,7 @@ public class SampleMappingModel {
 
 	public abstract static class SampleGlobalContextImpl extends BaseGlobalOptions<SampleGlobalContext> implements SampleGlobalContext {
 
-		public SampleGlobalContextImpl(OptionsContext context) {
+		public SampleGlobalContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 
@@ -66,7 +66,7 @@ public class SampleMappingModel {
 
 	public abstract static class SampleEntityContextImpl extends BaseEntityOptions<SampleEntityContext> implements SampleEntityContext {
 
-		public SampleEntityContextImpl(OptionsContext context) {
+		public SampleEntityContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 
@@ -85,7 +85,7 @@ public class SampleMappingModel {
 
 	public abstract static class SamplePropertyContextImpl extends BasePropertyOptions<SamplePropertyContext> implements SamplePropertyContext {
 
-		public SamplePropertyContextImpl(OptionsContext context) {
+		public SamplePropertyContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 

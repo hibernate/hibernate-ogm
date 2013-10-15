@@ -31,7 +31,7 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  */
 public abstract class BaseGlobalOptions<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
 
-	public BaseGlobalOptions(OptionsContext context) {
+	public BaseGlobalOptions(ConfigurationContext context) {
 		super( context );
 	}
 

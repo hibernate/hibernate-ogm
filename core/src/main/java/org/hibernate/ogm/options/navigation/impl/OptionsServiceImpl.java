@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import java.util.Map;
-
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
@@ -41,21 +39,19 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 
 	private final MappingFactory<?> mappingFactory;
 	private final SessionFactoryImplementor sessionFactoryImplementor;
-	private final OptionsContext context;
+	private final OptionsContext globalContext;
 
 	public OptionsServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.mappingFactory = factory;
 		this.sessionFactoryImplementor = sessionFactoryImplementor;
-
-		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
-		context = createContext( classLoaderService );
+		this.globalContext = getInitializedGlobalContext( registry );
 	}
 
 	//OptionsService
 
 	@Override
 	public OptionsServiceContext context() {
-		return new OptionsServiceContextImpl( context );
+		return new OptionsServiceContextImpl( globalContext );
 	}
 
 	@Override
@@ -67,26 +63,26 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder() {
-		return mappingFactory.createMapping( context );
+		return mappingFactory.createMapping( new ConfigurationContext( globalContext ) );
 	}
 
-	private OptionsContext createContext(ClassLoaderService classLoaderService) {
-		OptionsContext context = new OptionsContext();
-		GlobalContext<?, ?> globalContext = mappingFactory.createMapping( context );
-		initializeContext( classLoaderService, globalContext );
-		return context;
-	}
+	private OptionsContext getInitializedGlobalContext(ServiceRegistryImplementor registry) {
+		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
 
-	private void initializeContext(ClassLoaderService classLoaderService, GlobalContext<?, ?> globalContext) {
-		Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
-		for ( EntityPersister persister : entityPersisters.values() ) {
-			String entityName = persister.getEntityName();
-			Class<Object> classForName = classLoaderService.classForName( entityName );
-			globalContext.entity( classForName );
+		OptionsContext globalContext = new OptionsContext();
+
+		for ( EntityPersister persister : sessionFactoryImplementor.getEntityPersisters().values() ) {
+			Class<?> entityType = classLoaderService.classForName( persister.getEntityName() );
+
+			AnnotationProcessor.saveEntityOptions( globalContext, entityType );
+			AnnotationProcessor.savePropertyOptions( globalContext, entityType );
 		}
+
+		return globalContext;
 	}
 
 	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
+
 		private final OptionsContext context;
 
 		public OptionsServiceContextImpl(OptionsContext context) {
@@ -95,7 +91,7 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 
 		@Override
 		public OptionsContainer getGlobalOptions() {
-			return this.context.getGlobalOptions();
+			return context.getGlobalOptions();
 		}
 
 		@Override

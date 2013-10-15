@@ -25,6 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.options.generic.NamedQueryOption;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -42,7 +43,7 @@ public class ProxyFactoryTest {
 		final Object embedded = 3;
 
 		OptionsContext context = new OptionsContext();
-		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( context );
+		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( new ConfigurationContext( context ) );
 		sampleMapping
 				.namedQuery( "foo", "from Foo" )
 				.force( true )

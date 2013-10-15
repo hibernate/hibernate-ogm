@@ -20,57 +20,62 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import java.lang.annotation.ElementType;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.MethodHandler;
-import javassist.util.proxy.ProxyFactory;
-
-import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Contains all the options set using the mapping API; All the options are separated in different contexts: global, per
- * entity and per property.
+ * Keeps track of all the options set using one or more invocations of the mapping API; All the options are separated in
+ * different contexts: global, per entity and per property. Instances of this class are maintained per session factory
+ * and/or per session by {@link org.hibernate.ogm.options.spi.OptionsService}.
+ * <p>
+ * This class is safe to be accessed from several threads at the same time.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
+ * @see org.hibernate.ogm.options.spi.OptionsService
  */
 public class OptionsContext {
 
-	private static final Log log = LoggerFactory.make();
-
 	private final OptionsContainer globaloptions = new OptionsContainer();
-
-	private final Map<Class<?>, OptionsContainer> optionsPerEntity = new HashMap<Class<?>, OptionsContainer>();
-
-	private final Map<PropertyKey, OptionsContainer> optionsPerProperty = new HashMap<PropertyKey, OptionsContainer>();
-
-	private Class<?> currentEntityType;
-	private String currentPropertyName;
+	private final ConcurrentMap<Class<?>, OptionsContainer> optionsPerEntity = new ConcurrentHashMap<Class<?>, OptionsContainer>();
+	private final ConcurrentMap<PropertyKey, OptionsContainer> optionsPerProperty = new ConcurrentHashMap<PropertyKey, OptionsContainer>();
 
 	public void addGlobalOption(Option<?> option) {
 		globaloptions.add( option );
 	}
 
-	public void addEntityOption(Option<?> option) {
-		optionsPerEntity.get( currentEntityType ).add( option );
+	public void addEntityOption(Class<?> entityType, Option<?> option) {
+		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
+
+		if ( entityOptions == null ) {
+			entityOptions = new OptionsContainer();
+
+			OptionsContainer cachedOptions = optionsPerEntity.putIfAbsent( entityType, entityOptions );
+			if ( cachedOptions != null ) {
+				entityOptions = cachedOptions;
+			}
+		}
+
+		entityOptions.add( option );
 	}
 
-	public void addPropertyOption(Option<?> option) {
-		PropertyKey key = new PropertyKey( currentEntityType, currentPropertyName );
-		if ( !optionsPerProperty.containsKey( key ) ) {
-			optionsPerProperty.put( key, new OptionsContainer() );
+	public void addPropertyOption(Class<?> entityType, String propertyName, Option<?> option) {
+		PropertyKey key = new PropertyKey( entityType, propertyName );
+		OptionsContainer propertyOptions = optionsPerProperty.get( key );
+
+		if ( propertyOptions == null ) {
+			propertyOptions = new OptionsContainer();
+
+			OptionsContainer cachedOptions = optionsPerProperty.putIfAbsent( key, propertyOptions );
+			if ( cachedOptions != null ) {
+				propertyOptions = cachedOptions;
+			}
 		}
-		optionsPerProperty.get( key ).add( option );
+
+		propertyOptions.add( option );
 	}
 
 	public OptionsContainer getGlobalOptions() {
@@ -78,141 +83,14 @@ public class OptionsContext {
 	}
 
 	public OptionsContainer getEntityOptions(Class<?> entityType) {
-		OptionsContainer options = optionsPerEntity.get( entityType );
-		return options != null ? options : OptionsContainer.EMPTY;
+		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
+		return entityOptions != null ? entityOptions : OptionsContainer.EMPTY;
 	}
 
 	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-		OptionsContainer options = optionsPerProperty.get( new PropertyKey( entityType, propertyName ) );
-		return options != null ? options : OptionsContainer.EMPTY;
-	}
+		PropertyKey key = new PropertyKey( entityType, propertyName );
 
-	public void configureEntity(Class<?> entityType) {
-		this.currentEntityType = entityType;
-
-		if ( !optionsPerEntity.containsKey( currentEntityType ) ) {
-			optionsPerEntity.put( currentEntityType, new OptionsContainer() );
-			AnnotationProcessor.saveEntityOptions( this, currentEntityType );
-			AnnotationProcessor.savePropertyOptions( this, currentEntityType );
-		}
-	}
-
-	public void configureProperty(String propertyName) {
-		this.currentPropertyName = propertyName;
-	}
-
-	/**
-	 * Creates a new {@link GlobalContext} object based on the given context implementation types. All implementation
-	 * types must declare a public or protected constructor with a single parameter, accepting {@link OptionsContext}.
-	 * <p>
-	 * Each context implementation type must provide an implementation of the method(s) declared on the particular
-	 * provider-specific context interface. All methods declared on context super interfaces - {@code entity()} and
-	 * {@code property()} - are implemented following the dynamic proxy pattern, the implementation types therefore can
-	 * be declared abstract, avoiding the need to implement these methods themselves.
-	 * <p>
-	 * By convention, the implementation types should directly or indirectly extend {@link BaseContext}.
-	 *
-	 * @param globalContextImplType the provider-specific global context implementation type
-	 * @param entityContextImplType the provider-specific entity context implementation type
-	 * @param propertyContextImplType the provider-specific property context implementation type
-	 * @return a new {@link GlobalContext} object based on the given context implementation types
-	 */
-	@SuppressWarnings("unchecked")
-	public <G extends GlobalContext<?, ?>> G createGlobalContext(Class<? extends G> globalContextImplType,
-			final Class<? extends EntityContext<?, ?>> entityContextImplType, Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
-
-		ProxyFactory proxyFactory = new ProxyFactory();
-		proxyFactory.setSuperclass( globalContextImplType );
-		proxyFactory.setFilter( new EntityMethodFilter() );
-
-		try {
-			return (G) proxyFactory.create(
-					new Class<?>[] { OptionsContext.class },
-					new Object[] { this },
-					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
-		}
-		catch (Exception e) {
-			throw log.cannotCreateGlobalContextProxy( globalContextImplType, e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <E extends EntityContext<?, ?>> E createEntityMappingContext(Class<? extends E> entityContextImplType,
-			Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
-
-		ProxyFactory proxyFactory = new ProxyFactory();
-		proxyFactory.setSuperclass( entityContextImplType );
-		proxyFactory.setFilter( new EntityOrPropertyMethodFilter() );
-
-		try {
-			return (E) proxyFactory.create(
-					new Class<?>[] { OptionsContext.class },
-					new Object[] { this },
-					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
-		}
-		catch (Exception e) {
-			throw log.cannotCreateEntityContextProxy( entityContextImplType, e);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <P extends PropertyContext<?, ?>> P createPropertyMappingContext(Class<? extends EntityContext<?, ?>> entityContextImplType,
-			Class<? extends P> propertyContextImplType) {
-
-		ProxyFactory proxyFactory = new ProxyFactory();
-		proxyFactory.setSuperclass( propertyContextImplType );
-		proxyFactory.setFilter( new EntityOrPropertyMethodFilter() );
-
-		try {
-			return (P) proxyFactory.create(
-					new Class<?>[] { OptionsContext.class },
-					new Object[] { this },
-					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
-		}
-		catch (Exception e) {
-			throw log.cannotCreateEntityContextProxy( propertyContextImplType, e);
-		}
-	}
-
-	private final class EntityOrPropertyMethodHandler implements MethodHandler {
-
-		private final Class<? extends EntityContext<?, ?>> entityContextImplType;
-		private final Class<? extends PropertyContext<?, ?>> propertyContextImplType;
-
-		private EntityOrPropertyMethodHandler(Class<? extends EntityContext<?, ?>> entityContextImplType,
-				Class<? extends PropertyContext<?, ?>> propertyContextImplType) {
-			this.entityContextImplType = entityContextImplType;
-			this.propertyContextImplType = propertyContextImplType;
-		}
-
-		@Override
-		public Object invoke(Object self, Method thisMethod, Method proceed, Object[] args) throws Throwable {
-			if ( thisMethod.getName().equals( "entity" ) ) {
-				configureEntity( (Class<?>) args[0] );
-				return createEntityMappingContext( entityContextImplType, propertyContextImplType );
-			}
-			else {
-				configureProperty( (String) args[0] );
-				return createPropertyMappingContext( entityContextImplType, propertyContextImplType );
-			}
-		}
-	}
-
-	private final class EntityMethodFilter implements MethodFilter {
-
-		@Override
-		public boolean isHandled(Method m) {
-			return m.getName().equals( "entity" ) && m.getParameterTypes().length == 1 && m.getParameterTypes()[0] == Class.class;
-		}
-	}
-
-	private final class EntityOrPropertyMethodFilter implements MethodFilter {
-
-		@Override
-		public boolean isHandled(Method m) {
-			return ( m.getName().equals( "entity" ) && m.getParameterTypes().length == 1 && m.getParameterTypes()[0] == Class.class )
-					|| ( m.getName().equals( "property" ) && m.getParameterTypes().length == 2 && m.getParameterTypes()[0] == String.class && m
-							.getParameterTypes()[1] == ElementType.class );
-		}
+		OptionsContainer propertyOptions = optionsPerProperty.get( key );
+		return propertyOptions != null ? propertyOptions : OptionsContainer.EMPTY;
 	}
 }

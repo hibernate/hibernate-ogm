@@ -21,7 +21,7 @@
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
 
 /**
@@ -30,7 +30,7 @@ import org.hibernate.ogm.options.spi.MappingFactory;
 public class MongoDBMappingServiceFactory implements MappingFactory<MongoDBGlobalContext> {
 
 	@Override
-	public MongoDBGlobalContext createMapping(OptionsContext context) {
+	public MongoDBGlobalContext createMapping(ConfigurationContext context) {
 		return context.createGlobalContext( MongoDBGlobalOptions.class, MongoDBEntityOptions.class, MongoDBPropertyOptions.class );
 	}
 }

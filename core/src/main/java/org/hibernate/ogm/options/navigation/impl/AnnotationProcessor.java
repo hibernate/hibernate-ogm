@@ -48,13 +48,12 @@ public class AnnotationProcessor {
 	 * @param entityClass class of the entity annotated with the options
 	 */
 	public static void saveEntityOptions(final OptionsContext context, final Class<?> entityClass) {
-		context.configureEntity( entityClass );
 		Annotation[] annotations = entityClass.getAnnotations();
 		saveOptions( new ContextCommand() {
 
 			@Override
 			public void add(Option<?> option) {
-				context.addEntityOption( option );
+				context.addEntityOption( entityClass, option );
 			}
 
 		}, annotations );
@@ -67,25 +66,23 @@ public class AnnotationProcessor {
 	 * @param entityClass class containing the option annotation
 	 */
 	public static void savePropertyOptions(final OptionsContext context, final Class<?> entityClass) {
-		context.configureEntity( entityClass );
 		for ( final Method method : entityClass.getMethods() ) {
-			context.configureProperty( method.getName() );
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?> option) {
-					context.addPropertyOption( option );
+					//TODO OGM-345 Use property name
+					context.addPropertyOption( entityClass, method.getName(), option );
 				}
 
 			}, method.getAnnotations() );
 		}
 		for ( final Field field : entityClass.getFields() ) {
-			context.configureProperty( field.getName() );
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?> option) {
-					context.addPropertyOption( option );
+					context.addPropertyOption( entityClass, field.getName(), option );
 				}
 
 			}, field.getAnnotations() );

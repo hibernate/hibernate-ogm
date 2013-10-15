@@ -27,7 +27,9 @@ import org.hibernate.ogm.options.mongodb.AssociationStorage;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -37,15 +39,23 @@ import org.junit.Test;
  */
 public class AssociationStorageAnnotationTest {
 
+	private OptionsContext optionsContext;
+	private ConfigurationContext context;
+
+	@Before
+	public void setupContexts() {
+		optionsContext = new OptionsContext();
+		context = new ConfigurationContext( optionsContext );
+	}
+
 	@Test
 	public void testAssociationStorageMappingOptionOnField() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.entity( EntityAnnotatedOnField.class );
 
-		assertThat( context.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
+		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.IN_ENTITY ) );
 	}
@@ -53,12 +63,11 @@ public class AssociationStorageAnnotationTest {
 	@Test
 	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );
 
-		assertThat( context.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
+		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
 	}

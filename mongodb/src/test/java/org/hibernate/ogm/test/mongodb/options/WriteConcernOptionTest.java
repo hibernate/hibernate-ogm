@@ -26,7 +26,9 @@ import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -35,6 +37,15 @@ import org.junit.Test;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class WriteConcernOptionTest {
+
+	private OptionsContext optionsContext;
+	private ConfigurationContext context;
+
+	@Before
+	public void setupContexts() {
+		optionsContext = new OptionsContext();
+		context = new ConfigurationContext( optionsContext );
+	}
 
 	@Test
 	public void testGetter() throws Exception {
@@ -45,11 +56,10 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernMappingOption() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
-		assertThat( context.getGlobalOptions() )
+		assertThat( optionsContext.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
@@ -57,18 +67,17 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernedContextPriority() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.writeConcern( WriteConcernType.ERRORS_IGNORED )
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY );
 
-		assertThat( context.getGlobalOptions() )
+		assertThat( optionsContext.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED) );
 
-		assertThat( context.getEntityOptions( ExampleForMongoDBMapping.class ) )
+		assertThat( optionsContext.getEntityOptions( ExampleForMongoDBMapping.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.MAJORITY ) );
 	}
