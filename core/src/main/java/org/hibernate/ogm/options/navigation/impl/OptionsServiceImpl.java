@@ -26,25 +26,21 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.service.classloading.spi.ClassLoaderService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * Provides read and write access to option contexts maintained at the session factory and session level.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
 public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
 
 	private final MappingFactory<?> mappingFactory;
-	private final SessionFactoryImplementor sessionFactoryImplementor;
 	private final OptionsContext globalContext;
 
-	public OptionsServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
+	public OptionsServiceImpl(MappingFactory<?> factory, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.mappingFactory = factory;
-		this.sessionFactoryImplementor = sessionFactoryImplementor;
-		this.globalContext = getInitializedGlobalContext( registry );
+		this.globalContext = new OptionsContext();
 	}
 
 	//OptionsService
@@ -64,21 +60,6 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder() {
 		return mappingFactory.createMapping( new ConfigurationContext( globalContext ) );
-	}
-
-	private OptionsContext getInitializedGlobalContext(ServiceRegistryImplementor registry) {
-		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
-
-		OptionsContext globalContext = new OptionsContext();
-
-		for ( EntityPersister persister : sessionFactoryImplementor.getEntityPersisters().values() ) {
-			Class<?> entityType = classLoaderService.classForName( persister.getEntityName() );
-
-			AnnotationProcessor.saveEntityOptions( globalContext, entityType );
-			AnnotationProcessor.savePropertyOptions( globalContext, entityType );
-		}
-
-		return globalContext;
 	}
 
 	private static final class OptionsServiceContextImpl implements OptionsServiceContext {

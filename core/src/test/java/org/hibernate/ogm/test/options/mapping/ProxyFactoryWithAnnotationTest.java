@@ -22,7 +22,6 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.options.navigation.impl.AnnotationProcessor;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -38,7 +37,6 @@ public class ProxyFactoryWithAnnotationTest {
 	@Test
 	public void testAnnotatedEntity() throws Exception {
 		OptionsContext context = new OptionsContext();
-		AnnotationProcessor.saveEntityOptions( context, Example.class );
 
 		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 1 )
@@ -49,8 +47,6 @@ public class ProxyFactoryWithAnnotationTest {
 	public void testAnnotationIsOverridenByAPI() throws Exception {
 		OptionsContext context = new OptionsContext();
 		ConfigurationContext configurationContext = new ConfigurationContext( context );
-
-		AnnotationProcessor.saveEntityOptions( context, Example.class );
 
 		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( configurationContext );
 		sampleMapping

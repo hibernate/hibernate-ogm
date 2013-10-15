@@ -23,10 +23,13 @@ package org.hibernate.ogm.options.navigation.impl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -47,16 +50,20 @@ public class AnnotationProcessor {
 	 * @param context the {@link OptionsContext} where {@link Option} are saved
 	 * @param entityClass class of the entity annotated with the options
 	 */
-	public static void saveEntityOptions(final OptionsContext context, final Class<?> entityClass) {
-		Annotation[] annotations = entityClass.getAnnotations();
+	public static OptionsContainer getEntityOptions(Class<?> entityType) {
+		Annotation[] annotations = entityType.getAnnotations();
+		final OptionsContainer container = new OptionsContainer();
+
 		saveOptions( new ContextCommand() {
 
 			@Override
 			public void add(Option<?> option) {
-				context.addEntityOption( entityClass, option );
+				container.add( option );
 			}
 
 		}, annotations );
+
+		return container;
 	}
 
 	/**
@@ -65,28 +72,45 @@ public class AnnotationProcessor {
 	 * @param context the {@link OptionsContext} where {@link Option} are saved
 	 * @param entityClass class containing the option annotation
 	 */
-	public static void savePropertyOptions(final OptionsContext context, final Class<?> entityClass) {
+	public static Map<PropertyKey, OptionsContainer> getPropertyOptions(final Class<?> entityClass) {
+		final Map<PropertyKey, OptionsContainer> optionsByProperty = new HashMap<PropertyKey, OptionsContainer>();
+
 		for ( final Method method : entityClass.getMethods() ) {
+			final OptionsContainer optionsOfProperty = new OptionsContainer();
+			//TODO OGM-345 Use property name
+			optionsByProperty.put( new PropertyKey( entityClass, method.getName() ), optionsOfProperty );
+
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?> option) {
-					//TODO OGM-345 Use property name
-					context.addPropertyOption( entityClass, method.getName(), option );
+					optionsOfProperty.add( option );
 				}
 
 			}, method.getAnnotations() );
 		}
+
 		for ( final Field field : entityClass.getFields() ) {
+			PropertyKey key = new PropertyKey( entityClass, field.getName() );
+			OptionsContainer optionsOfProperty = optionsByProperty.get( key );
+			if ( optionsOfProperty == null ) {
+				optionsOfProperty = new OptionsContainer();
+				optionsByProperty.put( new PropertyKey( entityClass, field.getName() ), optionsOfProperty );
+			}
+
+			final OptionsContainer options = optionsOfProperty;
+
 			saveOptions( new ContextCommand() {
 
 				@Override
 				public void add(Option<?> option) {
-					context.addPropertyOption( entityClass, field.getName(), option );
+					options.add( option );
 				}
 
 			}, field.getAnnotations() );
 		}
+
+		return optionsByProperty;
 	}
 
 	private static void saveOptions(ContextCommand command, Annotation[] annotations) {

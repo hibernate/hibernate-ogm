@@ -47,7 +47,7 @@ public class PropertyKey {
 
 	@Override
 	public String toString() {
-		return entity + ": " + property;
+		return entity.getName() + "#" + property;
 	}
 
 	@Override

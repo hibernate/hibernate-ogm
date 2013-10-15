@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -51,12 +53,7 @@ public class OptionsContext {
 		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
 
 		if ( entityOptions == null ) {
-			entityOptions = new OptionsContainer();
-
-			OptionsContainer cachedOptions = optionsPerEntity.putIfAbsent( entityType, entityOptions );
-			if ( cachedOptions != null ) {
-				entityOptions = cachedOptions;
-			}
+			entityOptions = getAndCacheAnnotationBasedEntityOptions( entityType );
 		}
 
 		entityOptions.add( option );
@@ -67,12 +64,7 @@ public class OptionsContext {
 		OptionsContainer propertyOptions = optionsPerProperty.get( key );
 
 		if ( propertyOptions == null ) {
-			propertyOptions = new OptionsContainer();
-
-			OptionsContainer cachedOptions = optionsPerProperty.putIfAbsent( key, propertyOptions );
-			if ( cachedOptions != null ) {
-				propertyOptions = cachedOptions;
-			}
+			propertyOptions = getAndCacheAnnotationBasedPropertyOptions( key );
 		}
 
 		propertyOptions.add( option );
@@ -84,13 +76,68 @@ public class OptionsContext {
 
 	public OptionsContainer getEntityOptions(Class<?> entityType) {
 		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
-		return entityOptions != null ? entityOptions : OptionsContainer.EMPTY;
+
+		if (entityOptions == null ) {
+			entityOptions = getAndCacheAnnotationBasedEntityOptions( entityType );
+		}
+
+		return entityOptions;
 	}
 
 	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
 		PropertyKey key = new PropertyKey( entityType, propertyName );
 
 		OptionsContainer propertyOptions = optionsPerProperty.get( key );
-		return propertyOptions != null ? propertyOptions : OptionsContainer.EMPTY;
+
+		if (propertyOptions == null ) {
+			propertyOptions = getAndCacheAnnotationBasedPropertyOptions( key );
+		}
+
+		return propertyOptions;
+	}
+
+	/**
+	 * Retrieves a container with the annotation-based options for the given entity, adding the container to the cache.
+	 *
+	 * @param entityType the entity type for which to return the options
+	 * @return a container with the annotation-based options for the given entity, never {@code null}.
+	 */
+	private OptionsContainer getAndCacheAnnotationBasedEntityOptions(Class<?> entityType) {
+		OptionsContainer entityOptions = AnnotationProcessor.getEntityOptions( entityType );
+
+		OptionsContainer cachedOptions = optionsPerEntity.putIfAbsent( entityType, entityOptions );
+		if ( cachedOptions != null ) {
+			entityOptions = cachedOptions;
+		}
+
+		return entityOptions;
+	}
+
+	/**
+	 * Retrieves a container with the annotation-based options for the given property, adding the container to the
+	 * cache.
+	 *
+	 * @param key the property for which to return the options
+	 * @return a container with the annotation-based options for the given property, never {@code null}.
+	 */
+	private OptionsContainer getAndCacheAnnotationBasedPropertyOptions(PropertyKey key) {
+		Map<PropertyKey, OptionsContainer> allPropertyOptions = AnnotationProcessor.getPropertyOptions( key.getEntity() );
+
+		for ( Entry<PropertyKey, OptionsContainer> option : allPropertyOptions.entrySet() ) {
+			optionsPerProperty.putIfAbsent( option.getKey(), option.getValue() );
+		}
+
+		OptionsContainer propertyOptions = optionsPerProperty.get( key );
+
+		//cache an empty container in case the given property has no annotation based options
+		if ( propertyOptions == null ) {
+			propertyOptions = new OptionsContainer();
+			OptionsContainer cachedOptions = optionsPerProperty.putIfAbsent( key, propertyOptions );
+			if ( cachedOptions != null ) {
+				propertyOptions = cachedOptions;
+			}
+		}
+
+		return propertyOptions;
 	}
 }

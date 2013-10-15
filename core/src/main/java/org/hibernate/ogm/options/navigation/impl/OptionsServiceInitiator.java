@@ -54,7 +54,7 @@ public final class OptionsServiceInitiator implements SessionFactoryServiceIniti
 	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		Object mapping = configuration.getProperties().getProperty( MAPPING );
 		MappingFactory<?> mappingFactory = findFactory( registry, mapping );
-		return new OptionsServiceImpl( mappingFactory, registry, sessionFactory );
+		return new OptionsServiceImpl( mappingFactory, sessionFactory );
 	}
 
 	@Override
