@@ -24,7 +24,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.options.spi.OptionsService;
 
 /**
@@ -47,12 +46,12 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 
 	@Override
 	public OptionsServiceContext context() {
-		return new OptionsServiceContextImpl( globalContext );
+		return globalContext;
 	}
 
 	@Override
 	public OptionsServiceContext context(SessionImplementor session) {
-		return new OptionsServiceContextWithSession( session );
+		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
 	}
 
 	//ConfigurationBuilderService
@@ -61,50 +60,4 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 	public GlobalContext<?, ?> getConfigurationBuilder() {
 		return datastoreProvider.getConfigurationBuilder( new ConfigurationContext( globalContext ) );
 	}
-
-	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
-
-		private final OptionsContext context;
-
-		public OptionsServiceContextImpl(OptionsContext context) {
-			this.context = context;
-		}
-
-		@Override
-		public OptionsContainer getGlobalOptions() {
-			return context.getGlobalOptions();
-		}
-
-		@Override
-		public OptionsContainer getEntityOptions(Class<?> entityType) {
-			return context.getEntityOptions( entityType );
-		}
-
-		@Override
-		public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-			return context.getPropertyOptions( entityType, propertyName );
-		}
-	}
-
-	private static final class OptionsServiceContextWithSession implements OptionsServiceContext {
-
-		public OptionsServiceContextWithSession(SessionImplementor session) {
-		}
-
-		@Override
-		public OptionsContainer getGlobalOptions() {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-
-		@Override
-		public OptionsContainer getEntityOptions(Class<?> entityType) {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-
-		@Override
-		public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-	}
-
 }

@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 
 /**
  * Keeps track of all the options set using one or more invocations of the mapping API; All the options are separated in
@@ -39,7 +40,7 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
  * @author Gunnar Morling
  * @see org.hibernate.ogm.options.spi.OptionsService
  */
-public class OptionsContext {
+public class OptionsContext implements OptionsServiceContext {
 
 	private final OptionsContainer globaloptions = new OptionsContainer();
 	private final ConcurrentMap<Class<?>, OptionsContainer> optionsPerEntity = new ConcurrentHashMap<Class<?>, OptionsContainer>();
@@ -70,10 +71,12 @@ public class OptionsContext {
 		propertyOptions.add( option );
 	}
 
+	@Override
 	public OptionsContainer getGlobalOptions() {
 		return globaloptions;
 	}
 
+	@Override
 	public OptionsContainer getEntityOptions(Class<?> entityType) {
 		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
 
@@ -84,6 +87,7 @@ public class OptionsContext {
 		return entityOptions;
 	}
 
+	@Override
 	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
 		PropertyKey key = new PropertyKey( entityType, propertyName );
 
