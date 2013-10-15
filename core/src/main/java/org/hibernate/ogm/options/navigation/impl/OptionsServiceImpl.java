@@ -33,36 +33,41 @@ import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Creates a service that can be called to retrieve the mapping context containing all the options.
- * <p>
- * Some options might be session dependent.
+ * Provides read and write access to option contexts maintained at the session factory and session level.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OptionsServiceImpl implements OptionsService {
+public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
 
 	private final MappingFactory<?> mappingFactory;
-
-	private final ServiceRegistryImplementor registry;
-
 	private final SessionFactoryImplementor sessionFactoryImplementor;
+	private final OptionsContext context;
 
 	public OptionsServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.mappingFactory = factory;
-		this.registry = registry;
 		this.sessionFactoryImplementor = sessionFactoryImplementor;
+
+		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
+		context = createContext( classLoaderService );
 	}
+
+	//OptionsService
 
 	@Override
 	public OptionsServiceContext context() {
-		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
-		OptionsContext context = createContext( classLoaderService );
 		return new OptionsServiceContextImpl( context );
 	}
 
 	@Override
 	public OptionsServiceContext context(SessionImplementor session) {
 		return new OptionsServiceContextWithSession( session );
+	}
+
+	//ConfigurationBuilderService
+
+	@Override
+	public GlobalContext<?, ?> getConfigurationBuilder() {
+		return mappingFactory.createMapping( context );
 	}
 
 	private OptionsContext createContext(ClassLoaderService classLoaderService) {

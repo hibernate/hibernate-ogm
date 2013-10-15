@@ -71,13 +71,19 @@ import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationBuilderService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.type.Type;
+
+import com.fasterxml.classmate.ResolvedType;
+import com.fasterxml.classmate.TypeResolver;
 
 /**
  * Delegate most of the work to the underlying Hibernate Session
@@ -88,6 +94,12 @@ import org.hibernate.type.Type;
 public class OgmSession implements org.hibernate.Session, EventSource {
 
 	private static final Log log = LoggerFactory.make();
+
+	/**
+	 * Used for resolving generic type information. Maintains an internal cache and is safe to be accessed from several
+	 * threads at the same time.
+	 */
+	private static TypeResolver typeResolver = new TypeResolver();
 
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
@@ -860,4 +872,29 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		}
 	}
 
+	/**
+	 * Returns a typed {@link GlobalContext} object allowing to apply store-specific configuration options.
+	 *
+	 * @param datastoreType the configuration type representing the current datastore.
+	 * @return a {@link GlobalContext} object
+	 * @throws HibernateException in case the given configuration type isn't supported by the current datastore provider
+	 */
+	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
+		ResolvedType resolvedDatastoreType = typeResolver.resolve( datastoreType );
+		ResolvedType globalContextType = resolvedDatastoreType.typeParametersFor( DatastoreConfiguration.class ).get( 0 );
+
+		ConfigurationBuilderService configurationBuilderService = getSessionFactory()
+				.getServiceRegistry()
+				.getService( ConfigurationBuilderService.class );
+
+		GlobalContext<?, ?> globalContext = configurationBuilderService.getConfigurationBuilder();
+
+		if ( globalContextType.getErasedType().isInstance( globalContext ) ) {
+			@SuppressWarnings("unchecked")
+			G store = (G) globalContext;
+			return store;
+		}
+
+		throw log.getWrongDatastoreConfigurationTypeException( datastoreType.getName() );
+	}
 }

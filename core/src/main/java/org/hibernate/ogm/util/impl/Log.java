@@ -171,4 +171,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 39, value = "Unable to create property context proxy for type %1$s")
 	HibernateException cannotCreatePropertyContextProxy(Class<?> contextClass, @Cause Exception e);
 
+	@Message(id = 40, value = "The current datastore can not be configured via configuration type %1$s.")
+	HibernateException getWrongDatastoreConfigurationTypeException(String datastoreConfigurationTypeName);
 }

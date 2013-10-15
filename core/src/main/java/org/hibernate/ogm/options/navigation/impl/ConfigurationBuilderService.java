@@ -18,31 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.options.examples;
+package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.service.Service;
 
 /**
- * Offer the ability to embed an object in the configuration.
- * <p>
- * This is a {@link UniqueOption} that can be used for testing.
+ * Provides access to {@link GlobalContext}s specific to the current datastore provider. The options set via this
+ * context can be accessed via {@link org.hibernate.ogm.options.spi.OptionsService}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
+ * @see org.hibernate.ogm.options.spi.OptionsService
  */
-public class EmbedExampleOption extends UniqueOption {
+public interface ConfigurationBuilderService extends Service {
 
-	private final Object embed;
-
-	public EmbedExampleOption(Object embed) {
-		this.embed = embed;
-	}
-
-	@Override
-	public String toString() {
-		return "embed: " + String.valueOf( embed );
-	}
-
-	public Object getEmbedded() {
-		return embed;
-	}
+	/**
+	 * Returns a new global context of the store-specific implementation type
+	 *
+	 * @return a new global configuration context
+	 */
+	GlobalContext<?, ?> getConfigurationBuilder();
 }
