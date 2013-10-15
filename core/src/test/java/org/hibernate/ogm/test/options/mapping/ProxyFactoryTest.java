@@ -43,7 +43,7 @@ public class ProxyFactoryTest {
 		final Object embedded = 3;
 
 		OptionsContext context = new OptionsContext();
-		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( new ConfigurationContext( context ) );
+		SampleGlobalContext sampleMapping = SampleMappingModel.getInstance( new ConfigurationContext( context ) );
 		sampleMapping
 				.namedQuery( "foo", "from Foo" )
 				.force( true )

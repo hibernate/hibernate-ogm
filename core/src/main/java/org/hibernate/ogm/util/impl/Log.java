@@ -32,7 +32,6 @@ import org.hibernate.TransactionException;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -155,9 +154,6 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 34, value = "Annotation cannot be converted using %1$s")
 	HibernateException cannotConvertAnnotation(Class<? extends AnnotationConverter<?>> converterClass, @Cause Exception e);
-
-	@Message(id = 35, value = "Unable to create MappingServiceFactory using %1$s")
-	HibernateException cannotCreateMappingFactory(Class<? extends MappingFactory<?>> factoryClass, @Cause Exception e);
 
 	@Message(id = 36, value = "Unable to load %1$s method from %2$s ")
 	HibernateException unableToLoadContext(String methodName, Class<?> contextClass, @Cause Exception e);

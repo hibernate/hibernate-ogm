@@ -24,11 +24,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
@@ -43,8 +39,6 @@ public final class OptionsServiceInitiator implements SessionFactoryServiceIniti
 
 	public static final OptionsServiceInitiator INSTANCE = new OptionsServiceInitiator();
 
-	private static final Log log = LoggerFactory.make();
-
 	@Override
 	public Class<OptionsService> getServiceInitiated() {
 		return OptionsService.class;
@@ -52,45 +46,11 @@ public final class OptionsServiceInitiator implements SessionFactoryServiceIniti
 
 	@Override
 	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		Object mapping = configuration.getProperties().getProperty( MAPPING );
-		MappingFactory<?> mappingFactory = findFactory( registry, mapping );
-		return new OptionsServiceImpl( mappingFactory, sessionFactory );
+		return new OptionsServiceImpl( registry.getService( DatastoreProvider.class ), sessionFactory );
 	}
 
 	@Override
 	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
 		return null;
 	}
-
-	private MappingFactory<?> findFactory(ServiceRegistryImplementor registry, Object mapping) {
-		if ( mapping == null ) {
-			return factory( registry );
-		}
-		else {
-			return factory( registry, (String) mapping );
-		}
-	}
-
-	private MappingFactory<?> factory(ServiceRegistryImplementor registry) {
-		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-		return factory( datastoreProvider.getConfigurationBuilder() );
-	}
-
-	private MappingFactory<?> factory(ServiceRegistryImplementor registry, String factoryClassName) {
-		Class<? extends MappingFactory<?>> factoryClass = registry.getService( ClassLoaderService.class ).classForName( factoryClassName );
-		return factory( factoryClass );
-	}
-
-	private MappingFactory<?> factory(Class<? extends MappingFactory<?>> factoryClass) {
-		try {
-			return factoryClass.newInstance();
-		}
-		catch (InstantiationException e) {
-			throw log.cannotCreateMappingFactory( factoryClass, e );
-		}
-		catch (IllegalAccessException e) {
-			throw log.cannotCreateMappingFactory( factoryClass, e );
-		}
-	}
-
 }

@@ -34,7 +34,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
@@ -151,8 +151,8 @@ public class OptionIntegrationTest extends OgmTestCase {
 		}
 
 		@Override
-		public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-			return SampleMappingFactory.class;
+		public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+			return SampleMappingModel.getInstance( context );
 		}
 	}
 

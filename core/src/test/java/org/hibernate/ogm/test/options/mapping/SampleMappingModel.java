@@ -36,6 +36,10 @@ import org.hibernate.ogm.test.options.examples.NameExampleOption;
  */
 public class SampleMappingModel {
 
+	public static SampleGlobalContext getInstance(ConfigurationContext context) {
+		return context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
+	}
+
 	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
 		SampleGlobalContext force(boolean force);
 	}

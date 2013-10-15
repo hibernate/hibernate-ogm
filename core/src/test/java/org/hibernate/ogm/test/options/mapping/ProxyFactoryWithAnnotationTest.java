@@ -48,7 +48,7 @@ public class ProxyFactoryWithAnnotationTest {
 		OptionsContext context = new OptionsContext();
 		ConfigurationContext configurationContext = new ConfigurationContext( context );
 
-		SampleGlobalContext sampleMapping = new SampleMappingFactory().createMapping( configurationContext );
+		SampleGlobalContext sampleMapping = SampleMappingModel.getInstance( configurationContext );
 		sampleMapping
 			.entity( Example.class )
 				.name( "Name replaced" );

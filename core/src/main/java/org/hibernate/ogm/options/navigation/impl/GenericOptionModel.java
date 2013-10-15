@@ -23,19 +23,16 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
 
 /**
- * A {@link MappingFactory} implementation which returns a default {@link GlobalContext} that provides no
- * store-specific options.
+ * A generic option model that provides no store-specific options.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class GenericMappingFactory implements MappingFactory<GlobalContext<?, ?>> {
+public class GenericOptionModel {
 
-	@Override
-	public GlobalContext<?, ?> createMapping(ConfigurationContext context) {
+	public static GlobalContext<?, ?> getInstance(ConfigurationContext context) {
 		return context.createGlobalContext( GenericGlobalOptions.class, GenericEntityOptions.class, GenericPropertyOptions.class );
 	}
 

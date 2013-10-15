@@ -39,10 +39,11 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Startable;
@@ -192,8 +193,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	}
 
 	@Override
-	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-		return GenericMappingFactory.class;
+	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
+		return GenericOptionModel.getInstance( context );
 	}
-
 }

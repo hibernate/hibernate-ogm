@@ -22,8 +22,8 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.options.spi.OptionsService;
 
@@ -35,11 +35,11 @@ import org.hibernate.ogm.options.spi.OptionsService;
  */
 public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
 
-	private final MappingFactory<?> mappingFactory;
+	private final DatastoreProvider datastoreProvider;
 	private final OptionsContext globalContext;
 
-	public OptionsServiceImpl(MappingFactory<?> factory, SessionFactoryImplementor sessionFactoryImplementor) {
-		this.mappingFactory = factory;
+	public OptionsServiceImpl(DatastoreProvider datastoreProvider, SessionFactoryImplementor sessionFactoryImplementor) {
+		this.datastoreProvider = datastoreProvider;
 		this.globalContext = new OptionsContext();
 	}
 
@@ -59,7 +59,7 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder() {
-		return mappingFactory.createMapping( new ConfigurationContext( globalContext ) );
+		return datastoreProvider.getConfigurationBuilder( new ConfigurationContext( globalContext ) );
 	}
 
 	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
