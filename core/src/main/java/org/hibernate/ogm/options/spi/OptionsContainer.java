@@ -64,6 +64,17 @@ public class OptionsContainer implements Iterable<Option<?>> {
 	}
 
 	/**
+	 * Adds all options from the passed container to this container
+	 *
+	 * @param container a container with options to add
+	 */
+	public void addAll(OptionsContainer container) {
+		for ( Option<?> option : container ) {
+			options.add( option );
+		}
+	}
+
+	/**
 	 * Remove an existing option form the container.
 	 *
 	 * @param option to remove from the container.
