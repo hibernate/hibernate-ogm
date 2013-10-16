@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.test.options.mapping;
 
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleEntityContextImpl;
 import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
@@ -33,7 +33,7 @@ import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SamplePropertyC
 public class SampleMappingFactory implements MappingFactory<SampleGlobalContext> {
 
 	@Override
-	public SampleGlobalContext createMapping(final MappingContext context) {
+	public SampleGlobalContext createMapping(final OptionsContext context) {
 		return context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
 	}
 }

@@ -26,7 +26,7 @@ import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.junit.Test;
 
 /**
@@ -36,7 +36,7 @@ public class WriteConcernAnnotationTest {
 
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping.entity( EntityWriteConcernExample.class );
@@ -50,7 +50,7 @@ public class WriteConcernAnnotationTest {
 
 	@Test
 	public void testWriteConcernForField() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
@@ -65,7 +65,7 @@ public class WriteConcernAnnotationTest {
 
 	@Test
 	public void testWriteConcernForMethod() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
@@ -80,7 +80,7 @@ public class WriteConcernAnnotationTest {
 
 	@Test
 	public void testWriteConcernAnnotationPriorities() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping

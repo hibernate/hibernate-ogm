@@ -43,7 +43,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
 import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -93,7 +93,7 @@ public class MappingServiceFactoryTest extends OgmTestCase {
 	public static class LeakingMappingFactory implements MappingFactory<SampleGlobalContext> {
 
 		@Override
-		public SampleGlobalContext createMapping(MappingContext context) {
+		public SampleGlobalContext createMapping(OptionsContext context) {
 			SampleGlobalContext mapping = context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
 			mapping.entity( SampleEntity.class ).name( "PROGRAMMATIC" );
 			return mapping;

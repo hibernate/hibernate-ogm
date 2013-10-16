@@ -24,7 +24,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Iterator;
 
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -33,11 +33,11 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class MappingContextTest {
+public class OptionsContextTest {
 
 	@Test
 	public void contextShouldBeEmptyWhenCreated() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 
 		assertThat( context.getGlobalOptions() ).isEmpty();
 		assertThat( context.getEntityOptions( ContextExample.class ) ).isEmpty();
@@ -46,7 +46,7 @@ public class MappingContextTest {
 
 	@Test
 	public void shouldBeAbleToAddGlobalOption() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		context.addGlobalOption( ForceExampleOption.TRUE );
 
 		assertThat( context.getGlobalOptions() ).containsOnly( ForceExampleOption.TRUE );
@@ -54,7 +54,7 @@ public class MappingContextTest {
 
 	@Test
 	public void shouldBeAbleToAddEntityOption() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		context.configureEntity( ContextExample.class );
 		context.addEntityOption( ForceExampleOption.TRUE );
 		OptionsContainer optionsContainer = context.getEntityOptions( ContextExample.class );
@@ -66,7 +66,7 @@ public class MappingContextTest {
 
 	@Test
 	public void shouldBeAbleToAddPropertyOption() throws Exception {
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		context.configureEntity( ContextExample.class );
 		context.configureProperty( "property" );
 		context.addPropertyOption( ForceExampleOption.TRUE );

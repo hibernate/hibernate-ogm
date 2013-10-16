@@ -44,7 +44,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class MappingContext {
+public class OptionsContext {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -103,7 +103,7 @@ public class MappingContext {
 
 	/**
 	 * Creates a new {@link GlobalContext} object based on the given context implementation types. All implementation
-	 * types must declare a public or protected constructor with a single parameter, accepting {@link MappingContext}.
+	 * types must declare a public or protected constructor with a single parameter, accepting {@link OptionsContext}.
 	 * <p>
 	 * Each context implementation type must provide an implementation of the method(s) declared on the particular
 	 * provider-specific context interface. All methods declared on context super interfaces - {@code entity()} and
@@ -127,7 +127,7 @@ public class MappingContext {
 
 		try {
 			return (G) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { OptionsContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
@@ -146,7 +146,7 @@ public class MappingContext {
 
 		try {
 			return (E) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { OptionsContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
@@ -165,7 +165,7 @@ public class MappingContext {
 
 		try {
 			return (P) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { OptionsContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}

@@ -42,12 +42,12 @@ public class AnnotationProcessor {
 	private static final Log log = LoggerFactory.make();
 
 	/**
-	 * Saves in the {@link MappingContext} the options that are related to an entity.
+	 * Saves in the {@link OptionsContext} the options that are related to an entity.
 	 *
-	 * @param context the {@link MappingContext} where {@link Option} are saved
+	 * @param context the {@link OptionsContext} where {@link Option} are saved
 	 * @param entityClass class of the entity annotated with the options
 	 */
-	public static void saveEntityOptions(final MappingContext context, final Class<?> entityClass) {
+	public static void saveEntityOptions(final OptionsContext context, final Class<?> entityClass) {
 		context.configureEntity( entityClass );
 		Annotation[] annotations = entityClass.getAnnotations();
 		saveOptions( new ContextCommand() {
@@ -61,12 +61,12 @@ public class AnnotationProcessor {
 	}
 
 	/**
-	 * Saves in the {@link MappingContext} the options that are related to the properties and methods of an entity.
+	 * Saves in the {@link OptionsContext} the options that are related to the properties and methods of an entity.
 	 *
-	 * @param context the {@link MappingContext} where {@link Option} are saved
+	 * @param context the {@link OptionsContext} where {@link Option} are saved
 	 * @param entityClass class containing the option annotation
 	 */
-	public static void savePropertyOptions(final MappingContext context, final Class<?> entityClass) {
+	public static void savePropertyOptions(final OptionsContext context, final Class<?> entityClass) {
 		context.configureEntity( entityClass );
 		for ( final Method method : entityClass.getMethods() ) {
 			context.configureProperty( method.getName() );

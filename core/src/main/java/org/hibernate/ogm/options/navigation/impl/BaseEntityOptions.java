@@ -30,7 +30,7 @@ import org.hibernate.ogm.options.spi.EntityOptions;
  */
 public abstract class BaseEntityOptions<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
 
-	public BaseEntityOptions(MappingContext context) {
+	public BaseEntityOptions(OptionsContext context) {
 		super( context );
 	}
 

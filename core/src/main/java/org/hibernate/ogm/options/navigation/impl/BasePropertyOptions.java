@@ -30,7 +30,7 @@ import org.hibernate.ogm.options.spi.PropertyOptions;
  */
 public abstract class BasePropertyOptions<P extends PropertyOptions<P>> extends BaseContext implements PropertyOptions<P> {
 
-	public BasePropertyOptions(MappingContext context) {
+	public BasePropertyOptions(OptionsContext context) {
 		super( context );
 	}
 

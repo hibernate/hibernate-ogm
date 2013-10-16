@@ -27,7 +27,7 @@ import org.hibernate.ogm.options.mongodb.AssociationStorage;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.junit.Test;
 
 /**
@@ -40,7 +40,7 @@ public class AssociationStorageAnnotationTest {
 	@Test
 	public void testAssociationStorageMappingOptionOnField() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.entity( EntityAnnotatedOnField.class );
@@ -53,7 +53,7 @@ public class AssociationStorageAnnotationTest {
 	@Test
 	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );

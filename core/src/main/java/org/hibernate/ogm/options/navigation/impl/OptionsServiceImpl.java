@@ -26,8 +26,8 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.MappingFactory;
-import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.classloading.spi.ClassLoaderService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -56,7 +56,7 @@ public class OptionsServiceImpl implements OptionsService {
 	@Override
 	public OptionsServiceContext context() {
 		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
-		MappingContext context = createContext( classLoaderService );
+		OptionsContext context = createContext( classLoaderService );
 		return new OptionsServiceContextImpl( context );
 	}
 
@@ -65,8 +65,8 @@ public class OptionsServiceImpl implements OptionsService {
 		return new OptionsServiceContextWithSession( session );
 	}
 
-	private MappingContext createContext(ClassLoaderService classLoaderService) {
-		MappingContext context = new MappingContext();
+	private OptionsContext createContext(ClassLoaderService classLoaderService) {
+		OptionsContext context = new OptionsContext();
 		GlobalContext<?, ?> globalContext = mappingFactory.createMapping( context );
 		initializeContext( classLoaderService, globalContext );
 		return context;
@@ -82,9 +82,9 @@ public class OptionsServiceImpl implements OptionsService {
 	}
 
 	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
-		private final MappingContext context;
+		private final OptionsContext context;
 
-		public OptionsServiceContextImpl(MappingContext context) {
+		public OptionsServiceContextImpl(OptionsContext context) {
 			this.context = context;
 		}
 

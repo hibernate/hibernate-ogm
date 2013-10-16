@@ -21,7 +21,7 @@
 package org.hibernate.ogm.options.spi;
 
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.service.Service;
 
 /**
@@ -39,6 +39,6 @@ public interface MappingFactory<G extends GlobalContext<?, ?>> extends Service {
 	 *
 	 * @return a new global configuration context, of the provider-specific {@link GlobalContext} sub-type
 	 */
-	G createMapping(MappingContext context);
+	G createMapping(OptionsContext context);
 
 }

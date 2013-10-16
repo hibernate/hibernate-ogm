@@ -35,28 +35,28 @@ import org.hibernate.ogm.options.spi.MappingFactory;
 public class GenericMappingFactory implements MappingFactory<GlobalContext<?, ?>> {
 
 	@Override
-	public GlobalContext<?, ?> createMapping(MappingContext context) {
+	public GlobalContext<?, ?> createMapping(OptionsContext context) {
 		return context.createGlobalContext( GenericGlobalOptions.class, GenericEntityOptions.class, GenericPropertyOptions.class );
 	}
 
 	private abstract static class GenericGlobalOptions extends BaseGlobalOptions<GenericGlobalOptions> implements
 			GlobalContext<GenericGlobalOptions, GenericEntityOptions> {
 
-		public GenericGlobalOptions(MappingContext context) {
+		public GenericGlobalOptions(OptionsContext context) {
 			super( context );
 		}
 	}
 
 	private abstract static class GenericEntityOptions extends BaseEntityOptions<GenericEntityOptions> implements EntityContext<GenericEntityOptions, GenericPropertyOptions> {
 
-		public GenericEntityOptions(MappingContext context) {
+		public GenericEntityOptions(OptionsContext context) {
 			super( context );
 		}
 	}
 
 	private abstract static class GenericPropertyOptions extends BasePropertyOptions<GenericPropertyOptions> implements PropertyContext<GenericEntityOptions, GenericPropertyOptions> {
 
-		public GenericPropertyOptions(MappingContext context) {
+		public GenericPropertyOptions(OptionsContext context) {
 			super( context );
 		}
 	}

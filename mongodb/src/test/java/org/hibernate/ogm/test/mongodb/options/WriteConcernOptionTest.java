@@ -26,7 +26,7 @@ import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.junit.Test;
 
 /**
@@ -45,7 +45,7 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernMappingOption() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
@@ -57,7 +57,7 @@ public class WriteConcernOptionTest {
 	@Test
 	public void testWriteConcernedContextPriority() throws Exception {
 		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
+		OptionsContext context = new OptionsContext();
 		MongoDBGlobalContext mapping = factory.createMapping( context );
 		mapping
 			.writeConcern( WriteConcernType.ERRORS_IGNORED )
