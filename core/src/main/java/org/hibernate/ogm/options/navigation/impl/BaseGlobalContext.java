@@ -20,18 +20,29 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.spi.EntityOptions;
+import org.hibernate.ogm.options.generic.NamedQueryOption;
+import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
- * Implementation for options declared by {@link EntityOptions}.
+ * Base implementation for options declared by {@link GlobalOptions}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BaseEntityOptions<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
+public abstract class BaseGlobalContext<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
 
-	public BaseEntityOptions(MappingContext context) {
+	public BaseGlobalContext(ConfigurationContext context) {
 		super( context );
 	}
 
+	@Override
+	public G namedQuery(String name, String hql) {
+		addGlobalOption( new NamedQueryOption( name, hql ) );
+
+		// safe unless a provider developer screwed up the specific context definition
+		@SuppressWarnings("unchecked")
+		G globalContext = (G) this;
+
+		return globalContext;
+	}
 }

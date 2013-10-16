@@ -42,10 +42,10 @@ public class OptionsContainer implements Iterable<Option<?>> {
 	private final Set<Option<?>> options;
 
 	public OptionsContainer() {
-		this( new HashSet<Option<?>>() );
+		this( Collections.synchronizedSet( new HashSet<Option<?>>() ) );
 	}
 
-	protected OptionsContainer(Set<Option<?>> options) {
+	private OptionsContainer(Set<Option<?>> options) {
 		this.options = options;
 	}
 
@@ -61,6 +61,17 @@ public class OptionsContainer implements Iterable<Option<?>> {
 	 */
 	public void add(Option<?> option) {
 		options.add( option );
+	}
+
+	/**
+	 * Adds all options from the passed container to this container
+	 *
+	 * @param container a container with options to add
+	 */
+	public void addAll(OptionsContainer container) {
+		for ( Option<?> option : container ) {
+			options.add( option );
+		}
 	}
 
 	/**

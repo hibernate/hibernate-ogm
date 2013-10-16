@@ -23,34 +23,36 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Initialize the {@link OptionsService} so that other components can access it using the {@link org.hibernate.service.ServiceRegistry}.
+ * Initiator for the {@link ConfigurationBuilderService}. This is the same service instance which also implements
+ * {@link OptionsService}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public final class OptionsServiceInitiator implements SessionFactoryServiceInitiator<OptionsService> {
+public class ConfigurationBuilderServiceInitiator implements SessionFactoryServiceInitiator<ConfigurationBuilderService> {
 
-	public static final String MAPPING = "hibernate.ogm.mapping";
-
-	public static final OptionsServiceInitiator INSTANCE = new OptionsServiceInitiator();
+	public static final ConfigurationBuilderServiceInitiator INSTANCE = new ConfigurationBuilderServiceInitiator();
 
 	@Override
-	public Class<OptionsService> getServiceInitiated() {
-		return OptionsService.class;
+	public Class<ConfigurationBuilderService> getServiceInitiated() {
+		return ConfigurationBuilderService.class;
 	}
 
 	@Override
-	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		return new OptionsServiceImpl( registry.getService( DatastoreProvider.class ), sessionFactory );
+	public ConfigurationBuilderService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration,
+			ServiceRegistryImplementor registry) {
+
+		return (ConfigurationBuilderService) registry.getService( OptionsService.class );
 	}
 
 	@Override
-	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		return null;
+	public ConfigurationBuilderService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata,
+			ServiceRegistryImplementor registry) {
+
+		return (ConfigurationBuilderService) registry.getService( OptionsService.class );
 	}
 }

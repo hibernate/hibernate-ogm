@@ -25,10 +25,11 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.junit.Test;
 
 /**
@@ -46,15 +47,16 @@ public class AssociationStorageOptionTest {
 
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
+		OptionsContext optionsContext = new OptionsContext();
+		ConfigurationContext context = new ConfigurationContext( optionsContext );
+
+		MongoDBGlobalContext mapping = new MongoDBDatastoreProvider().getConfigurationBuilder( context );
 		mapping
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.COLLECTION );
 
-		assertThat( context.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
+		assertThat( optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.COLLECTION) );
 	}

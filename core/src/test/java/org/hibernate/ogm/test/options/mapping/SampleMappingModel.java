@@ -23,10 +23,10 @@ package org.hibernate.ogm.test.options.mapping;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.navigation.impl.BaseEntityOptions;
-import org.hibernate.ogm.options.navigation.impl.BaseGlobalOptions;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyOptions;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -35,6 +35,10 @@ import org.hibernate.ogm.test.options.examples.NameExampleOption;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class SampleMappingModel {
+
+	public static SampleGlobalContext getInstance(ConfigurationContext context) {
+		return context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
+	}
 
 	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
 		SampleGlobalContext force(boolean force);
@@ -51,9 +55,9 @@ public class SampleMappingModel {
 		SamplePropertyContext embed(Object object);
 	}
 
-	public abstract static class SampleGlobalContextImpl extends BaseGlobalOptions<SampleGlobalContext> implements SampleGlobalContext {
+	public abstract static class SampleGlobalContextImpl extends BaseGlobalContext<SampleGlobalContext> implements SampleGlobalContext {
 
-		public SampleGlobalContextImpl(MappingContext context) {
+		public SampleGlobalContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 
@@ -64,9 +68,9 @@ public class SampleMappingModel {
 		}
 	}
 
-	public abstract static class SampleEntityContextImpl extends BaseEntityOptions<SampleEntityContext> implements SampleEntityContext {
+	public abstract static class SampleEntityContextImpl extends BaseEntityContext<SampleEntityContext> implements SampleEntityContext {
 
-		public SampleEntityContextImpl(MappingContext context) {
+		public SampleEntityContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 
@@ -83,9 +87,9 @@ public class SampleMappingModel {
 		}
 	}
 
-	public abstract static class SamplePropertyContextImpl extends BasePropertyOptions<SamplePropertyContext> implements SamplePropertyContext {
+	public abstract static class SamplePropertyContextImpl extends BasePropertyContext<SamplePropertyContext> implements SamplePropertyContext {
 
-		public SamplePropertyContextImpl(MappingContext context) {
+		public SamplePropertyContextImpl(ConfigurationContext context) {
 			super( context );
 		}
 

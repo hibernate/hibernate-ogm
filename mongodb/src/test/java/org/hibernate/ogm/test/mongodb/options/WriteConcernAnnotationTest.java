@@ -23,10 +23,12 @@ package org.hibernate.ogm.test.mongodb.options;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -34,65 +36,63 @@ import org.junit.Test;
  */
 public class WriteConcernAnnotationTest {
 
+	private OptionsContext optionsContext;
+	private MongoDBGlobalOptions mongoOptions;
+
+	@Before
+	public void setupBuilder() {
+		optionsContext = new OptionsContext();
+		mongoOptions = new MongoDBDatastoreProvider().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+	}
+
+
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
-		MappingContext context = new MappingContext();
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping.entity( EntityWriteConcernExample.class );
+		mongoOptions.entity( EntityWriteConcernExample.class );
 
-		assertThat( context.getGlobalOptions() ).isEmpty();
+		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
 
-		assertThat( context.getEntityOptions( EntityWriteConcernExample.class ) )
+		assertThat( optionsContext.getEntityOptions( EntityWriteConcernExample.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
 
 	@Test
 	public void testWriteConcernForField() throws Exception {
-		MappingContext context = new MappingContext();
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping
+		mongoOptions
 			.entity( FieldWriteConcernExample.class );
 
-		assertThat( context.getGlobalOptions() ).isEmpty();
+		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
 
-		assertThat( context.getPropertyOptions( FieldWriteConcernExample.class, "content" ) )
+		assertThat( optionsContext.getPropertyOptions( FieldWriteConcernExample.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.FSYNCED ) );
 	}
 
 	@Test
 	public void testWriteConcernForMethod() throws Exception {
-		MappingContext context = new MappingContext();
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping
+		mongoOptions
 			.entity( MethodWriteConcernExample.class );
 
-		assertThat( context.getGlobalOptions() ).isEmpty();
+		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
 
-		assertThat( context.getPropertyOptions( MethodWriteConcernExample.class, "getContent" ) )
+		assertThat( optionsContext.getPropertyOptions( MethodWriteConcernExample.class, "getContent" ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.JOURNALED ) );
 	}
 
 	@Test
 	public void testWriteConcernAnnotationPriorities() throws Exception {
-		MappingContext context = new MappingContext();
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping
+		mongoOptions
 			.entity( AnnotatedClass.class );
 
-		assertThat( context.getGlobalOptions() ).isEmpty();
+		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
 
-		assertThat( context.getEntityOptions( AnnotatedClass.class ) )
+		assertThat( optionsContext.getEntityOptions( AnnotatedClass.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ACKNOWLEDGED ) );
 
-		assertThat( context.getPropertyOptions( AnnotatedClass.class, "title") )
+		assertThat( optionsContext.getPropertyOptions( AnnotatedClass.class, "title") )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}

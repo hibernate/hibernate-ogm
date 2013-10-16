@@ -20,109 +20,44 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import java.util.Map;
-
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.options.spi.OptionsContainer;
-import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.service.classloading.spi.ClassLoaderService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Creates a service that can be called to retrieve the mapping context containing all the options.
- * <p>
- * Some options might be session dependent.
+ * Provides read and write access to option contexts maintained at the session factory and session level.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public class OptionsServiceImpl implements OptionsService {
+public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
 
-	private final MappingFactory<?> mappingFactory;
+	private final DatastoreProvider datastoreProvider;
+	private final OptionsContext globalContext;
 
-	private final ServiceRegistryImplementor registry;
-
-	private final SessionFactoryImplementor sessionFactoryImplementor;
-
-	public OptionsServiceImpl(MappingFactory<?> factory, ServiceRegistryImplementor registry, SessionFactoryImplementor sessionFactoryImplementor) {
-		this.mappingFactory = factory;
-		this.registry = registry;
-		this.sessionFactoryImplementor = sessionFactoryImplementor;
+	public OptionsServiceImpl(DatastoreProvider datastoreProvider, SessionFactoryImplementor sessionFactoryImplementor) {
+		this.datastoreProvider = datastoreProvider;
+		this.globalContext = new OptionsContext();
 	}
+
+	//OptionsService
 
 	@Override
 	public OptionsServiceContext context() {
-		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
-		MappingContext context = createContext( classLoaderService );
-		return new OptionsServiceContextImpl( context );
+		return globalContext;
 	}
 
 	@Override
 	public OptionsServiceContext context(SessionImplementor session) {
-		return new OptionsServiceContextWithSession( session );
+		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
 	}
 
-	private MappingContext createContext(ClassLoaderService classLoaderService) {
-		MappingContext context = new MappingContext();
-		GlobalContext<?, ?> globalContext = mappingFactory.createMapping( context );
-		initializeContext( classLoaderService, globalContext );
-		return context;
+	//ConfigurationBuilderService
+
+	@Override
+	public GlobalContext<?, ?> getConfigurationBuilder() {
+		return datastoreProvider.getConfigurationBuilder( new ConfigurationContext( globalContext ) );
 	}
-
-	private void initializeContext(ClassLoaderService classLoaderService, GlobalContext<?, ?> globalContext) {
-		Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
-		for ( EntityPersister persister : entityPersisters.values() ) {
-			String entityName = persister.getEntityName();
-			Class<Object> classForName = classLoaderService.classForName( entityName );
-			globalContext.entity( classForName );
-		}
-	}
-
-	private static final class OptionsServiceContextImpl implements OptionsServiceContext {
-		private final MappingContext context;
-
-		public OptionsServiceContextImpl(MappingContext context) {
-			this.context = context;
-		}
-
-		@Override
-		public OptionsContainer getGlobalOptions() {
-			return this.context.getGlobalOptions();
-		}
-
-		@Override
-		public OptionsContainer getEntityOptions(Class<?> entityType) {
-			return context.getEntityOptions( entityType );
-		}
-
-		@Override
-		public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-			return context.getPropertyOptions( entityType, propertyName );
-		}
-	}
-
-	private static final class OptionsServiceContextWithSession implements OptionsServiceContext {
-
-		public OptionsServiceContextWithSession(SessionImplementor session) {
-		}
-
-		@Override
-		public OptionsContainer getGlobalOptions() {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-
-		@Override
-		public OptionsContainer getEntityOptions(Class<?> entityType) {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-
-		@Override
-		public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-			throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
-		}
-	}
-
 }

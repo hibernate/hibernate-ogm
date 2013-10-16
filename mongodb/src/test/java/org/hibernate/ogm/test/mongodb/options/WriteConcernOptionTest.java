@@ -23,10 +23,12 @@ package org.hibernate.ogm.test.mongodb.options;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -36,6 +38,15 @@ import org.junit.Test;
  */
 public class WriteConcernOptionTest {
 
+	private OptionsContext optionsContext;
+	private MongoDBGlobalOptions mongoOptions;
+
+	@Before
+	public void setupBuilder() {
+		optionsContext = new OptionsContext();
+		mongoOptions = new MongoDBDatastoreProvider().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+	}
+
 	@Test
 	public void testGetter() throws Exception {
 		WriteConcernOption option = new WriteConcernOption( WriteConcernType.ACKNOWLEDGED );
@@ -44,31 +55,25 @@ public class WriteConcernOptionTest {
 
 	@Test
 	public void testWriteConcernMappingOption() throws Exception {
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping.writeConcern( WriteConcernType.ERRORS_IGNORED );
+		mongoOptions.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
-		assertThat( context.getGlobalOptions() )
+		assertThat( optionsContext.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
 	}
 
 	@Test
 	public void testWriteConcernedContextPriority() throws Exception {
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
-		mapping
+		mongoOptions
 			.writeConcern( WriteConcernType.ERRORS_IGNORED )
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY );
 
-		assertThat( context.getGlobalOptions() )
+		assertThat( optionsContext.getGlobalOptions() )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED) );
 
-		assertThat( context.getEntityOptions( ExampleForMongoDBMapping.class ) )
+		assertThat( optionsContext.getEntityOptions( ExampleForMongoDBMapping.class ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.MAJORITY ) );
 	}

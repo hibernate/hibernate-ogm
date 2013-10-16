@@ -32,9 +32,9 @@ import org.hibernate.ogm.options.spi.Option;
  */
 public class BaseContext {
 
-	private final MappingContext context;
+	private final ConfigurationContext context;
 
-	public BaseContext(MappingContext context) {
+	public BaseContext(ConfigurationContext context) {
 		this.context = context;
 	}
 

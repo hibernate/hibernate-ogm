@@ -23,40 +23,37 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
 
 /**
- * A {@link MappingFactory} implementation which returns a default {@link GlobalContext} that provides no
- * store-specific options.
+ * A generic option model that provides no store-specific options.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class GenericMappingFactory implements MappingFactory<GlobalContext<?, ?>> {
+public class GenericOptionModel {
 
-	@Override
-	public GlobalContext<?, ?> createMapping(MappingContext context) {
+	public static GlobalContext<?, ?> getInstance(ConfigurationContext context) {
 		return context.createGlobalContext( GenericGlobalOptions.class, GenericEntityOptions.class, GenericPropertyOptions.class );
 	}
 
-	private abstract static class GenericGlobalOptions extends BaseGlobalOptions<GenericGlobalOptions> implements
+	private abstract static class GenericGlobalOptions extends BaseGlobalContext<GenericGlobalOptions> implements
 			GlobalContext<GenericGlobalOptions, GenericEntityOptions> {
 
-		public GenericGlobalOptions(MappingContext context) {
+		public GenericGlobalOptions(ConfigurationContext context) {
 			super( context );
 		}
 	}
 
-	private abstract static class GenericEntityOptions extends BaseEntityOptions<GenericEntityOptions> implements EntityContext<GenericEntityOptions, GenericPropertyOptions> {
+	private abstract static class GenericEntityOptions extends BaseEntityContext<GenericEntityOptions> implements EntityContext<GenericEntityOptions, GenericPropertyOptions> {
 
-		public GenericEntityOptions(MappingContext context) {
+		public GenericEntityOptions(ConfigurationContext context) {
 			super( context );
 		}
 	}
 
-	private abstract static class GenericPropertyOptions extends BasePropertyOptions<GenericPropertyOptions> implements PropertyContext<GenericEntityOptions, GenericPropertyOptions> {
+	private abstract static class GenericPropertyOptions extends BasePropertyContext<GenericPropertyOptions> implements PropertyContext<GenericEntityOptions, GenericPropertyOptions> {
 
-		public GenericPropertyOptions(MappingContext context) {
+		public GenericPropertyOptions(ConfigurationContext context) {
 			super( context );
 		}
 	}

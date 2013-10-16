@@ -23,11 +23,13 @@ package org.hibernate.ogm.test.mongodb.options;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.AssociationStorage;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBMappingServiceFactory;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -37,28 +39,33 @@ import org.junit.Test;
  */
 public class AssociationStorageAnnotationTest {
 
+	private OptionsContext optionsContext;
+	private ConfigurationContext context;
+
+	@Before
+	public void setupContexts() {
+		optionsContext = new OptionsContext();
+		context = new ConfigurationContext( optionsContext );
+	}
+
 	@Test
 	public void testAssociationStorageMappingOptionOnField() throws Exception {
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
+		MongoDBGlobalContext mapping = new MongoDBDatastoreProvider().getConfigurationBuilder( context );
 		mapping
 			.entity( EntityAnnotatedOnField.class );
 
-		assertThat( context.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
+		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.IN_ENTITY ) );
 	}
 
 	@Test
 	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
-		MongoDBMappingServiceFactory factory = new MongoDBMappingServiceFactory();
-		MappingContext context = new MappingContext();
-		MongoDBGlobalContext mapping = factory.createMapping( context );
+		MongoDBGlobalContext mapping = new MongoDBDatastoreProvider().getConfigurationBuilder( context );
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );
 
-		assertThat( context.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
+		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
 	}

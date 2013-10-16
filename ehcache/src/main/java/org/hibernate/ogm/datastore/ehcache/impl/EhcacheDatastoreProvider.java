@@ -39,10 +39,11 @@ import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.ogm.options.navigation.impl.GenericMappingFactory;
-import org.hibernate.ogm.options.spi.MappingFactory;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -145,7 +146,7 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	@Override
-	public Class<? extends MappingFactory<?>> getConfigurationBuilder() {
-		return GenericMappingFactory.class;
+	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
+		return GenericOptionModel.getInstance( context );
 	}
 }

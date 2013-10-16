@@ -18,20 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.options.spi.PropertyOptions;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
- * Implementation for options declared by {@link PropertyOptions}.
+ * Represents a specific datastore to the user and allows to invoke store-specific operations.
  *
- * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
+ *
+ * @param <G> the type of {@link GlobalContext} supported by the represented datastore
  */
-public abstract class BasePropertyOptions<P extends PropertyOptions<P>> extends BaseContext implements PropertyOptions<P> {
+public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
 
-	public BasePropertyOptions(MappingContext context) {
-		super( context );
-	}
-
+	/**
+	 * Returns a store-specific {@link GlobalContext} object which allows to apply configuration options on a global,
+	 * entity and property level.
+	 *
+	 * @return a store-specific {@link GlobalContext} object
+	 */
+	G getConfigurationBuilder();
 }

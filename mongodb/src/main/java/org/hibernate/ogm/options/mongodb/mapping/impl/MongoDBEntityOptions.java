@@ -23,15 +23,15 @@ package org.hibernate.ogm.options.mongodb.mapping.impl;
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.navigation.impl.BaseEntityOptions;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
+import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class MongoDBEntityOptions extends BaseEntityOptions<MongoDBEntityContext> implements MongoDBEntityContext {
+public abstract class MongoDBEntityOptions extends BaseEntityContext<MongoDBEntityContext> implements MongoDBEntityContext {
 
-	public MongoDBEntityOptions(MappingContext context ) {
+	public MongoDBEntityOptions(ConfigurationContext context ) {
 		super( context );
 	}
 

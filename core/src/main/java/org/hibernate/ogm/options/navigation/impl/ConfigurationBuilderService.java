@@ -18,27 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.spi;
+package org.hibernate.ogm.options.navigation.impl;
 
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
 import org.hibernate.service.Service;
 
 /**
- * Factory for the creation of {@link GlobalContext}s, providing the entry point into the fluent API for provider-specific
- * configurations, on a global, per-entity and per-property level.
+ * Provides access to {@link GlobalContext}s specific to the current datastore provider. The options set via this
+ * context can be accessed via {@link org.hibernate.ogm.options.spi.OptionsService}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
- *
- * @param <G> The type of {@link GlobalContext} created by this factory
+ * @author Gunnar Morling
+ * @see org.hibernate.ogm.options.spi.OptionsService
  */
-public interface MappingFactory<G extends GlobalContext<?, ?>> extends Service {
+public interface ConfigurationBuilderService extends Service {
 
 	/**
-	 * Returns a new global configuration context for configuring the current datastore provider
+	 * Returns a new global context of the store-specific implementation type
 	 *
-	 * @return a new global configuration context, of the provider-specific {@link GlobalContext} sub-type
+	 * @return a new global configuration context
 	 */
-	G createMapping(MappingContext context);
-
+	GlobalContext<?, ?> getConfigurationBuilder();
 }

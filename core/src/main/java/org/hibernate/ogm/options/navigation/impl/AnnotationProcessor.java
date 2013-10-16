@@ -23,10 +23,13 @@ package org.hibernate.ogm.options.navigation.impl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -36,75 +39,73 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * Only the annotations representing an option are considered.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
 public class AnnotationProcessor {
 
 	private static final Log log = LoggerFactory.make();
 
 	/**
-	 * Saves in the {@link MappingContext} the options that are related to an entity.
+	 * Returns an {@link OptionsContainer} with the entity-level options of the given type.
 	 *
-	 * @param context the {@link MappingContext} where {@link Option} are saved
 	 * @param entityClass class of the entity annotated with the options
+	 * @return an {@link OptionsContainer} with the entity-level options of the given type; may be empty but never
+	 * {@code null}
 	 */
-	public static void saveEntityOptions(final MappingContext context, final Class<?> entityClass) {
-		context.configureEntity( entityClass );
-		Annotation[] annotations = entityClass.getAnnotations();
-		saveOptions( new ContextCommand() {
-
-			@Override
-			public void add(Option<?> option) {
-				context.addEntityOption( option );
-			}
-
-		}, annotations );
+	public static OptionsContainer getEntityOptions(Class<?> entityType) {
+		return convertOptionAnnotations( entityType.getAnnotations() );
 	}
 
 	/**
-	 * Saves in the {@link MappingContext} the options that are related to the properties and methods of an entity.
+	 * Returns an {@link OptionsContainer} with the property-level options of the given type, keyed by property.
 	 *
-	 * @param context the {@link MappingContext} where {@link Option} are saved
 	 * @param entityClass class containing the option annotation
+	 * @return an {@link OptionsContainer} with the property-level options of the given type; may be empty but never
+	 * {@code null}
 	 */
-	public static void savePropertyOptions(final MappingContext context, final Class<?> entityClass) {
-		context.configureEntity( entityClass );
+	public static Map<PropertyKey, OptionsContainer> getPropertyOptions(final Class<?> entityClass) {
+		final Map<PropertyKey, OptionsContainer> optionsByProperty = new HashMap<PropertyKey, OptionsContainer>();
+
+		//TODO OGM-345 Consider only getters; use property name
 		for ( final Method method : entityClass.getMethods() ) {
-			context.configureProperty( method.getName() );
-			saveOptions( new ContextCommand() {
-
-				@Override
-				public void add(Option<?> option) {
-					context.addPropertyOption( option );
-				}
-
-			}, method.getAnnotations() );
+			final OptionsContainer optionsOfProperty = convertOptionAnnotations( method.getAnnotations() );
+			optionsByProperty.put( new PropertyKey( entityClass, method.getName() ), optionsOfProperty );
 		}
+
+		//TODO OGM-345 Consider private fields/getters
 		for ( final Field field : entityClass.getFields() ) {
-			context.configureProperty( field.getName() );
-			saveOptions( new ContextCommand() {
+			PropertyKey key = new PropertyKey( entityClass, field.getName() );
+			OptionsContainer optionsOfField = convertOptionAnnotations( field.getAnnotations() );
 
-				@Override
-				public void add(Option<?> option) {
-					context.addPropertyOption( option );
-				}
-
-			}, field.getAnnotations() );
-		}
-	}
-
-	private static void saveOptions(ContextCommand command, Annotation[] annotations) {
-		for ( Annotation annotation : annotations ) {
-			Class<? extends Annotation> class1 = annotation.annotationType();
-			Annotation[] qualifiers = class1.getAnnotations();
-			for ( Annotation qualifier : qualifiers ) {
-				if ( qualifier.annotationType().equals( MappingOption.class ) ) {
-					Class<? extends AnnotationConverter<?>> converterClass = ( (MappingOption) qualifier ).value();
-					Option<?> option = convert( annotation, converterClass );
-					command.add( option );
-					break;
-				}
+			OptionsContainer optionsOfProperty = optionsByProperty.get( key );
+			if ( optionsOfProperty != null ) {
+				optionsOfProperty.addAll( optionsOfField );
+			}
+			else {
+				optionsByProperty.put( key, optionsOfField );
 			}
 		}
+
+		return optionsByProperty;
+	}
+
+	private static OptionsContainer convertOptionAnnotations(Annotation[] annotations) {
+		OptionsContainer options = new OptionsContainer();
+
+		for ( Annotation annotation : annotations ) {
+			Class<? extends AnnotationConverter<?>> converterType = getConverterType( annotation );
+
+			if ( converterType != null ) {
+				options.add( convert( annotation, converterType ) );
+			}
+		}
+
+		return options;
+	}
+
+	private static Class<? extends AnnotationConverter<?>> getConverterType(Annotation annotation) {
+		MappingOption mappingOption = annotation.annotationType().getAnnotation( MappingOption.class );
+		return mappingOption != null ? mappingOption.value() : null;
 	}
 
 	private static Option<?> convert(Annotation annotation, Class<? extends AnnotationConverter<?>> converterClass) {
@@ -119,9 +120,4 @@ public class AnnotationProcessor {
 			throw log.cannotConvertAnnotation( converterClass, e );
 		}
 	}
-
-	private interface ContextCommand {
-		void add(Option<?> option);
-	}
-
 }

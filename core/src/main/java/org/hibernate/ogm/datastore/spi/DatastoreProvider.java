@@ -21,7 +21,8 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.MappingFactory;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.Service;
 
@@ -48,11 +49,10 @@ public interface DatastoreProvider extends Service {
 	Class<? extends QueryParserService> getDefaultQueryParserServiceType();
 
 	/**
-	 * Returns the {@link MappingFactory} for the creation of the mapping class used to assign options for a specific
-	 * datastore provider.
+	 * Returns a new store-specific {@link GlobalContext} instance.
 	 *
-	 * @return the {@link MappingFactory} for the creation of a mapping context
+	 * @param context configuration context to be used as factory for creating the global context object
+	 * @return a new {@link GlobalContext}
 	 */
-	Class<? extends MappingFactory<?>> getConfigurationBuilder();
-
+	GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context);
 }

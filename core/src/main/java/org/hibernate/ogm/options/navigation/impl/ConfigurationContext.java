@@ -22,8 +22,6 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
@@ -33,68 +31,49 @@ import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.spi.Option;
-import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Contains all the options set using the mapping API; All the options are separated in different contexts: global, per
- * entity and per property.
+ * Keeps track of the entities and properties configured using the fluent configuration API. There is one instance of
+ * this context per invocation of this API (beginning with the creation of a
+ * {@link org.hibernate.ogm.options.navigation.context.GlobalContext}). This instance is passed between the individual
+ * context types created in the course of using the fluent API. The book-keeping of configured options is delegated to
+ * {@link OptionsContext}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class MappingContext {
+public class ConfigurationContext {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final OptionsContainer globaloptions = new OptionsContainer();
-
-	private final Map<Class<?>, OptionsContainer> optionsPerEntity = new HashMap<Class<?>, OptionsContainer>();
-
-	private final Map<PropertyKey, OptionsContainer> optionsPerProperty = new HashMap<PropertyKey, OptionsContainer>();
+	/**
+	 * Contains all options configured via this and other configuration contexts.
+	 */
+	private final OptionsContext allOptions;
 
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
+	public ConfigurationContext(OptionsContext globalContext) {
+		this.allOptions = globalContext;
+	}
+
 	public void addGlobalOption(Option<?> option) {
-		globaloptions.add( option );
+		allOptions.addGlobalOption( option );
 	}
 
 	public void addEntityOption(Option<?> option) {
-		optionsPerEntity.get( currentEntityType ).add( option );
+		allOptions.addEntityOption( currentEntityType, option );
 	}
 
 	public void addPropertyOption(Option<?> option) {
-		PropertyKey key = new PropertyKey( currentEntityType, currentPropertyName );
-		if ( !optionsPerProperty.containsKey( key ) ) {
-			optionsPerProperty.put( key, new OptionsContainer() );
-		}
-		optionsPerProperty.get( key ).add( option );
-	}
-
-	public OptionsContainer getGlobalOptions() {
-		return globaloptions;
-	}
-
-	public OptionsContainer getEntityOptions(Class<?> entityType) {
-		OptionsContainer options = optionsPerEntity.get( entityType );
-		return options != null ? options : OptionsContainer.EMPTY;
-	}
-
-	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-		OptionsContainer options = optionsPerProperty.get( new PropertyKey( entityType, propertyName ) );
-		return options != null ? options : OptionsContainer.EMPTY;
+		allOptions.addPropertyOption( currentEntityType, currentPropertyName, option );
 	}
 
 	public void configureEntity(Class<?> entityType) {
 		this.currentEntityType = entityType;
-
-		if ( !optionsPerEntity.containsKey( currentEntityType ) ) {
-			optionsPerEntity.put( currentEntityType, new OptionsContainer() );
-			AnnotationProcessor.saveEntityOptions( this, currentEntityType );
-			AnnotationProcessor.savePropertyOptions( this, currentEntityType );
-		}
 	}
 
 	public void configureProperty(String propertyName) {
@@ -103,7 +82,7 @@ public class MappingContext {
 
 	/**
 	 * Creates a new {@link GlobalContext} object based on the given context implementation types. All implementation
-	 * types must declare a public or protected constructor with a single parameter, accepting {@link MappingContext}.
+	 * types must declare a public or protected constructor with a single parameter, accepting {@link ConfigurationContext}.
 	 * <p>
 	 * Each context implementation type must provide an implementation of the method(s) declared on the particular
 	 * provider-specific context interface. All methods declared on context super interfaces - {@code entity()} and
@@ -127,7 +106,7 @@ public class MappingContext {
 
 		try {
 			return (G) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { ConfigurationContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
@@ -146,7 +125,7 @@ public class MappingContext {
 
 		try {
 			return (E) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { ConfigurationContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}
@@ -165,7 +144,7 @@ public class MappingContext {
 
 		try {
 			return (P) proxyFactory.create(
-					new Class<?>[] { MappingContext.class },
+					new Class<?>[] { ConfigurationContext.class },
 					new Object[] { this },
 					new EntityOrPropertyMethodHandler( entityContextImplType, propertyContextImplType ) );
 		}

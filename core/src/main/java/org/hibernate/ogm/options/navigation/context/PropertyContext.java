@@ -25,7 +25,9 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.options.spi.PropertyOptions;
 
 /**
- * Property level to the mapping API
+ * Property level to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.navigation.impl.BasePropertyContext}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @param <E> the type of provider-specific entity context definition, associated with the specific property context

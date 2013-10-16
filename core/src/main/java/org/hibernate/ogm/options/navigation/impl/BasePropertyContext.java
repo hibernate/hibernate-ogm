@@ -18,19 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.mongodb.mapping.impl;
+package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.MappingContext;
-import org.hibernate.ogm.options.spi.MappingFactory;
+import org.hibernate.ogm.options.spi.PropertyOptions;
 
 /**
+ * Base implementation for options declared by {@link PropertyOptions}.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public class MongoDBMappingServiceFactory implements MappingFactory<MongoDBGlobalContext> {
+public abstract class BasePropertyContext<P extends PropertyOptions<P>> extends BaseContext implements PropertyOptions<P> {
 
-	@Override
-	public MongoDBGlobalContext createMapping(MappingContext context) {
-		return context.createGlobalContext( MongoDBGlobalOptions.class, MongoDBEntityOptions.class, MongoDBPropertyOptions.class );
+	public BasePropertyContext(ConfigurationContext context) {
+		super( context );
 	}
+
 }

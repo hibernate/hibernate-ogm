@@ -42,4 +42,7 @@ public class EmbedExampleOption extends UniqueOption {
 		return "embed: " + String.valueOf( embed );
 	}
 
+	public Object getEmbedded() {
+		return embed;
+	}
 }
