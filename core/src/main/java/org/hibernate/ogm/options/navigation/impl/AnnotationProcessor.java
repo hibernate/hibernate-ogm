@@ -48,7 +48,7 @@ public class AnnotationProcessor {
 	/**
 	 * Returns an {@link OptionsContainer} with the entity-level options of the given type.
 	 *
-	 * @param entityClass class of the entity annotated with the options
+	 * @param entityType class of the entity annotated with the options
 	 * @return an {@link OptionsContainer} with the entity-level options of the given type; may be empty but never
 	 * {@code null}
 	 */
