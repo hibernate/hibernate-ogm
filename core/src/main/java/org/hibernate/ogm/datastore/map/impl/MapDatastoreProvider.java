@@ -194,6 +194,6 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.getInstance( context );
+		return GenericOptionModel.createGlobalContext( context );
 	}
 }

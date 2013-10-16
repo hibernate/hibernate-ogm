@@ -147,6 +147,6 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.getInstance( context );
+		return GenericOptionModel.createGlobalContext( context );
 	}
 }

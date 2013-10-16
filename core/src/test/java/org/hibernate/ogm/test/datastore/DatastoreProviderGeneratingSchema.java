@@ -96,7 +96,7 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.getInstance( context );
+		return GenericOptionModel.createGlobalContext( context );
 	}
 
 	public static class Dialect implements GridDialect {

@@ -32,7 +32,7 @@ import org.hibernate.ogm.options.navigation.context.PropertyContext;
  */
 public class GenericOptionModel {
 
-	public static GlobalContext<?, ?> getInstance(ConfigurationContext context) {
+	public static GlobalContext<?, ?> createGlobalContext(ConfigurationContext context) {
 		return context.createGlobalContext( GenericGlobalOptions.class, GenericEntityOptions.class, GenericPropertyOptions.class );
 	}
 
