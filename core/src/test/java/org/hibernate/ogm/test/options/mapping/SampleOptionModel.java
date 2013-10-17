@@ -34,9 +34,9 @@ import org.hibernate.ogm.test.options.examples.NameExampleOption;
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class SampleMappingModel {
+public class SampleOptionModel {
 
-	public static SampleGlobalContext getInstance(ConfigurationContext context) {
+	public static SampleGlobalContext createGlobalContext(ConfigurationContext context) {
 		return context.createGlobalContext( SampleGlobalContextImpl.class, SampleEntityContextImpl.class, SamplePropertyContextImpl.class );
 	}
 

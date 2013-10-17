@@ -40,7 +40,7 @@ import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -152,11 +152,11 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		@Override
 		public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
-			return SampleMappingModel.getInstance( context );
+			return SampleOptionModel.createGlobalContext( context );
 		}
 	}
 
-	public interface SampleNoSqlDatastore extends DatastoreConfiguration<SampleMappingModel.SampleGlobalContext> {
+	public interface SampleNoSqlDatastore extends DatastoreConfiguration<SampleOptionModel.SampleGlobalContext> {
 	}
 
 	public interface AnotherDatastore extends DatastoreConfiguration<AnotherGlobalContext> {

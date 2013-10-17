@@ -30,7 +30,7 @@ import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.junit.Test;
 
 /**
@@ -43,7 +43,7 @@ public class ProxyFactoryTest {
 		final Object embedded = 3;
 
 		OptionsContext context = new OptionsContext();
-		SampleGlobalContext sampleMapping = SampleMappingModel.getInstance( new ConfigurationContext( context ) );
+		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( new ConfigurationContext( context ) );
 		sampleMapping
 				.namedQuery( "foo", "from Foo" )
 				.force( true )

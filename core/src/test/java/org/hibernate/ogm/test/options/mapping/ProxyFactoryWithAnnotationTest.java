@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
-import org.hibernate.ogm.test.options.mapping.SampleMappingModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.junit.Test;
 
 /**
@@ -48,7 +48,7 @@ public class ProxyFactoryWithAnnotationTest {
 		OptionsContext context = new OptionsContext();
 		ConfigurationContext configurationContext = new ConfigurationContext( context );
 
-		SampleGlobalContext sampleMapping = SampleMappingModel.getInstance( configurationContext );
+		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( configurationContext );
 		sampleMapping
 			.entity( Example.class )
 				.name( "Name replaced" );
