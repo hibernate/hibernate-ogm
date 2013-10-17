@@ -793,6 +793,10 @@
                     <version>2.12</version>
                     <configuration>
                         <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <systemPropertyVariables>
+                           <!-- See test org.hibernate.ogm.test.utils.EnvironmentTest -->
+                           <hibernate.service.allow_crawling>false</hibernate.service.allow_crawling>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <!-- Generate the docbook xml from the asciidoc -->
