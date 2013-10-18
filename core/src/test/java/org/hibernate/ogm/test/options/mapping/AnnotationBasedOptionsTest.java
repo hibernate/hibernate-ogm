@@ -82,8 +82,18 @@ public class AnnotationBasedOptionsTest {
 			.contains( new EmbedExampleOption( "Another Test" ) );
 	}
 
+	@Test
+	public void testAnnotationGivenOnPrivateFieldCanBeRetrievedFromOptionsContext() {
+		assertThat( context.getPropertyOptions( Example.class, "anotherProperty" ) )
+			.hasSize( 1 )
+			.contains( new EmbedExampleOption( "Yet Another Test" ) );
+	}
+
 	@NameExample( "Batman" )
 	private static final class Example {
+
+		@EmbedExample("Yet Another Test")
+		private int anotherProperty;
 
 		@EmbedExample("Test")
 		public String getExampleProperty() {

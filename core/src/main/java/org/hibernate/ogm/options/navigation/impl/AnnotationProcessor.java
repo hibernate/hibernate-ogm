@@ -77,8 +77,7 @@ public class AnnotationProcessor {
 			optionsByProperty.put( new PropertyKey( entityClass, propertyName ), optionsOfProperty );
 		}
 
-		//TODO OGM-345 Consider private fields/getters
-		for ( final Field field : entityClass.getFields() ) {
+		for ( final Field field : entityClass.getDeclaredFields() ) {
 			PropertyKey key = new PropertyKey( entityClass, field.getName() );
 			OptionsContainer optionsOfField = convertOptionAnnotations( field.getAnnotations() );
 
