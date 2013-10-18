@@ -114,6 +114,23 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testUniqueResultNamedNativeQuery() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		try {
+			OscarWildePoem uniqueResult = (OscarWildePoem) session.getNamedQuery( "AthanasiaQuery" )
+					.uniqueResult();
+			assertAreEquals( uniqueResult, athanasia );
+			transaction.commit();
+		}
+		finally {
+			session.clear();
+			session.close();
+		}
+	}
+
+	@Test
 	public void testExceptionWhenReturnedEntityIsMissingAndManyResultsAreExpected() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();

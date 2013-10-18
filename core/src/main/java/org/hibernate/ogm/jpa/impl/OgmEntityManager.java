@@ -43,6 +43,9 @@ import org.hibernate.LockMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
+import org.hibernate.engine.spi.NamedQueryDefinition;
+import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
@@ -214,7 +217,30 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createNamedQuery(String name) {
-		throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+		OgmSessionFactory sessionFactory = (OgmSessionFactory) factory.getSessionFactory();
+		NamedQueryDefinition queryDefinition = sessionFactory.getNamedSQLQuery( name );
+		if ( queryDefinition == null ) {
+			queryDefinition = sessionFactory.getNamedQuery( name );
+			if ( queryDefinition == null ) {
+				throw new IllegalArgumentException( "Named query not found: " + name );
+			}
+			else {
+				throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+			}
+		}
+		else {
+			return createNativeQuery( (NamedSQLQueryDefinition) queryDefinition );
+		}
+	}
+
+	private Query createNativeQuery(NamedSQLQueryDefinition sqlDefinition) {
+		String sqlQueryString = sqlDefinition.getQueryString();
+		SQLQuery noSqlQuery = ( (Session) getDelegate() ).createSQLQuery( sqlQueryString );
+		if ( sqlDefinition.getQueryReturns().length == 1 ) {
+			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
+			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
+		}
+		return new OgmNativeQuery( noSqlQuery, hibernateEm );
 	}
 
 	@Override
