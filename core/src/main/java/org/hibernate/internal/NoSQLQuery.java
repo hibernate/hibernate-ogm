@@ -22,18 +22,25 @@ package org.hibernate.internal;
 
 import org.hibernate.SQLQuery;
 import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionImplementor;
 
 /**
- * Hibernte OGM implementation of the {@link SQLQuery} contract
+ * Hibernte OGM implementation of the {@link SQLQuery} contract.
+ * <p>
+ * Technically this class is needed because the constructors in {@link SQLQueryImpl} are package-private but it also has
+ * a better name for a class dealing with NoSQL databases.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class NoSQLQuery extends SQLQueryImpl implements SQLQuery {
 
-	// The constructor of SQLQueryImpl is package-private
 	public NoSQLQuery(String queryString, SessionImplementor sessionImplementor, ParameterMetadata parameterMetadata) {
 		super( queryString, sessionImplementor, parameterMetadata );
+	}
+
+	public NoSQLQuery(NamedSQLQueryDefinition queryDef, SessionImplementor sessionImplementor, ParameterMetadata parameterMetadata) {
+		super( queryDef, sessionImplementor, parameterMetadata );
 	}
 
 }

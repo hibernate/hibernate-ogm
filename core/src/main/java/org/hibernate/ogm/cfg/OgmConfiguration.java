@@ -23,6 +23,7 @@ package org.hibernate.ogm.cfg;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -75,6 +76,9 @@ public class OgmConfiguration extends Configuration implements Configurable {
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		setProperty( OGM_ON, "true" );
+		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
+		// false
+		setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
