@@ -76,7 +76,7 @@ public class WriteConcernAnnotationTest {
 
 		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
 
-		assertThat( optionsContext.getPropertyOptions( MethodWriteConcernExample.class, "getContent" ) )
+		assertThat( optionsContext.getPropertyOptions( MethodWriteConcernExample.class, "content" ) )
 			.hasSize( 1 )
 			.contains( new WriteConcernOption( WriteConcernType.JOURNALED ) );
 	}

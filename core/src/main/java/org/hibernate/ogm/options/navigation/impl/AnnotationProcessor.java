@@ -32,6 +32,7 @@ import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**
  * Reads the annotation on an entity and save them in the appropriate context as {@link Option}.
@@ -66,14 +67,17 @@ public class AnnotationProcessor {
 	public static Map<PropertyKey, OptionsContainer> getPropertyOptions(final Class<?> entityClass) {
 		final Map<PropertyKey, OptionsContainer> optionsByProperty = new HashMap<PropertyKey, OptionsContainer>();
 
-		//TODO OGM-345 Consider only getters; use property name
 		for ( final Method method : entityClass.getMethods() ) {
+			String propertyName = ReflectionHelper.getPropertyName( method );
+			if ( propertyName == null ) {
+				continue;
+			}
+
 			final OptionsContainer optionsOfProperty = convertOptionAnnotations( method.getAnnotations() );
-			optionsByProperty.put( new PropertyKey( entityClass, method.getName() ), optionsOfProperty );
+			optionsByProperty.put( new PropertyKey( entityClass, propertyName ), optionsOfProperty );
 		}
 
-		//TODO OGM-345 Consider private fields/getters
-		for ( final Field field : entityClass.getFields() ) {
+		for ( final Field field : entityClass.getDeclaredFields() ) {
 			PropertyKey key = new PropertyKey( entityClass, field.getName() );
 			OptionsContainer optionsOfField = convertOptionAnnotations( field.getAnnotations() );
 

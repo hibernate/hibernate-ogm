@@ -25,6 +25,8 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.annotation.ElementType;
+
 import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
@@ -169,4 +171,10 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 40, value = "The current datastore can not be configured via configuration type %1$s.")
 	HibernateException getWrongDatastoreConfigurationTypeException(String datastoreConfigurationTypeName);
+
+	@Message(id = 41, value = "The given propery %1$s#%2$s with element type %3$s does not exist.")
+	HibernateException getPropertyDoesNotExistException(String typeName, String property, ElementType elementType);
+
+	@Message(id = 42, value = "The given element type %1$s is neither FIELD nor METHOD.")
+	HibernateException getUnsupportedElementTypeException(ElementType elementType);
 }

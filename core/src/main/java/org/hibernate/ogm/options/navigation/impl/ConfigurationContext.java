@@ -33,6 +33,7 @@ import org.hibernate.ogm.options.navigation.context.PropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**
  * Keeps track of the entities and properties configured using the fluent configuration API. There is one instance of
@@ -76,7 +77,15 @@ public class ConfigurationContext {
 		this.currentEntityType = entityType;
 	}
 
-	public void configureProperty(String propertyName) {
+	public void configureProperty(String propertyName, ElementType elementType) {
+		if ( elementType != ElementType.FIELD && elementType != ElementType.METHOD ) {
+			throw log.getUnsupportedElementTypeException( elementType );
+		}
+
+		if ( !ReflectionHelper.propertyExists( currentEntityType, propertyName, elementType ) ) {
+			throw log.getPropertyDoesNotExistException( currentEntityType.getName(), propertyName, elementType );
+		}
+
 		this.currentPropertyName = propertyName;
 	}
 
@@ -171,7 +180,7 @@ public class ConfigurationContext {
 				return createEntityMappingContext( entityContextImplType, propertyContextImplType );
 			}
 			else {
-				configureProperty( (String) args[0] );
+				configureProperty( (String) args[0], (ElementType) args[1] );
 				return createPropertyMappingContext( entityContextImplType, propertyContextImplType );
 			}
 		}

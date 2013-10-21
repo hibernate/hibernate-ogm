@@ -74,7 +74,6 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.getLockingStrategy( lockable, lockMode );
 	}
 
-
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext.toString() );
