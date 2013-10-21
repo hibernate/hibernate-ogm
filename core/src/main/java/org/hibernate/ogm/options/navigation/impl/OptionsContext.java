@@ -47,7 +47,7 @@ public class OptionsContext implements OptionsServiceContext {
 	private final ConcurrentMap<PropertyKey, OptionsContainer> optionsPerProperty = new ConcurrentHashMap<PropertyKey, OptionsContainer>();
 
 	public void addGlobalOption(Option<?> option) {
-		globaloptions.add( option );
+		add( option, globaloptions );
 	}
 
 	public void addEntityOption(Class<?> entityType, Option<?> option) {
@@ -57,7 +57,7 @@ public class OptionsContext implements OptionsServiceContext {
 			entityOptions = getAndCacheAnnotationBasedEntityOptions( entityType );
 		}
 
-		entityOptions.add( option );
+		add( option, entityOptions );
 	}
 
 	public void addPropertyOption(Class<?> entityType, String propertyName, Option<?> option) {
@@ -68,12 +68,19 @@ public class OptionsContext implements OptionsServiceContext {
 			propertyOptions = getAndCacheAnnotationBasedPropertyOptions( key );
 		}
 
-		propertyOptions.add( option );
+		add( option, propertyOptions );
+	}
+
+	private void add(Option<?> option, OptionsContainer container) {
+		//TODO only needed for SF-scoped context?
+		synchronized ( container ) {
+			container.add( option );
+		}
 	}
 
 	@Override
 	public OptionsContainer getGlobalOptions() {
-		return globaloptions;
+		return copy( globaloptions );
 	}
 
 	@Override
@@ -84,7 +91,7 @@ public class OptionsContext implements OptionsServiceContext {
 			entityOptions = getAndCacheAnnotationBasedEntityOptions( entityType );
 		}
 
-		return entityOptions;
+		return copy( entityOptions );
 	}
 
 	@Override
@@ -97,7 +104,14 @@ public class OptionsContext implements OptionsServiceContext {
 			propertyOptions = getAndCacheAnnotationBasedPropertyOptions( key );
 		}
 
-		return propertyOptions;
+		return copy( propertyOptions );
+	}
+
+	private OptionsContainer copy(OptionsContainer container) {
+		//TODO only needed for SF-scoped context?
+		synchronized ( container ) {
+			return new OptionsContainer( container );
+		}
 	}
 
 	/**
@@ -143,5 +157,10 @@ public class OptionsContext implements OptionsServiceContext {
 		}
 
 		return propertyOptions;
+	}
+
+	@Override
+	public String toString() {
+		return "OptionsContext [globaloptions=" + globaloptions + ", optionsPerEntity=" + optionsPerEntity + ", optionsPerProperty=" + optionsPerProperty + "]";
 	}
 }

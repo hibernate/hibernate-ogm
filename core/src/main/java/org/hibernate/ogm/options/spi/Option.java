@@ -21,13 +21,28 @@
 package org.hibernate.ogm.options.spi;
 
 /**
- * A configuration value.
+ * A configuration option describing a generic or datastore-specific setting, which applies globally, for a given entity
+ * type or for a given entity property.
+ * <p/>
+ * Options are maintained in {@link OptionContainer}s and can be unique or non-unique. When adding a unique option to a
+ * given container several times this option will only be contained exactly once, with the last value set. When in
+ * contrast adding a non-unique option several times, all the values set are stored and retrievable from the container.
+ * <p/>
+ * Unique option types should be derived from {@link UniqueOption}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  * @param <I> The type of this option's identifier
+ * @see UniqueOption
+ * @see OptionsContainer
  */
 public abstract class Option<I> {
 
+	/**
+	 * Returns this option's identifier.
+	 *
+	 * @return this option's identifier
+	 */
 	public abstract I getOptionIdentifier();
 
 	@Override

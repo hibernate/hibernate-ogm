@@ -22,28 +22,37 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.lang.annotation.ElementType;
 import java.util.Iterator;
+import java.util.Set;
 
+import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
+import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Test for putting/retrieving values into/from {@link OptionsContext}.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
 public class OptionsContextTest {
 
 	private OptionsContext optionsContext;
-	private ConfigurationContext context;
+	private SampleGlobalContext configuration;
 
 	@Before
 	public void setupContexts() {
 		optionsContext = new OptionsContext();
-		context = new ConfigurationContext( optionsContext );
+		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( optionsContext ) );
 	}
 
 	@Test
@@ -55,15 +64,30 @@ public class OptionsContextTest {
 
 	@Test
 	public void shouldBeAbleToAddGlobalOption() throws Exception {
-		context.addGlobalOption( ForceExampleOption.TRUE );
+		configuration.force( true );
 
 		assertThat( optionsContext.getGlobalOptions() ).containsOnly( ForceExampleOption.TRUE );
 	}
 
 	@Test
+	public void shouldBeAbleToAddNonUniqueGlobalOption() throws Exception {
+		configuration
+			.namedQuery( "foo", "from foo" )
+			.namedQuery( "bar", "from bar" );
+
+		Set<NamedQueryOption> queries = optionsContext.getGlobalOptions().get( NamedQueryOption.class );
+		assertThat( queries ).containsOnly(
+				new NamedQueryOption( "foo", "from foo" ),
+				new NamedQueryOption( "bar", "from bar" )
+		);
+	}
+
+	@Test
 	public void shouldBeAbleToAddEntityOption() throws Exception {
-		context.configureEntity( ContextExample.class );
-		context.addEntityOption( ForceExampleOption.TRUE );
+		configuration
+			.entity( ContextExample.class )
+				.force( true );
+
 		OptionsContainer optionsContainer = optionsContext.getEntityOptions( ContextExample.class );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
@@ -72,17 +96,71 @@ public class OptionsContextTest {
 	}
 
 	@Test
+	public void shouldBeAbleToAddSeveralEntityOptions() throws Exception {
+		configuration
+			.entity( Refrigerator.class )
+				.force( true )
+				.name( "test" );
+
+		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+
+		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
+		assertThat( forceOption.isForced() ).isTrue();
+
+		NameExampleOption nameOption = refrigatorOptions.getUnique( NameExampleOption.class );
+		assertThat( nameOption.getName() ).isEqualTo( "test" );
+	}
+
+	@Test
 	public void shouldBeAbleToAddPropertyOption() throws Exception {
-		context.configureEntity( ContextExample.class );
-		context.configureProperty( "property" );
-		context.addPropertyOption( ForceExampleOption.TRUE );
+		configuration
+			.entity( ContextExample.class )
+				.property( "property", ElementType.FIELD )
+					.embed( "Foo" );
+
 		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
 		Iterator<Option<?>> iterator = optionsContainer.iterator();
 
-		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
+		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( new EmbedExampleOption( "Foo" ) );
 		assertThat( iterator.hasNext() ).as( "Only one options should have been added per property" ).isFalse();
 	}
 
+	@Test
+	public void shouldBeAbleToRetrieveUniqueEntityOptionViaGet() throws Exception {
+		configuration
+			.entity( Refrigerator.class )
+				.force( true );
+
+		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+
+		Set<ForceExampleOption> forceOptions = refrigatorOptions.get( ForceExampleOption.class );
+		assertThat( forceOptions ).hasSize( 1 );
+		assertThat( forceOptions.iterator().next().isForced() ).isTrue();
+	}
+
+	@Test
+	public void uniqueEntityOptionShouldHaveLastValueWhenSetSeveralTimes() throws Exception {
+		configuration
+			.entity( Refrigerator.class )
+				.force( true )
+				.force( false );
+
+		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+
+		ForceExampleOption forceOption =  refrigatorOptions.getUnique( ForceExampleOption.class );
+		assertThat( forceOption.isForced() ).isFalse();
+	}
+
 	private static class ContextExample {
+	}
+
+	public static class Refrigerator {
+
+		public int temperature;
+	}
+
+	public static class Microwave {
+
+		public int power;
 	}
 }

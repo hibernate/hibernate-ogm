@@ -72,7 +72,7 @@ public abstract class OgmTestCase {
 	}
 
 	/**
-	 * Can be overridden in subclasses to inspect or modifcy the {@link Configuration} of this test.
+	 * Can be overridden in subclasses to inspect or modify the {@link Configuration} of this test.
 	 *
 	 * @param cfg the configuration
 	 */
