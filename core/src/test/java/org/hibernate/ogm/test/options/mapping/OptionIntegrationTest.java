@@ -23,15 +23,19 @@ package org.hibernate.ogm.test.options.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
+import java.util.Iterator;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
@@ -177,6 +181,11 @@ public class OptionIntegrationTest extends OgmTestCase {
 		@Override
 		public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
 			return SampleOptionModel.createGlobalContext( context );
+		}
+
+		@Override
+		public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+			throw new UnsupportedOperationException();
 		}
 	}
 

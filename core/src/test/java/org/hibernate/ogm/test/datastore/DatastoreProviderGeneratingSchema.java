@@ -27,6 +27,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.StartStoppable;
@@ -97,6 +98,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );
+	}
+
+	@Override
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+		return null;
 	}
 
 	public static class Dialect implements GridDialect {
@@ -170,4 +176,5 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
 	}
+
 }

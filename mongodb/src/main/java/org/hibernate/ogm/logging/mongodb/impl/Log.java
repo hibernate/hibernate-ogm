@@ -93,4 +93,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 			" you must choose between [ACKNOWLEDGED, ERRORS_IGNORED, FSYNC_IGNORED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED," +
 			"NONE, NORMAL, SAFE, MAJORITY, FSYNC_SAFE, JOURNAL_SAFE, REPLICAS_SAFE]")
 	HibernateException unableToSetWriteConcern(String value);
+
+	@Message(id = 1217, value = "The result of a native query in MongoDB must be mapped by an entity")
+	HibernateException requireMetadatas();
+
 }

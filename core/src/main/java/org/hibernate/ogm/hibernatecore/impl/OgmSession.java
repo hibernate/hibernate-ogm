@@ -64,17 +64,21 @@ import org.hibernate.engine.spi.NonFlushedChanges;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.internal.CriteriaImpl;
+import org.hibernate.internal.NoSQLQuery;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
+import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationBuilderService;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -174,7 +178,9 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
-		throw new IllegalStateException( "Hibernate OGM does not support native queries" );
+		// Parameters are not supported yet
+		ParameterMetadata parameterMetadata = new ParameterMetadata( null, null );
+		return new NoSQLQuery( queryString, (SessionImplementor) this, parameterMetadata );
 	}
 
 	@Override
@@ -376,7 +382,14 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public List listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
-		return delegate.listCustomQuery( customQuery, queryParameters );
+		errorIfClosed();
+
+		if ( log.isTraceEnabled() ) {
+			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
+		}
+
+		CustomLoader loader = new BackendCustomLoader( customQuery, getFactory() );
+		return loader.list( this, queryParameters );
 	}
 
 	@Override
@@ -387,7 +400,9 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public List list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		return delegate.list( spec, queryParameters );
+		CustomQuery customQuery = new BackendCustomQuery( spec.getQueryString(), spec.getQueryReturns(), spec.getQuerySpaces(), factory );
+		// TODO Implement query plan cache?
+		return listCustomQuery( customQuery, queryParameters );
 	}
 
 	@Override
