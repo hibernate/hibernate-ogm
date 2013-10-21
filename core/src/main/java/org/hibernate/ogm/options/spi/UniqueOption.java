@@ -21,7 +21,8 @@
 package org.hibernate.ogm.options.spi;
 
 /**
- * Specialized class used by options that are defined only once. Most options should subclass this class
+ * Specialized class to be extended by options that may be defined only once in the context of a given
+ * {@link OptionsContainer}. Most options should subclass this class.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
