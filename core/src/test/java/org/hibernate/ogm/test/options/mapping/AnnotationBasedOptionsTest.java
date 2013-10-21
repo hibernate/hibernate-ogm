@@ -24,20 +24,31 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.examples.annotations.EmbedExample;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
 import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Tests the retrieval of options specified via Java annotations.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public class ProxyFactoryWithAnnotationTest {
+public class AnnotationBasedOptionsTest {
+
+	private OptionsContext context;
+
+	@Before
+	public void setupContext() {
+		context = new OptionsContext();
+	}
 
 	@Test
 	public void testAnnotatedEntity() throws Exception {
-		OptionsContext context = new OptionsContext();
-
 		assertThat( context.getEntityOptions( Example.class ) )
 			.hasSize( 1 )
 			.contains( new NameExampleOption( "Batman" ) );
@@ -45,7 +56,6 @@ public class ProxyFactoryWithAnnotationTest {
 
 	@Test
 	public void testAnnotationIsOverridenByAPI() throws Exception {
-		OptionsContext context = new OptionsContext();
 		ConfigurationContext configurationContext = new ConfigurationContext( context );
 
 		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( configurationContext );
@@ -58,7 +68,31 @@ public class ProxyFactoryWithAnnotationTest {
 			.contains( new NameExampleOption( "Name replaced" ) );
 	}
 
-	@NameExample("Batman")
+	@Test
+	public void testAnnotationGivenOnPropertyCanBeRetrievedFromOptionsContext() {
+		assertThat( context.getPropertyOptions( Example.class, "exampleProperty" ) )
+			.hasSize( 1 )
+			.contains( new EmbedExampleOption( "Test" ) );
+	}
+
+	@Test
+	public void testAnnotationGivenOnBooleanPropertyCanBeRetrievedFromOptionsContext() {
+		assertThat( context.getPropertyOptions( Example.class, "helpful" ) )
+			.hasSize( 1 )
+			.contains( new EmbedExampleOption( "Another Test" ) );
+	}
+
+	@NameExample( "Batman" )
 	private static final class Example {
+
+		@EmbedExample("Test")
+		public String getExampleProperty() {
+			return null;
+		}
+
+		@EmbedExample("Another Test")
+		public boolean isHelpful() {
+			return false;
+		}
 	}
 }

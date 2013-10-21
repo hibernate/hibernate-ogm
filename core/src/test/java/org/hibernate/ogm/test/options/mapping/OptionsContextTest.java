@@ -26,6 +26,7 @@ import java.lang.annotation.ElementType;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
@@ -126,6 +127,28 @@ public class OptionsContextTest {
 	}
 
 	@Test
+	public void shouldBeAbleToAddPropertyOptionOnGetterLevel() throws Exception {
+		configuration
+			.entity( ContextExample.class )
+				.property( "property", ElementType.METHOD )
+					.embed( "Foo" );
+
+		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
+		Iterator<Option<?>> iterator = optionsContainer.iterator();
+
+		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( new EmbedExampleOption( "Foo" ) );
+		assertThat( iterator.hasNext() ).as( "Only one options should have been added per property" ).isFalse();
+	}
+
+	@Test(expected = HibernateException.class)
+	public void addingPropertyToNonExistingPropertyShouldRaiseException() throws Exception {
+		configuration
+			.entity( ContextExample.class )
+				.property( "getProperty", ElementType.METHOD )
+					.embed( "Foo" );
+	}
+
+	@Test
 	public void shouldBeAbleToRetrieveUniqueEntityOptionViaGet() throws Exception {
 		configuration
 			.entity( Refrigerator.class )
@@ -152,6 +175,13 @@ public class OptionsContextTest {
 	}
 
 	private static class ContextExample {
+
+		private String property;
+
+		@SuppressWarnings("unused")
+		public String getProperty() {
+			return property;
+		}
 	}
 
 	public static class Refrigerator {

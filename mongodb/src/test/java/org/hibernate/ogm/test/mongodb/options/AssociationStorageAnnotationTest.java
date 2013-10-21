@@ -65,7 +65,7 @@ public class AssociationStorageAnnotationTest {
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );
 
-		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "getMethod" ) )
+		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" ) )
 			.hasSize( 1 )
 			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
 	}
