@@ -43,14 +43,13 @@ public class OgmMassIndexerFactory implements MassIndexerFactory {
 	}
 
 	@Override
-	public MassIndexer createMassIndexer(SearchFactoryImplementor searchFactory, SessionFactory sessionFactory,
+	public MassIndexer createMassIndexer(SearchFactoryImplementor searchFactory, SessionFactoryImplementor sessionFactory,
 			Class<?>... entities) {
 		DatastoreServices service = service( sessionFactory, DatastoreServices.class );
-		return new OgmMassIndexer( service.getGridDialect(), searchFactory, (SessionFactoryImplementor) sessionFactory, entities );
+		return new OgmMassIndexer( service.getGridDialect(), searchFactory, sessionFactory, entities );
 	}
 
 	private static <T extends Service> T service(SessionFactory sessionFactory, Class<T> serviceClass) {
 		return ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( serviceClass );
 	}
-
 }
