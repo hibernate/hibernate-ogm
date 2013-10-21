@@ -22,19 +22,15 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hibernate.HibernateException;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
@@ -205,10 +201,4 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );
 	}
-
-	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		throw new UnsupportedOperationException( "Native queries not supported for Infinispan" );
-	}
-
 }

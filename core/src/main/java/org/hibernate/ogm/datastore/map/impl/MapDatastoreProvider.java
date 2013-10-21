@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,13 +34,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.persistence.PessimisticLockException;
 
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
@@ -200,10 +196,4 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );
 	}
-
-	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		throw new UnsupportedOperationException( "Native queries not supported for Map" );
-	}
-
 }

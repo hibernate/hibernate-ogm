@@ -33,8 +33,9 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
@@ -60,8 +61,8 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		DatastoreProvider provider = service( session, DatastoreProvider.class );
-		Iterator<Tuple> tuples = executeQuery( session, provider, resultTypes );
+		DatastoreServices services = service( session, DatastoreServices.class );
+		Iterator<Tuple> tuples = executeQuery( session, services.getGridDialect(), resultTypes );
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -73,13 +74,13 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private Iterator<Tuple> executeQuery(SessionImplementor session, DatastoreProvider provider, Type[] resultTypes) {
+	private Iterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, Type[] resultTypes) {
 		Loadable[] entityPersisters = getEntityPersisters();
 		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
 		for ( int i = 0; i < metadatas.length; i++ ) {
 			metadatas[i] = metadata( session.getFactory(), resultTypes[i] );
 		}
-		return provider.executeBackendQuery( customQuery, metadatas );
+		return dialect.executeBackendQuery( customQuery, metadatas );
 	}
 
 	private <T extends Service> T service(SessionImplementor session, Class<T> serviceRole) {

@@ -100,11 +100,6 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		return GenericOptionModel.createGlobalContext( context );
 	}
 
-	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		return null;
-	}
-
 	public static class Dialect implements GridDialect {
 
 		public Dialect(DatastoreProviderGeneratingSchema provider) {
@@ -175,6 +170,10 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		@Override
 		public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
-	}
 
+		@Override
+		public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+			return null;
+		}
+	}
 }

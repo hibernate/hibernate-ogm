@@ -20,11 +20,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import java.util.Iterator;
-
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -59,14 +55,4 @@ public interface DatastoreProvider extends Service {
 	 * @return a new {@link GlobalContext}
 	 */
 	GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context);
-
-	/**
-	 * Returns the result of a native query executed on the backend.
-	 *
-	 * @param customQuery the {@link CustomQuery} to execute on the backend
-	 * @param metadatas the metadata information of the results of the query
-	 * @return an {@link Iterator} throught the result of the query
-	 */
-	Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas);
-
 }

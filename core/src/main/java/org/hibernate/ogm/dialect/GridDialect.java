@@ -20,9 +20,12 @@
  */
 package org.hibernate.ogm.dialect;
 
+import java.util.Iterator;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -116,4 +119,14 @@ public interface GridDialect extends Service {
 	 *            the key metadata of the tables for which we want to apply the costumer
 	 */
 	void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas);
+
+	/**
+	 * Returns the result of a native query executed on the backend.
+	 *
+	 * @param customQuery the {@link CustomQuery} to execute on the backend
+	 * @param metadatas the metadata information of the results of the query
+	 * @return an {@link Iterator} throught the result of the query
+	 */
+	Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas);
+
 }

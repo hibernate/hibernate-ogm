@@ -21,6 +21,7 @@
 package org.hibernate.ogm.datastore.map.impl;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.hibernate.LockMode;
@@ -29,6 +30,7 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
@@ -158,4 +160,8 @@ public class HashMapDialect implements GridDialect {
 		}
 	}
 
+	@Override
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+		throw new UnsupportedOperationException( "Native queries not supported for Map" );
+	}
 }

@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.ehcache.impl;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -35,14 +34,11 @@ import net.sf.ehcache.config.FactoryConfiguration;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
@@ -153,10 +149,4 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
 		return GenericOptionModel.createGlobalContext( context );
 	}
-
-	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		throw new UnsupportedOperationException( "Native queries not supported for Ehcache" );
-	}
-
 }
