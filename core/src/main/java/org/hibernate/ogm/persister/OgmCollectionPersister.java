@@ -20,6 +20,14 @@
  */
 package org.hibernate.ogm.persister;
 
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -60,14 +68,6 @@ import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
-
-import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * CollectionPersister storing the collection in a grid
@@ -216,10 +216,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return new OgmBasicCollectionLoader( this );
 	}
 
+	@Override
 	public GridType getKeyGridType() {
 		return keyGridType;
 	}
 
+	@Override
 	public GridType getElementGridType() {
 		return elementGridType;
 	}
@@ -743,5 +745,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		// we don't handle subselect
 		// we don't know how to support filters on OGM today
 		return createCollectionInitializer( session.getLoadQueryInfluencers() );
+	}
+
+	@Override
+	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, SessionImplementor session) throws HibernateException {
+		// nothing to do
 	}
 }

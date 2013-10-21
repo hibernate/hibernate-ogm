@@ -64,11 +64,9 @@ import org.hibernate.engine.spi.NonFlushedChanges;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
-import org.hibernate.internal.CriteriaImpl;
 import org.hibernate.internal.NoSQLQuery;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
@@ -76,9 +74,9 @@ import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationBuilderService;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -180,7 +178,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
 		// Parameters are not supported yet
 		ParameterMetadata parameterMetadata = new ParameterMetadata( null, null );
-		return new NoSQLQuery( queryString, (SessionImplementor) this, parameterMetadata );
+		return new NoSQLQuery( queryString, this, parameterMetadata );
 	}
 
 	@Override
@@ -329,12 +327,12 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
-	public ScrollableResults scroll(CriteriaImpl criteria, ScrollMode scrollMode) {
+	public ScrollableResults scroll(Criteria criteria, ScrollMode scrollMode) {
 		return delegate.scroll( criteria, scrollMode );
 	}
 
 	@Override
-	public List list(CriteriaImpl criteria) {
+	public List list(Criteria criteria) {
 		return delegate.list( criteria );
 	}
 
