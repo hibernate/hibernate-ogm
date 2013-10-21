@@ -22,8 +22,10 @@ package org.hibernate.ogm.util.impl;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
 public class StringHelper {
+
 	public static boolean isEmpty(String value) {
 		return value != null ? value.length() == 0 : true;
 	}
@@ -38,5 +40,35 @@ public class StringHelper {
 			buf.append( array[i] ).append( ", " );
 		}
 		return buf.append( array[len - 1] ).toString();
+	}
+
+	/**
+	 * Joins the elements of the given iterable to a string, separated by the given separator string.
+	 *
+	 * @param iterable the iterable to join
+	 * @param separator the separator string
+	 * @return a string made up of the string representations of the given iterable members, separated by the given
+	 * separator string
+	 */
+	public static String join(Iterable<?> iterable, String separator) {
+		if ( iterable == null ) {
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+		boolean isFirst = true;
+
+		for ( Object object : iterable ) {
+			if ( !isFirst ) {
+				sb.append( separator );
+			}
+			else {
+				isFirst = false;
+			}
+
+			sb.append( object );
+		}
+
+		return sb.toString();
 	}
 }

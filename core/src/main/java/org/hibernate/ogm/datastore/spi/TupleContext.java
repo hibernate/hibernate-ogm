@@ -22,6 +22,8 @@ package org.hibernate.ogm.datastore.spi;
 
 import java.util.List;
 
+import org.hibernate.ogm.util.impl.StringHelper;
+
 /**
  * Represents all information used to load an entity
  * with some specific characteristics like a projection
@@ -42,10 +44,10 @@ public class TupleContext {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
-		for ( String columnName : this.getSelectableColumns() ) {
-			builder.append( columnName );
-		}
+
+		builder.append( StringHelper.join( selectableColumns, ", " ) );
 		builder.append( "}" );
+
 		return builder.toString();
 	}
 }
