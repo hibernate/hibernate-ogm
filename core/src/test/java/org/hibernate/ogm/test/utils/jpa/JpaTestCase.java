@@ -37,7 +37,6 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
@@ -45,7 +44,6 @@ import org.hibernate.ogm.massindex.OgmMassIndexerFactory;
 import org.hibernate.ogm.test.utils.GridDialectSkippableTestRunner;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;
-import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
 import org.junit.Before;
@@ -93,7 +91,6 @@ public abstract class JpaTestCase {
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
 		info.setTransactionType( PersistenceUnitTransactionType.JTA );
 		info.setValidationMode( ValidationMode.AUTO );
-		info.getProperties().setProperty( Environment.JTA_PLATFORM, JBossStandAloneJtaPlatform.class.getName() );
 		info.getProperties().setProperty( MassIndexerFactoryProvider.MASS_INDEXER_FACTORY_CLASSNAME, OgmMassIndexerFactory.class.getName() );
 		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 			info.getProperties().setProperty( entry.getKey(), entry.getValue() );

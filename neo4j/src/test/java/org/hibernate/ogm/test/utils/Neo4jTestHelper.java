@@ -32,13 +32,11 @@ import java.util.Set;
 
 import org.fest.util.Files;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
-import org.hibernate.ogm.dialect.neo4j.Neo4jJtaPlatform;
 import org.hibernate.ogm.grid.EntityKey;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -86,7 +84,6 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		Map<String, String> properties = new HashMap<String, String>();
-		properties.put( Environment.JTA_PLATFORM, Neo4jJtaPlatform.class.getName() );
 		properties.put( NEO4J_DATABASE_PATH, dbLocation() );
 		return properties;
 	}

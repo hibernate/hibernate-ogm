@@ -25,9 +25,5 @@
              version="2.0">
     <persistence-unit name="jpajtastandalone" transaction-type="JTA">
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
-        <properties>
-            <property name="hibernate.transaction.jta.platform"
-                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" />
-        </properties>
     </persistence-unit>
 </persistence>
