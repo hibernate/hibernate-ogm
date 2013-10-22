@@ -34,6 +34,7 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
@@ -208,6 +209,11 @@ public class InfinispanDialect implements GridDialect {
 	@Override
 	public GridType overrideType(Type type) {
 		return null;
+	}
+
+	@Override
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+		throw new UnsupportedOperationException( "Native queries not supported for Infinispan" );
 	}
 
 	@Override

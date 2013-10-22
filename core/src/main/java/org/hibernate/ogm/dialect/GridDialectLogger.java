@@ -20,9 +20,12 @@
  */
 package org.hibernate.ogm.dialect;
 
+import java.util.Iterator;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -156,6 +159,12 @@ public class GridDialectLogger implements GridDialect {
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+	}
+
+	@Override
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+		log.tracef( "Executing native backend query: %1$s", customQuery.getSQL() );
+		return gridDialect.executeBackendQuery( customQuery, metadatas );
 	}
 
 }

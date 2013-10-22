@@ -21,6 +21,7 @@
 package org.hibernate.ogm.jpa.impl;
 
 import java.util.Map;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
@@ -33,6 +34,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
@@ -206,17 +209,22 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public Query createNativeQuery(String sqlString) {
-		throw new IllegalStateException( "Hibernate OGM does not support native queries" );
+		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
+		return new OgmNativeQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass) {
-		throw new IllegalStateException( "Hibernate OGM does not support native queries" );
+		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
+		q.addEntity( "alias1", resultClass.getName(), LockMode.READ );
+		return new OgmNativeQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping) {
-		throw new IllegalStateException( "Hibernate OGM does not support native queries" );
+		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
+		q.setResultSetMapping( resultSetMapping );
+		return new OgmNativeQuery( q, hibernateEm );
 	}
 
 	@Override
@@ -280,6 +288,5 @@ public class OgmEntityManager implements EntityManager {
 	public Metamodel getMetamodel() {
 		return hibernateEm.getMetamodel();
 	}
-
 
 }

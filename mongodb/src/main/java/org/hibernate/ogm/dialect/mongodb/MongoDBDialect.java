@@ -23,7 +23,10 @@ package org.hibernate.ogm.dialect.mongodb;
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -32,6 +35,7 @@ import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
@@ -59,6 +63,7 @@ import org.hibernate.type.Type;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
 /**
@@ -487,4 +492,53 @@ public class MongoDBDialect implements GridDialect {
 			}
 		}
 	}
+
+	@Override
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+		BasicDBObject mongodbQuery = (BasicDBObject) com.mongodb.util.JSON.parse( customQuery.getSQL() );
+		validate( metadatas );
+		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
+		DBCursor cursor = collection.find( mongodbQuery );
+		return new MongoDBResultsCursor( cursor, metadatas[0] );
+	}
+
+	private void validate(EntityKeyMetadata[] metadatas) {
+		if ( metadatas.length != 1 ) {
+			throw log.requireMetadatas();
+		}
+	}
+
+	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
+
+		private final DBCursor cursor;
+		private final EntityKeyMetadata metadata;
+
+		public MongoDBResultsCursor(DBCursor cursor, EntityKeyMetadata metadata) {
+			this.cursor = cursor;
+			this.metadata = metadata;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return cursor.hasNext();
+		}
+
+		@Override
+		public Tuple next() {
+			DBObject dbObject = cursor.next();
+			return new Tuple( new MassIndexingMongoDBTupleSnapshot( dbObject, metadata ) );
+		}
+
+		@Override
+		public void remove() {
+			cursor.remove();
+		}
+
+		@Override
+		public void close() throws IOException {
+			cursor.close();
+		}
+
+	}
+
 }
