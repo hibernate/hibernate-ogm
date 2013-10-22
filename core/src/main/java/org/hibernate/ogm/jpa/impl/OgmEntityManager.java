@@ -248,10 +248,6 @@ public class OgmEntityManager implements EntityManager {
 		return new OgmSession( ogmSessionFactory, (EventSource) session );
 	}
 
-	private Session getSession() {
-		return (Session) getDelegate();
-	}
-
 	@Override
 	public Object getDelegate() {
 		final Object delegate = hibernateEm.getDelegate();
