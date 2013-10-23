@@ -46,11 +46,11 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.infinispan.Cache;
+import org.infinispan.commons.util.FileLookupFactory;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.util.FileLookupFactory;
 
 /**
  * Provides access to Infinispan's CacheManager; one CacheManager is needed for all caches,
