@@ -212,6 +212,6 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		return null;
+		throw new UnsupportedOperationException( "Native queries not supported for Ehcache" );
 	}
 }
