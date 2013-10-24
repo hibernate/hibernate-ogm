@@ -23,6 +23,7 @@ package org.hibernate.ogm.jpa.impl;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.ClassTransformer;
@@ -30,7 +31,7 @@ import javax.persistence.spi.PersistenceUnitInfo;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
-import org.hibernate.ejb.HibernatePersistence;
+import org.hibernate.jpa.HibernatePersistenceProvider;
 
 /**
  * Delegate most PersistenceUnitInfo method except for:
@@ -39,7 +40,7 @@ import org.hibernate.ejb.HibernatePersistence;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class DelegatorPersistenceUnitInfo implements PersistenceUnitInfo {
-	private PersistenceUnitInfo delegator;
+	private final PersistenceUnitInfo delegator;
 
 	public DelegatorPersistenceUnitInfo(PersistenceUnitInfo info) {
 		this.delegator = info;
@@ -52,7 +53,7 @@ public class DelegatorPersistenceUnitInfo implements PersistenceUnitInfo {
 
 	@Override
 	public String getPersistenceProviderClassName() {
-		return HibernatePersistence.class.getName();
+		return HibernatePersistenceProvider.class.getName();
 	}
 
 	@Override

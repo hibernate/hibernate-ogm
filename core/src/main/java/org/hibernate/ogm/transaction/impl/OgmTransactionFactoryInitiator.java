@@ -37,6 +37,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
+@SuppressWarnings("rawtypes")
 public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<TransactionFactory> {
 
 	public static final OgmTransactionFactoryInitiator INSTANCE = new OgmTransactionFactoryInitiator();
@@ -44,13 +45,12 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 	private static final Log log = LoggerFactory.make();
 
 	@Override
-	@SuppressWarnings({ "unchecked" })
 	public Class<TransactionFactory> getServiceInitiated() {
 		return TransactionFactory.class;
 	}
 
 	@Override
-	protected TransactionFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	protected TransactionFactory<?> buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
 
 		// Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
@@ -67,6 +67,7 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	protected StandardServiceInitiator<TransactionFactory> backupInitiator() {
 		return TransactionFactoryInitiator.INSTANCE;
 	}

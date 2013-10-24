@@ -80,6 +80,7 @@ public class OgmSessionBuilderDelegator implements SessionBuilderImplementor {
 	}
 
 	@Override
+	@Deprecated
 	public SessionBuilder autoClose(boolean autoClose) {
 		builder.autoClose( autoClose );
 		return this;

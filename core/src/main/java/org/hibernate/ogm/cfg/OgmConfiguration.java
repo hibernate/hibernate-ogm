@@ -62,6 +62,7 @@ public class OgmConfiguration extends Configuration {
 	}
 
 	@Override
+	@Deprecated
 	public SessionFactory buildSessionFactory() throws HibernateException {
 		return new OgmSessionFactory( (SessionFactoryImplementor) super.buildSessionFactory() );
 	}

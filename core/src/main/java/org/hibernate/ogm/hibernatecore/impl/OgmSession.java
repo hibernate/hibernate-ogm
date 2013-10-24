@@ -430,16 +430,19 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public Object getFilterParameterValue(String filterParameterName) {
 		return delegate.getFilterParameterValue( filterParameterName );
 	}
 
 	@Override
+	@Deprecated
 	public Type getFilterParameterType(String filterParameterName) {
 		return delegate.getFilterParameterType( filterParameterName );
 	}
 
 	@Override
+	@Deprecated
 	public Map getEnabledFilters() {
 		return delegate.getEnabledFilters();
 	}
@@ -497,11 +500,13 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public String getFetchProfile() {
 		return delegate.getFetchProfile();
 	}
 
 	@Override
+	@Deprecated
 	public void setFetchProfile(String name) {
 		delegate.setFetchProfile( name );
 	}
@@ -608,6 +613,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public Object load(Class theClass, Serializable id, LockMode lockMode) throws HibernateException {
 		return delegate.load( theClass, id, lockMode );
 	}
@@ -618,6 +624,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public Object load(String entityName, Serializable id, LockMode lockMode) throws HibernateException {
 		return delegate.load( entityName, id, lockMode );
 	}
@@ -713,11 +720,13 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public void lock(Object object, LockMode lockMode) throws HibernateException {
 		delegate.lock( object, lockMode );
 	}
 
 	@Override
+	@Deprecated
 	public void lock(String entityName, Object object, LockMode lockMode) throws HibernateException {
 		delegate.lock( entityName, object, lockMode );
 	}
@@ -738,6 +747,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public void refresh(Object object, LockMode lockMode) throws HibernateException {
 		delegate.refresh( object, lockMode );
 	}
@@ -783,6 +793,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public Object get(Class clazz, Serializable id, LockMode lockMode) throws HibernateException {
 		return delegate.get( clazz, id, lockMode );
 	}
@@ -798,6 +809,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
+	@Deprecated
 	public Object get(String entityName, Serializable id, LockMode lockMode) throws HibernateException {
 		return delegate.get( entityName, id, lockMode );
 	}

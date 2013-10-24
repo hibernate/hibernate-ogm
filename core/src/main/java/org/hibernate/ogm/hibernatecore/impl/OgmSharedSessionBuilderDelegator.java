@@ -65,6 +65,7 @@ public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 	}
 
 	@Override
+	@Deprecated
 	public SharedSessionBuilder autoClose() {
 		builder.autoClose();
 		return this;

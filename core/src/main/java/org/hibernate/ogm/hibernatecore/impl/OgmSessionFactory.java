@@ -146,6 +146,7 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
+	@Deprecated
 	public ConnectionProvider getConnectionProvider() {
 		return delegate.getConnectionProvider();
 	}
@@ -378,41 +379,49 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 	}
 
 	@Override
+	@Deprecated
 	public void evict(Class persistentClass) throws HibernateException {
 		delegate.evict( persistentClass );
 	}
 
 	@Override
+	@Deprecated
 	public void evict(Class persistentClass, Serializable id) throws HibernateException {
 		delegate.evict( persistentClass, id );
 	}
 
 	@Override
+	@Deprecated
 	public void evictEntity(String entityName) throws HibernateException {
 		delegate.evictEntity( entityName );
 	}
 
 	@Override
+	@Deprecated
 	public void evictEntity(String entityName, Serializable id) throws HibernateException {
 		delegate.evictEntity( entityName, id );
 	}
 
 	@Override
+	@Deprecated
 	public void evictCollection(String roleName) throws HibernateException {
 		delegate.evictCollection( roleName );
 	}
 
 	@Override
+	@Deprecated
 	public void evictCollection(String roleName, Serializable id) throws HibernateException {
 		delegate.evictCollection( roleName, id );
 	}
 
 	@Override
+	@Deprecated
 	public void evictQueries(String cacheRegion) throws HibernateException {
 		delegate.evictQueries( cacheRegion );
 	}
 
 	@Override
+	@Deprecated
 	public void evictQueries() throws HibernateException {
 		delegate.evictQueries();
 	}
