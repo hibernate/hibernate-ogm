@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.jbossas7.util;
+package org.hibernate.ogm.test.integration.wildfly.util;
 
-import org.hibernate.ogm.test.integration.jbossas7.ModuleMemberRegistrationScenario;
-import org.hibernate.ogm.test.integration.jbossas7.controller.MemberRegistration;
-import org.hibernate.ogm.test.integration.jbossas7.model.Member;
+import org.hibernate.ogm.test.integration.wildfly.ModuleMemberRegistrationScenario;
+import org.hibernate.ogm.test.integration.wildfly.controller.MemberRegistration;
+import org.hibernate.ogm.test.integration.wildfly.model.Member;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
