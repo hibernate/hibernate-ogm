@@ -32,8 +32,8 @@
     <artifactId>hibernate-ogm-modules</artifactId>
     <packaging>pom</packaging>
 
-    <name>Hibernate OGM JBoss AS Module</name>
-    <description>Build the module to add to JBoss AS</description>
+    <name>Hibernate OGM WildFly Module</name>
+    <description>A module for adding OGM to WildFly</description>
 
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
@@ -41,7 +41,6 @@
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
-        <hibernate.orm.module.slot>main</hibernate.orm.module.slot>
     </properties>
 
     <dependencies>
@@ -85,18 +84,6 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
-            <version>${hibernateVersion}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-envers</artifactId>
-            <version>4.0.1.Final</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
