@@ -40,6 +40,7 @@
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
+        <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
         <hibernate.orm.module.slot>main</hibernate.orm.module.slot>
     </properties>
 
@@ -107,6 +108,12 @@
                     <artifactId>hibernate-entitymanager</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-neo4j</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 

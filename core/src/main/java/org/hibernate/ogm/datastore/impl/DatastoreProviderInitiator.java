@@ -146,7 +146,7 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 		}
 	}
 
-	private String dataStoreProviderClassName(final String managerPropertyValue) {
+	public static String dataStoreProviderClassName(final String managerPropertyValue) {
 		if ( isValidShortcut( managerPropertyValue ) ) {
 			return AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() ).getDatastoreProviderClassName();
 		}
@@ -155,7 +155,7 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 		}
 	}
 
-	private boolean isValidShortcut(String shortcut) {
+	private static boolean isValidShortcut(String shortcut) {
 		for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
 			if ( provider.name().equalsIgnoreCase( shortcut ) ) {
 				return true;

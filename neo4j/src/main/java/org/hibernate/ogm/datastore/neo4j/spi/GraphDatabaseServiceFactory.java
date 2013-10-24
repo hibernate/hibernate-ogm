@@ -18,37 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.datastore.neo4j.spi;
 
-import junit.framework.Assert;
+import java.util.Properties;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Contains methods to create a {@link GraphDatabaseService}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public interface GraphDatabaseServiceFactory {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	/**
+	 * Called after the creation of the factory can be used to read the configuration.
+	 *
+	 * @param properties
+	 *            configuration properties
+	 */
+	void initialize(Properties properties);
 
-	@Test
-	public void testCorrect() {
-		// all fine
-	}
-
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
-	}
+	/**
+	 * Creates a {@link GraphDatabaseService}.
+	 *
+	 * @return a new {@link GraphDatabaseService} instance
+	 */
+	GraphDatabaseService create();
 
 }

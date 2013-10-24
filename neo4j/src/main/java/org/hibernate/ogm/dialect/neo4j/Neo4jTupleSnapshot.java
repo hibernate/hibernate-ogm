@@ -18,37 +18,49 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.neo4j;
 
-import junit.framework.Assert;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.neo4j.graphdb.PropertyContainer;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Represents the Tuple snapshot as loaded by the Neo4j datastore.
+ * <p>
+ * A {@link org.neo4j.graphdb.Node} represents a {@link org.hibernate.ogm.datastore.spi.Tuple}. Columns are mapped as properties of a the Node.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	private final PropertyContainer node;
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public Neo4jTupleSnapshot(PropertyContainer node) {
+		this.node = node;
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public Object get(String column) {
+		if ( node.hasProperty( column ) ) {
+			return node.getProperty( column );
+		}
+		return null;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return !node.getPropertyKeys().iterator().hasNext();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		Set<String> names = new HashSet<String>();
+		for ( String string : node.getPropertyKeys() ) {
+			names.add( string );
+		}
+		return names;
 	}
 
 }

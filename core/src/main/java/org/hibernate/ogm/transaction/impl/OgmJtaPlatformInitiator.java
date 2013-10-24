@@ -20,10 +20,13 @@
  */
 package org.hibernate.ogm.transaction.impl;
 
+import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.NEO4J_EMBEDDED;
+
 import java.util.Map;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.service.jta.platform.internal.JtaPlatformInitiator;
@@ -44,10 +47,20 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 
 	@Override
 	protected JtaPlatform buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		if ( ! hasExplicitPlatform( configurationValues ) ) {
-			return new JBossStandAloneJtaPlatform();
+		if ( hasExplicitPlatform( configurationValues ) ) {
+			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
-		return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
+		if ( isNeo4j( configurationValues ) ) {
+			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.transaction.neo4j.impl.Neo4jJtaPlatform" );
+			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
+		}
+		return new JBossStandAloneJtaPlatform();
+	}
+
+	private boolean isNeo4j(Map configuration) {
+		String propertyValue = (String) configuration.get( DatastoreProviderInitiator.DATASTORE_PROVIDER );
+		String providerClassName = DatastoreProviderInitiator.dataStoreProviderClassName( propertyValue );
+		return NEO4J_EMBEDDED.getDatastoreProviderClassName().equals( providerClassName );
 	}
 
 	@Override

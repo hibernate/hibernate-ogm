@@ -18,37 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.datastore.impl;
 
-import junit.framework.Assert;
+import java.util.Collections;
+import java.util.Set;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Represents an empty {@link AssociationSnapshot}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public final class EmptyAssociationSnapshot implements AssociationSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	public static final EmptyAssociationSnapshot SINGLETON = new EmptyAssociationSnapshot();
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	private EmptyAssociationSnapshot() {
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public Tuple get(RowKey column) {
+		return null;
+	}
+
+	@Override
+	public boolean containsKey(RowKey column) {
+		return false;
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return Collections.emptySet();
 	}
 
 }

@@ -18,37 +18,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.type.descriptor;
 
-import junit.framework.Assert;
+import java.util.Calendar;
+import java.util.Date;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * Converts a {@link Date} into a {@link String} representing a timestamp.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class TimestampDateTypeDescriptor extends DateTypeDescriptor {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	public static final TimestampDateTypeDescriptor INSTANCE = new TimestampDateTypeDescriptor();
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	@Override
+	public Date fromString(String string) {
+		return CalendarTimeZoneDateTimeTypeDescriptor.INSTANCE.fromString( string ).getTime();
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public String toString(Date value) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime( value );
+		return CalendarTimeZoneDateTimeTypeDescriptor.INSTANCE.toString( cal );
+	}
+
+	@Override
+	public boolean areEqual(Date one, Date another) {
+		if ( one == another ) {
+			return true;
+		}
+		if ( one == null || another == null ) {
+			return false;
+		}
+
+		return one.equals( another );
 	}
 
 }

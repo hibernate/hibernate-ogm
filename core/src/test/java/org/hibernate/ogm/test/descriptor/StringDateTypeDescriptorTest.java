@@ -18,37 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.test.descriptor;
 
-import junit.framework.Assert;
+import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.type.StringDateTypeDescriptor;
 import org.junit.Test;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class StringDateTypeDescriptorTest {
 
 	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	public void testDescriptorName() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getName() ).as( StringDateTypeDescriptor.class.getSimpleName() )
+				.isEqualTo( "string_date" );
 	}
 
 	@Test
-	public void testCorrect() {
-		// all fine
+	public void testColumnSpanForNull() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( null ) ).as( "Column span for null" )
+				.isEqualTo( 1 );
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	@Test
+	public void testColumnSpanForOgmSessionFactory() throws Exception {
+		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( new OgmSessionFactory( null ) ) )
+				.as( "Column span" ).isEqualTo( 1 );
 	}
-
 }

@@ -28,8 +28,6 @@
         <properties>
             <property name="hibernate.ogm.datastore.provider"
                       value="org.hibernate.ogm.test.datastore.DatastoreProviderGeneratingSchema"/>
-            <property name="hibernate.transaction.jta.platform"
-                      value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform" />
         </properties>
     </persistence-unit>
 </persistence>

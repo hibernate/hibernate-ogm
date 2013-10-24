@@ -50,7 +50,12 @@
              <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
              <filtered>true</filtered>
         </file>
-   </files>
+         <file>
+             <source>${module.xml.basedir}/ogm/neo4j/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+  </files>
 
     <dependencySets>
         <dependencySet>
@@ -81,6 +86,25 @@
              <includes>
                  <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
                  <include>org.mongodb:mongo-java-driver</include>
+              </includes>
+       </dependencySet>
+       <dependencySet>
+              <useProjectArtifact>false</useProjectArtifact>
+              <outputDirectory>org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+              <useTransitiveFiltering>false</useTransitiveFiltering>
+              <unpack>false</unpack>
+              <includes>
+                  <include>org.hibernate.ogm:hibernate-ogm-neo4j</include>
+                  <include>org.neo4j:neo4j</include>
+                  <include>org.neo4j:neo4j-lucene-index</include>
+                  <include>org.neo4j:neo4j-kernel</include>
+                  <include>org.neo4j:neo4j-udc</include>
+                  <include>org.neo4j:neo4j-graph-algo</include>
+                  <include>org.neo4j:neo4j-graph-matching</include>
+                  <include>org.neo4j:neo4j-jmx</include>
+                  <include>org.apache.lucene:lucene-core</include>
+                  <include>org.scala-lang:scala-library</include>
+                  <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
               </includes>
        </dependencySet>
        <dependencySet>

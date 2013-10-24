@@ -18,37 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.type;
 
-import junit.framework.Assert;
+import java.util.Date;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.TimestampDateTypeDescriptor;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
+ * For {@link Date} objects use a String representation.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class StringDateTypeDescriptor extends AbstractGenericBasicType<Date> {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
+	public static final StringDateTypeDescriptor INSTANCE = new StringDateTypeDescriptor();
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public StringDateTypeDescriptor() {
+		super( StringMappedGridTypeDescriptor.INSTANCE, TimestampDateTypeDescriptor.INSTANCE );
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
 
+	@Override
+	public String getName() {
+		return "string_date";
+	}
 }
