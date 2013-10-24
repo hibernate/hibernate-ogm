@@ -28,7 +28,7 @@
         <resource-root path="hibernate-ogm-infinispan-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" slot="${hibernate.orm.module.slot}" />
+        <module name="org.hibernate" export="true" />
         <module name="org.hibernate.commons-annotations" />
         <module name="org.slf4j" />
 
@@ -38,6 +38,7 @@
         <module name="javax.validation.api" />
         <module name="org.dom4j" />
         <module name="org.infinispan" services="export" export="true" optional="true" />
+        <module name="org.infinispan.commons" optional="true" />
         <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
         <module name="org.jboss.logging" />
 

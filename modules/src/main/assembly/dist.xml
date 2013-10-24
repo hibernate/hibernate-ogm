@@ -22,7 +22,7 @@
   ~ Boston, MA  02110-1301  USA
   -->
 <assembly>
-    <id>jbossas-72-dist</id>
+    <id>wildfly-8-dist</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -33,11 +33,6 @@
         <file>
             <source>${module.xml.basedir}/ogm/core/module.xml</source>
             <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
-            <source>${module.xml.basedir}/hibernate/module.xml</source>
-            <outputDirectory>/org/hibernate/main</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
@@ -107,18 +102,5 @@
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
               </includes>
        </dependencySet>
-       <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/${hibernate.orm.module.slot}</outputDirectory>
-            <useTransitiveFiltering>false</useTransitiveFiltering>
-            <unpack>false</unpack>
-            <includes>
-                <include>org.hibernate:hibernate-core</include>
-                <include>org.hibernate:hibernate-entitymanager</include>
-                <include>org.hibernate:hibernate-infinispan</include>
-                <include>org.hibernate:hibernate-envers</include>
-                <include>org.hibernate.common:hibernate-commons-annotations</include>
-            </includes>
-        </dependencySet>
     </dependencySets>
 </assembly>

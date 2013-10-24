@@ -66,7 +66,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 			+ "<infinispan>"
 				+ "<global />"
 				+ "<default >"
-					+ "<transaction transactionMode=\"TRANSACTIONAL\" transactionManagerLookupClass=\"org.infinispan.transaction.lookup.JBossTransactionManagerLookup\" />"
+					+ "<transaction transactionMode=\"TRANSACTIONAL\" transactionManagerLookupClass=\"org.infinispan.transaction.lookup.GenericTransactionManagerLookup\" />"
 					+ "<jmxStatistics enabled=\"true\" />"
 					+ "<eviction strategy=\"NONE\" />"
 					+ "<expiration wakeUpInterval=\"-1\" reaperEnabled=\"false\" />"

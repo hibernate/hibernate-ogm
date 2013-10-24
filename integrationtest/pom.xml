@@ -13,9 +13,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.jboss.as>7.2.0.Alpha1-redhat-4</version.jboss.as>
+        <version.wildfly>8.0.0.Beta1</version.wildfly>
         <version.arquillian>1.0.3.Final</version.arquillian>
-        <version.arquillian.jboss.as>7.2.0.Final</version.arquillian.jboss.as>
         <version.shrinkwrapResolver>2.0.0-alpha-1</version.shrinkwrapResolver>
 
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
@@ -83,9 +82,9 @@
                             <configuration>
                                 <artifactItems>
                                     <artifactItem>
-                                        <groupId>org.jboss.as</groupId>
-                                        <artifactId>jboss-as-dist</artifactId>
-                                        <version>${version.jboss.as}</version>
+                                        <groupId>org.wildfly</groupId>
+                                        <artifactId>wildfly-dist</artifactId>
+                                        <version>${version.wildfly}</version>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
                                         <outputDirectory>${project.build.directory}</outputDirectory>
@@ -94,10 +93,10 @@
                                         <groupId>${project.groupId}</groupId>
                                         <artifactId>hibernate-ogm-modules</artifactId>
                                         <version>${project.version}</version>
-                                        <classifier>jbossas-72-dist</classifier>
+                                        <classifier>wildfly-8-dist</classifier>
                                         <type>zip</type>
                                         <overWrite>false</overWrite>
-                                        <outputDirectory>${project.build.directory}/jboss-eap-6.1/modules</outputDirectory>
+                                        <outputDirectory>${project.build.directory}/wildfly-${version.wildfly}/modules</outputDirectory>
                                     </artifactItem>
                                 </artifactItems>
                             </configuration>
@@ -144,9 +143,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.jboss.as</groupId>
-            <artifactId>jboss-as-arquillian-container-managed</artifactId>
-            <version>${version.arquillian.jboss.as}</version>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <version>${version.wildfly}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
