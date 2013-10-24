@@ -33,8 +33,7 @@ import javax.persistence.spi.ProviderUtil;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
-import org.hibernate.ejb.AvailableSettings;
-import org.hibernate.ejb.HibernatePersistence;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
@@ -58,7 +57,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	@Override
 	public EntityManagerFactory createEntityManagerFactory(String emName, Map map) {
 		try {
-			Map integration = map == null ? Collections.emptyMap() : Collections.unmodifiableMap( map );
+			Map<?, ?> integration = map == null ? Collections.emptyMap() : Collections.unmodifiableMap( map );
 
 			List<ParsedPersistenceXmlDescriptor> metadataFiles = PersistenceXmlParser.locatePersistenceUnits(
 					integration
@@ -72,7 +71,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 					//correct provider
 					Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
 					enforceOgmConfig( protectiveCopy );
-					protectiveCopy.put( HibernatePersistence.PROVIDER, delegate.getClass().getName() );
+					protectiveCopy.put( AvailableSettings.PROVIDER, delegate.getClass().getName() );
 					final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
 							emName, protectiveCopy
 					);

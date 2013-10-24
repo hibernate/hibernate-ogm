@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.dom4j.Node;
-
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
@@ -81,6 +80,7 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
+	@Deprecated
 	public boolean isXMLElement() {
 		return delegate.isXMLElement();
 	}
@@ -135,6 +135,7 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
+	@Deprecated
 	public void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory) throws HibernateException {
 		delegate.setToXMLNode( node, value, factory );
 	}
@@ -145,6 +146,7 @@ public abstract class GridTypeDelegatingToCoreType implements GridType {
 	}
 
 	@Override
+	@Deprecated
 	public Object fromXMLNode(Node xml, Mapping factory) throws HibernateException {
 		return delegate.fromXMLNode( xml, factory );
 	}
