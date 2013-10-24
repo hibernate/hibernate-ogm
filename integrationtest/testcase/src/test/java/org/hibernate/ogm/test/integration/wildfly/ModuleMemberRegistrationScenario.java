@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.jbossas7;
+package org.hibernate.ogm.test.integration.wildfly;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -26,8 +26,8 @@ import static org.junit.Assert.assertNull;
 
 import javax.inject.Inject;
 
-import org.hibernate.ogm.test.integration.jbossas7.controller.MemberRegistration;
-import org.hibernate.ogm.test.integration.jbossas7.model.Member;
+import org.hibernate.ogm.test.integration.wildfly.controller.MemberRegistration;
+import org.hibernate.ogm.test.integration.wildfly.model.Member;
 import org.junit.Test;
 
 /**

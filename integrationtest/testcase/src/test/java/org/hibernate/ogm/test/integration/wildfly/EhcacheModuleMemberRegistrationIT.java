@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.jbossas7;
+package org.hibernate.ogm.test.integration.wildfly;
 
-import org.hibernate.ogm.test.integration.jbossas7.model.Member;
-import org.hibernate.ogm.test.integration.jbossas7.util.ModuleMemberRegistrationDeployment;
+import org.hibernate.ogm.test.integration.wildfly.model.Member;
+import org.hibernate.ogm.test.integration.wildfly.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -30,7 +30,7 @@ import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
 
 /**
- * Test the hibernate OGM module in JBoss AS using Ehcache.
+ * Test for the Hibernate OGM module in WildFly using Ehcache.
  *
  * @author Davide D'Alto
  */

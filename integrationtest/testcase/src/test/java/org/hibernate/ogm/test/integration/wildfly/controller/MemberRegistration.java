@@ -18,19 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.jbossas7.util;
+package org.hibernate.ogm.test.integration.wildfly.controller;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateful;
+import javax.enterprise.inject.Model;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
-/**
- * This class uses CDI to alias Java EE resources, such as the persistence context, to CDI beans
- */
-public class Resources {
+import org.hibernate.ogm.test.integration.wildfly.model.Member;
+
+@Stateful
+@Model
+public class MemberRegistration {
+
+	@Inject
+	private EntityManager em;
+
+	private Member newMember;
 
 	@Produces
-	@PersistenceContext
-	private EntityManager em;
+	@Named
+	public Member getNewMember() {
+		return newMember;
+	}
+
+	public void register() throws Exception {
+		em.persist( newMember );
+		initNewMember();
+	}
+
+	public Member find(Long id) {
+		return em.find( Member.class, id );
+	}
+
+	@PostConstruct
+	public void initNewMember() {
+		newMember = new Member();
+	}
 
 }
