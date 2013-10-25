@@ -66,6 +66,10 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-mongodb</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-neo4j</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -75,10 +79,11 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <sourcepath>
-                        ${basedir}/../../hibernate-ogm-core/src/main/java;
-                        ${basedir}/../../hibernate-ogm-ehcache/src/main/java;
-                        ${basedir}/../../hibernate-ogm-infinispan/src/main/java;
-                        ${basedir}/../../hibernate-ogm-mongodb/src/main/java
+                        ${basedir}/../../core/src/main/java;
+                        ${basedir}/../../ehcache/src/main/java;
+                        ${basedir}/../../infinispan/src/main/java;
+                        ${basedir}/../../mongodb/src/main/java
+                        ${basedir}/../../neo4j/src/main/java
                     </sourcepath>
                     <show>public</show>
                     <tags>
