@@ -22,9 +22,13 @@ package org.hibernate.ogm.test.utils;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -133,8 +137,49 @@ public class TestHelper {
 	}
 
 	public static Map<String, String> getEnvironmentProperties() {
+		//TODO hibernate.properties is ignored due to HHH-8635, thus explicitly load its properties
+		Map<String, String> properties = getHibernateProperties();
 		Map<String, String> environmentProperties = helper.getEnvironmentProperties();
-		return environmentProperties == null ? new HashMap<String, String>( 0 ) : environmentProperties;
+
+		if (environmentProperties != null ) {
+			properties.putAll( environmentProperties );
+		}
+
+		return properties;
+	}
+
+	private static Map<String, String> getHibernateProperties() {
+		InputStream hibernatePropertiesStream = null;
+		Map<String, String> properties = new HashMap<String, String>();
+
+		try {
+			hibernatePropertiesStream = TestHelper.class.getResourceAsStream( "/hibernate.properties" );
+			Properties hibernateProperties = new Properties();
+			hibernateProperties.load( hibernatePropertiesStream );
+
+			for ( Entry<Object, Object> property : hibernateProperties.entrySet() ) {
+				properties.put( property.getKey().toString(), property.getValue().toString() );
+			}
+
+			return properties;
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
+		finally {
+			closeQuietly( hibernatePropertiesStream );
+		}
+	}
+
+	private static void closeQuietly(InputStream stream) {
+		if ( stream != null ) {
+			try {
+				stream.close();
+			}
+			catch (IOException e) {
+				//ignore
+			}
+		}
 	}
 
 	public static void checkCleanCache(SessionFactory sessionFactory) {

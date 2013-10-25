@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -31,6 +31,7 @@ import javax.persistence.Persistence;
 
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.RequiresTransactionalCapabilitiesRule;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -47,7 +48,7 @@ public class JPAResourceLocalStandaloneTest {
 
 	@Test
 	public void testJTAStandalone() throws Exception {
-		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone" );
+		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		try {
 
 			final EntityManager em = emf.createEntityManager();
