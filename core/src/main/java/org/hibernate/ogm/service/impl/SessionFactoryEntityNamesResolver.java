@@ -21,9 +21,9 @@
 package org.hibernate.ogm.service.impl;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
-import org.hibernate.service.classloading.spi.ClassLoaderService;
 
 /**
  * Resolves entity names into Class references using the metadata

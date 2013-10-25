@@ -20,13 +20,13 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.persister.internal.PersisterClassResolverInitiator;
 import org.hibernate.persister.spi.PersisterClassResolver;
-import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-
-import java.util.Map;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -45,7 +45,7 @@ public class OgmPersisterClassResolverInitiator extends OptionalServiceInitiator
 	}
 
 	@Override
-	protected BasicServiceInitiator<PersisterClassResolver> backupInitiator() {
+	protected StandardServiceInitiator<PersisterClassResolver> backupInitiator() {
 		return PersisterClassResolverInitiator.INSTANCE;
 	}
 }

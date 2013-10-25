@@ -24,11 +24,11 @@ import java.sql.Connection;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.dialect.Dialect;
+import org.hibernate.engine.jdbc.dialect.internal.DialectFactoryInitiator;
+import org.hibernate.engine.jdbc.dialect.spi.DialectFactory;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.jdbc.dialect.internal.DialectFactoryInitiator;
-import org.hibernate.service.jdbc.dialect.spi.DialectFactory;
-import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -44,7 +44,7 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 	}
 
 	@Override
-	protected BasicServiceInitiator<DialectFactory> backupInitiator() {
+	protected StandardServiceInitiator<DialectFactory> backupInitiator() {
 		return DialectFactoryInitiator.INSTANCE;
 	}
 
@@ -54,6 +54,7 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 	}
 
 	private static class NoopDialectFactory implements DialectFactory {
+
 		@Override
 		public Dialect buildDialect(Map configValues, Connection connection) throws HibernateException {
 			return new NoopDialect();

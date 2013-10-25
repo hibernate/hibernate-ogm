@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.service.impl;
 
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
@@ -32,7 +33,6 @@ import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.transaction.impl.OgmJtaPlatformInitiator;
 import org.hibernate.ogm.transaction.impl.OgmTransactionFactoryInitiator;
-import org.hibernate.service.ServiceRegistryBuilder;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
@@ -70,7 +70,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	}
 
 	@Override
-	public void prepareServices(ServiceRegistryBuilder serviceRegistryBuilder) {
+	public void prepareServices(StandardServiceRegistryBuilder serviceRegistryBuilder) {
 		serviceRegistryBuilder.addInitiator( OgmSessionFactoryServiceRegistryFactoryInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( ConfigurationServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OgmPersisterClassResolverInitiator.INSTANCE );

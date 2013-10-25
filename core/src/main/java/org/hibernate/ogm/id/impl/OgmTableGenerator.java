@@ -30,11 +30,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
@@ -54,13 +49,17 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 
@@ -186,12 +185,13 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	private Optimizer optimizer;
 	private long accessCount = 0;
 	private volatile GridType identifierValueGridType;
-	private GridType segmentGridType = StringType.INSTANCE;
+	private final GridType segmentGridType = StringType.INSTANCE;
 	private volatile GridDialect gridDialect;
 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public Object generatorKey() {
 		return tableName;
 	}
@@ -299,6 +299,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
 		identifierType = type;
 
@@ -486,11 +487,18 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public synchronized Serializable generate(final SessionImplementor session, Object obj) {
 		return optimizer.generate(
 				new AccessCallback() {
+					@Override
 					public IntegralDataTypeHolder getNextValue() {
 						return (IntegralDataTypeHolder) doWorkInIsolationTransaction( session );
+					}
+
+					@Override
+					public String getTenantIdentifier() {
+						return session.getTenantIdentifier();
 					}
 				}
 		);
@@ -500,7 +508,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	public Serializable doWorkInIsolationTransaction(final SessionImplementor session)
 			throws HibernateException {
 		class Work extends AbstractReturningWork<IntegralDataTypeHolder> {
-			private SessionImplementor localSession = session;
+			private final SessionImplementor localSession = session;
 
 			@Override
 			public IntegralDataTypeHolder execute(Connection connection) throws SQLException {
@@ -562,6 +570,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public String[] sqlCreateStrings(Dialect dialect) throws HibernateException {
 		return new String[] { };
 	}
@@ -569,6 +578,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public String[] sqlDropStrings(Dialect dialect) throws HibernateException {
 		return new String[] { };
 	}

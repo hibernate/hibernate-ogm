@@ -20,15 +20,15 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
 import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class ConfigurationServiceInitiator implements BasicServiceInitiator<ConfigurationService> {
+public class ConfigurationServiceInitiator implements StandardServiceInitiator<ConfigurationService> {
 	public static ConfigurationServiceInitiator INSTANCE = new ConfigurationServiceInitiator();
 	@Override
 	public ConfigurationService initiateService(Map configurationValues, ServiceRegistryImplementor registry) {

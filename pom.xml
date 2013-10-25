@@ -137,7 +137,7 @@
         <infinispanVersion>6.0.0.CR1</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <neo4jVersion>2.0.0-M03</neo4jVersion>
-        <hibernateVersion>4.2.6.Final</hibernateVersion>
+        <hibernateVersion>4.3.0.Beta4</hibernateVersion>
         <hibernateSearchVersion>4.5.0.Alpha1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha5</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
@@ -174,8 +174,8 @@
             </dependency>
             <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
-                <artifactId>hibernate-jpa-2.0-api</artifactId>
-                <version>1.0.1.Final</version>
+                <artifactId>hibernate-jpa-2.1-api</artifactId>
+                <version>1.0.0.Final</version>
                 <scope>provided</scope>
             </dependency>
 
@@ -315,6 +315,13 @@
                 <groupId>org.hibernate.hql</groupId>
                 <artifactId>hibernate-hql-lucene</artifactId>
                 <version>${hibernateParserVersion}</version>
+                <!-- TODO Remove once parser is updated -->
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.hibernate.hql</groupId>
@@ -354,7 +361,7 @@
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>4.0.2.Final</version>
+                <version>4.0.4.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>

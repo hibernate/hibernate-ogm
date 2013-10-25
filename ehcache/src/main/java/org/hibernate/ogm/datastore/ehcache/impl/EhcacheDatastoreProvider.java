@@ -34,6 +34,7 @@ import net.sf.ehcache.config.FactoryConfiguration;
 import net.sf.ehcache.transaction.manager.TransactionManagerLookup;
 import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -44,7 +45,6 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;

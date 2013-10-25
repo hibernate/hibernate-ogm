@@ -40,7 +40,6 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
-import org.hibernate.event.spi.PostLoadEvent;
 import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
@@ -81,7 +80,7 @@ public class OgmLoader implements UniqueEntityLoader {
 	private final OgmEntityPersister[] entityPersisters;
 	private final OgmCollectionPersister[] collectionPersisters;
 	private final SessionFactoryImplementor factory;
-	private LockMode[] defaultLockModes;
+	private final LockMode[] defaultLockModes;
 	private final CollectionAliases[] collectionAliases;
 	private final GridDialect gridDialect;
 
@@ -658,14 +657,11 @@ public class OgmLoader implements UniqueEntityLoader {
 
 		//important: reuse the same event instances for performance!
 		final PreLoadEvent pre;
-		final PostLoadEvent post;
 		if ( session.isEventSource() ) {
 			pre = new PreLoadEvent( (EventSource) session );
-			post = new PostLoadEvent( (EventSource) session );
 		}
 		else {
 			pre = null;
-			post = null;
 		}
 
 		if ( hydratedObjects != null ) {
@@ -674,7 +670,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				log.trace( "total objects hydrated: " + hydratedObjectsSize );
 			}
 			for ( int i = 0; i < hydratedObjectsSize; i++ ) {
-				TwoPhaseLoad.initializeEntity( hydratedObjects.get( i ), readOnly, session, pre, post );
+				TwoPhaseLoad.initializeEntity( hydratedObjects.get( i ), readOnly, session, pre );
 			}
 		}
 

@@ -20,16 +20,16 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import org.hibernate.service.Service;
-import org.hibernate.service.spi.BasicServiceInitiator;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-
 import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.service.Service;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public abstract class OptionalServiceInitiator<S extends Service> implements BasicServiceInitiator<S> {
+public abstract class OptionalServiceInitiator<S extends Service> implements StandardServiceInitiator<S> {
 
 	@Override
 	public S initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
@@ -37,12 +37,12 @@ public abstract class OptionalServiceInitiator<S extends Service> implements Bas
 			return buildServiceInstance( configurationValues, registry );
 		}
 		else {
-			BasicServiceInitiator<S> initiator = backupInitiator();
+			StandardServiceInitiator<S> initiator = backupInitiator();
 			return initiator != null ? initiator.initiateService( configurationValues, registry ) : null;
 		}
 	}
 
 	protected abstract S buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry);
 
-	protected abstract BasicServiceInitiator<S> backupInitiator();
+	protected abstract StandardServiceInitiator<S> backupInitiator();
 }

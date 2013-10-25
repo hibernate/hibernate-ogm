@@ -20,33 +20,29 @@
  */
 package org.hibernate.ogm.jpa;
 
-import java.net.URL;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceUnitInfo;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.persistence.spi.ProviderUtil;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.EJB3DTDEntityResolver;
 import org.hibernate.cfg.Environment;
 import org.hibernate.ejb.AvailableSettings;
 import org.hibernate.ejb.HibernatePersistence;
-import org.hibernate.ejb.packaging.PersistenceMetadata;
-import org.hibernate.ejb.packaging.PersistenceXmlLoader;
+import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
+import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -55,57 +51,44 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class HibernateOgmPersistence implements PersistenceProvider {
-	private static final Log log = LoggerFactory.make();
-	private static final Map EMPTY_MAP = new HashMap<Object, Object>( 0 );
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();
 
-	private HibernatePersistence delegate = new HibernatePersistence();
+	private final HibernatePersistenceProvider delegate = new HibernatePersistenceProvider();
 
 	@Override
 	public EntityManagerFactory createEntityManagerFactory(String emName, Map map) {
 		try {
-			Map integration = map == null ?
-						EMPTY_MAP :
-						Collections.unmodifiableMap( map );
-			Enumeration<URL> persistenceXml = Thread.currentThread()
-					.getContextClassLoader()
-					.getResources( "META-INF/persistence.xml" );
-			if ( ! persistenceXml.hasMoreElements() ) {
-				log.persistenceXmlNotFoundInClassPath( emName != null ? emName : "" );
-			}
-			while ( persistenceXml.hasMoreElements() ) {
-				URL url = persistenceXml.nextElement();
-				List<PersistenceMetadata> metadataFiles = PersistenceXmlLoader.deploy(
-						url,
-						integration,
-						new EJB3DTDEntityResolver(),
-						PersistenceUnitTransactionType.RESOURCE_LOCAL
-				);
-				for ( PersistenceMetadata metadata : metadataFiles ) {
-					//if the provider is not set, don't use it as people might want to use Hibernate ORM
-					if ( IMPLEMENTATION_NAME.equalsIgnoreCase(
-							metadata.getProvider()
-					) ) {
-						//correct provider
-						Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
-						enforceOgmConfig( protectiveCopy );
-						protectiveCopy.put( HibernatePersistence.PROVIDER, delegate.getClass().getName() );
-						final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
-								emName, protectiveCopy
-						);
-						if ( coreEMF != null ) {
-							//delegate might return null to refuse the configuration
-							//(like when the configuration file is not defining the expected persistent unit)
-							return new OgmEntityManagerFactory( coreEMF );
-						}
+			Map integration = map == null ? Collections.emptyMap() : Collections.unmodifiableMap( map );
+
+			List<ParsedPersistenceXmlDescriptor> metadataFiles = PersistenceXmlParser.locatePersistenceUnits(
+					integration
+			);
+
+			for ( ParsedPersistenceXmlDescriptor metadata : metadataFiles ) {
+				//if the provider is not set, don't use it as people might want to use Hibernate ORM
+				if ( IMPLEMENTATION_NAME.equalsIgnoreCase(
+						metadata.getProviderClassName()
+				) ) {
+					//correct provider
+					Map<Object,Object> protectiveCopy = new HashMap<Object,Object>(integration);
+					enforceOgmConfig( protectiveCopy );
+					protectiveCopy.put( HibernatePersistence.PROVIDER, delegate.getClass().getName() );
+					final EntityManagerFactory coreEMF = delegate.createEntityManagerFactory(
+							emName, protectiveCopy
+					);
+					if ( coreEMF != null ) {
+						//delegate might return null to refuse the configuration
+						//(like when the configuration file is not defining the expected persistent unit)
+						return new OgmEntityManagerFactory( coreEMF );
 					}
 				}
 			}
+
 			//not the right provider
 			return null;
 		}
 		catch (PersistenceException pe) {
-			throw (PersistenceException) pe;
+			throw pe;
 		}
 		catch (Exception e) {
 			throw new PersistenceException( "Unable to build EntityManagerFactory", e );
@@ -149,5 +132,15 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 	@Override
 	public ProviderUtil getProviderUtil() {
 		return delegate.getProviderUtil();
+	}
+
+	@Override
+	public void generateSchema(PersistenceUnitInfo info, Map map) {
+		throw new IllegalStateException( "Hibernate OGM does not support schema generation" );
+	}
+
+	@Override
+	public boolean generateSchema(String persistenceUnitName, Map map) {
+		throw new IllegalStateException( "Hibernate OGM does not support schema generation" );
 	}
 }
