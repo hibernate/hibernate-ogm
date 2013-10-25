@@ -1,6 +1,30 @@
 Hibernate OGM Changelog
 =======================
 
+4.0.0.Beta4 (25-10-2013)
+-------------------------
+
+** Bug
+    * [OGM-345] - Use JavaBeans property names in OptionsContext
+
+** New Feature
+    * [OGM-182] - Support Embedded Neo4j as Datastore
+    * [OGM-208] - Create facility for OGM core and Dialects to receive custom metadata (annotation, programmatic) associated to entities, properties or associations
+    * [OGM-348] - Provide type-safe API for accessing options
+
+** Task
+    * [OGM-248] - Drop the hibernate-ogm prefix for the module directories
+    * [OGM-336] - Adapt to changed parser API
+    * [OGM-337] - The mapping context should be cached
+    * [OGM-338] - A User must be able to access the mapping context
+    * [OGM-341] - Update JavaDoc CSS and enforce JDK 7 for builds
+    * [OGM-350] - Use animalsniffer plugin to keep Java6 compatibility
+    * [OGM-354] - Disable usage of shadow services from ORM in our testsuite
+    * [OGM-358] - Add direct native backend query execution (e.g. MongoQL)
+    * [OGM-371] - Add Neo4j dependencies in the distribution package
+    * [OGM-374] - Javadoc not included in the distribution package
+
+
 4.0.0.Beta3 (26-09-2013)
 -------------------------
 
