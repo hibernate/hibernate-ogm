@@ -25,10 +25,10 @@ import javax.transaction.UserTransaction;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.jta.platform.internal.AbstractJtaPlatform;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.service.jta.platform.internal.AbstractJtaPlatform;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.kernel.impl.transaction.UserTransactionImpl;
@@ -50,8 +50,8 @@ public class Neo4jJtaPlatform extends AbstractJtaPlatform {
 
 	private GraphDatabaseAPI neo4jDb() {
 		ServiceRegistry serviceRegistry = serviceRegistry();
-		serviceRegistry = ( (SessionFactoryServiceRegistryFactory) serviceRegistry
-				.getService( SessionFactoryServiceRegistryFactory.class ) )
+		serviceRegistry = serviceRegistry
+				.getService( SessionFactoryServiceRegistryFactory.class )
 				.buildServiceRegistry( (SessionFactoryImplementor) null, (Configuration) null );
 		Neo4jDatastoreProvider service = (Neo4jDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 		return (GraphDatabaseAPI) service.getDataBase();

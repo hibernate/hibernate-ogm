@@ -81,6 +81,7 @@ import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.procedure.ProcedureCall;
 import org.hibernate.stat.SessionStatistics;
 import org.hibernate.type.Type;
 
@@ -212,6 +213,25 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		return delegate.doReturningWork( work );
 	}
 
+	@Override
+	public ProcedureCall getNamedProcedureCall(String name) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public ProcedureCall createStoredProcedureCall(String procedureName) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public ProcedureCall createStoredProcedureCall(String procedureName, Class... resultClasses) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public ProcedureCall createStoredProcedureCall(String procedureName, String... resultSetMappings) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
 
 	//Event Source methods
 	@Override

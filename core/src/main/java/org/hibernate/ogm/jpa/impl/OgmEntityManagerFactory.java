@@ -21,16 +21,22 @@
 package org.hibernate.ogm.jpa.impl;
 
 import java.util.Map;
+
 import javax.persistence.Cache;
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceUnitUtil;
+import javax.persistence.Query;
+import javax.persistence.SynchronizationType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
+import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
 
 /**
@@ -57,9 +63,29 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 	}
 
 	@Override
+	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType ) );
+	}
+
+	@Override
+	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType, map ) );
+	}
+
+	@Override
 	public SessionFactory getSessionFactory() {
 		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEmf ).getSessionFactory();
 		return new OgmSessionFactory( (SessionFactoryImplementor) sessionFactory );
+	}
+
+	@Override
+	public void addNamedQuery(String name, Query query) {
+		throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+	}
+
+	@Override
+	public <T> void addNamedEntityGraph(String graphName, EntityGraph<T> entityGraph) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
 	}
 
 	//Delegation
@@ -97,5 +123,21 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 	@Override
 	public PersistenceUnitUtil getPersistenceUnitUtil() {
 		return hibernateEmf.getPersistenceUnitUtil();
+	}
+
+	@Override
+	public EntityTypeImpl<?> getEntityTypeByName(String entityName) {
+		return ( (HibernateEntityManagerFactory) hibernateEmf ).getEntityTypeByName( entityName );
+	}
+
+	@Override
+	public <T> T unwrap(Class<T> cls) {
+		if ( cls != null && cls.isAssignableFrom( getClass() ) ) {
+			@SuppressWarnings("unchecked")
+			T result = (T) this;
+			return result;
+		}
+
+		return hibernateEmf.unwrap( cls );
 	}
 }

@@ -22,10 +22,10 @@ package org.hibernate.ogm.jdbc;
 
 import java.util.Map;
 
+import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.engine.jdbc.connections.internal.ConnectionProviderInitiator;
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.service.jdbc.connections.internal.ConnectionProviderInitiator;
-import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.service.spi.BasicServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -45,7 +45,7 @@ public class OgmConnectionProviderInitiator extends OptionalServiceInitiator<Con
 	}
 
 	@Override
-	protected BasicServiceInitiator<ConnectionProvider> backupInitiator() {
+	protected StandardServiceInitiator<ConnectionProvider> backupInitiator() {
 		return ConnectionProviderInitiator.INSTANCE;
 	}
 }

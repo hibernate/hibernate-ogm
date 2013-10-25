@@ -37,14 +37,14 @@ import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.massindex.OgmMassIndexerFactory;
 import org.hibernate.ogm.test.utils.GridDialectSkippableTestRunner;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;

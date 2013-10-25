@@ -26,10 +26,10 @@ import javax.transaction.UserTransaction;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
 
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
@@ -77,6 +77,7 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 		}
 	}
 
+	@Override
 	public ConnectionReleaseMode getDefaultReleaseMode() {
 		return ConnectionReleaseMode.AFTER_STATEMENT;
 	}

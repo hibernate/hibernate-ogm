@@ -25,7 +25,7 @@ import javax.persistence.TypedQuery;
 
 import org.hibernate.ejb.AbstractEntityManagerImpl;
 import org.hibernate.ejb.HibernateQuery;
-import org.hibernate.ejb.QueryImpl;
+import org.hibernate.jpa.internal.QueryImpl;
 
 /**
  * Hibernate OGM implementation of both {@link HibernateQuery} and {@link TypedQuery}

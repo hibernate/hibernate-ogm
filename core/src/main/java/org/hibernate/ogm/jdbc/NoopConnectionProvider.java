@@ -23,8 +23,8 @@ package org.hibernate.ogm.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.UnknownUnwrapTypeException;
-import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
 
 /**
  * @author Emmanuel Bernard

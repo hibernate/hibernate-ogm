@@ -20,17 +20,22 @@
  */
 package org.hibernate.ogm.jpa.impl;
 
+import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
+import javax.persistence.StoredProcedureQuery;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.HibernateException;
@@ -193,6 +198,16 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	@Override
+	public Query createQuery(CriteriaUpdate updateQuery) {
+		throw new NotSupportedException( "OGM-8", "criteria queries are not supported yet" );
+	}
+
+	@Override
+	public Query createQuery(CriteriaDelete deleteQuery) {
+		throw new NotSupportedException( "OGM-8", "criteria queries are not supported yet" );
+	}
+
+	@Override
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
 		throw new NotSupportedException( "OGM-14", "typed queries are not supported yet" );
 	}
@@ -228,8 +243,53 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	@Override
+	public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
+		throw new NotSupportedException( "OGM-359", "Stored procedures are not supported yet" );
+	}
+
+	@Override
+	public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
+	public EntityGraph<?> createEntityGraph(String graphName) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
+	public EntityGraph<?> getEntityGraph(String graphName) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
+	public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
+		throw new IllegalStateException( "Hibernate OGM does not support entity graphs" );
+	}
+
+	@Override
 	public void joinTransaction() {
 		hibernateEm.joinTransaction();
+	}
+
+	@Override
+	public boolean isJoinedToTransaction() {
+		return hibernateEm.isJoinedToTransaction();
 	}
 
 	@Override
@@ -288,5 +348,4 @@ public class OgmEntityManager implements EntityManager {
 	public Metamodel getMetamodel() {
 		return hibernateEm.getMetamodel();
 	}
-
 }

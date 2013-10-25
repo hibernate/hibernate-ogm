@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 
 import javax.transaction.TransactionManager;
 
-import org.hibernate.service.jta.platform.spi.JtaPlatform;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 
 /**
