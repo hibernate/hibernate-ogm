@@ -51,7 +51,6 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-orm</artifactId>
-            <optional>true</optional>
         </dependency>
         <!-- Currently we don't have explicit tests using it, but we still need to define
             a dependency to include the dependency in the distribution -->
