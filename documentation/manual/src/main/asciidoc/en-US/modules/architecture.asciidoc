@@ -11,7 +11,7 @@ It has successfully abstracted various key/value stores and MongoDB.
 We are working on testing it on other NoSQL families.
 ====
 
-In this chapter we will will explore:
+In this chapter we will explore:
 
 * the general architecture
 * how the data is persisted in the NoSQL datastore
