@@ -33,10 +33,11 @@ package org.hibernate.ogm.options.spi;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  * @param <I> The type of this option's identifier
+ * @param <V> The type of value associated to the option
  * @see UniqueOption
  * @see OptionsContainer
  */
-public abstract class Option<I> {
+public abstract class Option<I,V> {
 
 	/**
 	 * Returns this option's identifier.
@@ -54,7 +55,7 @@ public abstract class Option<I> {
 			return false;
 		}
 
-		Option<?> option = (Option<?>) o;
+		Option<?,?> option = (Option<?,?>) o;
 
 		if ( !getOptionIdentifier().equals( option.getOptionIdentifier() ) ) {
 			return false;

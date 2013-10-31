@@ -24,17 +24,16 @@ import org.hibernate.ogm.options.spi.Option;
 
 /**
  * An {@link Option} representing a named query.
+ * The value represents the HQL query
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class NamedQueryOption extends Option<String> {
+public class NamedQueryOption extends Option<String,String> {
 
 	private final String name;
-	private final String hql;
 
-	public NamedQueryOption(String name, String hql) {
+	public NamedQueryOption(String name) {
 		this.name = name;
-		this.hql = hql;
 	}
 
 	@Override
@@ -45,9 +44,4 @@ public class NamedQueryOption extends Option<String> {
 	public String getName() {
 		return name;
 	}
-
-	public String getHql() {
-		return hql;
-	}
-
 }

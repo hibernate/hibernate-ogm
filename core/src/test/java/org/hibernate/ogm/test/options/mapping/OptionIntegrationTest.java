@@ -23,6 +23,7 @@ package org.hibernate.ogm.test.options.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
+import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
@@ -33,6 +34,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
@@ -89,8 +91,8 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 
-		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isTrue();
+		Boolean forceOptionValue = refrigatorOptions.getUnique( ForceExampleOption.class );
+		assertThat( forceOptionValue ).isTrue();
 	}
 
 	@Test
@@ -104,8 +106,23 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 
-		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isTrue();
+		String profileName = refrigatorOptions.getUnique( Profile.class );
+		String hql = refrigatorOptions.getMultipleForKey( NamedQueryOption.class, profileName );
+
+
+		Map<String,ProfileDetail> profiles = refrigatorOptions.getAllMultiple( ProfileDefinition.class );
+
+		/**
+		 * @ProfileDefinition(name="foo", value=Complex())
+		 *
+		 *
+		 * [...]
+		 *
+		 * @Entity
+		 * @Profile(name="foo")
+		 * class Address {}
+		 */
+
 
 		OptionsContainer microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
 

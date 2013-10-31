@@ -26,7 +26,7 @@ package org.hibernate.ogm.options.spi;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class UniqueOption extends Option<Object> {
+public abstract class UniqueOption<V> extends Option<Object,V> {
 
 	private static final Object IDENTITY = new Object();
 
