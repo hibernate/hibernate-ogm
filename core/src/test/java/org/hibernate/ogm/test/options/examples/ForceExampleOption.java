@@ -29,28 +29,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class ForceExampleOption extends UniqueOption {
+public class ForceExampleOption extends UniqueOption<Boolean> {
 
-	public static final ForceExampleOption TRUE = new ForceExampleOption( true );
-	public static final ForceExampleOption FALSE = new ForceExampleOption( false );
-
-	private final boolean force;
-
-	private ForceExampleOption(boolean force) {
-		this.force = force;
-	}
-
-	public boolean isForced() {
-		return force;
-	}
-
-	public static ForceExampleOption valueOf(boolean force) {
-		return force ? TRUE : FALSE;
-	}
-
-	@Override
-	public String toString() {
-		return "forced: " + force;
-	}
 
 }

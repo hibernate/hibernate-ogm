@@ -38,7 +38,7 @@ import java.util.Set;
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class OptionsContainer implements Iterable<Option<?>> {
+public class OptionsContainer implements Iterable<Option<?,?>> {
 
 	/**
 	 * An immutable empty options container. A {@link java.lang.UnsupportedOperationException} will be raised when
@@ -106,6 +106,14 @@ public class OptionsContainer implements Iterable<Option<?>> {
 		uniqueOptions.putAll( container.uniqueOptions );
 	}
 
+
+	public <V, T extends UniqueOption<V>> V getUnique(Class<T> clazz) { return null; }
+
+	public <I, V, T extends Option<I,V>> V getMultipleForKey(Class<T> clazz, I key) { return null; }
+
+	public <I, V, T extends Option<I,V>> Map<I,V> getAllMultiple(Class<T> clazz) { return null; }
+
+
 	/**
 	 * Returns a set with all options of the given type (be it unique or non-unique). The returned set may not be
 	 * altered; an exception is thrown when doing so. Note that for obtaining unique options preferably
@@ -144,12 +152,12 @@ public class OptionsContainer implements Iterable<Option<?>> {
 	 * @param optionType the type of option to return
 	 * @return the unique option with the given type or {@code null} if this option is not present in this container
 	 */
-	public <T extends UniqueOption> T getUnique(Class<T> optionType) {
-		// safe as the right type is ensured during put
-		@SuppressWarnings("unchecked")
-		T option = (T) uniqueOptions.get( optionType );
-		return option;
-	}
+//	public <T extends UniqueOption> T getUnique(Class<T> optionType) {
+//		// safe as the right type is ensured during put
+//		@SuppressWarnings("unchecked")
+//		T option = (T) uniqueOptions.get( optionType );
+//		return option;
+//	}
 
 	@Override
 	public String toString() {
