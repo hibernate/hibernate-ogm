@@ -44,26 +44,49 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 
 	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
 		for ( Map<String, Object> row : association.getRows() ) {
-			Map<String, Object> rowKeyColumnValues = getRowKeyColumnValues( row, key );
-
 			RowKey rowKey = new RowKeyBuilder()
 					.tableName( key.getTable() )
 					.addColumns( key.getRowKeyColumnNames() )
-					.values( rowKeyColumnValues )
+					.values( getRowKeyColumnValues( row, key ) )
 					.build();
+
+			// Add values present in the given key to the row data
+			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+				row.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+			}
 
 			rows.put( rowKey, row );
 		}
 	}
 
+	/**
+	 * Returns the values of the row key of the given association; columns present in the given association key will be
+	 * obtained from there, all other columns from the given map.
+	 */
 	private static Map<String, Object> getRowKeyColumnValues(Map<String, Object> row, AssociationKey key) {
 		Map<String, Object> rowKeyColumnValues = new HashMap<String, Object>();
 
 		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
-			rowKeyColumnValues.put( rowKeyColumnName, row.get( rowKeyColumnName ) );
+			Object valueFromAssocationKey = getColumnValue( key, rowKeyColumnName );
+			if ( valueFromAssocationKey != null ) {
+				rowKeyColumnValues.put( rowKeyColumnName, valueFromAssocationKey );
+			}
+			else {
+				rowKeyColumnValues.put( rowKeyColumnName, row.get( rowKeyColumnName ) );
+			}
 		}
 
 		return rowKeyColumnValues;
+	}
+
+	private static Object getColumnValue(AssociationKey key, String columnName) {
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			if ( columnName.equals( key.getColumnNames()[i] ) ) {
+				return key.getColumnValues()[i];
+			}
+		}
+
+		return null;
 	}
 
 	@Override

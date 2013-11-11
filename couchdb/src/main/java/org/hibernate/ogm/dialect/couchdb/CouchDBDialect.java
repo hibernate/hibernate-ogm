@@ -132,7 +132,7 @@ public class CouchDBDialect implements GridDialect {
 		if ( couchDBAssociation == null ) {
 			couchDBAssociation = new CouchDBAssociation( key );
 		}
-		couchDBAssociation.update( association );
+		couchDBAssociation.update( association, key );
 		getDataStore().saveDocument( couchDBAssociation );
 	}
 
