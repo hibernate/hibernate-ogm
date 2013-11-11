@@ -25,6 +25,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
@@ -113,7 +115,8 @@ public class CouchDBDialectTest {
 		Object[] columnValues = { "17" };
 		String tableName = "user_address";
 		String[] columnNames = { "id" };
-		AssociationKey key = createAssociationKey( tableName, columnNames, columnValues );
+		String[] rowKeyColumnNames = new String[] { "id" };
+		AssociationKey key = createAssociationKey( tableName, columnNames, columnValues, rowKeyColumnNames );
 
 		Association createAssociation = dialect.createAssociation( key );
 
@@ -126,15 +129,16 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
-		String[] tupleColumnNames = new String[] { "user_id", "addresses_id" };
-		Object[] tupleColumnValues = new Object[] { "Emmanuel", 1 };
 
-		AssociationKey key = createAssociationKey( "user_address", new String[] { "user_id" },
-
-		new Object[] { "Emmanuel" } );
+		AssociationKey key = createAssociationKey(
+				"user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+		);
 		Association createAssociation = dialect.createAssociation( key );
 
-		Tuple tuple = createTuple( tupleColumnNames, tupleColumnValues );
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "user_id", "Emmanuel" );
+		properties.put( "addresses_id", 1 );
+		Tuple tuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, tuple );
@@ -150,13 +154,16 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
-		String[] tupleColumnNames = new String[] { "user_id", "addresses_id" };
-		Object[] tupleColumnValues = new Object[] { "Emmanuel", 1 };
 
-		AssociationKey key = createAssociationKey( tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" } );
+		AssociationKey key = createAssociationKey(
+				tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+		);
 		Association createAssociation = dialect.createAssociation( key );
 
-		Tuple tuple = createTuple( tupleColumnNames, tupleColumnValues );
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "user_id", "Emmanuel" );
+		properties.put( "addresses_id", 1 );
+		Tuple tuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, tuple );
@@ -181,16 +188,14 @@ public class CouchDBDialectTest {
 		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
 	}
 
-	private AssociationKey createAssociationKey(String tableName, String[] columnNames, Object[] columnValues) {
-		return new AssociationKey( new AssociationKeyMetadata( tableName, columnNames ), columnValues );
+	private AssociationKey createAssociationKey(String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames );
+		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+		return new AssociationKey( associationKeyMetadata, columnValues );
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
 		return new RowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
-	}
-
-	private Tuple createTuple(String[] tupleColumnNames, Object[] tupleColumnValues) {
-		return new Tuple( new CouchDBTupleSnapshot( tupleColumnNames, tupleColumnValues ) );
 	}
 
 	private void createDataStoreProvider() throws Exception {
