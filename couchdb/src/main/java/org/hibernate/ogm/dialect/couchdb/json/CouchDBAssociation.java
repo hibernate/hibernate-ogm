@@ -31,7 +31,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 
@@ -51,13 +50,11 @@ public class CouchDBAssociation extends CouchDBDocument {
 
 	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();
 
-	private final Identifier identifier = new Identifier();
-
 	public CouchDBAssociation() {
 	}
 
-	public CouchDBAssociation(AssociationKey associationKey) {
-		setId( createId( associationKey ) );
+	public CouchDBAssociation(String id) {
+		super( id );
 	}
 
 	/**
@@ -93,10 +90,6 @@ public class CouchDBAssociation extends CouchDBDocument {
 		}
 
 		return false;
-	}
-
-	private String createId(AssociationKey associationKey) {
-		return identifier.createAssociationId( associationKey );
 	}
 
 	public List<Map<String,Object>> getRows() {

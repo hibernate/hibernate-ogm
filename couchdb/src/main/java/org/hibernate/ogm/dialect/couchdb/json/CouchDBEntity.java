@@ -69,8 +69,6 @@ public class CouchDBEntity extends CouchDBDocument {
 	private static final String PATH_SEPARATOR = ".";
 	private static final Pattern PATH_SPLIT_PATTERN = Pattern.compile( Pattern.quote( PATH_SEPARATOR ) );
 
-	private final Identifier identifier = new Identifier();
-
 	private String tableName;
 
 	/**
@@ -82,7 +80,7 @@ public class CouchDBEntity extends CouchDBDocument {
 	}
 
 	public CouchDBEntity(EntityKey key) {
-		setId( identifier.createEntityId( key ) );
+		super( Identifier.createEntityId( key ) );
 		tableName = key.getTable();
 	}
 
