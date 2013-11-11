@@ -36,6 +36,7 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBByteType;
@@ -114,7 +115,7 @@ public class CouchDBDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation association = getDataStore().getAssociation( new CouchDBAssociation( key ).getId() );
 		if ( association != null ) {
-			return association.getAssociation( key );
+			return new Association( new CouchDBAssociationSnapshot( association, key ) );
 		}
 		return null;
 	}
@@ -122,7 +123,7 @@ public class CouchDBDialect implements GridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key) {
 		CouchDBAssociation association = new CouchDBAssociation( key );
-		return association.getAssociation( key );
+		return new Association( new CouchDBAssociationSnapshot( association, key ) );
 	}
 
 	@Override

@@ -46,13 +46,6 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 		}
 	}
 
-	public CouchDBTupleSnapshot(String[] columnNames, Object[] columnValues) {
-		properties = new HashMap<String, Object>();
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			properties.put( columnNames[i], columnValues[i] );
-		}
-	}
-
 	public CouchDBTupleSnapshot(Map<String, Object> properties) {
 		this.properties = properties;
 	}

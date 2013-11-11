@@ -20,11 +20,10 @@
  */
 package org.hibernate.ogm.dialect.couchdb.json;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
@@ -32,8 +31,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -43,19 +40,16 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * Used to serialize and deserialize the JSON with the following structure:
  *
- * { "_id": "", "_rev": " ", "type": "CouchDBAssociation", "tuples": [{ "tupleColumnValues": [] }],
- * "tupleColumnNames": * [] }
+ * { "_id": "", "_rev": " ", "type": "CouchDBAssociation", "rows": [{ "key": "value" }] }
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 public class CouchDBAssociation extends CouchDBDocument {
 
-	private Set<String> tupleColumnNames;
-	private Set<CouchDBAssociationTuple> tuples = new HashSet<CouchDBAssociationTuple>();
-
-	private Map<String, Integer> columnNamesPositions;
+	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();
 
 	private final Identifier identifier = new Identifier();
 
@@ -74,157 +68,29 @@ public class CouchDBAssociation extends CouchDBDocument {
 	 */
 	@JsonIgnore
 	public void update(Association association) {
-		updateColumnNames( association );
-		updateTuples( association );
-	}
+		rows.clear();
 
-	/**
-	 * Returns the {@link Tuple} with the {@link RowKey}
-	 *
-	 * @param key
-	 *            of the searched Tuple
-	 * @return the found tuple
-	 */
-	@JsonIgnore
-	public Tuple getTuple(RowKey key) {
-		return new Tuple( new CouchDBTupleSnapshot( tupleColumnNames.toArray( new String[tupleColumnNames.size()] ), getTupleColumnValues( key ) ) );
-	}
+		for ( RowKey rowKey : association.getKeys() ) {
+			Tuple tuple = association.get( rowKey );
 
-	/**
-	 * Creates the Association using the supplied {@link AssociationKey} and the CouchDBAssociation
-	 * The AssociationKey is needed because the information about the Keys is not stored.
-	 *
-	 * @param key
-	 *            used to create the Association
-	 * @return the Association from the CouchDBAssociation
-	 */
-	@JsonIgnore
-	public Association getAssociation(AssociationKey key) {
-		return new Association( new CouchDBAssociationSnapshot( this, key ) );
-	}
-
-	/**
-	 * Checks if the CouchDBAssociation contains a Tuple with the supplied {@link RowKey}
-	 *
-	 * @param key
-	 *            the searched Rowkey
-	 * @return true if contains the RowKey, false otherwise
-	 */
-	public boolean containsKey(RowKey key) {
-		for ( CouchDBAssociationTuple tuple : tuples ) {
-			if ( tuple.hasKey( columnNamesPositions, key ) ) {
-				return true;
+			Map<String, Object> row = new HashMap<String, Object>();
+			for ( String columnName : tuple.getColumnNames() ) {
+				row.put( columnName, tuple.get( columnName ) );
 			}
+
+			rows.add( row );
 		}
-		return false;
-	}
-
-	/**
-	 * Returns all the key of the CouchDBAssociation
-	 * The AssociationKey is needed because the information about the Keys are not stored.
-	 *
-	 * @param associationKey
-	 *            used to reconstruct the RowKeys
-	 * @return all the Rowkeys of the CouchDBAssociation
-	 */
-	@JsonIgnore
-	public Set<RowKey> getRowKeys(AssociationKey associationKey) {
-		Set<RowKey> result = new HashSet<RowKey>();
-		final String[] rowKeycolumnNames = associationKey.getRowKeyColumnNames();
-		final String tableName = associationKey.getTable();
-
-		for ( CouchDBAssociationTuple tuple : tuples ) {
-			result.add( tuple.getRowKey( rowKeycolumnNames, tableName, columnNamesPositions ) );
-		}
-		return result;
-	}
-
-	/**
-	 * Returns the number of Tuples of the CouchDBAssociation
-	 *
-	 * @return the number of tuples
-	 */
-	public int size() {
-		return tuples.size();
-	}
-
-	public Set<String> getTupleColumnNames() {
-		return tupleColumnNames;
-	}
-
-	public void setTupleColumnNames(Set<String> tupleColumnNames) {
-		this.tupleColumnNames = tupleColumnNames;
-		columnNamesPositions = getColumnNamesPositions( tupleColumnNames );
-	}
-
-	public Set<CouchDBAssociationTuple> getTuples() {
-		return tuples;
-	}
-
-	public void setTuples(Set<CouchDBAssociationTuple> tuples) {
-		this.tuples = tuples;
 	}
 
 	private String createId(AssociationKey associationKey) {
 		return identifier.createAssociationId( associationKey );
 	}
 
-	private void updateTuples(Association association) {
-		tuples.clear();
-		final Set<RowKey> keys = association.getKeys();
-		for ( RowKey key : keys ) {
-			Object[] columnValues = getColumnValues( association.get( key ) );
-			addTuple( key, new CouchDBAssociationTuple( columnValues ) );
-		}
+	public List<Map<String,Object>> getRows() {
+		return rows;
 	}
 
-	private Object[] getColumnValues(Tuple tuple) {
-		Object[] columnValues = new Object[tuple.getColumnNames().size()];
-
-		int i = 0;
-		for ( String columnName : tuple.getColumnNames() ) {
-			columnValues[i] = tuple.get( columnName );
-			i++;
-		}
-
-		return columnValues;
+	public void setRows(List<Map<String, Object>> rows) {
+		this.rows = rows;
 	}
-
-	private void updateColumnNames(Association association) {
-		tupleColumnNames = getTupleColumnNames( association );
-		columnNamesPositions = getColumnNamesPositions( tupleColumnNames );
-	}
-
-	private Set<String> getTupleColumnNames(Association association) {
-		return getTuple( association ).getColumnNames();
-	}
-
-	private Map<String, Integer> getColumnNamesPositions(Set<String> tupleColumnNames) {
-		Map<String, Integer> result = new HashMap<String, Integer>();
-		int position = 0;
-		for ( String columnName : tupleColumnNames ) {
-			result.put( columnName, position );
-			position++;
-		}
-		return result;
-	}
-
-	private Tuple getTuple(Association association) {
-		final Iterator<RowKey> iterator = association.getKeys().iterator();
-		return association.get( iterator.next() );
-	}
-
-	private Object[] getTupleColumnValues(RowKey key) {
-		for ( CouchDBAssociationTuple tuple : tuples ) {
-			if ( tuple.hasKey( columnNamesPositions, key ) ) {
-				return tuple.getTupleColumnValues();
-			}
-		}
-		return null;
-	}
-
-	private void addTuple(RowKey key, CouchDBAssociationTuple couchDBAssociationTuple) {
-		tuples.add( couchDBAssociationTuple );
-	}
-
 }
