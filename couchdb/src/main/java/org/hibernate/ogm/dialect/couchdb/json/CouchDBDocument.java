@@ -37,6 +37,13 @@ public abstract class CouchDBDocument {
 	@JsonProperty("_rev")
 	private String revision;
 
+	public CouchDBDocument() {
+	}
+
+	public CouchDBDocument(String id) {
+		this.id = id;
+	}
+
 	@JsonIgnore
 	public String getId() {
 		return id;

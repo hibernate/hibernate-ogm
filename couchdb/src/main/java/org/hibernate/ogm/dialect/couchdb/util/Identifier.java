@@ -20,10 +20,10 @@
  */
 package org.hibernate.ogm.dialect.couchdb.util;
 
+import java.util.regex.Pattern;
+
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-
-import java.util.regex.Pattern;
 
 /**
  * Generates the ids used to create the {@link org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument}
@@ -41,7 +41,7 @@ public class Identifier {
 	 * @param key the {@link EntityKey} used to generate the id
 	 * @return the value of the generate id
 	 */
-	public String createEntityId(EntityKey key) {
+	public static String createEntityId(EntityKey key) {
 		return key.getTable() + ":" + fromColumnValues( key.getColumnNames() ) + ":" + fromColumnValues( key.getColumnValues() );
 	}
 
@@ -51,11 +51,11 @@ public class Identifier {
 	 * @param key the{@link AssociationKey} used to generate the id
 	 * @return the value of the generate id
 	 */
-	public String createAssociationId(AssociationKey key) {
+	public static String createAssociationId(AssociationKey key) {
 		return key.getTable() + ":" + fromColumnValues( key.getColumnNames() ) + ":" + fromColumnValues( key.getColumnValues() );
 	}
 
-	private String fromColumnValues(Object[] columnValues) {
+	private static String fromColumnValues(Object[] columnValues) {
 		String id = "";
 		for ( int i = 0; i < columnValues.length; i++ ) {
 			id += escapeCharsValuesUsedAsColumnValuesSeparator( columnValues[i] ) + COLUMN_VALUES_SEPARATOR;
@@ -63,7 +63,7 @@ public class Identifier {
 		return id;
 	}
 
-	private String escapeCharsValuesUsedAsColumnValuesSeparator(Object columnValue) {
+	private static String escapeCharsValuesUsedAsColumnValuesSeparator(Object columnValue) {
 		final String value = String.valueOf( columnValue );
 		return escapingPattern.matcher( value ).replaceAll( "/_" );
 	}

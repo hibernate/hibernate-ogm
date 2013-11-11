@@ -67,7 +67,6 @@ import org.hibernate.type.Type;
 public class CouchDBDialect implements GridDialect {
 
 	private final CouchDBDatastoreProvider provider;
-	private final Identifier identifier = new Identifier();
 
 	public CouchDBDialect(CouchDBDatastoreProvider provider) {
 		this.provider = provider;
@@ -80,7 +79,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		CouchDBEntity entity = getDataStore().getEntity( getId( key ) );
+		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
 		}
@@ -95,7 +94,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		CouchDBEntity entity = getDataStore().getEntity( getId( key ) );
+		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity == null ) {
 			entity = new CouchDBEntity( key );
 		}
@@ -105,7 +104,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		CouchDBEntity entity = getDataStore().getEntity( getId( key ) );
+		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			getDataStore().deleteDocument( entity );
 		}
@@ -113,7 +112,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		CouchDBAssociation association = getDataStore().getAssociation( new CouchDBAssociation( key ).getId() );
+		CouchDBAssociation association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
 		if ( association != null ) {
 			return new Association( new CouchDBAssociationSnapshot( association, key ) );
 		}
@@ -122,15 +121,15 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		CouchDBAssociation association = new CouchDBAssociation( key );
+		CouchDBAssociation association = new CouchDBAssociation( Identifier.createAssociationId( key ) );
 		return new Association( new CouchDBAssociationSnapshot( association, key ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		CouchDBAssociation couchDBAssociation = getDataStore().getAssociation( new CouchDBAssociation( key ).getId() );
+		CouchDBAssociation couchDBAssociation = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
 		if ( couchDBAssociation == null ) {
-			couchDBAssociation = new CouchDBAssociation( key );
+			couchDBAssociation = new CouchDBAssociation( Identifier.createAssociationId( key ) );
 		}
 		couchDBAssociation.update( association, key );
 		getDataStore().saveDocument( couchDBAssociation );
@@ -138,7 +137,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		CouchDBAssociation association = getDataStore().getAssociation( new CouchDBAssociation( key ).getId() );
+		CouchDBAssociation association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
 		if ( association != null ) {
 			getDataStore().deleteDocument( association );
 		}
@@ -203,10 +202,6 @@ public class CouchDBDialect implements GridDialect {
 	 */
 	public int getEntitiesSize() {
 		return getDataStore().getNumberOfEntities();
-	}
-
-	private String getId(EntityKey key) {
-		return identifier.createEntityId( key );
 	}
 
 	private void forTuple(Consumer consumer, EntityKeyMetadata entityKeyMetadata) {

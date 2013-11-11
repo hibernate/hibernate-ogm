@@ -62,7 +62,7 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		CouchDBEntity entity = dataStore.getEntity( new Identifier().createEntityId( key ) );
+		CouchDBEntity entity = dataStore.getEntity( Identifier.createEntityId( key ) );
 		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {
