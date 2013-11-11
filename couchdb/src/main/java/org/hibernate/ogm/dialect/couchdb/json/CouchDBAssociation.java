@@ -67,7 +67,7 @@ public class CouchDBAssociation extends CouchDBDocument {
 	 *            used to update the CouchDBAssociation
 	 */
 	@JsonIgnore
-	public void update(Association association) {
+	public void update(Association association, AssociationKey associationKey) {
 		rows.clear();
 
 		for ( RowKey rowKey : association.getKeys() ) {
@@ -75,11 +75,24 @@ public class CouchDBAssociation extends CouchDBDocument {
 
 			Map<String, Object> row = new HashMap<String, Object>();
 			for ( String columnName : tuple.getColumnNames() ) {
-				row.put( columnName, tuple.get( columnName ) );
+				// don't store columns which are part of the assocation key and can be retrieved from there
+				if ( !isKeyColumn( associationKey, columnName ) ) {
+					row.put( columnName, tuple.get( columnName ) );
+				}
 			}
 
 			rows.add( row );
 		}
+	}
+
+	private boolean isKeyColumn(AssociationKey associationKey, String columnName) {
+		for ( String keyColumName : associationKey.getColumnNames() ) {
+			if ( keyColumName.equals( columnName ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private String createId(AssociationKey associationKey) {
