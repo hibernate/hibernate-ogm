@@ -117,12 +117,6 @@ public class CouchDBDatastoreTest {
 		dataStore.deleteDocument( createdDocument.getId(), createdDocument.getRevision() );
 	}
 
-	@Test(expected = HibernateException.class)
-	public void testDeleteADocumentNotSavedOnTheDatabase() {
-		CouchDBDocument document = createEntity();
-		dataStore.deleteDocument( document.getId(), document.getRevision() );
-	}
-
 	@Test
 	public void testGetEntity() {
 		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
