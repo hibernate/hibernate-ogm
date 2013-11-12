@@ -43,7 +43,7 @@ public class OgmConfiguration extends Configuration {
 	/**
 	 * Name of the configuration option for specifying the {@link org.hibernate.ogm.service.impl.QueryParserService} to
 	 * be used. Accepts a fully-qualified class name. If not specified, the parser type returned by
-	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider.DatastoreProvider#getDefaultQueryParserServiceType()}
+	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider#getDefaultQueryParserServiceType()}
 	 * will be used.
 	 */
 	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
