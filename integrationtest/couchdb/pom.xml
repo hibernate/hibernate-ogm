@@ -44,5 +44,10 @@
             <version>${project.version}</version>
             <type>test-jar</type>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>hibernate-ogm-couchdb</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
