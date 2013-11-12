@@ -20,6 +20,10 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
@@ -27,13 +31,11 @@ import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.couchdb.Environment;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
@@ -61,11 +63,10 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
 		CouchDBEntity entity = dataStore.getEntity( new Identifier().createEntityId( key ) );
-		String[] columnNames = entity.getTuple().getColumnNames();
-		Object[] columnValues = entity.getTuple().getColumnValues();
-		int length = columnNames.length;
-		for ( int i = 0; i < length; i++ ) {
-			tupleMap.put( columnNames[i], columnValues[i] );
+		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
+		Set<String> columnNames = snapshot.getColumnNames();
+		for ( String columnName : columnNames ) {
+			tupleMap.put( columnName, snapshot.get( columnName ) );
 		}
 		return tupleMap;
 	}

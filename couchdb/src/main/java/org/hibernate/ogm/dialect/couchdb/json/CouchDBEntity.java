@@ -31,7 +31,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 
@@ -86,15 +86,10 @@ public class CouchDBEntity extends CouchDBDocument {
 		tableName = key.getTable();
 	}
 
-	public void update(CouchDBTuple tuple) {
-		for ( int i = 0; i < tuple.getColumnNames().length; i++ ) {
-			properties.put( tuple.getColumnNames()[i], tuple.getColumnValues()[i] );
+	public void update(Tuple tuple) {
+		for ( String columnName : tuple.getColumnNames() ) {
+			properties.put( columnName, tuple.get( columnName ) );
 		}
-	}
-
-	@JsonIgnore
-	public CouchDBTuple getTuple() {
-		return new CouchDBTuple( properties.keySet().toArray( new String[properties.size()] ), properties.values().toArray() );
 	}
 
 	public String getTableName() {
@@ -113,6 +108,8 @@ public class CouchDBEntity extends CouchDBDocument {
 	/**
 	 * Returns a map with all non-static properties. Will contain nested maps in case of embedded objects. Invoked by
 	 * Jackson during serialization.
+	 *
+	 * @return a map with all non-static properties
 	 */
 	@JsonAnyGetter
 	public Map<String, Object> getPropertiesAsHierarchy() {

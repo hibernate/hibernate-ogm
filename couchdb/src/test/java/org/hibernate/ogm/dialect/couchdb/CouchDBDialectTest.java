@@ -20,12 +20,18 @@
  */
 package org.hibernate.ogm.dialect.couchdb;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import java.util.ArrayList;
+import java.util.Properties;
+
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
@@ -35,13 +41,6 @@ import org.hibernate.ogm.grid.RowKey;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Properties;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
@@ -191,10 +190,7 @@ public class CouchDBDialectTest {
 	}
 
 	private Tuple createTuple(String[] tupleColumnNames, Object[] tupleColumnValues) {
-		CouchDBTuple couchDBtuple = new CouchDBTuple();
-		couchDBtuple.setColumnNames( tupleColumnNames );
-		couchDBtuple.setColumnValues( tupleColumnValues );
-		return new Tuple( new CouchDBTupleSnapshot( couchDBtuple ) );
+		return new Tuple( new CouchDBTupleSnapshot( tupleColumnNames, tupleColumnValues ) );
 	}
 
 	private void createDataStoreProvider() throws Exception {

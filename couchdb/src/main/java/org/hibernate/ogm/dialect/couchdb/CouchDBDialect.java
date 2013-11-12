@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.dialect.couchdb;
 
+import java.util.Iterator;
+import java.util.List;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -33,7 +36,6 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBByteType;
@@ -51,10 +53,6 @@ import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Stores Tuples and Associations as Documents inside CouchDB
@@ -83,7 +81,7 @@ public class CouchDBDialect implements GridDialect {
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		CouchDBEntity entity = getDataStore().getEntity( getId( key ) );
 		if ( entity != null ) {
-			return new Tuple( new CouchDBTupleSnapshot( entity.getTuple() ) );
+			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
 		}
 
 		return null;
@@ -91,8 +89,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		CouchDBTuple tuple = new CouchDBTuple( key );
-		return new Tuple( new CouchDBTupleSnapshot( tuple ) );
+		return new Tuple( new CouchDBTupleSnapshot( key ) );
 	}
 
 	@Override
@@ -101,7 +98,7 @@ public class CouchDBDialect implements GridDialect {
 		if ( entity == null ) {
 			entity = new CouchDBEntity( key );
 		}
-		entity.update( new CouchDBTuple( tuple ) );
+		entity.update( tuple );
 		getDataStore().saveDocument( entity );
 	}
 
@@ -219,14 +216,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	private List<Tuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
-		List<Tuple> tuples = new ArrayList<Tuple>();
-
-		List<CouchDBTuple> couchDBTuples = getDataStore().getTuples( entityKeyMetadata );
-		for ( CouchDBTuple tuple : couchDBTuples ) {
-			tuples.add( new Tuple( new CouchDBTupleSnapshot( tuple ) ) );
-		}
-
-		return tuples;
+		return getDataStore().getTuples( entityKeyMetadata );
 	}
 
 	private CouchDBDatastore getDataStore() {
