@@ -20,6 +20,13 @@
  */
 package org.hibernate.ogm.dialect.couchdb.json;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
+
+import org.codehaus.jackson.annotate.JsonAnyGetter;
+import org.codehaus.jackson.annotate.JsonAnySetter;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
@@ -29,24 +36,47 @@ import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * Contains the information related to a {@link org.hibernate.ogm.datastore.spi.Tuple}
+ * Contains the information related to a {@link org.hibernate.ogm.datastore.spi.Tuple} The use of this class is to
+ * serialize and deserialize the JSON stored in CouchDB; Documents have the following structure:
  *
- * The use of this class is to serialize and deserialize the JSON stored in CouchDB has the following structure:
- * { "_id": "", "_rev": "", "type": "CouchDBEntity", "columnNames":
- * [],"columnValues": [ ],
- * "tableName": "user" }
+ * <pre>
+ * {@code
+ * {
+ *     "_id": "a4jdefe8",
+ *     "_rev": "123",
+ *     "type": "CouchDBEntity",
+ *     "tableName": "Foo",
+ *
+ *     "name": "Bob",
+ *     "login": "dude",
+ *     "homeAddress": {
+ *         "street2": null,
+ *         "street1": "1 avenue des Champs Elysees",
+ *         "country": "France",
+ *         "city": "Paris"
+ *     },
+ * }
+ * }
+ * </pre>
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 public class CouchDBEntity extends CouchDBDocument {
 
-	private Identifier identifier = new Identifier();
+	private static final String PATH_SEPARATOR = ".";
+	private static final Pattern PATH_SPLIT_PATTERN = Pattern.compile( Pattern.quote( PATH_SEPARATOR ) );
+
+	private final Identifier identifier = new Identifier();
 
 	private String tableName;
-	private String[] columnNames;
-	private Object[] columnValues;
+
+	/**
+	 * Holds the properties of this entity. Embedded properties are keyed by dot-separated path names.
+	 */
+	private final Map<String, Object> properties = new HashMap<String, Object>();
 
 	CouchDBEntity() {
 	}
@@ -54,18 +84,17 @@ public class CouchDBEntity extends CouchDBDocument {
 	public CouchDBEntity(EntityKey key) {
 		setId( identifier.createEntityId( key ) );
 		tableName = key.getTable();
-		columnNames = key.getColumnNames();
-		columnValues = key.getColumnValues();
 	}
 
 	public void update(CouchDBTuple tuple) {
-		columnNames = tuple.getColumnNames();
-		columnValues = tuple.getColumnValues();
+		for ( int i = 0; i < tuple.getColumnNames().length; i++ ) {
+			properties.put( tuple.getColumnNames()[i], tuple.getColumnValues()[i] );
+		}
 	}
 
 	@JsonIgnore
 	public CouchDBTuple getTuple() {
-		return new CouchDBTuple( columnNames, columnValues );
+		return new CouchDBTuple( properties.keySet().toArray( new String[properties.size()] ), properties.values().toArray() );
 	}
 
 	public String getTableName() {
@@ -76,20 +105,82 @@ public class CouchDBEntity extends CouchDBDocument {
 		this.tableName = tableName;
 	}
 
-	public String[] getColumnNames() {
-		return columnNames;
+	@JsonIgnore
+	public Map<String, Object> getProperties() {
+		return properties;
 	}
 
-	public void setColumnNames(String[] columnNames) {
-		this.columnNames = columnNames;
+	/**
+	 * Returns a map with all non-static properties. Will contain nested maps in case of embedded objects. Invoked by
+	 * Jackson during serialization.
+	 */
+	@JsonAnyGetter
+	public Map<String, Object> getPropertiesAsHierarchy() {
+		Map<String, Object> hierarchicalProperties = new HashMap<String, Object>();
+		for ( Entry<String, Object> entry : properties.entrySet() ) {
+			String columnName = entry.getKey();
+
+			if ( isEmbeddedProperty( columnName ) ) {
+				putEmbeddedProperty( hierarchicalProperties, columnName, entry.getValue() );
+			}
+			else {
+				hierarchicalProperties.put( columnName, entry.getValue() );
+			}
+		}
+
+		return hierarchicalProperties;
 	}
 
-	public Object[] getColumnValues() {
-		return columnValues;
+	/**
+	 * Adds the given embedded property indirectly to the given map, creating any intermediary embedded maps as required.
+	 *
+	 * @param root the root map to which the embedded property will be added
+	 * @param name the dot-separated path denoting the property to add
+	 * @param value the value of the property
+	 */
+	private void putEmbeddedProperty(Map<String, Object> root, String name, Object value) {
+		String[] pathElements = PATH_SPLIT_PATTERN.split( name );
+
+		Map<String, Object> owner = root;
+
+		for ( int i = 0; i < pathElements.length - 1; i++ ) {
+			String element = pathElements[i];
+
+			@SuppressWarnings("unchecked")
+			Map<String, Object> nextOwner = (Map<String, Object>) owner.get( element );
+			if ( nextOwner == null ) {
+				nextOwner = new HashMap<String, Object>();
+				owner.put( element, nextOwner );
+			}
+
+			owner = nextOwner;
+		}
+
+		owner.put( pathElements[pathElements.length - 1], value );
 	}
 
-	public void setColumnValues(Object[] columnValues) {
-		this.columnValues = columnValues;
+	private boolean isEmbeddedProperty(String columnName) {
+		return columnName.contains( PATH_SEPARATOR );
 	}
 
+	/**
+	 * Invoked by Jackson for any non-static property.
+	 *
+	 * @param name the property name
+	 * @param value the property value
+	 */
+	@JsonAnySetter
+	@SuppressWarnings("unchecked")
+	public void set(String name, Object value) {
+		if ( value instanceof Map ) {
+			setMapValue( name, (Map<String, Object>) value );
+		}
+		properties.put( name, value );
+	}
+
+	private void setMapValue(String name, Map<String, Object> value) {
+		for ( Entry<String, Object> entry : value.entrySet() ) {
+			set( name + PATH_SEPARATOR + entry.getKey(), entry.getValue() );
+		}
+	}
 }
