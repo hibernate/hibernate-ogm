@@ -33,7 +33,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -58,7 +57,7 @@ public class CouchDBAssociation extends CouchDBDocument {
 
 	private Map<String, Integer> columnNamesPositions;
 
-	private Identifier identifier = new Identifier();
+	private final Identifier identifier = new Identifier();
 
 	public CouchDBAssociation() {
 	}
@@ -88,7 +87,7 @@ public class CouchDBAssociation extends CouchDBDocument {
 	 */
 	@JsonIgnore
 	public Tuple getTuple(RowKey key) {
-		return new Tuple( new CouchDBTupleSnapshot( buildTuple( key ) ) );
+		return new Tuple( new CouchDBTupleSnapshot( tupleColumnNames.toArray( new String[tupleColumnNames.size()] ), getTupleColumnValues( key ) ) );
 	}
 
 	/**
@@ -166,10 +165,6 @@ public class CouchDBAssociation extends CouchDBDocument {
 		this.tuples = tuples;
 	}
 
-	private CouchDBTuple buildTuple(RowKey key) {
-		return new CouchDBTuple( tupleColumnNames, getTupleColumnValues( key ) );
-	}
-
 	private String createId(AssociationKey associationKey) {
 		return identifier.createAssociationId( associationKey );
 	}
@@ -178,8 +173,21 @@ public class CouchDBAssociation extends CouchDBDocument {
 		tuples.clear();
 		final Set<RowKey> keys = association.getKeys();
 		for ( RowKey key : keys ) {
-			addTuple( key, new CouchDBTuple( association.get( key ) ) );
+			Object[] columnValues = getColumnValues( association.get( key ) );
+			addTuple( key, new CouchDBAssociationTuple( columnValues ) );
 		}
+	}
+
+	private Object[] getColumnValues(Tuple tuple) {
+		Object[] columnValues = new Object[tuple.getColumnNames().size()];
+
+		int i = 0;
+		for ( String columnName : tuple.getColumnNames() ) {
+			columnValues[i] = tuple.get( columnName );
+			i++;
+		}
+
+		return columnValues;
 	}
 
 	private void updateColumnNames(Association association) {
@@ -215,8 +223,8 @@ public class CouchDBAssociation extends CouchDBDocument {
 		return null;
 	}
 
-	private void addTuple(RowKey key, CouchDBTuple tuple) {
-		tuples.add( new CouchDBAssociationTuple( tuple.getColumnValues() ) );
+	private void addTuple(RowKey key, CouchDBAssociationTuple couchDBAssociationTuple) {
+		tuples.add( couchDBAssociationTuple );
 	}
 
 }

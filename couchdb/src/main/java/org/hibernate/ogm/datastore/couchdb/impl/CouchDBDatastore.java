@@ -32,6 +32,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.http.HttpStatus;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.designdocument.AssociationsDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.designdocument.CouchDBDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.designdocument.EntitiesDesignDocument;
@@ -44,7 +45,6 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBKeyValue;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBResponse;
 import org.hibernate.ogm.dialect.couchdb.json.DatabaseClient;
 import org.hibernate.ogm.dialect.couchdb.json.ServerClient;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
 import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -65,8 +65,8 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 public class CouchDBDatastore {
 
 	private static final Log logger = LoggerFactory.getLogger();
-	private DatabaseClient databaseClient;
-	private ServerClient serverClient;
+	private final DatabaseClient databaseClient;
+	private final ServerClient serverClient;
 
 	private CouchDBDatastore(DataBaseURL databaseUrl, String userName, String password) {
 		logger.connectingToCouchDB( databaseUrl.toString() );
@@ -224,7 +224,7 @@ public class CouchDBDatastore {
 	 * @param entityKeyMetadata the EntityKeyMetadata used to filter the tuples
 	 * @return all the {@link CouchDBTuple} matching the given entityKeyMetadata
 	 */
-	public List<CouchDBTuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
+	public List<Tuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
 		final String tableName = getTableName( entityKeyMetadata );
 		return getTuplesByTableName( tableName );
 	}
@@ -408,7 +408,7 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private List<CouchDBTuple> getTuplesByTableName(String tableName) {
+	private List<Tuple> getTuplesByTableName(String tableName) {
 		Response response = null;
 		try {
 			response = databaseClient.getEntityTuplesByTableName( tableName );

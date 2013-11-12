@@ -20,13 +20,14 @@
  */
 package org.hibernate.ogm.dialect.couchdb.designdocument;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTuple;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 
 /**
  * Represents the Result of the REST call associated with the {@link TuplesDesignDocument}
@@ -47,11 +48,11 @@ public class EntityTupleRows {
 	}
 
 	@JsonIgnore
-	public List<CouchDBTuple> getTuples() {
-		ArrayList<CouchDBTuple> tuples = new ArrayList<CouchDBTuple>();
+	public List<Tuple> getTuples() {
+		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
 		if ( rows.size() > 0 ) {
 			for ( Row row : rows ) {
-				tuples.add( row.getValue().getTuple() );
+				tuples.add( new Tuple( new CouchDBTupleSnapshot( row.getValue().getProperties() ) ) );
 			}
 		}
 		return tuples;

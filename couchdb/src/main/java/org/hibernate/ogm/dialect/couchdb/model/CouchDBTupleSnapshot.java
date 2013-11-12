@@ -20,49 +20,55 @@
  */
 package org.hibernate.ogm.dialect.couchdb.model;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
 public class CouchDBTupleSnapshot implements TupleSnapshot {
 
-	private final CouchDBTuple tuple;
+	private final Map<String, Object> properties;
 
 	public CouchDBTupleSnapshot() {
-		tuple = new CouchDBTuple();
+		this.properties = Collections.emptyMap();
 	}
 
-	public CouchDBTupleSnapshot(CouchDBTuple tuple) {
-		this.tuple = tuple;
+	public CouchDBTupleSnapshot(EntityKey key) {
+		properties = new HashMap<String, Object>();
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
+	}
+
+	public CouchDBTupleSnapshot(String[] columnNames, Object[] columnValues) {
+		properties = new HashMap<String, Object>();
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			properties.put( columnNames[i], columnValues[i] );
+		}
+	}
+
+	public CouchDBTupleSnapshot(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
 	@Override
 	public Object get(String column) {
-		return tuple.getColumnValue( getColumnPosition( column ) );
+		return properties.get( column );
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return tuple.isEmpty();
+		return properties.isEmpty();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
-		if ( tuple.getColumnNames() != null ) {
-			return new HashSet<String>( Arrays.asList( tuple.getColumnNames() ) );
-		}
-		else {
-			return new HashSet<String>();
-		}
+		return properties.keySet();
 	}
-
-	private int getColumnPosition(String column) {
-		return tuple.getColumNamePosition( column );
-	}
-
 }
