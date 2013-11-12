@@ -288,7 +288,7 @@ public class CouchDBDatastore {
 			if ( response.getStatus() == HttpStatus.SC_CONFLICT ) {
 				throw new OptimisticLockException();
 			}
-			else if ( response.getStatus() != HttpStatus.SC_OK ) {
+			else if ( response.getStatus() != HttpStatus.SC_OK &&  response.getStatus() != HttpStatus.SC_NOT_FOUND ) {
 				throw logger.errorDeletingDocument( response.getStatus(), null, null );
 			}
 		}
