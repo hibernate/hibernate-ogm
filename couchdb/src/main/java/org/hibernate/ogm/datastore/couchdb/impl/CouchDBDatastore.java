@@ -30,7 +30,6 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import org.apache.http.HttpStatus;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.designdocument.AssociationsDesignDocument;
@@ -108,11 +107,11 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.saveDocument( document, document.getId() );
-			if ( response.getStatus() == HttpStatus.SC_CREATED ) {
+			if ( response.getStatus() == Response.Status.CREATED.getStatusCode() ) {
 				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
 				updateDocumentRevision( document, entity.getRev() );
 			}
-			else if ( response.getStatus() == HttpStatus.SC_CONFLICT ) {
+			else if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
 				throw new OptimisticLockException();
 			}
 			else {
@@ -135,11 +134,11 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.saveDesign( design, design.getId() );
-			if ( response.getStatus() == HttpStatus.SC_CREATED ) {
+			if ( response.getStatus() == Response.Status.CREATED.getStatusCode() ) {
 				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
 				updateDocumentRevision( design, entity.getRev() );
 			}
-			else if ( response.getStatus() == HttpStatus.SC_CONFLICT ) {
+			else if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
 				throw new OptimisticLockException();
 			}
 			else {
@@ -168,10 +167,10 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getEntityById( id );
-			if ( response.getStatus() == HttpStatus.SC_NOT_FOUND ) {
+			if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
 				return null;
 			}
-			else if ( response.getStatus() == HttpStatus.SC_OK ) {
+			else if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( CouchDBEntity.class );
 			}
 			else {
@@ -231,10 +230,10 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getAssociationById( id );
-			if ( response.getStatus() == HttpStatus.SC_NOT_FOUND ) {
+			if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
 				return null;
 			}
-			else if ( response.getStatus() == HttpStatus.SC_OK ) {
+			else if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( CouchDBAssociation.class );
 			}
 			else {
@@ -285,10 +284,10 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.deleteDocument( id, revision );
-			if ( response.getStatus() == HttpStatus.SC_CONFLICT ) {
+			if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
 				throw new OptimisticLockException();
 			}
-			else if ( response.getStatus() != HttpStatus.SC_OK &&  response.getStatus() != HttpStatus.SC_NOT_FOUND ) {
+			else if ( response.getStatus() != Response.Status.OK.getStatusCode() &&  response.getStatus() != Response.Status.NOT_FOUND.getStatusCode() ) {
 				throw logger.errorDeletingDocument( response.getStatus(), null, null );
 			}
 		}
@@ -311,7 +310,7 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getNumberOfAssociations();
-			if ( response.getStatus() == HttpStatus.SC_OK ) {
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return toInteger( response );
 			}
 			else {
@@ -337,7 +336,7 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getNumberOfEntities();
-			if ( response.getStatus() == HttpStatus.SC_OK ) {
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return toInteger( response );
 			}
 			else {
@@ -375,7 +374,7 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.dropDatabase();
-			if ( response.getStatus() != HttpStatus.SC_OK ) {
+			if ( response.getStatus() != Response.Status.OK.getStatusCode() ) {
 				throw logger.errorDroppingDatabase( response.getStatus() );
 			}
 		}
@@ -400,7 +399,7 @@ public class CouchDBDatastore {
 		try {
 			if ( !databaseExists( url.getDataBaseName() ) ) {
 				response = serverClient.createDatabase( url.getDataBaseName() );
-				if ( response.getStatus() != HttpStatus.SC_CREATED ) {
+				if ( response.getStatus() != Response.Status.CREATED.getStatusCode() ) {
 					CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
 					throw logger.errorCreatingDatabase( url.getDataBaseName(), response.getStatus(), entity.getError(), entity.getReason() );
 				}
@@ -420,7 +419,7 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = serverClient.getAllDatabaseNames();
-			if ( response.getStatus() == HttpStatus.SC_OK ) {
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				@SuppressWarnings("unchecked")
 				List<String> entity = response.readEntity( List.class );
 				if ( entity.contains( databaseName ) ) {
@@ -446,7 +445,7 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getEntityTuplesByTableName( tableName );
-			if ( response.getStatus() == HttpStatus.SC_OK ) {
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( EntityTupleRows.class ).getTuples();
 			}
 			else {
@@ -508,10 +507,10 @@ public class CouchDBDatastore {
 		Response response = null;
 		try {
 			response = databaseClient.getKeyValueById( id );
-			if ( response.getStatus() == HttpStatus.SC_OK ) {
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( CouchDBKeyValue.class );
 			}
-			else if ( response.getStatus() == HttpStatus.SC_NOT_FOUND ) {
+			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
 				CouchDBKeyValue identifier = new CouchDBKeyValue( initialValue );
 				identifier.setId( id );
 				return identifier;
