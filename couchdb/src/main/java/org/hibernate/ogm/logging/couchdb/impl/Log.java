@@ -93,4 +93,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1318, value = "Error shutting down the datastore")
 	HibernateException shutDownDatastoreException(@Cause Exception e);
 
+	@Message(id = 1319, value = "An error occurred when retrieving the current revision of entity with id %s, http response status code %03d")
+	HibernateException errorRetrievingCurrentRevision(String entityId, int status);
 }

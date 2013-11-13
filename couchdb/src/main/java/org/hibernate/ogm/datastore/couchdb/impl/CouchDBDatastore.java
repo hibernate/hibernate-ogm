@@ -189,6 +189,39 @@ public class CouchDBDatastore {
 	}
 
 	/**
+	 * Returns the current revision of the document with the given id.
+	 *
+	 * @param id the document's id
+	 * @return the current revision of the specified document or {@code null} if no document with the given id exists
+	 */
+	public String getCurrentRevision(String id) {
+		Response response = null;
+
+		try {
+			response = databaseClient.getCurrentRevision( id );
+
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				//The revision is returned as ETag for HEAD requests
+				return response.getEntityTag().getValue();
+			}
+			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
+				return null;
+			}
+			else {
+				throw logger.errorRetrievingCurrentRevision( id, response.getStatus() );
+			}
+		}
+		catch (ResteasyClientException e) {
+			throw logger.couchDBConnectionProblem( e );
+		}
+		finally {
+			if ( response != null ) {
+				response.close();
+			}
+		}
+	}
+
+	/**
 	 * Retrieves a {@link CouchDBAssociation} from the database
 	 *
 	 * @param id the id of the CouchDBAssociation to retrieve
@@ -245,12 +278,13 @@ public class CouchDBDatastore {
 	/**
 	 * Deletes a Document from the database
 	 *
-	 * @param toDelete the CouchDBDocument to be deleted
+	 * @param id the id of the document to be deleted
+	 * @param revision the revision of the document to be deleted
 	 */
-	public void deleteDocument(CouchDBDocument toDelete) {
+	public void deleteDocument(String id, String revision) {
 		Response response = null;
 		try {
-			response = databaseClient.deleteDocument( toDelete.getId(), toDelete.getRevision() );
+			response = databaseClient.deleteDocument( id, revision );
 			if ( response.getStatus() == HttpStatus.SC_CONFLICT ) {
 				throw new OptimisticLockException();
 			}

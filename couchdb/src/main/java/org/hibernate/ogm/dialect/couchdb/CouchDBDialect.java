@@ -104,10 +104,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
-		if ( entity != null ) {
-			getDataStore().deleteDocument( entity );
-		}
+		removeDocumentIfPresent( Identifier.createEntityId( key ) );
 	}
 
 	@Override
@@ -137,10 +134,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		CouchDBAssociation association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
-		if ( association != null ) {
-			getDataStore().deleteDocument( association );
-		}
+		removeDocumentIfPresent( Identifier.createAssociationId( key ) );
 	}
 
 	@Override
@@ -217,6 +211,13 @@ public class CouchDBDialect implements GridDialect {
 
 	private CouchDBDatastore getDataStore() {
 		return provider.getDataStore();
+	}
+
+	private void removeDocumentIfPresent(String id) {
+		String currentRevision = getDataStore().getCurrentRevision( id );
+		if ( currentRevision != null ) {
+			getDataStore().deleteDocument( id, currentRevision );
+		}
 	}
 
 	@Override

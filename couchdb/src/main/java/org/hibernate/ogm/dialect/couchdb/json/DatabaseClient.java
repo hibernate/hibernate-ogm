@@ -23,6 +23,7 @@ package org.hibernate.ogm.dialect.couchdb.json;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -146,4 +147,14 @@ public interface DatabaseClient {
 	@Path(TuplesDesignDocument.ENTITY_TUPLE_BY_TABLE_NAME_PATH)
 	Response getEntityTuplesByTableName(@QueryParam("value") String tableName);
 
+	/**
+	 * Retrieves the current revision of the document with the given id.
+	 *
+	 * @param id the id of the document of which to get the current revision
+	 * @return the current revision of the specified document, contained in the response's ETag. If the specified
+	 * document doesn't exist, the response's status will be 404.
+	 */
+	@HEAD
+	@Path("{id}")
+	Response getCurrentRevision(@PathParam("id") String id);
 }
