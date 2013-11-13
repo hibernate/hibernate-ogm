@@ -20,6 +20,16 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Properties;
+
+import javax.persistence.OptimisticLockException;
+
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialectTest;
 import org.hibernate.ogm.dialect.couchdb.Environment;
@@ -31,16 +41,6 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.persistence.OptimisticLockException;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.Properties;
-
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
@@ -98,7 +98,7 @@ public class CouchDBDatastoreTest {
 	public void testDeleteADocument() {
 		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
 		String createdDocumentId = createdDocument.getId();
-		dataStore.deleteDocument( createdDocument );
+		dataStore.deleteDocument( createdDocument.getId(), createdDocument.getRevision() );
 
 		CouchDBEntity entity = dataStore.getEntity( createdDocumentId );
 
@@ -114,13 +114,13 @@ public class CouchDBDatastoreTest {
 		dataStore.saveDocument( createdDocument );
 		createdDocument.setRevision( revisionBeforeUpdate );
 
-		dataStore.deleteDocument( createdDocument );
+		dataStore.deleteDocument( createdDocument.getId(), createdDocument.getRevision() );
 	}
 
 	@Test(expected = HibernateException.class)
 	public void testDeleteADocumentNotSavedOnTheDatabase() {
 		CouchDBDocument document = createEntity();
-		dataStore.deleteDocument( document );
+		dataStore.deleteDocument( document.getId(), document.getRevision() );
 	}
 
 	@Test
