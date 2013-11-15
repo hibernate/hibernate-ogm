@@ -29,20 +29,5 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class EmbedExampleOption extends UniqueOption {
-
-	private final Object embed;
-
-	public EmbedExampleOption(Object embed) {
-		this.embed = embed;
-	}
-
-	@Override
-	public String toString() {
-		return "embed: " + String.valueOf( embed );
-	}
-
-	public Object getEmbedded() {
-		return embed;
-	}
+public class EmbedExampleOption extends UniqueOption<Object> {
 }

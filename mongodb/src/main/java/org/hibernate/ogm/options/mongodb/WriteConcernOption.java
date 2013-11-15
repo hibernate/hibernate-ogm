@@ -26,26 +26,5 @@ import org.hibernate.ogm.options.spi.UniqueOption;
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class WriteConcernOption extends UniqueOption {
-
-	private final WriteConcernType writeConcern;
-
-	public WriteConcernOption(WriteConcernType writeConcern) {
-		this.writeConcern = writeConcern;
-	}
-
-	public WriteConcernType getWriteConcern() {
-		return writeConcern;
-	}
-
-	@Override
-	public String toString() {
-		if ( writeConcern == null ) {
-			return "writeConcern: null";
-		}
-		else {
-			return "writeConcern: " + writeConcern;
-		}
-	}
-
+public class WriteConcernOption extends UniqueOption<WriteConcernType> {
 }

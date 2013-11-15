@@ -37,7 +37,7 @@ public abstract class MongoDBPropertyOptions extends BasePropertyContext<MongoDB
 
 	@Override
 	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption( storage ) );
+		addPropertyOption( new AssociationStorageOption(), storage );
 		return this;
 	}
 

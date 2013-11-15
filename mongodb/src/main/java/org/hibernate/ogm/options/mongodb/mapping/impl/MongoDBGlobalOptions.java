@@ -38,7 +38,7 @@ public abstract class MongoDBGlobalOptions extends BaseGlobalContext<MongoDBGlob
 
 	@Override
 	public MongoDBGlobalContext writeConcern(WriteConcernType concern) {
-		addGlobalOption( new WriteConcernOption( concern ) );
+		addGlobalOption( new WriteConcernOption(), concern );
 		return this;
 	}
 }

@@ -29,6 +29,7 @@ import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,9 +55,8 @@ public class AssociationStorageAnnotationTest {
 		mapping
 			.entity( EntityAnnotatedOnField.class );
 
-		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" ) )
-			.hasSize( 1 )
-			.contains( new AssociationStorageOption( AssociationStorageType.IN_ENTITY ) );
+		OptionsContainer fieldOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" );
+		assertThat( fieldOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.IN_ENTITY );
 	}
 
 	@Test
@@ -65,9 +65,8 @@ public class AssociationStorageAnnotationTest {
 		mapping
 			.entity( EntityAnnotatedOnMethod.class );
 
-		assertThat( optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" ) )
-			.hasSize( 1 )
-			.contains( new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION ) );
+		OptionsContainer methodOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" );
+		assertThat( methodOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.GLOBAL_COLLECTION );
 	}
 
 	private static final class EntityAnnotatedOnField {

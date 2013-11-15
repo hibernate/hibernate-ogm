@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.OptionValue;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample.NameExampleOptionConverter;
 
@@ -47,8 +47,8 @@ public @interface NameExample {
 	static class NameExampleOptionConverter implements AnnotationConverter<NameExample> {
 
 		@Override
-		public Option<?> convert(NameExample annotation) {
-			return new NameExampleOption( annotation.value() );
+		public OptionValue<?> convert(NameExample annotation) {
+			return OptionValue.getInstance( new NameExampleOption(), annotation.value() );
 		}
 
 	}

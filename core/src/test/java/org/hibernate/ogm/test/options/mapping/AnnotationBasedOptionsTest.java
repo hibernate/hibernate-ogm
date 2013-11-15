@@ -24,6 +24,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.EmbedExample;
@@ -49,13 +50,12 @@ public class AnnotationBasedOptionsTest {
 
 	@Test
 	public void testAnnotatedEntity() throws Exception {
-		assertThat( context.getEntityOptions( Example.class ) )
-			.hasSize( 1 )
-			.contains( new NameExampleOption( "Batman" ) );
+		OptionsContainer entityOptions = context.getEntityOptions( Example.class );
+		assertThat( entityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Batman" );
 	}
 
 	@Test
-	public void testAnnotationIsOverridenByAPI() throws Exception {
+	public void testAnnotationIsOverriddenByAPI() throws Exception {
 		ConfigurationContext configurationContext = new ConfigurationContext( context );
 
 		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( configurationContext );
@@ -63,30 +63,26 @@ public class AnnotationBasedOptionsTest {
 			.entity( Example.class )
 				.name( "Name replaced" );
 
-		assertThat( context.getEntityOptions( Example.class ) )
-			.hasSize( 1 )
-			.contains( new NameExampleOption( "Name replaced" ) );
+		OptionsContainer entityOptions = context.getEntityOptions( Example.class );
+		assertThat( entityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Name replaced" );
 	}
 
 	@Test
 	public void testAnnotationGivenOnPropertyCanBeRetrievedFromOptionsContext() {
-		assertThat( context.getPropertyOptions( Example.class, "exampleProperty" ) )
-			.hasSize( 1 )
-			.contains( new EmbedExampleOption( "Test" ) );
+		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "exampleProperty" );
+		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Test" );
 	}
 
 	@Test
 	public void testAnnotationGivenOnBooleanPropertyCanBeRetrievedFromOptionsContext() {
-		assertThat( context.getPropertyOptions( Example.class, "helpful" ) )
-			.hasSize( 1 )
-			.contains( new EmbedExampleOption( "Another Test" ) );
+		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "helpful" );
+		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Another Test" );
 	}
 
 	@Test
 	public void testAnnotationGivenOnPrivateFieldCanBeRetrievedFromOptionsContext() {
-		assertThat( context.getPropertyOptions( Example.class, "anotherProperty" ) )
-			.hasSize( 1 )
-			.contains( new EmbedExampleOption( "Yet Another Test" ) );
+		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "anotherProperty" );
+		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Yet Another Test" );
 	}
 
 	@NameExample( "Batman" )

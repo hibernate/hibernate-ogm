@@ -63,7 +63,7 @@ public class SampleOptionModel {
 
 		@Override
 		public SampleGlobalContext force(boolean force) {
-			addGlobalOption( ForceExampleOption.valueOf( force ) );
+			addGlobalOption( new ForceExampleOption(), force );
 			return this;
 		}
 	}
@@ -76,13 +76,13 @@ public class SampleOptionModel {
 
 		@Override
 		public SampleEntityContext force(boolean force) {
-			addEntityOption( ForceExampleOption.valueOf( force ) );
+			addEntityOption( new ForceExampleOption(), force );
 			return this;
 		}
 
 		@Override
 		public SampleEntityContext name(String name) {
-			addEntityOption( new NameExampleOption( name ) );
+			addEntityOption( new NameExampleOption(), name );
 			return this;
 		}
 	}
@@ -95,7 +95,7 @@ public class SampleOptionModel {
 
 		@Override
 		public SamplePropertyContext embed(Object object) {
-			addPropertyOption( new EmbedExampleOption( object ) );
+			addPropertyOption( new EmbedExampleOption(), object );
 			return this;
 		}
 	}

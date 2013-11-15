@@ -23,18 +23,18 @@ package org.hibernate.ogm.options.spi;
 import java.lang.annotation.Annotation;
 
 /**
- * Convert an {@link Annotation} into an {@link Option}.
+ * Convert option {@link Annotation}s into equivalent {@link OptionValue}s.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public interface AnnotationConverter<T extends Annotation> {
 
 	/**
-	 * The annotation is converted in an Option that can be added to the OptionContainer.
+	 * Converts the given option annotation into an equivalent option value object.
 	 *
-	 * @param annotation
-	 *            representing an option
+	 * @param annotation the annotation to convert
+	 * @return a option value representing the given option annotation
 	 */
-	Option<?> convert(T annotation);
+	OptionValue<?> convert(T annotation);
 
 }

@@ -28,16 +28,14 @@ import java.util.Map;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.OptionValue;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**
- * Reads the annotation on an entity and save them in the appropriate context as {@link Option}.
- * <p>
- * Only the annotations representing an option are considered.
+ * Reads the option annotations on an entity and save them in the appropriate context.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
@@ -97,31 +95,43 @@ public class AnnotationProcessor {
 		OptionsContainer options = new OptionsContainer();
 
 		for ( Annotation annotation : annotations ) {
-			Class<? extends AnnotationConverter<?>> converterType = getConverterType( annotation );
-
-			if ( converterType != null ) {
-				options.add( convert( annotation, converterType ) );
-			}
+			processAnnotation( options, annotation );
 		}
 
 		return options;
 	}
 
-	private static Class<? extends AnnotationConverter<?>> getConverterType(Annotation annotation) {
-		MappingOption mappingOption = annotation.annotationType().getAnnotation( MappingOption.class );
-		return mappingOption != null ? mappingOption.value() : null;
+	private static <A extends Annotation> void processAnnotation(OptionsContainer options, A annotation) {
+		AnnotationConverter<Annotation> converter = getConverter( annotation );
+
+		if ( converter != null ) {
+			add( options, converter.convert( annotation ) );
+		}
 	}
 
-	private static Option<?> convert(Annotation annotation, Class<? extends AnnotationConverter<?>> converterClass) {
+	/**
+	 * Returns a converter instance for the given annotation.
+	 *
+	 * @param annotation the annotation
+	 * @return a converter instance or {@code null} if the given annotation is no option annotation
+	 */
+	private static <A extends Annotation> AnnotationConverter<A> getConverter(Annotation annotation) {
+		MappingOption mappingOption = annotation.annotationType().getAnnotation( MappingOption.class );
+
+		// wrong type would be a programming error of the annotation developer
+		@SuppressWarnings("unchecked")
+		Class<? extends AnnotationConverter<A>> converterClass = (Class<? extends AnnotationConverter<A>>) ( mappingOption != null ? mappingOption.value()
+				: null );
+
 		try {
-			AnnotationConverter converter = converterClass.newInstance();
-			return converter.convert( annotation );
+			return converterClass != null ? converterClass.newInstance() : null;
 		}
-		catch (InstantiationException e) {
+		catch (Exception e) {
 			throw log.cannotConvertAnnotation( converterClass, e );
 		}
-		catch (IllegalAccessException e) {
-			throw log.cannotConvertAnnotation( converterClass, e );
-		}
+	}
+
+	private static <V> void add(OptionsContainer options, OptionValue<V> optionValue) {
+		options.add( optionValue.getOption(), optionValue.getValue() );
 	}
 }

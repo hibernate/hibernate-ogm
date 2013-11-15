@@ -46,21 +46,21 @@ public class OptionsContext implements OptionsServiceContext {
 	private final ConcurrentMap<Class<?>, OptionsContainer> optionsPerEntity = new ConcurrentHashMap<Class<?>, OptionsContainer>();
 	private final ConcurrentMap<PropertyKey, OptionsContainer> optionsPerProperty = new ConcurrentHashMap<PropertyKey, OptionsContainer>();
 
-	public void addGlobalOption(Option<?> option) {
-		add( option, globaloptions );
+	public <V> void addGlobalOption(Option<?, V> option, V value) {
+		add( option, value, globaloptions );
 	}
 
-	public void addEntityOption(Class<?> entityType, Option<?> option) {
+	public <V> void addEntityOption(Class<?> entityType, Option<?, V> option, V value) {
 		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
 
 		if ( entityOptions == null ) {
 			entityOptions = getAndCacheAnnotationBasedEntityOptions( entityType );
 		}
 
-		add( option, entityOptions );
+		add( option, value, entityOptions );
 	}
 
-	public void addPropertyOption(Class<?> entityType, String propertyName, Option<?> option) {
+	public <V> void addPropertyOption(Class<?> entityType, String propertyName, Option<?, V> option, V value) {
 		PropertyKey key = new PropertyKey( entityType, propertyName );
 		OptionsContainer propertyOptions = optionsPerProperty.get( key );
 
@@ -68,13 +68,13 @@ public class OptionsContext implements OptionsServiceContext {
 			propertyOptions = getAndCacheAnnotationBasedPropertyOptions( key );
 		}
 
-		add( option, propertyOptions );
+		add( option, value, propertyOptions );
 	}
 
-	private void add(Option<?> option, OptionsContainer container) {
+	private <V> void add(Option<?, V> option, V value, OptionsContainer container) {
 		//TODO only needed for SF-scoped context?
 		synchronized ( container ) {
-			container.add( option );
+			container.add( option, value );
 		}
 	}
 

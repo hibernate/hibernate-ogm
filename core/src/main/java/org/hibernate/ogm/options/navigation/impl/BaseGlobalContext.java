@@ -37,7 +37,7 @@ public abstract class BaseGlobalContext<G extends GlobalOptions<G>> extends Base
 
 	@Override
 	public G namedQuery(String name, String hql) {
-		addGlobalOption( new NamedQueryOption( name, hql ) );
+		addGlobalOption( new NamedQueryOption( name ), hql );
 
 		// safe unless a provider developer screwed up the specific context definition
 		@SuppressWarnings("unchecked")

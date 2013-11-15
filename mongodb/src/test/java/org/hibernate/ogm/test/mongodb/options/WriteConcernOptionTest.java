@@ -28,6 +28,7 @@ import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,18 +49,11 @@ public class WriteConcernOptionTest {
 	}
 
 	@Test
-	public void testGetter() throws Exception {
-		WriteConcernOption option = new WriteConcernOption( WriteConcernType.ACKNOWLEDGED );
-		assertThat( option.getWriteConcern() ).isEqualTo( WriteConcernType.ACKNOWLEDGED );
-	}
-
-	@Test
 	public void testWriteConcernMappingOption() throws Exception {
 		mongoOptions.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
-		assertThat( optionsContext.getGlobalOptions() )
-			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED ) );
+		OptionsContainer options = optionsContext.getGlobalOptions();
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
 	}
 
 	@Test
@@ -69,18 +63,15 @@ public class WriteConcernOptionTest {
 			.entity( ExampleForMongoDBMapping.class )
 				.writeConcern( WriteConcernType.MAJORITY );
 
-		assertThat( optionsContext.getGlobalOptions() )
-			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcernType.ERRORS_IGNORED) );
+		OptionsContainer options = optionsContext.getGlobalOptions();
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
 
-		assertThat( optionsContext.getEntityOptions( ExampleForMongoDBMapping.class ) )
-			.hasSize( 1 )
-			.contains( new WriteConcernOption( WriteConcernType.MAJORITY ) );
+		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.MAJORITY );
 	}
 
 	@SuppressWarnings("unused")
 	private static final class ExampleForMongoDBMapping {
 		String content;
 	}
-
 }

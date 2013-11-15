@@ -30,6 +30,7 @@ import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Test;
 
 /**
@@ -38,12 +39,6 @@ import org.junit.Test;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class AssociationStorageOptionTest {
-
-	@Test
-	public void testGetter() throws Exception {
-		AssociationStorageOption option = new AssociationStorageOption( AssociationStorageType.GLOBAL_COLLECTION );
-		assertThat( option.getAssociationStorage() ).isEqualTo( AssociationStorageType.GLOBAL_COLLECTION );
-	}
 
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
@@ -56,9 +51,8 @@ public class AssociationStorageOptionTest {
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.COLLECTION );
 
-		assertThat( optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" ) )
-			.hasSize( 1 )
-			.contains( new AssociationStorageOption( AssociationStorageType.COLLECTION) );
+		OptionsContainer options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.COLLECTION );
 	}
 
 	@SuppressWarnings("unused")
