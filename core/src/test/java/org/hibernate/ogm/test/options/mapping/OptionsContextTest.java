@@ -21,16 +21,15 @@
 package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.MapAssert.entry;
 
 import java.lang.annotation.ElementType;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
-import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -57,17 +56,10 @@ public class OptionsContextTest {
 	}
 
 	@Test
-	public void contextShouldBeEmptyWhenCreated() throws Exception {
-		assertThat( optionsContext.getGlobalOptions() ).isEmpty();
-		assertThat( optionsContext.getEntityOptions( ContextExample.class ) ).isEmpty();
-		assertThat( optionsContext.getPropertyOptions( ContextExample.class, "property" ) ).isEmpty();
-	}
-
-	@Test
 	public void shouldBeAbleToAddGlobalOption() throws Exception {
 		configuration.force( true );
 
-		assertThat( optionsContext.getGlobalOptions() ).containsOnly( ForceExampleOption.TRUE );
+		assertThat( optionsContext.getGlobalOptions().getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
 	@Test
@@ -76,10 +68,12 @@ public class OptionsContextTest {
 			.namedQuery( "foo", "from foo" )
 			.namedQuery( "bar", "from bar" );
 
-		Set<NamedQueryOption> queries = optionsContext.getGlobalOptions().get( NamedQueryOption.class );
-		assertThat( queries ).containsOnly(
-				new NamedQueryOption( "foo", "from foo" ),
-				new NamedQueryOption( "bar", "from bar" )
+		Map<String, String> queries = optionsContext.getGlobalOptions().getAll( NamedQueryOption.class );
+		assertThat( queries )
+			.hasSize( 2 )
+			.includes(
+				entry( "foo", "from foo" ),
+				entry( "bar", "from bar" )
 		);
 	}
 
@@ -90,10 +84,7 @@ public class OptionsContextTest {
 				.force( true );
 
 		OptionsContainer optionsContainer = optionsContext.getEntityOptions( ContextExample.class );
-		Iterator<Option<?>> iterator = optionsContainer.iterator();
-
-		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( ForceExampleOption.TRUE );
-		assertThat( iterator.hasNext() ).as( "Only one option should have been added per entity" ).isFalse();
+		assertThat( optionsContainer.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
 	@Test
@@ -105,11 +96,8 @@ public class OptionsContextTest {
 
 		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
 
-		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isTrue();
-
-		NameExampleOption nameOption = refrigatorOptions.getUnique( NameExampleOption.class );
-		assertThat( nameOption.getName() ).isEqualTo( "test" );
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
+		assertThat( refrigatorOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
 	}
 
 	@Test
@@ -120,10 +108,7 @@ public class OptionsContextTest {
 					.embed( "Foo" );
 
 		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
-		Iterator<Option<?>> iterator = optionsContainer.iterator();
-
-		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( new EmbedExampleOption( "Foo" ) );
-		assertThat( iterator.hasNext() ).as( "Only one options should have been added per property" ).isFalse();
+		assertThat( optionsContainer.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Foo" );
 	}
 
 	@Test
@@ -134,10 +119,7 @@ public class OptionsContextTest {
 					.embed( "Foo" );
 
 		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
-		Iterator<Option<?>> iterator = optionsContainer.iterator();
-
-		assertThat( iterator.next() ).as( "Unexpected option" ).isEqualTo( new EmbedExampleOption( "Foo" ) );
-		assertThat( iterator.hasNext() ).as( "Only one options should have been added per property" ).isFalse();
+		assertThat( optionsContainer.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Foo" );
 	}
 
 	@Test(expected = HibernateException.class)
@@ -155,10 +137,7 @@ public class OptionsContextTest {
 				.force( true );
 
 		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
-
-		Set<ForceExampleOption> forceOptions = refrigatorOptions.get( ForceExampleOption.class );
-		assertThat( forceOptions ).hasSize( 1 );
-		assertThat( forceOptions.iterator().next().isForced() ).isTrue();
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
 	@Test
@@ -169,9 +148,7 @@ public class OptionsContextTest {
 				.force( false );
 
 		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
-
-		ForceExampleOption forceOption =  refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isFalse();
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isFalse();
 	}
 
 	private static class ContextExample {

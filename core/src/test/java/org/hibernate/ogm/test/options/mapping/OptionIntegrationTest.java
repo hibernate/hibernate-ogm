@@ -89,8 +89,8 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 
-		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isTrue();
+		Boolean forceOptionValue = refrigatorOptions.getUnique( ForceExampleOption.class );
+		assertThat( forceOptionValue ).isTrue();
 	}
 
 	@Test
@@ -103,14 +103,10 @@ public class OptionIntegrationTest extends OgmTestCase {
 				.name( "test" );
 
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
-
-		ForceExampleOption forceOption = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOption.isForced() ).isTrue();
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 
 		OptionsContainer microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
-
-		NameExampleOption nameOption = microwaveOptions.getUnique( NameExampleOption.class );
-		assertThat( nameOption.getName() ).isEqualTo( "test" );
+		assertThat( microwaveOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
 	}
 
 	@Test
@@ -122,9 +118,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 					.embed( "Embedded" );
 
 		OptionsContainer temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
-
-		EmbedExampleOption embeddedOption = temperatureOptions.getUnique( EmbedExampleOption.class );
-		assertThat( embeddedOption.getEmbedded() ).isEqualTo( "Embedded" );
+		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 
 	/**

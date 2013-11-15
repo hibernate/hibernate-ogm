@@ -29,20 +29,5 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class NameExampleOption extends UniqueOption {
-	private final String name;
-
-	public NameExampleOption(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	@Override
-	public String toString() {
-		return "name: " + name;
-	}
-
+public class NameExampleOption extends UniqueOption<String> {
 }

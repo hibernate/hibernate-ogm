@@ -61,16 +61,16 @@ public class ConfigurationContext {
 		this.allOptions = globalContext;
 	}
 
-	public void addGlobalOption(Option<?> option) {
-		allOptions.addGlobalOption( option );
+	public <V> void addGlobalOption(Option<?, V> option, V value) {
+		allOptions.addGlobalOption( option, value );
 	}
 
-	public void addEntityOption(Option<?> option) {
-		allOptions.addEntityOption( currentEntityType, option );
+	public <V> void addEntityOption(Option<?, V> option, V value) {
+		allOptions.addEntityOption( currentEntityType, option, value );
 	}
 
-	public void addPropertyOption(Option<?> option) {
-		allOptions.addPropertyOption( currentEntityType, currentPropertyName, option );
+	public <V> void addPropertyOption(Option<?, V> option, V value) {
+		allOptions.addPropertyOption( currentEntityType, currentPropertyName, option, value );
 	}
 
 	public void configureEntity(Class<?> entityType) {

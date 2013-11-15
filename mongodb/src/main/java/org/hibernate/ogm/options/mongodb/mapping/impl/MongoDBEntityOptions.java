@@ -37,7 +37,7 @@ public abstract class MongoDBEntityOptions extends BaseEntityContext<MongoDBEnti
 
 	@Override
 	public MongoDBEntityContext writeConcern(WriteConcernType concern) {
-		addEntityOption( new WriteConcernOption( concern ) );
+		addEntityOption( new WriteConcernOption(), concern );
 		return this;
 	}
 }

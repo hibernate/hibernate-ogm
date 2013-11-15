@@ -27,6 +27,7 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -57,19 +58,21 @@ public class ProxyFactoryTest {
 				.entity( Example.class )
 					.name( "Batman" );
 
-		assertThat( context.getGlobalOptions() )
-			.hasSize( 2 )
-			.contains( ForceExampleOption.TRUE )
-			.contains( new NamedQueryOption( "foo", "from Foo" ) );
-		assertThat( context.getEntityOptions( Example.class ) )
-			.hasSize( 2 )
-			.contains( ForceExampleOption.TRUE, new NameExampleOption( "Batman" ) );
-		assertThat( context.getEntityOptions( Sample.class ) )
-			.hasSize( 2 )
-			.contains( ForceExampleOption.FALSE, new NameExampleOption( "Joker" ) );
-		assertThat( context.getPropertyOptions( Example.class, "title" ) )
-			.hasSize( 1 )
-			.contains( new EmbedExampleOption( embedded ) );
+		OptionsContainer globalOptions = context.getGlobalOptions();
+		assertThat( globalOptions.getUnique( ForceExampleOption.class ) ).isTrue();
+		assertThat( globalOptions.get( NamedQueryOption.class, "foo" ) ).isEqualTo( "from Foo" );
+
+		OptionsContainer exampleEntityOptions = context.getEntityOptions( Example.class );
+		assertThat( exampleEntityOptions.getUnique( ForceExampleOption.class ) ).isTrue();
+		assertThat( exampleEntityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Batman" );
+
+		OptionsContainer sampleEntityOptions = context.getEntityOptions( Sample.class );
+		assertThat( sampleEntityOptions.getUnique( ForceExampleOption.class ) ).isFalse();
+		assertThat( sampleEntityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Joker" );
+
+
+		OptionsContainer titlePropertyOptions = context.getPropertyOptions( Example.class, "title" );
+		assertThat( titlePropertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( embedded );
 	}
 
 	public static final class Example {

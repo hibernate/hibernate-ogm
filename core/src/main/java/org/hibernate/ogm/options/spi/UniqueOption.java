@@ -26,14 +26,14 @@ package org.hibernate.ogm.options.spi;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public abstract class UniqueOption extends Option<Object> {
+public abstract class UniqueOption<V> extends Option<Object, V> {
 
 	private static final Object IDENTITY = new Object();
 
 	/**
 	 * Return the identifier of this option.
 	 * <p>
-	 * Since two implementations of the same {@link UniqueOption} must be unique this method cannot be overridden.
+	 * Since two instances of the same {@link UniqueOption} must be unique this method cannot be overridden.
 	 */
 	@Override
 	public final Object getOptionIdentifier() {

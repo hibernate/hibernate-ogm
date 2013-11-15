@@ -38,15 +38,15 @@ public class BaseContext {
 		this.context = context;
 	}
 
-	protected final void addGlobalOption(Option<?> option) {
-		context.addGlobalOption( option );
+	protected final <V> void addGlobalOption(Option<?, V> option, V value) {
+		context.addGlobalOption( option, value );
 	}
 
-	protected final void addEntityOption(Option<?> option) {
-		context.addEntityOption( option );
+	protected final <V> void addEntityOption(Option<?, V> option, V value) {
+		context.addEntityOption( option, value );
 	}
 
-	protected final void addPropertyOption(Option<?> option) {
-		context.addPropertyOption( option );
+	protected final <V> void addPropertyOption(Option<?, V> option, V value) {
+		context.addPropertyOption( option, value );
 	}
 }

@@ -18,16 +18,37 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.options.examples;
-
-import org.hibernate.ogm.options.spi.UniqueOption;
+package org.hibernate.ogm.options.spi;
 
 /**
- * Can be used to map an options that force some kind of policy.
- * <p>
- * This is a {@link UniqueOption} that can be used for testing.
+ * Represents an {@link Option} and its associated value.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-public class ForceExampleOption extends UniqueOption<Boolean> {
+public class OptionValue<V> {
+
+	private final Option<?, V> option;
+	private final V value;
+
+	private OptionValue(Option<?, V> option, V value) {
+		this.option = option;
+		this.value = value;
+	}
+
+	public static <V> OptionValue<V> getInstance(Option<?, V> option, V value) {
+		return new OptionValue<V>( option, value );
+	}
+
+	public Option<?, V> getOption() {
+		return option;
+	}
+
+	public V getValue() {
+		return value;
+	}
+
+	@Override
+	public String toString() {
+		return "OptionValue [option=" + option + ", value=" + value + "]";
+	}
 }
