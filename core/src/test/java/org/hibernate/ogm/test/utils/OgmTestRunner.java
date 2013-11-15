@@ -24,14 +24,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import javax.transaction.TransactionManager;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-
 /**
  * A JUnit 4 runner for OGM tests. Based on a given set of entities, it manages a session factory, which is used
  * throughout all test methods of the given test class.
@@ -80,6 +85,8 @@ import org.junit.runners.model.InitializationError;
  */
 public class OgmTestRunner extends GridDialectSkippableTestRunner {
 
+	private static final Log LOG = LoggerFactory.make();
+
 	private SessionFactory sessionFactory;
 
 	public OgmTestRunner(Class<?> klass) throws InitializationError {
@@ -95,8 +102,26 @@ public class OgmTestRunner extends GridDialectSkippableTestRunner {
 			super.run( notifier );
 		}
 		finally {
+			cleanUpPendingTransactionIfRequired();
 			TestHelper.dropSchemaAndDatabase( sessionFactory );
 			sessionFactory.close();
+		}
+	}
+
+	private void cleanUpPendingTransactionIfRequired() {
+		TransactionManager transactionManager = ( (SessionFactoryImplementor) sessionFactory )
+				.getServiceRegistry()
+				.getService( JtaPlatform.class )
+				.retrieveTransactionManager();
+
+		try {
+			if ( transactionManager != null && transactionManager.getTransaction() != null ) {
+				LOG.warn( "The test started a transaction but failed to commit it or roll it back. Going to roll it back." );
+				transactionManager.rollback();
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
 		}
 	}
 
