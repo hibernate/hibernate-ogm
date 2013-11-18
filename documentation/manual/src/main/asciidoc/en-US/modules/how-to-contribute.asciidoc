@@ -77,11 +77,11 @@ according to the descriptions available
 http://community.jboss.org/wiki/MavenGettingStarted-Users[on this jboss.org wiki page].
 ====
 
-To build the documentation, set the +buildDocs+ property to true:
+To skip building the documentation, set the +skipDocs+ property to true:
 
 [source]
 ----
-mvn clean install -DbuildDocs=true -s settings-example.xml
+mvn clean install -DskipDocs=true -s settings-example.xml
 ----
 
 [TIP]
