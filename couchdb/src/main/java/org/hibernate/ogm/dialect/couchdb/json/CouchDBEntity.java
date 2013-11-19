@@ -29,7 +29,7 @@ import org.codehaus.jackson.annotate.JsonAnyGetter;
 import org.codehaus.jackson.annotate.JsonAnySetter;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.annotate.JsonTypeName;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -64,12 +64,13 @@ import org.hibernate.ogm.grid.EntityKey;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(
-		use = JsonTypeInfo.Id.NAME,
-		include = JsonTypeInfo.As.PROPERTY,
-		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
-)
+@JsonTypeName(CouchDBEntity.TYPE_NAME)
 public class CouchDBEntity extends CouchDBDocument {
+
+	/**
+	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 */
+	public static final String TYPE_NAME = "entity";
 
 	/**
 	 * Name of the table discriminator field

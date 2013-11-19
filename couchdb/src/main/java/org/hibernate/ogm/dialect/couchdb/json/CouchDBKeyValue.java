@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.dialect.couchdb.json;
 
-import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.annotate.JsonTypeName;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
@@ -30,12 +30,13 @@ import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(
-		use = JsonTypeInfo.Id.NAME,
-		include = JsonTypeInfo.As.PROPERTY,
-		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
-)
+@JsonTypeName(CouchDBKeyValue.TYPE_NAME)
 public class CouchDBKeyValue extends CouchDBDocument {
+
+	/**
+	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 */
+	public static final String TYPE_NAME = "sequence";
 
 	private long value;
 

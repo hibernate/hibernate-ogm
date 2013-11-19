@@ -59,7 +59,7 @@ public class EntitiesDesignDocument extends CouchDBDesignDocument {
 	 * The javascript used in the map function, for each stored document if the type is equal to
 	 * the CouchDBEntity.class simpleName emit 1
 	 */
-	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.class.getSimpleName()
+	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
 			+ "\"){  emit(null, 1); }}";
 
 	/**
