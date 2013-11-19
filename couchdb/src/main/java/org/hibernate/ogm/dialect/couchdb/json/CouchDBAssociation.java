@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.annotate.JsonTypeName;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -45,12 +45,13 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(
-		use = JsonTypeInfo.Id.NAME,
-		include = JsonTypeInfo.As.PROPERTY,
-		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
-)
+@JsonTypeName(CouchDBAssociation.TYPE_NAME)
 public class CouchDBAssociation extends CouchDBDocument {
+
+	/**
+	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 */
+	public static final String TYPE_NAME = "association";
 
 	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();
 

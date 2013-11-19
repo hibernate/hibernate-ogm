@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.couchdb.json;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 /**
  * Every Json document in CouchDB contains, The field '_id' representing the id of the document and '_rev' representing
@@ -29,6 +30,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
+@JsonTypeInfo(
+	use = JsonTypeInfo.Id.NAME,
+	include = JsonTypeInfo.As.PROPERTY,
+	property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
+)
 public abstract class CouchDBDocument {
 
 	/**
