@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.couchdb.designdocument;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 
 /**
  * Creates a CouchDB Design Document used to retrieve the number of {@link CouchDBAssociation}, stored in the database.
@@ -58,7 +59,7 @@ public class AssociationsDesignDocument extends CouchDBDesignDocument {
 	 * The javascript used in the map function, for each stored document if the type is equal to
 	 * the .class simpleName emit 1
 	 */
-	private static final String MAP = "function(doc) {if(doc.type == \"" + CouchDBAssociation.class.getSimpleName()
+	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBAssociation.class.getSimpleName()
 			+ "\"){ emit(null, 1); }}";
 
 	/**

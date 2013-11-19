@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.couchdb.designdocument;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 
 /**
@@ -58,7 +59,7 @@ public class EntitiesDesignDocument extends CouchDBDesignDocument {
 	 * The javascript used in the map function, for each stored document if the type is equal to
 	 * the CouchDBEntity.class simpleName emit 1
 	 */
-	private static final String MAP = "function(doc) {if(doc.type == \"" + CouchDBEntity.class.getSimpleName()
+	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.class.getSimpleName()
 			+ "\"){  emit(null, 1); }}";
 
 	/**
