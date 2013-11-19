@@ -30,7 +30,11 @@ import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		include = JsonTypeInfo.As.PROPERTY,
+		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
+)
 public class CouchDBKeyValue extends CouchDBDocument {
 
 	private long value;

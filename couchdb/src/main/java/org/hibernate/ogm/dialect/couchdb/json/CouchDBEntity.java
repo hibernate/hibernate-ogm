@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.codehaus.jackson.annotate.JsonAnyGetter;
 import org.codehaus.jackson.annotate.JsonAnySetter;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
@@ -44,8 +45,8 @@ import org.hibernate.ogm.grid.EntityKey;
  * {
  *     "_id": "a4jdefe8",
  *     "_rev": "123",
- *     "type": "CouchDBEntity",
- *     "tableName": "Foo",
+ *     "$type": "CouchDBEntity",
+ *     "$table": "Foo",
  *
  *     "name": "Bob",
  *     "login": "dude",
@@ -63,13 +64,21 @@ import org.hibernate.ogm.grid.EntityKey;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		include = JsonTypeInfo.As.PROPERTY,
+		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
+)
 public class CouchDBEntity extends CouchDBDocument {
 
+	/**
+	 * Name of the table discriminator field
+	 */
+	private static final String TABLE_FIELD_NAME = "$table";
 	private static final String PATH_SEPARATOR = ".";
 	private static final Pattern PATH_SPLIT_PATTERN = Pattern.compile( Pattern.quote( PATH_SEPARATOR ) );
 
-	private String tableName;
+	private String table;
 
 	/**
 	 * Holds the properties of this entity. Embedded properties are keyed by dot-separated path names.
@@ -81,7 +90,7 @@ public class CouchDBEntity extends CouchDBDocument {
 
 	public CouchDBEntity(EntityKey key) {
 		super( Identifier.createEntityId( key ) );
-		tableName = key.getTable();
+		table = key.getTable();
 	}
 
 	public void update(Tuple tuple) {
@@ -90,12 +99,14 @@ public class CouchDBEntity extends CouchDBDocument {
 		}
 	}
 
-	public String getTableName() {
-		return tableName;
+	@JsonProperty(TABLE_FIELD_NAME)
+	public String getTable() {
+		return table;
 	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
+	@JsonProperty(TABLE_FIELD_NAME)
+	public void setTable(String table) {
+		this.table = table;
 	}
 
 	@JsonIgnore

@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.couchdb.designdocument;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 
 /**
@@ -61,8 +62,8 @@ public class TuplesDesignDocument extends CouchDBDesignDocument {
 	 * the CouchDBEntity.class and the doc.tableName is equal the value passed as a QueryParam in the REST call
 	 * return the entire document
 	 */
-	public static final String MAP = "function(doc) {if(doc.type == \"" + CouchDBEntity.class.getSimpleName()
-			+ "\") {emit(doc.tableName , doc);}}";
+	public static final String MAP = "function(doc) {if(doc."  + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.class.getSimpleName()
+			+ "\") {emit(doc.$table , doc);}}";
 
 	public TuplesDesignDocument() {
 		setId( DOCUMENT_ID );

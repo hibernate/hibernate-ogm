@@ -39,13 +39,17 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * Used to serialize and deserialize the JSON with the following structure:
  *
- * { "_id": "", "_rev": " ", "type": "CouchDBAssociation", "rows": [{ "key": "value" }] }
+ * { "_id": "", "_rev": " ", "$type": "CouchDBAssociation", "rows": [{ "key": "value" }] }
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		include = JsonTypeInfo.As.PROPERTY,
+		property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
+)
 public class CouchDBAssociation extends CouchDBDocument {
 
 	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();

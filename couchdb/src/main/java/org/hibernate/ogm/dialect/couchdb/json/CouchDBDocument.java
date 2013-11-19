@@ -31,6 +31,11 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public abstract class CouchDBDocument {
 
+	/**
+	 * Name of the document type discriminator field
+	 */
+	public static final String TYPE_DISCRIMINATOR_FIELD_NAME = "$type";
+
 	@JsonProperty("_id")
 	private String id;
 
