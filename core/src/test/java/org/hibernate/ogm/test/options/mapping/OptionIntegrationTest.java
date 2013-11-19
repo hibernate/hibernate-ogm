@@ -27,7 +27,6 @@ import java.lang.annotation.ElementType;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -45,9 +44,8 @@ import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.hibernate.ogm.test.utils.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestHelper;
-import org.junit.After;
-import org.junit.Before;
+import org.hibernate.ogm.test.utils.TestSessionFactory;
+import org.hibernate.ogm.test.utils.TestSessionFactory.Scope;
 import org.junit.Test;
 
 /**
@@ -60,20 +58,8 @@ public class OptionIntegrationTest extends OgmTestCase {
 	/**
 	 * Not using the SF from the super class to reset it for each test method
 	 */
+	@TestSessionFactory(scope = Scope.TEST_METHOD)
 	private OgmSessionFactory sessions;
-
-	@Before
-	public void openOgmSession() {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-
-		sessions = configuration.buildSessionFactory();
-	}
-
-	@After
-	public void closeSession() {
-		sessions.close();
-	}
 
 	@Test
 	public void testThatEntityOptionCanBeSetAndRetrieved() throws Exception {
