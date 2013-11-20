@@ -145,6 +145,7 @@
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
+        <slf4jVersion>1.7.5</slf4jVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -296,6 +297,11 @@
                 <artifactId>hibernate-ogm-neo4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-couchdb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -308,6 +314,14 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${jbossLoggingVersion}</version>
+            </dependency>
+
+            <!-- slf4j is not used by OGM itself; Still setting the version to make sure different versions pulled in
+                 transitively converge -->
+            <dependency>
+                <artifactId>slf4j-api</artifactId>
+                <groupId>org.slf4j</groupId>
+                <version>${slf4jVersion}</version>
             </dependency>
 
             <!-- HQL Parsing and Lucene Query creation support -->
@@ -1028,6 +1042,22 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>couchdb</id>
+            <!--
+              To activate and use the couchdb profile you need to define the
+              environment property:
+                 COUCHDB_HOSTNAME
+            -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <modules>
+                <module>couchdb</module>
+            </modules>
+        </profile>
         <profile>
             <id>integrationtest</id>
             <activation>

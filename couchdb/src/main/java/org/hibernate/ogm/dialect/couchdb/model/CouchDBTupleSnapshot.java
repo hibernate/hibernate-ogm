@@ -18,37 +18,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.model;
 
-import junit.framework.Assert;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class CouchDBTupleSnapshot implements TupleSnapshot {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	private final Map<String, Object> properties;
+
+	public CouchDBTupleSnapshot() {
+		this.properties = Collections.emptyMap();
 	}
 
-	@Test
-	public void testCorrect() {
-		// all fine
+	public CouchDBTupleSnapshot(EntityKey key) {
+		properties = new HashMap<String, Object>();
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
+	}
+
+	public CouchDBTupleSnapshot(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
 	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public Object get(String column) {
+		return properties.get( column );
 	}
 
+	@Override
+	public boolean isEmpty() {
+		return properties.isEmpty();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		return properties.keySet();
+	}
 }

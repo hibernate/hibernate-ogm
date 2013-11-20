@@ -18,37 +18,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.logging.couchdb.impl;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
-import org.junit.Test;
+import org.jboss.logging.Logger;
 
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class LoggerFactory {
 
-	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
-	}
-
-	@Test
-	public void testCorrect() {
-		// all fine
-	}
-
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	public static Log getLogger() {
+		return Logger.getMessageLogger( Log.class, "CouchDB" );
 	}
 
 }
