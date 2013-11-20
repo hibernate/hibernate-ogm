@@ -96,7 +96,7 @@ public interface DatabaseClient {
 	 */
 	@GET
 	@Path("{id}")
-	Response getEntityId(@PathParam("id") String id);
+	Response getEntityById(@PathParam("id") String id);
 
 	/**
 	 * Retrieve the {@link CouchDBAssociation} with the given id
@@ -116,7 +116,7 @@ public interface DatabaseClient {
 	 */
 	@GET
 	@Path("{id}")
-	Response getKeyValue(@PathParam("id") String id);
+	Response getKeyValueById(@PathParam("id") String id);
 
 	/**
 	 * Retrieve the number of {@link CouchDBAssociation} stored in the database
