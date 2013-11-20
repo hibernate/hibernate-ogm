@@ -128,7 +128,7 @@ public interface DatabaseClient {
 	Response getNumberOfAssociations();
 
 	/**
-	 * Retrieve the number of {@link CouchDBEntity} stored in the database
+	 * Retrieve the number of entities stored in the database
 	 *
 	 * @return the Response CouchDB with the {@link org.hibernate.ogm.dialect.couchdb.designdocument.Rows}
 	 */
@@ -137,9 +137,9 @@ public interface DatabaseClient {
 	Response getNumberOfEntities();
 
 	/**
-	 * Retrieve all the Tuples belonging to {@link CouchDBEntity} with the table name equals to the given one.
+	 * Retrieve all the entity tuples with the table name equals to the given one.
 	 *
-	 * @param tableName of the CouchDBEntity
+	 * @param tableName name of the entity
 	 * @return the {@link Response} with the {@link org.hibernate.ogm.dialect.couchdb.designdocument.EntityTupleRows}
 	 */
 	@GET

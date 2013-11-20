@@ -26,15 +26,12 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 
 /**
- * Creates a CouchDB Design Document used to retrieve the number of {@link CouchDBEntity} stored in the database
+ * Creates a CouchDB Design Document with a view used to retrieve the number of entities stored in the database.
+ * <p>
+ * The map function of this view emits those documents whose type is {@link CouchDBEntity#TYPE_NAME}. The reduce
+ * function counts the number of the documents returned by the map function.
  *
- * CouchDBEntity are stored in the Database with a JSON field 'type' = 'CouchDBEntity'
- *
- * This field is used in the map function to extract only the documents related to CouchDBEntity
- *
- * The reduce function counts the number of the documents returned by the map function
- *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero <dreborier@gmail.com>
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 public class EntitiesDesignDocument extends CouchDBDesignDocument {
@@ -50,21 +47,19 @@ public class EntitiesDesignDocument extends CouchDBDesignDocument {
 	public static final String ENTITIES_NUMBER_VIEW_NAME = "number";
 
 	/**
-	 * The URL to use in the REST call in order to obtain the number number of CouchDBEntity stored in
-	 * the database
+	 * The URL to use in the REST call in order to obtain the number of entities stored in the database
 	 */
 	public static final String NUMBER_OF_ENTITIES_VIEW_PATH = "_design/" + DOCUMENT_ID + "/_view/" + ENTITIES_NUMBER_VIEW_NAME;
 
 	/**
-	 * The javascript used in the map function, for each stored document if the type is equal to
-	 * the CouchDBEntity.class simpleName emit 1
+	 * The JavaScript map function; for each document of type "entity" value 1 will be emitted.
 	 */
 	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
 			+ "\"){  emit(null, 1); }}";
 
 	/**
-	 * The javascript used in the reduce function, return the length of the value returned by the map
-	 * function, this value represents the number of the stored CouchDBEntity
+	 * The JavaScript reduce function, return the length of the value returned by the map function, this value
+	 * represents the number of the stored entities
 	 */
 	private static final String REDUCE = "function(key,value){ return value.length; }";
 
