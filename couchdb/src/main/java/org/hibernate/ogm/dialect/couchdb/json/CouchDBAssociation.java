@@ -39,7 +39,7 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * Used to serialize and deserialize the JSON with the following structure:
  *
- * { "_id": "", "_rev": " ", "$type": "CouchDBAssociation", "rows": [{ "key": "value" }] }
+ * { "_id": "", "_rev": " ", "$type": "association", "rows": [{ "key": "value" }] }
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling

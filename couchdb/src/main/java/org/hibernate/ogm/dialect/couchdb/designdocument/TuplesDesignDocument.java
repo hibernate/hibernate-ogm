@@ -25,16 +25,11 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 
 /**
- * Creates a CouchDB Design Document used to retrieve the {@link CouchDBEntity} whose tableName attribute is equal to
- * the value passed as a QueryParam in the REST call.
- *
- * CouchDBEntity are stored in the Database with a JSON field 'type' = 'CouchDBEntity' and a JSON field 'tableName' with
- * the name of the table the Entity belongs to.
- *
- * This field is used in the map function to extract only the documents related to CouchDBEntity with the tableName
- * field
- * equals to the value supplied as a QueryParam in the REST call (CouchDB use this value in the emit part of the map
- * function )
+ * Creates a CouchDB Design Document with a view used to retrieve the entities of a given table.
+ * <p>
+ * The map function of this view emits those documents whose type is {@link CouchDBEntity#TYPE_NAME}, keyed by table
+ * name. This allows to limit the result set to entities of specific tables by specifying the "key" query parameter when
+ * querying the view.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  */
@@ -42,7 +37,7 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 public class TuplesDesignDocument extends CouchDBDesignDocument {
 
 	/**
-	 * The ID fo the Document
+	 * The ID of the Document
 	 */
 	public static final String DOCUMENT_ID = "tuples";
 
@@ -58,9 +53,7 @@ public class TuplesDesignDocument extends CouchDBDesignDocument {
 			+ ENTITY_TUPLE_BY_TABLE_NAME_VIEW_NAME;
 
 	/**
-	 * The javascript used in the map function, for each stored document if the type is equal to
-	 * the CouchDBEntity.class and the doc.tableName is equal the value passed as a QueryParam in the REST call
-	 * return the entire document
+	 * The JavaScript map function; each document of type "entity" will be emitted, using the table name as key.
 	 */
 	public static final String MAP = "function(doc) {if(doc."  + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
 			+ "\") {emit(doc.$table , doc);}}";

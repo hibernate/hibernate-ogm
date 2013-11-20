@@ -45,7 +45,7 @@ import org.hibernate.ogm.grid.EntityKey;
  * {
  *     "_id": "a4jdefe8",
  *     "_rev": "123",
- *     "$type": "CouchDBEntity",
+ *     "$type": "entity",
  *     "$table": "Foo",
  *
  *     "name": "Bob",

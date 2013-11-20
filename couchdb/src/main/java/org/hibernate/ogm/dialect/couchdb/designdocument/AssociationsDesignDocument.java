@@ -25,13 +25,10 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 
 /**
- * Creates a CouchDB Design Document used to retrieve the number of {@link CouchDBAssociation}, stored in the database.
- *
- * CouchDBAssociation are stored in the Database with a JSON field 'type' = 'CouchDBAssociation'
- *
- * This field is used in the map function to extract only the documents related to CouchDBAssociation
- *
- * The reduce function counts the number of the documents returned by the map function
+ * Creates a CouchDB Design Document with a view used to retrieve the number of associations stored in the database.
+ * <p>
+ * The map function of this view emits those documents whose type is {@link CouchDBAssociation#TYPE_NAME}. The reduce
+ * function counts the number of the documents returned by the map function.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  */
@@ -56,15 +53,14 @@ public class AssociationsDesignDocument extends CouchDBDesignDocument {
 			+ ASSOCIATIONS_NUMBER_VIEW_NAME;
 
 	/**
-	 * The javascript used in the map function, for each stored document if the type is equal to
-	 * the .class simpleName emit 1
+	 * The JavaScript map function; for each document of type "association" value 1 will be emitted.
 	 */
 	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBAssociation.TYPE_NAME
 			+ "\"){ emit(null, 1); }}";
 
 	/**
-	 * The javascript used in the reduce function, return the length of the value returned by the map
-	 * function, this value represents the number of the stored CouchDBAssociation
+	 * The JavaScript reduce function, return the length of the value returned by the map function, this value
+	 * represents the number of the stored CouchDBAssociation
 	 */
 	private static final String REDUCE = "function(key,value){ return value.length; }";
 
