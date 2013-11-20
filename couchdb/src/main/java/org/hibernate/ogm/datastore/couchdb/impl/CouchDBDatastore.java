@@ -167,7 +167,7 @@ public class CouchDBDatastore {
 	public CouchDBEntity getEntity(String id) {
 		Response response = null;
 		try {
-			response = databaseClient.getEntityId( id );
+			response = databaseClient.getEntityById( id );
 			if ( response.getStatus() == HttpStatus.SC_NOT_FOUND ) {
 				return null;
 			}
@@ -473,7 +473,7 @@ public class CouchDBDatastore {
 	private CouchDBKeyValue getNextKeyValue(String id, int initialValue) {
 		Response response = null;
 		try {
-			response = databaseClient.getKeyValue( id );
+			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == HttpStatus.SC_OK ) {
 				return response.readEntity( CouchDBKeyValue.class );
 			}
