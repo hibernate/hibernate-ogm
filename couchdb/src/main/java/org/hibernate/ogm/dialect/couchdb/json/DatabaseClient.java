@@ -145,7 +145,7 @@ public interface DatabaseClient {
 	 */
 	@GET
 	@Path(TuplesDesignDocument.ENTITY_TUPLE_BY_TABLE_NAME_PATH)
-	Response getEntityTuplesByTableName(@QueryParam("value") String tableName);
+	Response getEntityTuplesByTableName(@QueryParam("key") String tableName);
 
 	/**
 	 * Retrieves the current revision of the document with the given id.

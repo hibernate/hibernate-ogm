@@ -444,7 +444,7 @@ public class CouchDBDatastore {
 	private List<Tuple> getTuplesByTableName(String tableName) {
 		Response response = null;
 		try {
-			response = databaseClient.getEntityTuplesByTableName( tableName );
+			response = databaseClient.getEntityTuplesByTableName( "\"" + tableName + "\"" );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( EntityTupleRows.class ).getTuples();
 			}

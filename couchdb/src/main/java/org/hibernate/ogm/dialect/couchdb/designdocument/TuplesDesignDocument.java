@@ -55,7 +55,7 @@ public class TuplesDesignDocument extends CouchDBDesignDocument {
 	/**
 	 * The JavaScript map function; each document of type "entity" will be emitted, using the table name as key.
 	 */
-	public static final String MAP = "function(doc) {if(doc."  + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
+	public static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
 			+ "\") {emit(doc.$table , doc);}}";
 
 	public TuplesDesignDocument() {
