@@ -18,37 +18,40 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.utils;
+package org.hibernate.ogm.dialect.couchdb.util;
 
-import junit.framework.Assert;
-
-import org.hibernate.ogm.test.simpleentity.Hypothesis;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
 /**
- * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
+public class DataBaseURLTest {
 
 	@Test
-	@SkipByGridDialect({
-		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
-	})
-	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+	public void shouldReturnTheCorrectServerURL() throws Exception {
+		String expectedServerURL = "http://localhost:5984";
+		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+
+		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
 	}
 
 	@Test
-	public void testCorrect() {
-		// all fine
+	public void shouldReturnTheCorrectServerName() throws Exception {
+		String expectedName = "not_important";
+		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
+
+		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
 	}
 
-	@Override
-	public Class<?>[] getEntities() {
-		return new Class<?>[] { Hypothesis.class };
+	@Test
+	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
+		String expectedString = "http://localhost:5984/databaseName";
+		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
+
+		assertThat( dataBaseURL.toString(), is( expectedString ) );
 	}
 
 }
