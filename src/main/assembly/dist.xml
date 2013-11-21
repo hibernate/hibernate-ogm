@@ -55,19 +55,30 @@
                         <useProjectArtifact>false</useProjectArtifact>
                         <outputDirectory>/dist/lib/required</outputDirectory>
                         <scope>runtime</scope>
-                        <excludes>
-                            <!-- we have this in the Infinispan module already -->
-                            <exclude>org.hibernate:hibernate-search-infinispan</exclude>
-                            <!-- we have this in the root directory, don't repeat it -->
-                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude  >
-                            <!-- being pulled in via Hibernate Search, but we want it in the Infinispan module only -->
-                            <exclude>org.infinispan:*</exclude  >
-                            <exclude>org.jboss.marshalling:*</exclude>
-                            <exclude>org.rhq.helpers:*</exclude>
-                            <exclude>org.codehaus.woodstox:*</exclude>
-                            <exclude>net.sf.ehcache:*</exclude>
-                            <exclude>org.mongodb:*</exclude>
-                        </excludes>
+                        <includes>
+                            <include>org.hibernate.common:hibernate-commons-annotations</include>
+                            <include>antlr:antlr</include>
+                            <include>org.antlr:antlr-runtime</include>
+                            <include>org.apache.avro:avro</include>
+                            <include>dom4j:dom4j</include>
+                            <include>org.hibernate:hibernate-core</include>
+                            <include>org.hibernate:hibernate-entitymanager</include>
+                            <include>org.hibernate.hql:hibernate-hql-lucene</include>
+                            <include>org.hibernate.hql:hibernate-hql-parser</include>
+                            <include>org.hibernate:hibernate-search-engine</include>
+                            <include>org.hibernate:hibernate-search-orm</include>
+                            <include>org.codehaus.jackson:jackson-core-asl</include>
+                            <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                            <include>org.javassist:javassist</include>
+                            <include>org.jboss.logging:jboss-logging</include>
+                            <include>org.jboss.logging:jboss-logging-annotations</include>
+                            <include>org.apache.lucene:lucene-core</include>
+                            <include>org.apache.lucene:lucene-facet</include>
+                            <include>com.thoughtworks.paranamer:paranamer</include>
+                            <include>org.slf4j:slf4j-api</include>
+                            <include>org.antlr:stringtemplate</include>
+                            <include>org.jgroups:jgroups</include>
+                        </includes>
                     </dependencySet>
                     <dependencySet>
                         <useProjectArtifact>false</useProjectArtifact>
@@ -99,67 +110,14 @@
                         <outputDirectory>/dist/lib/infinispan</outputDirectory>
                         <useProjectArtifact>false</useProjectArtifact>
                         <scope>runtime</scope>
-                        <excludes>
-                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.hql:*</exclude>
-                            <exclude>org.hibernate:*</exclude>
-                            <exclude>org.hibernate.common:*</exclude>
-                            <exclude>dom4j:dom4j</exclude>
-                            <exclude>org.antlr:*</exclude>
-                            <exclude>antlr:*</exclude>
-                            <exclude>org.mongodb:*</exclude>
-                            <exclude>org.jboss.logging:*</exclude>
-                            <exclude>org.javassist:*</exclude>
-                            <exclude>org.codehaus.jackson:*</exclude>
-                            <exclude>org.apache.avro:*</exclude>
-                            <exclude>org.apache.lucene:*</exclude>
-                            <exclude>com.thoughtworks.paranamer:*</exclude>
-                            <exclude>org.xerial.snappy:*</exclude>
-                            <exclude>org.slf4j:*</exclude>
-                            <exclude>net.sf.ehcache:*</exclude>
-                            <!-- JGroups is already included via Hibernate Search in the main module -->
-                            <exclude>org.jgroups:*</exclude>
-                        </excludes>
-                    </dependencySet>
-                </dependencySets>
-            </binaries>
-        </moduleSet>
-        <moduleSet>
-            <includes>
-                <include>org.hibernate:hibernate-search-infinispan</include>
-            </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
-            <binaries>
-                <outputDirectory>dist/lib/infinispan</outputDirectory>
-                <unpack>false</unpack>
-                <dependencySets>
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <scope>runtime</scope>
-                    </dependencySet>
-                </dependencySets>
-            </binaries>
-        </moduleSet>
-        <!-- With Infinispan usage we suggest using the Hibernate Search / Infinispan integration too,
-             so add the relevant dependencies to the /infinispan directory too: -->
-        <moduleSet>
-            <includes>
-                <include>org.hibernate:hibernate-search-infinispan</include>
-            </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
-            <binaries>
-                <outputDirectory>dist/lib/infinispan</outputDirectory>
-                <unpack>false</unpack>
-                <dependencySets>
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/infinispan</outputDirectory>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <scope>runtime</scope>
+                        <includes>
+                            <include>org.hibernate:hibernate-search-infinispan</include>
+                            <include>org.infinispan:infinispan-commons</include>
+                            <include>org.infinispan:infinispan-core</include>
+                            <include>org.infinispan:infinispan-lucene-directory</include>
+                            <include>org.jboss.marshalling:jboss-marshalling</include>
+                            <include>org.jboss.marshalling:jboss-marshalling-river</include>
+                        </includes>
                     </dependencySet>
                 </dependencySets>
             </binaries>
@@ -186,30 +144,9 @@
                         <outputDirectory>/dist/lib/ehcache</outputDirectory>
                         <useProjectArtifact>false</useProjectArtifact>
                         <scope>runtime</scope>
-                        <excludes>
-                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.hql:*</exclude>
-                            <exclude>org.hibernate:*</exclude>
-                            <exclude>org.hibernate.common:*</exclude>
-                            <exclude>dom4j:dom4j</exclude>
-                            <exclude>org.antlr:*</exclude>
-                            <exclude>antlr:*</exclude>
-                            <exclude>org.mongodb:*</exclude>
-                            <exclude>org.jboss.logging:*</exclude>
-                            <exclude>org.jboss.marshalling:*</exclude>
-                            <exclude>org.javassist:*</exclude>
-                            <exclude>org.apache.avro:*</exclude>
-                            <exclude>org.codehaus.jackson:*</exclude>
-                            <exclude>org.xerial.snappy:*</exclude>
-                            <exclude>org.apache.lucene:*</exclude>
-                            <exclude>org.infinispan:*</exclude>
-                            <exclude>org.jgroups:*</exclude>
-                            <exclude>org.rhq.helpers:*</exclude>
-                            <exclude>org.codehaus.woodstox:*</exclude>
-                            <exclude>com.thoughtworks.paranamer:*</exclude>
-                            <!-- Ehcache uses slf4j but we have it in the core module as Solr analyzers depend on it too -->
-                            <exclude>org.slf4j:*</exclude>
-                        </excludes>
+                        <includes>
+                            <include>net.sf.ehcache:ehcache-core</include>
+                        </includes>
                     </dependencySet>
                 </dependencySets>
             </binaries>
@@ -236,29 +173,9 @@
                         <outputDirectory>/dist/lib/mongodb</outputDirectory>
                         <useProjectArtifact>false</useProjectArtifact>
                         <scope>runtime</scope>
-                        <excludes>
-                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.hql:*</exclude>
-                            <exclude>org.hibernate:*</exclude>
-                            <exclude>org.hibernate.common:*</exclude>
-                            <exclude>dom4j:dom4j</exclude>
-                            <exclude>org.antlr:*</exclude>
-                            <exclude>antlr:*</exclude>
-                            <exclude>org.jboss.logging:*</exclude>
-                            <exclude>org.jboss.marshalling:*</exclude>
-                            <exclude>org.javassist:*</exclude>
-                            <exclude>org.apache.avro:*</exclude>
-                            <exclude>org.codehaus.jackson:*</exclude>
-                            <exclude>org.xerial.snappy:*</exclude>
-                            <exclude>org.apache.lucene:*</exclude>
-                            <exclude>org.infinispan:*</exclude>
-                            <exclude>org.jgroups:*</exclude>
-                            <exclude>org.rhq.helpers:*</exclude>
-                            <exclude>org.codehaus.woodstox:*</exclude>
-                            <exclude>com.thoughtworks.paranamer:*</exclude>
-                            <exclude>org.slf4j:*</exclude>
-                            <exclude>net.sf.ehcache:*</exclude>
-                        </excludes>
+                        <includes>
+                            <include>org.mongodb:mongo-java-driver</include>
+                        </includes>
                     </dependencySet>
                 </dependencySets>
             </binaries>
@@ -285,30 +202,19 @@
                         <outputDirectory>/dist/lib/neo4j</outputDirectory>
                         <useProjectArtifact>false</useProjectArtifact>
                         <scope>runtime</scope>
-                        <excludes>
-                            <exclude>org.hibernate.ogm:hibernate-ogm-core</exclude>
-                            <exclude>org.hibernate.hql:*</exclude>
-                            <exclude>org.hibernate:*</exclude>
-                            <exclude>org.hibernate.common:*</exclude>
-                            <exclude>dom4j:dom4j</exclude>
-                            <exclude>org.antlr:*</exclude>
-                            <exclude>antlr:*</exclude>
-                            <exclude>org.jboss.logging:*</exclude>
-                            <exclude>org.jboss.marshalling:*</exclude>
-                            <exclude>org.javassist:*</exclude>
-                            <exclude>org.apache.avro:*</exclude>
-                            <exclude>org.codehaus.jackson:*</exclude>
-                            <exclude>org.xerial.snappy:*</exclude>
-                            <exclude>org.apache.lucene:*</exclude>
-                            <exclude>org.infinispan:*</exclude>
-                            <exclude>org.jgroups:*</exclude>
-                            <exclude>org.rhq.helpers:*</exclude>
-                            <exclude>org.codehaus.woodstox:*</exclude>
-                            <exclude>com.thoughtworks.paranamer:*</exclude>
-                            <exclude>org.slf4j:*</exclude>
-                            <exclude>net.sf.ehcache:*</exclude>
-                            <exclude>org.mongodb:mongo-java-driver</exclude>
-                        </excludes>
+                        <includes>
+                            <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
+                            <include>org.apache.geronimo.specs:geronimo-jta_1.1_spec</include>
+                            <include>org.neo4j:neo4j</include>
+                            <include>org.neo4j:neo4j-cypher</include>
+                            <include>org.neo4j:neo4j-graph-algo</include>
+                            <include>org.neo4j:neo4j-graph-matching</include>
+                            <include>org.neo4j:neo4j-jmx</include>
+                            <include>org.neo4j:neo4j-kernel</include>
+                            <include>org.neo4j:neo4j-lucene-index</include>
+                            <include>org.neo4j:neo4j-udc</include>
+                            <include>org.scala-lang:scala-library</include>
+                        </includes>
                     </dependencySet>
                 </dependencySets>
             </binaries>
