@@ -37,8 +37,8 @@ import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * Contains the information related to a {@link org.hibernate.ogm.datastore.spi.Tuple} The use of this class is to
- * serialize and deserialize the JSON stored in CouchDB; Documents have the following structure:
+ * Contains the information related to a {@link Tuple}. The use of this class is to serialize and deserialize the JSON
+ * stored in CouchDB; Documents have the following structure:
  *
  * <pre>
  * {@code

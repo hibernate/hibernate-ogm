@@ -36,18 +36,17 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 public class AssociationsDesignDocument extends CouchDBDesignDocument {
 
 	/**
-	 * The ID fo the Document
+	 * The ID of the Document
 	 */
 	public static final String DOCUMENT_ID = "associations";
 
 	/**
 	 * The name of the view
 	 */
-	public static final String ASSOCIATIONS_NUMBER_VIEW_NAME = "number";
+	public static final String ASSOCIATIONS_NUMBER_VIEW_NAME = "count";
 
 	/**
-	 * The URL to use in the REST call in order to obtain the number number of CouchDBAssociation stored in
-	 * the database
+	 * The URL to use in the REST call in order to obtain the number of CouchDBAssociation stored in the database
 	 */
 	public static final String NUMBER_OF_ASSOCIATIONS_VIEW_PATH = "_design/" + DOCUMENT_ID + "/_view/"
 			+ ASSOCIATIONS_NUMBER_VIEW_NAME;

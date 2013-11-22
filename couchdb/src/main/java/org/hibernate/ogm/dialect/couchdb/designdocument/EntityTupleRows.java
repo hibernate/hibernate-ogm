@@ -49,7 +49,7 @@ public class EntityTupleRows {
 
 	@JsonIgnore
 	public List<Tuple> getTuples() {
-		ArrayList<Tuple> tuples = new ArrayList<Tuple>();
+		List<Tuple> tuples = new ArrayList<Tuple>( rows.size() );
 		if ( rows.size() > 0 ) {
 			for ( Row row : rows ) {
 				tuples.add( new Tuple( new CouchDBTupleSnapshot( row.getValue().getProperties() ) ) );

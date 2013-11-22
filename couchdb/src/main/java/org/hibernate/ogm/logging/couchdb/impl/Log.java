@@ -25,6 +25,8 @@ import static org.jboss.logging.Logger.Level.INFO;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 
+import javax.persistence.OptimisticLockException;
+
 import org.hibernate.HibernateException;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -95,4 +97,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1319, value = "An error occurred when retrieving the current revision of entity with id %s, http response status code %03d")
 	HibernateException errorRetrievingCurrentRevision(String entityId, int status);
+
+	@Message(id = 1320, value = "The document with id %s has been concurrently modified.")
+	OptimisticLockException getDocumentHasBeenConcurrentlyModifiedException(String id);
 }

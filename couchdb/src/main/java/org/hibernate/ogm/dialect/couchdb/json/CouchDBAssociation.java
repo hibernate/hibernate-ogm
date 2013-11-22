@@ -77,7 +77,7 @@ public class CouchDBAssociation extends CouchDBDocument {
 
 			Map<String, Object> row = new HashMap<String, Object>();
 			for ( String columnName : tuple.getColumnNames() ) {
-				// don't store columns which are part of the assocation key and can be retrieved from there
+				// don't store columns which are part of the association key and can be retrieved from there
 				if ( !isKeyColumn( associationKey, columnName ) ) {
 					row.put( columnName, tuple.get( columnName ) );
 				}

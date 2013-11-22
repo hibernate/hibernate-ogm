@@ -23,7 +23,6 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.OptimisticLockException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -104,48 +103,40 @@ public class CouchDBDatastore {
 	 * @return the saved CouchDBDocument
 	 */
 	public CouchDBDocument saveDocument(CouchDBDocument document) {
+		return doSaveDocument( document, false );
+	}
+
+	/**
+	 * Saves the given design document in the database.
+	 *
+	 * @param design the design document to save
+	 * @return the saved document
+	 */
+	public CouchDBDocument saveDocument(CouchDBDesignDocument design) {
+		return doSaveDocument( design, true );
+	}
+
+	private CouchDBDocument doSaveDocument(CouchDBDocument document, boolean isDesignDocument) {
 		Response response = null;
 		try {
-			response = databaseClient.saveDocument( document, document.getId() );
+			if ( isDesignDocument ) {
+				response = databaseClient.saveDesign( (CouchDBDesignDocument) document, document.getId() );
+			}
+			else {
+				response = databaseClient.saveDocument( document, document.getId() );
+			}
 			if ( response.getStatus() == Response.Status.CREATED.getStatusCode() ) {
 				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
 				updateDocumentRevision( document, entity.getRev() );
 			}
 			else if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
-				throw new OptimisticLockException();
+				throw logger.getDocumentHasBeenConcurrentlyModifiedException( document.getId() );
 			}
 			else {
 				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
 				throw logger.errorCreatingDocument( response.getStatus(), entity.getError(), entity.getReason() );
 			}
 			return document;
-		}
-		catch (ResteasyClientException e) {
-			throw logger.couchDBConnectionProblem( e );
-		}
-		finally {
-			if ( response != null ) {
-				response.close();
-			}
-		}
-	}
-
-	public CouchDBDocument saveDocument(CouchDBDesignDocument design) {
-		Response response = null;
-		try {
-			response = databaseClient.saveDesign( design, design.getId() );
-			if ( response.getStatus() == Response.Status.CREATED.getStatusCode() ) {
-				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
-				updateDocumentRevision( design, entity.getRev() );
-			}
-			else if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
-				throw new OptimisticLockException();
-			}
-			else {
-				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
-				throw logger.errorCreatingDocument( response.getStatus(), entity.getError(), entity.getReason() );
-			}
-			return design;
 		}
 		catch (ResteasyClientException e) {
 			throw logger.couchDBConnectionProblem( e );
@@ -254,7 +245,7 @@ public class CouchDBDatastore {
 	 * Retrieves all the tuples matching the {@link EntityKeyMetadata}
 	 *
 	 * @param entityKeyMetadata the EntityKeyMetadata used to filter the tuples
-	 * @return all the {@link CouchDBTuple} matching the given entityKeyMetadata
+	 * @return all the tuples matching the given entityKeyMetadata
 	 */
 	public List<Tuple> getTuples(EntityKeyMetadata entityKeyMetadata) {
 		final String tableName = getTableName( entityKeyMetadata );
@@ -285,7 +276,7 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.deleteDocument( id, revision );
 			if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
-				throw new OptimisticLockException();
+				throw logger.getDocumentHasBeenConcurrentlyModifiedException( id );
 			}
 			else if ( response.getStatus() != Response.Status.OK.getStatusCode() &&  response.getStatus() != Response.Status.NOT_FOUND.getStatusCode() ) {
 				throw logger.errorDeletingDocument( response.getStatus(), null, null );
