@@ -20,27 +20,24 @@
  */
 package org.hibernate.ogm.dialect.couchdb.designdocument;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
+
 /**
- * Creates a CouchDB Design Document
- *
- * It's serialized to Json in order to create a CouchDB Design Documents
- *
- * A Design Document contains a set of View.
- *
- * Each View has a name, a Javascript map function and an optional JavaScript reduce function
+ * Represents a CouchDB design document. Design documents are special CouchDB documents containing application logic in
+ * form of JavaScript, more specifically views (which apply map/reduce routines) and lists (which render other documents
+ * or views).
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDesignDocument extends CouchDBDocument {
 
 	private Map<String, View> views = new HashMap<String, View>();
-
+	private Map<String, String> lists = new HashMap<String, String>();
 	private final String language = "javascript";
 
 	public Map<String, View> getViews() {
@@ -53,6 +50,14 @@ public class CouchDBDesignDocument extends CouchDBDocument {
 
 	public String getLanguage() {
 		return language;
+	}
+
+	public Map<String, String> getLists() {
+		return lists;
+	}
+
+	public void setLists(Map<String, String> lists) {
+		this.lists = lists;
 	}
 
 	/**
@@ -90,8 +95,18 @@ public class CouchDBDesignDocument extends CouchDBDocument {
 		views.put( viewName, view );
 	}
 
+	/**
+	 * Adds the given list function to this design document.
+	 *
+	 * @param name the name of the function
+	 * @param listFunction the JavaScript code of the function
+	 */
+	public void addList(String name, String listFunction) {
+		lists.put( name, listFunction );
+	}
+
 	@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-	public class View {
+	public static class View {
 		private String map;
 		private String reduce;
 
@@ -110,6 +125,5 @@ public class CouchDBDesignDocument extends CouchDBDocument {
 		public void setReduce(String reduce) {
 			this.reduce = reduce;
 		}
-
 	}
 }

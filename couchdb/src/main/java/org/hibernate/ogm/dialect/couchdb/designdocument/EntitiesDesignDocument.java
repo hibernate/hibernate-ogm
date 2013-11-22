@@ -26,46 +26,48 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 
 /**
- * Creates a CouchDB Design Document with a view used to retrieve the number of entities stored in the database.
+ * Creates a CouchDB Design Document with a view and list used to retrieve the number of entities stored in the
+ * database.
  * <p>
  * The map function of this view emits those documents whose type is {@link CouchDBEntity#TYPE_NAME}. The reduce
- * function counts the number of the documents returned by the map function.
+ * function counts the number of the documents returned by the map function. The list function creates an easily
+ * consumable representation of the view result.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 public class EntitiesDesignDocument extends CouchDBDesignDocument {
 
-	/**
-	 * The ID fo the Document
-	 */
 	public static final String DOCUMENT_ID = "entities";
-
-	/**
-	 * The name of the view
-	 */
-	public static final String ENTITIES_NUMBER_VIEW_NAME = "number";
+	public static final String VIEW_NAME = "allEntities";
+	public static final String LIST_NAME = "count";
 
 	/**
 	 * The URL to use in the REST call in order to obtain the number of entities stored in the database
 	 */
-	public static final String NUMBER_OF_ENTITIES_VIEW_PATH = "_design/" + DOCUMENT_ID + "/_view/" + ENTITIES_NUMBER_VIEW_NAME;
+	public static final String ENTITY_COUNT_PATH = "_design/" + DOCUMENT_ID + "/_list/" + LIST_NAME + "/" + VIEW_NAME;
 
 	/**
 	 * The JavaScript map function; for each document of type "entity" value 1 will be emitted.
 	 */
 	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
-			+ "\"){  emit(null, 1); }}";
+			+ "\"){  emit(doc.id, 1); }}";
+
+	/**
+	 * The JavaScript list function; simplifies the output of the view into the form { "count" : n }.
+	 */
+	private static final String LIST = "function (head, req) { row = getRow(); send( JSON.stringify( { count : row ? row.value : 0 } ) ); }";
 
 	/**
 	 * The JavaScript reduce function, return the length of the value returned by the map function, this value
 	 * represents the number of the stored entities
 	 */
-	private static final String REDUCE = "function(key,value){ return value.length; }";
+	private static final String REDUCE = "_count";
 
 	public EntitiesDesignDocument() {
 		setId( DOCUMENT_ID );
-		addView( ENTITIES_NUMBER_VIEW_NAME, MAP, REDUCE );
+		addView( VIEW_NAME, MAP, REDUCE );
+		addList( LIST_NAME, LIST );
 	}
-
 }

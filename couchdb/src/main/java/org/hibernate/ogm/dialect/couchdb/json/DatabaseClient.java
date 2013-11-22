@@ -125,7 +125,7 @@ public interface DatabaseClient {
 	 * @return the Response with the searched {@link CouchDBKeyValue}
 	 */
 	@GET
-	@Path(AssociationsDesignDocument.NUMBER_OF_ASSOCIATIONS_VIEW_PATH)
+	@Path(AssociationsDesignDocument.ASSOCIATION_COUNT_PATH)
 	Response getNumberOfAssociations();
 
 	/**
@@ -134,7 +134,7 @@ public interface DatabaseClient {
 	 * @return the Response CouchDB with the {@link org.hibernate.ogm.dialect.couchdb.designdocument.Rows}
 	 */
 	@GET
-	@Path(EntitiesDesignDocument.NUMBER_OF_ENTITIES_VIEW_PATH)
+	@Path(EntitiesDesignDocument.ENTITY_COUNT_PATH)
 	Response getNumberOfEntities();
 
 	/**

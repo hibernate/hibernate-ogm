@@ -21,7 +21,6 @@
 package org.hibernate.ogm.datastore.couchdb.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -37,6 +36,7 @@ import org.hibernate.ogm.dialect.couchdb.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.designdocument.EntityTupleRows;
 import org.hibernate.ogm.dialect.couchdb.designdocument.TuplesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
+import org.hibernate.ogm.dialect.couchdb.json.CouchDBCountResponse;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
 import org.hibernate.ogm.dialect.couchdb.json.CouchDBKeyValue;
@@ -305,7 +305,7 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.getNumberOfAssociations();
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return toInteger( response );
+				return response.readEntity( CouchDBCountResponse.class ).getCount();
 			}
 			else {
 				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
@@ -332,7 +332,7 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.getNumberOfEntities();
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return toInteger( response );
+				return response.readEntity( CouchDBCountResponse.class ).getCount();
 			}
 			else {
 				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
@@ -347,20 +347,6 @@ public class CouchDBDatastore {
 				response.close();
 			}
 		}
-	}
-
-	@SuppressWarnings("rawtypes")
-	private int toInteger(Response response) {
-		Map entity = response.readEntity( Map.class );
-		if ( entity.isEmpty() ) {
-			return 0;
-		}
-		List list = (List) entity.get( "rows" );
-		if ( list.isEmpty() ) {
-			return 0;
-		}
-		Object rows = ( (Map) list.get( 0 ) ).get( "value" );
-		return (Integer) rows;
 	}
 
 	/**
