@@ -39,43 +39,45 @@ import org.jboss.logging.MessageLogger;
 @MessageLogger(projectCode = "OGM")
 public interface Log extends org.hibernate.ogm.util.impl.Log {
 
+	String ERROR_DESCRIPTION = "HTTP response status code: %03d, error: '%s', reason: '%s'";
+
 	@Message(id = 1301, value = "An error occurred increasing the value of the key")
 	HibernateException errorCalculatingNextValue(@Cause Exception exception);
 
-	@Message(id = 1302, value = "An error occurred creating CouchDB Document, http response status code %03d, error %s , cause  %s")
+	@Message(id = 1302, value = "An error occurred creating CouchDB Document, " + ERROR_DESCRIPTION)
 	HibernateException errorCreatingDocument(int status, String error, String cause);
 
-	@Message(id = 1303, value = "An error occurred deleting CouchDB Document, http response status code %03d, error %s , cause  %s")
+	@Message(id = 1303, value = "An error occurred deleting CouchDB Document, " + ERROR_DESCRIPTION)
 	HibernateException errorDeletingDocument(int status, String error, String reason);
 
 	@Message(id = 1304, value = "Unable to connect to CouchDB")
 	HibernateException couchDBConnectionProblem(@Cause Exception exception);
 
-	@Message(id = 1305, value = "An error occurred dropping the database, http response status code %03d")
-	HibernateException errorDroppingDatabase(int status);
+	@Message(id = 1305, value = "An error occurred dropping the database, " + ERROR_DESCRIPTION)
+	HibernateException errorDroppingDatabase(int status, String error, String reason);
 
-	@Message(id = 1306, value = "An error occurred retrieving entity with id %s, http response status code %03d")
-	HibernateException errorRetrievingEntity(String entityId, int status);
+	@Message(id = 1306, value = "An error occurred retrieving entity with id %s, " + ERROR_DESCRIPTION)
+	HibernateException errorRetrievingEntity(String entityId, int status, String error, String reason);
 
-	@Message(id = 1307, value = "An error occurred retrieving association with id %s, http response status code %03d")
-	HibernateException errorRetrievingAssociation(String id, int status);
+	@Message(id = 1307, value = "An error occurred retrieving association with id %s, " + ERROR_DESCRIPTION)
+	HibernateException errorRetrievingAssociation(String id, int status, String error, String reason);
 
-	@Message(id = 1308, value = "An error occurred retrieving the number of associations stored into CouchDb, http response status code %03d")
-	HibernateException unableToRetrieveTheNumberOfAssociations(int status);
+	@Message(id = 1308, value = "An error occurred retrieving the number of associations stored in CouchDB, " + ERROR_DESCRIPTION)
+	HibernateException unableToRetrieveTheNumberOfAssociations(int status, String error, String reason);
 
-	@Message(id = 1309, value = "An error occurred retrieving the number of entities stored into CouchDb, http response status code %03d")
-	HibernateException unableToRetrieveTheNumberOfEntities(int status);
+	@Message(id = 1309, value = "An error occurred retrieving the number of entities stored in CouchDB, " + ERROR_DESCRIPTION)
+	HibernateException unableToRetrieveTheNumberOfEntities(int status, String error, String reason);
 
-	@Message(id = 1310, value = "An error occurred retrieving tuples for table %s, http response status code %03d")
-	HibernateException unableToRetrieveTheTupleByEntityKeyMetadata(String tableName, int status);
+	@Message(id = 1310, value = "An error occurred retrieving tuples for table %s, " + ERROR_DESCRIPTION)
+	HibernateException unableToRetrieveTheTupleByEntityKeyMetadata(String tableName, int status, String error, String reason);
 
-	@Message(id = 1311, value = "An error occurred retrieving a key value, http response status code %03d")
-	HibernateException errorRetrievingKeyValue(int status);
+	@Message(id = 1311, value = "An error occurred retrieving a key value, " + ERROR_DESCRIPTION)
+	HibernateException errorRetrievingKeyValue(int status, String error, String reason);
 
-	@Message(id = 1312, value = "An error occurred retrieving the list of databases, http response status code %03d")
-	HibernateException unableToRetrieveTheListOfDatabase(int status);
+	@Message(id = 1312, value = "An error occurred retrieving the list of databases, " + ERROR_DESCRIPTION)
+	HibernateException unableToRetrieveTheListOfDatabase(int status, String error, String reason);
 
-	@Message(id = 1313, value = "An error occurred retrieving database %s, http response status code %03d, error %s, reason %s")
+	@Message(id = 1313, value = "An error occurred retrieving database %s, " + ERROR_DESCRIPTION)
 	HibernateException errorCreatingDatabase(String dataBaseName, int status, String error, String reason);
 
 	@LogMessage(level = INFO)
@@ -95,8 +97,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1318, value = "Error shutting down the datastore")
 	HibernateException shutDownDatastoreException(@Cause Exception e);
 
-	@Message(id = 1319, value = "An error occurred when retrieving the current revision of entity with id %s, http response status code %03d")
-	HibernateException errorRetrievingCurrentRevision(String entityId, int status);
+	@Message(id = 1319, value = "An error occurred when retrieving the current revision of entity with id %s, " + ERROR_DESCRIPTION)
+	HibernateException errorRetrievingCurrentRevision(String entityId, int status, String error, String reason);
 
 	@Message(id = 1320, value = "The document with id %s has been concurrently modified.")
 	OptimisticLockException getDocumentHasBeenConcurrentlyModifiedException(String id);

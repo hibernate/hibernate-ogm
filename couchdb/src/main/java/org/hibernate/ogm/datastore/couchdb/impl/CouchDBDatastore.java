@@ -165,7 +165,8 @@ public class CouchDBDatastore {
 				return response.readEntity( CouchDBEntity.class );
 			}
 			else {
-				throw logger.errorRetrievingEntity( id, response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.errorRetrievingEntity( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -198,7 +199,8 @@ public class CouchDBDatastore {
 				return null;
 			}
 			else {
-				throw logger.errorRetrievingCurrentRevision( id, response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.errorRetrievingCurrentRevision( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -228,7 +230,8 @@ public class CouchDBDatastore {
 				return response.readEntity( CouchDBAssociation.class );
 			}
 			else {
-				throw logger.errorRetrievingAssociation( id, response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.errorRetrievingAssociation( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -305,7 +308,8 @@ public class CouchDBDatastore {
 				return toInteger( response );
 			}
 			else {
-				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -331,7 +335,8 @@ public class CouchDBDatastore {
 				return toInteger( response );
 			}
 			else {
-				throw logger.unableToRetrieveTheNumberOfEntities( response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.unableToRetrieveTheNumberOfEntities( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -366,7 +371,8 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.dropDatabase();
 			if ( response.getStatus() != Response.Status.OK.getStatusCode() ) {
-				throw logger.errorDroppingDatabase( response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.errorDroppingDatabase( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -419,7 +425,8 @@ public class CouchDBDatastore {
 				return false;
 			}
 			else {
-				throw logger.unableToRetrieveTheListOfDatabase( response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.unableToRetrieveTheListOfDatabase( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ProcessingException e) {
@@ -440,7 +447,8 @@ public class CouchDBDatastore {
 				return response.readEntity( EntityTupleRows.class ).getTuples();
 			}
 			else {
-				throw logger.unableToRetrieveTheTupleByEntityKeyMetadata( tableName, response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.unableToRetrieveTheTupleByEntityKeyMetadata( tableName, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -507,7 +515,8 @@ public class CouchDBDatastore {
 				return identifier;
 			}
 			else {
-				throw logger.errorRetrievingKeyValue( response.getStatus() );
+				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				throw logger.errorRetrievingKeyValue( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
