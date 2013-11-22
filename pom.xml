@@ -619,16 +619,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptors>
-                        <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
-                    </descriptors>
-                    <finalName>hibernate-ogm-${project.version}</finalName>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>
                     <goals>deploy assembly:assembly</goals>
@@ -850,6 +840,21 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.3</version>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                            <configuration>
+                                <descriptors>
+                                    <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
+                                </descriptors>
+                                <finalName>${assembly.name}</finalName>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -1050,6 +1055,18 @@
             </activation>
             <modules>
                 <module>documentation</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>distro</id>
+            <activation>
+                <property>
+                    <name>skipDistro</name>
+                    <value>!true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>distribution</module>
             </modules>
         </profile>
     </profiles>

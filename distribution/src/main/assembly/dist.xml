@@ -26,7 +26,7 @@
 <!--
   When updating this file, make sure we don't include duplicate jars in different subdirectories.
   Generate the distribution preview to see how it looks like:
-   mvn clean package assembly:assembly -DskipTests=true -DskipITs=true
+   mvn clean package -DskipDistro=false -DskipTests=true -DskipITs=true
 
   To inspect which jars are being distributed and look for duplicates this might be handy:
   tar -ztvf target/*-dist.tar.gz | grep .jar| sed -e "s/.*\/dist//" -e "s/\(\/lib\/[^\/]*\)\/\(.*\)/\2 \t\t\t\1/" | sort
@@ -41,6 +41,7 @@
     <!-- Configure the module artifacts which make it into the distribution bundle -->
     <moduleSets>
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-core</include>
             </includes>
@@ -93,6 +94,7 @@
          -->
 
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
             </includes>
@@ -124,6 +126,7 @@
          -->
 
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-ehcache</include>
             </includes>
@@ -150,6 +153,7 @@
          -->
 
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
             </includes>
@@ -176,6 +180,7 @@
          -->
 
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-neo4j</include>
             </includes>
@@ -211,6 +216,7 @@
         #######################################################################
          -->
         <moduleSet>
+            <useAllReactorProjects>true</useAllReactorProjects>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-javadoc</include>
             </includes>
@@ -229,16 +235,16 @@
 
     <files>
         <file>
-            <source>readme.md</source>
+            <source>../readme.md</source>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
         </file>
         <file>
-            <source>license.txt</source>
+            <source>../license.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
         <file>
-            <source>changelog.txt</source>
+            <source>../changelog.txt</source>
             <outputDirectory>/</outputDirectory>
         </file>
     </files>
@@ -246,14 +252,14 @@
     <fileSets>
         <!-- Include all sources -->
         <fileSet>
-            <directory>.</directory>
+            <directory>../.</directory>
             <outputDirectory>sources</outputDirectory>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
-                <exclude>readme.md</exclude>
-                <exclude>license.txt</exclude>
-                <exclude>changelog.txt</exclude>
-                <exclude>*.sh</exclude>
+                <exclude>../readme.md</exclude>
+                <exclude>../license.txt</exclude>
+                <exclude>../changelog.txt</exclude>
+                <exclude>../*.sh</exclude>
                 <exclude>**/.git/**</exclude>
                 <exclude>**/.gitignore</exclude>
                 <exclude>**/.gitattributes</exclude>
@@ -271,7 +277,7 @@
             </excludes>
         </fileSet>
         <fileSet>
-            <directory>documentation/manual/target/docbook/publish</directory>
+            <directory>../documentation/manual/target/docbook/publish</directory>
             <outputDirectory>docs/reference</outputDirectory>
         </fileSet>
     </fileSets>
