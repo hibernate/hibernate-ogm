@@ -44,9 +44,6 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-core</include>
             </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
             <binaries>
                 <outputDirectory>dist</outputDirectory>
                 <unpack>false</unpack>
@@ -99,9 +96,6 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
             </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
             <binaries>
                 <outputDirectory>dist/lib/infinispan</outputDirectory>
                 <unpack>false</unpack>
@@ -133,9 +127,6 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-ehcache</include>
             </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
             <binaries>
                 <outputDirectory>dist/lib/ehcache</outputDirectory>
                 <unpack>false</unpack>
@@ -162,9 +153,6 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
             </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
             <binaries>
                 <outputDirectory>dist/lib/mongodb</outputDirectory>
                 <unpack>false</unpack>
@@ -191,9 +179,6 @@
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-neo4j</include>
             </includes>
-            <sources>
-                <includeModuleDirectory>false</includeModuleDirectory>
-            </sources>
             <binaries>
                 <outputDirectory>dist/lib/neo4j</outputDirectory>
                 <unpack>false</unpack>
@@ -257,7 +242,7 @@
             <outputDirectory>/</outputDirectory>
         </file>
     </files>
-    
+
     <fileSets>
         <!-- Include all sources -->
         <fileSet>
@@ -265,19 +250,19 @@
             <outputDirectory>sources</outputDirectory>
             <useDefaultExcludes>true</useDefaultExcludes>
             <excludes>
-                <exclude>readme.txt</exclude>
+                <exclude>readme.md</exclude>
                 <exclude>license.txt</exclude>
                 <exclude>changelog.txt</exclude>
-                <exclude>.git</exclude>
                 <exclude>*.sh</exclude>
+                <exclude>**/.git/**</exclude>
                 <exclude>**/.gitignore</exclude>
                 <exclude>**/.gitattributes</exclude>
-                <exclude>**/.bin</exclude>
+                <exclude>**/.bin/**</exclude>
                 <exclude>**/.settings/**</exclude>
                 <exclude>**/.project</exclude>
                 <exclude>**/.classpath</exclude>
                 <exclude>**/.factorypath</exclude>
-                <exclude>**/bin</exclude>
+                <exclude>**/bin/**</exclude>
                 <exclude>**/.externalToolBuilders/**</exclude>
                 <exclude>**/target/**</exclude>
                 <exclude>**/.idea/**</exclude>
