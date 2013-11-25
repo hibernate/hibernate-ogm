@@ -26,7 +26,7 @@ import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 
 /**
- * Represents a Long type
+ * Represents an Integer type
  *
  * @author Emmanuel Bernard
  */
@@ -37,6 +37,7 @@ public class IntegerType extends AbstractGenericBasicType<Integer> {
 		super( PassThroughGridTypeDescriptor.INSTANCE, IntegerTypeDescriptor.INSTANCE );
 	}
 
+	@Override
 	public String getName() {
 		return "integer";
 	}

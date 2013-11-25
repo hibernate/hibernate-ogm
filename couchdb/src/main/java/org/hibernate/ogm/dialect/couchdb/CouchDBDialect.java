@@ -181,18 +181,18 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	/**
-	 * Returns the number of Asosciations stored inside the database
+	 * Returns the number of associations stored inside the database
 	 *
-	 * @return the number of Asosciations
+	 * @return the number of associations
 	 */
 	public int getAssociationSize() {
 		return getDataStore().getNumberOfAssociations();
 	}
 
 	/**
-	 * Returns the number of Entities stored inside the database
+	 * Returns the number of entities stored inside the database
 	 *
-	 * @return the number of Entities
+	 * @return the number of entities
 	 */
 	public int getEntitiesSize() {
 		return getDataStore().getNumberOfEntities();
