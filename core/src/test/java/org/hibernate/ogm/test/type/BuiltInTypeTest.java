@@ -26,8 +26,6 @@ import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -54,8 +52,6 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	private static final Random RANDOM = new Random();
 
-	private final DateFormat DATE_FORMAT = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss:SSS Z" );
-
 	@Test
 	public void testTypesSupport() throws Exception {
 		final Session session = openSession();
@@ -72,14 +68,16 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setFavourite( Boolean.TRUE );
 		Byte displayMask = Byte.valueOf( (byte) '8' );
 		b.setDisplayMask( displayMask );
+
 		Date now = new Date( System.currentTimeMillis() );
+		Calendar nowCalendar = Calendar.getInstance();
+		nowCalendar.setTime( now );
+
 		b.setCreationDate( now );
 		b.setDestructionDate( now );
-		b.setUpdateDate( now );
-		final Calendar iCal = Calendar.getInstance();
-		iCal.setTimeInMillis( now.getTime() );
-		b.setCreationCalendar( iCal );
-		b.setDestructionCalendar( iCal );
+		b.setUpdateTime( now );
+		b.setCreationCalendar( nowCalendar );
+		b.setDestructionCalendar( nowCalendar );
 		byte[] blob = new byte[5];
 		blob[0] = '1';
 		blob[1] = '2';
@@ -94,6 +92,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUserId( userId );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
+		b.setType( BookmarkType.URL );
 
 		session.persist( b );
 		transaction.commit();
@@ -111,21 +110,32 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "user id incorrect", userId, b.getUserId() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
 
-		assertEquals( "Creation Date Incorrect", now, b.getCreationDate() );
+		//Date - DATE
+		Calendar creationDate = Calendar.getInstance();
+		creationDate.setTime( b.getCreationDate() );
+		assertEquals( nowCalendar.get( Calendar.YEAR ), creationDate.get( Calendar.YEAR ) );
+		assertEquals( nowCalendar.get( Calendar.MONTH ), creationDate.get( Calendar.MONTH ) );
+		assertEquals( nowCalendar.get( Calendar.DAY_OF_MONTH ), creationDate.get( Calendar.DAY_OF_MONTH ) );
 
-		assertEquals( "Timezone Info Not Correct", iCal.getTimeZone(), b.getDestructionCalendar().getTimeZone() );
+		//Date - TIME
+		Calendar updateTime = Calendar.getInstance();
+		updateTime.setTime( b.getUpdateTime() );
+		assertEquals( nowCalendar.get( Calendar.HOUR_OF_DAY ), updateTime.get( Calendar.HOUR_OF_DAY ) );
+		assertEquals( nowCalendar.get( Calendar.MINUTE ), updateTime.get( Calendar.MINUTE ) );
+		assertEquals( nowCalendar.get( Calendar.SECOND ), updateTime.get( Calendar.SECOND ) );
 
-		assertEquals( "Date info String Not Correct iCal",
-				iCal.getTime().toGMTString(), b.getDestructionCalendar().getTime().toGMTString() );
+		//Date - TIMESTAMP
+		assertEquals( "Destruction date incorrect", now, b.getDestructionDate() );
 
-		// This test can break in ehcache dialect.
-		assertEquals( "Timezone Info Not Correct", iCal.getTimeZone(), b.getDestructionCalendar().getTimeZone() );
+		//Calendar - DATE
+		assertEquals( "getCreationCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getCreationCalendar().getTimeZone().getRawOffset() );
+		assertEquals( nowCalendar.get( Calendar.YEAR ), b.getCreationCalendar().get( Calendar.YEAR ) );
+		assertEquals( nowCalendar.get( Calendar.MONTH ), b.getCreationCalendar().get( Calendar.MONTH ) );
+		assertEquals( nowCalendar.get( Calendar.DAY_OF_MONTH ), b.getCreationCalendar().get( Calendar.DAY_OF_MONTH ) );
 
-		assertEquals( "Date info Not Correct iCal: "
-				+ DATE_FORMAT.format( iCal.getTime() )
-				+ " dest millis: " + b.getDestructionCalendar().getTimeInMillis()
-				+ " iCal millis: " + iCal.getTimeInMillis(),
-				iCal.getTime(), b.getDestructionCalendar().getTime() );
+		//Calendar - TIMESTAMP
+		assertEquals( "destructionCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getDestructionCalendar().getTimeZone().getRawOffset() );
+		assertEquals( "destructionCalendar timestamp incorrect", nowCalendar.getTimeInMillis(), b.getDestructionCalendar().getTimeInMillis() );
 
 		assertEquals( "Byte array incorrect length", blob.length, b.getBlob().length );
 		assertEquals( blob[0], b.getBlob()[0] );
@@ -134,6 +144,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( '3', b.getBlob()[2] );
 		assertEquals( '4', b.getBlob()[3] );
 		assertEquals( '5', b.getBlob()[4] );
+
+		assertEquals( BookmarkType.URL, b.getType() );
 
 		session.delete( b );
 		transaction.commit();
