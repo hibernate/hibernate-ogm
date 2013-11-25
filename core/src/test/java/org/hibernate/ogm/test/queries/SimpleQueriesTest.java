@@ -60,15 +60,24 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	private Session session;
 
+	private Transaction tx;
+
 	@Before
 	public void createSession() {
+		closeSession();
 		session = sessions.openSession();
+		tx = session.beginTransaction();
 	}
 
 	@After
 	public void closeSession() {
+		if ( tx != null && tx.isActive() ) {
+			tx.commit();
+			tx = null;
+		}
 		if ( session != null ) {
 			session.close();
+			session = null;
 		}
 	}
 
@@ -513,15 +522,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	private void assertQuery(final Session session, final int expectedSize, final Query testedQuery) {
-		Transaction transaction = session.beginTransaction();
 		List<?> list = testedQuery.list();
-		try {
-			assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
-		}
-		finally {
-			transaction.commit();
-			session.clear();
-		}
+		assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
 	}
 
 	private List<ProjectionResult> asProjectionResults(String projectionQuery) {
