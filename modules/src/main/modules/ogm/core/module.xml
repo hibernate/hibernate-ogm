@@ -34,7 +34,8 @@
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />
-        <module name="javax.transaction.api" />
+        <!-- Exporting as one of its types is exposed via Log which is extended in other modules -->
+        <module name="javax.transaction.api" export="true" />
         <module name="javax.validation.api" />
         <module name="org.dom4j" />
         <module name="org.infinispan" services="export" export="true" optional="true" />

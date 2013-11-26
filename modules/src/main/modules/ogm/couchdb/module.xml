@@ -25,23 +25,11 @@
     </resources>
     <dependencies>
         <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
-
-        <module name="javax.api" />
         <module name="javax.ws.rs.api" />
-        <module name="javax.annotation.api" />
         <module name="javax.persistence.api" />
-        <module name="javax.transaction.api" />
-        <module name="net.jcip" />
-        <module name="org.apache.httpcomponents" />
         <module name="org.jboss.resteasy.resteasy-client" />
         <module name="org.jboss.resteasy.resteasy-jackson-provider" />
         <module name="org.jboss.resteasy.resteasy-jaxrs" />
-        <module name="org.apache.log4j" />
-        <module name="org.dom4j" />
-        <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
         <module name="org.jboss.logging" />
-
-        <!-- Allow Hibernate ORM to load com.arjuna.ats.jta.TransactionManager -->
-        <module name="org.jboss.jts" export="true" />
     </dependencies>
 </module>

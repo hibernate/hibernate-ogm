@@ -91,12 +91,10 @@
         <dependencySet>
              <useProjectArtifact>false</useProjectArtifact>
              <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
-             <useTransitiveFiltering>true</useTransitiveFiltering>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
              <unpack>false</unpack>
              <includes>
                  <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
-                 <include>org.jboss.resteasy:resteasy-jaxrs</include>
-                 <include>org.jboss.resteasy:resteasy-jackson-provider</include>
              </includes>
        </dependencySet>
        <dependencySet>
