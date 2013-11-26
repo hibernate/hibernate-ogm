@@ -56,13 +56,13 @@ import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
- * Stores Tuples and Associations as Documents inside CouchDB
- *
- * Tuples are stored in CouchDB Documents obtained as a JSON serialization of a {@link CouchDBEntity} object
- *
- * Associations are stored in CouchDB Documents obtained as a JSON serialization of a {@link CouchDBAssociation} object
+ * Stores tuples and associations as JSON documents inside CouchDB.
+ * <p>
+ * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBEntity} object.
+ * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBAssociation} object.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {
 
@@ -161,15 +161,16 @@ public class CouchDBDialect implements GridDialect {
 		else if ( type == StandardBasicTypes.TIMESTAMP ) {
 			return CouchDBDateType.INSTANCE;
 		}
-		else if ( type == StandardBasicTypes.BYTE ) {
-			return CouchDBByteType.INSTANCE;
-		}
 		else if ( type == StandardBasicTypes.TIME ) {
 			return CouchDBTimeType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.BYTE ) {
+			return CouchDBByteType.INSTANCE;
 		}
 		else if ( type == StandardBasicTypes.LONG ) {
 			return CouchDBLongType.INSTANCE;
 		}
+
 		return null;
 	}
 
