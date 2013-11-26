@@ -25,18 +25,18 @@ package org.hibernate.ogm.options.spi;
  *
  * @author Gunnar Morling
  */
-public class OptionValue<V> {
+public class OptionValuePair<V> {
 
 	private final Option<?, V> option;
 	private final V value;
 
-	private OptionValue(Option<?, V> option, V value) {
+	private OptionValuePair(Option<?, V> option, V value) {
 		this.option = option;
 		this.value = value;
 	}
 
-	public static <V> OptionValue<V> getInstance(Option<?, V> option, V value) {
-		return new OptionValue<V>( option, value );
+	public static <V> OptionValuePair<V> getInstance(Option<?, V> option, V value) {
+		return new OptionValuePair<V>( option, value );
 	}
 
 	public Option<?, V> getOption() {

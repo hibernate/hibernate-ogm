@@ -32,7 +32,7 @@ import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcern.WriteConcernConverter;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValue;
+import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Define the write concern type
@@ -49,8 +49,8 @@ public @interface WriteConcern {
 	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
 
 		@Override
-		public OptionValue<?> convert(WriteConcern annotation) {
-			return OptionValue.getInstance( new WriteConcernOption(), annotation.value() );
+		public OptionValuePair<?> convert(WriteConcern annotation) {
+			return OptionValuePair.getInstance( new WriteConcernOption(), annotation.value() );
 		}
 	}
 }

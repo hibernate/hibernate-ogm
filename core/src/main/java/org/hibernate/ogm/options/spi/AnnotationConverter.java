@@ -23,7 +23,7 @@ package org.hibernate.ogm.options.spi;
 import java.lang.annotation.Annotation;
 
 /**
- * Convert option {@link Annotation}s into equivalent {@link OptionValue}s.
+ * Convert option {@link Annotation}s into equivalent {@link OptionValuePair}s.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -35,6 +35,6 @@ public interface AnnotationConverter<T extends Annotation> {
 	 * @param annotation the annotation to convert
 	 * @return a option value representing the given option annotation
 	 */
-	OptionValue<?> convert(T annotation);
+	OptionValuePair<?> convert(T annotation);
 
 }

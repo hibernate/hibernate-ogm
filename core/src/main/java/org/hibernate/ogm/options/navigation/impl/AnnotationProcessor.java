@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValue;
+import org.hibernate.ogm.options.spi.OptionValuePair;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -131,7 +131,7 @@ public class AnnotationProcessor {
 		}
 	}
 
-	private static <V> void add(OptionsContainer options, OptionValue<V> optionValue) {
+	private static <V> void add(OptionsContainer options, OptionValuePair<V> optionValue) {
 		options.add( optionValue.getOption(), optionValue.getValue() );
 	}
 }

@@ -31,7 +31,7 @@ import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.options.mongodb.AssociationStorage.AssociationStorageConverter;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValue;
+import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Define the association storage type
@@ -48,8 +48,8 @@ public @interface AssociationStorage {
 	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {
 
 		@Override
-		public OptionValue<?> convert(AssociationStorage annotation) {
-			return OptionValue.getInstance( new AssociationStorageOption(), annotation.value() );
+		public OptionValuePair<?> convert(AssociationStorage annotation) {
+			return OptionValuePair.getInstance( new AssociationStorageOption(), annotation.value() );
 		}
 	}
 }
