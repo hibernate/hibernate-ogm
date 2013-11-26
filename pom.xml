@@ -145,6 +145,9 @@
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
+        <slf4jVersion>1.7.5</slf4jVersion>
+        <resteasyVersion>3.0.5.Final</resteasyVersion>
+        <jacksonVersion>1.9.13</jacksonVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -296,6 +299,11 @@
                 <artifactId>hibernate-ogm-neo4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-couchdb</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- Logging -->
             <dependency>
@@ -308,6 +316,19 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${jbossLoggingVersion}</version>
+            </dependency>
+
+            <!-- slf4j is not used by OGM itself; Still setting the version to make sure different versions pulled in
+                 transitively converge -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4jVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-log4j12</artifactId>
+                <version>${slf4jVersion}</version>
             </dependency>
 
             <!-- HQL Parsing and Lucene Query creation support -->
@@ -362,6 +383,42 @@
                 <version>${mongodbVersion}</version>
             </dependency>
 
+            <!-- RESTEasy for accessing CouchDB -->
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-client</artifactId>
+                <version>${resteasyVersion}</version>
+                <exclusions>
+                    <!-- Javassist changed its group id and is already pulled in with the new id -->
+                    <exclusion>
+                        <groupId>javassist</groupId>
+                        <artifactId>javassist</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jaxrs</artifactId>
+                <version>${resteasyVersion}</version>
+                <exclusions>
+                    <!-- Actually RESTEasy shouldn't depend on a slf4j backend -->
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-jackson-provider</artifactId>
+                <version>${resteasyVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
+                <artifactId>jaxrs-api</artifactId>
+                <version>${resteasyVersion}</version>
+            </dependency>
+
             <!-- utils -->
             <dependency>
                 <groupId>org.hibernate.common</groupId>
@@ -377,6 +434,27 @@
                 <groupId>com.fasterxml</groupId>
                 <artifactId>classmate</artifactId>
                 <version>0.8.0</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-core-asl</artifactId>
+                <version>${jacksonVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-mapper-asl</artifactId>
+                <version>${jacksonVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-jaxrs</artifactId>
+                <version>${jacksonVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.jackson</groupId>
+                <artifactId>jackson-xc</artifactId>
+                <version>${jacksonVersion}</version>
             </dependency>
 
             <!-- Tests -->
@@ -1011,6 +1089,22 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>couchdb</id>
+            <!--
+              To activate and use the couchdb profile you need to define the
+              environment property:
+                 COUCHDB_HOSTNAME
+            -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <modules>
+                <module>couchdb</module>
+            </modules>
+        </profile>
         <profile>
             <id>integrationtest</id>
             <activation>

@@ -50,7 +50,12 @@
              <outputDirectory>/org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
              <filtered>true</filtered>
         </file>
-  </files>
+        <file>
+             <source>${module.xml.basedir}/ogm/couchdb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+   </files>
 
     <dependencySets>
         <dependencySet>
@@ -82,6 +87,15 @@
                  <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
                  <include>org.mongodb:mongo-java-driver</include>
               </includes>
+       </dependencySet>
+        <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
+             </includes>
        </dependencySet>
        <dependencySet>
               <useProjectArtifact>false</useProjectArtifact>
