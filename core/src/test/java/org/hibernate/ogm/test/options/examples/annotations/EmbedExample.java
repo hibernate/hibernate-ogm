@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValue;
+import org.hibernate.ogm.options.spi.OptionValuePair;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 
 /**
@@ -48,8 +48,8 @@ public @interface EmbedExample {
 	static class EmbedExampleOptionConverter implements AnnotationConverter<EmbedExample> {
 
 		@Override
-		public OptionValue<?> convert(EmbedExample annotation) {
-			return OptionValue.getInstance( new EmbedExampleOption(), annotation.value() );
+		public OptionValuePair<?> convert(EmbedExample annotation) {
+			return OptionValuePair.getInstance( new EmbedExampleOption(), annotation.value() );
 		}
 	}
 }
