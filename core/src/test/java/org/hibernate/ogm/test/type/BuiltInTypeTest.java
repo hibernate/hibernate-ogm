@@ -30,6 +30,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import org.hibernate.Session;
@@ -39,6 +40,8 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,6 +54,19 @@ public class BuiltInTypeTest extends OgmTestCase {
 	private static final Log log = LoggerFactory.make();
 
 	private static final Random RANDOM = new Random();
+
+	private static TimeZone originalTimeZone = null;
+
+	@BeforeClass
+	public static void setDefaultTimeZone() {
+		originalTimeZone = TimeZone.getDefault();
+		TimeZone.setDefault( TimeZone.getTimeZone( "UTC" ) );
+	}
+
+	@AfterClass
+	public static void resetDefautlTimeZone() {
+		TimeZone.setDefault( originalTimeZone );
+	}
 
 	@Test
 	public void testTypesSupport() throws Exception {
