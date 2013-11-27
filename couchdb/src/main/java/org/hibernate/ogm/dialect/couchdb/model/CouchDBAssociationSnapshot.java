@@ -40,9 +40,16 @@ import org.hibernate.ogm.grid.impl.RowKeyBuilder;
  */
 public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 
+	/**
+	 * The original association representing this snapshot as retrieved from CouchDB.
+	 */
+	private final CouchDBAssociation couchDbAssociation;
+
 	private final Map<RowKey, Map<String, Object>> rows = new HashMap<RowKey, Map<String, Object>>();
 
 	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
+		this.couchDbAssociation = association;
+
 		for ( Map<String, Object> row : association.getRows() ) {
 			RowKey rowKey = new RowKeyBuilder()
 					.tableName( key.getTable() )
@@ -108,6 +115,10 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Set<RowKey> getRowKeys() {
 		return rows.keySet();
+	}
+
+	public CouchDBAssociation getCouchDbAssociation() {
+		return couchDbAssociation;
 	}
 
 	@Override
