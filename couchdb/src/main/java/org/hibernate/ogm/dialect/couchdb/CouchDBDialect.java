@@ -124,11 +124,9 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		CouchDBAssociation couchDBAssociation = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
-		if ( couchDBAssociation == null ) {
-			couchDBAssociation = new CouchDBAssociation( Identifier.createAssociationId( key ) );
-		}
+		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
 		couchDBAssociation.update( association, key );
+
 		getDataStore().saveDocument( couchDBAssociation );
 	}
 
