@@ -18,34 +18,35 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.type;
+package org.hibernate.ogm.type.descriptor;
 
-import org.hibernate.MappingException;
-import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
-import org.hibernate.ogm.type.descriptor.WrappedGridTypeDescriptor;
-import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
+import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.type.descriptor.WrapperOptions;
+import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
- * Type for storing {@code byte}s in CouchDB. They are stored as JSON numbers.
+ * A {@link GridTypeDescriptor} which stores/retrieves values from the grid unwrapping/wrapping them, delegating to a
+ * given {@link JavaTypeDescriptor}.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
-public class CouchDBByteType extends AbstractGenericBasicType<Byte> {
+public class WrappedGridTypeDescriptor implements GridTypeDescriptor {
 
-	public static final CouchDBByteType INSTANCE = new CouchDBByteType();
+	public static final WrappedGridTypeDescriptor INSTANCE = new WrappedGridTypeDescriptor();
 
-	public CouchDBByteType() {
-		super( WrappedGridTypeDescriptor.INSTANCE, ByteTypeDescriptor.INSTANCE );
+	@Override
+	public <X> GridValueBinder<X> getBinder(final JavaTypeDescriptor<X> javaTypeDescriptor) {
+		return new BasicGridBinder<X>( javaTypeDescriptor, this ) {
+
+			@Override
+			protected void doBind(Tuple resultset, X value, String[] names, WrapperOptions options) {
+				resultset.put( names[0], javaTypeDescriptor.unwrap( value, value.getClass(), options ) );
+			}
+		};
 	}
 
 	@Override
-	public String getName() {
-		return "couchdb_byte";
-	}
-
-	@Override
-	public int getColumnSpan(Mapping mapping) throws MappingException {
-		return 1;
+	public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
+		return new BasicGridExtractor<X>( javaTypeDescriptor, true );
 	}
 }

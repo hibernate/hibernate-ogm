@@ -27,6 +27,9 @@ import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 
 /**
+ * Type for storing {@code long}s in CouchDB. They are stored as strings to avoid precision issues with large numbers
+ * (e.g. {@link Long#MAX_VALUE} can't be properly displayed as numeric type in CouchDB's Futon console).
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
 public class CouchDBLongType extends AbstractGenericBasicType<Long> {
@@ -46,5 +49,4 @@ public class CouchDBLongType extends AbstractGenericBasicType<Long> {
 	public int getColumnSpan(Mapping mapping) throws MappingException {
 		return 1;
 	}
-
 }

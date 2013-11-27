@@ -57,7 +57,7 @@ public class Bookmark {
 	private BigDecimal siteWeight;
 	private BigInteger visitCount;
 	private Byte displayMask;
-	private Date updateDate;
+	private Date updateTime;
 	private Date destructionDate;
 	private Calendar creationCalendar;
 	private Boolean favourite;
@@ -134,12 +134,12 @@ public class Bookmark {
 	}
 
 	@Temporal(TemporalType.TIME)
-	public Date getUpdateDate() {
-		return updateDate;
+	public Date getUpdateTime() {
+		return updateTime;
 	}
 
-	public void setUpdateDate(Date updateDate) {
-		this.updateDate = updateDate;
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
 	}
 
 	@Temporal(TemporalType.TIMESTAMP)
@@ -159,7 +159,6 @@ public class Bookmark {
 	public void setCreationCalendar(Calendar creationCalendar) {
 		this.creationCalendar = creationCalendar;
 	}
-
 
 	// not supported by core today: nobody misses it apparently ;)
 	// @Temporal(TemporalType.TIME)

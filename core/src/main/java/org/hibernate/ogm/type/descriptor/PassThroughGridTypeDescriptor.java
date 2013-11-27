@@ -44,6 +44,6 @@ public class PassThroughGridTypeDescriptor implements GridTypeDescriptor {
 
 	@Override
 	public <X> GridValueExtractor<X> getExtractor(JavaTypeDescriptor<X> javaTypeDescriptor) {
-		return new BasicGridExtractor<X>( javaTypeDescriptor, this );
+		return new BasicGridExtractor<X>( javaTypeDescriptor, false );
 	}
 }

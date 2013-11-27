@@ -40,9 +40,7 @@ import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBByteType;
-import org.hibernate.ogm.dialect.couchdb.type.CouchDBDateType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBLongType;
-import org.hibernate.ogm.dialect.couchdb.type.CouchDBTimeType;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -50,19 +48,20 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.type.Iso8601StringCalendarType;
+import org.hibernate.ogm.type.Iso8601StringDateType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
- * Stores Tuples and Associations as Documents inside CouchDB
- *
- * Tuples are stored in CouchDB Documents obtained as a JSON serialization of a {@link CouchDBEntity} object
- *
- * Associations are stored in CouchDB Documents obtained as a JSON serialization of a {@link CouchDBAssociation} object
+ * Stores tuples and associations as JSON documents inside CouchDB.
+ * <p>
+ * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBEntity} object.
+ * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBAssociation} object.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {
 
@@ -152,24 +151,30 @@ public class CouchDBDialect implements GridDialect {
 		if ( type == StandardBasicTypes.MATERIALIZED_BLOB ) {
 			return CouchDBBlobType.INSTANCE;
 		}
-		else if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
-			return StringCalendarDateType.INSTANCE;
+		// persist calendars as ISO8601 strings, including TZ info
+		else if ( type == StandardBasicTypes.CALENDAR ) {
+			return Iso8601StringCalendarType.DATE_TIME;
 		}
+		else if ( type == StandardBasicTypes.CALENDAR_DATE ) {
+			return Iso8601StringCalendarType.DATE;
+		}
+		// persist date as ISO8601 strings, in UTC, without TZ info
 		else if ( type == StandardBasicTypes.DATE ) {
-			return CouchDBDateType.INSTANCE;
+			return Iso8601StringDateType.DATE;
+		}
+		else if ( type == StandardBasicTypes.TIME ) {
+			return Iso8601StringDateType.TIME;
 		}
 		else if ( type == StandardBasicTypes.TIMESTAMP ) {
-			return CouchDBDateType.INSTANCE;
+			return Iso8601StringDateType.DATE_TIME;
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return CouchDBByteType.INSTANCE;
 		}
-		else if ( type == StandardBasicTypes.TIME ) {
-			return CouchDBTimeType.INSTANCE;
-		}
 		else if ( type == StandardBasicTypes.LONG ) {
 			return CouchDBLongType.INSTANCE;
 		}
+
 		return null;
 	}
 
@@ -181,18 +186,18 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	/**
-	 * Returns the number of Asosciations stored inside the database
+	 * Returns the number of associations stored inside the database
 	 *
-	 * @return the number of Asosciations
+	 * @return the number of associations
 	 */
 	public int getAssociationSize() {
 		return getDataStore().getNumberOfAssociations();
 	}
 
 	/**
-	 * Returns the number of Entities stored inside the database
+	 * Returns the number of entities stored inside the database
 	 *
-	 * @return the number of Entities
+	 * @return the number of entities
 	 */
 	public int getEntitiesSize() {
 		return getDataStore().getNumberOfEntities();

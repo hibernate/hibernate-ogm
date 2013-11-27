@@ -26,23 +26,27 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 
 /**
+ * A {@link GridValueExtractor} which either retrieves values from given tuples as is or concerts them by delegating to
+ * a given {@link JavaTypeDescriptor}.
+ *
  * @author Emmanuel Bernard
+ * @author Gunnar Morling
  */
 public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final GridTypeDescriptor gridTypeDescriptor;
 	private final JavaTypeDescriptor<J> javaTypeDescriptor;
+	private final boolean wrap;
 
-	public BasicGridExtractor( JavaTypeDescriptor<J> javaTypeDescriptor, GridTypeDescriptor gridTypeDescriptor ) {
-		this.gridTypeDescriptor = gridTypeDescriptor;
+	public BasicGridExtractor(JavaTypeDescriptor<J> javaTypeDescriptor, boolean wrap) {
 		this.javaTypeDescriptor = javaTypeDescriptor;
+		this.wrap = wrap;
 	}
 
 	@Override
 	public J extract(final Tuple resultset, final String name) {
-		@SuppressWarnings( "unchecked" )
+		@SuppressWarnings("unchecked")
 		final J result = (J) resultset.get( name );
 		if ( result == null ) {
 			log.tracef( "found [null] as column [%s]", name );
@@ -52,7 +56,7 @@ public final class BasicGridExtractor<J> implements GridValueExtractor<J> {
 			if ( log.isTraceEnabled() ) {
 				log.tracef( "found [%1$s] as column [%2$s]", javaTypeDescriptor.extractLoggableRepresentation( result ), name );
 			}
-			return result;
+			return wrap ? javaTypeDescriptor.wrap( result, null ) : result;
 		}
 	}
 }

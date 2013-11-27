@@ -18,30 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.type;
+package org.hibernate.ogm.type;
 
 import java.util.Date;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.dialect.couchdb.type.descriptor.CouchDBDateTypeDescriptor;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.Iso8601DateTypeDescriptor;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 
 /**
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * Type for persisting {@link Date} objects as String adhering to the ISO8601 format, either with or without time
+ * information. Persisted strings represent the given dates in UTC.
+ *
+ * @author Gunnar Morling
  */
-public class CouchDBDateType extends AbstractGenericBasicType<Date> {
+public class Iso8601StringDateType extends AbstractGenericBasicType<Date> {
 
-	public static final CouchDBDateType INSTANCE = new CouchDBDateType();
+	public static final Iso8601StringDateType DATE = new Iso8601StringDateType( Iso8601DateTypeDescriptor.DATE );
+	public static final Iso8601StringDateType TIME = new Iso8601StringDateType( Iso8601DateTypeDescriptor.TIME );
+	public static final Iso8601StringDateType DATE_TIME = new Iso8601StringDateType( Iso8601DateTypeDescriptor.DATE_TIME );
 
-	public CouchDBDateType() {
-		super( StringMappedGridTypeDescriptor.INSTANCE, CouchDBDateTypeDescriptor.INSTANCE );
-	}
-
-	@Override
-	public String getName() {
-		return "couchdb_date";
+	private Iso8601StringDateType(Iso8601DateTypeDescriptor descriptor) {
+		super( StringMappedGridTypeDescriptor.INSTANCE, descriptor );
 	}
 
 	@Override
@@ -49,4 +48,8 @@ public class CouchDBDateType extends AbstractGenericBasicType<Date> {
 		return 1;
 	}
 
+	@Override
+	public String getName() {
+		return "is8601_string_date";
+	}
 }
