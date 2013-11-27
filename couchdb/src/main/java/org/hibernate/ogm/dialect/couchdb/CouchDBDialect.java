@@ -40,9 +40,7 @@ import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBByteType;
-import org.hibernate.ogm.dialect.couchdb.type.CouchDBDateType;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBLongType;
-import org.hibernate.ogm.dialect.couchdb.type.CouchDBTimeType;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -50,7 +48,8 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.type.Iso8601StringCalendarType;
+import org.hibernate.ogm.type.Iso8601StringDateType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -152,17 +151,22 @@ public class CouchDBDialect implements GridDialect {
 		if ( type == StandardBasicTypes.MATERIALIZED_BLOB ) {
 			return CouchDBBlobType.INSTANCE;
 		}
-		else if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {
-			return StringCalendarDateType.INSTANCE;
+		// persist calendars as ISO8601 strings, including TZ info
+		else if ( type == StandardBasicTypes.CALENDAR ) {
+			return Iso8601StringCalendarType.DATE_TIME;
 		}
+		else if ( type == StandardBasicTypes.CALENDAR_DATE ) {
+			return Iso8601StringCalendarType.DATE;
+		}
+		// persist date as ISO8601 strings, in UTC, without TZ info
 		else if ( type == StandardBasicTypes.DATE ) {
-			return CouchDBDateType.INSTANCE;
-		}
-		else if ( type == StandardBasicTypes.TIMESTAMP ) {
-			return CouchDBDateType.INSTANCE;
+			return Iso8601StringDateType.DATE;
 		}
 		else if ( type == StandardBasicTypes.TIME ) {
-			return CouchDBTimeType.INSTANCE;
+			return Iso8601StringDateType.TIME;
+		}
+		else if ( type == StandardBasicTypes.TIMESTAMP ) {
+			return Iso8601StringDateType.DATE_TIME;
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return CouchDBByteType.INSTANCE;

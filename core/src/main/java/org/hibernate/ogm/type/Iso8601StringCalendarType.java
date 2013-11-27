@@ -18,30 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.type;
+package org.hibernate.ogm.type;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.Iso8601CalendarTypeDescriptor;
 import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
-import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 
 /**
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * Type for persisting {@link Calendar} objects as String adhering to the ISO8601 format, either with or without time
+ * information but always with time zone information.
+ *
+ * @author Gunnar Morling
  */
-public class CouchDBTimeType extends AbstractGenericBasicType<Date> {
+public class Iso8601StringCalendarType extends AbstractGenericBasicType<Calendar> {
 
-	public static final CouchDBTimeType INSTANCE = new CouchDBTimeType();
+	public static final Iso8601StringCalendarType DATE = new Iso8601StringCalendarType( Iso8601CalendarTypeDescriptor.DATE );
+	public static final Iso8601StringCalendarType DATE_TIME = new Iso8601StringCalendarType( Iso8601CalendarTypeDescriptor.DATE_TIME );
 
-	public CouchDBTimeType() {
-		super( StringMappedGridTypeDescriptor.INSTANCE, DateTypeDescriptor.INSTANCE );
-	}
-
-	@Override
-	public String getName() {
-		return "couchdb_time";
+	private Iso8601StringCalendarType(Iso8601CalendarTypeDescriptor descriptor) {
+		super( StringMappedGridTypeDescriptor.INSTANCE, descriptor );
 	}
 
 	@Override
@@ -49,4 +47,8 @@ public class CouchDBTimeType extends AbstractGenericBasicType<Date> {
 		return 1;
 	}
 
+	@Override
+	public String getName() {
+		return "is8601_string_calendar";
+	}
 }
