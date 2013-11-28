@@ -42,6 +42,12 @@ For rapid documentation testing, you can limit the generated format to html to s
 
     mvn clean install -f hibernate-ogm-documentation/manual/pom.xml -s settings-example.xml -Djdocbook.format=html_single
 
+### Distribution
+
+The distribution bundle is built by default as part of the project build. You can skip it by specifying the `skipDistro` property:
+
+    mvn clean install -DskipDistro=true -s settings-example.xml
+
 ### MongoDB
 
 For executing the tests in the _hibernate-ogm-mongodb_ and _hibernate-ogm-integrationtest-mongodb_ modules, the
