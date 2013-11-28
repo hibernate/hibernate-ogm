@@ -30,7 +30,7 @@ import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.couchdb.Environment;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
@@ -62,7 +62,7 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		CouchDBEntity entity = dataStore.getEntity( Identifier.createEntityId( key ) );
+		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
 		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {

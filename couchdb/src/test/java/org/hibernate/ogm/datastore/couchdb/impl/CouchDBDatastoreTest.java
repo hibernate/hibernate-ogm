@@ -33,8 +33,8 @@ import javax.persistence.OptimisticLockException;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialectTest;
 import org.hibernate.ogm.dialect.couchdb.Environment;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -72,7 +72,7 @@ public class CouchDBDatastoreTest {
 
 	@Test(expected = OptimisticLockException.class)
 	public void testUpdatingADocumentWithWrongRevisionNumber() {
-		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
+		Document createdDocument = dataStore.saveDocument( createEntity() );
 		String firstVersion = createdDocument.getRevision();
 
 		createdDocument = dataStore.saveDocument( createdDocument );
@@ -96,18 +96,18 @@ public class CouchDBDatastoreTest {
 
 	@Test
 	public void testDeleteADocument() {
-		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
+		Document createdDocument = dataStore.saveDocument( createEntity() );
 		String createdDocumentId = createdDocument.getId();
 		dataStore.deleteDocument( createdDocument.getId(), createdDocument.getRevision() );
 
-		CouchDBEntity entity = dataStore.getEntity( createdDocumentId );
+		EntityDocument entity = dataStore.getEntity( createdDocumentId );
 
 		assertThat( entity, nullValue() );
 	}
 
 	@Test(expected = OptimisticLockException.class)
 	public void testDeleteADocumentWithWrongRevision() {
-		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
+		Document createdDocument = dataStore.saveDocument( createEntity() );
 		final String revisionBeforeUpdate = createdDocument.getRevision();
 
 		// saving the document will change its revision value
@@ -119,15 +119,15 @@ public class CouchDBDatastoreTest {
 
 	@Test
 	public void testGetEntity() {
-		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
-		CouchDBEntity entity = dataStore.getEntity( createdDocument.getId() );
+		Document createdDocument = dataStore.saveDocument( createEntity() );
+		EntityDocument entity = dataStore.getEntity( createdDocument.getId() );
 		assertThat( entity, notNullValue() );
 	}
 
 	@Test
 	public void testGetEntityWithWoringIdReturnNullValue() {
-		CouchDBDocument createdDocument = dataStore.saveDocument( createEntity() );
-		CouchDBEntity entity = dataStore.getEntity( createdDocument.getId() + "_1" );
+		Document createdDocument = dataStore.saveDocument( createEntity() );
+		EntityDocument entity = dataStore.getEntity( createdDocument.getId() + "_1" );
 		assertThat( entity, nullValue() );
 	}
 
@@ -178,8 +178,8 @@ public class CouchDBDatastoreTest {
 		}
 	}
 
-	private CouchDBEntity createEntity() {
-		return new CouchDBEntity( createEntityKey( "tableName", new String[] { "id", "name" }, new String[] { "1",
+	private EntityDocument createEntity() {
+		return new EntityDocument( createEntityKey( "tableName", new String[] { "id", "name" }, new String[] { "1",
 				"Andrea" } ) );
 	}
 

@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,11 +64,11 @@ import org.hibernate.ogm.grid.EntityKey;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeName(CouchDBEntity.TYPE_NAME)
-public class CouchDBEntity extends CouchDBDocument {
+@JsonTypeName(EntityDocument.TYPE_NAME)
+public class EntityDocument extends Document {
 
 	/**
-	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 * The name of this document type as materialized in {@link Document#TYPE_DISCRIMINATOR_FIELD_NAME}.
 	 */
 	public static final String TYPE_NAME = "entity";
 
@@ -86,10 +86,10 @@ public class CouchDBEntity extends CouchDBDocument {
 	 */
 	private final Map<String, Object> properties = new HashMap<String, Object>();
 
-	CouchDBEntity() {
+	EntityDocument() {
 	}
 
-	public CouchDBEntity(EntityKey key) {
+	public EntityDocument(EntityKey key) {
 		super( Identifier.createEntityId( key ) );
 		table = key.getTable();
 	}

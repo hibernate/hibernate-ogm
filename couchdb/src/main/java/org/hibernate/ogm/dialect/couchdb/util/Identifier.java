@@ -26,7 +26,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * Generates the ids used to create the {@link org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument}
+ * Generates the ids used to create the {@link org.hibernate.ogm.dialect.couchdb.backend.json.Document}
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
@@ -36,7 +36,7 @@ public class Identifier {
 	private static final Pattern escapingPattern = Pattern.compile( COLUMN_VALUES_SEPARATOR );
 
 	/**
-	 * Create the id used to store an {@link org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity}
+	 * Create the id used to store an {@link org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument}
 	 *
 	 * @param key the {@link EntityKey} used to generate the id
 	 * @return the value of the generate id
@@ -46,7 +46,7 @@ public class Identifier {
 	}
 
 	/**
-	 * Create the id used to store an {@link org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation}
+	 * Create the id used to store an {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument}
 	 *
 	 * @param key the{@link AssociationKey} used to generate the id
 	 * @return the value of the generate id

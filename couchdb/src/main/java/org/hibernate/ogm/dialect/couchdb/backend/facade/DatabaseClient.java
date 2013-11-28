@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.facade;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -31,10 +31,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
-import org.hibernate.ogm.dialect.couchdb.designdocument.AssociationsDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.CouchDBDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.EntitiesDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.TuplesDesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.AssociationsDesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.DesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.EntitiesDesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.TuplesDesignDocument;
 
 /**
  * The Interface used by RESTEasy to create the REST calls used to interact with the CouchDB database instance. The
@@ -48,7 +49,7 @@ import org.hibernate.ogm.dialect.couchdb.designdocument.TuplesDesignDocument;
 public interface DatabaseClient {
 
 	/**
-	 * Save a {@link CouchDBDocument} with the given id
+	 * Save a {@link Document} with the given id
 	 *
 	 * @param document to be saved
 	 * @param id to use for the document
@@ -56,10 +57,10 @@ public interface DatabaseClient {
 	 */
 	@PUT
 	@Path("{id}")
-	Response saveDocument(CouchDBDocument document, @PathParam("id") String id);
+	Response saveDocument(Document document, @PathParam("id") String id);
 
 	/**
-	 * Save a {@link CouchDBDesignDocument} with the given id
+	 * Save a {@link DesignDocument} with the given id
 	 *
 	 * @param design to be saved
 	 * @param id to use for the design
@@ -67,7 +68,7 @@ public interface DatabaseClient {
 	 */
 	@PUT
 	@Path("_design/{id}")
-	Response saveDesign(CouchDBDesignDocument design, @PathParam("id") String id);
+	Response saveDesign(DesignDocument design, @PathParam("id") String id);
 
 	/**
 	 * Delete the CouchDBDocument with the given id and revision
@@ -90,7 +91,7 @@ public interface DatabaseClient {
 	Response dropDatabase();
 
 	/**
-	 * Retrieve the {@link CouchDBEntity} with the given id
+	 * Retrieve the {@link org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument} with the given id
 	 *
 	 * @param id of the CouchDBEntity to retrieve
 	 * @return the {@link Response} with the searched CouchDBEntity
@@ -100,7 +101,7 @@ public interface DatabaseClient {
 	Response getEntityById(@PathParam("id") String id);
 
 	/**
-	 * Retrieve the {@link CouchDBAssociation} with the given id
+	 * Retrieve the {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument} with the given id
 	 *
 	 * @param id of the CouchDBAssociation to retrieve
 	 * @return the Response with the searched CouchDBAssociation
@@ -110,7 +111,7 @@ public interface DatabaseClient {
 	Response getAssociationById(@PathParam("id") String id);
 
 	/**
-	 * Retrieve the {@link CouchDBKeyValue} with the given id
+	 * Retrieve the {@link org.hibernate.ogm.dialect.couchdb.backend.json.SequenceDocument} with the given id
 	 *
 	 * @param id of the CouchDBKeyValue to retrieve
 	 * @return the {@link Response} with the searched CouchDBKeyValue
@@ -120,9 +121,10 @@ public interface DatabaseClient {
 	Response getKeyValueById(@PathParam("id") String id);
 
 	/**
-	 * Retrieve the number of {@link CouchDBAssociation} stored in the database
+	 * Retrieve the number of {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument} stored in the
+	 * database
 	 *
-	 * @return the Response with the searched {@link CouchDBKeyValue}
+	 * @return the Response with the searched {@link org.hibernate.ogm.dialect.couchdb.backend.json.SequenceDocument}
 	 */
 	@GET
 	@Path(AssociationsDesignDocument.ASSOCIATION_COUNT_PATH)
@@ -131,7 +133,7 @@ public interface DatabaseClient {
 	/**
 	 * Retrieve the number of entities stored in the database
 	 *
-	 * @return the Response CouchDB with the {@link org.hibernate.ogm.dialect.couchdb.designdocument.Rows}
+	 * @return the Response CouchDB with the {@link org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.Rows}
 	 */
 	@GET
 	@Path(EntitiesDesignDocument.ENTITY_COUNT_PATH)
@@ -141,7 +143,8 @@ public interface DatabaseClient {
 	 * Retrieve all the entity tuples with the table name equals to the given one.
 	 *
 	 * @param tableName name of the entity
-	 * @return the {@link Response} with the {@link org.hibernate.ogm.dialect.couchdb.designdocument.EntityTupleRows}
+	 * @return the {@link Response} with the
+	 * {@link org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.EntityTupleRows}
 	 */
 	@GET
 	@Path(TuplesDesignDocument.ENTITY_TUPLE_BY_TABLE_NAME_PATH)

@@ -18,18 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.designdocument;
+package org.hibernate.ogm.dialect.couchdb.backend.json.designdocument;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 
 /**
  * Creates a CouchDB Design Document with a view and list used to retrieve the number of entities stored in the
  * database.
  * <p>
- * The map function of this view emits those documents whose type is {@link CouchDBEntity#TYPE_NAME}. The reduce
+ * The map function of this view emits those documents whose type is {@link EntityDocument#TYPE_NAME}. The reduce
  * function counts the number of the documents returned by the map function. The list function creates an easily
  * consumable representation of the view result.
  *
@@ -37,7 +37,7 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-public class EntitiesDesignDocument extends CouchDBDesignDocument {
+public class EntitiesDesignDocument extends DesignDocument {
 
 	public static final String DOCUMENT_ID = "entities";
 	public static final String VIEW_NAME = "allEntities";
@@ -51,7 +51,7 @@ public class EntitiesDesignDocument extends CouchDBDesignDocument {
 	/**
 	 * The JavaScript map function; for each document of type "entity" value 1 will be emitted.
 	 */
-	private static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
+	private static final String MAP = "function(doc) {if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + EntityDocument.TYPE_NAME
 			+ "\"){  emit(doc.id, 1); }}";
 
 	/**

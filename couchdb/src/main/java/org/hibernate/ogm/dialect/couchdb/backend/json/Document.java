@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -35,9 +35,9 @@ import org.codehaus.jackson.map.ObjectWriter;
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,
 	include = JsonTypeInfo.As.PROPERTY,
-	property = CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME
+	property = Document.TYPE_DISCRIMINATOR_FIELD_NAME
 )
-public abstract class CouchDBDocument {
+public abstract class Document {
 
 	/**
 	 * Name of the document type discriminator field
@@ -50,10 +50,10 @@ public abstract class CouchDBDocument {
 	@JsonProperty("_rev")
 	private String revision;
 
-	public CouchDBDocument() {
+	public Document() {
 	}
 
-	public CouchDBDocument(String id) {
+	public Document(String id) {
 		this.id = id;
 	}
 
@@ -93,7 +93,7 @@ public abstract class CouchDBDocument {
 		 */
 		private static final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
 
-		private static String toString(CouchDBDocument document) {
+		private static String toString(Document document) {
 			try {
 				return writer.writeValueAsString( document );
 			}

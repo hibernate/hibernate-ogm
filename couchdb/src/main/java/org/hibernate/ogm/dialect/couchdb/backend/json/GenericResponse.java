@@ -18,45 +18,61 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
- * *
- * The Interface used by RESTEasy to create the REST calls used to
- * interact with the CouchDB server
+ * Used to serialize and deserialized a REST CouchDB response to a PUT and a DELETE
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-@Path("/")
-@Produces("application/json")
-@Consumes("application/json")
-public interface ServerClient {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GenericResponse {
 
-	/**
-	 * Create a new database
-	 *
-	 * @param databaseName
-	 *            the name of the new database
-	 * @return the {@link Response}
-	 */
-	@PUT
-	@Path("{name}")
-	Response createDatabase(@PathParam("name") String databaseName);
+	private boolean ok;
+	private String rev;
+	private String error;
+	private String reason;
+	private String id;
 
-	/**
-	 * Retrieve the name of all the databases on the CouchDBServer
-	 *
-	 * @return the ClientResponse with the list of the names of the existing databases
-	 */
-	@GET
-	@Path("_all_dbs")
-	Response getAllDatabaseNames();
+	public boolean getOk() {
+		return ok;
+	}
+
+	public void setOk(boolean ok) {
+		this.ok = ok;
+	}
+
+	public String getRev() {
+		return rev;
+	}
+
+	public void setRev(String rev) {
+		this.rev = rev;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

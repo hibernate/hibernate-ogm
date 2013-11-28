@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.designdocument;
+package org.hibernate.ogm.dialect.couchdb.backend.json.designdocument;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.List;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 
 /**
@@ -60,13 +60,13 @@ public class EntityTupleRows {
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	private static class Row {
-		private CouchDBEntity value;
+		private EntityDocument value;
 
-		public CouchDBEntity getValue() {
+		public EntityDocument getValue() {
 			return value;
 		}
 
-		void setValue(CouchDBEntity value) {
+		void setValue(EntityDocument value) {
 			this.value = value;
 		}
 	}

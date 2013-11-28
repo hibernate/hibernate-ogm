@@ -26,13 +26,13 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 
 /**
- * {@link AssociationSnapshot} implementation based on a {@link CouchDBAssociation} object as written to and retrieved
+ * {@link AssociationSnapshot} implementation based on a {@link AssociationDocument} object as written to and retrieved
  * from the CouchDB server.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
@@ -43,11 +43,11 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	/**
 	 * The original association representing this snapshot as retrieved from CouchDB.
 	 */
-	private final CouchDBAssociation couchDbAssociation;
+	private final AssociationDocument couchDbAssociation;
 
 	private final Map<RowKey, Map<String, Object>> rows = new HashMap<RowKey, Map<String, Object>>();
 
-	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
+	public CouchDBAssociationSnapshot(AssociationDocument association, AssociationKey key) {
 		this.couchDbAssociation = association;
 
 		for ( Map<String, Object> row : association.getRows() ) {
@@ -117,7 +117,7 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 		return rows.keySet();
 	}
 
-	public CouchDBAssociation getCouchDbAssociation() {
+	public AssociationDocument getCouchDbAssociation() {
 		return couchDbAssociation;
 	}
 

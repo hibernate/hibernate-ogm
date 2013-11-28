@@ -18,22 +18,44 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
+
+import org.codehaus.jackson.annotate.JsonTypeName;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 
 /**
- * Represents the result returned by the entity/association count list functions.
+ * Used to serialize and deserialize sequence objects.
  *
- * @author Gunnar Morling
+ * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class CouchDBCountResponse {
+@JsonSerialize(include = Inclusion.NON_NULL)
+@JsonTypeName(SequenceDocument.TYPE_NAME)
+public class SequenceDocument extends Document {
 
-	private int count;
+	/**
+	 * The name of this document type as materialized in {@link Document#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 */
+	public static final String TYPE_NAME = "sequence";
 
-	public int getCount() {
-		return count;
+	private long value;
+
+	public SequenceDocument() {
 	}
 
-	public void setCount(int count) {
-		this.count = count;
+	public SequenceDocument(int initialValue) {
+		value = initialValue;
+	}
+
+	public long getValue() {
+		return value;
+	}
+
+	public void setValue(long value) {
+		this.value = value;
+	}
+
+	public void increase(int increment) {
+		value += increment;
 	}
 }

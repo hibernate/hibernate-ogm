@@ -30,19 +30,19 @@ import javax.ws.rs.core.Response;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.designdocument.AssociationsDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.CouchDBDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.EntitiesDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.designdocument.EntityTupleRows;
-import org.hibernate.ogm.dialect.couchdb.designdocument.TuplesDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBCountResponse;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBKeyValue;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBResponse;
-import org.hibernate.ogm.dialect.couchdb.json.DatabaseClient;
-import org.hibernate.ogm.dialect.couchdb.json.ServerClient;
+import org.hibernate.ogm.dialect.couchdb.backend.facade.DatabaseClient;
+import org.hibernate.ogm.dialect.couchdb.backend.facade.ServerClient;
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.CountResponse;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.GenericResponse;
+import org.hibernate.ogm.dialect.couchdb.backend.json.SequenceDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.AssociationsDesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.DesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.EntitiesDesignDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.EntityTupleRows;
+import org.hibernate.ogm.dialect.couchdb.backend.json.designdocument.TuplesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -99,10 +99,10 @@ public class CouchDBDatastore {
 	/**
 	 * Saves a Document to the database
 	 *
-	 * @param document the {@link CouchDBDocument} to be saved
+	 * @param document the {@link Document} to be saved
 	 * @return the saved CouchDBDocument
 	 */
-	public CouchDBDocument saveDocument(CouchDBDocument document) {
+	public Document saveDocument(Document document) {
 		return doSaveDocument( document, false );
 	}
 
@@ -112,28 +112,28 @@ public class CouchDBDatastore {
 	 * @param design the design document to save
 	 * @return the saved document
 	 */
-	public CouchDBDocument saveDocument(CouchDBDesignDocument design) {
+	public Document saveDocument(DesignDocument design) {
 		return doSaveDocument( design, true );
 	}
 
-	private CouchDBDocument doSaveDocument(CouchDBDocument document, boolean isDesignDocument) {
+	private Document doSaveDocument(Document document, boolean isDesignDocument) {
 		Response response = null;
 		try {
 			if ( isDesignDocument ) {
-				response = databaseClient.saveDesign( (CouchDBDesignDocument) document, document.getId() );
+				response = databaseClient.saveDesign( (DesignDocument) document, document.getId() );
 			}
 			else {
 				response = databaseClient.saveDocument( document, document.getId() );
 			}
 			if ( response.getStatus() == Response.Status.CREATED.getStatusCode() ) {
-				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
+				GenericResponse entity = response.readEntity( GenericResponse.class );
 				updateDocumentRevision( document, entity.getRev() );
 			}
 			else if ( response.getStatus() == Response.Status.CONFLICT.getStatusCode() ) {
 				throw logger.getDocumentHasBeenConcurrentlyModifiedException( document.getId() );
 			}
 			else {
-				CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
+				GenericResponse entity = response.readEntity( GenericResponse.class );
 				throw logger.errorCreatingDocument( response.getStatus(), entity.getError(), entity.getReason() );
 			}
 			return document;
@@ -149,12 +149,12 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Retrieves a {@link CouchDBEntity} from the database
+	 * Retrieves a {@link EntityDocument} from the database
 	 *
 	 * @param id the id of the CouchDBEntity to retrieve
 	 * @return the found CouchDBEntity or null
 	 */
-	public CouchDBEntity getEntity(String id) {
+	public EntityDocument getEntity(String id) {
 		Response response = null;
 		try {
 			response = databaseClient.getEntityById( id );
@@ -162,10 +162,10 @@ public class CouchDBDatastore {
 				return null;
 			}
 			else if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CouchDBEntity.class );
+				return response.readEntity( EntityDocument.class );
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.errorRetrievingEntity( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -199,7 +199,7 @@ public class CouchDBDatastore {
 				return null;
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.errorRetrievingCurrentRevision( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -214,12 +214,12 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Retrieves a {@link CouchDBAssociation} from the database
+	 * Retrieves a {@link AssociationDocument} from the database
 	 *
 	 * @param id the id of the CouchDBAssociation to retrieve
 	 * @return the found CouchDBAssociation or null
 	 */
-	public CouchDBAssociation getAssociation(String id) {
+	public AssociationDocument getAssociation(String id) {
 		Response response = null;
 		try {
 			response = databaseClient.getAssociationById( id );
@@ -227,10 +227,10 @@ public class CouchDBDatastore {
 				return null;
 			}
 			else if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CouchDBAssociation.class );
+				return response.readEntity( AssociationDocument.class );
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.errorRetrievingAssociation( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -258,7 +258,7 @@ public class CouchDBDatastore {
 	public long nextValue(RowKey key, int increment, int initialValue) {
 		long value;
 		try {
-			CouchDBKeyValue identifier = getNextKeyValue( createId( key ), initialValue );
+			SequenceDocument identifier = getNextKeyValue( createId( key ), initialValue );
 			value = identifier.getValue();
 			saveIntegralIncreasedValue( increment, identifier );
 		}
@@ -305,10 +305,10 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.getNumberOfAssociations();
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CouchDBCountResponse.class ).getCount();
+				return response.readEntity( CountResponse.class ).getCount();
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -332,10 +332,10 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.getNumberOfEntities();
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CouchDBCountResponse.class ).getCount();
+				return response.readEntity( CountResponse.class ).getCount();
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.unableToRetrieveTheNumberOfEntities( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -357,7 +357,7 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.dropDatabase();
 			if ( response.getStatus() != Response.Status.OK.getStatusCode() ) {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.errorDroppingDatabase( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -383,7 +383,7 @@ public class CouchDBDatastore {
 			if ( !databaseExists( url.getDataBaseName() ) ) {
 				response = serverClient.createDatabase( url.getDataBaseName() );
 				if ( response.getStatus() != Response.Status.CREATED.getStatusCode() ) {
-					CouchDBResponse entity = response.readEntity( CouchDBResponse.class );
+					GenericResponse entity = response.readEntity( GenericResponse.class );
 					throw logger.errorCreatingDatabase( url.getDataBaseName(), response.getStatus(), entity.getError(), entity.getReason() );
 				}
 			}
@@ -411,7 +411,7 @@ public class CouchDBDatastore {
 				return false;
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.unableToRetrieveTheListOfDatabase( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -433,7 +433,7 @@ public class CouchDBDatastore {
 				return response.readEntity( EntityTupleRows.class ).getTuples();
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.unableToRetrieveTheTupleByEntityKeyMetadata( tableName, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
@@ -447,7 +447,7 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private void saveIntegralIncreasedValue(int increment, CouchDBKeyValue identifier) {
+	private void saveIntegralIncreasedValue(int increment, SequenceDocument identifier) {
 		identifier.increase( increment );
 		saveDocument( identifier );
 	}
@@ -471,7 +471,7 @@ public class CouchDBDatastore {
 		return dbClient;
 	}
 
-	private void updateDocumentRevision(CouchDBDocument document, String revision) {
+	private void updateDocumentRevision(Document document, String revision) {
 		document.setRevision( revision );
 	}
 
@@ -488,20 +488,20 @@ public class CouchDBDatastore {
 		return builder.toString();
 	}
 
-	private CouchDBKeyValue getNextKeyValue(String id, int initialValue) {
+	private SequenceDocument getNextKeyValue(String id, int initialValue) {
 		Response response = null;
 		try {
 			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CouchDBKeyValue.class );
+				return response.readEntity( SequenceDocument.class );
 			}
 			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
-				CouchDBKeyValue identifier = new CouchDBKeyValue( initialValue );
+				SequenceDocument identifier = new SequenceDocument( initialValue );
 				identifier.setId( id );
 				return identifier;
 			}
 			else {
-				CouchDBResponse responseEntity = response.readEntity( CouchDBResponse.class );
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
 				throw logger.errorRetrievingKeyValue( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
