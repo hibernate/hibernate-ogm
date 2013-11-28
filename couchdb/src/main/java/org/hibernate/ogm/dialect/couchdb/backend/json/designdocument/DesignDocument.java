@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.designdocument;
+package org.hibernate.ogm.dialect.couchdb.backend.json.designdocument;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
 
 /**
  * Represents a CouchDB design document. Design documents are special CouchDB documents containing application logic in
@@ -34,7 +34,7 @@ import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
  */
-public class CouchDBDesignDocument extends CouchDBDocument {
+public class DesignDocument extends Document {
 
 	private Map<String, View> views = new HashMap<String, View>();
 	private Map<String, String> lists = new HashMap<String, String>();

@@ -18,44 +18,45 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.facade;
 
-import org.codehaus.jackson.annotate.JsonTypeName;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 /**
- * Used to serialize and deserialize the CouchDBKeyValue
+ * *
+ * The Interface used by RESTEasy to create the REST calls used to
+ * interact with the CouchDB server
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-@JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeName(CouchDBKeyValue.TYPE_NAME)
-public class CouchDBKeyValue extends CouchDBDocument {
+@Path("/")
+@Produces("application/json")
+@Consumes("application/json")
+public interface ServerClient {
 
 	/**
-	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 * Create a new database
+	 *
+	 * @param databaseName
+	 *            the name of the new database
+	 * @return the {@link Response}
 	 */
-	public static final String TYPE_NAME = "sequence";
+	@PUT
+	@Path("{name}")
+	Response createDatabase(@PathParam("name") String databaseName);
 
-	private long value;
-
-	public CouchDBKeyValue() {
-	}
-
-	public CouchDBKeyValue(int initialValue) {
-		value = initialValue;
-	}
-
-	public long getValue() {
-		return value;
-	}
-
-	public void setValue(long value) {
-		this.value = value;
-	}
-
-	public void increase(int increment) {
-		value += increment;
-	}
+	/**
+	 * Retrieve the name of all the databases on the CouchDBServer
+	 *
+	 * @return the ClientResponse with the list of the names of the existing databases
+	 */
+	@GET
+	@Path("_all_dbs")
+	Response getAllDatabaseNames();
 }

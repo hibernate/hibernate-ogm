@@ -18,61 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
-
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 /**
- * Used to serialize and deserialized a REST CouchDB response to a PUT and a DELETE
+ * Represents the result returned by the entity/association count list functions.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CouchDBResponse {
+public class CountResponse {
 
-	private boolean ok;
-	private String rev;
-	private String error;
-	private String reason;
-	private String id;
+	private int count;
 
-	public boolean getOk() {
-		return ok;
+	public int getCount() {
+		return count;
 	}
 
-	public void setOk(boolean ok) {
-		this.ok = ok;
-	}
-
-	public String getRev() {
-		return rev;
-	}
-
-	public void setRev(String rev) {
-		this.rev = rev;
-	}
-
-	public String getError() {
-		return error;
-	}
-
-	public void setError(String error) {
-		this.error = error;
-	}
-
-	public String getReason() {
-		return reason;
-	}
-
-	public void setReason(String reason) {
-		this.reason = reason;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
+	public void setCount(int count) {
+		this.count = count;
 	}
 }

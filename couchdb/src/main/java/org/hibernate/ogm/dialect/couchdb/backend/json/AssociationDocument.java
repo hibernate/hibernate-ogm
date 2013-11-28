@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.json;
+package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,20 +45,20 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
-@JsonTypeName(CouchDBAssociation.TYPE_NAME)
-public class CouchDBAssociation extends CouchDBDocument {
+@JsonTypeName(AssociationDocument.TYPE_NAME)
+public class AssociationDocument extends Document {
 
 	/**
-	 * The name of this document type as materialized in {@link CouchDBDocument#TYPE_DISCRIMINATOR_FIELD_NAME}.
+	 * The name of this document type as materialized in {@link Document#TYPE_DISCRIMINATOR_FIELD_NAME}.
 	 */
 	public static final String TYPE_NAME = "association";
 
 	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();
 
-	public CouchDBAssociation() {
+	public AssociationDocument() {
 	}
 
-	public CouchDBAssociation(String id) {
+	public AssociationDocument(String id) {
 		super( id );
 	}
 

@@ -18,23 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.designdocument;
+package org.hibernate.ogm.dialect.couchdb.backend.json.designdocument;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBDocument;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 
 /**
  * Creates a CouchDB Design Document with a view used to retrieve the entities of a given table.
  * <p>
- * The map function of this view emits those documents whose type is {@link CouchDBEntity#TYPE_NAME}, keyed by table
+ * The map function of this view emits those documents whose type is {@link EntityDocument#TYPE_NAME}, keyed by table
  * name. This allows to limit the result set to entities of specific tables by specifying the "key" query parameter when
  * querying the view.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  */
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
-public class TuplesDesignDocument extends CouchDBDesignDocument {
+public class TuplesDesignDocument extends DesignDocument {
 
 	/**
 	 * The ID of the Document
@@ -55,7 +55,7 @@ public class TuplesDesignDocument extends CouchDBDesignDocument {
 	/**
 	 * The JavaScript map function; each document of type "entity" will be emitted, using the table name as key.
 	 */
-	public static final String MAP = "function(doc) {if(doc." + CouchDBDocument.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + CouchDBEntity.TYPE_NAME
+	public static final String MAP = "function(doc) {if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + EntityDocument.TYPE_NAME
 			+ "\") {emit(doc.$table , doc);}}";
 
 	public TuplesDesignDocument() {

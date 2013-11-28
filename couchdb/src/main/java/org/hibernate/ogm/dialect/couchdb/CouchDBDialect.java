@@ -35,8 +35,8 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
@@ -58,8 +58,8 @@ import org.hibernate.type.Type;
 /**
  * Stores tuples and associations as JSON documents inside CouchDB.
  * <p>
- * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBEntity} object.
- * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBAssociation} object.
+ * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link EntityDocument} object.
+ * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link AssociationDocument} object.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
@@ -79,7 +79,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
+		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
 		}
@@ -94,9 +94,9 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
+		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity == null ) {
-			entity = new CouchDBEntity( key );
+			entity = new EntityDocument( key );
 		}
 		entity.update( tuple );
 		getDataStore().saveDocument( entity );
@@ -109,7 +109,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		CouchDBAssociation association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
+		AssociationDocument association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
 		if ( association != null ) {
 			return new Association( new CouchDBAssociationSnapshot( association, key ) );
 		}
@@ -118,13 +118,13 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		CouchDBAssociation association = new CouchDBAssociation( Identifier.createAssociationId( key ) );
+		AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
 		return new Association( new CouchDBAssociationSnapshot( association, key ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key) {
-		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
+		AssociationDocument couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
 		couchDBAssociation.update( association, key );
 
 		getDataStore().saveDocument( couchDBAssociation );
