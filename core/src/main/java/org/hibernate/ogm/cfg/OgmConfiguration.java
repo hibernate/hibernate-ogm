@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
@@ -43,7 +44,7 @@ public class OgmConfiguration extends Configuration {
 	/**
 	 * Name of the configuration option for specifying the {@link org.hibernate.ogm.service.impl.QueryParserService} to
 	 * be used. Accepts a fully-qualified class name. If not specified, the parser type returned by
-	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider.DatastoreProvider#getDefaultQueryParserServiceType()}
+	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider#getDefaultQueryParserServiceType()}
 	 * will be used.
 	 */
 	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
@@ -56,6 +57,9 @@ public class OgmConfiguration extends Configuration {
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		setProperty( OGM_ON, "true" );
+		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
+		// false
+		setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );

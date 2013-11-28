@@ -82,6 +82,13 @@ public class JPAAPIWrappingTest extends JpaTestCase {
 		entityManager.close();
 	}
 
+	@Test
+	public void testIllegalArgumentExceptionIfQueryDefinitionDoesNotExists() throws Exception {
+		thrown.expect( IllegalArgumentException.class );
+		EntityManager em = getFactory().createEntityManager();
+		em.createNamedQuery( "DoesNotExistsQuery" );
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class<?>[] { Poem.class };

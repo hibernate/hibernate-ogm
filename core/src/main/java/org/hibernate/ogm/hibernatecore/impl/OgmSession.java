@@ -38,6 +38,7 @@ import org.hibernate.Interceptor;
 import org.hibernate.LobHelper;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
+import org.hibernate.MappingException;
 import org.hibernate.NaturalIdLoadAccess;
 import org.hibernate.Query;
 import org.hibernate.ReplicationMode;
@@ -60,6 +61,8 @@ import org.hibernate.engine.spi.ActionQueue;
 import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
+import org.hibernate.engine.spi.NamedQueryDefinition;
+import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.NonFlushedChanges;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
@@ -97,6 +100,11 @@ import com.fasterxml.classmate.TypeResolver;
 public class OgmSession implements org.hibernate.Session, EventSource {
 
 	private static final Log log = LoggerFactory.make();
+
+	/**
+	 * Query parameters are not supported
+	 */
+	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
 
 	/**
 	 * Used for resolving generic type information. Maintains an internal cache and is safe to be accessed from several
@@ -177,9 +185,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	@Override
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
-		// Parameters are not supported yet
-		ParameterMetadata parameterMetadata = new ParameterMetadata( null, null );
-		return new NoSQLQuery( queryString, this, parameterMetadata );
+		return new NoSQLQuery( queryString, this, NO_PARAMETERS );
 	}
 
 	@Override
@@ -481,12 +487,29 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	//SessionImplementor methods
 	@Override
 	public Query getNamedQuery(String name) {
-		return delegate.getNamedQuery( name );
+		errorIfClosed();
+		NamedQueryDefinition namedQuery = factory.getNamedQuery( name );
+		if (namedQuery == null) {
+			return getNamedSQLQuery( name );
+		}
+		throw new NotSupportedException( "OGM-15", "Named queries are not supported yet" );
 	}
 
 	@Override
-	public Query getNamedSQLQuery(String name) {
-		return delegate.getNamedSQLQuery( name );
+	public Query getNamedSQLQuery(String queryName) {
+		errorIfClosed();
+		NamedSQLQueryDefinition nsqlqd = findNamedNativeQuery( queryName );
+		Query query = new NoSQLQuery( nsqlqd, this, NO_PARAMETERS );
+		query.setComment( "named native query " + queryName );
+		return query;
+	}
+
+	private NamedSQLQueryDefinition findNamedNativeQuery(String queryName) {
+		NamedSQLQueryDefinition nsqlqd = factory.getNamedSQLQuery( queryName );
+		if ( nsqlqd == null ) {
+			throw new MappingException( "Named native query not found: " + queryName );
+		}
+		return nsqlqd;
 	}
 
 	@Override

@@ -101,6 +101,9 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 		map.put( OgmConfiguration.OGM_ON, "true" );
+		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
+		// false
+		map.put( org.hibernate.cfg.AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
 	}
 
 	@Override

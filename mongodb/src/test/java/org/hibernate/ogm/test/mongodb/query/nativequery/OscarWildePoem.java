@@ -22,10 +22,12 @@ package org.hibernate.ogm.test.mongodb.query.nativequery;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.NamedNativeQuery;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = OscarWildePoem.TABLE_NAME)
+@NamedNativeQuery(name = "AthanasiaQuery", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultClass = OscarWildePoem.class )
 public class OscarWildePoem {
 
 	public static final String TABLE_NAME = "WILDE_POEM";

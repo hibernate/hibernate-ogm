@@ -88,6 +88,19 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Test
+	public void testIteratorSingleResultFromNamedNativeQuery() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQuery" ).getSingleResult();
+
+		assertAreEquals( athanasia, poem );
+
+		commit();
+		close( em );
+	}
+
+	@Test
 	public void testExceptionWhenReturnedEntityIsMissing() throws Exception {
 		begin();
 		EntityManager em = createEntityManager();
