@@ -23,6 +23,8 @@ package org.hibernate.ogm.dialect.couchdb.json;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonTypeInfo;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
 
 /**
  * Every Json document in CouchDB contains, The field '_id' representing the id of the document and '_rev' representing
@@ -73,4 +75,31 @@ public abstract class CouchDBDocument {
 		this.revision = revision;
 	}
 
+	@Override
+	public String toString() {
+		return JsonToStringHelper.toString( this );
+	}
+
+	/**
+	 * Creates a JSON representation of given documents. As static inner class this is only loaded on demand, i.e. when
+	 * {@code toString()} is invoked on a document type.
+	 *
+	 * @author Gunnar Morling
+	 */
+	private static class JsonToStringHelper {
+
+		/**
+		 * Thread-safe as per the docs.
+		 */
+		private static final ObjectWriter writer = new ObjectMapper().writerWithDefaultPrettyPrinter();
+
+		private static String toString(CouchDBDocument document) {
+			try {
+				return writer.writeValueAsString( document );
+			}
+			catch (Exception e) {
+				return document.getClass().getSimpleName() + " id: " + document.getId() + " rev: " + document.getRevision();
+			}
+		}
+	}
 }
