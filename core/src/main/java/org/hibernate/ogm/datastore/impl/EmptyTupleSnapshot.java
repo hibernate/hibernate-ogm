@@ -46,6 +46,6 @@ public final class EmptyTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public Set<String> getColumnNames() {
-		return Collections.EMPTY_SET;
+		return Collections.emptySet();
 	}
 }

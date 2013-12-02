@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,34 +20,35 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Collections;
 import java.util.Set;
 
 import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Represents the Association snapshot as loaded by the datastore.
- * Interface implemented by the datastore dialect to avoid data
- * duplication in memory (if possible).
+ * An empty {@link AssociationSnapshot}.
  *
- * Note that this snapshot will not be modified by the Hibernate OGM engine
- *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public interface AssociationSnapshot {
+/* package-private */ class EmptyAssociationSnapshot implements AssociationSnapshot {
 
-	/**
-	 * An empty unmodifiable {@link AssociationSnapshot}.
-	 */
-	AssociationSnapshot EMPTY = new EmptyAssociationSnapshot();
+	@Override
+	public Tuple get(RowKey column) {
+		return null;
+	}
 
-	/**
-	 * Returns the value set in a column or null if not set
-	 */
-	Tuple get(RowKey column);
+	@Override
+	public boolean containsKey(RowKey column) {
+		return false;
+	}
 
-	boolean containsKey(RowKey column);
+	@Override
+	public int size() {
+		return 0;
+	}
 
-	int size();
-
-	Set<RowKey> getRowKeys();
+	@Override
+	public Set<RowKey> getRowKeys() {
+		return Collections.emptySet();
+	}
 }

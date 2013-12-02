@@ -20,12 +20,17 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -44,12 +49,6 @@ import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Emmanuel Bernard
@@ -327,7 +326,7 @@ public class PropertyMetadataProvider {
 			AssociationKey key = getCollectionMetadataKey();
 			if ( isBidirectional == Boolean.FALSE ) {
 				//fake association to prevent unidirectional associations to keep record of the inverse side
-				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
+				collectionMetadata = new Association( AssociationSnapshot.EMPTY );
 			}
 			else {
 				collectionMetadata = gridDialect.getAssociation( key, this.getAssociationContext() );
