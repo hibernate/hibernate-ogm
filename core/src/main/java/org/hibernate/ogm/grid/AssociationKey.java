@@ -145,4 +145,36 @@ public final class AssociationKey implements Serializable {
 	public void setAssociationKind(AssociationKind kind) {
 		this.associationKind = kind;
 	}
+
+	/**
+	 * Whether the given column is part of this key or not.
+	 *
+	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
+	 */
+	public boolean isKeyColumn(String columnName) {
+		for ( String keyColumName : getColumnNames() ) {
+			if ( keyColumName.equals( columnName ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the value of the given column if part of this key.
+	 *
+	 * @param columnName the name of interest
+	 * @return the value of the given column or {@code null} if the column is not present or has no value.
+	 */
+	public Object getColumnValue(String columnName) {
+		for ( int i = 0; i < getColumnNames().length; i++ ) {
+			String name = getColumnNames()[i];
+			if ( name.equals( columnName ) ) {
+				return getColumnValues()[i];
+			}
+		}
+
+		return null;
+	}
 }
