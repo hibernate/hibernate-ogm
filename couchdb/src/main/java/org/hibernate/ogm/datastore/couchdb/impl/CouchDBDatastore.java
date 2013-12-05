@@ -20,7 +20,9 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -32,9 +34,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.backend.facade.DatabaseClient;
 import org.hibernate.ogm.dialect.couchdb.backend.facade.ServerClient;
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationCountResponse;
 import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
-import org.hibernate.ogm.dialect.couchdb.backend.json.CountResponse;
 import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityCountResponse;
 import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.backend.json.GenericResponse;
 import org.hibernate.ogm.dialect.couchdb.backend.json.SequenceDocument;
@@ -48,6 +51,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -296,16 +300,22 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Retrieves the number of CouchDBAssociation stored in the database
+	 * Retrieves the number of associations stored in the database
 	 *
-	 * @return the number of CouchDBAssociation stored in the database
+	 * @return the number of associations stored in the database
 	 */
-	public int getNumberOfAssociations() {
+	public Map<AssociationStorageType, Integer> getNumberOfAssociations() {
 		Response response = null;
 		try {
-			response = databaseClient.getNumberOfAssociations();
+			response = databaseClient.getNumberOfAssociations( true );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CountResponse.class ).getCount();
+				AssociationCountResponse countResponse = response.readEntity( AssociationCountResponse.class );
+
+				Map<AssociationStorageType, Integer> countsByType = new HashMap<AssociationStorageType, Integer>( 2 );
+				countsByType.put( AssociationStorageType.IN_ENTITY, countResponse.getInEntityAssociationCount() );
+				countsByType.put( AssociationStorageType.ASSOCIATION_DOCUMENT, countResponse.getAssociationDocumentCount() );
+
+				return countsByType;
 			}
 			else {
 				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
@@ -332,7 +342,7 @@ public class CouchDBDatastore {
 		try {
 			response = databaseClient.getNumberOfEntities();
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( CountResponse.class ).getCount();
+				return response.readEntity( EntityCountResponse.class ).getCount();
 			}
 			else {
 				GenericResponse responseEntity = response.readEntity( GenericResponse.class );

@@ -121,14 +121,16 @@ public interface DatabaseClient {
 	Response getKeyValueById(@PathParam("id") String id);
 
 	/**
-	 * Retrieve the number of {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument} stored in the
-	 * database
+	 * Retrieve the number of associations stored in the database.
 	 *
-	 * @return the Response with the searched {@link org.hibernate.ogm.dialect.couchdb.backend.json.SequenceDocument}
+	 * @return the response in form of a {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationCountResponse}
+	 * entity
 	 */
 	@GET
+	// TODO Can the parameter be avoided? It is always set to true, but adding "?group=true" to the path itself causes
+	// the question mark to be URL-encoded
 	@Path(AssociationsDesignDocument.ASSOCIATION_COUNT_PATH)
-	Response getNumberOfAssociations();
+	Response getNumberOfAssociations(@QueryParam("group") boolean group);
 
 	/**
 	 * Retrieve the number of entities stored in the database

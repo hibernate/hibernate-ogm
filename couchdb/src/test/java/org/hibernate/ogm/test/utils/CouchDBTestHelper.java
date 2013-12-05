@@ -34,6 +34,7 @@ import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -48,14 +49,32 @@ public class CouchDBTestHelper implements TestableGridDialect {
 
 	@Override
 	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		return dataStore.getNumberOfEntities() == numberOfEntities;
+		return getNumberOfEntities( sessionFactory ) == numberOfEntities;
+	}
+
+	public int getNumberOfEntities(SessionFactory sessionFactory) {
+		return getDataStore( sessionFactory ).getNumberOfEntities();
 	}
 
 	@Override
 	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		return getNumberOfAssociations( sessionFactory ) == numberOfAssociations;
+	}
+
+	public int getNumberOfAssociations(AssociationStorageType type, SessionFactory sessionFactory) {
+		Integer count = getDataStore( sessionFactory ).getNumberOfAssociations().get( type );
+		return count != null ? count : 0;
+	}
+
+	public int getNumberOfAssociations(SessionFactory sessionFactory) {
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		return dataStore.getNumberOfAssociations() == numberOfAssociations;
+
+		Map<AssociationStorageType, Integer> associationCountByType = dataStore.getNumberOfAssociations();
+		int totalCount = 0;
+		for ( int count : associationCountByType.values() ) {
+			totalCount += count;
+		}
+		return totalCount;
 	}
 
 	@Override

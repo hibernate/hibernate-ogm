@@ -21,19 +21,29 @@
 package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 /**
- * Represents the result returned by the entity/association count list functions.
+ * Represents the result returned by the association count list functions.
  *
  * @author Gunnar Morling
  */
-public class CountResponse {
+public class AssociationCountResponse {
 
-	private int count;
+	int associationDocumentCount;
 
-	public int getCount() {
-		return count;
+	int inEntityAssociationCount;
+
+	public int getAssociationDocumentCount() {
+		return associationDocumentCount;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
+	public void setAssociationDocumentCount(int associationDocumentCount) {
+		this.associationDocumentCount = associationDocumentCount;
+	}
+
+	public int getInEntityAssociationCount() {
+		return inEntityAssociationCount;
+	}
+
+	public void setInEntityAssociationCount(int inEntityAssociationCount) {
+		this.inEntityAssociationCount = inEntityAssociationCount;
 	}
 }

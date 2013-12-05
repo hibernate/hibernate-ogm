@@ -24,14 +24,15 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
 import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 
 /**
  * Creates a CouchDB Design Document with a view and list used to retrieve the number of associations stored in the
  * database.
  * <p>
- * The map function of this view emits those documents whose type is {@link AssociationDocument#TYPE_NAME}. The reduce
- * function counts the number of the documents returned by the map function. The list function creates an easily
- * consumable representation of the view result.
+ * The map function of this view emits a record for each association. The reduce function counts the number of the
+ * documents returned by the map function. The list function creates an easily consumable representation of the view
+ * result.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling
@@ -49,21 +50,54 @@ public class AssociationsDesignDocument extends DesignDocument {
 	public static final String ASSOCIATION_COUNT_PATH = "_design/" + DOCUMENT_ID + "/_list/" + LIST_NAME + "/" + VIEW_NAME;
 
 	/**
-	 * The JavaScript map function; for each document of type "association" value 1 will be emitted.
+	 * The JavaScript map function; for each association - embedded or in a dedicated document - value 1 will be emitted.
 	 */
-	private static final String MAP = "function(doc) {if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + AssociationDocument.TYPE_NAME
-			+ "\"){  emit(doc.id, 1); }}";
-
-	/**
-	 * The JavaScript list function; simplifies the output of the view into the form { "count" : n }.
-	 */
-	private static final String LIST = "function (head, req) { row = getRow(); send( JSON.stringify( { count : row ? row.value : 0 } ) ); }";
+	private static final String MAP =
+			"function(doc) {\n" +
+			// association document
+			"    if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + AssociationDocument.TYPE_NAME + "\") {\n" +
+			"        emit('association', 1);\n" +
+			"    }\n" +
+			// embedded association; each embedded array is considered as association; note that this also would match
+			// embedded collections; ignoring this for now as there is no test which makes use of embedded collections
+			// and associations
+			"    else if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + EntityDocument.TYPE_NAME + "\") {\n" +
+			"        for(var propt in doc) {\n" +
+			"            if( Object.prototype.toString.call( doc[propt] ) === '[object Array]' ) {\n" +
+			"                emit('inEntity', 1 );\n" +
+			"            }\n" +
+			"        }\n" +
+			"    }\n" +
+			"}";
 
 	/**
 	 * The JavaScript reduce function, return the length of the value returned by the map function, this value
 	 * represents the number of the stored associations
 	 */
 	private static final String REDUCE = "_count";
+
+	/**
+	 * The JavaScript list function; simplifies the output of the view into the form { "count" : n }.
+	 */
+	private static final String LIST =
+			"function (head, req) {\n" +
+			"    associationDocumentCount = 0;\n" +
+			"    inEntityAssociationCount = 0;\n" +
+			"    while ( row = getRow() ) {\n" +
+			"        if ( row.key == \"association\" ) {\n" +
+			"            associationDocumentCount = row.value;\n" +
+			"        }\n" +
+			"        else {\n" +
+			"            inEntityAssociationCount = row.value;\n" +
+			"        }\n" +
+			"    }\n" +
+			"    send(\n" +
+			"        JSON.stringify( {\n" +
+			"            associationDocumentCount : associationDocumentCount,\n" +
+			"            inEntityAssociationCount : inEntityAssociationCount\n" +
+			"        } )\n" +
+			"    );\n" +
+			"}";
 
 	public AssociationsDesignDocument() {
 		setId( DOCUMENT_ID );
