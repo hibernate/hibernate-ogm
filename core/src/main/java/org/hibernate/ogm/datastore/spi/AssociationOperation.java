@@ -29,7 +29,6 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-
 public class AssociationOperation {
 	private final RowKey key;
 	private final Tuple value;
@@ -51,5 +50,10 @@ public class AssociationOperation {
 
 	public AssociationOperationType getType() {
 		return type;
+	}
+
+	@Override
+	public String toString() {
+		return "AssociationOperation [key=" + key + ", type=" + type + "]";
 	}
 }

@@ -109,4 +109,9 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	public Set<RowKey> getRowKeys() {
 		return rows.keySet();
 	}
+
+	@Override
+	public String toString() {
+		return "CouchDBAssociationSnapshot [rows=" + rows + "]";
+	}
 }
