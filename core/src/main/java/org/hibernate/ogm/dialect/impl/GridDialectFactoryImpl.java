@@ -44,7 +44,7 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 	}
 
 	@Override
-	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
+	public GridDialect buildGridDialect(Map<?, ?> configurationValues, ServiceRegistry registry) {
 		Object value = configurationValues.get( GRID_DIALECT );
 		Class<? extends GridDialect> dialectClass = dialectClass( registry, value );
 		return buildDialect( registry, dialectClass );
@@ -55,9 +55,9 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 			// FIXME not sure I like this constructor business. Argue with Sanne
 			// to me that's blocking the doors for future enhancements (ie injecting more things)
 			// an alternative is to pass the ServiceRegistry verbatim but I'm not sure that's enough either
-			Constructor injector = null;
-			for ( Constructor constructor : dialectClass.getConstructors() ) {
-				Class[] parameterTypes = constructor.getParameterTypes();
+			Constructor<?> injector = null;
+			for ( Constructor<?> constructor : dialectClass.getConstructors() ) {
+				Class<?>[] parameterTypes = constructor.getParameterTypes();
 				if ( parameterTypes.length == 1 && DatastoreProvider.class.isAssignableFrom( parameterTypes[0] ) ) {
 					injector = constructor;
 					break;
@@ -67,6 +67,7 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 				log.gridDialectHasNoProperConstrutor( dialectClass );
 			}
 			GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+
 			log.useGridDialect( gridDialect.getClass().getName() );
 			if ( GridDialectLogger.activationNeeded() ) {
 				gridDialect = new GridDialectLogger( gridDialect );
@@ -97,7 +98,9 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 	private Class<? extends GridDialect> findGridDialect(ServiceRegistry registry, String value) {
 		Class<?> maybeDialectClass = loadClass( registry, value );
 		if ( GridDialect.class.isAssignableFrom( maybeDialectClass ) ) {
-			return (Class<? extends GridDialect>) maybeDialectClass;
+			@SuppressWarnings("unchecked")
+			Class<? extends GridDialect> dialectClass = (Class<? extends GridDialect>) maybeDialectClass;
+			return dialectClass;
 		}
 		else {
 			throw log.doesNotImplementGridDialect( value.toString() );

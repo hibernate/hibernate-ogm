@@ -159,7 +159,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		for ( String column : columns ) {
 			selectableColumns.add( column );
 		}
-		return new AssociationContext( selectableColumns );
+		return new AssociationContext();
 	}
 
 	/** represents the type of associations at stake */
@@ -271,7 +271,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		int count = 0;
 		int i = 0;
-		Iterator entries = collection.entries( this );
+		Iterator<?> entries = collection.entries( this );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
 				.gridDialect( gridDialect )
 				.key( key )
@@ -471,7 +471,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// delete all the deleted entries
-			Iterator deletes = collection.getDeletes( this, !deleteByIndex );
+			Iterator<?> deletes = collection.getDeletes( this, !deleteByIndex );
 			if ( deletes.hasNext() ) {
 				int count = 0;
 				while ( deletes.hasNext() ) {
@@ -520,7 +520,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// insert all the new entries
 			collection.preInsert( this );
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			int i = 0;
 			int count = 0;
 			while ( entries.hasNext() ) {
@@ -561,7 +561,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// create all the new entries
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			if ( entries.hasNext() ) {
 				collection.preInsert( this );
 				int i = 0;
