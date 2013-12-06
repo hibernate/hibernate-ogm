@@ -23,10 +23,8 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -47,7 +45,6 @@ import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
@@ -87,7 +84,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
-	private final AssociationContext associationContext;
 	private final AssociationKeyMetadata associationKeyMetadata;
 	private final AssociationKeyMetadata associationKeyMetadataFromElement;
 
@@ -123,7 +119,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
-		associationContext = buildAssociationContext();
 		associationKeyMetadata = new AssociationKeyMetadata( getTableName(), getKeyColumnNames() );
 		associationKeyMetadata.setRowKeyColumnNames( getRowKeyColumnNames() );
 
@@ -131,35 +126,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
 	}
 
-	public AssociationContext getAssociationContext() {
-		return associationContext;
-	}
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
-	}
-
-	private AssociationContext buildAssociationContext() {
-		List<String> selectableColumns = new ArrayList<String>();
-		// add identifier, index, key and element columns
-		String identifierColumnName = getIdentifierColumnName();
-		if ( identifierColumnName != null ) {
-			selectableColumns.add( identifierColumnName );
-		}
-		for ( String column : getKeyColumnNames() ) {
-			selectableColumns.add( column );
-		}
-		String[] columns = getIndexColumnNames();
-		if ( columns != null ) {
-			for ( String column : columns ) {
-				selectableColumns.add( column );
-			}
-		}
-		columns = getElementColumnNames();
-		for ( String column : columns ) {
-			selectableColumns.add( column );
-		}
-		return new AssociationContext();
 	}
 
 	/** represents the type of associations at stake */
