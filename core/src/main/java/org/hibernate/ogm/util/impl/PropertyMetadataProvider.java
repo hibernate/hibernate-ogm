@@ -21,9 +21,7 @@
 package org.hibernate.ogm.util.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -379,16 +377,7 @@ public class PropertyMetadataProvider {
 
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			if ( collectionPersister != null ) {
-				associationContext = collectionPersister.getAssociationContext();
-			}
-			else {
-				List<String> selectableColumns = new ArrayList<String>( rowKeyColumnNames.length );
-				for ( String column : rowKeyColumnNames ) {
-					selectableColumns.add( column );
-				}
-				associationContext = new AssociationContext( selectableColumns );
-			}
+			associationContext = new AssociationContext();
 		}
 		return associationContext;
 	}

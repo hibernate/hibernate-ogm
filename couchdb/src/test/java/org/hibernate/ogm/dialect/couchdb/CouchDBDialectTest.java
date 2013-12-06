@@ -144,7 +144,7 @@ public class CouchDBDialectTest {
 		createAssociation.put( rowKey, tuple );
 		dialect.updateAssociation( createAssociation, key );
 
-		Association actualAssociation = dialect.getAssociation( key, new AssociationContext( new ArrayList<String>() ) );
+		Association actualAssociation = dialect.getAssociation( key, new AssociationContext() );
 		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
 	}
 
