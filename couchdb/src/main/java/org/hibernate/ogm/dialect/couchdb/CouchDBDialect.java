@@ -53,6 +53,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.couchdb.mapping.impl.AssociationStorageOption;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.Iso8601StringDateType;
@@ -116,7 +117,7 @@ public class CouchDBDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key ) ) {
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getCollectionRole() ) ) {
 				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
@@ -136,7 +137,7 @@ public class CouchDBDialect implements GridDialect {
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key ) ) {
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity == null ) {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
@@ -184,7 +185,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key ) ) {
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getCollectionRole() );
@@ -201,9 +202,16 @@ public class CouchDBDialect implements GridDialect {
 		return new Tuple( EmptyTupleSnapshot.SINGLETON );
 	}
 
-	//TODO Implement based on configuration
-	private boolean isStoredInEntityStructure(AssociationKey associationKey) {
-		return true;
+	private boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		AssociationStorageType associationStorage = associationContext
+				.getOptionsContext()
+				.getUnique( AssociationStorageOption.class );
+
+		if ( associationStorage != null ) {
+			return associationStorage == AssociationStorageType.IN_ENTITY;
+		}
+
+		return false;
 	}
 
 	@Override

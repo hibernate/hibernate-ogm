@@ -22,6 +22,7 @@ package org.hibernate.ogm.test.associations.collection.unidirectional;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -39,6 +40,7 @@ public class Cloud {
 	private String type;
 	private double length;
 	private Set<SnowFlake> producedSnowFlakes = new HashSet<SnowFlake>();
+	private Set<SnowFlake> backupSnowFlakes = new HashSet<SnowFlake>();
 
 	@Id
 	@GeneratedValue(generator = "uuid")
@@ -75,5 +77,15 @@ public class Cloud {
 
 	public void setProducedSnowFlakes(Set<SnowFlake> producedSnowFlakes) {
 		this.producedSnowFlakes = producedSnowFlakes;
+	}
+
+	@OneToMany
+	@JoinTable
+	public Set<SnowFlake> getBackupSnowFlakes() {
+		return backupSnowFlakes;
+	}
+
+	public void setBackupSnowFlakes(Set<SnowFlake> backupSnowFlakes) {
+		this.backupSnowFlakes = backupSnowFlakes;
 	}
 }
