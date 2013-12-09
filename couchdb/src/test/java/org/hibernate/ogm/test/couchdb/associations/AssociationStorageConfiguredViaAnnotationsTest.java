@@ -31,90 +31,52 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;
-import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
 import org.junit.After;
 import org.junit.Test;
 
 /**
- * Test for configuring the different association storage modes via the option API.
+ * Test for configuring the different association storage modes via annotations.
  *
  * @author Gunnar Morling
  */
-public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTestBase {
+public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationStorageTestBase {
 
-	private Cloud cloud;
-
-	@Test
-	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
-			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
-
-		createCloudWithTwoProducedSnowflakes();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
-	}
+	private AnnotatedCloud cloud;
+	private PolarCloud polarCloud;
 
 	@Test
-	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
-			.associationStorage( AssociationStorageType.IN_ENTITY );
-
+	public void associationStorageSetToCollectionOnEntityLevel() throws Exception {
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
-	}
-
-	@Test
-	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
-			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
-
-		createCloudWithTwoProducedSnowflakes();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
-	}
-
-	@Test
-	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
-			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.IN_ENTITY );
-
-		createCloudWithTwoProducedSnowflakes();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 0 );
-		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
-	}
-
-	@Test
-	public void associationStorageSetOnPropertyLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
-			.entity( Cloud.class )
-				.property( "producedSnowFlakes", ElementType.METHOD )
-					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-				.property( "backupSnowFlakes", ElementType.METHOD )
-					.associationStorage( AssociationStorageType.IN_ENTITY );
-
-		createCloudWithTwoProducedAndOneBackupSnowflake();
-
-		assertThat( associationDocumentCount() ).isEqualTo( 1 );
 		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
 	}
 
 	@Test
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
+		createCloudWithTwoProducedAndOneBackupSnowflake();
+
+		assertThat( associationDocumentCount() ).isEqualTo( 1 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+	}
+
+	@Test
+	public void associationStorageSetOnPropertyLevelViaApiTakesPrecedenceOverAnnotation() throws Exception {
 		sessions.configureDatastore( CouchDB.class )
-		.entity( Cloud.class )
-			.associationStorage( AssociationStorageType.IN_ENTITY )
-			.property( "backupSnowFlakes", ElementType.METHOD )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+			.entity( AnnotatedCloud.class )
+				.property( "backupSnowFlakes", ElementType.METHOD )
+					.associationStorage( AssociationStorageType.IN_ENTITY );
 
 		createCloudWithTwoProducedAndOneBackupSnowflake();
+
+		assertThat( associationDocumentCount() ).isEqualTo( 0 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 2 );
+	}
+
+	@Test
+	public void associationStorageSetOnSubClass() throws Exception {
+		createPolarCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
 		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
@@ -135,50 +97,91 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 				.createAndSave();
 	}
 
-	private CloudBuilder newCloud() {
-		return new CloudBuilder();
+	private void createPolarCloudWithTwoProducedAndOneBackupSnowflake() {
+		polarCloud = newPolarCloud()
+				.withLength( 23 )
+				.withProducedSnowflakes( "Snowflake1", "Snowflake2" )
+				.withBackupSnowflakes( "Snowflake3" )
+				.createAndSave();
 	}
 
-	private class CloudBuilder {
+	private CloudBuilder<AnnotatedCloud> newCloud() {
+		return new CloudBuilder<AnnotatedCloud>( false );
+	}
 
+	private CloudBuilder<PolarCloud> newPolarCloud() {
+		return new CloudBuilder<PolarCloud>( true );
+	}
+
+	private class CloudBuilder<T> {
+
+		private final boolean polar;
 		private int length;
 		private final List<String> producedSnowflakes = new ArrayList<String>();
 		private final List<String> backupSnowflakes = new ArrayList<String>();
 
-		public CloudBuilder withLength(int length) {
+		private CloudBuilder(boolean polar) {
+			this.polar = polar;
+		}
+
+		public CloudBuilder<T> withLength(int length) {
 			this.length = length;
 			return this;
 		}
 
-		public CloudBuilder withProducedSnowflakes(String... descriptions) {
+		public CloudBuilder<T> withProducedSnowflakes(String... descriptions) {
 			this.producedSnowflakes.addAll( Arrays.asList( descriptions ) );
 			return this;
 		}
 
-		public CloudBuilder withBackupSnowflakes(String... descriptions) {
+		public CloudBuilder<T> withBackupSnowflakes(String... descriptions) {
 			this.backupSnowflakes.addAll( Arrays.asList( descriptions ) );
 			return this;
 		}
 
-		public Cloud createAndSave() {
+		public T createAndSave() {
 			Session session = sessions.openSession();
 			Transaction transaction = session.beginTransaction();
 
-			Cloud cloud = new Cloud();
-			cloud.setLength( length );
+			Object cloud = null;
 
-			for ( String description : producedSnowflakes ) {
-				SnowFlake sf = new SnowFlake();
-				sf.setDescription( description );
-				session.save( sf );
-				cloud.getProducedSnowFlakes().add( sf );
+			if ( polar ) {
+				PolarCloud polarCloud = new PolarCloud();
+				polarCloud.setLength( length );
+
+				for ( String description : producedSnowflakes ) {
+					SnowFlake sf = new SnowFlake();
+					sf.setDescription( description );
+					session.save( sf );
+					polarCloud.getProducedSnowFlakes().add( sf );
+				}
+
+				for ( String description : backupSnowflakes ) {
+					SnowFlake sf = new SnowFlake();
+					sf.setDescription( description );
+					session.save( sf );
+					polarCloud.getBackupSnowFlakes().add( sf );
+				}
+				cloud = polarCloud;
 			}
+			else {
+				AnnotatedCloud annotatedCloud = new AnnotatedCloud();
+				annotatedCloud.setLength( length );
 
-			for ( String description : backupSnowflakes ) {
-				SnowFlake sf = new SnowFlake();
-				sf.setDescription( description );
-				session.save( sf );
-				cloud.getBackupSnowFlakes().add( sf );
+				for ( String description : producedSnowflakes ) {
+					SnowFlake sf = new SnowFlake();
+					sf.setDescription( description );
+					session.save( sf );
+					annotatedCloud.getProducedSnowFlakes().add( sf );
+				}
+
+				for ( String description : backupSnowflakes ) {
+					SnowFlake sf = new SnowFlake();
+					sf.setDescription( description );
+					session.save( sf );
+					annotatedCloud.getBackupSnowFlakes().add( sf );
+				}
+				cloud = annotatedCloud;
 			}
 
 			session.persist( cloud );
@@ -186,7 +189,10 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 			transaction.commit();
 			session.close();
 
-			return cloud;
+			@SuppressWarnings("unchecked")
+			T result = (T) cloud;
+
+			return result;
 		}
 	}
 
@@ -196,7 +202,18 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 		Transaction transaction = session.beginTransaction();
 
 		if ( cloud != null ) {
-			Cloud cloudToDelete = (Cloud) session.get( Cloud.class, cloud.getId() );
+			AnnotatedCloud cloudToDelete = (AnnotatedCloud) session.get( AnnotatedCloud.class, cloud.getId() );
+			for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
+				session.delete( current );
+			}
+			for ( SnowFlake current : cloudToDelete.getBackupSnowFlakes() ) {
+				session.delete( current );
+			}
+			session.delete( cloudToDelete );
+		}
+
+		if ( polarCloud != null ) {
+			PolarCloud cloudToDelete = (PolarCloud) session.get( PolarCloud.class, polarCloud.getId() );
 			for ( SnowFlake current : cloudToDelete.getProducedSnowFlakes() ) {
 				session.delete( current );
 			}
@@ -216,7 +233,8 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] {
-				Cloud.class,
+				AnnotatedCloud.class,
+				PolarCloud.class,
 				SnowFlake.class
 		};
 	}
