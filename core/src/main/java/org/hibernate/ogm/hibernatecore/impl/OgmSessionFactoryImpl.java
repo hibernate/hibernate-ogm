@@ -65,7 +65,13 @@ import org.hibernate.id.factory.IdentifierGeneratorFactory;
 import org.hibernate.internal.NamedQueryRepository;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationBuilderService;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.proxy.EntityNotFoundDelegate;
@@ -75,13 +81,25 @@ import org.hibernate.stat.spi.StatisticsImplementor;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
 
+import com.fasterxml.classmate.ResolvedType;
+
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public class OgmSessionFactory implements SessionFactoryImplementor {
+public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSessionFactory {
+
+	private static final Log log = LoggerFactory.make();
+
+	/**
+	 * Used for resolving generic type information. Maintains an internal cache and is safe to be accessed from several
+	 * threads at the same time.
+	 */
+	private final com.fasterxml.classmate.TypeResolver typeResolver = new com.fasterxml.classmate.TypeResolver();
+
 	private final SessionFactoryImplementor delegate;
 
-	public OgmSessionFactory(SessionFactoryImplementor delegate) {
+	public OgmSessionFactoryImpl(SessionFactoryImplementor delegate) {
 		this.delegate = delegate;
 	}
 
@@ -466,10 +484,29 @@ public class OgmSessionFactory implements SessionFactoryImplementor {
 		//Expect Hibernate Core to use one StringRefAddr based address
 		String uuid = String.valueOf( delegate.getReference().get( 0 ).getContent() );
 		return new Reference(
-				OgmSessionFactory.class.getName(),
+				OgmSessionFactoryImpl.class.getName(),
 				new StringRefAddr( "uuid", uuid ),
 				OgmSessionFactoryObjectFactory.class.getName(),
 				null
 				);
+	}
+
+	@Override
+	public <G extends GlobalContext<G, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
+		ResolvedType resolvedDatastoreType = typeResolver.resolve( datastoreType );
+		ResolvedType globalContextType = resolvedDatastoreType.typeParametersFor( DatastoreConfiguration.class ).get( 0 );
+
+		ConfigurationBuilderService configurationBuilderService = getServiceRegistry()
+				.getService( ConfigurationBuilderService.class );
+
+		GlobalContext<?, ?> globalContext = configurationBuilderService.getConfigurationBuilder();
+
+		if ( globalContextType.getErasedType().isInstance( globalContext ) ) {
+			@SuppressWarnings("unchecked")
+			G store = (G) globalContext;
+			return store;
+		}
+
+		throw log.getWrongDatastoreConfigurationTypeException( datastoreType.getName() );
 	}
 }

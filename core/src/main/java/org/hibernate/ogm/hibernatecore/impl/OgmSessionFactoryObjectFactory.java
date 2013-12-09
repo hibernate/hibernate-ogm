@@ -31,7 +31,8 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.internal.SessionFactoryRegistry;
 
 /**
- * Resolves {@link OgmSessionFactory} instances during <tt>JNDI<tt> look-ups as well as during deserialization
+ * Resolves {@link org.hibernate.ogm.OgmSessionFactory.OgmSessionFactory} instances during
+ * <tt>JNDI<tt> look-ups as well as during deserialization
  *
  * @author Davide D'Alto
  */
@@ -42,7 +43,7 @@ public class OgmSessionFactoryObjectFactory implements ObjectFactory {
 			throws Exception {
 		final String uuid = (String) ( (Reference) reference ).get( 0 ).getContent();
 		//OgmSessionFactory does not have state so we can create a new instance each time instead of keeping a registry
-		return new OgmSessionFactory( (SessionFactoryImplementor) SessionFactoryRegistry.INSTANCE.getSessionFactory( uuid ) );
+		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) SessionFactoryRegistry.INSTANCE.getSessionFactory( uuid ) );
 	}
 
 }
