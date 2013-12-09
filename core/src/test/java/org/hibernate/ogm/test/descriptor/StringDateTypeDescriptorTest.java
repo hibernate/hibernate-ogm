@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.descriptor;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.type.StringDateTypeDescriptor;
 import org.junit.Test;
 
@@ -45,7 +45,7 @@ public class StringDateTypeDescriptorTest {
 
 	@Test
 	public void testColumnSpanForOgmSessionFactory() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( new OgmSessionFactory( null ) ) )
+		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( new OgmSessionFactoryImpl( null ) ) )
 				.as( "Column span" ).isEqualTo( 1 );
 	}
 }

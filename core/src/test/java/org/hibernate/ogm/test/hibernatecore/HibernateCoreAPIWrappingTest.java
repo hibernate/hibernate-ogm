@@ -31,7 +31,7 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.test.utils.PackagingRule;
 import org.hibernate.ogm.test.utils.TestHelper;
@@ -51,11 +51,11 @@ public class HibernateCoreAPIWrappingTest {
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		assertThat( HibernateEntityManagerFactory.class.isAssignableFrom( emf.getClass() ) ).isTrue();
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
-		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 
 		Session s = factory.openSession();
 		assertThat( s.getClass() ).isEqualTo( OgmSession.class );
-		assertThat( s.getSessionFactory().getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( s.getSessionFactory().getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		s.close();
 
 		EntityManager em = emf.createEntityManager();
@@ -72,14 +72,14 @@ public class HibernateCoreAPIWrappingTest {
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone", TestHelper.getEnvironmentProperties() );
 		SessionFactory factory = ( (HibernateEntityManagerFactory) emf ).getSessionFactory();
 		Reference reference = factory.getReference();
-		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactory.class.getName() );
+		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactoryImpl.class.getName() );
 		assertThat( reference.getFactoryClassName() ).isEqualTo( OgmSessionFactoryObjectFactory.class.getName() );
 		assertThat( reference.get( 0 ) ).isNotNull();
 		assertThat( reference.getFactoryClassLocation() ).isNull();
 
 		OgmSessionFactoryObjectFactory objFactory = new OgmSessionFactoryObjectFactory();
 		SessionFactory factoryFromRegistry = (SessionFactory) objFactory.getObjectInstance( reference, null, null, null );
-		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		assertThat( factoryFromRegistry.getReference() ).isEqualTo( factory.getReference() );
 
 		emf.close();

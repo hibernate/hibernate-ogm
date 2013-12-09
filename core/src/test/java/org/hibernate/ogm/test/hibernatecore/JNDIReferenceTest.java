@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 
@@ -42,17 +42,17 @@ public class JNDIReferenceTest extends OgmTestCase {
 		final Session session = openSession();
 		SessionFactory factory = session.getSessionFactory();
 
-		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 
 		Reference reference = factory.getReference();
-		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactory.class.getName() );
+		assertThat( reference.getClassName() ).isEqualTo( OgmSessionFactoryImpl.class.getName() );
 		assertThat( reference.getFactoryClassName() ).isEqualTo( OgmSessionFactoryObjectFactory.class.getName() );
 		assertThat( reference.get( 0 ) ).isNotNull();
 		assertThat( reference.getFactoryClassLocation() ).isNull();
 
 		OgmSessionFactoryObjectFactory objFactory = new OgmSessionFactoryObjectFactory();
 		SessionFactory factoryFromRegistry = (SessionFactory) objFactory.getObjectInstance( reference, null, null, null );
-		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactory.class );
+		assertThat( factoryFromRegistry.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		assertThat( factoryFromRegistry.getReference() ).isEqualTo( factory.getReference() );
 
 		session.close();
