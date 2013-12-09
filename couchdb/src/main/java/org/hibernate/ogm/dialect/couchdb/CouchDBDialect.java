@@ -30,6 +30,7 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
@@ -58,6 +59,7 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.Iso8601StringDateType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.Configurable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -70,12 +72,29 @@ import org.hibernate.type.Type;
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
  */
-public class CouchDBDialect implements GridDialect {
+public class CouchDBDialect implements GridDialect, Configurable {
 
 	private final CouchDBDatastoreProvider provider;
 
+	/**
+	 * The default association storage strategy if not configured explicitly via annotations or API.
+	 */
+	private AssociationStorageType defaultAssociationStorage;
+
 	public CouchDBDialect(CouchDBDatastoreProvider provider) {
 		this.provider = provider;
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		Object propertyValue = configurationValues.get( CouchDB.ASSOCIATIONS_STORE );
+
+		if ( propertyValue != null ) {
+			this.defaultAssociationStorage = AssociationStorageType.valueOf( propertyValue.toString() );
+		}
+		else {
+			this.defaultAssociationStorage = AssociationStorageType.IN_ENTITY;
+		}
 	}
 
 	@Override
@@ -207,11 +226,11 @@ public class CouchDBDialect implements GridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		if ( associationStorage != null ) {
-			return associationStorage == AssociationStorageType.IN_ENTITY;
+		if ( associationStorage == null ) {
+			associationStorage = defaultAssociationStorage;
 		}
 
-		return false;
+		return associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 
 	@Override

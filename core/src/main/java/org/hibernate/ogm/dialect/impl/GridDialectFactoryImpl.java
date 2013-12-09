@@ -30,6 +30,7 @@ import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.spi.Configurable;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -44,13 +45,13 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 	}
 
 	@Override
-	public GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry) {
+	public GridDialect buildGridDialect(Map<?, ?> configurationValues, ServiceRegistry registry) {
 		Object value = configurationValues.get( GRID_DIALECT );
 		Class<? extends GridDialect> dialectClass = dialectClass( registry, value );
-		return buildDialect( registry, dialectClass );
+		return buildDialect( registry, configurationValues, dialectClass );
 	}
 
-	private GridDialect buildDialect(ServiceRegistry registry, Class<? extends GridDialect> dialectClass) {
+	private GridDialect buildDialect(ServiceRegistry registry, Map<?, ?> configurationValues, Class<? extends GridDialect> dialectClass) {
 		try {
 			// FIXME not sure I like this constructor business. Argue with Sanne
 			// to me that's blocking the doors for future enhancements (ie injecting more things)
@@ -67,6 +68,11 @@ public class GridDialectFactoryImpl implements GridDialectFactory {
 				log.gridDialectHasNoProperConstrutor( dialectClass );
 			}
 			GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+
+			if ( gridDialect instanceof Configurable ) {
+				( (Configurable) gridDialect ).configure( configurationValues );
+			}
+
 			log.useGridDialect( gridDialect.getClass().getName() );
 			if ( GridDialectLogger.activationNeeded() ) {
 				gridDialect = new GridDialectLogger( gridDialect );
