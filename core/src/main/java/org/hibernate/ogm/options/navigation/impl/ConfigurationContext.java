@@ -40,7 +40,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
  * this context per invocation of this API (beginning with the creation of a
  * {@link org.hibernate.ogm.options.navigation.context.GlobalContext}). This instance is passed between the individual
  * context types created in the course of using the fluent API. The book-keeping of configured options is delegated to
- * {@link OptionsContext}.
+ * {@link WritableOptionsServiceContext}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
@@ -52,12 +52,12 @@ public class ConfigurationContext {
 	/**
 	 * Contains all options configured via this and other configuration contexts.
 	 */
-	private final OptionsContext allOptions;
+	private final WritableOptionsServiceContext allOptions;
 
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
-	public ConfigurationContext(OptionsContext globalContext) {
+	public ConfigurationContext(WritableOptionsServiceContext globalContext) {
 		this.allOptions = globalContext;
 	}
 

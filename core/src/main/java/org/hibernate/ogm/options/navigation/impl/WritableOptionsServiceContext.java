@@ -40,7 +40,7 @@ import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
  * @author Gunnar Morling
  * @see org.hibernate.ogm.options.spi.OptionsService
  */
-public class OptionsContext implements OptionsServiceContext {
+public class WritableOptionsServiceContext implements OptionsServiceContext {
 
 	private final OptionsContainer globaloptions = new OptionsContainer();
 	private final ConcurrentMap<Class<?>, OptionsContainer> optionsPerEntity = new ConcurrentHashMap<Class<?>, OptionsContainer>();
