@@ -24,7 +24,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
 
 /**
- * Represents the CouchDB document data store.
+ * Allows to configure options specific to the CouchDB document data store.
  *
  * @author Gunnar Morling
  * @author Andrea Boriero <dreborier@gmail.com/>

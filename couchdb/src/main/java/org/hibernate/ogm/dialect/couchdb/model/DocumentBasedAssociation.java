@@ -31,7 +31,7 @@ import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
  *
  * @author Gunnar Morling
  */
-/* package-private */class DocumentBasedAssociation extends CouchDBAssociation {
+class DocumentBasedAssociation extends CouchDBAssociation {
 
 	private final AssociationDocument document;
 

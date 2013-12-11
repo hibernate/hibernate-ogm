@@ -34,8 +34,7 @@ import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
- * Define the association storage type the annotated entity or property. A configuration given on the property-level
- * takes precedence over configuration on the entity-level.
+ * Define the association storage type for the annotated entity or property.
  *
  * @author Gunnar Morling
  */

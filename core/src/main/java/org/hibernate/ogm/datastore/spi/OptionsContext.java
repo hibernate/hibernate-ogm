@@ -57,7 +57,7 @@ public interface OptionsContext {
 	<I, V> V get(Class<? extends Option<I, V>> optionType, I identifier);
 
 	/**
-	 * Returns the value of the unique option of the given type, if pr esent.
+	 * Returns the value of the unique option of the given type, if present.
 	 *
 	 * @param optionType the type of option to return
 	 * @return the unique option with the given type or {@code null} if this option is not present

@@ -117,7 +117,6 @@ public class PropertyOptionsContext implements OptionsContext {
 
 	@Override
 	public String toString() {
-		return "AssocationOptionContextImpl [optionsServiceContext=" + optionsServiceContext + ", entityType=" + entityType + ", propertyName=" + propertyName
-				+ "]";
+		return "PropertyOptionsContext [optionsServiceContext=" + optionsServiceContext + ", entityType=" + entityType + ", propertyName=" + propertyName + "]";
 	}
 }

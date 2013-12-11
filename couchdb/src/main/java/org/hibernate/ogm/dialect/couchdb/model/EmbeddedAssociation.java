@@ -31,7 +31,7 @@ import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
  *
  * @author Gunnar Morling
  */
-/* package-private */class EmbeddedAssociation extends CouchDBAssociation {
+class EmbeddedAssociation extends CouchDBAssociation {
 
 	private final EntityDocument entity;
 	private final String name;
