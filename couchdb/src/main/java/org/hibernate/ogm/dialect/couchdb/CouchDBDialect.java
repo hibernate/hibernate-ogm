@@ -32,7 +32,6 @@ import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -199,7 +198,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	private boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {

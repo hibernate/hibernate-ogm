@@ -29,7 +29,6 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -336,7 +335,7 @@ public class PropertyMetadataProvider {
 			AssociationKey key = getCollectionMetadataKey();
 			if ( isBidirectional == Boolean.FALSE ) {
 				//fake association to prevent unidirectional associations to keep record of the inverse side
-				collectionMetadata = new Association( AssociationSnapshot.EMPTY );
+				collectionMetadata = new Association();
 			}
 			else {
 				collectionMetadata = gridDialect.getAssociation( key, getAssociationContext() );

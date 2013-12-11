@@ -27,8 +27,6 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -98,7 +96,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	@Override
@@ -118,7 +116,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	@Override
@@ -132,7 +130,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		return new Association( EmptyAssociationSnapshot.SINGLETON );
+		return new Association();
 	}
 
 	@Override

@@ -36,11 +36,6 @@ import org.hibernate.ogm.grid.RowKey;
 public interface AssociationSnapshot {
 
 	/**
-	 * An empty unmodifiable {@link AssociationSnapshot}.
-	 */
-	AssociationSnapshot EMPTY = new EmptyAssociationSnapshot();
-
-	/**
 	 * Returns the value set in a column or null if not set
 	 */
 	Tuple get(RowKey column);

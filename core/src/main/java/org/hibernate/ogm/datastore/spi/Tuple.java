@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.SetFromCollection;
 
 /**
@@ -49,6 +50,10 @@ public class Tuple {
 
 	private final TupleSnapshot snapshot;
 	private Map<String, TupleOperation> currentState = null; //lazy initialize the Map as it costs quite some memory
+
+	public Tuple() {
+		this.snapshot = EmptyTupleSnapshot.INSTANCE;
+	}
 
 	public Tuple(TupleSnapshot snapshot) {
 		this.snapshot = snapshot;

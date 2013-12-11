@@ -23,7 +23,6 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -194,7 +193,7 @@ class EntityDehydrator {
 				.tableName( persister.getTableName( tableIndex ) )
 				.propertyType( persister.getPropertyTypes()[propertyIndex] )
 				.rowKeyColumnNames( rowKeyColumnNames );
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
 		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
@@ -245,7 +244,7 @@ class EntityDehydrator {
 				.propertyType( persister.getPropertyTypes()[propertyIndex] )
 				.rowKeyColumnNames( rowKeyColumnNames );
 		//add fk column value in TupleKey
-		Tuple tupleKey = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tupleKey = new Tuple();
 		for (int index = 0 ; index < propertyColumnNames.length ; index++) {
 			tupleKey.put( propertyColumnNames[index], oldColumnValue[index] );
 		}

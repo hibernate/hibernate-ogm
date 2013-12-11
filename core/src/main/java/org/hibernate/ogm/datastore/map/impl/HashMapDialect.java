@@ -31,9 +31,8 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
+import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -134,7 +133,7 @@ public class HashMapDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	@Override
@@ -154,7 +153,7 @@ public class HashMapDialect implements GridDialect {
 		for ( EntityKey key : entityMap.keySet() ) {
 			for ( EntityKeyMetadata metadata : metadatas ) {
 				if ( key.getTable().equals( metadata.getTable() ) ) {
-					consumer.consume( new Tuple( new MapTupleSnapshot( (Map) entityMap.get( key ) ) ) );
+					consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ) ) );
 				}
 			}
 		}

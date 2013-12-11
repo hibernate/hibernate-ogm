@@ -43,7 +43,6 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -295,7 +294,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private RowKeyAndTuple createAndPutTupleforInsert(Serializable key, PersistentCollection collection,
 			PropertyMetadataProvider metadataProvider, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -353,7 +352,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -379,7 +378,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
 			String[] names = { getIdentifierColumnName() };
