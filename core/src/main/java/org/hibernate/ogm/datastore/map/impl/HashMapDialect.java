@@ -137,6 +137,11 @@ public class HashMapDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
+	}
+
+	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		int nextValue = provider.getSharedAtomicInteger( key, initialValue, increment );
 		value.initialize( nextValue );

@@ -153,6 +153,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
+		public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+			return false;
+		}
+
+		@Override
 		public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		}
 

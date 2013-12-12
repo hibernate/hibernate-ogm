@@ -66,6 +66,31 @@ public class ConcurrentModificationTest extends OgmTestCase {
 			session.delete( animal );
 		}
 
+		animal = (Animal) session.get( Animal.class, "animal-2" );
+		if ( animal != null ) {
+			session.delete( animal );
+		}
+
+		Zoo zoo = (Zoo) session.get( Zoo.class, "zoo-1" );
+		if ( zoo != null ) {
+			session.delete( zoo );
+		}
+
+		Contributor contributor = (Contributor) session.get( Contributor.class, "contributor-1" );
+		if ( contributor != null ) {
+			session.delete( contributor );
+		}
+
+		contributor = (Contributor) session.get( Contributor.class, "contributor-2" );
+		if ( contributor != null ) {
+			session.delete( contributor );
+		}
+
+		Project project = (Project) session.get( Project.class, "project-1" );
+		if ( project != null ) {
+			session.delete( project );
+		}
+
 		transaction.commit();
 		session.close();
 	}
@@ -154,6 +179,52 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		transaction.commit();
 	}
 
+	@Test
+	public void canUpdateObjectPropertyAfterUpdateOfAssociationStoredInEntity() {
+		Animal animal1 = createAndPersistAnimal();
+		Animal animal2 = createAndPersistAnotherAnimal();
+		Zoo zoo = createAndPersistZoo( animal1 );
+
+		Transaction transaction = session.beginTransaction();
+
+		zoo.getAnimals().add( animal2 );
+		zoo.setName( "Hilwelma" );
+
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+
+		zoo = (Zoo) session.get( Zoo.class, "zoo-1" );
+		assertThat( zoo.getName() ).isEqualTo( "Hilwelma" );
+		assertThat( zoo.getAnimals() ).onProperty( "name" ).containsOnly( "Bruno", "Berta" );
+
+		transaction.commit();
+	}
+
+	@Test(expected = StaleObjectStateException.class)
+	public void concurrentUpdateToAssociationShouldCauseException() throws Exception {
+		Animal animal = createAndPersistAnimal();
+		Zoo zoo = createAndPersistZoo( animal );
+
+		doConcurrentUpdateToTheZoosAnimals();
+
+		Transaction transaction = session.beginTransaction();
+		zoo.getAnimals().remove( zoo.getAnimals().iterator().next() );
+		transaction.commit();
+	}
+
+	@Test(expected = StaleObjectStateException.class)
+	public void concurrentUpdateToObjectShouldCauseExceptionWhenUpdatingAssociation() throws Exception {
+		Animal animal = createAndPersistAnimal();
+		Zoo zoo = createAndPersistZoo( animal );
+
+		doConcurrentUpdateToZoo();
+
+		Transaction transaction = session.beginTransaction();
+		zoo.getAnimals().remove( zoo.getAnimals().iterator().next() );
+		transaction.commit();
+	}
+
 	private Animal createAndPersistAnimal() {
 		Animal animal = new Animal();
 		animal.setId( "animal-1" );
@@ -166,6 +237,37 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		assertThat( animal.getRevision() ).isNotNull();
 
 		return animal;
+	}
+
+	private Animal createAndPersistAnotherAnimal() {
+		return createAndPersistAnotherAnimal( session );
+	}
+
+	private Animal createAndPersistAnotherAnimal(Session session) {
+		Animal animal = new Animal();
+		animal.setId( "animal-2" );
+		animal.setName( "Berta" );
+
+		Transaction transaction = session.beginTransaction();
+		assertThat( animal.getRevision() ).isNull();
+		session.persist( animal );
+		transaction.commit();
+		assertThat( animal.getRevision() ).isNotNull();
+
+		return animal;
+	}
+
+	private Zoo createAndPersistZoo(Animal animal) {
+		Zoo zoo = new Zoo();
+		zoo.setId( "zoo-1" );
+		zoo.setName( "Bagenhecks Tierpark" );
+		zoo.getAnimals().add( animal );
+
+		Transaction transaction = session.beginTransaction();
+		session.persist( zoo );
+		transaction.commit();
+
+		return zoo;
 	}
 
 	private String doConcurrentUpdateToAnimal() throws Exception {
@@ -185,9 +287,157 @@ public class ConcurrentModificationTest extends OgmTestCase {
 		} ).get();
 	}
 
+	private String doConcurrentUpdateToTheZoosAnimals() throws Exception {
+		return Executors.newSingleThreadExecutor().submit( new Callable<String>() {
+
+			@Override
+			public String call() throws Exception {
+				Session session = openSession();
+
+				Animal berta = createAndPersistAnotherAnimal( session );
+
+				Transaction transaction = session.beginTransaction();
+				final Zoo zoo = (Zoo) session.get( Zoo.class, "zoo-1" );
+				zoo.getAnimals().add( berta );
+				transaction.commit();
+
+				return zoo.getRevision();
+			}
+		} ).get();
+	}
+
+	private String doConcurrentUpdateToZoo() throws Exception {
+		return Executors.newSingleThreadExecutor().submit( new Callable<String>() {
+
+			@Override
+			public String call() throws Exception {
+				Session session = openSession();
+				Transaction transaction = session.beginTransaction();
+
+				final Zoo zoo = (Zoo) session.get( Zoo.class, "zoo-1" );
+				zoo.setName( "Hilwema" );
+
+				transaction.commit();
+				return zoo.getRevision();
+			}
+		} ).get();
+	}
+
+	@Test
+	public void concurrentUpdateToObjectShouldCauseNoExceptionWithAssociationExcludedFromOptimisticLocking() throws Exception {
+		Project ogm = createAndPersistProjectWithContributor();
+
+		doConcurrentUpdateToProject();
+
+		Transaction transaction = session.beginTransaction();
+		ogm.setName( "OGM!" );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+
+		ogm = (Project) session.get( Project.class, "project-1" );
+		assertThat( ogm.getName() ).isEqualTo( "OGM!" );
+		assertThat( ogm.getMembers() ).onProperty( "name" ).containsOnly( "Davide", "Sanne" );
+
+		transaction.commit();
+	}
+
+	@Test
+	public void canUpdateEntityOnInverseSideOfManyToManyAssocationAfterUpdateToAssociation() throws Exception {
+		// given
+		Project search = createAndPersistProjectWithUser();
+		Project ogm = createAndPersistProjectWithContributor();
+
+		// when
+		Transaction transaction = session.beginTransaction();
+		User bob = search.getUsers().iterator().next();
+		bob.getProjects().add( ogm );
+		ogm.getUsers().add( bob );
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+		bob.setName( "Alice" );
+		transaction.commit();
+		session.clear();
+
+		// then
+		transaction = session.beginTransaction();
+		bob = (User) session.get( User.class, "user-1" );
+		assertThat( bob.getName() ).isEqualTo( "Alice" );
+		assertThat( bob.getProjects() ).onProperty( "name" ).containsOnly( "OGM", "Search" );
+		transaction.commit();
+	}
+
+	private Project createAndPersistProjectWithContributor() {
+		Transaction transaction = session.beginTransaction();
+
+		Project ogm = new Project();
+		ogm.setId( "project-1" );
+		ogm.setName( "OGM" );
+		session.persist( ogm  );
+
+		Contributor davide = new Contributor();
+		davide.setId( "contributor-1" );
+		davide.setName( "Davide" );
+		session.persist( davide );
+
+		ogm.getMembers().add( davide );
+		davide.getProjects().add( ogm );
+
+		transaction.commit();
+		return ogm;
+	}
+
+	private Project createAndPersistProjectWithUser() {
+		Transaction transaction = session.beginTransaction();
+
+		Project ogm = new Project();
+		ogm.setId( "project-2" );
+		ogm.setName( "Search" );
+		session.persist( ogm  );
+
+		User bob = new User();
+		bob.setId( "user-1" );
+		bob.setName( "Bob" );
+		session.persist( bob );
+
+		ogm.getUsers().add( bob );
+		bob.getProjects().add( ogm );
+
+		transaction.commit();
+		return ogm;
+	}
+
+	private String doConcurrentUpdateToProject() throws Exception {
+		return Executors.newSingleThreadExecutor().submit( new Callable<String>() {
+
+			@Override
+			public String call() throws Exception {
+				Session session = openSession();
+
+				Transaction transaction = session.beginTransaction();
+				final Project project = (Project) session.get( Project.class, "project-1" );
+
+				Contributor sanne = new Contributor();
+				sanne.setId( "contributor-2" );
+				sanne.setName( "Sanne" );
+
+				sanne.getProjects().add( project );
+				project.getMembers().add( sanne );
+
+				session.persist( sanne );
+
+				transaction.commit();
+
+				return project.getRevision();
+			}
+		} ).get();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class, Animal.class };
+		return new Class<?>[] { Hypothesis.class, Animal.class, Zoo.class, Project.class, Contributor.class, User.class };
 	}
 
 	@Override

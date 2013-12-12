@@ -169,6 +169,11 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
+	}
+
+	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		final AdvancedCache<RowKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
 		boolean done = false;

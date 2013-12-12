@@ -158,6 +158,11 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
+	}
+
+	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		final Cache cache = getIdentifierCache();
 		Element previousValue = cache.get( key );

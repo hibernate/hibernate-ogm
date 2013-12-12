@@ -470,6 +470,12 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		//TODO implement
+		return false;
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		// Override handling of calendar types
 		if ( type == StandardBasicTypes.CALENDAR || type == StandardBasicTypes.CALENDAR_DATE ) {

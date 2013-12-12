@@ -167,4 +167,9 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.executeBackendQuery( customQuery, metadatas );
 	}
 
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		log.tracef( "Determining whether assocication %1$s is stored in an entity structrure", associationKey );
+		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );
+	}
 }

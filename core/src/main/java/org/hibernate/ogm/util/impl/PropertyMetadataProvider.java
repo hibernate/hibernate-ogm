@@ -70,7 +70,7 @@ public class PropertyMetadataProvider {
 	private AssociationContext associationContext;
 	/*
 	 * Return true if the other side association has been searched and not been found
-	 * The other side association is searched when we are looking forward to udpate it
+	 * The other side association is searched when we are looking forward to update it
 	 * and need to build the corresponding association key.
 	 *
 	 * It uses Boolean instead of boolean to make sure it's used only after being calculated
@@ -132,7 +132,7 @@ public class PropertyMetadataProvider {
 
 	//action methods
 
-	private AssociationKey getCollectionMetadataKey() {
+	public AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			if ( associationKeyMetadata == null ) {
 				associationKeyMetadata = new AssociationKeyMetadata( tableName, keyColumnNames );
@@ -386,7 +386,7 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	private AssociationContext getAssociationContext() {
+	public AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
 			OptionsServiceContext serviceContext = session.getFactory()
 					.getServiceRegistry()
