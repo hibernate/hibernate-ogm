@@ -138,7 +138,7 @@
         <ehcacheVersion>2.6.6</ehcacheVersion>
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
-        <neo4jVersion>2.0.0-M03</neo4jVersion>
+        <neo4jVersion>2.0.1</neo4jVersion>
         <hibernateVersion>4.3.1.Final</hibernateVersion>
         <hibernateSearchVersion>4.5.0.CR1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha6</hibernateParserVersion>
