@@ -20,10 +20,38 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.ogm.datastore.impl.EmptyOptionsContext;
+
 /**
  * Provides context information to {@link org.hibernate.ogm.dialect.GridDialect}s when accessing {@link Association}s.
  *
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
 public class AssociationContext {
+
+	/**
+	 * An immutable empty association context.
+	 */
+	public static final AssociationContext EMPTY = new AssociationContext( new EmptyOptionsContext() );
+
+	private final OptionsContext optionsContext;
+
+	public AssociationContext(OptionsContext optionsContext) {
+		this.optionsContext = optionsContext;
+	}
+
+	/**
+	 * A context object providing access to the options effectively applying for a given association.
+	 *
+	 * @return A context object providing access to the options effectively applying for a given association
+	 */
+	public OptionsContext getOptionsContext() {
+		return optionsContext;
+	}
+
+	@Override
+	public String toString() {
+		return "AssociationContext [optionsContext=" + optionsContext + "]";
+	}
 }

@@ -116,19 +116,19 @@ public class HashMapDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key) {
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String,Object>>();
 		provider.putAssociation( key, associationMap );
 		return new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association, key );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		provider.removeAssociation( key );
 	}
 

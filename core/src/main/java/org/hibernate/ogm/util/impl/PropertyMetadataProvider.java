@@ -26,6 +26,7 @@ import java.util.Arrays;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
@@ -36,6 +37,8 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
@@ -75,6 +78,15 @@ public class PropertyMetadataProvider {
 	 */
 	private Boolean isBidirectional;
 	private AssociationKeyMetadata associationKeyMetadata;
+
+	/**
+	 * The entity type hosting the association.
+	 */
+	private final Class<?> entityType;
+
+	public PropertyMetadataProvider(Class<?> entityType) {
+		this.entityType = entityType;
+	}
 
 	//fluent methods for populating data
 
@@ -327,9 +339,9 @@ public class PropertyMetadataProvider {
 				collectionMetadata = new Association( AssociationSnapshot.EMPTY );
 			}
 			else {
-				collectionMetadata = gridDialect.getAssociation( key, this.getAssociationContext() );
+				collectionMetadata = gridDialect.getAssociation( key, getAssociationContext() );
 				if (collectionMetadata == null) {
-					collectionMetadata = gridDialect.createAssociation( key );
+					collectionMetadata = gridDialect.createAssociation( key, getAssociationContext() );
 				}
 			}
 		}
@@ -341,7 +353,7 @@ public class PropertyMetadataProvider {
 	 */
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), this.getAssociationContext() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), getAssociationContext() );
 		}
 		return collectionMetadata;
 	}
@@ -351,11 +363,11 @@ public class PropertyMetadataProvider {
 		//to prevent unidirectional associations to keep record of the inverse side
 		if ( isBidirectional != Boolean.FALSE ) {
 			if ( getCollectionMetadata().isEmpty() ) {
-				gridDialect.removeAssociation( getCollectionMetadataKey() );
+				gridDialect.removeAssociation( getCollectionMetadataKey(), getAssociationContext() );
 				collectionMetadata = null;
 			}
 			else {
-				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
+				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationContext() );
 			}
 		}
 	}
@@ -377,8 +389,16 @@ public class PropertyMetadataProvider {
 
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			associationContext = new AssociationContext();
+			OptionsServiceContext serviceContext = session.getFactory()
+					.getServiceRegistry()
+					.getService( OptionsService.class )
+					.context();
+
+			associationContext = new AssociationContext(
+					new PropertyOptionsContext( serviceContext, entityType, getCollectionMetadataKey().getCollectionRole() )
+			);
 		}
+
 		return associationContext;
 	}
 

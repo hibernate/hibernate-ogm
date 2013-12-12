@@ -120,7 +120,7 @@ public class CouchDBDialectTest {
 
 		AssociationKey key = createAssociationKey( entityKey, collectionRole, tableName, columnNames, columnValues, rowKeyColumnNames );
 
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, AssociationContext.EMPTY );
 
 		assertThat( createAssociation.getSnapshot(), notNullValue() );
 		assertThat( createAssociation.getSnapshot().getRowKeys().isEmpty(), is( true ) );
@@ -138,7 +138,7 @@ public class CouchDBDialectTest {
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, AssociationContext.EMPTY );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
@@ -147,9 +147,9 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, associationTuple );
-		dialect.updateAssociation( createAssociation, key );
+		dialect.updateAssociation( createAssociation, key, AssociationContext.EMPTY );
 
-		Association actualAssociation = dialect.getAssociation( key, new AssociationContext() );
+		Association actualAssociation = dialect.getAssociation( key, AssociationContext.EMPTY );
 		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
 	}
 
@@ -164,7 +164,7 @@ public class CouchDBDialectTest {
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, AssociationContext.EMPTY );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
@@ -173,7 +173,7 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, tuple );
-		dialect.updateAssociation( createAssociation, key );
+		dialect.updateAssociation( createAssociation, key, AssociationContext.EMPTY );
 
 		assertThat( dialect.getAssociationSize(), is( 1 ) );
 	}
@@ -214,5 +214,4 @@ public class CouchDBDialectTest {
 		datastoreProvider.configure( properties );
 		datastoreProvider.start();
 	}
-
 }

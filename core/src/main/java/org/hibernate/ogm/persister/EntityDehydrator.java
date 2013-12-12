@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.persister;
 
+import java.io.Serializable;
+
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -35,8 +37,6 @@ import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
-
-import java.io.Serializable;
 
 class EntityDehydrator {
 
@@ -183,7 +183,9 @@ class EntityDehydrator {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					persister.getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( newColumnValue )
@@ -231,7 +233,9 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					persister.getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( oldColumnValue )

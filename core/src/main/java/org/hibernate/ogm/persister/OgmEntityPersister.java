@@ -241,6 +241,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	//FIXME finish implement postInstantiate
+	@Override
 	public void postInstantiate() {
 		createLoaders();
 		//createUniqueKeyLoaders();
@@ -427,7 +428,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( associationKeyMetadata == null ) {
 			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
 		}
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
@@ -954,6 +957,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return true;
 	}
 
+	@Override
 	public void delete(Serializable id, Object version, Object object, SessionImplementor session)
 			throws HibernateException {
 		final int span = getTableSpan();

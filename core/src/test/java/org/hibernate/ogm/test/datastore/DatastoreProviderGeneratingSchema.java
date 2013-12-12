@@ -135,16 +135,16 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public Association createAssociation(AssociationKey key) {
+		public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 			return null;
 		}
 
 		@Override
-		public void updateAssociation(Association association, AssociationKey key) {
+		public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		}
 
 		@Override
-		public void removeAssociation(AssociationKey key) {
+		public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		}
 
 		@Override

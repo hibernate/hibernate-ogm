@@ -133,7 +133,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key) {
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
 		if ( isStoredInEntityStructure( key ) ) {
@@ -153,7 +153,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey associationKey) {
+	public void updateAssociation(Association association, AssociationKey associationKey, AssociationContext associationContext) {
 		List<Map<String, Object>> rows = getAssociationRows( association, associationKey );
 
 		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
@@ -183,7 +183,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isStoredInEntityStructure( key ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {

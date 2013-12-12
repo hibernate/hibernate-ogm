@@ -87,12 +87,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final AssociationKeyMetadata associationKeyMetadata;
 	private final AssociationKeyMetadata associationKeyMetadataFromElement;
 
+	private final String nodeName;
+
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
 		super( collection, cacheAccessStrategy, cfg, factory );
 		ServiceRegistry registry = factory.getServiceRegistry();
 		final TypeTranslator typeTranslator = registry.getService( TypeTranslator.class );
 		this.gridDialect = registry.getService( DatastoreServices.class ).getGridDialect();
+
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );
 		indexGridType = typeTranslator.getType( getIndexType() );
@@ -124,8 +127,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata( getTableName(), getElementColumnNames() );
 		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
-	}
 
+		nodeName = collection.getNodeName();
+	}
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
@@ -241,7 +245,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		int count = 0;
 		int i = 0;
 		Iterator<?> entries = collection.entries( this );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( key )
 				.keyGridType( getKeyGridType() )
@@ -400,7 +406,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.key( key )
 				.tableName( getTableName() )
 				.session( session )
@@ -431,7 +439,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -479,7 +489,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting rows of collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -521,7 +533,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -597,7 +611,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
-			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider(
+						getElementPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
@@ -645,7 +661,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			// Remove all the old entries
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+						getOwnerEntityPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.key( id )
 					.keyGridType( getKeyGridType() )

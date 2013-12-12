@@ -131,14 +131,14 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey associationKey) {
+	public Association createAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		return new Association( EmptyAssociationSnapshot.SINGLETON );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		for ( AssociationOperation action : association.getOperations() ) {
-			applyAssociationOperation( key, action );
+			applyAssociationOperation( key, action, associationContext );
 		}
 	}
 
@@ -154,7 +154,7 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( key != null ) {
 			Node node = findNode( key.getEntityKey() );
 			Iterable<Relationship> relationships = node.getRelationships( Direction.OUTGOING, relationshipType( key ) );
@@ -164,10 +164,10 @@ public class Neo4jDialect implements GridDialect {
 		}
 	}
 
-	private void applyAssociationOperation(AssociationKey key, AssociationOperation operation) {
+	private void applyAssociationOperation(AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
 		switch ( operation.getType() ) {
 		case CLEAR:
-			removeAssociation( key );
+			removeAssociation( key, associationContext );
 			break;
 		case PUT:
 			putAssociationOperation( key, operation );
