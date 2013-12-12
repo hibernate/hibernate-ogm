@@ -31,7 +31,7 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.InternalProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jGraphDatabaseServiceFactoryProvider;
-import org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory;
+import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
