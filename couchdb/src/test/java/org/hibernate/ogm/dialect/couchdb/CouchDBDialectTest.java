@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -81,7 +82,7 @@ public class CouchDBDialectTest {
 
 		dialect.updateTuple( createdTuple, key );
 
-		Tuple actualTuple = dialect.getTuple( key, null );
+		Tuple actualTuple = dialect.getTuple( key, new TupleContext( Collections.<String>emptyList() ) );
 
 		assertThat( actualTuple.get( "id" ), is( createdTuple.get( "id" ) ) );
 	}

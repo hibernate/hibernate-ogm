@@ -1199,4 +1199,47 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	public String getJpaEntityName() {
 		return jpaEntityName;
 	}
+
+	@Override
+	public void processInsertGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
+		if ( !hasUpdateGeneratedProperties() ) {
+			throw new AssertionFailure("no insert-generated properties");
+		}
+		processGeneratedProperties( id, entity, state, session, getPropertyInsertGenerationInclusions() );
+	}
+
+	@Override
+	public void processUpdateGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
+		if ( !hasUpdateGeneratedProperties() ) {
+			throw new AssertionFailure("no update-generated properties");
+		}
+		processGeneratedProperties( id, entity, state, session, getPropertyUpdateGenerationInclusions() );
+	}
+
+	/**
+	 * Re-reads the given entity, refreshing any properties updated on the server-side during insert or update.
+	 */
+	private void processGeneratedProperties(
+			Serializable id,
+			Object entity,
+			Object[] state,
+			SessionImplementor session,
+			ValueInclusion[] includeds) {
+
+		Tuple tuple = getResultsetById( id, session );
+
+		if ( tuple == null || tuple.getSnapshot().isEmpty() ) {
+			throw new HibernateException(
+					"Unable to locate row for retrieval of generated properties: " +
+							MessageHelper.infoString( this, id, getFactory() )
+					);
+		}
+		for ( int i = 0; i < getPropertySpan(); i++ ) {
+			if ( includeds[i] != ValueInclusion.NONE ) {
+				Object hydratedState = gridPropertyTypes[i].hydrate( tuple, getPropertyAliases( "", i ), session, entity );
+				state[i] = gridPropertyTypes[i].resolve( hydratedState, session, entity );
+				setPropertyValue( entity, i, state[i] );
+			}
+		}
+	}
 }

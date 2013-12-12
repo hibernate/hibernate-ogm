@@ -62,6 +62,10 @@ import org.hibernate.ogm.grid.EntityKey;
  * }
  * </pre>
  *
+ * Implementation note: The entity's properties are stored in a map, with embedded properties being represented by
+ * dot-separated property paths. When (de-)serializing this document from/to JSON via Jackson, this flat representation
+ * is converted into a hierarchical representation using nested maps (if embedded properties are present).
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
  */
@@ -92,13 +96,26 @@ public class EntityDocument extends Document {
 	}
 
 	public EntityDocument(EntityKey key) {
-		super( Identifier.createEntityId( key ) );
-		table = key.getTable();
+		this( key, null, null );
 	}
 
-	public void update(Tuple tuple) {
-		for ( String columnName : tuple.getColumnNames() ) {
-			properties.put( columnName, tuple.get( columnName ) );
+	/**
+	 * Creates a new entity representing the given tuple.
+	 *
+	 * @param key of the entity
+	 * @param revision the revision of the entity when loaded; may be {@code null} when inserting a new entity
+	 * @param tuple the properties of the entity; may be {@code null} when inserting a new entity
+	 */
+	public EntityDocument(EntityKey key, String revision, Tuple tuple) {
+		super( Identifier.createEntityId( key ), revision );
+		table = key.getTable();
+
+		if ( tuple != null ) {
+			for ( String columnName : tuple.getColumnNames() ) {
+				if ( columnName != Document.REVISION_FIELD_NAME ) {
+					properties.put( columnName, tuple.get( columnName ) );
+				}
+			}
 		}
 	}
 
@@ -112,9 +129,20 @@ public class EntityDocument extends Document {
 		this.table = table;
 	}
 
+	/**
+	 * Returns all properties of this entity, including its revision.
+	 *
+	 * @return all properties of this entity
+	 */
 	@JsonIgnore
 	public Map<String, Object> getProperties() {
-		return properties;
+		Map<String, Object> props = new HashMap<String, Object>( properties );
+
+		if ( getRevision() != null ) {
+			props.put( Document.REVISION_FIELD_NAME, getRevision() );
+		}
+
+		return props;
 	}
 
 	/**
