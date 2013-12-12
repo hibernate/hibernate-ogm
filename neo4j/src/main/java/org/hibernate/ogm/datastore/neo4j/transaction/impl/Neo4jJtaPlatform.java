@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.service.ServiceRegistry;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 import org.neo4j.kernel.GraphDatabaseAPI;
+import org.neo4j.kernel.impl.transaction.TxManager;
 import org.neo4j.kernel.impl.transaction.UserTransactionImpl;
 
 /**
@@ -26,7 +27,7 @@ public class Neo4jJtaPlatform extends AbstractJtaPlatform {
 
 	@Override
 	protected TransactionManager locateTransactionManager() {
-		return neo4jDb().getTxManager();
+		return neo4jDb().getDependencyResolver().resolveDependency( TxManager.class );
 	}
 
 	@Override
