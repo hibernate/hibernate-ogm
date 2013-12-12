@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
+import org.hibernate.ogm.dialect.neo4j.Neo4jSequenceGenerator;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;

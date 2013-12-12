@@ -28,7 +28,6 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
