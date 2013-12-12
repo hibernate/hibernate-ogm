@@ -23,16 +23,16 @@ package org.hibernate.ogm.cfg;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
  * to specify properties and mapping documents to be used when
- * creating an {@link OgmSessionFactory}.
+ * creating an {@link OgmSessionFactoryImpl}.
  *
  * @author Davide D'Alto
  */
@@ -63,8 +63,8 @@ public class OgmConfiguration extends Configuration {
 
 	@Override
 	@Deprecated
-	public SessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactory( (SessionFactoryImplementor) super.buildSessionFactory() );
+	public OgmSessionFactory buildSessionFactory() throws HibernateException {
+		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) super.buildSessionFactory() );
 	}
 
 	@Override

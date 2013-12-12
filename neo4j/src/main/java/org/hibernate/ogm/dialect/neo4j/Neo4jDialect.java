@@ -27,8 +27,6 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -98,7 +96,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	@Override
@@ -118,7 +116,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
 	}
 
 	@Override
@@ -131,15 +129,20 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey associationKey) {
-		return new Association( EmptyAssociationSnapshot.SINGLETON );
+	public Association createAssociation(AssociationKey associationKey, AssociationContext associationContext) {
+		return new Association();
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		for ( AssociationOperation action : association.getOperations() ) {
-			applyAssociationOperation( key, action );
+			applyAssociationOperation( key, action, associationContext );
 		}
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
 	}
 
 	@Override
@@ -154,7 +157,7 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( key != null ) {
 			Node node = findNode( key.getEntityKey() );
 			Iterable<Relationship> relationships = node.getRelationships( Direction.OUTGOING, relationshipType( key ) );
@@ -164,10 +167,10 @@ public class Neo4jDialect implements GridDialect {
 		}
 	}
 
-	private void applyAssociationOperation(AssociationKey key, AssociationOperation operation) {
+	private void applyAssociationOperation(AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
 		switch ( operation.getType() ) {
 		case CLEAR:
-			removeAssociation( key );
+			removeAssociation( key, associationContext );
 			break;
 		case PUT:
 			putAssociationOperation( key, operation );

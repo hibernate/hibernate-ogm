@@ -29,6 +29,7 @@ import org.hibernate.SessionBuilder;
 import org.hibernate.engine.spi.SessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.ogm.OgmSessionFactory;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

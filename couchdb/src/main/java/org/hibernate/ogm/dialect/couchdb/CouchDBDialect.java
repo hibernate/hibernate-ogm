@@ -20,13 +20,17 @@
  */
 package org.hibernate.ogm.dialect.couchdb;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -34,8 +38,10 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBAssociation;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
+import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
+import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
@@ -46,29 +52,53 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.logging.couchdb.impl.Log;
+import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.couchdb.mapping.impl.AssociationStorageOption;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.Iso8601StringDateType;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.Configurable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
  * Stores tuples and associations as JSON documents inside CouchDB.
  * <p>
- * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBEntity} object.
- * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link CouchDBAssociation} object.
+ * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link EntityDocument} object.
+ * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link AssociationDocument} object.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
  * @author Gunnar Morling
  */
-public class CouchDBDialect implements GridDialect {
+public class CouchDBDialect implements GridDialect, Configurable {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final CouchDBDatastoreProvider provider;
 
+	/**
+	 * The default association storage strategy if not configured explicitly via annotations or API.
+	 */
+	private AssociationStorageType defaultAssociationStorage;
+
 	public CouchDBDialect(CouchDBDatastoreProvider provider) {
 		this.provider = provider;
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		Object propertyValue = configurationValues.get( CouchDB.ASSOCIATIONS_STORE );
+
+		if ( propertyValue != null ) {
+			this.defaultAssociationStorage = AssociationStorageType.valueOf( propertyValue.toString() );
+		}
+		else {
+			this.defaultAssociationStorage = AssociationStorageType.IN_ENTITY;
+		}
 	}
 
 	@Override
@@ -78,7 +108,11 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
+		if ( !tupleContext.getSelectableColumns().contains( Document.REVISION_FIELD_NAME ) ) {
+			log.entityShouldHaveRevisionProperty( key.getTable() );
+		}
+
+		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
 		}
@@ -93,12 +127,17 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		CouchDBEntity entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
-		if ( entity == null ) {
-			entity = new CouchDBEntity( key );
+		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
+
+		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
+
+		// load the latest revision for updates without the revision being present; a warning about
+		// this mapping will have been issued during get
+		if ( revision == null && !snapshot.isCreatedOnInsert() ) {
+			revision = getDataStore().getCurrentRevision( Identifier.createEntityId( key ) );
 		}
-		entity.update( tuple );
-		getDataStore().saveDocument( entity );
+
+		getDataStore().saveDocument( new EntityDocument( key, revision, tuple ) );
 	}
 
 	@Override
@@ -108,37 +147,104 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		CouchDBAssociation association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
-		if ( association != null ) {
-			return new Association( new CouchDBAssociationSnapshot( association, key ) );
+		CouchDBAssociation couchDBAssociation = null;
+
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getCollectionRole() ) ) {
+				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+			}
 		}
-		return null;
-	}
-
-	@Override
-	public Association createAssociation(AssociationKey key) {
-		CouchDBAssociation association = new CouchDBAssociation( Identifier.createAssociationId( key ) );
-		return new Association( new CouchDBAssociationSnapshot( association, key ) );
-	}
-
-	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
-		CouchDBAssociation couchDBAssociation = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
-		if ( couchDBAssociation == null ) {
-			couchDBAssociation = new CouchDBAssociation( Identifier.createAssociationId( key ) );
+		else {
+			AssociationDocument association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
+			if ( association != null ) {
+				couchDBAssociation = CouchDBAssociation.fromAssociationDocument( association );
+			}
 		}
-		couchDBAssociation.update( association, key );
-		getDataStore().saveDocument( couchDBAssociation );
+
+		return couchDBAssociation != null ? new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) ) : null;
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
-		removeDocumentIfPresent( Identifier.createAssociationId( key ) );
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
+		CouchDBAssociation couchDBAssociation = null;
+
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity == null ) {
+				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
+			}
+
+			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+		}
+		else {
+			AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
+			couchDBAssociation = CouchDBAssociation.fromAssociationDocument( association );
+		}
+
+		return new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) );
+	}
+
+	@Override
+	public void updateAssociation(Association association, AssociationKey associationKey, AssociationContext associationContext) {
+		List<Map<String, Object>> rows = getAssociationRows( association, associationKey );
+
+		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
+		couchDBAssociation.setRows( rows );
+
+		getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
+	}
+
+	private List<Map<String, Object>> getAssociationRows(Association association, AssociationKey associationKey) {
+		List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
+
+		for ( RowKey rowKey : association.getKeys() ) {
+			Tuple tuple = association.get( rowKey );
+
+			//TODO Should we have TupleBackedMap?
+			Map<String, Object> row = new HashMap<String, Object>( 3 );
+			for ( String columnName : tuple.getColumnNames() ) {
+				// don't store columns which are part of the association key and can be retrieved from there
+				if ( !associationKey.isKeyColumn( columnName ) ) {
+					row.put( columnName, tuple.get( columnName ) );
+				}
+			}
+
+			rows.add( row );
+		}
+		return rows;
+	}
+
+	@Override
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
+		if ( isStoredInEntityStructure( key, associationContext ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity != null ) {
+				owningEntity.removeAssociation( key.getCollectionRole() );
+				getDataStore().saveDocument( owningEntity );
+			}
+		}
+		else {
+			removeDocumentIfPresent( Identifier.createAssociationId( key ) );
+		}
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( new CouchDBTupleSnapshot() );
+		return new Tuple();
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		AssociationStorageType associationStorage = associationContext
+				.getOptionsContext()
+				.getUnique( AssociationStorageOption.class );
+
+		if ( associationStorage == null ) {
+			associationStorage = defaultAssociationStorage;
+		}
+
+		return associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 
 	@Override
@@ -191,7 +297,14 @@ public class CouchDBDialect implements GridDialect {
 	 * @return the number of associations
 	 */
 	public int getAssociationSize() {
-		return getDataStore().getNumberOfAssociations();
+		Map<AssociationStorageType, Integer> associationCountByType = getDataStore().getNumberOfAssociations();
+
+		int totalCount = 0;
+		for ( int count : associationCountByType.values() ) {
+			totalCount += count;
+		}
+
+		return totalCount;
 	}
 
 	/**
@@ -229,5 +342,4 @@ public class CouchDBDialect implements GridDialect {
 	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for CouchDB" );
 	}
-
 }

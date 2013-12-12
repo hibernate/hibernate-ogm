@@ -29,7 +29,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Test;
 
@@ -42,7 +42,7 @@ public class AssociationStorageOptionTest {
 
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
-		OptionsContext optionsContext = new OptionsContext();
+		WritableOptionsServiceContext optionsContext = new WritableOptionsServiceContext();
 		ConfigurationContext context = new ConfigurationContext( optionsContext );
 
 		MongoDBGlobalContext mapping = new MongoDBDatastoreProvider().getConfigurationBuilder( context );

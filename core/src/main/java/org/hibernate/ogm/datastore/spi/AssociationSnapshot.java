@@ -34,6 +34,7 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public interface AssociationSnapshot {
+
 	/**
 	 * Returns the value set in a column or null if not set
 	 */

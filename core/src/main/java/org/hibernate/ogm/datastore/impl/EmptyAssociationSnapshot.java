@@ -34,7 +34,7 @@ import org.hibernate.ogm.grid.RowKey;
  */
 public final class EmptyAssociationSnapshot implements AssociationSnapshot {
 
-	public static final EmptyAssociationSnapshot SINGLETON = new EmptyAssociationSnapshot();
+	public static final EmptyAssociationSnapshot INSTANCE = new EmptyAssociationSnapshot();
 
 	private EmptyAssociationSnapshot() {
 	}

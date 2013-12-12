@@ -25,7 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
 import org.hibernate.ogm.options.mongodb.WriteConcern;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,11 +35,11 @@ import org.junit.Test;
  */
 public class WriteConcernAnnotationTest {
 
-	private OptionsContext optionsContext;
+	private WritableOptionsServiceContext optionsContext;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new OptionsContext();
+		optionsContext = new WritableOptionsServiceContext();
 	}
 
 	@Test

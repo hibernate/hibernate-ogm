@@ -25,14 +25,12 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
@@ -46,9 +44,8 @@ import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
 import org.hibernate.ogm.test.utils.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestHelper;
-import org.junit.After;
-import org.junit.Before;
+import org.hibernate.ogm.test.utils.TestSessionFactory;
+import org.hibernate.ogm.test.utils.TestSessionFactory.Scope;
 import org.junit.Test;
 
 /**
@@ -58,31 +55,15 @@ import org.junit.Test;
  */
 public class OptionIntegrationTest extends OgmTestCase {
 
-	private OgmSession session;
-
 	/**
 	 * Not using the SF from the super class to reset it for each test method
 	 */
-	private SessionFactory sessions;
-
-	@Before
-	public void openOgmSession() {
-		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-
-		sessions = configuration.buildSessionFactory();
-		session = (OgmSession) sessions.openSession();
-	}
-
-	@After
-	public void closeSession() {
-		session.close();
-		sessions.close();
-	}
+	@TestSessionFactory(scope = Scope.TEST_METHOD)
+	private OgmSessionFactory sessions;
 
 	@Test
 	public void testThatEntityOptionCanBeSetAndRetrieved() throws Exception {
-		SampleGlobalContext configuration = session.configureDatastore( SampleNoSqlDatastore.class );
+		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
 		configuration
 			.entity( Refrigerator.class )
 				.force( true );
@@ -95,7 +76,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatEntityOptionsCanBeSetAndRetrievedOnMultipleTypes() throws Exception {
-		SampleGlobalContext configuration = session.configureDatastore( SampleNoSqlDatastore.class );
+		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
 		configuration
 			.entity( Refrigerator.class )
 				.force( true )
@@ -111,7 +92,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatPropertyOptionCanBeSetAndRetrieved() throws Exception {
-		SampleGlobalContext configuration = session.configureDatastore( SampleNoSqlDatastore.class );
+		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
 		configuration
 			.entity( Refrigerator.class )
 				.property( "temperature", ElementType.FIELD )
@@ -126,7 +107,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	 */
 	@Test(expected = HibernateException.class)
 	public void testThatWrongStoreTypeCausesException() {
-		session.configureDatastore( AnotherDatastore.class );
+		sessions.configureDatastore( AnotherDatastore.class );
 	}
 
 	@Override
@@ -140,8 +121,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	}
 
 	private OptionsServiceContext getOptionsContext() {
-		return session.getSessionFactory()
-				.getServiceRegistry()
+		return sessions.getServiceRegistry()
 				.getService( OptionsService.class )
 				.context();
 	}

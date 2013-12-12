@@ -47,9 +47,10 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -304,7 +305,7 @@ public class OgmEntityManager implements EntityManager {
 	private OgmSession buildOgmSession(Session session) {
 		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEm.getEntityManagerFactory() )
 				.getSessionFactory();
-		final OgmSessionFactory ogmSessionFactory = new OgmSessionFactory( (SessionFactoryImplementor) sessionFactory );
+		final OgmSessionFactory ogmSessionFactory = new OgmSessionFactoryImpl( (SessionFactoryImplementor) sessionFactory );
 		return new OgmSession( ogmSessionFactory, (EventSource) session );
 	}
 

@@ -44,6 +44,7 @@ import org.hibernate.type.Type;
  * Dialect abstracting Hibernate OGM from the grid implementation
  *
  * @author Emmanuel Bernard
+ * @author Gunnar Morling
  */
 public interface GridDialect extends Service {
 
@@ -79,19 +80,29 @@ public interface GridDialect extends Service {
 	 * Create an empty container for the list of tuples corresponding to a given association
 	 * Only used if the association data is not present
 	 */
-	Association createAssociation(AssociationKey key);
+	Association createAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Update a given list of tuples corresponding to a given association
 	 */
-	void updateAssociation(Association association, AssociationKey key);
+	void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
 	 */
-	void removeAssociation(AssociationKey key);
+	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
 	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
+
+	/**
+	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may
+	 * support storing associations within entity documents and would have to return {@code true} if this is the case
+	 * for a given association.
+	 *
+	 * @param associationKey identifies the association of interest
+	 * @return {@code true} if the specified association is stored within an entity structure, {@code false} otherwise.
+	 */
+	boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext);
 
 	/**
 	 * Update value with the guaranteed next value with the defined increment

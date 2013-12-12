@@ -20,10 +20,13 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.io.Serializable;
+import java.util.Arrays;
+
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -33,6 +36,8 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
@@ -44,12 +49,6 @@ import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Emmanuel Bernard
@@ -71,13 +70,22 @@ public class PropertyMetadataProvider {
 	private AssociationContext associationContext;
 	/*
 	 * Return true if the other side association has been searched and not been found
-	 * The other side association is searched when we are looking forward to udpate it
+	 * The other side association is searched when we are looking forward to update it
 	 * and need to build the corresponding association key.
 	 *
 	 * It uses Boolean instead of boolean to make sure it's used only after being calculated
 	 */
 	private Boolean isBidirectional;
 	private AssociationKeyMetadata associationKeyMetadata;
+
+	/**
+	 * The entity type hosting the association.
+	 */
+	private final Class<?> entityType;
+
+	public PropertyMetadataProvider(Class<?> entityType) {
+		this.entityType = entityType;
+	}
 
 	//fluent methods for populating data
 
@@ -124,7 +132,7 @@ public class PropertyMetadataProvider {
 
 	//action methods
 
-	private AssociationKey getCollectionMetadataKey() {
+	public AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			if ( associationKeyMetadata == null ) {
 				associationKeyMetadata = new AssociationKeyMetadata( tableName, keyColumnNames );
@@ -327,12 +335,12 @@ public class PropertyMetadataProvider {
 			AssociationKey key = getCollectionMetadataKey();
 			if ( isBidirectional == Boolean.FALSE ) {
 				//fake association to prevent unidirectional associations to keep record of the inverse side
-				collectionMetadata = new Association( new MapAssociationSnapshot( Collections.EMPTY_MAP ) );
+				collectionMetadata = new Association();
 			}
 			else {
-				collectionMetadata = gridDialect.getAssociation( key, this.getAssociationContext() );
+				collectionMetadata = gridDialect.getAssociation( key, getAssociationContext() );
 				if (collectionMetadata == null) {
-					collectionMetadata = gridDialect.createAssociation( key );
+					collectionMetadata = gridDialect.createAssociation( key, getAssociationContext() );
 				}
 			}
 		}
@@ -344,7 +352,7 @@ public class PropertyMetadataProvider {
 	 */
 	public Association getCollectionMetadataOrNull() {
 		if ( collectionMetadata == null ) {
-			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), this.getAssociationContext() );
+			collectionMetadata = gridDialect.getAssociation( getCollectionMetadataKey(), getAssociationContext() );
 		}
 		return collectionMetadata;
 	}
@@ -354,11 +362,11 @@ public class PropertyMetadataProvider {
 		//to prevent unidirectional associations to keep record of the inverse side
 		if ( isBidirectional != Boolean.FALSE ) {
 			if ( getCollectionMetadata().isEmpty() ) {
-				gridDialect.removeAssociation( getCollectionMetadataKey() );
+				gridDialect.removeAssociation( getCollectionMetadataKey(), getAssociationContext() );
 				collectionMetadata = null;
 			}
 			else {
-				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey() );
+				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationContext() );
 			}
 		}
 	}
@@ -378,19 +386,18 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	private AssociationContext getAssociationContext() {
+	public AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			if ( collectionPersister != null ) {
-				associationContext = collectionPersister.getAssociationContext();
-			}
-			else {
-				List<String> selectableColumns = new ArrayList<String>( rowKeyColumnNames.length );
-				for ( String column : rowKeyColumnNames ) {
-					selectableColumns.add( column );
-				}
-				associationContext = new AssociationContext( selectableColumns );
-			}
+			OptionsServiceContext serviceContext = session.getFactory()
+					.getServiceRegistry()
+					.getService( OptionsService.class )
+					.context();
+
+			associationContext = new AssociationContext(
+					new PropertyOptionsContext( serviceContext, entityType, getCollectionMetadataKey().getCollectionRole() )
+			);
 		}
+
 		return associationContext;
 	}
 

@@ -28,7 +28,7 @@ import org.hibernate.ogm.options.mongodb.AssociationStorage;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,12 +40,12 @@ import org.junit.Test;
  */
 public class AssociationStorageAnnotationTest {
 
-	private OptionsContext optionsContext;
+	private WritableOptionsServiceContext optionsContext;
 	private ConfigurationContext context;
 
 	@Before
 	public void setupContexts() {
-		optionsContext = new OptionsContext();
+		optionsContext = new WritableOptionsServiceContext();
 		context = new ConfigurationContext( optionsContext );
 	}
 
