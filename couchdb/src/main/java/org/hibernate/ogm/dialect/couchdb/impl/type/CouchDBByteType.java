@@ -18,41 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.type;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.WrappedGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 
 /**
+ * Type for storing {@code byte}s in CouchDB. They are stored as JSON numbers.
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+public class CouchDBByteType extends AbstractGenericBasicType<Byte> {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	public static final CouchDBByteType INSTANCE = new CouchDBByteType();
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	public CouchDBByteType() {
+		super( WrappedGridTypeDescriptor.INSTANCE, ByteTypeDescriptor.INSTANCE );
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	@Override
+	public String getName() {
+		return "couchdb_byte";
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
-
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
-
 }

@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
-import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
+import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;

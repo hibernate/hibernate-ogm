@@ -18,41 +18,61 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.backend.json;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
 /**
+ * Used to serialize and deserialize a REST CouchDB response to a PUT and a DELETE
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class GenericResponse {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	private boolean ok;
+	private String rev;
+	private String error;
+	private String reason;
+	private String id;
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	public boolean getOk() {
+		return ok;
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	public void setOk(boolean ok) {
+		this.ok = ok;
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
-
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	public String getRev() {
+		return rev;
 	}
 
+	public void setRev(String rev) {
+		this.rev = rev;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 }

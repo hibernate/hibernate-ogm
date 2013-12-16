@@ -18,41 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.type;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.hibernate.MappingException;
+import org.hibernate.engine.spi.Mapping;
+import org.hibernate.ogm.type.AbstractGenericBasicType;
+import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+public class CouchDBBlobType extends AbstractGenericBasicType<byte[]> {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	public static final CouchDBBlobType INSTANCE = new CouchDBBlobType();
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	public CouchDBBlobType() {
+		super( StringMappedGridTypeDescriptor.INSTANCE, PrimitiveByteArrayTypeDescriptor.INSTANCE );
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	@Override
+	public String getName() {
+		return "couchdb_byte_array";
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
-
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	@Override
+	public int getColumnSpan(Mapping mapping) throws MappingException {
+		return 1;
 	}
-
 }

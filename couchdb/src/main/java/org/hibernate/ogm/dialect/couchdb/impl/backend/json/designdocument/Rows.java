@@ -18,41 +18,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
+import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import java.util.List;
 
 /**
+ * Represents the Result of the REST call associated with the {@link AssociationsDesignDocument} and
+ * {@link EntitiesDesignDocument}
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+public class Rows {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	private List<Row> rows;
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	List<Row> getRows() {
+		return rows;
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	void setRows(List<Row> rows) {
+		this.rows = rows;
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
-
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	@JsonIgnore
+	public int size() {
+		if ( rows.size() == 0 ) {
+			return 0;
+		}
+		else {
+			return rows.get( 0 ).getValue();
+		}
 	}
 
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	private static class Row {
+		private int value;
+
+		public int getValue() {
+			return value;
+		}
+
+		public void setValue(int value) {
+			this.value = value;
+		}
+	}
 }

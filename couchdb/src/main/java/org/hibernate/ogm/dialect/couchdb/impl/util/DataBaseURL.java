@@ -18,41 +18,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.util;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
+ * Represent the URL pointing to an instance of the CouchDB
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+public class DataBaseURL {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	private static final String PROTOCOL = "http";
+	private static final String SLASH = "/";
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	private URL databaseURL;
+
+	public DataBaseURL(String host, int port, String databaseName) throws MalformedURLException {
+		databaseURL = new URL( PROTOCOL, host, port, SLASH + databaseName );
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	/**
+	 * The name of the database
+	 *
+	 * @return the name of the database
+	 */
+	public String getDataBaseName() {
+		return databaseURL.getPath().substring( 1 );
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
+	/**
+	 * The server URL
+	 *
+	 * @return the server Url
+	 */
+	public String getServerUrl() {
+		return toString().replace( SLASH + getDataBaseName(), "" );
+	}
 
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	@Override
+	public String toString() {
+		return databaseURL.toString();
 	}
 
 }

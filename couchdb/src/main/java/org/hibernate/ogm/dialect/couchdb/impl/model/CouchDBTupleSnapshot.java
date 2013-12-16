@@ -18,41 +18,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.util;
+package org.hibernate.ogm.dialect.couchdb.impl.model;
 
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
-import org.junit.Test;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.grid.EntityKey;
 
 /**
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURLTest {
+public class CouchDBTupleSnapshot implements TupleSnapshot {
 
-	@Test
-	public void shouldReturnTheCorrectServerURL() throws Exception {
-		String expectedServerURL = "http://localhost:5984";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databasename" );
+	private final Map<String, Object> properties;
 
-		assertThat( dataBaseURL.getServerUrl(), is( expectedServerURL ) );
+	public CouchDBTupleSnapshot() {
+		this.properties = Collections.emptyMap();
 	}
 
-	@Test
-	public void shouldReturnTheCorrectServerName() throws Exception {
-		String expectedName = "not_important";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, expectedName );
-
-		assertThat( dataBaseURL.getDataBaseName(), is( expectedName ) );
+	public CouchDBTupleSnapshot(EntityKey key) {
+		properties = new HashMap<String, Object>();
+		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
+			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
+		}
 	}
 
-	@Test
-	public void shouldReturnTheCorectURLStringRepresentation() throws Exception {
-		String expectedString = "http://localhost:5984/databaseName";
-		DataBaseURL dataBaseURL = new DataBaseURL( "localhost", 5984, "databaseName" );
-
-		assertThat( dataBaseURL.toString(), is( expectedString ) );
+	public CouchDBTupleSnapshot(Map<String, Object> properties) {
+		this.properties = properties;
 	}
 
+	@Override
+	public Object get(String column) {
+		return properties.get( column );
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return properties.isEmpty();
+	}
+
+	@Override
+	public Set<String> getColumnNames() {
+		return properties.keySet();
+	}
 }
