@@ -18,22 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.backend.json;
+package org.hibernate.ogm.options.couchdb;
 
 /**
- * Represents the result returned by the entity/association count list functions.
+ * A strategy for storing association information in CouchDB.
  *
  * @author Gunnar Morling
  */
-public class CountResponse {
+public enum AssociationStorageType {
 
-	private int count;
+	/**
+	 * Stores association information in a dedicated CouchDB document per association.
+	 */
+	ASSOCIATION_DOCUMENT,
 
-	public int getCount() {
-		return count;
-	}
-
-	public void setCount(int count) {
-		this.count = count;
-	}
+	/**
+	 * Store association information within the entity.
+	 */
+	IN_ENTITY
 }

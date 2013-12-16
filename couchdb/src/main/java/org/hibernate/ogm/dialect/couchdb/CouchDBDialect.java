@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect.couchdb;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -48,6 +49,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.Iso8601StringDateType;
@@ -190,7 +192,14 @@ public class CouchDBDialect implements GridDialect {
 	 * @return the number of associations
 	 */
 	public int getAssociationSize() {
-		return getDataStore().getNumberOfAssociations();
+		Map<AssociationStorageType, Integer> associationCountByType = getDataStore().getNumberOfAssociations();
+
+		int totalCount = 0;
+		for ( int count : associationCountByType.values() ) {
+			totalCount += count;
+		}
+
+		return totalCount;
 	}
 
 	/**
