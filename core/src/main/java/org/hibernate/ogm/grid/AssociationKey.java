@@ -30,6 +30,7 @@ import org.hibernate.annotations.common.AssertionFailure;
  *
  * @author Emmanuel Bernard
  * @author Sanne Grinovero
+ * @author Gunnar Morling
  */
 public final class AssociationKey implements Serializable {
 
@@ -144,5 +145,40 @@ public final class AssociationKey implements Serializable {
 
 	public void setAssociationKind(AssociationKind kind) {
 		this.associationKind = kind;
+	}
+
+	/**
+	 * Whether the given column is part of this key or not.
+	 *
+	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
+	 */
+	public boolean isKeyColumn(String columnName) {
+		for ( String keyColumName : getColumnNames() ) {
+			if ( keyColumName.equals( columnName ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the value of the given column if part of this key. Use {@link AssociationKey#isKeyColumn(String)} to
+	 * check whether a given column is part of this key prior to invoking this method.
+	 *
+	 * @param columnName the name of interest
+	 * @return the value of the given column.
+	 */
+	public Object getColumnValue(String columnName) {
+		for ( int i = 0; i < getColumnNames().length; i++ ) {
+			String name = getColumnNames()[i];
+			if ( name.equals( columnName ) ) {
+				return getColumnValues()[i];
+			}
+		}
+
+		throw new AssertionFailure(
+				String.format( "Given column %s is not part of this key: %s", columnName, this.toString() )
+		);
 	}
 }

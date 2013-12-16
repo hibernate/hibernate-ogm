@@ -111,12 +111,14 @@ public class CouchDBDialectTest {
 
 	@Test
 	public void createAssociationShouldCreateAnEmptyAssociation() {
-
 		Object[] columnValues = { "17" };
 		String tableName = "user_address";
 		String[] columnNames = { "id" };
 		String[] rowKeyColumnNames = new String[] { "id" };
-		AssociationKey key = createAssociationKey( tableName, columnNames, columnValues, rowKeyColumnNames );
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
+		String collectionRole = "addresses";
+
+		AssociationKey key = createAssociationKey( entityKey, collectionRole, tableName, columnNames, columnValues, rowKeyColumnNames );
 
 		Association createAssociation = dialect.createAssociation( key );
 
@@ -129,19 +131,22 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
+		Tuple tuple = dialect.createTuple( entityKey );
+		dialect.updateTuple( tuple, entityKey );
 
 		AssociationKey key = createAssociationKey(
-				"user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
 		Association createAssociation = dialect.createAssociation( key );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
 		properties.put( "addresses_id", 1 );
-		Tuple tuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
+		Tuple associationTuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
-		createAssociation.put( rowKey, tuple );
+		createAssociation.put( rowKey, associationTuple );
 		dialect.updateAssociation( createAssociation, key );
 
 		Association actualAssociation = dialect.getAssociation( key, new AssociationContext() );
@@ -154,9 +159,10 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 
 		AssociationKey key = createAssociationKey(
-				tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+				entityKey, "addresses", tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
 		Association createAssociation = dialect.createAssociation( key );
 
@@ -188,10 +194,14 @@ public class CouchDBDialectTest {
 		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
 	}
 
-	private AssociationKey createAssociationKey(String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
+	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames );
 		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
-		return new AssociationKey( associationKeyMetadata, columnValues );
+
+		AssociationKey associationKey = new AssociationKey( associationKeyMetadata, columnValues );
+		associationKey.setOwnerEntityKey( ownerEntityKey );
+		associationKey.setCollectionRole( collectionRole );
+		return associationKey;
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {

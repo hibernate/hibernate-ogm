@@ -21,19 +21,21 @@
 package org.hibernate.ogm.dialect.couchdb.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
+import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 
 /**
- * {@link AssociationSnapshot} implementation based on a {@link AssociationDocument} object as written to and retrieved
- * from the CouchDB server.
+ * {@link AssociationSnapshot} implementation based on a
+ * {@link org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument} object as written to and retrieved from
+ * the CouchDB server.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling
@@ -43,12 +45,13 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	/**
 	 * The original association representing this snapshot as retrieved from CouchDB.
 	 */
-	private final AssociationDocument couchDbAssociation;
-
+	private final CouchDBAssociation couchDbAssociation;
+	private final AssociationKey key;
 	private final Map<RowKey, Map<String, Object>> rows = new HashMap<RowKey, Map<String, Object>>();
 
-	public CouchDBAssociationSnapshot(AssociationDocument association, AssociationKey key) {
+	public CouchDBAssociationSnapshot(CouchDBAssociation association, AssociationKey key) {
 		this.couchDbAssociation = association;
+		this.key = key;
 
 		for ( Map<String, Object> row : association.getRows() ) {
 			RowKey rowKey = new RowKeyBuilder()
@@ -56,11 +59,6 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 					.addColumns( key.getRowKeyColumnNames() )
 					.values( getRowKeyColumnValues( row, key ) )
 					.build();
-
-			// Add values present in the given key to the row data
-			for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-				row.put( key.getColumnNames()[i], key.getColumnValues()[i] );
-			}
 
 			rows.put( rowKey, row );
 		}
@@ -74,26 +72,13 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 		Map<String, Object> rowKeyColumnValues = new HashMap<String, Object>();
 
 		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
-			Object valueFromAssocationKey = getColumnValue( key, rowKeyColumnName );
-			if ( valueFromAssocationKey != null ) {
-				rowKeyColumnValues.put( rowKeyColumnName, valueFromAssocationKey );
-			}
-			else {
-				rowKeyColumnValues.put( rowKeyColumnName, row.get( rowKeyColumnName ) );
-			}
+			rowKeyColumnValues.put(
+					rowKeyColumnName,
+					key.isKeyColumn( rowKeyColumnName ) ? key.getColumnValue( rowKeyColumnName ) : row.get( rowKeyColumnName )
+			);
 		}
 
 		return rowKeyColumnValues;
-	}
-
-	private static Object getColumnValue(AssociationKey key, String columnName) {
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			if ( columnName.equals( key.getColumnNames()[i] ) ) {
-				return key.getColumnValues()[i];
-			}
-		}
-
-		return null;
 	}
 
 	@Override
@@ -104,7 +89,7 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		Map<String, Object> row = rows.get( column );
-		return row != null ? new Tuple( new CouchDBTupleSnapshot( row ) ) : null;
+		return row != null ? new Tuple( new CouchDBAssociationRowTupleSnapshot( row, key ) ) : null;
 	}
 
 	@Override
@@ -117,12 +102,50 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 		return rows.keySet();
 	}
 
-	public AssociationDocument getCouchDbAssociation() {
+	public CouchDBAssociation getCouchDbAssociation() {
 		return couchDbAssociation;
 	}
 
 	@Override
 	public String toString() {
-		return "CouchDBAssociationSnapshot [rows=" + rows + "]";
+		return "CouchDBAssociationSnapshot [key=" + key + ", rows=" + rows + "]";
+	}
+
+	private static class CouchDBAssociationRowTupleSnapshot implements TupleSnapshot {
+
+		private final Map<String, Object> associationRow;
+		private final AssociationKey associationKey;
+		private final Set<String> columnNames;
+
+		private CouchDBAssociationRowTupleSnapshot(Map<String, Object> associationRow, AssociationKey associationKey) {
+			this.associationRow = associationRow;
+			this.associationKey = associationKey;
+			this.columnNames = getColumnNames( associationRow, associationKey );
+		}
+
+		private static Set<String> getColumnNames(Map<String, Object> associationRow, AssociationKey associationKey) {
+			Set<String> columnNames = new HashSet<String>( associationRow.size() + associationKey.getColumnNames().length );
+			columnNames.addAll( associationRow.keySet() );
+			for ( String column : associationKey.getColumnNames() ) {
+				columnNames.add( column );
+			}
+
+			return columnNames;
+		}
+
+		@Override
+		public Object get(String column) {
+			return associationKey.isKeyColumn( column ) ? associationKey.getColumnValue( column ) : associationRow.get( column );
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return columnNames.isEmpty();
+		}
+
+		@Override
+		public Set<String> getColumnNames() {
+			return columnNames;
+		}
 	}
 }

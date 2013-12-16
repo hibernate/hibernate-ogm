@@ -21,21 +21,15 @@
 package org.hibernate.ogm.dialect.couchdb.backend.json;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonTypeName;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
-import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Contains the information related to an {@link Association}
+ * Represents an association stored as a separate CouchDB document.
  *
  * Used to serialize and deserialize the JSON with the following structure:
  *
@@ -53,7 +47,7 @@ public class AssociationDocument extends Document {
 	 */
 	public static final String TYPE_NAME = "association";
 
-	private List<Map<String, Object>> rows = new ArrayList<Map<String,Object>>();
+	private List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
 
 	public AssociationDocument() {
 	}
@@ -62,42 +56,7 @@ public class AssociationDocument extends Document {
 		super( id );
 	}
 
-	/**
-	 * Updates the CouchDBAssociation with the data from {@link Association}
-	 *
-	 * @param association
-	 *            used to update the CouchDBAssociation
-	 */
-	@JsonIgnore
-	public void update(Association association, AssociationKey associationKey) {
-		rows.clear();
-
-		for ( RowKey rowKey : association.getKeys() ) {
-			Tuple tuple = association.get( rowKey );
-
-			Map<String, Object> row = new HashMap<String, Object>();
-			for ( String columnName : tuple.getColumnNames() ) {
-				// don't store columns which are part of the association key and can be retrieved from there
-				if ( !isKeyColumn( associationKey, columnName ) ) {
-					row.put( columnName, tuple.get( columnName ) );
-				}
-			}
-
-			rows.add( row );
-		}
-	}
-
-	private boolean isKeyColumn(AssociationKey associationKey, String columnName) {
-		for ( String keyColumName : associationKey.getColumnNames() ) {
-			if ( keyColumName.equals( columnName ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public List<Map<String,Object>> getRows() {
+	public List<Map<String, Object>> getRows() {
 		return rows;
 	}
 

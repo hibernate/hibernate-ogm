@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.dialect.couchdb;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
 import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
+import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.type.CouchDBBlobType;
@@ -111,35 +114,96 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		AssociationDocument association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
-		if ( association != null ) {
-			return new Association( new CouchDBAssociationSnapshot( association, key ) );
+		CouchDBAssociation couchDBAssociation = null;
+
+		if ( isStoredInEntityStructure( key ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getCollectionRole() ) ) {
+				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+			}
 		}
-		return null;
+		else {
+			AssociationDocument association = getDataStore().getAssociation( Identifier.createAssociationId( key ) );
+			if ( association != null ) {
+				couchDBAssociation = CouchDBAssociation.fromAssociationDocument( association );
+			}
+		}
+
+		return couchDBAssociation != null ? new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) ) : null;
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key) {
-		AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
-		return new Association( new CouchDBAssociationSnapshot( association, key ) );
+		CouchDBAssociation couchDBAssociation = null;
+
+		if ( isStoredInEntityStructure( key ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity == null ) {
+				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
+			}
+
+			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+		}
+		else {
+			AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
+			couchDBAssociation = CouchDBAssociation.fromAssociationDocument( association );
+		}
+
+		return new Association( new CouchDBAssociationSnapshot( couchDBAssociation, key ) );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
-		AssociationDocument couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
-		couchDBAssociation.update( association, key );
+	public void updateAssociation(Association association, AssociationKey associationKey) {
+		List<Map<String, Object>> rows = getAssociationRows( association, associationKey );
 
-		getDataStore().saveDocument( couchDBAssociation );
+		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
+		couchDBAssociation.setRows( rows );
+
+		getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
+	}
+
+	private List<Map<String, Object>> getAssociationRows(Association association, AssociationKey associationKey) {
+		List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
+
+		for ( RowKey rowKey : association.getKeys() ) {
+			Tuple tuple = association.get( rowKey );
+
+			//TODO Should we have TupleBackedMap?
+			Map<String, Object> row = new HashMap<String, Object>( 3 );
+			for ( String columnName : tuple.getColumnNames() ) {
+				// don't store columns which are part of the association key and can be retrieved from there
+				if ( !associationKey.isKeyColumn( columnName ) ) {
+					row.put( columnName, tuple.get( columnName ) );
+				}
+			}
+
+			rows.add( row );
+		}
+		return rows;
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key) {
-		removeDocumentIfPresent( Identifier.createAssociationId( key ) );
+		if ( isStoredInEntityStructure( key ) ) {
+			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
+			if ( owningEntity != null ) {
+				owningEntity.removeAssociation( key.getCollectionRole() );
+				getDataStore().saveDocument( owningEntity );
+			}
+		}
+		else {
+			removeDocumentIfPresent( Identifier.createAssociationId( key ) );
+		}
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+	}
+
+	//TODO Implement based on configuration
+	private boolean isStoredInEntityStructure(AssociationKey associationKey) {
+		return true;
 	}
 
 	@Override
@@ -237,5 +301,4 @@ public class CouchDBDialect implements GridDialect {
 	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for CouchDB" );
 	}
-
 }

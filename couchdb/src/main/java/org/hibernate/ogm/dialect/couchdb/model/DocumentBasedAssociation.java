@@ -18,61 +18,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.backend.json;
+package org.hibernate.ogm.dialect.couchdb.model;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import java.util.List;
+import java.util.Map;
+
+import org.hibernate.ogm.dialect.couchdb.backend.json.AssociationDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
 
 /**
- * Used to serialize and deserialize a REST CouchDB response to a PUT and a DELETE
+ * A {@link CouchDBAssociation} backed by an {@link AssociationDocument}.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class GenericResponse {
+/* package-private */class DocumentBasedAssociation extends CouchDBAssociation {
 
-	private boolean ok;
-	private String rev;
-	private String error;
-	private String reason;
-	private String id;
+	private final AssociationDocument document;
 
-	public boolean getOk() {
-		return ok;
+	public DocumentBasedAssociation(AssociationDocument document) {
+		this.document = document;
 	}
 
-	public void setOk(boolean ok) {
-		this.ok = ok;
+	@Override
+	public List<Map<String, Object>> getRows() {
+		return document.getRows();
 	}
 
-	public String getRev() {
-		return rev;
+	@Override
+	public void setRows(List<Map<String, Object>> rows) {
+		document.setRows( rows );
 	}
 
-	public void setRev(String rev) {
-		this.rev = rev;
-	}
-
-	public String getError() {
-		return error;
-	}
-
-	public void setError(String error) {
-		this.error = error;
-	}
-
-	public String getReason() {
-		return reason;
-	}
-
-	public void setReason(String reason) {
-		this.reason = reason;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		this.id = id;
+	@Override
+	public Document getOwningDocument() {
+		return document;
 	}
 }
