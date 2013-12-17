@@ -31,6 +31,7 @@ import org.hibernate.ogm.dialect.couchdb.Environment;
 import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBEntityContextImpl;
 import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBGlobalContextImpl;
 import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBPropertyContextImpl;
@@ -48,6 +49,7 @@ import org.hibernate.service.spi.Stoppable;
  * Creates a fully configured instance of {@link CouchDBDatastore}
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService, Configurable {
 
@@ -107,6 +109,19 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	 */
 	public CouchDBDatastore getDataStore() {
 		return datastore;
+	}
+
+	/**
+	 * Returns the default association storage strategy to be used if none is configured explicitly via annotations or
+	 * API. This default strategy can be specified via the
+	 * {@link org.hibernate.ogm.datastore.couchdb.CouchDB#ASSOCIATIONS_STORE} property. If no value is given for that
+	 * property, {@link AssociationStorageType#IN_ENTITY} will be returned.
+	 *
+	 * @return the default association storage strategy to be used if none is configured explicitly via annotations or
+	 * API
+	 */
+	public AssociationStorageType getDefaultAssociationStorageStrategy() {
+		return configuration.getAssociationStorageStrategy();
 	}
 
 	private boolean isDatastoreNotInitialized() {
