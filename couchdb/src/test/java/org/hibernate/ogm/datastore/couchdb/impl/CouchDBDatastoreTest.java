@@ -31,8 +31,8 @@ import java.util.Properties;
 import javax.persistence.OptimisticLockException;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialectTest;
-import org.hibernate.ogm.dialect.couchdb.Environment;
 import org.hibernate.ogm.dialect.couchdb.backend.json.Document;
 import org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
@@ -147,15 +147,15 @@ public class CouchDBDatastoreTest {
 	}
 
 	private String getPassword() {
-		return properties.getProperty( Environment.COUCHDB_PASSWORD );
+		return properties.getProperty( CouchDB.PASSWORD );
 	}
 
 	private String getUserName() {
-		return properties.getProperty( Environment.COUCHDB_USERNAME );
+		return properties.getProperty( CouchDB.USERNAME );
 	}
 
 	private int getDatabasePort() {
-		final String port = properties.getProperty( Environment.COUCHDB_PORT );
+		final String port = properties.getProperty( CouchDB.PORT );
 		if ( isValueProvided( port ) ) {
 			return Integer.valueOf( port );
 		}
@@ -165,11 +165,11 @@ public class CouchDBDatastoreTest {
 	}
 
 	private String getDatabaseName() {
-		return properties.getProperty( Environment.COUCHDB_DATABASE );
+		return properties.getProperty( CouchDB.DATABASE );
 	}
 
 	private String getDatabaseHost() {
-		final String host = properties.getProperty( Environment.COUCHDB_HOST );
+		final String host = properties.getProperty( CouchDB.HOST );
 		if ( isValueProvided( host ) ) {
 			return host;
 		}

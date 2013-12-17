@@ -27,7 +27,7 @@ import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
  * Represents the CouchDB document data store.
  *
  * @author Gunnar Morling
- *
+ * @author Andrea Boriero <dreborier@gmail.com/>
  * @see org.hibernate.ogm.OgmSessionFactory#configureDatastore(Class)
  */
 public interface CouchDB extends DatastoreConfiguration<CouchDBGlobalContext> {
@@ -40,4 +40,36 @@ public interface CouchDB extends DatastoreConfiguration<CouchDBGlobalContext> {
 	 * programmatic API.
 	 */
 	String ASSOCIATIONS_STORE = "hibernate.ogm.couchdb.associations.store";
+
+	/**
+	 * The CouchDB Database name to connect to.
+	 */
+	String DATABASE = "hibernate.ogm.couchdb.database";
+
+	/**
+	 * The port of the CouchDB instance.
+	 */
+	String PORT = "hibernate.ogm.couchdb.port";
+
+	/**
+	 * The hostname of the CouchDB instance.
+	 */
+	String HOST = "hibernate.ogm.couchdb.host";
+
+	/**
+	 * The username of the CouchDB database user with authentication enabled.
+	 */
+	String USERNAME = "hibernate.org.couchdb.username";
+
+	/**
+	 * The username of the CouchDB database user with authentication enabled.
+	 */
+	String PASSWORD = "hibernate.org.couchdb.password";
+
+	/**
+	 * If true, the database will be created when it doesn't exist. Default to false. The user defined with
+	 * {@link #USERNAME} must have the privileges for the creation of a new database. The database will have the name
+	 * defined with {@link #DATABASE}.
+	 */
+	String CREATE_DATABASE = "hibernate.org.couchdb.createdatabase";
 }
