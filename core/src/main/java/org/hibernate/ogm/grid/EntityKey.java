@@ -44,6 +44,10 @@ public final class EntityKey implements Serializable {
 		return keyMetadata.getTable();
 	}
 
+	public String getExampleTest() {
+		return "It works now!";
+	}
+
 	/**
 	 * This class should be treated as immutable. While we expose this array,
 	 * you should never make changes to it!

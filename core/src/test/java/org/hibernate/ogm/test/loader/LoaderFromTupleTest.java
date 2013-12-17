@@ -47,6 +47,14 @@ import org.junit.Test;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class LoaderFromTupleTest extends OgmTestCase {
+
+	@Test
+	public void testExample() throws Exception {
+		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { "booo" } );
+		assertThat( key.getExampleTest() ).contains( "works" );
+
+	}
+
 	@Test
 	public void testLoadingFromTuple() throws Exception {
 		final Session session = openSession();

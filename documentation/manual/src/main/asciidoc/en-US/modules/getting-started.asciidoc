@@ -11,6 +11,8 @@ Before we can start, make sure you have the following tools configured:
 * Java JDK 6 or above
 * Maven 3.x
 
+This is a test to show how a software is done.
+
 Hibernate OGM is published in the JBoss hosted Maven repository.
 Adjust your [filename]+$$~/.m2/settings.xml$$+ file
 according to the guidelines found
