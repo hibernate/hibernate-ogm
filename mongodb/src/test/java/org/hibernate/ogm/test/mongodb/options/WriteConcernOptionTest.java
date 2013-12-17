@@ -27,7 +27,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
 import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,12 +39,12 @@ import org.junit.Test;
  */
 public class WriteConcernOptionTest {
 
-	private OptionsContext optionsContext;
+	private WritableOptionsServiceContext optionsContext;
 	private MongoDBGlobalOptions mongoOptions;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new OptionsContext();
+		optionsContext = new WritableOptionsServiceContext();
 		mongoOptions = new MongoDBDatastoreProvider().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
 	}
 

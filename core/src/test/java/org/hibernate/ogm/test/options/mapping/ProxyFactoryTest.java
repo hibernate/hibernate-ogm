@@ -26,7 +26,7 @@ import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -43,7 +43,7 @@ public class ProxyFactoryTest {
 	public void testProxyGeneration() throws Exception {
 		final Object embedded = 3;
 
-		OptionsContext context = new OptionsContext();
+		WritableOptionsServiceContext context = new WritableOptionsServiceContext();
 		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( new ConfigurationContext( context ) );
 		sampleMapping
 				.namedQuery( "foo", "from Foo" )

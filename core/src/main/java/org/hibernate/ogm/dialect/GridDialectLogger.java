@@ -113,26 +113,26 @@ public class GridDialectLogger implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key) {
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Build association object with key %1$s (does not trigger access to the datastore)", key );
-		return gridDialect.createAssociation( key );
+		return gridDialect.createAssociation( key, associationContext );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		if ( association.getSnapshot().size() == 0 ) {
 			log.tracef( "Creating association with key %1$s in datastore", key );
 		}
 		else {
 			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
-		gridDialect.updateAssociation( association, key );
+		gridDialect.updateAssociation( association, key, associationContext );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Removing association with key %1$s from datastore", key );
-		gridDialect.removeAssociation( key );
+		gridDialect.removeAssociation( key, associationContext );
 	}
 
 	@Override
@@ -167,4 +167,9 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.executeBackendQuery( customQuery, metadatas );
 	}
 
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		log.tracef( "Determining whether assocication %1$s is stored in an entity structrure", associationKey );
+		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );
+	}
 }

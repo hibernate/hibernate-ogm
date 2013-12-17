@@ -31,9 +31,8 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
-import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
+import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -116,25 +115,30 @@ public class HashMapDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key) {
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		Map<RowKey, Map<String, Object>> associationMap = new HashMap<RowKey, Map<String,Object>>();
 		provider.putAssociation( key, associationMap );
 		return new Association( new MapAssociationSnapshot( associationMap ) );
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association, key );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		provider.removeAssociation( key );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
 	}
 
 	@Override
@@ -154,7 +158,7 @@ public class HashMapDialect implements GridDialect {
 		for ( EntityKey key : entityMap.keySet() ) {
 			for ( EntityKeyMetadata metadata : metadatas ) {
 				if ( key.getTable().equals( metadata.getTable() ) ) {
-					consumer.consume( new Tuple( new MapTupleSnapshot( (Map) entityMap.get( key ) ) ) );
+					consumer.consume( new Tuple( new MapTupleSnapshot( entityMap.get( key ) ) ) );
 				}
 			}
 		}

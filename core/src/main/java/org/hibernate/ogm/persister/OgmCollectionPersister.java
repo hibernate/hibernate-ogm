@@ -23,10 +23,8 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -45,11 +43,10 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
@@ -63,6 +60,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Joinable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
@@ -87,9 +85,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
-	private final AssociationContext associationContext;
 	private final AssociationKeyMetadata associationKeyMetadata;
 	private final AssociationKeyMetadata associationKeyMetadataFromElement;
+
+	private final String nodeName;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -97,6 +96,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		ServiceRegistry registry = factory.getServiceRegistry();
 		final TypeTranslator typeTranslator = registry.getService( TypeTranslator.class );
 		this.gridDialect = registry.getService( DatastoreServices.class ).getGridDialect();
+
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );
 		indexGridType = typeTranslator.getType( getIndexType() );
@@ -123,43 +123,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
-		associationContext = buildAssociationContext();
 		associationKeyMetadata = new AssociationKeyMetadata( getTableName(), getKeyColumnNames() );
 		associationKeyMetadata.setRowKeyColumnNames( getRowKeyColumnNames() );
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata( getTableName(), getElementColumnNames() );
 		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
-	}
 
-	public AssociationContext getAssociationContext() {
-		return associationContext;
+		nodeName = collection.getNodeName();
 	}
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
-	}
-
-	private AssociationContext buildAssociationContext() {
-		List<String> selectableColumns = new ArrayList<String>();
-		// add identifier, index, key and element columns
-		String identifierColumnName = getIdentifierColumnName();
-		if ( identifierColumnName != null ) {
-			selectableColumns.add( identifierColumnName );
-		}
-		for ( String column : getKeyColumnNames() ) {
-			selectableColumns.add( column );
-		}
-		String[] columns = getIndexColumnNames();
-		if ( columns != null ) {
-			for ( String column : columns ) {
-				selectableColumns.add( column );
-			}
-		}
-		columns = getElementColumnNames();
-		for ( String column : columns ) {
-			selectableColumns.add( column );
-		}
-		return new AssociationContext( selectableColumns );
 	}
 
 	/** represents the type of associations at stake */
@@ -271,8 +245,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		int count = 0;
 		int i = 0;
-		Iterator entries = collection.entries( this );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		Iterator<?> entries = collection.entries( this );
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( key )
 				.keyGridType( getKeyGridType() )
@@ -291,7 +267,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				}
 				// update the matching element
 				// FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, assocEntryTuple, Action.REMOVE, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
 
 				getElementGridType().nullSafeSet(
 						assocEntryTuple,
@@ -300,7 +276,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						session
 				);
 
-				updateInverseSideOfAssociationNavigation( session, assocEntryTuple, Action.ADD, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey );
 
 				count++;
 			}
@@ -308,7 +284,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 
 		// need to put the data back in the cache
-		metadataProvider.flushToCache();
+		persistChanges( session, metadataProvider, getOwnerEntityPersister(), collection.getOwner() );
+
 		return count;
 	}
 
@@ -320,7 +297,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private RowKeyAndTuple createAndPutTupleforInsert(Serializable key, PersistentCollection collection,
 			PropertyMetadataProvider metadataProvider, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -378,7 +355,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -404,7 +381,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
 			String[] names = { getIdentifierColumnName() };
@@ -431,7 +408,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.key( key )
 				.tableName( getTableName() )
 				.session( session )
@@ -462,7 +441,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -471,7 +452,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// delete all the deleted entries
-			Iterator deletes = collection.getDeletes( this, !deleteByIndex );
+			Iterator<?> deletes = collection.getDeletes( this, !deleteByIndex );
 			if ( deletes.hasNext() ) {
 				int count = 0;
 				while ( deletes.hasNext() ) {
@@ -483,7 +464,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
 					// delete the tuple
-					updateInverseSideOfAssociationNavigation( session, assocEntryTuple, Action.REMOVE, assocEntryKey );
+					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
 					metadataProvider.getCollectionMetadata().remove( assocEntryKey );
 
 					count++;
@@ -492,7 +473,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						log.debug( "done deleting collection rows: " + count + " deleted" );
 					}
 				}
-				metadataProvider.flushToCache();
+
+				persistChanges( session, metadataProvider, getOwnerEntityPersister(), collection.getOwner() );
 			}
 			else {
 				log.debug( "no rows to delete" );
@@ -510,7 +492,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting rows of collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -520,7 +504,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// insert all the new entries
 			collection.preInsert( this );
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			int i = 0;
 			int count = 0;
 			while ( entries.hasNext() ) {
@@ -529,13 +513,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					// TODO: copy/paste from recreate()
 					RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, metadataProvider, session, i, entry );
 					completeTuple( keyAndTuple, collection, session, entry );
-					updateInverseSideOfAssociationNavigation( session, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
 				i++;
 			}
-			metadataProvider.flushToCache();
+
+			persistChanges( session, metadataProvider, getOwnerEntityPersister(), collection.getOwner() );
+
 			if ( log.isDebugEnabled() ) {
 				log.debug( "done inserting rows: " + count + " inserted" );
 			}
@@ -552,7 +538,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -561,7 +549,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// create all the new entries
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			if ( entries.hasNext() ) {
 				collection.preInsert( this );
 				int i = 0;
@@ -572,13 +560,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						// TODO: copy/paste from insertRows()
 						RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, metadataProvider, session, i, entry );
 						completeTuple( keyAndTuple, collection, session, entry );
-						updateInverseSideOfAssociationNavigation( session, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
 					i++;
 				}
-				metadataProvider.flushToCache();
+
+				persistChanges( session, metadataProvider, getOwnerEntityPersister(), collection.getOwner() );
+
 				if ( log.isDebugEnabled() ) {
 					log.debug( "done inserting collection: " + count + " rows inserted" );
 				}
@@ -592,12 +582,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Tuple tuple, Action action, RowKey rowKey) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
 			OgmEntityPersister persister = (OgmEntityPersister) getElementPersister();
 			final EntityKey entityKey = EntityKeyBuilder.fromPersister( persister, entityId, session );
+
 			final Tuple entityTuple = gridDialect.getTuple( entityKey, persister.getTupleContext() );
 			// the entity tuple could already be gone (not 100% sure this can happen but that feels right)
 			if ( entityTuple == null ) {
@@ -628,7 +619,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
-			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
+
+			if ( entity == null ) {
+				entity = session.getPersistenceContext().getEntity( session.generateEntityKey( entityId, getElementPersister() ) );
+			}
+
+			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider(
+						getElementPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
@@ -658,7 +656,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			associationProvider.flushToCache();
+
+			persistChanges( session, associationProvider, getElementPersister(), entity );
 		}
 	}
 
@@ -676,7 +675,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			// Remove all the old entries
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+						getOwnerEntityPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.key( id )
 					.keyGridType( getKeyGridType() )
@@ -688,12 +689,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			if ( associationType != AssociationType.OTHER ) {
 				for ( RowKey assocEntryKey : metadataProvider.getCollectionMetadata().getKeys() ) {
 					// we unfortunately cannot mass change the update of the associated entity
-					updateInverseSideOfAssociationNavigation( session,
+					updateInverseSideOfAssociationNavigation( session, null, //TODO
 							metadataProvider.getCollectionMetadata().get( assocEntryKey ), Action.REMOVE, assocEntryKey );
 				}
 			}
 			metadataProvider.getCollectionMetadata().clear();
-			metadataProvider.flushToCache();
+
+			persistChanges( session, metadataProvider, getOwnerEntityPersister(), session.getPersistenceContext().getCollectionOwner( id, this ) );
 
 			if ( log.isDebugEnabled() ) {
 				log.debug( "done deleting collection" );
@@ -750,5 +752,41 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, SessionImplementor session) throws HibernateException {
 		// nothing to do
+	}
+
+	/**
+	 * Persists the changes of collection represented by the given metadata provider. If required the entity hosting the
+	 * collection will be read back afterwards to refresh any properties changed on the server side.
+	 *
+	 * @param session the current session
+	 * @param metadataProvider the metadata provider representing the collection to be persisted
+	 * @param entityPersister the entity persister of the type hosting the given association; That's this collection
+	 * persister's owner persister for the non-inverse side and this collection's element's entity persister for the
+	 * inverse side
+	 * @param entity the entity hosting the given association
+	 */
+	private void persistChanges(SessionImplementor session, PropertyMetadataProvider metadataProvider, EntityPersister entityPersister, Object entity) {
+		metadataProvider.flushToCache();
+
+		// may be the case upon deletion; in that case there is nothing to be re-read
+		if ( entity == null ) {
+			return;
+		}
+
+		AssociationKey associationKey = metadataProvider.getCollectionMetadataKey();
+
+		// if the association is stored within an entity structure ("embedded") and this entity has properties whose
+		// value is generated in the data store, trigger a re-read of the entity document to ensure the entity is
+		// up-to-date
+		if ( entityPersister.hasUpdateGeneratedProperties() &&
+				gridDialect.isStoredInEntityStructure( associationKey, metadataProvider.getAssociationContext() ) ) {
+
+			entityPersister.processUpdateGeneratedProperties(
+					entityPersister.getIdentifier( entity, session ),
+					entity,
+					new Object[entityPersister.getPropertyNames().length],
+					session
+			);
+		}
 	}
 }

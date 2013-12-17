@@ -35,7 +35,6 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
@@ -145,7 +144,7 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public Association createAssociation(AssociationKey key) {
+	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
 		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache( ASSOCIATION_STORE );
@@ -154,19 +153,24 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key) {
+	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association, key );
 	}
 
 	@Override
-	public void removeAssociation(AssociationKey key) {
+	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCache( ASSOCIATION_STORE );
 		AtomicMapLookup.removeAtomicMap( cache, key );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple( EmptyTupleSnapshot.SINGLETON );
+		return new Tuple();
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
 	}
 
 	@Override

@@ -37,7 +37,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
  * Delegate most work to the underlying EntityManagerFactory.
@@ -75,7 +75,7 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 	@Override
 	public SessionFactory getSessionFactory() {
 		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEmf ).getSessionFactory();
-		return new OgmSessionFactory( (SessionFactoryImplementor) sessionFactory );
+		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) sessionFactory );
 	}
 
 	@Override

@@ -28,10 +28,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -50,7 +50,7 @@ public abstract class OgmTestCase {
 	 * The session factory used by all test methods of a test class.
 	 */
 	@TestSessionFactory
-	protected SessionFactory sessions;
+	protected OgmSessionFactory sessions;
 
 	private List<Session> openedSessions;
 

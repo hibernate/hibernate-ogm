@@ -50,7 +50,6 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.RowKey;
@@ -555,7 +554,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	}
 
 	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		type.nullSafeSet( tuple, value, new String[] { columnName }, session );
 		return tuple.get( columnName );
 	}

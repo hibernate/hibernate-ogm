@@ -35,11 +35,11 @@ import org.hibernate.ogm.options.spi.OptionsService;
 public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
 
 	private final DatastoreProvider datastoreProvider;
-	private final OptionsContext globalContext;
+	private final WritableOptionsServiceContext globalContext;
 
 	public OptionsServiceImpl(DatastoreProvider datastoreProvider, SessionFactoryImplementor sessionFactoryImplementor) {
 		this.datastoreProvider = datastoreProvider;
-		this.globalContext = new OptionsContext();
+		this.globalContext = new WritableOptionsServiceContext();
 	}
 
 	//OptionsService

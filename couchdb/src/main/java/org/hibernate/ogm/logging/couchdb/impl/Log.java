@@ -21,6 +21,7 @@
 package org.hibernate.ogm.logging.couchdb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import java.net.MalformedURLException;
 import java.text.ParseException;
@@ -102,4 +103,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1320, value = "The document with id %s has been concurrently modified.")
 	OptimisticLockException getDocumentHasBeenConcurrentlyModifiedException(String id);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1321, value = "Entity '%s' does not have a revision property; It is recommended to define a property '@Generated @Version _rev' for entities persisted in CouchDB.")
+	void entityShouldHaveRevisionProperty(String entityName);
 }

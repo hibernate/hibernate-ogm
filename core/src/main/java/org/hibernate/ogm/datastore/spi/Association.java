@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
@@ -49,6 +50,13 @@ public class Association {
 	private final AssociationSnapshot snapshot;
 	private final Map<RowKey, AssociationOperation> currentState = new HashMap<RowKey, AssociationOperation>();
 	private boolean cleared;
+
+	/**
+	 * Creates a new association, based on an empty association snapshot.
+	 */
+	public Association() {
+		this.snapshot = EmptyAssociationSnapshot.INSTANCE;
+	}
 
 	public Association(AssociationSnapshot snapshot) {
 		this.snapshot = snapshot;

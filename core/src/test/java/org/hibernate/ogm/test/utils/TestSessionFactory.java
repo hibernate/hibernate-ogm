@@ -34,4 +34,24 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface TestSessionFactory {
+
+	/**
+	 * The scope of the session factory.
+	 *
+	 * @return the scope of the session factory
+	 */
+	Scope scope() default Scope.TEST;
+
+	public enum Scope {
+
+		/**
+		 * The same session factory instance is used for all test methods of the given test
+		 */
+		TEST,
+
+		/**
+		 * A fresh session factory instance is used for each individual test methods of the given test
+		 */
+		TEST_METHOD;
+	}
 }

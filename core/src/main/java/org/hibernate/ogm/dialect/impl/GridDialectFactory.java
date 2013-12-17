@@ -20,11 +20,11 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import java.util.Map;
+
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.service.Service;
 import org.hibernate.service.ServiceRegistry;
-
-import java.util.Map;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -32,5 +32,5 @@ import java.util.Map;
 public interface GridDialectFactory extends Service {
 	String GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
 
-	GridDialect buildGridDialect(Map configurationValues, ServiceRegistry registry);
+	GridDialect buildGridDialect(Map<?, ?> configurationValues, ServiceRegistry registry);
 }

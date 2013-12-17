@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.test.options.examples.annotations;
 
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -30,16 +32,15 @@ import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.examples.annotations.NameExample.NameExampleOptionConverter;
 
 /**
  * Annotation equivalent of {@link NameExampleOption}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-@Target(TYPE)
+@Target({ TYPE, FIELD, METHOD })
 @Retention(RUNTIME)
-@MappingOption(NameExampleOptionConverter.class)
+@MappingOption(NameExample.NameExampleOptionConverter.class)
 public @interface NameExample {
 
 	String value();
@@ -50,6 +51,5 @@ public @interface NameExample {
 		public OptionValuePair<?> convert(NameExample annotation) {
 			return OptionValuePair.getInstance( new NameExampleOption(), annotation.value() );
 		}
-
 	}
 }
