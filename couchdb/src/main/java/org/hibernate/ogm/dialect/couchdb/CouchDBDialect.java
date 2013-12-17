@@ -168,7 +168,6 @@ public class CouchDBDialect implements GridDialect {
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
 
-			//TODO Should we have TupleBackedMap?
 			Map<String, Object> row = new HashMap<String, Object>( 3 );
 			for ( String columnName : tuple.getColumnNames() ) {
 				// don't store columns which are part of the association key and can be retrieved from there

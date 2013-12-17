@@ -161,6 +161,7 @@ public class WritableOptionsServiceContext implements OptionsServiceContext {
 
 	@Override
 	public String toString() {
-		return "OptionsContext [globaloptions=" + globaloptions + ", optionsPerEntity=" + optionsPerEntity + ", optionsPerProperty=" + optionsPerProperty + "]";
+		return "WritableOptionsServiceContext [globaloptions=" + globaloptions + ", optionsPerEntity=" + optionsPerEntity + ", optionsPerProperty="
+				+ optionsPerProperty + "]";
 	}
 }

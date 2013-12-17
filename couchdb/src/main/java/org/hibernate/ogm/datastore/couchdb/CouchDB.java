@@ -24,7 +24,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
 
 /**
- * Represents the CouchDB document data store.
+ * Allows to configure options specific to the CouchDB document data store.
  *
  * @author Gunnar Morling
  * @author Andrea Boriero <dreborier@gmail.com/>
@@ -35,6 +35,7 @@ public interface CouchDB extends DatastoreConfiguration<CouchDBGlobalContext> {
 	/**
 	 * Name of the property for configuring the strategy for storing associations in CouchDB. Valid values are the
 	 * string values of the members of the {@link org.hibernate.ogm.options.couchdb.AssociationStorageType} enumeration.
+	 * Defaults to the in-entity storage strategy.
 	 * <p>
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.
