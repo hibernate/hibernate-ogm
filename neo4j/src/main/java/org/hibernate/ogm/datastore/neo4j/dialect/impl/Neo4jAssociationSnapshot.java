@@ -17,7 +17,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 
 /**
  * Represents the association snapshot as loaded by Neo4j.
@@ -27,12 +26,10 @@ import org.neo4j.graphdb.RelationshipType;
 public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private final Node ownerNode;
-	private final RelationshipType relationshipType;
 	private final AssociationKey associationKey;
 
-	public Neo4jAssociationSnapshot(Node ownerNode, RelationshipType type, AssociationKey associationKey) {
+	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey) {
 		this.ownerNode = ownerNode;
-		this.relationshipType = type;
 		this.associationKey = associationKey;
 	}
 
@@ -40,7 +37,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	public Tuple get(RowKey rowKey) {
 		for ( Relationship relationship : relationships() ) {
 			if ( matches( rowKey, relationship ) ) {
-				return new Tuple( new Neo4jTupleSnapshot( relationship.getEndNode() ) );
+				return new Tuple( new Neo4jTupleSnapshot( relationship ) );
 			}
 		}
 		return null;
@@ -85,7 +82,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	private Iterable<Relationship> relationships() {
-		return ownerNode.getRelationships( Direction.OUTGOING, relationshipType );
+		return ownerNode.getRelationships( Direction.OUTGOING, CypherCRUD.relationshipType( associationKey ) );
 	}
 
 	@Override
