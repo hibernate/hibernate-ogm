@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,33 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.test.options.examples;
+
+import org.hibernate.ogm.options.spi.Option;
 
 /**
- * Provides context information to {@link org.hibernate.ogm.dialect.GridDialect}s when accessing {@link Association}s.
+ * An example non-unique option for testing purposes.
  *
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  * @author Gunnar Morling
+ *
  */
-public class AssociationContext {
+public class PermissionOption extends Option<String, String> {
 
-	private final OptionsContext optionsContext;
+	private final String role;
 
-	public AssociationContext(OptionsContext optionsContext) {
-		this.optionsContext = optionsContext;
-	}
-
-	/**
-	 * A context object providing access to the options effectively applying for a given association.
-	 *
-	 * @return A context object providing access to the options effectively applying for a given association
-	 */
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
+	public PermissionOption(String role) {
+		this.role = role;
 	}
 
 	@Override
-	public String toString() {
-		return "AssociationContext [optionsContext=" + optionsContext + "]";
+	public String getOptionIdentifier() {
+		return role;
 	}
 }

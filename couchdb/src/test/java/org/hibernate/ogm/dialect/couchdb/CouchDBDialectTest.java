@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -40,6 +41,7 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -120,7 +122,7 @@ public class CouchDBDialectTest {
 
 		AssociationKey key = createAssociationKey( entityKey, collectionRole, tableName, columnNames, columnValues, rowKeyColumnNames );
 
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		assertThat( createAssociation.getSnapshot(), notNullValue() );
 		assertThat( createAssociation.getSnapshot().getRowKeys().isEmpty(), is( true ) );
@@ -138,7 +140,7 @@ public class CouchDBDialectTest {
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
@@ -147,9 +149,9 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, associationTuple );
-		dialect.updateAssociation( createAssociation, key );
+		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
 
-		Association actualAssociation = dialect.getAssociation( key, new AssociationContext() );
+		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
 		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
 	}
 
@@ -164,7 +166,7 @@ public class CouchDBDialectTest {
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
@@ -173,7 +175,7 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, tuple );
-		dialect.updateAssociation( createAssociation, key );
+		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
 
 		assertThat( dialect.getAssociationSize(), is( 1 ) );
 	}
@@ -215,4 +217,7 @@ public class CouchDBDialectTest {
 		datastoreProvider.start();
 	}
 
+	private AssociationContext emptyAssociationContext() {
+		return new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Object.class, "" ) );
+	}
 }

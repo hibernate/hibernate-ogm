@@ -481,7 +481,9 @@ public class OgmLoader implements UniqueEntityLoader {
 				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
 			}
 			final OgmCollectionPersister persister = (OgmCollectionPersister) getCollectionPersisters()[0];
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					persister.getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( persister.getKeyGridType() )
