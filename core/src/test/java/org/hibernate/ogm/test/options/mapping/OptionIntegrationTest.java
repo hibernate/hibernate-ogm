@@ -28,21 +28,19 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
-import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.model.Microwave;
+import org.hibernate.ogm.test.options.mapping.model.Refrigerator;
+import org.hibernate.ogm.test.options.mapping.model.SampleDatastoreProvider;
+import org.hibernate.ogm.test.options.mapping.model.SampleNoSqlDatastore;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurer;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.TestHelper;
@@ -171,40 +169,6 @@ public class OptionIntegrationTest extends OgmTestCase {
 		configuration.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
 
 		return configuration;
-	}
-
-	public static class Refrigerator {
-
-		public int temperature;
-	}
-
-	public static class Microwave {
-
-		public int power;
-	}
-
-	public static class SampleDatastoreProvider implements DatastoreProvider {
-
-		@Override
-		public Class<? extends GridDialect> getDefaultDialect() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-			throw new UnsupportedOperationException();
-		}
-	}
-
-	public static class SampleNoSqlDatastore implements DatastoreConfiguration<SampleOptionModel.SampleGlobalContext> {
-
-		@Override
-		public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
-			return SampleOptionModel.createGlobalContext( context );
-		}
-	}
-
-	public interface AnotherDatastore extends DatastoreConfiguration<AnotherGlobalContext> {
 	}
 
 	public interface AnotherGlobalContext extends GlobalContext<AnotherGlobalContext, AnotherEntityContext> {

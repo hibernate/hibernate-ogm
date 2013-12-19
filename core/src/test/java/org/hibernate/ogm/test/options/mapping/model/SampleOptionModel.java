@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.options.mapping;
+package org.hibernate.ogm.test.options.mapping.model;
 
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;

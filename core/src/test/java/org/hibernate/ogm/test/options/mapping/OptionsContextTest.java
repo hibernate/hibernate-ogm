@@ -34,7 +34,8 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;
 import org.junit.Test;
 

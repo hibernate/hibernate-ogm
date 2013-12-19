@@ -27,7 +27,7 @@
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
             <property name="hibernate.search.lucene_version" value="LUCENE_CURRENT"/>
-            <property name="hibernate.ogm.datastore.provider" value="org.hibernate.ogm.test.options.mapping.OptionIntegrationTest$SampleDatastoreProvider"/>
+            <property name="hibernate.ogm.datastore.provider" value="org.hibernate.ogm.test.options.mapping.model.SampleDatastoreProvider"/>
             <property name="hibernate.ogm.option.configurer" value="org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurer"/>
         </properties>
     </persistence-unit>

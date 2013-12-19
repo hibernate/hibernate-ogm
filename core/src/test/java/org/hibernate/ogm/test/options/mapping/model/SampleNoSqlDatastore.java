@@ -20,24 +20,17 @@
  */
 package org.hibernate.ogm.test.options.mapping.model;
 
-import java.lang.annotation.ElementType;
-
-import org.hibernate.ogm.cfg.Configurable;
-import org.hibernate.ogm.cfg.spi.OptionConfigurer;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 
 /**
  * @author Gunnar Morling
  */
-public class SampleOptionConfigurer extends OptionConfigurer {
+public class SampleNoSqlDatastore implements DatastoreConfiguration<SampleOptionModel.SampleGlobalContext> {
 
 	@Override
-	public void configure(Configurable configurable) {
-		configurable.configureOptionsFor( SampleNoSqlDatastore.class )
-			.entity( Refrigerator.class )
-				.force( true )
-				.property( "temperature", ElementType.FIELD )
-					.embed( "Embedded" )
-			.entity( Microwave.class )
-				.name( "test" );
+	public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+		return SampleOptionModel.createGlobalContext( context );
 	}
 }
