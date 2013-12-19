@@ -62,9 +62,9 @@ public final class MapHelpers {
 		}
 		Map<String, Object> snapshot;
 		TupleSnapshot snapshotInstance = tuple.getSnapshot();
-		if ( snapshotInstance == EmptyTupleSnapshot.SINGLETON ) {
+		if ( snapshotInstance.isEmpty() ) {
 			//new assoc tuples are made of EmptyTupleSnapshot
-			snapshot = Collections.EMPTY_MAP;
+			snapshot = Collections.emptyMap();
 		}
 		else {
 			//loaded assoc tuples are made of MapTupleSnapshot

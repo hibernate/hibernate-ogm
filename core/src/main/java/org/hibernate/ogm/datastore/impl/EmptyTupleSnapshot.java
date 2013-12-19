@@ -29,7 +29,8 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public final class EmptyTupleSnapshot implements TupleSnapshot {
-	public static final TupleSnapshot SINGLETON = new EmptyTupleSnapshot();
+
+	public static final TupleSnapshot INSTANCE = new EmptyTupleSnapshot();
 
 	private EmptyTupleSnapshot() {
 	}
@@ -46,6 +47,6 @@ public final class EmptyTupleSnapshot implements TupleSnapshot {
 
 	@Override
 	public Set<String> getColumnNames() {
-		return Collections.EMPTY_SET;
+		return Collections.emptySet();
 	}
 }

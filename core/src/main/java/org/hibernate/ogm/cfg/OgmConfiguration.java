@@ -23,20 +23,26 @@ package org.hibernate.ogm.cfg;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
-import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
-import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactory;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
  * to specify properties and mapping documents to be used when
- * creating an {@link OgmSessionFactory}.
+ * creating an {@link OgmSessionFactoryImpl}.
  *
  * @author Davide D'Alto
  */
-public class OgmConfiguration extends Configuration {
+public class OgmConfiguration extends Configuration implements Configurable {
 
 	public static final String OGM_ON = "hibernate.ogm._activate";
 
@@ -47,6 +53,19 @@ public class OgmConfiguration extends Configuration {
 	 * will be used.
 	 */
 	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
+
+	/**
+	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} when
+	 * bootstrapping Hibernate OGM. Supported value types are:
+	 * <ul>
+	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurer} type</li>
+	 * <li>{@link Class}: the class object representing an {@code OptionConfigurer} type</li>
+	 * <li>{@code OptionConfigurer}: a configurer instance</li>
+	 * </ul>
+	 */
+	public static final String OGM_OPTION_CONFIGURER = "hibernate.ogm.option.configurer";
+
+	private static final Log log = LoggerFactory.make();
 
 	public OgmConfiguration() {
 		super();
@@ -63,8 +82,8 @@ public class OgmConfiguration extends Configuration {
 
 	@Override
 	@Deprecated
-	public SessionFactory buildSessionFactory() throws HibernateException {
-		return new OgmSessionFactory( (SessionFactoryImplementor) super.buildSessionFactory() );
+	public OgmSessionFactory buildSessionFactory() throws HibernateException {
+		return new OgmSessionFactoryImpl( (SessionFactoryImplementor) super.buildSessionFactory() );
 	}
 
 	@Override
@@ -76,5 +95,22 @@ public class OgmConfiguration extends Configuration {
 			setProperty( OGM_ON, "true" );
 		}
 		return this;
+	}
+
+	/**
+	 * Applies configuration options to the bootstrapped session factory. Use either this method or pass a
+	 * {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} via {@link #OGM_OPTION_CONFIGURER} but don't use both at the
+	 * same time.
+	 *
+	 * @param datastoreType represents the datastore to be configured; it is the responsibility of the caller to make
+	 * sure that this matches the underlying datastore provider.
+	 * @return a context object representing the entry point into the fluent configuration API.
+	 */
+	@Override
+	public <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Class<D> datastoreType) {
+		ConfigurableImpl configurable = new ConfigurableImpl();
+		getProperties().put( InternalProperties.OGM_OPTION_CONTEXT, configurable.getContext() );
+
+		return configurable.configureOptionsFor( datastoreType );
 	}
 }

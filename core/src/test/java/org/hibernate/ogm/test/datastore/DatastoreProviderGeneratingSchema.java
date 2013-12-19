@@ -42,9 +42,6 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
@@ -95,11 +92,6 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		throw new RuntimeException("STOPPED!");
 	}
 
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
-	}
-
 	public static class Dialect implements GridDialect {
 
 		public Dialect(DatastoreProviderGeneratingSchema provider) {
@@ -108,57 +100,52 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 
 		@Override
 		public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+			return null;
 		}
 
 		@Override
 		public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+			return null;
 		}
 
 		@Override
 		public Tuple createTuple(EntityKey key) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+			return null;
 		}
 
 		@Override
 		public void updateTuple(Tuple tuple, EntityKey key) {
-			//To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		@Override
 		public void removeTuple(EntityKey key) {
-			//To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		@Override
 		public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+			return null;
 		}
 
 		@Override
-		public Association createAssociation(AssociationKey key) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+		public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
+			return null;
 		}
 
 		@Override
-		public void updateAssociation(Association association, AssociationKey key) {
-			//To change body of implemented methods use File | Settings | File Templates.
+		public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		}
 
 		@Override
-		public void removeAssociation(AssociationKey key) {
-			//To change body of implemented methods use File | Settings | File Templates.
+		public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		}
 
 		@Override
 		public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-			return null;  //To change body of implemented methods use File | Settings | File Templates.
+			return null;
 		}
 
 		@Override
 		public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-			//To change body of implemented methods use File | Settings | File Templates.
 		}
 
 		@Override

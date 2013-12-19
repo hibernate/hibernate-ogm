@@ -23,13 +23,14 @@ package org.hibernate.ogm.test.options.mapping;
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.EmbedExample;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
-import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,11 +42,11 @@ import org.junit.Test;
  */
 public class AnnotationBasedOptionsTest {
 
-	private OptionsContext context;
+	private WritableOptionsServiceContext context;
 
 	@Before
 	public void setupContext() {
-		context = new OptionsContext();
+		context = new WritableOptionsServiceContext();
 	}
 
 	@Test

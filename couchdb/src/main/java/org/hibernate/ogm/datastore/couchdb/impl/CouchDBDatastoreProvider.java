@@ -23,17 +23,15 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.net.MalformedURLException;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
-import org.hibernate.ogm.dialect.couchdb.Environment;
-import org.hibernate.ogm.dialect.couchdb.util.DataBaseURL;
+import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
@@ -46,6 +44,7 @@ import org.hibernate.service.spi.Stoppable;
  * Creates a fully configured instance of {@link CouchDBDatastore}
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService, Configurable {
 
@@ -53,7 +52,7 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private CouchDBDatastore datastore;
 
-	private CouchDBConfiguration configuration;
+	private final CouchDBConfiguration configuration;
 
 	public CouchDBDatastoreProvider() {
 		configuration = new CouchDBConfiguration();
@@ -93,11 +92,6 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 		return LuceneBasedQueryParserService.class;
 	}
 
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
-	}
-
 	/**
 	 * Provides an instance of CouchDBDatastore
 	 *
@@ -105,6 +99,19 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	 */
 	public CouchDBDatastore getDataStore() {
 		return datastore;
+	}
+
+	/**
+	 * Returns the default association storage strategy to be used if none is configured explicitly via annotations or
+	 * API. This default strategy can be specified via the
+	 * {@link org.hibernate.ogm.datastore.couchdb.CouchDB#ASSOCIATIONS_STORE} property. If no value is given for that
+	 * property, {@link AssociationStorageType#IN_ENTITY} will be returned.
+	 *
+	 * @return the default association storage strategy to be used if none is configured explicitly via annotations or
+	 * API
+	 */
+	public AssociationStorageType getDefaultAssociationStorageStrategy() {
+		return configuration.getAssociationStorageStrategy();
 	}
 
 	private boolean isDatastoreNotInitialized() {
@@ -121,7 +128,7 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 			}
 		}
 		else {
-			throw logger.missingConfigurationProperty( Environment.COUCHDB_DATABASE );
+			throw logger.missingConfigurationProperty( CouchDB.DATABASE );
 		}
 	}
 

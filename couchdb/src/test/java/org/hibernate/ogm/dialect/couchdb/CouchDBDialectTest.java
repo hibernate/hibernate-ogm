@@ -30,16 +30,18 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
+import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,14 +113,16 @@ public class CouchDBDialectTest {
 
 	@Test
 	public void createAssociationShouldCreateAnEmptyAssociation() {
-
 		Object[] columnValues = { "17" };
 		String tableName = "user_address";
 		String[] columnNames = { "id" };
 		String[] rowKeyColumnNames = new String[] { "id" };
-		AssociationKey key = createAssociationKey( tableName, columnNames, columnValues, rowKeyColumnNames );
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
+		String collectionRole = "addresses";
 
-		Association createAssociation = dialect.createAssociation( key );
+		AssociationKey key = createAssociationKey( entityKey, collectionRole, tableName, columnNames, columnValues, rowKeyColumnNames );
+
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		assertThat( createAssociation.getSnapshot(), notNullValue() );
 		assertThat( createAssociation.getSnapshot().getRowKeys().isEmpty(), is( true ) );
@@ -129,22 +133,25 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
+		Tuple tuple = dialect.createTuple( entityKey );
+		dialect.updateTuple( tuple, entityKey );
 
 		AssociationKey key = createAssociationKey(
-				"user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
 		properties.put( "addresses_id", 1 );
-		Tuple tuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
+		Tuple associationTuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
-		createAssociation.put( rowKey, tuple );
-		dialect.updateAssociation( createAssociation, key );
+		createAssociation.put( rowKey, associationTuple );
+		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
 
-		Association actualAssociation = dialect.getAssociation( key, new AssociationContext( new ArrayList<String>() ) );
+		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
 		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
 	}
 
@@ -154,11 +161,12 @@ public class CouchDBDialectTest {
 		String tableName = "user_address";
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
+		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
 
 		AssociationKey key = createAssociationKey(
-				tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
+				entityKey, "addresses", tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
 		);
-		Association createAssociation = dialect.createAssociation( key );
+		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "user_id", "Emmanuel" );
@@ -167,7 +175,7 @@ public class CouchDBDialectTest {
 
 		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, tuple );
-		dialect.updateAssociation( createAssociation, key );
+		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
 
 		assertThat( dialect.getAssociationSize(), is( 1 ) );
 	}
@@ -188,10 +196,14 @@ public class CouchDBDialectTest {
 		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
 	}
 
-	private AssociationKey createAssociationKey(String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
+	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames );
 		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
-		return new AssociationKey( associationKeyMetadata, columnValues );
+
+		AssociationKey associationKey = new AssociationKey( associationKeyMetadata, columnValues );
+		associationKey.setOwnerEntityKey( ownerEntityKey );
+		associationKey.setCollectionRole( collectionRole );
+		return associationKey;
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
@@ -205,4 +217,7 @@ public class CouchDBDialectTest {
 		datastoreProvider.start();
 	}
 
+	private AssociationContext emptyAssociationContext() {
+		return new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Object.class, "" ) );
+	}
 }

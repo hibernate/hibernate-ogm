@@ -79,17 +79,17 @@ public interface GridDialect extends Service {
 	 * Create an empty container for the list of tuples corresponding to a given association
 	 * Only used if the association data is not present
 	 */
-	Association createAssociation(AssociationKey key);
+	Association createAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Update a given list of tuples corresponding to a given association
 	 */
-	void updateAssociation(Association association, AssociationKey key);
+	void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
 	 */
-	void removeAssociation(AssociationKey key);
+	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
 	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
 

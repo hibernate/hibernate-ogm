@@ -26,14 +26,15 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.couchdb.Environment;
-import org.hibernate.ogm.dialect.couchdb.json.CouchDBEntity;
-import org.hibernate.ogm.dialect.couchdb.model.CouchDBTupleSnapshot;
-import org.hibernate.ogm.dialect.couchdb.util.Identifier;
+import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
+import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
+import org.hibernate.ogm.dialect.couchdb.impl.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -48,21 +49,39 @@ public class CouchDBTestHelper implements TestableGridDialect {
 
 	@Override
 	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		return dataStore.getNumberOfEntities() == numberOfEntities;
+		return getNumberOfEntities( sessionFactory ) == numberOfEntities;
+	}
+
+	public int getNumberOfEntities(SessionFactory sessionFactory) {
+		return getDataStore( sessionFactory ).getNumberOfEntities();
 	}
 
 	@Override
 	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
+		return getNumberOfAssociations( sessionFactory ) == numberOfAssociations;
+	}
+
+	public int getNumberOfAssociations(AssociationStorageType type, SessionFactory sessionFactory) {
+		Integer count = getDataStore( sessionFactory ).getNumberOfAssociations().get( type );
+		return count != null ? count : 0;
+	}
+
+	public int getNumberOfAssociations(SessionFactory sessionFactory) {
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		return dataStore.getNumberOfAssociations() == numberOfAssociations;
+
+		Map<AssociationStorageType, Integer> associationCountByType = dataStore.getNumberOfAssociations();
+		int totalCount = 0;
+		for ( int count : associationCountByType.values() ) {
+			totalCount += count;
+		}
+		return totalCount;
 	}
 
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
-		CouchDBEntity entity = dataStore.getEntity( Identifier.createEntityId( key ) );
+		EntityDocument entity = dataStore.getEntity( Identifier.createEntityId( key ) );
 		CouchDBTupleSnapshot snapshot = new CouchDBTupleSnapshot( entity.getProperties() );
 		Set<String> columnNames = snapshot.getColumnNames();
 		for ( String columnName : columnNames ) {
@@ -84,12 +103,12 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		Map<String, String> envProps = new HashMap<String, String>( 2 );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_HOST, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_PORT, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_DATABASE, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_USERNAME, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_PASSWORD, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.COUCHDB_CREATE_DATABASE, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.HOST, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.PORT, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.DATABASE, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.USERNAME, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.PASSWORD, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( CouchDB.CREATE_DATABASE, envProps );
 		return envProps;
 	}
 

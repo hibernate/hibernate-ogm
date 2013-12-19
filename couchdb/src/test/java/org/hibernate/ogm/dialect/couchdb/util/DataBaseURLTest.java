@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.couchdb.util;
 
+import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

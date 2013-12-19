@@ -32,10 +32,6 @@ import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.dialect.mongodb.query.parsing.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBEntityOptions;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBPropertyOptions;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Startable;
@@ -76,11 +72,6 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return MongoDBBasedQueryParserService.class;
-	}
-
-	@Override
-	public MongoDBGlobalOptions getConfigurationBuilder(ConfigurationContext context) {
-		return context.createGlobalContext( MongoDBGlobalOptions.class, MongoDBEntityOptions.class, MongoDBPropertyOptions.class );
 	}
 
 	@Override

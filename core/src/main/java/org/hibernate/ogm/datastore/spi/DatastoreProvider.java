@@ -21,8 +21,6 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.Service;
 
@@ -47,12 +45,4 @@ public interface DatastoreProvider extends Service {
 	 * @return the default {@link QueryParserService} for the underlying datastore; never {@code null}
 	 */
 	Class<? extends QueryParserService> getDefaultQueryParserServiceType();
-
-	/**
-	 * Returns a new store-specific {@link GlobalContext} instance.
-	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
-	 */
-	GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context);
 }

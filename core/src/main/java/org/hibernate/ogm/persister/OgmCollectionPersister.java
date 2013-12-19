@@ -23,10 +23,8 @@ package org.hibernate.ogm.persister;
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -45,9 +43,7 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.datastore.impl.DatastoreServices;
-import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
@@ -87,9 +83,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
-	private final AssociationContext associationContext;
 	private final AssociationKeyMetadata associationKeyMetadata;
 	private final AssociationKeyMetadata associationKeyMetadataFromElement;
+
+	private final String nodeName;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -97,6 +94,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		ServiceRegistry registry = factory.getServiceRegistry();
 		final TypeTranslator typeTranslator = registry.getService( TypeTranslator.class );
 		this.gridDialect = registry.getService( DatastoreServices.class ).getGridDialect();
+
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );
 		indexGridType = typeTranslator.getType( getIndexType() );
@@ -123,43 +121,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
-		associationContext = buildAssociationContext();
 		associationKeyMetadata = new AssociationKeyMetadata( getTableName(), getKeyColumnNames() );
 		associationKeyMetadata.setRowKeyColumnNames( getRowKeyColumnNames() );
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata( getTableName(), getElementColumnNames() );
 		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
-	}
 
-	public AssociationContext getAssociationContext() {
-		return associationContext;
+		nodeName = collection.getNodeName();
 	}
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
-	}
-
-	private AssociationContext buildAssociationContext() {
-		List<String> selectableColumns = new ArrayList<String>();
-		// add identifier, index, key and element columns
-		String identifierColumnName = getIdentifierColumnName();
-		if ( identifierColumnName != null ) {
-			selectableColumns.add( identifierColumnName );
-		}
-		for ( String column : getKeyColumnNames() ) {
-			selectableColumns.add( column );
-		}
-		String[] columns = getIndexColumnNames();
-		if ( columns != null ) {
-			for ( String column : columns ) {
-				selectableColumns.add( column );
-			}
-		}
-		columns = getElementColumnNames();
-		for ( String column : columns ) {
-			selectableColumns.add( column );
-		}
-		return new AssociationContext( selectableColumns );
 	}
 
 	/** represents the type of associations at stake */
@@ -271,8 +243,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		int count = 0;
 		int i = 0;
-		Iterator entries = collection.entries( this );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		Iterator<?> entries = collection.entries( this );
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( key )
 				.keyGridType( getKeyGridType() )
@@ -320,7 +294,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private RowKeyAndTuple createAndPutTupleforInsert(Serializable key, PersistentCollection collection,
 			PropertyMetadataProvider metadataProvider, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -378,7 +352,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
@@ -404,7 +378,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple( EmptyTupleSnapshot.SINGLETON );
+		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
 			final Object identifier = entry;
 			String[] names = { getIdentifierColumnName() };
@@ -431,7 +405,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.key( key )
 				.tableName( getTableName() )
 				.session( session )
@@ -462,7 +438,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -471,7 +449,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// delete all the deleted entries
-			Iterator deletes = collection.getDeletes( this, !deleteByIndex );
+			Iterator<?> deletes = collection.getDeletes( this, !deleteByIndex );
 			if ( deletes.hasNext() ) {
 				int count = 0;
 				while ( deletes.hasNext() ) {
@@ -510,7 +488,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting rows of collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -520,7 +500,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// insert all the new entries
 			collection.preInsert( this );
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			int i = 0;
 			int count = 0;
 			while ( entries.hasNext() ) {
@@ -552,7 +532,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+					getOwnerEntityPersister().getMappedClass()
+				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( getKeyGridType() )
@@ -561,7 +543,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.session( session );
 
 			// create all the new entries
-			Iterator entries = collection.entries( this );
+			Iterator<?> entries = collection.entries( this );
 			if ( entries.hasNext() ) {
 				collection.preInsert( this );
 				int i = 0;
@@ -628,7 +610,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			String[] elementColumnNames = getElementColumnNames();
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
-			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider associationProvider = new PropertyMetadataProvider(
+						getElementPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
@@ -676,7 +660,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			// Remove all the old entries
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider()
+			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+						getOwnerEntityPersister().getMappedClass()
+					)
 					.gridDialect( gridDialect )
 					.key( id )
 					.keyGridType( getKeyGridType() )

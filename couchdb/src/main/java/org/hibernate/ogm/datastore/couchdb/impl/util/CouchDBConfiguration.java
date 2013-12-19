@@ -20,48 +20,56 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl.util;
 
-import org.hibernate.ogm.dialect.couchdb.Environment;
-
 import java.util.Map;
+
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 
 /**
  * Provides utility methods to access the CouchDB configuration value
  *
  * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Gunnar Morling
  */
 public class CouchDBConfiguration {
 
 	public static final String DEFAULT_COUCHDB_PORT = "5984";
 	public static final String LOCALHOST = "localhost";
+	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
 
-	private Map configurationValues;
+	private Map<?, ?> configurationValues;
 
-	public void setConfigurationValues(Map configurationValues) {
+	public void setConfigurationValues(Map<?, ?> configurationValues) {
 		this.configurationValues = configurationValues;
 	}
 
 	public String getDatabaseHost() {
-		return getPropertyValue( Environment.COUCHDB_HOST, LOCALHOST );
+		return getPropertyValue( CouchDB.HOST, LOCALHOST );
 	}
 
 	public int getDatabasePort() {
-		return Integer.valueOf( getPropertyValue( Environment.COUCHDB_PORT, DEFAULT_COUCHDB_PORT ) );
+		return Integer.valueOf( getPropertyValue( CouchDB.PORT, DEFAULT_COUCHDB_PORT ) );
 	}
 
 	public String getDatabaseName() {
-		return getPropertyValue( Environment.COUCHDB_DATABASE, null );
+		return getPropertyValue( CouchDB.DATABASE, null );
 	}
 
 	public String getUsername() {
-		return getPropertyValue( Environment.COUCHDB_USERNAME, null );
+		return getPropertyValue( CouchDB.USERNAME, null );
 	}
 
 	public String getPassword() {
-		return getPropertyValue( Environment.COUCHDB_PASSWORD, null );
+		return getPropertyValue( CouchDB.PASSWORD, null );
 	}
 
 	public boolean isDatabaseToBeCreated() {
-		return Boolean.valueOf( getPropertyValue( Environment.COUCHDB_CREATE_DATABASE, Boolean.toString( false ) ) );
+		return Boolean.valueOf( getPropertyValue( CouchDB.CREATE_DATABASE, Boolean.toString( false ) ) );
+	}
+
+	public AssociationStorageType getAssociationStorageStrategy() {
+		String propertyValue = getPropertyValue( CouchDB.ASSOCIATIONS_STORE, null );
+		return propertyValue != null ? AssociationStorageType.valueOf( propertyValue ) : DEFAULT_ASSOCIATION_STORAGE;
 	}
 
 	public boolean isDatabaseNameConfigured() {

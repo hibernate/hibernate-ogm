@@ -27,6 +27,7 @@ import org.hibernate.Interceptor;
 import org.hibernate.SessionBuilder;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.ogm.OgmSessionFactory;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

@@ -29,29 +29,30 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
-import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test for putting/retrieving values into/from {@link OptionsContext}.
+ * Test for putting/retrieving values into/from {@link WritableOptionsServiceContext}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
 public class OptionsContextTest {
 
-	private OptionsContext optionsContext;
+	private WritableOptionsServiceContext optionsContext;
 	private SampleGlobalContext configuration;
 
 	@Before
 	public void setupContexts() {
-		optionsContext = new OptionsContext();
+		optionsContext = new WritableOptionsServiceContext();
 		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( optionsContext ) );
 	}
 

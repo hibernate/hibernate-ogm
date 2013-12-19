@@ -23,6 +23,8 @@ package org.hibernate.ogm.test.utils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.transaction.TransactionManager;
 
@@ -31,21 +33,29 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.test.utils.TestSessionFactory.Scope;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.FrameworkField;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.TestClass;
+
 /**
  * A JUnit 4 runner for OGM tests. Based on a given set of entities, it manages a session factory, which is used
  * throughout all test methods of the given test class.
  * <p>
  * The entities of the test are to be returned by a parameterless method annotated with {@link TestEntities} in form of
- * a {@code Class<?>[]}. The used session factory can be obtained by annotating a field of type {@link SessionFactory}
- * with the {@link TestSessionFactory} annotation. The runner will inject the factory in this field then. Finally the
- * {@link Configuration} used for bootstrapping the factory can optionally be modified by annotating a configuration
- * method with the {@link SessionFactoryConfiguration} a shown in the example below.
+ * a {@code Class<?>[]}.
+ * <p>
+ * The used session factory can be obtained by annotating a field of type {@link SessionFactory} with the
+ * {@link TestSessionFactory} annotation. The runner will inject the factory in this field then. Depending on the
+ * {@link TestSessionFactory#scope() } setting, either the same session factory instance will be used for all test
+ * methods of a given test class or a new session factory will be created and injected for each individual test method.
+ * <p>
+ * Finally the {@link Configuration} used for bootstrapping the factory can optionally be modified by annotating a
+ * configuration method with the {@link SessionFactoryConfiguration} a shown in the example below.
  * <p>
  * Usage example:
  *
@@ -87,29 +97,69 @@ public class OgmTestRunner extends GridDialectSkippableTestRunner {
 
 	private static final Log LOG = LoggerFactory.make();
 
-	private SessionFactory sessionFactory;
+	private final Set<Field> testScopedFactoryFields;
+	private final Set<Field> testMethodScopedFactoryFields;
+
+	private SessionFactory testScopedSessionFactory;
+	private SessionFactory testMethodScopedSessionFactory;
 
 	public OgmTestRunner(Class<?> klass) throws InitializationError {
 		super( klass );
+
+		testScopedFactoryFields = getTestFactoryFields( getTestClass(), Scope.TEST_CLASS );
+		testMethodScopedFactoryFields = getTestFactoryFields( getTestClass(), Scope.TEST_METHOD );
+	}
+
+	private static Set<Field> getTestFactoryFields(TestClass testClass, TestSessionFactory.Scope scope) {
+		Set<Field> testFactoryFields = new HashSet<Field>();
+
+		for ( FrameworkField frameworkField : testClass.getAnnotatedFields( TestSessionFactory.class ) ) {
+			Field field = frameworkField.getField();
+			if ( scope == field.getAnnotation( TestSessionFactory.class ).scope() ) {
+				field.setAccessible( true );
+				testFactoryFields.add( field );
+			}
+		}
+
+		return testFactoryFields;
 	}
 
 	@Override
 	public void run(RunNotifier notifier) {
-		sessionFactory = buildSessionFactory();
-		injectSessionFactory( null, true );
+		testScopedSessionFactory = buildSessionFactory();
+
+		//inject shared SF into static fields, if any
+		injectSessionFactory( null, testScopedFactoryFields, testScopedSessionFactory );
 
 		try {
 			super.run( notifier );
 		}
 		finally {
 			cleanUpPendingTransactionIfRequired();
-			TestHelper.dropSchemaAndDatabase( sessionFactory );
-			sessionFactory.close();
+			TestHelper.dropSchemaAndDatabase( testScopedSessionFactory );
+			testScopedSessionFactory.close();
+		}
+	}
+
+	@Override
+	protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+		// create test method scoped SF if required; it will be injected in createTest()
+		if ( !testMethodScopedFactoryFields.isEmpty() ) {
+			testMethodScopedSessionFactory = buildSessionFactory();
+		}
+
+		try {
+			super.runChild( method, notifier );
+		}
+		finally {
+			if ( testMethodScopedSessionFactory != null ) {
+				testMethodScopedSessionFactory.close();
+			}
 		}
 	}
 
 	private void cleanUpPendingTransactionIfRequired() {
-		TransactionManager transactionManager = ( (SessionFactoryImplementor) sessionFactory )
+		TransactionManager transactionManager = ( (SessionFactoryImplementor) testScopedSessionFactory )
 				.getServiceRegistry()
 				.getService( JtaPlatform.class )
 				.retrieveTransactionManager();
@@ -180,21 +230,28 @@ public class OgmTestRunner extends GridDialectSkippableTestRunner {
 	@Override
 	protected Object createTest() throws Exception {
 		Object test = super.createTest();
-		injectSessionFactory( test, false );
+
+		// inject SFs as per given scopes
+		if ( !testScopedFactoryFields.isEmpty() ) {
+			injectSessionFactory( test, testScopedFactoryFields, testScopedSessionFactory );
+		}
+		if ( !testMethodScopedFactoryFields.isEmpty() ) {
+			injectSessionFactory( test, testMethodScopedFactoryFields, testMethodScopedSessionFactory );
+		}
+
 		return test;
 	}
 
-	private void injectSessionFactory(Object test, boolean statics) {
-		for ( FrameworkField frameworkField : getTestClass().getAnnotatedFields( TestSessionFactory.class ) ) {
-			Field field = frameworkField.getField();
-			if ( statics == Modifier.isStatic( field.getModifiers() ) ) {
-				field.setAccessible( true );
-				try {
+	private void injectSessionFactory(Object test, Iterable<Field> fields, SessionFactory sessionFactory) {
+		for ( Field field : fields ) {
+			try {
+				if ( ( test == null && Modifier.isStatic( field.getModifiers() ) ) ||
+						( test != null && !Modifier.isStatic( field.getModifiers() ) ) ) {
 					field.set( test, sessionFactory );
 				}
-				catch (Exception e) {
-					throw new RuntimeException( "Can't inject session factory into field " + field );
-				}
+			}
+			catch (Exception e) {
+				throw new RuntimeException( "Can't inject session factory into field " + field );
 			}
 		}
 	}
