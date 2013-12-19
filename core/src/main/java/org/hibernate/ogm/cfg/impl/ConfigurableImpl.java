@@ -18,28 +18,47 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.cfg.impl;
 
+import org.hibernate.ogm.cfg.Configurable;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+
 
 /**
- * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.
- * <p>
- * Implementations must provide a no-args constructor.
- *
  * @author Gunnar Morling
- * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
+ *
  */
-public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
+public class ConfigurableImpl implements Configurable {
 
-	/**
-	 * Returns a new store-specific {@link GlobalContext} instance. Used by the Hibernate OGM engine during
-	 * bootstrapping a session factory, not intended for client use.
-	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
-	 */
-	G getConfigurationBuilder(ConfigurationContext context);
+	private static final Log log = LoggerFactory.make();
+	private final WritableOptionsServiceContext context;
+
+	public ConfigurableImpl() {
+		context = new WritableOptionsServiceContext();
+	}
+
+	@Override
+	public <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Class<D> datastoreType) {
+		D configuration = newInstance( datastoreType );
+		return configuration.getConfigurationBuilder( new ConfigurationContext( context ) );
+	}
+
+	public WritableOptionsServiceContext getContext() {
+		return context;
+	}
+
+	private <D extends DatastoreConfiguration<?>> D newInstance(Class<D> datastoreType) {
+		try {
+			return datastoreType.newInstance();
+
+		}
+		catch (Exception e) {
+			throw log.unableToInstantiateType( datastoreType.getName(), e );
+		}
+	}
 }

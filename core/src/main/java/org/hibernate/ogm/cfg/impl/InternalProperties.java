@@ -18,28 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
-
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+package org.hibernate.ogm.cfg.impl;
 
 /**
- * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.
- * <p>
- * Implementations must provide a no-args constructor.
+ * Constants used within OGM, not intended for public use.
  *
  * @author Gunnar Morling
- * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
  */
-public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
+public class InternalProperties {
 
 	/**
-	 * Returns a new store-specific {@link GlobalContext} instance. Used by the Hibernate OGM engine during
-	 * bootstrapping a session factory, not intended for client use.
-	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
+	 * Name of the configuration option for passing in set up
+	 * {@link org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext}s.
 	 */
-	G getConfigurationBuilder(ConfigurationContext context);
+	public static final String OGM_OPTION_CONTEXT = "hibernate.ogm.options.context";
+
+	private InternalProperties() {
+	}
 }

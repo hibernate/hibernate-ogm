@@ -21,8 +21,6 @@
 package org.hibernate.ogm;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
  * Provides OGM-specific functionality on the session factory level.
@@ -30,16 +28,4 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
  * @author Gunnar Morling
  */
 public interface OgmSessionFactory extends SessionFactoryImplementor {
-
-	/**
-	 * Returns a typed {@link GlobalContext} object allowing to apply store-specific configuration options. These
-	 * settings are applied to all sessions created via this factory.
-	 *
-	 * @param datastoreType the configuration type representing the current datastore
-	 * @param <G> the returned type of global context
-	 * @param <D> the configuration type representing the current datastore
-	 * @return a {@link GlobalContext} object
-	 * @throws org.hibernate.HibernateException in case the given configuration type isn't supported by the current datastore provider
-	 */
-	<G extends GlobalContext<G, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType);
 }

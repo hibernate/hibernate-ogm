@@ -52,6 +52,7 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Test
 	public void associationStorageSetToAssociationDocumentViaProperty() throws Exception {
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -60,9 +61,10 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Test
 	public void associationStorageSetViaApiTakesPrecedenceOverProperty() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );

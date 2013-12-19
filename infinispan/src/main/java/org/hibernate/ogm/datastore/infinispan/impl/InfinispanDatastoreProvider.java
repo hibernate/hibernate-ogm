@@ -33,9 +33,6 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
@@ -195,10 +192,5 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	@Override
 	public void configure(Map configurationValues) {
 		this.config.initConfiguration( configurationValues );
-	}
-
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
 	}
 }

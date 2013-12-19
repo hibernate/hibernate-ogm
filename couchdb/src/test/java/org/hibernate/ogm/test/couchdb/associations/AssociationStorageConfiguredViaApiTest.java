@@ -47,9 +47,10 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -58,9 +59,10 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -69,10 +71,11 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -81,10 +84,11 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.IN_ENTITY );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -93,13 +97,14 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetOnPropertyLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.entity( Cloud.class )
 				.property( "producedSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.IN_ENTITY );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -108,12 +113,13 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 		.entity( Cloud.class )
 			.associationStorage( AssociationStorageType.IN_ENTITY )
 			.property( "backupSnowFlakes", ElementType.METHOD )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
+		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );

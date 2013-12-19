@@ -21,11 +21,12 @@
 package org.hibernate.ogm.test.couchdb.associations;
 
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.hibernate.ogm.test.utils.CouchDBTestHelper;
 import org.hibernate.ogm.test.utils.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestSessionFactory;
-import org.hibernate.ogm.test.utils.TestSessionFactory.Scope;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.Before;
 
 /**
  * Base for tests for configuring association storage strategies.
@@ -36,11 +37,18 @@ public abstract class AssociationStorageTestBase extends OgmTestCase {
 
 	protected static CouchDBTestHelper testHelper = new CouchDBTestHelper();
 
-	/**
-	 * Not using the SF from the super class to reset it for each test method
-	 */
-	@TestSessionFactory(scope = Scope.TEST_METHOD)
+	protected OgmConfiguration configuration;
 	protected OgmSessionFactory sessions;
+
+	@Before
+	public void setupConfiguration() {
+		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+		configure( configuration );
+	}
+
+	protected void setupSessionFactory() {
+		sessions = configuration.buildSessionFactory();
+	}
 
 	protected int associationDocumentCount() {
 		return testHelper.getNumberOfAssociations( AssociationStorageType.ASSOCIATION_DOCUMENT, sessions );

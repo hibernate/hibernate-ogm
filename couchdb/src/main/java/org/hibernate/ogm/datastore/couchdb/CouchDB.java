@@ -22,15 +22,18 @@ package org.hibernate.ogm.datastore.couchdb;
 
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
+import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBEntityContextImpl;
+import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBGlobalContextImpl;
+import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBPropertyContextImpl;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * Allows to configure options specific to the CouchDB document data store.
  *
  * @author Gunnar Morling
  * @author Andrea Boriero <dreborier@gmail.com/>
- * @see org.hibernate.ogm.OgmSessionFactory#configureDatastore(Class)
  */
-public interface CouchDB extends DatastoreConfiguration<CouchDBGlobalContext> {
+public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
 
 	/**
 	 * Name of the property for configuring the strategy for storing associations in CouchDB. Valid values are the
@@ -40,37 +43,42 @@ public interface CouchDB extends DatastoreConfiguration<CouchDBGlobalContext> {
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.
 	 */
-	String ASSOCIATIONS_STORE = "hibernate.ogm.couchdb.associations.store";
+	public static final String ASSOCIATIONS_STORE = "hibernate.ogm.couchdb.associations.store";
 
 	/**
 	 * The CouchDB Database name to connect to.
 	 */
-	String DATABASE = "hibernate.ogm.couchdb.database";
+	public static final String DATABASE = "hibernate.ogm.couchdb.database";
 
 	/**
 	 * The port of the CouchDB instance.
 	 */
-	String PORT = "hibernate.ogm.couchdb.port";
+	public static final String PORT = "hibernate.ogm.couchdb.port";
 
 	/**
 	 * The hostname of the CouchDB instance.
 	 */
-	String HOST = "hibernate.ogm.couchdb.host";
+	public static final String HOST = "hibernate.ogm.couchdb.host";
 
 	/**
 	 * The username of the CouchDB database user with authentication enabled.
 	 */
-	String USERNAME = "hibernate.org.couchdb.username";
+	public static final String USERNAME = "hibernate.org.couchdb.username";
 
 	/**
 	 * The username of the CouchDB database user with authentication enabled.
 	 */
-	String PASSWORD = "hibernate.org.couchdb.password";
+	public static final String PASSWORD = "hibernate.org.couchdb.password";
 
 	/**
 	 * If true, the database will be created when it doesn't exist. Default to false. The user defined with
 	 * {@link #USERNAME} must have the privileges for the creation of a new database. The database will have the name
 	 * defined with {@link #DATABASE}.
 	 */
-	String CREATE_DATABASE = "hibernate.org.couchdb.createdatabase";
+	public static final String CREATE_DATABASE = "hibernate.org.couchdb.createdatabase";
+
+	@Override
+	public CouchDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+		return context.createGlobalContext( CouchDBGlobalContextImpl.class, CouchDBEntityContextImpl.class, CouchDBPropertyContextImpl.class );
+	}
 }

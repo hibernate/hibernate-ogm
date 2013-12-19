@@ -39,9 +39,6 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
@@ -190,10 +187,5 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	 */
 	public Map<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationsMap() {
 		return Collections.unmodifiableMap( associationsKeyValueStorage );
-	}
-
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
 	}
 }

@@ -20,33 +20,66 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.engine.spi.SessionFactoryImplementor;
+import java.util.Map;
+
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
+import org.hibernate.ogm.cfg.spi.OptionConfigurer;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Provides read and write access to option contexts maintained at the session factory and session level.
+ * Provides read access to option contexts maintained at the session factory and session level.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Gunnar Morling
  */
-public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderService {
+public class OptionsServiceImpl implements OptionsService, Configurable, ServiceRegistryAwareService {
 
-	private final DatastoreProvider datastoreProvider;
-	private final WritableOptionsServiceContext globalContext;
+	private static final Log log = LoggerFactory.make();
 
-	public OptionsServiceImpl(DatastoreProvider datastoreProvider, SessionFactoryImplementor sessionFactoryImplementor) {
-		this.datastoreProvider = datastoreProvider;
-		this.globalContext = new WritableOptionsServiceContext();
+	private OptionsServiceContext sessionFactoryOptions;
+	private ServiceRegistryImplementor registry;
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.registry = serviceRegistry;
 	}
 
-	//OptionsService
+	@Override
+	public void configure(Map configurationValues) {
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry );
+
+		OptionsServiceContext context = propertyReader.getValue( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class );
+		OptionConfigurer configurer = propertyReader.getValue( OgmConfiguration.OGM_OPTION_CONFIGURER, OptionConfigurer.class );
+
+		if ( context != null && configurer != null ) {
+			throw log.ambigiousOptionConfiguration( OgmConfiguration.OGM_OPTION_CONFIGURER );
+		}
+		else if ( configurer != null ) {
+			sessionFactoryOptions = invoke( configurer );
+		}
+		else if ( context != null ) {
+			sessionFactoryOptions = context;
+		}
+		// use default context which provides access to annotation options
+		else {
+			sessionFactoryOptions = new WritableOptionsServiceContext();
+		}
+	}
 
 	@Override
 	public OptionsServiceContext context() {
-		return globalContext;
+		return sessionFactoryOptions;
 	}
 
 	@Override
@@ -54,10 +87,17 @@ public class OptionsServiceImpl implements OptionsService, ConfigurationBuilderS
 		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
 	}
 
-	//ConfigurationBuilderService
+	/**
+	 * Invokes the given configurer, obtaining the correct global context type via the datastore configuration type of
+	 * the current datastore provider.
+	 *
+	 * @param configurer the configurer to invoke
+	 * @return a context object containing the options set via the given configurer
+	 */
+	private <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> OptionsServiceContext invoke(OptionConfigurer configurer) {
+		ConfigurableImpl configurable = new ConfigurableImpl();
+		configurer.configure( configurable );
 
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder() {
-		return datastoreProvider.getConfigurationBuilder( new ConfigurationContext( globalContext ) );
+		return configurable.getContext();
 	}
 }

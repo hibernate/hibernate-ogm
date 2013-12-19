@@ -22,10 +22,10 @@ package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.mongodb.WriteConcernOption;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
+import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
@@ -40,17 +40,18 @@ import org.junit.Test;
 public class WriteConcernOptionTest {
 
 	private WritableOptionsServiceContext optionsContext;
-	private MongoDBGlobalOptions mongoOptions;
+	private MongoDBGlobalContext mongoOptions;
 
 	@Before
 	public void setupBuilder() {
 		optionsContext = new WritableOptionsServiceContext();
-		mongoOptions = new MongoDBDatastoreProvider().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
 	}
 
 	@Test
 	public void testWriteConcernMappingOption() throws Exception {
-		mongoOptions.writeConcern( WriteConcernType.ERRORS_IGNORED );
+		mongoOptions
+			.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
 		OptionsContainer options = optionsContext.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );

@@ -177,4 +177,22 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 42, value = "The given element type %1$s is neither FIELD nor METHOD.")
 	HibernateException getUnsupportedElementTypeException(ElementType elementType);
+
+	@Message(id = 43, value = "Cannot instantiate DatastoreConfiguration %1$s")
+	HibernateException unableToInstantiateType(String datastoreConfigurationClassName, @Cause Exception e);
+
+	@Message(id = 44, value = "Can not load class %2$s specified via configuration property '%1$s'")
+	HibernateException unableToLoadClass(String propertyName, String className, @Cause Exception e);
+
+	@Message(id = 45, value = "Type %2$s specified via configuration property '%1$s' is not a sub-type of expected type %3$s")
+	HibernateException unexpectedClassType(String propertyName, String className, String expectedClassName);
+
+	@Message(id = 46, value = "Object %2$s of type %3$s specified via configuration property '%1$s' is not of the expected type %4$s")
+	HibernateException unexpectedInstanceType(String propertyName, String instance, String actualClassName, String expectedClassName);
+
+	@Message(id = 47, value = "Either an option configurer may be specified via configuration property '%1$s' or OgmConfiguration#configureOptions() may be called, but not both at the same time.")
+	HibernateException ambigiousOptionConfiguration(String propertyName);
+
+	@Message(id = 48, value = "Unexpected option configurer type %1$s. Make sure to pass an option configurer which is parameterized with the global context type of the current datastore configuration type %2$s.")
+	HibernateException unexpectedOptionConfigurerType(String configurerTypeName, String datastoreConfigurationTypeName, @Cause Exception cause);
 }

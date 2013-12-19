@@ -18,28 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.test.options.mapping.model;
 
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import java.lang.annotation.ElementType;
+
+import org.hibernate.ogm.cfg.Configurable;
+import org.hibernate.ogm.cfg.spi.OptionConfigurer;
+import org.hibernate.ogm.test.options.mapping.OptionIntegrationTest.Microwave;
+import org.hibernate.ogm.test.options.mapping.OptionIntegrationTest.Refrigerator;
+import org.hibernate.ogm.test.options.mapping.OptionIntegrationTest.SampleNoSqlDatastore;
 
 /**
- * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.
- * <p>
- * Implementations must provide a no-args constructor.
- *
  * @author Gunnar Morling
- * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
  */
-public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
+public class SampleOptionConfigurer extends OptionConfigurer {
 
-	/**
-	 * Returns a new store-specific {@link GlobalContext} instance. Used by the Hibernate OGM engine during
-	 * bootstrapping a session factory, not intended for client use.
-	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
-	 */
-	G getConfigurationBuilder(ConfigurationContext context);
+	@Override
+	public void configure(Configurable configurable) {
+		configurable.configureOptionsFor( SampleNoSqlDatastore.class )
+			.entity( Refrigerator.class )
+				.force( true )
+				.property( "temperature", ElementType.FIELD )
+					.embed( "Embedded" )
+			.entity( Microwave.class )
+				.name( "test" );
+	}
 }

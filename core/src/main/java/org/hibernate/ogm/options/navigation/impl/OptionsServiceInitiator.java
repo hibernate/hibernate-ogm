@@ -23,7 +23,6 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
@@ -46,7 +45,7 @@ public final class OptionsServiceInitiator implements SessionFactoryServiceIniti
 
 	@Override
 	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		return new OptionsServiceImpl( registry.getService( DatastoreProvider.class ), sessionFactory );
+		return new OptionsServiceImpl();
 	}
 
 	@Override

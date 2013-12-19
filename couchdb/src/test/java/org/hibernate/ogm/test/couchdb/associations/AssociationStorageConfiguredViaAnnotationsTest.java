@@ -47,6 +47,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetToCollectionOnEntityLevel() throws Exception {
+		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 0 );
@@ -55,6 +56,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
+		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -63,10 +65,12 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetOnPropertyLevelViaApiTakesPrecedenceOverAnnotation() throws Exception {
-		sessions.configureDatastore( CouchDB.class )
+		configuration.configureOptionsFor( CouchDB.class )
 			.entity( AnnotatedCloud.class )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.IN_ENTITY );
+
+		setupSessionFactory();
 
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
@@ -76,6 +80,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetOnSubClass() throws Exception {
+		setupSessionFactory();
 		createPolarCloudWithTwoProducedAndOneBackupSnowflake();
 
 		assertThat( associationDocumentCount() ).isEqualTo( 1 );
@@ -228,6 +233,8 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 		assertThat( testHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
 		assertThat( testHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+
+		sessions.close();
 	}
 
 	@Override

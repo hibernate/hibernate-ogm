@@ -18,28 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.datastore.mongodb;
 
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBEntityOptions;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBPropertyOptions;
+import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
- * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.
- * <p>
- * Implementations must provide a no-args constructor.
+ * Allows to configure options specific to the MongoDB document data store.
  *
  * @author Gunnar Morling
- * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
  */
-public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
+public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext> {
 
-	/**
-	 * Returns a new store-specific {@link GlobalContext} instance. Used by the Hibernate OGM engine during
-	 * bootstrapping a session factory, not intended for client use.
-	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
-	 */
-	G getConfigurationBuilder(ConfigurationContext context);
+	@Override
+	public MongoDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+		return context.createGlobalContext( MongoDBGlobalOptions.class, MongoDBEntityOptions.class, MongoDBPropertyOptions.class );
+	}
 }

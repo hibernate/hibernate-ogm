@@ -18,24 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.cfg.spi;
 
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.service.Service;
+import org.hibernate.ogm.cfg.Configurable;
 
 /**
- * Provides access to {@link GlobalContext}s specific to the current datastore provider. The options set via this
- * context can be accessed via {@link org.hibernate.ogm.options.spi.OptionsService}.
+ * A callback invoked at bootstrap time to apply configuration options. Can be passed via the option
+ * {@link org.hibernate.ogm.cfg.OgmConfiguration#OGM_OPTION_CONFIGURER}.
  *
  * @author Gunnar Morling
- * @see org.hibernate.ogm.options.spi.OptionsService
  */
-public interface ConfigurationBuilderService extends Service {
+public abstract class OptionConfigurer {
 
 	/**
-	 * Returns a new global context of the store-specific implementation type
+	 * Callback for applying configuration options.
 	 *
-	 * @return a new global configuration context
+	 * @param configurable allows to apply store-specific configuration options
 	 */
-	GlobalContext<?, ?> getConfigurationBuilder();
+	public abstract void configure(Configurable configurable);
 }

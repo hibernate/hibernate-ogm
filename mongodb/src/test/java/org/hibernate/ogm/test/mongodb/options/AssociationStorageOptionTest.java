@@ -25,9 +25,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
@@ -45,8 +44,7 @@ public class AssociationStorageOptionTest {
 		WritableOptionsServiceContext optionsContext = new WritableOptionsServiceContext();
 		ConfigurationContext context = new ConfigurationContext( optionsContext );
 
-		MongoDBGlobalContext mapping = new MongoDBDatastoreProvider().getConfigurationBuilder( context );
-		mapping
+		new MongoDB().getConfigurationBuilder( context )
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.COLLECTION );
@@ -59,5 +57,4 @@ public class AssociationStorageOptionTest {
 	private static final class ExampleForMongoDBMapping {
 		String content;
 	}
-
 }

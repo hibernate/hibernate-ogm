@@ -24,9 +24,9 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.HibernateException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -43,9 +43,10 @@ import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.mapping.SampleOptionModel.SampleGlobalContext;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurer;
 import org.hibernate.ogm.test.utils.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestSessionFactory;
-import org.hibernate.ogm.test.utils.TestSessionFactory.Scope;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -55,33 +56,36 @@ import org.junit.Test;
  */
 public class OptionIntegrationTest extends OgmTestCase {
 
-	/**
-	 * Not using the SF from the super class to reset it for each test method
-	 */
-	@TestSessionFactory(scope = Scope.TEST_METHOD)
 	private OgmSessionFactory sessions;
+
+	@After
+	public void closeSessionFactory() {
+		sessions.close();
+	}
 
 	@Test
 	public void testThatEntityOptionCanBeSetAndRetrieved() throws Exception {
-		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
-		configuration
+		OgmConfiguration configuration = getConfiguration();
+		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.force( true );
 
-		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		setupSessionFactory( configuration );
 
-		Boolean forceOptionValue = refrigatorOptions.getUnique( ForceExampleOption.class );
-		assertThat( forceOptionValue ).isTrue();
+		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
 	@Test
 	public void testThatEntityOptionsCanBeSetAndRetrievedOnMultipleTypes() throws Exception {
-		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
-		configuration
+		OgmConfiguration configuration = getConfiguration();
+		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.force( true )
 			.entity( Microwave.class )
 				.name( "test" );
+
+		setupSessionFactory( configuration );
 
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
@@ -92,22 +96,54 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Test
 	public void testThatPropertyOptionCanBeSetAndRetrieved() throws Exception {
-		SampleGlobalContext configuration = sessions.configureDatastore( SampleNoSqlDatastore.class );
-		configuration
+		OgmConfiguration configuration = getConfiguration();
+		configuration.configureOptionsFor( SampleNoSqlDatastore.class )
 			.entity( Refrigerator.class )
 				.property( "temperature", ElementType.FIELD )
 					.embed( "Embedded" );
+
+		setupSessionFactory( configuration );
 
 		OptionsContainer temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 
-	/**
-	 * The requested type doesn't match with the type of global context created by the current datastore provider.
-	 */
-	@Test(expected = HibernateException.class)
-	public void testThatWrongStoreTypeCausesException() {
-		sessions.configureDatastore( AnotherDatastore.class );
+	@Test
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerInstance() throws Exception {
+		OgmConfiguration configuration = getConfiguration();
+		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, new SampleOptionConfigurer() );
+		setupSessionFactory( configuration );
+
+		assertOptionsSetViaConfigurer();
+	}
+
+	@Test
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerType() throws Exception {
+		OgmConfiguration configuration = getConfiguration();
+		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class );
+		setupSessionFactory( configuration );
+
+		assertOptionsSetViaConfigurer();
+	}
+
+	@Test
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerTypeName() throws Exception {
+		OgmConfiguration configuration = getConfiguration();
+		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
+		setupSessionFactory( configuration );
+
+		assertOptionsSetViaConfigurer();
+	}
+
+	private void assertOptionsSetViaConfigurer() {
+		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
+
+		OptionsContainer microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
+		assertThat( microwaveOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
+
+		OptionsContainer temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
+		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 
 	@Override
@@ -124,6 +160,17 @@ public class OptionIntegrationTest extends OgmTestCase {
 		return sessions.getServiceRegistry()
 				.getService( OptionsService.class )
 				.context();
+	}
+
+	private void setupSessionFactory(OgmConfiguration ogmConfiguration) {
+		sessions = ogmConfiguration.buildSessionFactory();
+	}
+
+	private OgmConfiguration getConfiguration() {
+		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+		configuration.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
+
+		return configuration;
 	}
 
 	public static class Refrigerator {
@@ -147,14 +194,14 @@ public class OptionIntegrationTest extends OgmTestCase {
 		public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 			throw new UnsupportedOperationException();
 		}
+	}
+
+	public static class SampleNoSqlDatastore implements DatastoreConfiguration<SampleOptionModel.SampleGlobalContext> {
 
 		@Override
 		public SampleGlobalContext getConfigurationBuilder(ConfigurationContext context) {
 			return SampleOptionModel.createGlobalContext( context );
 		}
-	}
-
-	public interface SampleNoSqlDatastore extends DatastoreConfiguration<SampleOptionModel.SampleGlobalContext> {
 	}
 
 	public interface AnotherDatastore extends DatastoreConfiguration<AnotherGlobalContext> {

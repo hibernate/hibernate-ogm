@@ -18,28 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.cfg;
 
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
- * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.
- * <p>
- * Implementations must provide a no-args constructor.
+ * Implementations allow to apply configuration options specific to given datastores.
  *
  * @author Gunnar Morling
- * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
  */
-public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
+public interface Configurable {
 
 	/**
-	 * Returns a new store-specific {@link GlobalContext} instance. Used by the Hibernate OGM engine during
-	 * bootstrapping a session factory, not intended for client use.
+	 * Applies configuration options to the bootstrapped session factory.
 	 *
-	 * @param context configuration context to be used as factory for creating the global context object
-	 * @return a new {@link GlobalContext}
+	 * @param datastoreType represents the datastore to be configured
+	 * @return a context object representing the entry point into the fluent configuration API
 	 */
-	G getConfigurationBuilder(ConfigurationContext context);
+	<D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Class<D> datastoreType);
 }

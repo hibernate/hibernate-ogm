@@ -32,11 +32,6 @@ import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBEntityContextImpl;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBGlobalContextImpl;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBPropertyContextImpl;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
@@ -95,11 +90,6 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return LuceneBasedQueryParserService.class;
-	}
-
-	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return context.createGlobalContext( CouchDBGlobalContextImpl.class, CouchDBEntityContextImpl.class, CouchDBPropertyContextImpl.class );
 	}
 
 	/**
