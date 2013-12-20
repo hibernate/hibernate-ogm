@@ -104,6 +104,86 @@ public class ConfigurationPropertyReader {
 		}
 	}
 
+	/**
+	 * A context for retrieving the value of a given property, making several aspects of value retrieval customizable,
+	 * such as the instantiation strategy.
+	 *
+	 * @author Gunnar Morling
+	 * @param <T> the expected type of the property
+	 */
+	public class PropertyReaderContext<T> {
+
+		private final String propertyName;
+		private final Class<T> clazz;
+		private Class<? extends T> defaultImplementation;
+		private String defaultImplementationName;
+		private Instantiator<T> instantiator;
+		private ShortNameResolver shortNameResolver;
+
+		public PropertyReaderContext(String propertyName, Class<T> clazz) {
+			this.propertyName = propertyName;
+			this.clazz = clazz;
+		}
+
+		/**
+		 * Sets the default implementation type for the property in case no value is found.
+		 */
+		public PropertyReaderContext<T> withDefaultImplementation(Class<? extends T> defaultImplementation) {
+			this.defaultImplementation = defaultImplementation;
+			this.defaultImplementationName = null;
+			return this;
+		}
+
+		/**
+		 * Sets the name of default implementation type for the property in case no value is found.
+		 */
+		public PropertyReaderContext<T> withDefaultImplementation(String defaultImplementationName) {
+			this.defaultImplementationName = defaultImplementationName;
+			this.defaultImplementation = null;
+			return this;
+		}
+
+		/**
+		 * Sets an instantiator to be used to create an instance of the property
+		 */
+		public PropertyReaderContext<T> withInstantiator(Instantiator<T> instantiator) {
+			this.instantiator = instantiator;
+			return this;
+		}
+
+		/**
+		 * Sets a short name resolver to be applied in case the property is given as string
+		 */
+		public PropertyReaderContext<T> withShortNameResolver(ShortNameResolver shortNameResolver) {
+			this.shortNameResolver = shortNameResolver;
+			return this;
+		}
+
+		/**
+		 * Returns the value of the specified property.
+		 *
+		 * @return the value of the specified property; may be {@code null} in case the property is not present in the
+		 * given configuration map and no default implementation has been specified
+		 */
+		public T getValue() {
+			ShortNameResolver resolver = shortNameResolver != null ? shortNameResolver : NoOpNameResolver.INSTANCE;
+			Instantiator<T> instantiator = this.instantiator != null ? this.instantiator : DefaultInstantiator.<T>getInstance();
+
+			T value = doGetValue( propertyName, resolver, instantiator, clazz );
+
+			if ( value == null ) {
+				if ( defaultImplementationName != null ) {
+					defaultImplementation = getClassFromString( propertyName, defaultImplementationName, clazz, resolver );
+				}
+				if ( defaultImplementation != null ) {
+					value = instantiator.newInstance( defaultImplementation );
+				}
+			}
+
+			return value;
+		}
+	}
+
 	private static final Log log = LoggerFactory.make();
 
 	private final Map<?, ?> properties;
@@ -119,65 +199,16 @@ public class ConfigurationPropertyReader {
 	}
 
 	/**
-	 * Retrieves the value of the specified property.
+	 * Returns a context for retrieving the specified property. The returned context allows to customize the value
+	 * retrieval logic, e.g. by setting a default value or a custom instantiator. Finalze the call by invoking
+	 * {@link PropertyReaderContext#getValue()}.
 	 *
 	 * @param propertyName the name of the property to retrieve
 	 * @param targetType the target type of the property
-	 * @return the value of the specified property or {@code null} if the property is not present
+	 * @return a context for retrieving the specified property
 	 */
-	public <T> T getValue(String propertyName, Class<T> targetType) {
-		return doGetValue( propertyName, NoOpNameResolver.INSTANCE, DefaultInstantiator.<T>getInstance(), targetType );
-	}
-
-	/**
-	 * Retrieves the value of the specified property.
-	 *
-	 * @param propertyName the name of the property to retrieve
-	 * @param targetType the target type of the property
-	 * @param defaultImplementation a default implementation type
-	 * @return the value of the specified property or the instantiation of the given default implementation if the
-	 * property is not present
-	 */
-	public <T> T getValue(String propertyName, Class<T> targetType, Class<? extends T> defaultImplementation) {
-		T value = doGetValue( propertyName, NoOpNameResolver.INSTANCE, DefaultInstantiator.<T>getInstance(), targetType );
-		return value != null ? value : DefaultInstantiator.<T>getInstance().newInstance( defaultImplementation );
-	}
-
-	/**
-	 * Retrieves the value of the specified property.
-	 *
-	 * @param propertyName the name of the property to retrieve
-	 * @param targetType the target type of the property
-	 * @param defaultImplementation a default implementation type
-	 * @param instantiator the instantiator used to create an instance of the property
-	 * @return the value of the specified property or the instantiation of the given default implementation if the
-	 * property is not present
-	 */
-	public <T> T getValue(String propertyName, Class<T> targetType, Class<? extends T> defaultImplementation, Instantiator<T> instantiator) {
-		T value = doGetValue( propertyName, NoOpNameResolver.INSTANCE, instantiator, targetType );
-		return value != null ? value : instantiator.newInstance( defaultImplementation );
-	}
-
-	/**
-	 * Retrieves the value of the specified property.
-	 *
-	 * @param propertyName the name of the property to retrieve
-	 * @param targetType the target type of the property
-	 * @param defaultImplementationName the name of a default implementation type
-	 * @param shortNameResolver a resolver applied in case the property is given as string or the given default value is
-	 * applied
-	 * @return the value of the specified property or the instantiation of the specified default implementation type if
-	 * the property is not present
-	 */
-	public <T> T getValue(String propertyName, Class<T> targetType, String defaultImplementationName, ShortNameResolver shortNameResolver) {
-		T value = doGetValue( propertyName, shortNameResolver, DefaultInstantiator.<T>getInstance(), targetType );
-
-		if ( value == null ) {
-			Class<? extends T> defaultImplementation = getClassFromString( null, defaultImplementationName, targetType, shortNameResolver );
-			value = DefaultInstantiator.<T>getInstance().newInstance( defaultImplementation );
-		}
-
-		return value;
+	public <T> PropertyReaderContext<T> property(String propertyName, Class<T> targetType) {
+		return new PropertyReaderContext<T>( propertyName, targetType );
 	}
 
 	private <T> T doGetValue(String propertyName, ShortNameResolver shortNameResolver, Instantiator<T> instantiator, Class<T> targetType) {

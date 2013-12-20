@@ -60,8 +60,8 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 	public void configure(Map configurationValues) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
-		OptionsServiceContext context = propertyReader.getValue( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class );
-		OptionConfigurer configurer = propertyReader.getValue( OgmConfiguration.OGM_OPTION_CONFIGURER, OptionConfigurer.class );
+		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class ).getValue();
+		OptionConfigurer configurer = propertyReader.property( OgmConfiguration.OGM_OPTION_CONFIGURER, OptionConfigurer.class ).getValue();
 
 		if ( context != null && configurer != null ) {
 			throw log.ambigiousOptionConfiguration( OgmConfiguration.OGM_OPTION_CONFIGURER );
