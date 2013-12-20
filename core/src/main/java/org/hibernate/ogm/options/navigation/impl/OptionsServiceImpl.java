@@ -22,6 +22,7 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import java.util.Map;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
@@ -57,7 +58,7 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 
 	@Override
 	public void configure(Map configurationValues) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
 		OptionsServiceContext context = propertyReader.getValue( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class );
 		OptionConfigurer configurer = propertyReader.getValue( OgmConfiguration.OGM_OPTION_CONFIGURER, OptionConfigurer.class );

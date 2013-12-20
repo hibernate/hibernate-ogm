@@ -20,15 +20,13 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.ShortNameResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -59,7 +57,7 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
 	private static final Log log = LoggerFactory.make();
-	private static final String DEFAULT_DATASTORE_PROVIDER_CLASS = "org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider";
+	private static final String DEFAULT_DATASTORE_PROVIDER = "infinispan";
 
 	@Override
 	public Class<DatastoreProvider> getServiceInitiated() {
@@ -68,7 +66,15 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 
 	@Override
 	public DatastoreProvider initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		DatastoreProvider datastoreProvider = createDatastoreProvider( configuration.getProperties(), registry );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+
+		DatastoreProvider datastoreProvider = propertyReader.getValue(
+				DATASTORE_PROVIDER,
+				DatastoreProvider.class,
+				DEFAULT_DATASTORE_PROVIDER,
+				DatastoreProviderShortNameResolver.INSTANCE
+		);
+
 		log.useDatastoreProvider( datastoreProvider.getClass().getName() );
 		return datastoreProvider;
 	}
@@ -78,90 +84,18 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 		throw new UnsupportedOperationException( "Cannot create " + DatastoreProvider.class.getName() + " service using metadata" );
 	}
 
-	private DatastoreProvider createDatastoreProvider(Map<?, ?> configuration, ServiceRegistryImplementor registry) {
-		Object datastoreProviderProperty = configuration.get( DATASTORE_PROVIDER );
-		if ( datastoreProviderProperty == null ) {
-			return defaultDatastoreProvider( registry );
-		}
-		else if ( datastoreProviderProperty instanceof DatastoreProvider ) {
-			return (DatastoreProvider) datastoreProviderProperty;
-		}
-		else if ( datastoreProviderProperty instanceof String ) {
-			return createDatastore( registry, (String) datastoreProviderProperty );
-		}
-		else if ( datastoreProviderProperty instanceof Class<?> ) {
-			return create( (Class<?>) datastoreProviderProperty );
-		}
-		throw log.unknownDatastoreManagerType( datastoreProviderProperty.getClass().getName() );
-	}
+	private static class DatastoreProviderShortNameResolver implements ShortNameResolver {
 
-	private DatastoreProvider createDatastore(ServiceRegistryImplementor registry, String managerProperty) {
-		Class<?> dataStoreProviderClass = findDataStoreProviderClass( registry, managerProperty );
-		return create( dataStoreProviderClass );
-	}
+		private static final DatastoreProviderShortNameResolver INSTANCE = new DatastoreProviderShortNameResolver();
 
-	private DatastoreProvider create(Class<?> datastoreProviderClass) {
-		try {
-			validate( datastoreProviderClass );
-			return (DatastoreProvider) datastoreProviderClass.newInstance();
+		@Override
+		public boolean isShortName(String name) {
+			return AvailableDatastoreProvider.isShortName( name );
 		}
-		catch (InstantiationException e) {
-			throw log.unableToInstantiateDatastoreManager( datastoreProviderClass.getName(), e );
-		}
-		catch (IllegalAccessException e) {
-			throw log.unableToInstantiateDatastoreManager( datastoreProviderClass.getName(), e );
+
+		@Override
+		public String resolve(String shortName) {
+			return AvailableDatastoreProvider.byShortName( shortName ).getDatastoreProviderClassName();
 		}
 	}
-
-	private DatastoreProvider defaultDatastoreProvider(ServiceRegistryImplementor registry) {
-		try {
-			ClassLoaderService service = registry.getService( ClassLoaderService.class );
-			Class<?> datastoreProviderClass = service.classForName( DEFAULT_DATASTORE_PROVIDER_CLASS );
-			return (DatastoreProvider) datastoreProviderClass.newInstance();
-		}
-		catch (ClassLoadingException e) {
-			throw log.noDatastoreConfigured();
-		}
-		catch (InstantiationException e) {
-			throw log.unableToInstantiateDatastoreManager( DEFAULT_DATASTORE_PROVIDER_CLASS, e );
-		}
-		catch (IllegalAccessException e) {
-			throw log.unableToInstantiateDatastoreManager( DEFAULT_DATASTORE_PROVIDER_CLASS, e );
-		}
-	}
-
-	private void validate(Class<?> datastoreProviderClass) {
-		if ( !( DatastoreProvider.class.isAssignableFrom( datastoreProviderClass ) ) ) {
-			throw log.notADatastoreManager( datastoreProviderClass.getName() );
-		}
-	}
-
-	private Class<?> findDataStoreProviderClass(ServiceRegistryImplementor registry, final String managerPropertyValue) {
-		try {
-			String datastoreProviderClassName = dataStoreProviderClassName( managerPropertyValue );
-			return registry.getService( ClassLoaderService.class ).classForName( datastoreProviderClassName );
-		}
-		catch (Exception e) {
-			throw log.datastoreClassCannotBeFound( managerPropertyValue, Arrays.toString( AvailableDatastoreProvider.values() ) );
-		}
-	}
-
-	public static String dataStoreProviderClassName(final String managerPropertyValue) {
-		if ( isValidShortcut( managerPropertyValue ) ) {
-			return AvailableDatastoreProvider.valueOf( managerPropertyValue.toUpperCase() ).getDatastoreProviderClassName();
-		}
-		else {
-			return managerPropertyValue;
-		}
-	}
-
-	private static boolean isValidShortcut(String shortcut) {
-		for ( AvailableDatastoreProvider provider : AvailableDatastoreProvider.values() ) {
-			if ( provider.name().equalsIgnoreCase( shortcut ) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 }

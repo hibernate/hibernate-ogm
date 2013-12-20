@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.transaction.impl;
 
-import static org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider.NEO4J_EMBEDDED;
-
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
@@ -30,6 +28,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -57,10 +56,16 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 		return new JBossStandAloneJtaPlatform();
 	}
 
+	//TODO get rid of this!!!
 	private boolean isNeo4j(Map configuration) {
 		String propertyValue = (String) configuration.get( DatastoreProviderInitiator.DATASTORE_PROVIDER );
-		String providerClassName = DatastoreProviderInitiator.dataStoreProviderClassName( propertyValue );
-		return NEO4J_EMBEDDED.getDatastoreProviderClassName().equals( providerClassName );
+
+		if ( AvailableDatastoreProvider.isShortName( propertyValue ) ) {
+			return AvailableDatastoreProvider.byShortName( propertyValue ) == AvailableDatastoreProvider.NEO4J_EMBEDDED;
+		}
+		else {
+			return AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName().equals( propertyValue );
+		}
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import javax.transaction.SystemException;
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -61,21 +60,6 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 4, value = "Unable to find or initialize Infinispan CacheManager")
 	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
-
-	@Message(id = 5, value = "%1$s is not a subclass of DatastoreManager. Update " + DatastoreProviderInitiator.DATASTORE_PROVIDER)
-	HibernateException notADatastoreManager(String propertyValue);
-
-	@Message(id = 6, value = "Cannot instantiate DatastoreManager %1$s")
-	HibernateException unableToInstantiateDatastoreManager(String managerClassName, @Cause Exception e);
-
-	@Message(id = 7, value = "DatastoreManager property is of unknown type %1$s")
-	HibernateException unknownDatastoreManagerType(String managerType);
-
-	@Message(id = 8, value = "DatastoreManager class [%1$s] cannot be found in classpath try with: %2$s")
-	HibernateException datastoreClassCannotBeFound(String className, String availableShortcuts);
-
-	@Message(id = 9, value = DatastoreProviderInitiator.DATASTORE_PROVIDER + " has not been defined and no DatastoreManager could be guessed")
-	HibernateException noDatastoreConfigured();
 
 	@Message(id = 10, value = "GridDialect class [%1$s] cannot be found in classpath")
 	HibernateException dialectClassCannotBeFound(String className);
@@ -138,12 +122,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 28, value = "Created query object '%2$s' from HQL/JP-QL query '%1$s'.")
 	void createdQuery(String hqlQuery, Object queryObject);
 
-	@Message(id = 29, value = "Given class %2$s is no implementation/sub-type of %1$s.")
-	HibernateException givenImplementationClassIsOfWrongType(String expectedClassName, String actualClassName);
-
-	@Message(id = 30, value = "Cannot instantiate query parser service %s.")
-	HibernateException unableToInstantiateQueryParserService(String parserServiceClassName, @Cause Exception e);
-
 	@LogMessage(level = WARN)
 	@Message(id = 31, value = "OgmMassIndexer doesn't support the configuration option '%s'. Its setting will be ignored.")
 	void unsupportedIndexerConfigurationOption(String optionName);
@@ -169,17 +147,14 @@ public interface Log extends BasicLogger {
 	@Message(id = 39, value = "Unable to create property context proxy for type %1$s")
 	HibernateException cannotCreatePropertyContextProxy(Class<?> contextClass, @Cause Exception e);
 
-	@Message(id = 40, value = "The current datastore can not be configured via configuration type %1$s.")
-	HibernateException getWrongDatastoreConfigurationTypeException(String datastoreConfigurationTypeName);
-
 	@Message(id = 41, value = "The given propery %1$s#%2$s with element type %3$s does not exist.")
 	HibernateException getPropertyDoesNotExistException(String typeName, String property, ElementType elementType);
 
 	@Message(id = 42, value = "The given element type %1$s is neither FIELD nor METHOD.")
 	HibernateException getUnsupportedElementTypeException(ElementType elementType);
 
-	@Message(id = 43, value = "Cannot instantiate DatastoreConfiguration %1$s")
-	HibernateException unableToInstantiateType(String datastoreConfigurationClassName, @Cause Exception e);
+	@Message(id = 43, value = "Cannot instantiate type %1$s")
+	HibernateException unableToInstantiateType(String className, @Cause Exception e);
 
 	@Message(id = 44, value = "Can not load class %2$s specified via configuration property '%1$s'")
 	HibernateException unableToLoadClass(String propertyName, String className, @Cause Exception e);
