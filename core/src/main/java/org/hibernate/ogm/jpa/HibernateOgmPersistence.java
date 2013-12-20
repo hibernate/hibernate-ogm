@@ -104,6 +104,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
 		// false
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
+		//set the OGM specific mass indexer in case we use Hibernate Search
+		map.put( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
 	}
 
 	@Override

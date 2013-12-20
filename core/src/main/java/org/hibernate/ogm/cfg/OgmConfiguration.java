@@ -93,10 +93,16 @@ public class OgmConfiguration extends Configuration implements Configurable {
 	@Override
 	public Configuration setProperties(Properties properties) {
 		super.setProperties( properties );
-		//Unless the new configuration properties explicitly disable OGM,
-		//assume there was no intention to disable it:
+		//Unless the new configuration properties explicitly disable OGM's default properties
+		//assume there was no intention to disable them:
 		if ( ! properties.containsKey( OGM_ON ) ) {
 			setProperty( OGM_ON, "true" );
+		}
+		if ( ! properties.containsKey(  AvailableSettings.QUERY_STARTUP_CHECKING ) ) {
+			setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
+		}
+		if ( ! properties.containsKey(  "hibernate.search.massindexer.factoryclass" ) ) {
+			setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
 		}
 		return this;
 	}
