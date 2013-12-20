@@ -26,7 +26,7 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionImplementor;
 
 /**
- * Hibernte OGM implementation of the {@link SQLQuery} contract.
+ * Hibernate OGM implementation of the {@link SQLQuery} contract.
  * <p>
  * Technically this class is needed because the constructors in {@link SQLQueryImpl} are package-private but it also has
  * a better name for a class dealing with NoSQL databases.

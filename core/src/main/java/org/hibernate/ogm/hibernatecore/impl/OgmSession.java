@@ -480,6 +480,7 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	public Query getNamedQuery(String name) {
 		errorIfClosed();
 		NamedQueryDefinition namedQuery = factory.getNamedQuery( name );
+		//ORM looks for native queries when no HQL definition is found, we do the same here.
 		if (namedQuery == null) {
 			return getNamedSQLQuery( name );
 		}
