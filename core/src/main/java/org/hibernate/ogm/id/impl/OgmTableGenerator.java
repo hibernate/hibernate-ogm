@@ -49,7 +49,6 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.RowKey;
@@ -548,7 +547,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	private GridDialect getDialect(SessionImplementor session) {
 		if (gridDialect == null) {
-			gridDialect = session.getFactory().getServiceRegistry().getService( DatastoreServices.class ).getGridDialect();
+			gridDialect = session.getFactory().getServiceRegistry().getService( GridDialect.class );
 		}
 		return gridDialect;
 	}

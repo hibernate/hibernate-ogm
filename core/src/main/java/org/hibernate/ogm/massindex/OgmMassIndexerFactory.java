@@ -22,13 +22,11 @@ package org.hibernate.ogm.massindex;
 
 import java.util.Properties;
 
-import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.spi.MassIndexerFactory;
-import org.hibernate.service.Service;
 
 /**
  * {@link MassIndexerFactory} that can be used to register the {@link OgmMassIndexer} to Hibernate Search.
@@ -45,11 +43,6 @@ public class OgmMassIndexerFactory implements MassIndexerFactory {
 	@Override
 	public MassIndexer createMassIndexer(SearchFactoryImplementor searchFactory, SessionFactoryImplementor sessionFactory,
 			Class<?>... entities) {
-		DatastoreServices service = service( sessionFactory, DatastoreServices.class );
-		return new OgmMassIndexer( service.getGridDialect(), searchFactory, sessionFactory, entities );
-	}
-
-	private static <T extends Service> T service(SessionFactory sessionFactory, Class<T> serviceClass) {
-		return ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( serviceClass );
+		return new OgmMassIndexer( sessionFactory.getServiceRegistry().getService( GridDialect.class ), searchFactory, sessionFactory, entities );
 	}
 }

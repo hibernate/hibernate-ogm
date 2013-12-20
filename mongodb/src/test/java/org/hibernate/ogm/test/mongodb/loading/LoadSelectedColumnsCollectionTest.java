@@ -33,7 +33,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -158,7 +157,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 	}
 
 	protected GridDialect getGridDialect() {
-		return ( (DatastoreServices) this.getService( DatastoreServices.class ) ).getGridDialect();
+		return sfi().getServiceRegistry().getService( GridDialect.class );
 	}
 
 	@Override

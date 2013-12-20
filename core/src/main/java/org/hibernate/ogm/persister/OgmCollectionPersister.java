@@ -42,7 +42,6 @@ import org.hibernate.internal.StaticFilterAliasGenerator;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -93,7 +92,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		super( collection, cacheAccessStrategy, cfg, factory );
 		ServiceRegistry registry = factory.getServiceRegistry();
 		final TypeTranslator typeTranslator = registry.getService( TypeTranslator.class );
-		this.gridDialect = registry.getService( DatastoreServices.class ).getGridDialect();
+		this.gridDialect = registry.getService( GridDialect.class );
 
 		keyGridType = typeTranslator.getType( getKeyType() );
 		elementGridType = typeTranslator.getType( getElementType() );

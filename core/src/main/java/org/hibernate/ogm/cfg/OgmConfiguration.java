@@ -33,8 +33,6 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -66,7 +64,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 	 */
 	public static final String OGM_OPTION_CONFIGURER = "hibernate.ogm.option.configurer";
 
-	private static final Log log = LoggerFactory.make();
+	public static final String OGM_GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
 
 	public OgmConfiguration() {
 		super();

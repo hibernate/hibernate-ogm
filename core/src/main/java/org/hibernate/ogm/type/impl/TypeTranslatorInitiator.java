@@ -23,7 +23,6 @@ package org.hibernate.ogm.type.impl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -57,7 +56,7 @@ public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<T
 	}
 
 	private TypeTranslator createService(ServiceRegistryImplementor registry) {
-		GridDialect dialect = registry.getService( DatastoreServices.class ).getGridDialect();
+		GridDialect dialect = registry.getService( GridDialect.class );
 		return new TypeTranslatorImpl( dialect );
 	}
 

@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -39,6 +40,9 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
@@ -50,7 +54,7 @@ import org.jboss.logging.Logger;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @see org.hibernate.ogm.dialect.impl.GridDialectFactoryImpl#buildGridDialect(java.util.Map, org.hibernate.service.ServiceRegistry)
  */
-public class GridDialectLogger implements GridDialect {
+public class GridDialectLogger implements GridDialect, Configurable, ServiceRegistryAwareService {
 
 	private static final Log log = Logger.getMessageLogger( Log.class, CoreLogCategories.DATASTORE_ACCESS.toString() );
 
@@ -167,4 +171,19 @@ public class GridDialectLogger implements GridDialect {
 		return gridDialect.executeBackendQuery( customQuery, metadatas );
 	}
 
+	@Override
+	public void configure(Map configurationValues) {
+		if ( gridDialect instanceof Configurable ) {
+			log.tracef( "Configuring service with properties: %1$s", configurationValues );
+			( (Configurable) gridDialect ).configure( configurationValues );
+		}
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		if ( gridDialect instanceof ServiceRegistryAwareService ) {
+			log.tracef( "Injecting service registry" );
+			( (ServiceRegistryAwareService) gridDialect ).injectServices( serviceRegistry );
+		}
+	}
 }

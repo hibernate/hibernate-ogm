@@ -56,6 +56,17 @@ public class ConfigurationPropertyReader {
 		String resolve(String shortName);
 	}
 
+	/**
+	 * Implementations instantiate given classes. By default an implementation invoking the no-args constructor of the
+	 * given type is used.
+	 *
+	 * @author Gunnar Morling
+	 */
+	public interface Instantiator<T> {
+
+		T newInstance(Class<? extends T> clazz);
+	}
+
 	private static class NoOpNameResolver implements ShortNameResolver {
 
 		private static final NoOpNameResolver INSTANCE = new NoOpNameResolver();
@@ -68,6 +79,28 @@ public class ConfigurationPropertyReader {
 		@Override
 		public String resolve(String shortName) {
 			throw new UnsupportedOperationException();
+		}
+	}
+
+	private static class DefaultInstantiator<T> implements Instantiator<T> {
+
+		@SuppressWarnings("rawtypes")
+		private static final DefaultInstantiator<?> INSTANCE = new DefaultInstantiator();
+
+		@SuppressWarnings("unchecked")
+		public static <T> DefaultInstantiator<T> getInstance() {
+			return (DefaultInstantiator<T>) INSTANCE;
+		}
+
+		@Override
+		public T newInstance(Class<? extends T> clazz) {
+			try {
+				return clazz.newInstance();
+
+			}
+			catch (Exception e) {
+				throw log.unableToInstantiateType( clazz.getName(), e );
+			}
 		}
 	}
 
@@ -93,7 +126,7 @@ public class ConfigurationPropertyReader {
 	 * @return the value of the specified property or {@code null} if the property is not present
 	 */
 	public <T> T getValue(String propertyName, Class<T> targetType) {
-		return getValue( propertyName, NoOpNameResolver.INSTANCE, targetType );
+		return doGetValue( propertyName, NoOpNameResolver.INSTANCE, DefaultInstantiator.<T>getInstance(), targetType );
 	}
 
 	/**
@@ -106,8 +139,23 @@ public class ConfigurationPropertyReader {
 	 * property is not present
 	 */
 	public <T> T getValue(String propertyName, Class<T> targetType, Class<? extends T> defaultImplementation) {
-		T value = getValue( propertyName, targetType );
-		return value != null ? value : newInstance( defaultImplementation );
+		T value = doGetValue( propertyName, NoOpNameResolver.INSTANCE, DefaultInstantiator.<T>getInstance(), targetType );
+		return value != null ? value : DefaultInstantiator.<T>getInstance().newInstance( defaultImplementation );
+	}
+
+	/**
+	 * Retrieves the value of the specified property.
+	 *
+	 * @param propertyName the name of the property to retrieve
+	 * @param targetType the target type of the property
+	 * @param defaultImplementation a default implementation type
+	 * @param instantiator the instantiator used to create an instance of the property
+	 * @return the value of the specified property or the instantiation of the given default implementation if the
+	 * property is not present
+	 */
+	public <T> T getValue(String propertyName, Class<T> targetType, Class<? extends T> defaultImplementation, Instantiator<T> instantiator) {
+		T value = doGetValue( propertyName, NoOpNameResolver.INSTANCE, instantiator, targetType );
+		return value != null ? value : instantiator.newInstance( defaultImplementation );
 	}
 
 	/**
@@ -122,16 +170,17 @@ public class ConfigurationPropertyReader {
 	 * the property is not present
 	 */
 	public <T> T getValue(String propertyName, Class<T> targetType, String defaultImplementationName, ShortNameResolver shortNameResolver) {
-		T value = getValue( propertyName, shortNameResolver, targetType );
+		T value = doGetValue( propertyName, shortNameResolver, DefaultInstantiator.<T>getInstance(), targetType );
+
 		if ( value == null ) {
-			Class<T> defaultImplementation = getClassFromString( null, defaultImplementationName, targetType, shortNameResolver );
-			value = newInstance( defaultImplementation );
+			Class<? extends T> defaultImplementation = getClassFromString( null, defaultImplementationName, targetType, shortNameResolver );
+			value = DefaultInstantiator.<T>getInstance().newInstance( defaultImplementation );
 		}
 
 		return value;
 	}
 
-	private <T> T getValue(String propertyName, ShortNameResolver shortNameResolver, Class<T> targetType) {
+	private <T> T doGetValue(String propertyName, ShortNameResolver shortNameResolver, Instantiator<T> instantiator, Class<T> targetType) {
 		Object property = properties.get( propertyName );
 
 		if ( property == null ) {
@@ -144,33 +193,23 @@ public class ConfigurationPropertyReader {
 			return value;
 		}
 
-		Class<T> clazz = null;
+		Class<? extends T> clazz = null;
 
 		if ( property instanceof Class ) {
-			clazz = narrowDownClass( propertyName, targetType, property );
+			clazz = narrowDownClass( propertyName, (Class<?>) property, targetType );
 		}
 		else if ( property instanceof String ) {
 			clazz = getClassFromString( propertyName, (String) property, targetType, shortNameResolver );
 		}
 
 		if ( clazz != null ) {
-			return newInstance( clazz );
+			return instantiator.newInstance( clazz );
 		}
 
 		throw log.unexpectedInstanceType( propertyName, property.toString(), property.getClass().getName(), targetType.getName() );
 	}
 
-	private <T> Class<T> narrowDownClass(String propertyName, Class<T> targetType, Object property) {
-		if ( !targetType.isAssignableFrom( (Class<?>) property ) ) {
-			throw log.unexpectedClassType( propertyName, ( (Class<?>) property ).getName(), targetType.getName() );
-		}
-
-		@SuppressWarnings("unchecked")
-		Class<T> clazz = (Class<T>) property;
-		return clazz;
-	}
-
-	private <T> Class<T> getClassFromString(String propertyName, String className, Class<T> targetType, ShortNameResolver shortNameResolver) {
+	private <T> Class<? extends T> getClassFromString(String propertyName, String className, Class<T> targetType, ShortNameResolver shortNameResolver) {
 		if ( shortNameResolver.isShortName( className ) ) {
 			className = shortNameResolver.resolve( className );
 		}
@@ -184,6 +223,10 @@ public class ConfigurationPropertyReader {
 			throw log.unableToLoadClass( propertyName, className, e );
 		}
 
+		return narrowDownClass( propertyName, clazz, targetType );
+	}
+
+	private <T> Class<? extends T> narrowDownClass(String propertyName, Class<?> clazz, Class<T> targetType) {
 		if ( !targetType.isAssignableFrom( clazz ) ) {
 			throw log.unexpectedClassType( propertyName, clazz.getName(), targetType.getName() );
 		}
@@ -191,15 +234,5 @@ public class ConfigurationPropertyReader {
 		@SuppressWarnings("unchecked")
 		Class<T> typed = (Class<T>) clazz;
 		return typed;
-	}
-
-	private <T> T newInstance(Class<T> type) {
-		try {
-			return type.newInstance();
-
-		}
-		catch (Exception e) {
-			throw log.unableToInstantiateType( type.getName(), e );
-		}
 	}
 }

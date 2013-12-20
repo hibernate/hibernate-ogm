@@ -44,7 +44,6 @@ import org.hibernate.event.spi.PreLoadEvent;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -94,7 +93,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.entityPersisters = new OgmEntityPersister[] {};
 		this.collectionPersisters = collectionPersisters;
 		this.factory = collectionPersisters[0].getFactory();
-		this.gridDialect = this.factory.getServiceRegistry().getService( DatastoreServices.class ).getGridDialect();
+		this.gridDialect = this.factory.getServiceRegistry().getService( GridDialect.class );
 
 		//NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
@@ -115,7 +114,7 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.entityPersisters = entityPersisters;
 		this.collectionPersisters = new OgmCollectionPersister[] {};
 		this.factory = entityPersisters[0].getFactory();
-		this.gridDialect = this.factory.getServiceRegistry().getService( DatastoreServices.class ).getGridDialect();
+		this.gridDialect = this.factory.getServiceRegistry().getService( GridDialect.class );
 
 		// NONE, because its the requested lock mode, not the actual!
 		final int fromSize = 1;
