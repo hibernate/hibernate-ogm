@@ -26,8 +26,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
@@ -44,8 +43,6 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 
 	public static final SessionFactoryServiceInitiator<QueryParserService> INSTANCE = new QueryParserServicesInitiator();
 
-	private static final Log log = LoggerFactory.make();
-
 	@Override
 	public Class<QueryParserService> getServiceInitiated() {
 		return QueryParserService.class;
@@ -53,30 +50,12 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 
 	@Override
 	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		Class<?> queryParserServiceClass = getQueryParserServiceType( configuration, registry );
-
-		if ( !QueryParserService.class.isAssignableFrom( queryParserServiceClass ) ) {
-			throw log.givenImplementationClassIsOfWrongType( QueryParserService.class.getName(), queryParserServiceClass.getName() );
-		}
-		else {
-			try {
-				return (QueryParserService) queryParserServiceClass.newInstance();
-			}
-			catch (Exception e) {
-				throw log.unableToInstantiateQueryParserService( queryParserServiceClass.getName(), e );
-			}
-		}
-	}
-
-	private Class<?> getQueryParserServiceType(Configuration configuration, ServiceRegistryImplementor registry) {
-		String queryParserOption = configuration.getProperty( OgmConfiguration.OGM_QUERY_PARSER_SERVICE );
-
-		if ( queryParserOption != null ) {
-			return registry.getService( ClassLoaderService.class ).classForName( queryParserOption );
-		}
-		else {
-			return registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType();
-		}
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+		return propertyReader.getValue(
+				OgmConfiguration.OGM_QUERY_PARSER_SERVICE,
+				QueryParserService.class,
+				registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType()
+		);
 	}
 
 	@Override
