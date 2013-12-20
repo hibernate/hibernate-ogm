@@ -33,7 +33,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -61,8 +60,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		DatastoreServices services = service( session, DatastoreServices.class );
-		Iterator<Tuple> tuples = executeQuery( session, services.getGridDialect(), resultTypes );
+		Iterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), resultTypes );
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();

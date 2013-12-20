@@ -61,20 +61,11 @@ public interface Log extends BasicLogger {
 	@Message(id = 4, value = "Unable to find or initialize Infinispan CacheManager")
 	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
 
-	@Message(id = 10, value = "GridDialect class [%1$s] cannot be found in classpath")
-	HibernateException dialectClassCannotBeFound(String className);
-
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(Class<?> dialectClass, @Cause Exception e);
 
-	@Message(id = 12, value = "GridDialect property is of unknown type %1$s")
-	HibernateException gridDialectPropertyOfUnknownType(Class<?> type);
-
-	@Message(id = 13, value = "%1$s property does not implement GridDialect interface")
-	HibernateException doesNotImplementGridDialect(String value);
-
 	@Message(id = 14, value = "%1$s has no constructor accepting DatasourceProvider")
-	HibernateException gridDialectHasNoProperConstrutor(Class<?> dialectClass);
+	HibernateException gridDialectHasNoProperConstructor(Class<?> dialectClass);
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
 	HibernateException unexpectedDatastoreProvider(Class<?> found, Class<?> expected);

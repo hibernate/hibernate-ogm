@@ -29,6 +29,7 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.Instantiator;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.ShortNameResolver;
 import org.junit.Test;
 
@@ -104,6 +105,16 @@ public class ConfigurationPropertyReaderTest {
 	}
 
 	@Test
+	public void shouldRetrievePropertyUsingCustomInstantiator() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
+		MyService value = reader.getValue( "service", MyService.class, MyYetAnotherServiceImpl.class, new MyInstantiator() );
+
+		assertThat( value.getClass() ).isEqualTo( MyYetAnotherServiceImpl.class );
+	}
+
+	@Test
 	public void shouldRaiseExceptionDueToWrongInstanceType() {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", 42 );
@@ -160,6 +171,12 @@ public class ConfigurationPropertyReaderTest {
 	public static class MyOtherServiceImpl implements MyService {
 	}
 
+	public static class MyYetAnotherServiceImpl implements MyService {
+
+		public MyYetAnotherServiceImpl(String name) {
+		}
+	}
+
 	private static class MyShortNameResolver implements ShortNameResolver {
 
 		@Override
@@ -170,6 +187,14 @@ public class ConfigurationPropertyReaderTest {
 		@Override
 		public String resolve(String shortName) {
 			return MyOtherServiceImpl.class.getName();
+		}
+	}
+
+	private static class MyInstantiator implements Instantiator<MyService> {
+
+		@Override
+		public MyService newInstance(Class<? extends MyService> clazz) {
+			return new MyYetAnotherServiceImpl( "foo" );
 		}
 	}
 }

@@ -56,7 +56,6 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.impl.DatastoreServices;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -126,7 +125,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
 		}
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-		this.gridDialect = serviceRegistry.getService( DatastoreServices.class ).getGridDialect();
+		this.gridDialect = serviceRegistry.getService( GridDialect.class );
 
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
