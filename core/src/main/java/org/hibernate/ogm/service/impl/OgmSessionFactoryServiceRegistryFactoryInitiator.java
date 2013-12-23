@@ -23,6 +23,7 @@ package org.hibernate.ogm.service.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.service.internal.SessionFactoryServiceRegistryFactoryInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 
@@ -45,6 +46,6 @@ public class OgmSessionFactoryServiceRegistryFactoryInitiator extends OptionalSe
 
 	@Override
 	protected StandardServiceInitiator<SessionFactoryServiceRegistryFactory> backupInitiator() {
-		return OgmSessionFactoryServiceRegistryFactoryInitiator.INSTANCE;
+		return SessionFactoryServiceRegistryFactoryInitiator.INSTANCE;
 	}
 }
