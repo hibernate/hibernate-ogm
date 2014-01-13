@@ -137,7 +137,7 @@
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <neo4jVersion>2.0.0-M03</neo4jVersion>
-        <hibernateVersion>4.3.0.Beta4</hibernateVersion>
+        <hibernateVersion>4.3.1.Final</hibernateVersion>
         <hibernateSearchVersion>4.5.0.CR1</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.Alpha6</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
@@ -146,7 +146,7 @@
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
-        <resteasyVersion>3.0.5.Final</resteasyVersion>
+        <resteasyVersion>3.0.6.Final</resteasyVersion>
         <jacksonVersion>1.9.13</jacksonVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
@@ -408,7 +408,7 @@
             <dependency>
                 <groupId>org.javassist</groupId>
                 <artifactId>javassist</artifactId>
-                <version>3.15.0-GA</version>
+                <version>3.18.1-GA</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml</groupId>

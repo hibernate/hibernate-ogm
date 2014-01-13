@@ -45,6 +45,7 @@ import org.hibernate.ReplicationMode;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
+import org.hibernate.SessionEventListener;
 import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.SimpleNaturalIdLoadAccess;
@@ -63,9 +64,9 @@ import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
-import org.hibernate.engine.spi.NonFlushedChanges;
 import org.hibernate.engine.spi.PersistenceContext;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionEventListenerManager;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.event.spi.EventSource;
@@ -167,6 +168,11 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 		}
 	}
 
+	@Override
+	public Query createQuery(NamedQueryDefinition namedQueryDefinition) {
+		throw new NotSupportedException( "OGM-15", "Named queries are not supported yet" );
+	}
+
 	private QueryParserService getQueryParserService() {
 		if ( queryParserService == null ) {
 			queryParserService = getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
@@ -177,6 +183,11 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	@Override
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
 		return new NoSQLQuery( queryString, this, NO_PARAMETERS );
+	}
+
+	@Override
+	public SQLQuery createSQLQuery(NamedSQLQueryDefinition namedQueryDefinition) {
+		return new NoSQLQuery( namedQueryDefinition, this, NO_PARAMETERS );
 	}
 
 	@Override
@@ -262,8 +273,8 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	}
 
 	@Override
-	public void refresh(Object object, Map refreshedAlready) throws HibernateException {
-		delegate.refresh( object, refreshedAlready );
+	public void refresh(String entityName, Object object, Map refreshedAlready) throws HibernateException {
+		delegate.refresh( entityName, object, refreshedAlready );
 	}
 
 	@Override
@@ -463,16 +474,6 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 	public int executeNativeUpdate(NativeSQLQuerySpecification specification, QueryParameters queryParameters)
 			throws HibernateException {
 		return delegate.executeNativeUpdate( specification, queryParameters );
-	}
-
-	@Override
-	public NonFlushedChanges getNonFlushedChanges() throws HibernateException {
-		return delegate.getNonFlushedChanges();
-	}
-
-	@Override
-	public void applyNonFlushedChanges(NonFlushedChanges nonFlushedChanges) throws HibernateException {
-		delegate.applyNonFlushedChanges( nonFlushedChanges );
 	}
 
 	//SessionImplementor methods
@@ -934,5 +935,20 @@ public class OgmSession implements org.hibernate.Session, EventSource {
 
 	public <G extends GlobalContext<?, ?>, D extends DatastoreConfiguration<G>> G configureDatastore(Class<D> datastoreType) {
 		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
+	}
+
+	@Override
+	public void removeOrphanBeforeUpdates(String entityName, Object child) {
+		delegate.removeOrphanBeforeUpdates( entityName, child );
+	}
+
+	@Override
+	public SessionEventListenerManager getEventListenerManager() {
+		return delegate.getEventListenerManager();
+	}
+
+	@Override
+	public void addEventListeners(SessionEventListener... listeners) {
+		delegate.addEventListeners( listeners );
 	}
 }

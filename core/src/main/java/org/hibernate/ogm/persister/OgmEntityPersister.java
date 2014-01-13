@@ -49,7 +49,6 @@ import org.hibernate.engine.spi.LoadQueryInfluencers;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.engine.spi.ValueInclusion;
 import org.hibernate.internal.DynamicFilterAliasGenerator;
 import org.hibernate.internal.FilterAliasGenerator;
 import org.hibernate.loader.entity.UniqueEntityLoader;
@@ -91,6 +90,8 @@ import org.hibernate.type.Type;
  * @author Davide D'Alto
  */
 public abstract class OgmEntityPersister extends AbstractEntityPersister implements EntityPersister {
+
+	private static final int TABLE_SPAN = 1;
 
 	private static final Log log = LoggerFactory.make();
 
@@ -225,6 +226,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		//load unique key association key metadata
 		associationKeyMetadataPerPropertyName = new HashMap<String,AssociationKeyMetadata>();
 		initAssociationKeyMetadata();
+		initCustomSQLStrings();
+	}
+
+	// Required to avoid null pointer errors when super.postInstantiate() is called
+	private void initCustomSQLStrings() {
+		customSQLInsert = new String[TABLE_SPAN];
+		customSQLUpdate = new String[TABLE_SPAN];
+		customSQLDelete = new String[TABLE_SPAN];
 	}
 
 	private void initAssociationKeyMetadata() {
@@ -239,12 +248,13 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 	}
 
-	//FIXME finish implement postInstantiate
 	@Override
-	public void postInstantiate() {
-		createLoaders();
-		//createUniqueKeyLoaders();
-		createQueryLoader();
+	protected void createUniqueKeyLoaders() throws MappingException {
+		// Avoid the execution of super.createUniqueLoaders()
+	}
+
+	@Override
+	protected void doPostInstantiate() {
 	}
 
 	public GridType getGridIdentifierType() {
@@ -860,9 +870,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
 	private boolean checkVersion(final boolean[] includeProperty) {
-		return includeProperty[ getVersionProperty() ] ||
-				getEntityMetamodel().getPropertyUpdateGenerationInclusions()[ getVersionProperty() ] != ValueInclusion.NONE;
-
+		return includeProperty[ getVersionProperty() ]
+				|| getEntityMetamodel().isVersionGenerated();
 	}
 
 	//TODO make AbstractEntityPersister#isModifiableEntity protected instead
@@ -1101,7 +1110,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected int getTableSpan() {
-		return 1;
+		return TABLE_SPAN;
 	}
 
 	@Override

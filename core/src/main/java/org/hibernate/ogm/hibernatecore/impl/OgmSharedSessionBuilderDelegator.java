@@ -25,6 +25,7 @@ import java.sql.Connection;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.Interceptor;
 import org.hibernate.SessionBuilder;
+import org.hibernate.SessionEventListener;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -134,6 +135,18 @@ public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 	@Override
 	public SessionBuilder tenantIdentifier(String tenantIdentifier) {
 		builder.tenantIdentifier( tenantIdentifier );
+		return this;
+	}
+
+	@Override
+	public SessionBuilder eventListeners(SessionEventListener... listeners) {
+		builder.eventListeners( listeners );
+		return this;
+	}
+
+	@Override
+	public SessionBuilder clearEventListeners() {
+		builder.clearEventListeners();
 		return this;
 	}
 }
