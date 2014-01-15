@@ -23,15 +23,12 @@ package org.hibernate.ogm.dialect.mongodb;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getValueFromColumns;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
 import com.mongodb.DBObject;
@@ -45,23 +42,25 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	private final DBObject dbObject;
 	private final RowKey rowKey;
-	private final EntityKey entityKey;
-	//use it so it avoids multiple calls to Arrays.asList()
-	private final List<String> columnNames;
+	private final boolean newlyInserted;
 
-	//consider RowKey columns and values as part of the Tuple
-	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
-		this.dbObject = dbObject;
-		this.rowKey = rowKey;
-		this.entityKey = null;
-		this.columnNames = null;
+	public MongoDBTupleSnapshot(DBObject dbObject) {
+		this( dbObject, null, false );
 	}
 
-	public MongoDBTupleSnapshot(DBObject dbObject, EntityKey entityKey) {
+	public MongoDBTupleSnapshot(DBObject dbObject, boolean newlyInserted) {
+		this( dbObject, null, newlyInserted );
+	}
+
+	// consider RowKey columns and values as part of the Tuple
+	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
+		this( dbObject, rowKey, false );
+	}
+
+	private MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey, boolean newlyInserted) {
 		this.dbObject = dbObject;
-		this.entityKey = entityKey;
-		this.columnNames  = Arrays.asList( entityKey.getColumnNames());
-		this.rowKey = null;
+		this.rowKey = rowKey;
+		this.newlyInserted = newlyInserted;
 	}
 
 	@Override
@@ -125,7 +124,7 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		return this.dbObject.keySet().isEmpty();
 	}
 
-	public boolean columnInIdField(String column) {
-		return (this.columnNames == null) ? false : this.columnNames.contains( column );
+	public boolean isNewlyInserted() {
+		return newlyInserted;
 	}
 }
