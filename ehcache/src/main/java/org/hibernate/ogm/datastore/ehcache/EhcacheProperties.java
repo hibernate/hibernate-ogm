@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,36 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.ehcache.impl.configuration;
-
-import java.util.Map;
-
-import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
+package org.hibernate.ogm.datastore.ehcache;
 
 /**
- * Configuration for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.
+ * Properties for configuring the Ehcache datastore via {@code persistence.xml} or
+ * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
-public class EhcacheConfiguration {
-
-	private String url;
+public final class EhcacheProperties {
 
 	/**
-	 * Initialize the internal values from the given {@link Map}.
-	 *
-	 * @see Environment
-	 * @param configurationMap The values to use as configuration
+	 * Configuration property for specifying the name of the Ehcache configuration file
 	 */
-	public void initialize(Map configurationMap) {
-		this.url = (String) configurationMap.get( EhcacheProperties.RESOURCE_NAME );
-	}
+	public static final String RESOURCE_NAME = "hibernate.ogm.ehcache.configuration_resourcename";
 
-	/**
-	 * @see Environment#RESOURCE_NAME
-	 * @return An URL to an XML file compliant with the ehcache.xsd schema.
-	 */
-	public String getUrl() {
-		return url;
+	private EhcacheProperties() {
 	}
 }
