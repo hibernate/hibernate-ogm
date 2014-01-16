@@ -37,7 +37,7 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
 /**
  * An instance of {@link OgmConfiguration} allows the application
  * to specify properties and mapping documents to be used when
- * creating an {@link OgmSessionFactoryImpl}.
+ * creating an {@link OgmSessionFactory}.
  *
  * @author Davide D'Alto
  */
