@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.infinispan.impl.configuration;
 
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -35,11 +36,13 @@ public class InfinispanConfiguration {
 
 	private static final Log log = LoggerFactory.make();
 
+	private static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
+
 	private String configName;
 	private String jndi;
 
 	/**
-	 * @see Environment#INFINISPAN_CONFIGURATION_RESOURCENAME
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#INFINISPAN_CONFIGURATION_RESOURCENAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
 	 */
 	public String getConfigurationName() {
@@ -47,7 +50,7 @@ public class InfinispanConfiguration {
 	}
 
 	/**
-	 * @see Environment#CACHE_MANAGER_RESOURCE_PROP
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_RESOURCE_PROP
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
 	public String getJndiName() {
@@ -57,16 +60,15 @@ public class InfinispanConfiguration {
 	/**
 	 * Initialize the internal values form the given {@link Map}.
 	 *
-	 * @see Environment
 	 * @param configurationMap
 	 *            The values to use as configuration
 	 */
 	public void initConfiguration(Map configurationMap) {
-		this.jndi = (String) configurationMap.get( Environment.CACHE_MANAGER_RESOURCE_PROP );
+		this.jndi = (String) configurationMap.get( InfinispanProperties.CACHE_MANAGER_RESOURCE_PROP );
 
-		this.configName = (String) configurationMap.get( Environment.INFINISPAN_CONFIGURATION_RESOURCENAME );
+		this.configName = (String) configurationMap.get( InfinispanProperties.INFINISPAN_CONFIGURATION_RESOURCENAME );
 		if ( StringHelper.isEmpty( configName ) ) {
-			this.configName = Environment.INFINISPAN_DEFAULT_CONFIG;
+			this.configName = INFINISPAN_DEFAULT_CONFIG;
 		}
 
 		log.tracef( "Initializing Infinispan from configuration file at %1$s", configName );

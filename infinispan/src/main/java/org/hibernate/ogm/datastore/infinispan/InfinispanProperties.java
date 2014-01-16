@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,25 +18,28 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-
-package org.hibernate.ogm.datastore.infinispan.impl.configuration;
+package org.hibernate.ogm.datastore.infinispan;
 
 /**
- * Configuration options for {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}
+ * Properties for configuring the Infinispan datastore via {@code persistence.xml} or
+ * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
-public interface Environment {
+public final class InfinispanProperties {
+
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
 	 */
-	String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
+	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
 
 	/**
-	 * The key for the configuration property to define the jndi name of the cachemanager.
-	 * If this property is defined, the cachemanager will be looked up via JNDI.
-	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
+	 * The key for the configuration property to define the JNDI name of the cache manager. If this property is defined,
+	 * the cache manager will be looked up via JNDI. JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are
+	 * used to define the context properties.
 	 */
-	String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
-	String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
+	public static final String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
+
+	private InfinispanProperties() {
+	}
 }
