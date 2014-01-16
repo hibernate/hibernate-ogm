@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 
 import java.util.Properties;
 
-import org.hibernate.ogm.datastore.neo4j.Environment;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -39,7 +39,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class Neo4jGraphDatabaseServiceFactoryProvider {
 
 	public GraphDatabaseServiceFactory load(Properties properties) {
-		String factoryClassName = (String) properties.get( Environment.NEO4J_GRAPHDB_FACTORYCLASS );
+		String factoryClassName = (String) properties.get( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS );
 		GraphDatabaseServiceFactory factory = createFactory( factoryClassName );
 		factory.initialize( properties );
 		return factory;

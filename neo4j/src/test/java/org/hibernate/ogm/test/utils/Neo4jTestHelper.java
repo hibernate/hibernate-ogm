@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import static org.hibernate.ogm.datastore.neo4j.Environment.NEO4J_DATABASE_PATH;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -33,6 +31,7 @@ import java.util.Set;
 import org.fest.util.Files;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
@@ -84,7 +83,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		Map<String, String> properties = new HashMap<String, String>();
-		properties.put( NEO4J_DATABASE_PATH, dbLocation() );
+		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation() );
 		return properties;
 	}
 
@@ -99,7 +98,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		try {
 			Properties hibProperties = new Properties();
 			hibProperties.load( Thread.currentThread().getContextClassLoader().getResourceAsStream( "hibernate.properties" ) );
-			String buildDirectory = hibProperties.getProperty( NEO4J_DATABASE_PATH );
+			String buildDirectory = hibProperties.getProperty( Neo4jProperties.DATABASE_PATH );
 			return buildDirectory;
 		}
 		catch (IOException e) {
@@ -119,7 +118,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
 		Set<String> associations = new HashSet<String>();
 		while ( relationships.hasNext() ) {
-			Relationship relationship = (Relationship) relationships.next();
+			Relationship relationship = relationships.next();
 			if ( !associations.contains( relationship.getType().name() ) ) {
 				associations.add( relationship.getType().name() );
 			}
@@ -132,7 +131,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
 		int count = 0;
 		while ( iterator.hasNext() ) {
-			Node node = (Node) iterator.next();
+			Node node = iterator.next();
 			count++;
 		}
 		iterator.close();

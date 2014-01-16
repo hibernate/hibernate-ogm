@@ -25,7 +25,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.fest.util.Files;
-import org.hibernate.ogm.datastore.neo4j.Environment;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.EmbeddedGraphDatabaseFactory;
 import org.hibernate.ogm.test.utils.Neo4jTestHelper;
 import org.junit.After;
@@ -55,8 +55,8 @@ public class EmbeddedGraphDatabaseFactoryTest {
 	public void testLoadPropertiesFromUrl() throws Exception {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
-		properties.put( Environment.NEO4J_DATABASE_PATH, dbLocation );
-		properties.put( Environment.NEO4J_CONFIGURATION_LOCATION, neo4jPropertiesUrl().toExternalForm() );
+		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
+		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().toExternalForm() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
@@ -65,8 +65,8 @@ public class EmbeddedGraphDatabaseFactoryTest {
 	public void testLoadPropertiesFromFilePath() throws Exception {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
-		properties.put( Environment.NEO4J_DATABASE_PATH, dbLocation );
-		properties.put( Environment.NEO4J_CONFIGURATION_LOCATION, neo4jPropertiesUrl().getFile() );
+		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
+		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().getFile() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
@@ -75,8 +75,8 @@ public class EmbeddedGraphDatabaseFactoryTest {
 	public void testLoadMalformedPropertiesLocation() throws Exception {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
-		properties.put( Environment.NEO4J_DATABASE_PATH, dbLocation );
-		properties.put( Environment.NEO4J_CONFIGURATION_LOCATION, "aKDJSAGFKJAFLASFlaLfsfaf" );
+		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
+		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, "aKDJSAGFKJAFLASFlaLfsfaf" );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}

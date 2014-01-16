@@ -28,7 +28,7 @@ import java.util.Properties;
 
 import org.fest.util.Files;
 import org.hibernate.id.IdentifierGeneratorHelper;
-import org.hibernate.ogm.datastore.neo4j.Environment;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
 import org.hibernate.ogm.grid.RowKey;
@@ -55,7 +55,7 @@ public class Neo4jNextValueGenerationTest {
 	public void setUp() {
 		dbLocation = Neo4jTestHelper.dbLocation();
 		Properties configurationValues = new Properties();
-		configurationValues.put( Environment.NEO4J_DATABASE_PATH, dbLocation );
+		configurationValues.put( Neo4jProperties.DATABASE_PATH, dbLocation );
 		provider = new Neo4jDatastoreProvider();
 		provider.configure( configurationValues );
 		provider.start();
