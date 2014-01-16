@@ -146,7 +146,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Override
 	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
+		cfg.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	private OgmConfiguration getConfiguration() {
 		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
+		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
 
 		return configuration;
 	}

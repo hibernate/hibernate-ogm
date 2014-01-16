@@ -23,6 +23,7 @@ package org.hibernate.ogm.transaction.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
@@ -30,7 +31,10 @@ import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiat
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
+import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -49,23 +53,23 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 		if ( hasExplicitPlatform( configurationValues ) ) {
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
-		if ( isNeo4j( configurationValues ) ) {
+		if ( isNeo4j( configurationValues, registry.getService( ClassLoaderService.class ) ) ) {
 			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.transaction.neo4j.impl.Neo4jJtaPlatform" );
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 		return new JBossStandAloneJtaPlatform();
 	}
 
-	//TODO get rid of this!!!
-	private boolean isNeo4j(Map configuration) {
-		String propertyValue = (String) configuration.get( OgmProperties.DATASTORE_PROVIDER );
+	//TODO OGM-370 get rid of this!!!
+	private boolean isNeo4j(Map configuration, ClassLoaderService classLoaderService) {
+		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration, classLoaderService )
+			.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+			.withShortNameResolver( new DatastoreProviderInitiator.DatastoreProviderShortNameResolver() )
+			.getValue();
 
-		if ( AvailableDatastoreProvider.isShortName( propertyValue ) ) {
-			return AvailableDatastoreProvider.byShortName( propertyValue ) == AvailableDatastoreProvider.NEO4J_EMBEDDED;
-		}
-		else {
-			return AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName().equals( propertyValue );
-		}
+		return configuredProvider != null &&
+				configuredProvider.getClass().getName().equals(
+						AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName() );
 	}
 
 	@Override
