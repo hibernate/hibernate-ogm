@@ -28,8 +28,8 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -58,7 +58,7 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 
 	//TODO get rid of this!!!
 	private boolean isNeo4j(Map configuration) {
-		String propertyValue = (String) configuration.get( DatastoreProviderInitiator.DATASTORE_PROVIDER );
+		String propertyValue = (String) configuration.get( OgmProperties.DATASTORE_PROVIDER );
 
 		if ( AvailableDatastoreProvider.isShortName( propertyValue ) ) {
 			return AvailableDatastoreProvider.byShortName( propertyValue ) == AvailableDatastoreProvider.NEO4J_EMBEDDED;
