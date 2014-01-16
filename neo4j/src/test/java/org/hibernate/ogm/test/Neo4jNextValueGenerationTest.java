@@ -22,17 +22,22 @@ package org.hibernate.ogm.test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Properties;
 
 import org.fest.util.Files;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.test.utils.Neo4jTestHelper;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +62,11 @@ public class Neo4jNextValueGenerationTest {
 		Properties configurationValues = new Properties();
 		configurationValues.put( Neo4jProperties.DATABASE_PATH, dbLocation );
 		provider = new Neo4jDatastoreProvider();
+
+		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
+		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
+		provider.injectServices( serviceRegistry );
+
 		provider.configure( configurationValues );
 		provider.start();
 		dialect = new Neo4jDialect( provider );

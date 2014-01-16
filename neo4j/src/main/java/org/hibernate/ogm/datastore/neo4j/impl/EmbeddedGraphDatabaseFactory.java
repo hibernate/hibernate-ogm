@@ -24,7 +24,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
@@ -43,17 +42,17 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 
 	private String configurationLocation;
 
-	private Properties configuration;
+	private Map<?, ?> configuration;
 
 	@Override
-	public void initialize(Properties properties) {
+	public void initialize(Map<?, ?> properties) {
 		validate( properties );
-		dbLocation = properties.getProperty( Neo4jProperties.DATABASE_PATH );
-		configurationLocation = properties.getProperty( Neo4jProperties.CONFIGURATION_LOCATION );
+		dbLocation = (String) properties.get( Neo4jProperties.DATABASE_PATH );
+		configurationLocation = (String) properties.get( Neo4jProperties.CONFIGURATION_LOCATION );
 		configuration = properties;
 	}
 
-	private void validate(Properties properties) {
+	private void validate(Map<?, ?> properties) {
 		String dbLocation = (String) properties.get( Neo4jProperties.DATABASE_PATH );
 		if ( dbLocation == null ) {
 			throw new IllegalArgumentException( "Property " + Neo4jProperties.DATABASE_PATH + " cannot be null" );
@@ -68,13 +67,13 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 		return builder.newGraphDatabase();
 	}
 
-	private void setConfigurationFromProperties(GraphDatabaseBuilder builder, Properties properties) {
+	private void setConfigurationFromProperties(GraphDatabaseBuilder builder, Map<?, ?> properties) {
 		if ( properties != null ) {
 			builder.setConfig( convert( properties ) );
 		}
 	}
 
-	private Map<String, String> convert(Properties properties) {
+	private Map<String, String> convert(Map<?, ?> properties) {
 		Map<String, String> neo4jConfiguration = new HashMap<String, String>();
 		for ( Map.Entry<?, ?> entry : properties.entrySet() ) {
 			neo4jConfiguration.put( String.valueOf( entry.getKey() ), String.valueOf( entry.getValue() ) );

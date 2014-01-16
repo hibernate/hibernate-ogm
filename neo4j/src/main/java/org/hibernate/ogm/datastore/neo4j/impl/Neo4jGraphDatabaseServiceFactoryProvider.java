@@ -20,12 +20,12 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
-import java.util.Properties;
+import java.util.Map;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.search.util.impl.ClassLoaderHelper;
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 
 /**
  * Creates an instance of {@link GraphDatabaseServiceFactory} using the implementation selected in the properties.
@@ -38,21 +38,14 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class Neo4jGraphDatabaseServiceFactoryProvider {
 
-	public GraphDatabaseServiceFactory load(Properties properties) {
-		String factoryClassName = (String) properties.get( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS );
-		GraphDatabaseServiceFactory factory = createFactory( factoryClassName );
+	public GraphDatabaseServiceFactory load(Map<?, ?> properties, ClassLoaderService classLoaderService) {
+		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader(properties, classLoaderService)
+			.property( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
+			.withDefaultImplementation( EmbeddedGraphDatabaseFactory.class )
+			.getValue();
+
 		factory.initialize( properties );
+
 		return factory;
 	}
-
-	private GraphDatabaseServiceFactory createFactory(String className) {
-		if ( className == null ) {
-			return new EmbeddedGraphDatabaseFactory();
-		}
-		else {
-			return ClassLoaderHelper.instanceFromName( GraphDatabaseServiceFactory.class, className, getClass(),
-					GraphDatabaseService.class.getName() );
-		}
-	}
-
 }
