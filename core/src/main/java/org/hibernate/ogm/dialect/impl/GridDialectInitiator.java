@@ -28,6 +28,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
@@ -99,9 +100,15 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				if ( injector == null ) {
 					log.gridDialectHasNoProperConstructor( clazz );
 				}
-				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+				GridDialect originalDialect = (GridDialect) injector.newInstance( datastore );
+				GridDialect gridDialect = originalDialect;
 
-				log.useGridDialect( gridDialect.getClass().getName() );
+				if ( originalDialect instanceof BatchableGridDialect ) {
+					log.info( "Grid dialect supports batch operations" );
+					gridDialect = new BatchableDelegator( (BatchableGridDialect) originalDialect );
+				}
+
+				log.useGridDialect( originalDialect.getClass().getName() );
 				if ( GridDialectLogger.activationNeeded() ) {
 					gridDialect = new GridDialectLogger( gridDialect );
 					log.info( "Grid dialect logs are active" );
