@@ -25,11 +25,16 @@ import java.lang.reflect.Constructor;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
+import org.hibernate.ogm.service.impl.AutoFlushBatchManagerEventListener;
+import org.hibernate.ogm.service.impl.FlushBatchManagerEventListener;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.impl.Log;
@@ -64,7 +69,7 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
-				.withInstantiator( new GridDialectInstantiator( datastore ) )
+				.withInstantiator( new GridDialectInstantiator( datastore, registry.getService( EventListenerRegistry.class ) ) )
 				.getValue();
 	}
 
@@ -76,9 +81,11 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 	private static class GridDialectInstantiator implements Instantiator<GridDialect> {
 
 		private final DatastoreProvider datastore;
+		private EventListenerRegistry eventListenerRegistry;
 
-		public GridDialectInstantiator(DatastoreProvider datastore) {
+		public GridDialectInstantiator(DatastoreProvider datastore, EventListenerRegistry eventListenerRegistry) {
 			this.datastore = datastore;
+			this.eventListenerRegistry = eventListenerRegistry;
 		}
 
 		@Override
@@ -100,6 +107,10 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 
+				if ( gridDialect instanceof BatchableGridDialect ) {
+					addListeners( (BatchableGridDialect) gridDialect );
+				}
+
 				log.useGridDialect( gridDialect.getClass().getName() );
 				if ( GridDialectLogger.activationNeeded() ) {
 					gridDialect = new GridDialectLogger( gridDialect );
@@ -114,5 +125,13 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				throw log.cannotInstantiateGridDialect( clazz, e );
 			}
 		}
+
+		private void addListeners(BatchableGridDialect gridDialect) {
+			eventListenerRegistry.addDuplicationStrategy( new FlushBatchManagerEventListener.FlushDuplicationStrategy() );
+			eventListenerRegistry.addDuplicationStrategy( new AutoFlushBatchManagerEventListener.AutoFlushDuplicationStrategy() );
+			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushBatchManagerEventListener( gridDialect ) );
+			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new AutoFlushBatchManagerEventListener( gridDialect ) );
+		}
+
 	}
 }
