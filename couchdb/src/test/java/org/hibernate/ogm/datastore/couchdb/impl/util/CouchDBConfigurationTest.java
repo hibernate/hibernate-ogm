@@ -27,7 +27,7 @@ import static org.junit.Assert.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +54,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnTheDefaultValueIfThePortConfigurationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.PORT, "" );
+		configurationValues.put( OgmProperties.PORT, "" );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabasePort(), is( Integer.valueOf( CouchDBConfiguration.DEFAULT_COUCHDB_PORT ) ) );
@@ -63,7 +63,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnThePortConfigured() {
 		final int configuredPortValue = 8080;
-		configurationValues.put( CouchDB.PORT, String.valueOf( configuredPortValue ) );
+		configurationValues.put( OgmProperties.PORT, String.valueOf( configuredPortValue ) );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabasePort(), is( configuredPortValue ) );
@@ -78,7 +78,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnLocalhostIfTheHostConfigurationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.HOST, " " );
+		configurationValues.put( OgmProperties.HOST, " " );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabaseHost(), is( "localhost" ) );
@@ -87,7 +87,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnTheHostConfiguredValue() {
 		final String configuredHostValue = "192.168.2.2";
-		configurationValues.put( CouchDB.HOST, configuredHostValue );
+		configurationValues.put( OgmProperties.HOST, configuredHostValue );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabaseHost(), is( configuredHostValue ) );
@@ -102,7 +102,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnNullIfTheDatabaseNameConfigurationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.DATABASE, "" );
+		configurationValues.put( OgmProperties.DATABASE, "" );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabaseName(), nullValue() );
@@ -111,7 +111,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnTheDatabaseNameConfiguredValue() {
 		final String configuredDatabaseName = "test";
-		configurationValues.put( CouchDB.DATABASE, configuredDatabaseName );
+		configurationValues.put( OgmProperties.DATABASE, configuredDatabaseName );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getDatabaseName(), is( configuredDatabaseName ) );
@@ -126,7 +126,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnNullIfTheUsernameConfigurationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.USERNAME, "" );
+		configurationValues.put( OgmProperties.USERNAME, "" );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getUsername(), nullValue() );
@@ -135,7 +135,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnTheUserameConfiguredValue() {
 		final String configuredUsername = "andrea";
-		configurationValues.put( CouchDB.USERNAME, configuredUsername );
+		configurationValues.put( OgmProperties.USERNAME, configuredUsername );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getUsername(), is( configuredUsername ) );
@@ -150,7 +150,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnNullIfThePasswordConfigurationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.PASSWORD, "" );
+		configurationValues.put( OgmProperties.PASSWORD, "" );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getPassword(), nullValue() );
@@ -159,7 +159,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnThePasswordConfiguredValue() {
 		final String configuredPassword = "pwd";
-		configurationValues.put( CouchDB.PASSWORD, configuredPassword );
+		configurationValues.put( OgmProperties.PASSWORD, configuredPassword );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.getPassword(), is( configuredPassword ) );
@@ -174,7 +174,7 @@ public class CouchDBConfigurationTest {
 
 	@Test
 	public void shouldReturnFalseIfTheDatabaseCreationValueIsTheEmptyString() {
-		configurationValues.put( CouchDB.CREATE_DATABASE, "" );
+		configurationValues.put( OgmProperties.CREATE_DATABASE, "" );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.isDatabaseToBeCreated(), is( false ) );
@@ -183,7 +183,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldReturnTheDatabaseCreationConfiguredValue() {
 		final String configuredValue = "true";
-		configurationValues.put( CouchDB.CREATE_DATABASE, configuredValue );
+		configurationValues.put( OgmProperties.CREATE_DATABASE, configuredValue );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.isDatabaseToBeCreated(), is( Boolean.valueOf( configuredValue ) ) );
@@ -192,7 +192,7 @@ public class CouchDBConfigurationTest {
 	@Test
 	public void shouldIsDatabaseNameConfiguredReturnTrueIfTheDatabaseNameIsPresentInTheConfiguredValues() {
 		final String configuredDatabaseName = "test";
-		configurationValues.put( CouchDB.DATABASE, configuredDatabaseName );
+		configurationValues.put( OgmProperties.DATABASE, configuredDatabaseName );
 		configuration.setConfigurationValues( configurationValues );
 
 		assertThat( configuration.isDatabaseNameConfigured(), is( true ) );

@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.couchdb.impl.util;
 
 import java.util.Map;
 
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 
@@ -44,27 +45,27 @@ public class CouchDBConfiguration {
 	}
 
 	public String getDatabaseHost() {
-		return getPropertyValue( CouchDB.HOST, LOCALHOST );
+		return getPropertyValue( OgmProperties.HOST, LOCALHOST );
 	}
 
 	public int getDatabasePort() {
-		return Integer.valueOf( getPropertyValue( CouchDB.PORT, DEFAULT_COUCHDB_PORT ) );
+		return Integer.valueOf( getPropertyValue( OgmProperties.PORT, DEFAULT_COUCHDB_PORT ) );
 	}
 
 	public String getDatabaseName() {
-		return getPropertyValue( CouchDB.DATABASE, null );
+		return getPropertyValue( OgmProperties.DATABASE, null );
 	}
 
 	public String getUsername() {
-		return getPropertyValue( CouchDB.USERNAME, null );
+		return getPropertyValue( OgmProperties.USERNAME, null );
 	}
 
 	public String getPassword() {
-		return getPropertyValue( CouchDB.PASSWORD, null );
+		return getPropertyValue( OgmProperties.PASSWORD, null );
 	}
 
 	public boolean isDatabaseToBeCreated() {
-		return Boolean.valueOf( getPropertyValue( CouchDB.CREATE_DATABASE, Boolean.toString( false ) ) );
+		return Boolean.valueOf( getPropertyValue( OgmProperties.CREATE_DATABASE, Boolean.toString( false ) ) );
 	}
 
 	public AssociationStorageType getAssociationStorageStrategy() {

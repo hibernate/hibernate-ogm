@@ -68,6 +68,13 @@ public final class OgmProperties {
 	 */
 	public static final String PASSWORD = "hibernate.ogm.datastore.password";
 
+	/**
+	 * Property for specifying whether the database to connect to should be created when it doesn't exist. Default to
+	 * false. The user defined with {@link #USERNAME} must have the privileges for the creation of a new database. The
+	 * database will have the name defined with {@link #DATABASE}. Accepts "true" or "false".
+	 */
+	public static final String CREATE_DATABASE = "hibernate.org.datastore.createdatabase";
+
 	private OgmProperties() {
 	}
 }

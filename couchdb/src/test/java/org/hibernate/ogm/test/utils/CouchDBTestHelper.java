@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -103,12 +103,12 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		Map<String, String> envProps = new HashMap<String, String>( 2 );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.HOST, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.PORT, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.DATABASE, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.USERNAME, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.PASSWORD, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( CouchDB.CREATE_DATABASE, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.DATABASE, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PASSWORD, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.CREATE_DATABASE, envProps );
 		return envProps;
 	}
 

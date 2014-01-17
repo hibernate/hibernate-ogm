@@ -23,7 +23,7 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -128,7 +128,7 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 			}
 		}
 		else {
-			throw logger.missingConfigurationProperty( CouchDB.DATABASE );
+			throw logger.missingConfigurationProperty( OgmProperties.DATABASE );
 		}
 	}
 

@@ -45,38 +45,6 @@ public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
 	 */
 	public static final String ASSOCIATIONS_STORE = "hibernate.ogm.couchdb.associations.store";
 
-	/**
-	 * The CouchDB Database name to connect to.
-	 */
-	public static final String DATABASE = "hibernate.ogm.couchdb.database";
-
-	/**
-	 * The port of the CouchDB instance.
-	 */
-	public static final String PORT = "hibernate.ogm.couchdb.port";
-
-	/**
-	 * The hostname of the CouchDB instance.
-	 */
-	public static final String HOST = "hibernate.ogm.couchdb.host";
-
-	/**
-	 * The username of the CouchDB database user with authentication enabled.
-	 */
-	public static final String USERNAME = "hibernate.org.couchdb.username";
-
-	/**
-	 * The username of the CouchDB database user with authentication enabled.
-	 */
-	public static final String PASSWORD = "hibernate.org.couchdb.password";
-
-	/**
-	 * If true, the database will be created when it doesn't exist. Default to false. The user defined with
-	 * {@link #USERNAME} must have the privileges for the creation of a new database. The database will have the name
-	 * defined with {@link #DATABASE}.
-	 */
-	public static final String CREATE_DATABASE = "hibernate.org.couchdb.createdatabase";
-
 	@Override
 	public CouchDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
 		return context.createGlobalContext( CouchDBGlobalContextImpl.class, CouchDBEntityContextImpl.class, CouchDBPropertyContextImpl.class );
