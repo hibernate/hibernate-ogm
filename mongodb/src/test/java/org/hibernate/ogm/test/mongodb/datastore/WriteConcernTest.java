@@ -60,8 +60,7 @@ public class WriteConcernTest {
 	public void testNoConfiguration() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, null );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
 		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
 	}
 
@@ -73,8 +72,7 @@ public class WriteConcernTest {
 	public void testWrongConfiguration() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, "wrongValue" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
 		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
 	}
 
@@ -86,8 +84,7 @@ public class WriteConcernTest {
 	public void testCorrectValue() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNAL_SAFE" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNAL_SAFE );
 	}
 }

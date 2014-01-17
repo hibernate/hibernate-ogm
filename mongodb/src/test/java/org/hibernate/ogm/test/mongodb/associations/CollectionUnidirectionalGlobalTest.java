@@ -32,9 +32,9 @@ public class CollectionUnidirectionalGlobalTest extends CollectionUnidirectional
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
+		cfg.getProperties().put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.ASSOCIATION_DOCUMENT.toString().toLowerCase()
+				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);
 	}
 }

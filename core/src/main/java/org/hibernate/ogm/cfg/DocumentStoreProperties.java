@@ -33,8 +33,8 @@ public final class DocumentStoreProperties {
 
 	/**
 	 * Property for configuring the strategy for storing associations. Valid values are the
-	 * string values of the members of the {@link org.hibernate.ogm.options.couchdb.AssociationStorageType} enumeration.
-	 * Defaults to the in-entity storage strategy.
+	 * {@link org.hibernate.ogm.options.couchdb.AssociationStorageType} enumeration and the String representation of its
+	 * constants. Defaults to the in-entity storage strategy.
 	 * <p>
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.

@@ -52,15 +52,14 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private CouchDBDatastore datastore;
 
-	private final CouchDBConfiguration configuration;
+	private CouchDBConfiguration configuration;
 
 	public CouchDBDatastoreProvider() {
-		configuration = new CouchDBConfiguration();
 	}
 
 	@Override
 	public void configure(Map configurationValues) {
-		configuration.setConfigurationValues( configurationValues );
+		configuration = new CouchDBConfiguration( configurationValues );
 	}
 
 	@Override

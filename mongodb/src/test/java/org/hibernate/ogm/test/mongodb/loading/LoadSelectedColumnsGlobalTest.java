@@ -38,9 +38,9 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsCollection
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
+		cfg.getProperties().put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.ASSOCIATION_DOCUMENT.name()
+				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);
 	}
 

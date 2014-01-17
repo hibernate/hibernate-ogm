@@ -52,15 +52,15 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	private boolean isCacheStarted;
 	private MongoClient mongo;
 	private DB mongoDb;
-	private final MongoDBConfiguration config = new MongoDBConfiguration();
+	private MongoDBConfiguration config;
 
 	@Override
 	public void configure(Map configurationValues) {
-		this.config.initialize( configurationValues );
+		this.config = new MongoDBConfiguration( configurationValues );
 	}
 
 	public AssociationStorageStrategy getAssociationStorageStrategy() {
-		return AssociationStorageStrategy.getInstance( config.getAssociationStorage(), config.getAssociationDocumentStorage() );
+		return AssociationStorageStrategy.getInstance( config.getAssociationStorageStrategy(), config.getAssociationDocumentStorage() );
 	}
 
 	@Override

@@ -24,13 +24,12 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
-import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
@@ -40,7 +39,7 @@ import com.mongodb.WriteConcern;
  *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
-public class MongoDBConfiguration {
+public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	/**
 	 * The default value used to set up the acknowledgement of write operations.
@@ -73,15 +72,29 @@ public class MongoDBConfiguration {
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private String host;
-	private int port;
-	private AssociationStorageType associationStorage;
-	private AssociationDocumentType associationDocumentStorage;
-	private String databaseName;
-	private String username;
-	private String password;
-	private int timeout;
-	private WriteConcern writeConcern;
+	private final String host;
+	private final int port;
+	private final AssociationDocumentType associationDocumentStorage;
+	private final String databaseName;
+	private final String username;
+	private final String password;
+	private final int timeout;
+	private final WriteConcern writeConcern;
+
+	public MongoDBConfiguration(Map<?, ?> configurationMap) {
+		super( configurationMap );
+
+		this.host = this.buildHost( configurationMap );
+		this.port = this.buildPort( configurationMap );
+		this.timeout = this.buildTimeout( configurationMap );
+		log.connectingToMongo( host, port, timeout );
+
+		this.associationDocumentStorage = this.buildAssociationDocumentStorage( configurationMap );
+		this.writeConcern = this.buildWriteConcern( configurationMap );
+		this.databaseName = this.buildDatabase( configurationMap );
+		this.username = this.buildUsername( configurationMap );
+		this.password = this.buildPassword( configurationMap );
+	}
 
 	/**
 	 * @see OgmProperties#HOST
@@ -116,14 +129,6 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see OgmProperties#ASSOCIATIONS_STORE
-	 * @return where to store associations
-	 */
-	public AssociationStorageType getAssociationStorage() {
-		return associationStorage;
-	}
-
-	/**
 	 * @see MongoDBProperties#ASSOCIATION_DOCUMENT_STORAGE
 	 * @return how to store association documents
 	 */
@@ -137,27 +142,6 @@ public class MongoDBConfiguration {
 	 */
 	public int getPort() {
 		return port;
-	}
-
-	/**
-	 * Initialize the internal values from the given {@link Map}.
-	 *
-	 * @see Environment
-	 * @param configurationMap
-	 *            The values to use as configuration
-	 */
-	public void initialize(Map<?, ?> configurationMap) {
-		this.host = this.buildHost( configurationMap );
-		this.port = this.buildPort( configurationMap );
-		this.timeout = this.buildTimeout( configurationMap );
-		log.connectingToMongo( host, port, timeout );
-
-		this.associationStorage = this.buildAssociationStorage( configurationMap );
-		this.associationDocumentStorage = this.buildAssociationDocumentStorage( configurationMap );
-		this.writeConcern = this.buildWriteConcern( configurationMap );
-		this.databaseName = this.buildDatabase( configurationMap );
-		this.username = this.buildUsername( configurationMap );
-		this.password = this.buildPassword( configurationMap );
 	}
 
 	private String buildHost(Map<?, ?> cfg) {
@@ -181,22 +165,6 @@ public class MongoDBConfiguration {
 		}
 		else {
 			return DEFAULT_PORT;
-		}
-	}
-
-	private AssociationStorageType buildAssociationStorage(Map<?, ?> cfg) {
-		String assocStoreString = (String) cfg.get( DocumentStoreProperties.ASSOCIATIONS_STORE );
-		if ( assocStoreString == null ) {
-			//default value
-			return AssociationStorageType.IN_ENTITY;
-		}
-		else {
-			try {
-				return AssociationStorageType.valueOf( assocStoreString.toUpperCase( Locale.ENGLISH ) );
-			}
-			catch ( IllegalArgumentException e ) {
-				throw log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorageType.class );
-			}
 		}
 	}
 

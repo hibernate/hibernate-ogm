@@ -48,7 +48,7 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Override
 	protected void configure(Configuration cfg) {
-		cfg.setProperty( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT.toString() );
+		cfg.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	@Test

@@ -32,9 +32,9 @@ public class ManyToManyInEntityTest extends ManyToManyTest {
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
+		cfg.getProperties().put(
 				DocumentStoreProperties.ASSOCIATIONS_STORE,
-				AssociationStorageType.IN_ENTITY.toString().toLowerCase()
+				AssociationStorageType.IN_ENTITY
 		);
 	}
 }

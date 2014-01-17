@@ -78,9 +78,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1211, value = "The configuration property '" + MongoDBProperties.WRITE_CONCERN + "' is set to %s")
 	void useWriteConcern(String writeConcern);
 
-	@Message(id = 1212, value = "Unknown association storage strategy: [%s]. Supported values in enum %s" )
-	HibernateException unknownAssociationStorageStrategy(String databaseName, Class<?> enumType);
-
 	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
 	HibernateException authenticationFailed(String username);
 

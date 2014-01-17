@@ -33,6 +33,6 @@ public class CompositeIdInEmbeddedTest extends CompositeIdTest {
 	protected void refineInfo(GetterPersistenceUnitInfo info) {
 		super.refineInfo( info );
 		info.getProperties()
-			.setProperty( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.IN_ENTITY.name() );
+			.put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.IN_ENTITY );
 	}
 }

@@ -161,4 +161,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 48, value = "Unexpected option configurer type %1$s. Make sure to pass an option configurer which is parameterized with the global context type of the current datastore configuration type %2$s.")
 	HibernateException unexpectedOptionConfigurerType(String configurerTypeName, String datastoreConfigurationTypeName, @Cause Exception cause);
+
+	@Message(id = 49, value = "Unknown association storage strategy: [%s]. Supported values are: %s" )
+	HibernateException unknownAssociationStorageStrategy(String databaseName, String supportedValues);
 }

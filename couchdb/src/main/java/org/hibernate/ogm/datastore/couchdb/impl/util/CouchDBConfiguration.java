@@ -22,9 +22,8 @@ package org.hibernate.ogm.datastore.couchdb.impl.util;
 
 import java.util.Map;
 
-import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 
 /**
  * Provides utility methods to access the CouchDB configuration value
@@ -32,16 +31,13 @@ import org.hibernate.ogm.options.generic.document.AssociationStorageType;
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling
  */
-public class CouchDBConfiguration {
+public class CouchDBConfiguration extends DocumentStoreConfiguration {
 
 	public static final String DEFAULT_COUCHDB_PORT = "5984";
 	public static final String LOCALHOST = "localhost";
-	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
 
-	private Map<?, ?> configurationValues;
-
-	public void setConfigurationValues(Map<?, ?> configurationValues) {
-		this.configurationValues = configurationValues;
+	public CouchDBConfiguration(Map<?, ?> configurationValues) {
+		super( configurationValues );
 	}
 
 	public String getDatabaseHost() {
@@ -66,11 +62,6 @@ public class CouchDBConfiguration {
 
 	public boolean isDatabaseToBeCreated() {
 		return Boolean.valueOf( getPropertyValue( OgmProperties.CREATE_DATABASE, Boolean.toString( false ) ) );
-	}
-
-	public AssociationStorageType getAssociationStorageStrategy() {
-		String propertyValue = getPropertyValue( DocumentStoreProperties.ASSOCIATIONS_STORE, null );
-		return propertyValue != null ? AssociationStorageType.valueOf( propertyValue ) : DEFAULT_ASSOCIATION_STORAGE;
 	}
 
 	public boolean isDatabaseNameConfigured() {
