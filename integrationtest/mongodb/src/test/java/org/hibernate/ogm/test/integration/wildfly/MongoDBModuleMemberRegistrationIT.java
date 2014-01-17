@@ -60,14 +60,14 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties();
 		if ( isNotNull( host ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.mongodb.host" ).value( host );
+			propertiesContext.createProperty().name( "hibernate.ogm.datastore.host" ).value( host );
 		}
 		if ( isNotNull( port ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.mongodb.port" ).value( port );
+			propertiesContext.createProperty().name( "hibernate.ogm.datastore.port" ).value( port );
 		}
 		return propertiesContext
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "mongodb" ).up()
-					.createProperty().name( "hibernate.ogm.mongodb.database" ).value( "ogm_test_database" ).up()
+					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
 				.up().up();
 	}
 

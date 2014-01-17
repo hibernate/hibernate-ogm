@@ -22,15 +22,17 @@ package org.hibernate.ogm.cfg;
 
 /**
  * Common properties for configuring NoSql datastores via {@code persistence.xml} or
- * {@link org.hibernate.ogm.cfg.OgmConfiguration}. Note that not all properties are supported by all datastores; refer
- * to the documentation of the specific dialect to find out the supported configuration properties.
+ * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
+ * <p>
+ * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
+ * find out the supported configuration properties.
  *
  * @author Gunnar Morling
  */
 public final class OgmProperties {
 
 	/**
-	 * Configuration property for setting the datastore provider. Can take the following values:
+	 * Property for setting the datastore provider. Can take the following values:
 	 * <ul>
 	 * <li>a {@code DatastoreProvider} instance</li>
 	 * <li>a {@code DatastoreProvider} class</li>
@@ -40,6 +42,31 @@ public final class OgmProperties {
 	 * If the property is not set, Infinispan is used by default.
 	 */
 	public static final String DATASTORE_PROVIDER = "hibernate.ogm.datastore.provider";
+
+	/**
+	 * Property for setting the host name to connect to. Accepts {@code String}.
+	 */
+	public static final String HOST = "hibernate.ogm.datastore.host";
+
+	/**
+	 * Property for setting the port number of the database to connect to. Accepts {@code int}.
+	 */
+	public static final String PORT = "hibernate.ogm.datastore.port";
+
+	/**
+	 * Property for setting the name of the database to connect to. Accepts {@code String}.
+	 */
+	public static final String DATABASE = "hibernate.ogm.datastore.database";
+
+	/**
+	 * Property for setting the user name to connect with. Accepts {@code String}.
+	 */
+	public static final String USERNAME = "hibernate.ogm.datastore.username";
+
+	/**
+	 * Property for setting the password to connect with. Accepts {@code String}.
+	 */
+	public static final String PASSWORD = "hibernate.ogm.datastore.password";
 
 	private OgmProperties() {
 	}

@@ -23,12 +23,14 @@ package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 import java.util.Locale;
 import java.util.Map;
 
-import com.mongodb.MongoClientOptions;
-import com.mongodb.WriteConcern;
-
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+
+import com.mongodb.MongoClientOptions;
+import com.mongodb.WriteConcern;
 
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider}.
@@ -36,6 +38,35 @@ import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public class MongoDBConfiguration {
+
+	/**
+	 * The default value used to set up the acknowledgement of write operations.
+	 *
+	 * @see MongoDBProperties#WRITE_CONCERN
+	 */
+	public static final WriteConcern DEFAULT_WRITE_CONCERN = WriteConcern.ACKNOWLEDGED;
+
+	/**
+	 * The default host used to connect to MongoDB: if the {@link OgmProperties#HOST} property is not set, we'll attempt
+	 * to connect to localhost.
+	 */
+	public static final String DEFAULT_HOST = "127.0.0.1";
+
+	/**
+	 * The default port used to connect to MongoDB: if the {@link OgmProperties#PORT} property is not set, we'll try
+	 * this port.
+	 */
+	public static final int DEFAULT_PORT = 27017;
+
+	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
+
+	/**
+	 * The default value used to set the timeout during the connection to the MongoDB instance This value is set in
+	 * milliseconds.
+	 *
+	 * @see MongoDBProperties#TIMEOUT
+	 */
+	public static final int DEFAULT_TIMEOUT = 5000;
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -49,7 +80,7 @@ public class MongoDBConfiguration {
 	private WriteConcern writeConcern;
 
 	/**
-	 * @see Environment#MONGODB_HOST
+	 * @see OgmProperties#HOST
 	 * @return The hostname of the MongoDB instance
 	 */
 	public String getHost() {
@@ -57,7 +88,7 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see Environment#MONGODB_PASSWORD
+	 * @see OgmProperties#PASSWORD
 	 * @return The password of the MongoDB admin database with authentication enabled
 	 */
 	public String getPassword() {
@@ -65,7 +96,7 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see Environment#MONGODB_USERNAME
+	 * @see OgmProperties#USERNAME
 	 * @return The username of the MongoDB admin database with authentication enabled
 	 */
 	public String getUsername() {
@@ -73,7 +104,7 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see Environment#MONGODB_DATABASE
+	 * @see OgmProperties#DATABASE
 	 * @return the MongoDB Database name to connect to
 	 */
 	public String getDatabaseName() {
@@ -81,7 +112,7 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see Environment#MONGODB_ASSOCIATIONS_STORE
+	 * @see OgmProperties#ASSOCIATIONS_STORE
 	 * @return where to store associations
 	 */
 	public AssociationStorageType getAssociationStorage() {
@@ -89,7 +120,7 @@ public class MongoDBConfiguration {
 	}
 
 	/**
-	 * @see Environment#MONGODB_PORT
+	 * @see OgmProperties#PORT
 	 * @return The port of the MongoDB instance
 	 */
 	public int getPort() {
@@ -103,7 +134,7 @@ public class MongoDBConfiguration {
 	 * @param configurationMap
 	 *            The values to use as configuration
 	 */
-	public void initialize(Map configurationMap) {
+	public void initialize(Map<?, ?> configurationMap) {
 		this.host = this.buildHost( configurationMap );
 		this.port = this.buildPort( configurationMap );
 		this.timeout = this.buildTimeout( configurationMap );
@@ -117,12 +148,12 @@ public class MongoDBConfiguration {
 	}
 
 	private String buildHost(Map<?, ?> cfg) {
-		Object cfgHost = cfg.get( Environment.MONGODB_HOST );
-		return cfgHost != null ? cfgHost.toString() : Environment.MONGODB_DEFAULT_HOST;
+		Object cfgHost = cfg.get( OgmProperties.HOST );
+		return cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
 	}
 
 	private int buildPort(Map<?, ?> cfg) {
-		Object cfgPort = cfg.get( Environment.MONGODB_PORT );
+		Object cfgPort = cfg.get( OgmProperties.PORT );
 		if ( cfgPort != null ) {
 			try {
 				int temporaryPort = Integer.valueOf( cfgPort.toString() );
@@ -136,12 +167,12 @@ public class MongoDBConfiguration {
 			}
 		}
 		else {
-			return Environment.MONGODB_DEFAULT_PORT;
+			return DEFAULT_PORT;
 		}
 	}
 
 	private AssociationStorageType buildAssociationStorage(Map<?, ?> cfg) {
-		String assocStoreString = (String) cfg.get( Environment.MONGODB_ASSOCIATIONS_STORE );
+		String assocStoreString = (String) cfg.get( MongoDBProperties.ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value
 			return AssociationStorageType.IN_ENTITY;
@@ -157,15 +188,15 @@ public class MongoDBConfiguration {
 	}
 
 	private WriteConcern buildWriteConcern(Map<?, ?> cfg) {
-		Object cfgWriteConcern = cfg.get( Environment.MONGODB_WRITE_CONCERN );
-		WriteConcern writeConcern = Environment.MONGODB_DEFAULT_WRITE_CONCERN;
+		Object cfgWriteConcern = cfg.get( MongoDBProperties.WRITE_CONCERN );
+		WriteConcern writeConcern = DEFAULT_WRITE_CONCERN;
 		String wcLogMessage = "ACKNOWLEDGED";
 		if ( cfgWriteConcern != null ) {
 			final String confWC = cfgWriteConcern.toString();
 			writeConcern = WriteConcern.valueOf( confWC );
 
 			if ( writeConcern == null ) {
-				writeConcern = Environment.MONGODB_DEFAULT_WRITE_CONCERN;
+				writeConcern = DEFAULT_WRITE_CONCERN;
 				wcLogMessage = "ACKNOWLEDGED";
 			}
 			else {
@@ -178,7 +209,7 @@ public class MongoDBConfiguration {
 	}
 
 	private int buildTimeout(Map<?, ?> cfg) {
-		Object cfgTimeout = cfg.get( Environment.MONGODB_TIMEOUT );
+		Object cfgTimeout = cfg.get( MongoDBProperties.TIMEOUT );
 		if ( cfgTimeout != null ) {
 			try {
 				int temporaryTimeout = Integer.valueOf( cfgTimeout.toString() );
@@ -192,12 +223,12 @@ public class MongoDBConfiguration {
 			}
 		}
 		else {
-			return Environment.MONGODB_DEFAULT_TIMEOUT;
+			return DEFAULT_TIMEOUT;
 		}
 	}
 
 	private String buildDatabase(Map<?, ?> cfg) {
-		Object dbNameObject = cfg.get( Environment.MONGODB_DATABASE );
+		Object dbNameObject = cfg.get( OgmProperties.DATABASE );
 		if ( dbNameObject == null ) {
 			throw log.mongoDbNameMissing();
 		}
@@ -207,11 +238,11 @@ public class MongoDBConfiguration {
 	}
 
 	private String buildUsername(Map<?, ?> cfg) {
-		return (String) cfg.get( Environment.MONGODB_USERNAME );
+		return (String) cfg.get( OgmProperties.USERNAME );
 	}
 
 	private String buildPassword(Map<?, ?> cfg) {
-		Object passwordObject = cfg.get( Environment.MONGODB_PASSWORD );
+		Object passwordObject = cfg.get( OgmProperties.PASSWORD );
 		return passwordObject != null ? passwordObject.toString() : "";
 	}
 

@@ -26,7 +26,7 @@ import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
@@ -45,7 +45,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
 		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
+				MongoDBProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.IN_ENTITY.toString().toLowerCase()
 		);
 	}
@@ -64,6 +64,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 		collection.update( query, updater );
 	}
 
+	@Override
 	protected void checkLoading(DBObject associationObject) {
 		/*
 		 * The only column (except _id) that needs to be retrieved is "modules"

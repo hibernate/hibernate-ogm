@@ -37,7 +37,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -204,7 +204,7 @@ public class MongoDBDialect implements GridDialect {
 	private DBCollection getAssociationCollection(AssociationKey key) {
 		switch ( provider.getAssociationStorage() ) {
 		case GLOBAL_COLLECTION:
-			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
+			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
 		case COLLECTION:
 			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
 		default:

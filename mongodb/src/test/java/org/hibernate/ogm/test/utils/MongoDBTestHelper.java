@@ -27,9 +27,10 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
@@ -54,11 +55,11 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		// Maven's surefire plugin set it to the string 'null'
 		String mongoHostName = System.getenv( "MONGODB_HOSTNAME" );
 		if ( isNotNull( mongoHostName ) ) {
-			System.getProperties().setProperty( Environment.MONGODB_HOST, mongoHostName );
+			System.getProperties().setProperty( OgmProperties.HOST, mongoHostName );
 		}
 		String mongoPort = System.getenv( "MONGODB_PORT" );
 		if ( isNotNull( mongoPort ) ) {
-			System.getProperties().setProperty( Environment.MONGODB_PORT, mongoPort );
+			System.getProperties().setProperty( OgmProperties.PORT, mongoPort );
 		}
 	}
 
@@ -77,7 +78,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 				continue;
 			}
 			if ( storage == AssociationStorageType.GLOBAL_COLLECTION
-					&& collectionName.equals( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ) ) {
+					&& collectionName.equals( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ) ) {
 				continue;
 			}
 
@@ -101,7 +102,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			return true; //FIXME find a way to test that, maybe with some map reduce magic?
 		}
 		else if ( assocStorage == AssociationStorageType.GLOBAL_COLLECTION ) {
-			return db.getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
+			return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
 		}
 		else if ( assocStorage == AssociationStorageType.COLLECTION ) {
 			int count = 0;
@@ -167,10 +168,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	public Map<String, String> getEnvironmentProperties() {
 		//read variables from the System properties set in the static initializer
 		Map<String,String> envProps = new HashMap<String, String>(2);
-		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_HOST, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_PORT, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_USERNAME, envProps );
-		copyFromSystemPropertiesToLocalEnvironment( Environment.MONGODB_PASSWORD, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.USERNAME, envProps );
+		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PASSWORD, envProps );
 		return envProps;
 	}
 

@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.mongodb.loading;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 
@@ -39,7 +39,7 @@ public class LoadSelectedColumnsGlobalTest extends LoadSelectedColumnsCollection
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
 		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
+				MongoDBProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.GLOBAL_COLLECTION.toString().toLowerCase()
 		);
 	}

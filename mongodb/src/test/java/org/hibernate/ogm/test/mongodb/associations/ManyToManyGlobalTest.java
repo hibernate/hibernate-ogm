@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.mongodb.associations;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.test.associations.collection.manytomany.ManyToManyTest;
 
 /**
@@ -33,7 +33,7 @@ public class ManyToManyGlobalTest extends ManyToManyTest {
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
 		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
+				MongoDBProperties.ASSOCIATIONS_STORE,
 				AssociationStorageType.GLOBAL_COLLECTION.toString().toLowerCase()
 		);
 	}
