@@ -35,16 +35,6 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  */
 public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
 
-	/**
-	 * Name of the property for configuring the strategy for storing associations in CouchDB. Valid values are the
-	 * string values of the members of the {@link org.hibernate.ogm.options.couchdb.AssociationStorageType} enumeration.
-	 * Defaults to the in-entity storage strategy.
-	 * <p>
-	 * Note that any value specified via this property will be overridden by values configured via annotations or the
-	 * programmatic API.
-	 */
-	public static final String ASSOCIATIONS_STORE = "hibernate.ogm.couchdb.associations.store";
-
 	@Override
 	public CouchDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
 		return context.createGlobalContext( CouchDBGlobalContextImpl.class, CouchDBEntityContextImpl.class, CouchDBPropertyContextImpl.class );

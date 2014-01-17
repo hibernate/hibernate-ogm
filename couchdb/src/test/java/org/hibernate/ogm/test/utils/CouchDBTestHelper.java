@@ -34,7 +34,7 @@ import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.impl.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 

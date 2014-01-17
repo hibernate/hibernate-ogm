@@ -18,15 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.couchdb.mapping;
-
-import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
+package org.hibernate.ogm.options.generic.document;
 
 /**
- * Allows to configure CouchDB-specific options applying on a per-entity level. These options can be overridden for
- * single properties.
+ * A strategy for storing association information in CouchDB.
  *
  * @author Gunnar Morling
  */
-public interface CouchDBEntityContext extends DocumentStoreEntityContext<CouchDBEntityContext, CouchDBPropertyContext> {
+public enum AssociationStorageType {
+
+	/**
+	 * Stores association information in a dedicated CouchDB document per association.
+	 */
+	ASSOCIATION_DOCUMENT,
+
+	/**
+	 * Store association information within the entity.
+	 */
+	IN_ENTITY
 }

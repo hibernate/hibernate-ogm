@@ -31,7 +31,7 @@ import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
 import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;

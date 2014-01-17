@@ -22,9 +22,9 @@ package org.hibernate.ogm.datastore.couchdb.impl.util;
 
 import java.util.Map;
 
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 /**
  * Provides utility methods to access the CouchDB configuration value
@@ -69,7 +69,7 @@ public class CouchDBConfiguration {
 	}
 
 	public AssociationStorageType getAssociationStorageStrategy() {
-		String propertyValue = getPropertyValue( CouchDB.ASSOCIATIONS_STORE, null );
+		String propertyValue = getPropertyValue( DocumentStoreProperties.ASSOCIATIONS_STORE, null );
 		return propertyValue != null ? AssociationStorageType.valueOf( propertyValue ) : DEFAULT_ASSOCIATION_STORAGE;
 	}
 

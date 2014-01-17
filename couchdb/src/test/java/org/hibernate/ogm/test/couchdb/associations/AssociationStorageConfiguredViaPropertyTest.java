@@ -29,8 +29,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
 import org.junit.After;
@@ -47,7 +48,7 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Override
 	protected void configure(Configuration cfg) {
-		cfg.setProperty( CouchDB.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT.toString() );
+		cfg.setProperty( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT.toString() );
 	}
 
 	@Test

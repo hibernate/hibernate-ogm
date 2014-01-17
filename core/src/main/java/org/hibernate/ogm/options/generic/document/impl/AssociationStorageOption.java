@@ -18,15 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.couchdb.mapping;
+package org.hibernate.ogm.options.generic.document.impl;
 
-import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * Allows to configure CouchDB-specific options applying on a per-entity level. These options can be overridden for
- * single properties.
+ * Represents the type of association storage as configured via the API or annotations for a given element.
  *
  * @author Gunnar Morling
  */
-public interface CouchDBEntityContext extends DocumentStoreEntityContext<CouchDBEntityContext, CouchDBPropertyContext> {
+public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
 }
