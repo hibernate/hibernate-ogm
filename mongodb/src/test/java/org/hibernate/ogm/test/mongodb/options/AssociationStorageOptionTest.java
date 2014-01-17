@@ -24,9 +24,9 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
-import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
@@ -47,10 +47,10 @@ public class AssociationStorageOptionTest {
 		new MongoDB().getConfigurationBuilder( context )
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
-					.associationStorage( AssociationStorageType.COLLECTION );
+					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
 		OptionsContainer options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
-		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.COLLECTION );
+		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	@SuppressWarnings("unused")

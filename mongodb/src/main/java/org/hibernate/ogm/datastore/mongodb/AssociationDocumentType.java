@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,22 +21,19 @@
 package org.hibernate.ogm.datastore.mongodb;
 
 /**
- * Defines the various association storage strategies
+ * Strategies for storing MongoDB association documents.
  *
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public enum AssociationStorageType {
+public enum AssociationDocumentType {
+
 	/**
-	 * Store the association info in a unique MongoDB collection for all associations
+	 * Stores the association info in the same MongoDB collection for all associations
 	 */
 	GLOBAL_COLLECTION,
+
 	/**
-	 * Store the association in a dedicated MongoDB collection per association
+	 * Stores the association in a dedicated MongoDB collection per association
 	 */
-	COLLECTION,
-	/**
-	 * Store association information from within the entity
-	 */
-	IN_ENTITY
+	COLLECTION_PER_ASSOCIATION
 }

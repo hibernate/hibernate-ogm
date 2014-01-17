@@ -41,9 +41,14 @@ public final class MongoDBProperties {
 	public static final String TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
 
 	/**
-	 * Where to store associations.
+	 * Configuration property for specifying how to store association documents. Only applicable if
+	 * {@link org.hibernate.ogm.cfg.DocumentStoreProperties#ASSOCIATIONS_STORE} is set to
+	 * {@link org.hibernate.ogm.options.generic.document.AssociationStorageType#ASSOCIATION_DOCUMENT}. Supported values
+	 * are the {@link org.hibernate.ogm.options.generic.document.AssociationStorageType} enum or the String
+	 * representations of its constants. Defaults to
+	 * {@link org.hibernate.ogm.options.generic.document.AssociationStorageType#GLOBAL_COLLECTION}.
 	 */
-	public static final String ASSOCIATIONS_STORE = "hibernate.ogm.mongodb.associations.store";
+	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.associationdocumentstorage";
 
 	private MongoDBProperties() {
 	}

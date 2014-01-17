@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -60,8 +59,8 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		this.config.initialize( configurationValues );
 	}
 
-	public AssociationStorageType getAssociationStorage() {
-		return config.getAssociationStorage();
+	public AssociationStorageStrategy getAssociationStorageStrategy() {
+		return AssociationStorageStrategy.getInstance( config.getAssociationStorage(), config.getAssociationDocumentStorage() );
 	}
 
 	@Override

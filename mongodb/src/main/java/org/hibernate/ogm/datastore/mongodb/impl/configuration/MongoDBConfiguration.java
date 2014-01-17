@@ -20,14 +20,17 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
@@ -73,6 +76,7 @@ public class MongoDBConfiguration {
 	private String host;
 	private int port;
 	private AssociationStorageType associationStorage;
+	private AssociationDocumentType associationDocumentStorage;
 	private String databaseName;
 	private String username;
 	private String password;
@@ -120,6 +124,14 @@ public class MongoDBConfiguration {
 	}
 
 	/**
+	 * @see MongoDBProperties#ASSOCIATION_DOCUMENT_STORAGE
+	 * @return how to store association documents
+	 */
+	public AssociationDocumentType getAssociationDocumentStorage() {
+		return associationDocumentStorage;
+	}
+
+	/**
 	 * @see OgmProperties#PORT
 	 * @return The port of the MongoDB instance
 	 */
@@ -141,6 +153,7 @@ public class MongoDBConfiguration {
 		log.connectingToMongo( host, port, timeout );
 
 		this.associationStorage = this.buildAssociationStorage( configurationMap );
+		this.associationDocumentStorage = this.buildAssociationDocumentStorage( configurationMap );
 		this.writeConcern = this.buildWriteConcern( configurationMap );
 		this.databaseName = this.buildDatabase( configurationMap );
 		this.username = this.buildUsername( configurationMap );
@@ -172,7 +185,7 @@ public class MongoDBConfiguration {
 	}
 
 	private AssociationStorageType buildAssociationStorage(Map<?, ?> cfg) {
-		String assocStoreString = (String) cfg.get( MongoDBProperties.ASSOCIATIONS_STORE );
+		String assocStoreString = (String) cfg.get( DocumentStoreProperties.ASSOCIATIONS_STORE );
 		if ( assocStoreString == null ) {
 			//default value
 			return AssociationStorageType.IN_ENTITY;
@@ -183,6 +196,27 @@ public class MongoDBConfiguration {
 			}
 			catch ( IllegalArgumentException e ) {
 				throw log.unknownAssociationStorageStrategy( assocStoreString, AssociationStorageType.class );
+			}
+		}
+	}
+
+	private AssociationDocumentType buildAssociationDocumentStorage(Map<?, ?> cfg) {
+		Object value = cfg.get( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE );
+
+		if ( value == null ) {
+			// default value
+			return AssociationDocumentType.GLOBAL_COLLECTION;
+		}
+		else if ( value instanceof AssociationDocumentType ) {
+			return (AssociationDocumentType) value;
+		}
+		else {
+			String documentTypeString = (String) value;
+			try {
+				return AssociationDocumentType.valueOf( documentTypeString.toUpperCase( Locale.ENGLISH ) );
+			}
+			catch (IllegalArgumentException e) {
+				throw log.unknownAssociationDocumentStorageStrategy( documentTypeString, Arrays.toString( AssociationDocumentType.class.getEnumConstants() ) );
 			}
 		}
 	}

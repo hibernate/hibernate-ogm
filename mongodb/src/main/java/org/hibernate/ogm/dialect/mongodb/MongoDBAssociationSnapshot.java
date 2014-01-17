@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -36,9 +39,6 @@ import org.hibernate.ogm.grid.RowKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 /**
  * @author Alan Fitton <alan at eth0.org.uk>
@@ -48,15 +48,15 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, DBObject> map;
 	private final DBObject dbObject;
-	private AssociationKey associationKey;
-	private AssociationStorageType storage;
+	private final AssociationKey associationKey;
+	private final AssociationStorageStrategy storageStrategy;
 
 	/**
 	 * @param document DBObject containing the association information
 	 * @param key
 	 */
-	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorageType storage) {
-		this.storage = storage;
+	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorageStrategy storageStrategy) {
+		this.storageStrategy = storageStrategy;
 		this.dbObject = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
 		this.associationKey = key;
@@ -118,7 +118,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
-		if ( isEmbeddedInEntity( associationKey, storage ) ) {
+		if ( isEmbeddedInEntity( associationKey, storageStrategy ) ) {
 			return getAssociationFieldOrNull( associationKey, dbObject );
 		}
 		else {

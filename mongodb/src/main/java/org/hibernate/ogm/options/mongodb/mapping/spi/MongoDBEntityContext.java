@@ -21,13 +21,12 @@
 package org.hibernate.ogm.options.mongodb.mapping.spi;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.navigation.context.EntityContext;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface MongoDBEntityContext extends EntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
+public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
 
 	MongoDBEntityContext writeConcern(WriteConcernType concern);
-
 }

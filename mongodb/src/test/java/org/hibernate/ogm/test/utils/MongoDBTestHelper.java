@@ -25,10 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -70,20 +69,11 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		AssociationStorageType storage = provider.getAssociationStorage();
+		AssociationStorageStrategy storage = provider.getAssociationStorageStrategy();
 		DB db = provider.getDatabase();
 		int count = 0;
 		for ( String collectionName : db.getCollectionNames() ) {
-			if ( collectionName.startsWith( "system." ) ) {
-				continue;
-			}
-			if ( storage == AssociationStorageType.GLOBAL_COLLECTION
-					&& collectionName.equals( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ) ) {
-				continue;
-			}
-
-			if ( storage == AssociationStorageType.COLLECTION
-					&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
+			if ( isSystemCollection( collectionName ) || isAssociationCollection( collectionName, storage ) ) {
 				continue;
 			}
 
@@ -92,30 +82,42 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return count == numberOfEntities;
 	}
 
+	private boolean isSystemCollection(String collectionName) {
+		return collectionName.startsWith( "system." );
+	}
+
+	private boolean isAssociationCollection(String collectionName, AssociationStorageStrategy storage) {
+		if ( storage.isEmbeddedInEntity() ) {
+			return false;
+		}
+		else if ( storage.isGlobalCollection() && collectionName.equals( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ) ) {
+			return true;
+		}
+		else {
+			return collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX );
+		}
+	}
+
 	@Override
 	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		AssociationStorageType assocStorage = provider.getAssociationStorage();
+		AssociationStorageStrategy assocStorage = provider.getAssociationStorageStrategy();
 		DB db = provider.getDatabase();
 
-		if ( assocStorage == AssociationStorageType.IN_ENTITY ) {
+		if ( assocStorage.isEmbeddedInEntity() ) {
 			return true; //FIXME find a way to test that, maybe with some map reduce magic?
 		}
-		else if ( assocStorage == AssociationStorageType.GLOBAL_COLLECTION ) {
+		else if ( assocStorage.isGlobalCollection() ) {
 			return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
 		}
-		else if ( assocStorage == AssociationStorageType.COLLECTION ) {
+		else {
 			int count = 0;
 			for ( String collectionName : db.getCollectionNames() ) {
-				if ( assocStorage == AssociationStorageType.COLLECTION
-						&& collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
+				if ( collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
 					count += db.getCollection( collectionName ).count();
 				}
 			}
 			return count == numberOfAssociations;
-		}
-		else {
-			throw new AssertionFailure( "Unknown AssociationStorage approach: " + assocStorage );
 		}
 	}
 

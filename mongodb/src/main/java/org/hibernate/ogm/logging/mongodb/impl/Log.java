@@ -98,4 +98,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1217, value = "The result of a native query in MongoDB must be mapped by an entity")
 	HibernateException requireMetadatas();
 
+	@Message(id = 1218, value = "Unknown association document storage strategy: [%s]. Supported values are: %s" )
+	HibernateException unknownAssociationDocumentStorageStrategy(String strategy, String supportedValues);
 }
