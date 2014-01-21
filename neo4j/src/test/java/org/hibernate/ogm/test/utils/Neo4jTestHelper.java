@@ -49,13 +49,29 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return numberOfEntities == countEntities( sessionFactory );
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
+		String allEntitiesQuery = Neo4jDialect.TABLE_PROPERTY + ":*";
+		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
+		int count = 0;
+		while ( iterator.hasNext() ) {
+			iterator.next();
+			count++;
+		}
+		iterator.close();
+		return count;
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return numberOfAssociations == countAssociations( sessionFactory );
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
+		Set<String> associations = new HashSet<String>();
+		while ( relationships.hasNext() ) {
+			Relationship relationship = relationships.next();
+			if ( !associations.contains( relationship.getType().name() ) ) {
+				associations.add( relationship.getType().name() );
+			}
+		}
+		return associations.size();
 	}
 
 	@Override
@@ -113,29 +129,4 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		}
 		return Neo4jDatastoreProvider.class.cast( provider );
 	}
-
-	public int countAssociations(SessionFactory sessionFactory) {
-		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
-		Set<String> associations = new HashSet<String>();
-		while ( relationships.hasNext() ) {
-			Relationship relationship = relationships.next();
-			if ( !associations.contains( relationship.getType().name() ) ) {
-				associations.add( relationship.getType().name() );
-			}
-		}
-		return associations.size();
-	}
-
-	public int countEntities(SessionFactory sessionFactory) {
-		String allEntitiesQuery = Neo4jDialect.TABLE_PROPERTY + ":*";
-		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
-		int count = 0;
-		while ( iterator.hasNext() ) {
-			Node node = iterator.next();
-			count++;
-		}
-		iterator.close();
-		return count;
-	}
-
 }

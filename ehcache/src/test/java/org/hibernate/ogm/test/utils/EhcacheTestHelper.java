@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+
 import java.util.Map;
 
 import net.sf.ehcache.Cache;
@@ -30,21 +33,19 @@ import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
-
 /**
  * @author Alex Snaps
  */
 public class EhcacheTestHelper implements TestableGridDialect {
+
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).getSize() == numberOfEntities;
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
+		return getEntityCache( sessionFactory ).getSize();
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).getSize() == numberOfAssociations;
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		return getAssociationCache( sessionFactory ).getSize();
 	}
 
 	@Override

@@ -62,8 +62,8 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, EntityManager em) {
-		return assertNumberOfEntities( numberOfEntities, em.unwrap( Session.class ) );
+	public static long getNumberOfEntities(EntityManager em) {
+		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
 	private static TestableGridDialect createStoreSpecificHelper() {
@@ -88,21 +88,20 @@ public class TestHelper {
 		return GridDialectType.valueFromHelperClass( helper.getClass() );
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, Session session) {
-		return assertNumberOfEntities( numberOfEntities, session.getSessionFactory() );
+	public static long getNumberOfEntities( Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return helper.assertNumberOfEntities( numberOfEntities, sessionFactory );
+	public static long getNumberOfEntities(SessionFactory sessionFactory) {
+		return helper.getNumberOfEntities( sessionFactory );
 	}
 
 	public static Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return helper.extractEntityTuple( sessionFactory, key );
 	}
 
-	public static boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		boolean result = helper.assertNumberOfAssociations( numberOfAssociations, sessionFactory );
-		return result;
+	public static long getNumberOfAssociations(SessionFactory sessionFactory) {
+		return helper.getNumberOfAssociations( sessionFactory );
 	}
 
 	public static boolean backendSupportsTransactions() {
@@ -183,8 +182,8 @@ public class TestHelper {
 	}
 
 	public static void checkCleanCache(SessionFactory sessionFactory) {
-		assertThat( assertNumberOfEntities( 0, sessionFactory ) ).as( "Entity cache should be empty" ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessionFactory ) ).as( "Association cache should be empty" ).isTrue();
+		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 
 	/**
