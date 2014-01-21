@@ -109,7 +109,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerInstance() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, new SampleOptionConfigurer() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, new SampleOptionConfigurer() );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();
@@ -118,7 +118,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerType() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();
@@ -127,7 +127,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerTypeName() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();

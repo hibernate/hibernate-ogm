@@ -31,6 +31,29 @@ package org.hibernate.ogm.cfg;
  */
 public final class OgmProperties {
 
+	public static final String OGM_ON = "hibernate.ogm._activate";
+
+	/**
+	 * Name of the configuration option for specifying the {@link org.hibernate.ogm.service.impl.QueryParserService} to
+	 * be used. Accepts a fully-qualified class name. If not specified, the parser type returned by
+	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider#getDefaultQueryParserServiceType()}
+	 * will be used.
+	 */
+	public static final String QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
+
+	/**
+	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} when
+	 * bootstrapping Hibernate OGM. Supported value types are:
+	 * <ul>
+	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurer} type</li>
+	 * <li>{@link Class}: the class object representing an {@code OptionConfigurer} type</li>
+	 * <li>{@code OptionConfigurer}: a configurer instance</li>
+	 * </ul>
+	 */
+	public static final String OPTION_CONFIGURER = "hibernate.ogm.option.configurer";
+
+	public static final String GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
+
 	/**
 	 * Property for setting the datastore provider. Can take the following values:
 	 * <ul>

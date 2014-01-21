@@ -26,7 +26,7 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
@@ -38,7 +38,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Contributes the {@link GridDialect} service, based on the configuration via {@link OgmConfiguration#OGM_GRID_DIALECT}, using
+ * Contributes the {@link GridDialect} service, based on the configuration via {@link OgmProperties#GRID_DIALECT}, using
  * the implementation returned by {@link DatastoreProvider#getDefaultDialect()} as fallback.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -63,7 +63,7 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				registry.getService( ClassLoaderService.class )
 		);
 
-		return propertyReader.property( OgmConfiguration.OGM_GRID_DIALECT, GridDialect.class )
+		return propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
 				.withInstantiator( new GridDialectInstantiator( datastore ) )
 				.getValue();

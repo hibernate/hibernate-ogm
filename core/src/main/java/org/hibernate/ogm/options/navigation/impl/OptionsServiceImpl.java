@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.spi.OptionConfigurer;
@@ -61,10 +61,10 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
 		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class ).getValue();
-		OptionConfigurer configurer = propertyReader.property( OgmConfiguration.OGM_OPTION_CONFIGURER, OptionConfigurer.class ).getValue();
+		OptionConfigurer configurer = propertyReader.property( OgmProperties.OPTION_CONFIGURER, OptionConfigurer.class ).getValue();
 
 		if ( context != null && configurer != null ) {
-			throw log.ambigiousOptionConfiguration( OgmConfiguration.OGM_OPTION_CONFIGURER );
+			throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURER );
 		}
 		else if ( configurer != null ) {
 			sessionFactoryOptions = invoke( configurer );
