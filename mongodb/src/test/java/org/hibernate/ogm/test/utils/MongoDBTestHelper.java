@@ -22,12 +22,14 @@
 package org.hibernate.ogm.test.utils;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -38,6 +40,7 @@ import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
@@ -67,61 +70,134 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		AssociationStorageStrategy storage = provider.getAssociationStorageStrategy();
 		DB db = provider.getDatabase();
 		int count = 0;
-		for ( String collectionName : db.getCollectionNames() ) {
-			if ( isSystemCollection( collectionName ) || isAssociationCollection( collectionName, storage ) ) {
-				continue;
-			}
 
+		for ( String collectionName : getEntityCollections( sessionFactory ) ) {
 			count += db.getCollection( collectionName ).count();
 		}
-		return count == numberOfEntities;
+
+		return count;
 	}
 
 	private boolean isSystemCollection(String collectionName) {
 		return collectionName.startsWith( "system." );
 	}
 
-	private boolean isAssociationCollection(String collectionName, AssociationStorageStrategy storage) {
-		if ( storage.isEmbeddedInEntity() ) {
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		long associationCount = getNumberOfAssociationsFromGlobalCollection( sessionFactory );
+		associationCount += getNumberOfAssociationsFromDedicatedCollections( sessionFactory );
+		associationCount += getNumberOfEmbeddedAssociations( sessionFactory );
+
+		return associationCount;
+	}
+
+	private long getNumberOfAssociationsFromGlobalCollection(SessionFactory sessionFactory) {
+		DB db = getProvider( sessionFactory ).getDatabase();
+		return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count();
+	}
+
+	private long getNumberOfAssociationsFromDedicatedCollections(SessionFactory sessionFactory) {
+		DB db = getProvider( sessionFactory ).getDatabase();
+
+		Set<String> associationCollections = getDedicatedAssociationCollections( sessionFactory );
+		long associationCount = 0;
+		for ( String collectionName : associationCollections ) {
+			associationCount += db.getCollection( collectionName ).count();
+		}
+
+		return associationCount;
+	}
+
+	// TODO Use aggregation framework for a more efficient solution; Given that there will only be a few
+	// test collections/entities, that's good enough for now
+	private long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
+		DB db = getProvider( sessionFactory ).getDatabase();
+		long associationCount = 0;
+
+		for ( String entityCollection : getEntityCollections( sessionFactory ) ) {
+			DBCursor entities = db.getCollection( entityCollection ).find();
+
+			while ( entities.hasNext() ) {
+				DBObject entity = entities.next();
+				associationCount += getNumberOfReferences( entity );
+			}
+		}
+
+		return associationCount;
+	}
+
+	private int getNumberOfReferences(DBObject entity) {
+		int numberOfReferences = 0;
+
+		for ( String fieldName : entity.keySet() ) {
+			Object field = entity.get( fieldName );
+			if ( isReference( field ) ) {
+				numberOfReferences++;
+			}
+		}
+
+		return numberOfReferences;
+	}
+
+	private boolean isReference(Object field) {
+		// TODO: *ToOne references?
+		if ( !( field instanceof List ) ) {
 			return false;
 		}
-		else if ( storage.isGlobalCollection() && collectionName.equals( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ) ) {
-			return true;
-		}
-		else {
-			return collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX );
-		}
-	}
 
-	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
-		AssociationStorageStrategy assocStorage = provider.getAssociationStorageStrategy();
-		DB db = provider.getDatabase();
-
-		if ( assocStorage.isEmbeddedInEntity() ) {
-			return true; //FIXME find a way to test that, maybe with some map reduce magic?
-		}
-		else if ( assocStorage.isGlobalCollection() ) {
-			return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count() == numberOfAssociations;
-		}
-		else {
-			int count = 0;
-			for ( String collectionName : db.getCollectionNames() ) {
-				if ( collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX ) ) {
-					count += db.getCollection( collectionName ).count();
-				}
+		@SuppressWarnings("unchecked")
+		List<DBObject> list = (List<DBObject>) field;
+		for ( DBObject element : list ) {
+			if ( element.keySet().size() != 1 || !element.keySet().iterator().next().endsWith( "_id" ) ) {
+				return false;
 			}
-			return count == numberOfAssociations;
 		}
+
+		return true;
+	}
+
+	private Set<String> getEntityCollections(SessionFactory sessionFactory) {
+		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		Set<String> names = new HashSet<String>();
+
+		for ( String collectionName : db.getCollectionNames() ) {
+			if ( !isSystemCollection( collectionName ) &&
+					!isDedicatedAssociationCollection( collectionName ) &&
+					!isGlobalAssociationCollection( collectionName ) ) {
+				names.add( collectionName );
+			}
+		}
+
+		return names;
+	}
+
+	private Set<String> getDedicatedAssociationCollections(SessionFactory sessionFactory) {
+		DB db = MongoDBTestHelper.getProvider( sessionFactory ).getDatabase();
+		Set<String> names = new HashSet<String>();
+
+		for ( String collectionName : db.getCollectionNames() ) {
+			if ( isDedicatedAssociationCollection( collectionName ) ) {
+				names.add( collectionName );
+			}
+		}
+
+		return names;
+	}
+
+	private boolean isDedicatedAssociationCollection(String collectionName) {
+		return collectionName.startsWith( MongoDBDialect.ASSOCIATIONS_COLLECTION_PREFIX );
+	}
+
+	private boolean isGlobalAssociationCollection(String collectionName) {
+		return collectionName.equals( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject finder = new BasicDBObject( MongoDBDialect.ID_FIELDNAME, key.getColumnValues()[0] );

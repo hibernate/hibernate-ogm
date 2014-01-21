@@ -20,8 +20,8 @@
  */
 package org.hibernate.ogm.test.associations.collection.unidirectional;
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -52,12 +52,12 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf2 );
 		session.persist( cloud );
 		session.flush();
-		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 1 );
 		transaction.commit();
 
-		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 1 );
 
 		session.clear();
 
@@ -73,8 +73,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().add( sf3 );
 		transaction.commit();
 
-		assertThat( assertNumberOfEntities( 4, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 1, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 4 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 1 );
 
 		session.clear();
 
@@ -96,8 +96,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		cloud.getProducedSnowFlakes().clear();
 		transaction.commit();
 
-		assertThat( assertNumberOfEntities( 1, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 1 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		session.clear();
 
@@ -109,8 +109,8 @@ public class CollectionUnidirectionalTest extends OgmTestCase {
 		session.flush();
 		transaction.commit();
 
-		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 		session.close();
 
 		checkCleanCache();

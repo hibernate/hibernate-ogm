@@ -21,9 +21,9 @@
 package org.hibernate.ogm.test.associations.collection.manytomany;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.get;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEntities;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -48,8 +48,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.persist( owner );
 		tx.commit();
 
-		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 2, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 2 );
 
 		session.clear();
 
@@ -77,8 +77,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( soge );
 		tx.commit();
 
-		assertThat( assertNumberOfEntities( 2, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 2, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 2 );
 		session.clear();
 
 		// delete data
@@ -93,8 +93,8 @@ public class ManyToManyTest extends OgmTestCase {
 		session.delete( owner );
 		tx.commit();
 
-		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		session.close();
 		checkCleanCache();

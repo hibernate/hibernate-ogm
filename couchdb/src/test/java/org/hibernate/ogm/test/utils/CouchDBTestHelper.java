@@ -48,17 +48,8 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return getNumberOfEntities( sessionFactory ) == numberOfEntities;
-	}
-
-	public int getNumberOfEntities(SessionFactory sessionFactory) {
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getDataStore( sessionFactory ).getNumberOfEntities();
-	}
-
-	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return getNumberOfAssociations( sessionFactory ) == numberOfAssociations;
 	}
 
 	public int getNumberOfAssociations(AssociationStorageType type, SessionFactory sessionFactory) {
@@ -66,7 +57,8 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		return count != null ? count : 0;
 	}
 
-	public int getNumberOfAssociations(SessionFactory sessionFactory) {
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
 
 		Map<AssociationStorageType, Integer> associationCountByType = dataStore.getNumberOfAssociations();
