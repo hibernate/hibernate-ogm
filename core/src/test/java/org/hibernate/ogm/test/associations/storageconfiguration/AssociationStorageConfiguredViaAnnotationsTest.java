@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.couchdb.associations;
+package org.hibernate.ogm.test.associations.storageconfiguration;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -29,9 +29,12 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
@@ -40,6 +43,10 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.MONGODB },
+		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
+)
 public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationStorageTestBase {
 
 	private AnnotatedCloud cloud;
@@ -65,7 +72,7 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 
 	@Test
 	public void associationStorageSetOnPropertyLevelViaApiTakesPrecedenceOverAnnotation() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.entity( AnnotatedCloud.class )
 				.property( "backupSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.IN_ENTITY );
@@ -231,8 +238,8 @@ public class AssociationStorageConfiguredViaAnnotationsTest extends AssociationS
 		transaction.commit();
 		session.close();
 
-		assertThat( testHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		sessions.close();
 	}

@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.couchdb.associations;
+package org.hibernate.ogm.test.associations.storageconfiguration;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -30,10 +30,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
 import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
@@ -42,6 +45,10 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.MONGODB },
+		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
+)
 public class AssociationStorageConfiguredViaPropertyTest extends AssociationStorageTestBase {
 
 	private Cloud cloud;
@@ -62,7 +69,7 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 
 	@Test
 	public void associationStorageSetViaApiTakesPrecedenceOverProperty() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
 		setupSessionFactory();
@@ -140,8 +147,8 @@ public class AssociationStorageConfiguredViaPropertyTest extends AssociationStor
 		transaction.commit();
 		session.close();
 
-		assertThat( testHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 	}
 
 	@Override
