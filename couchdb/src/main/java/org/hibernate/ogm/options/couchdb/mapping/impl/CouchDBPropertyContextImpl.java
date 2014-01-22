@@ -20,27 +20,19 @@
  */
 package org.hibernate.ogm.options.couchdb.mapping.impl;
 
+import org.hibernate.ogm.options.couchdb.mapping.CouchDBEntityContext;
 import org.hibernate.ogm.options.couchdb.mapping.CouchDBPropertyContext;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.document.DocumentStorePropertyContextImpl;
 
 /**
  * Converts CouchDB property-level options.
  *
  * @author Gunnar Morling
  */
-public abstract class CouchDBPropertyContextImpl extends BasePropertyContext<CouchDBPropertyContext> implements CouchDBPropertyContext {
+public abstract class CouchDBPropertyContextImpl extends DocumentStorePropertyContextImpl<CouchDBEntityContext, CouchDBPropertyContext> implements CouchDBPropertyContext {
 
 	public CouchDBPropertyContextImpl(ConfigurationContext context) {
 		super( context );
 	}
-
-	@Override
-	public CouchDBPropertyContext associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption(), storage );
-		return this;
-	}
-
 }

@@ -18,12 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.couchdb.associations;
+package org.hibernate.ogm.test.associations.storageconfiguration;
 
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.test.utils.CouchDBTestHelper;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.Before;
@@ -34,8 +33,6 @@ import org.junit.Before;
  * @author Gunnar Morling
  */
 public abstract class AssociationStorageTestBase extends OgmTestCase {
-
-	protected static CouchDBTestHelper testHelper = new CouchDBTestHelper();
 
 	protected OgmConfiguration configuration;
 	protected OgmSessionFactory sessions;
@@ -51,10 +48,10 @@ public abstract class AssociationStorageTestBase extends OgmTestCase {
 	}
 
 	protected long associationDocumentCount() {
-		return testHelper.getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT );
+		return TestHelper.getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	protected long inEntityAssociationCount() {
-		return testHelper.getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY );
+		return TestHelper.getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY );
 	}
 }

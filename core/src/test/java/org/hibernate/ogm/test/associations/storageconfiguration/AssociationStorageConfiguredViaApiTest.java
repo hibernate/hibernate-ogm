@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.couchdb.associations;
+package org.hibernate.ogm.test.associations.storageconfiguration;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -29,10 +29,13 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
 import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
+import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 
@@ -41,13 +44,17 @@ import org.junit.Test;
  *
  * @author Gunnar Morling
  */
+@SkipByGridDialect(
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.MONGODB },
+		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
+)
 public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTestBase {
 
 	private Cloud cloud;
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
 		setupSessionFactory();
@@ -59,7 +66,7 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.associationStorage( AssociationStorageType.IN_ENTITY );
 
 		setupSessionFactory();
@@ -71,7 +78,7 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
@@ -84,7 +91,7 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.IN_ENTITY );
 
@@ -97,7 +104,7 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetOnPropertyLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.entity( Cloud.class )
 				.property( "producedSnowFlakes", ElementType.METHOD )
 					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
@@ -113,7 +120,7 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 
 	@Test
 	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
-		configuration.configureOptionsFor( CouchDB.class )
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 		.entity( Cloud.class )
 			.associationStorage( AssociationStorageType.IN_ENTITY )
 			.property( "backupSnowFlakes", ElementType.METHOD )
@@ -215,8 +222,8 @@ public class AssociationStorageConfiguredViaApiTest extends AssociationStorageTe
 		transaction.commit();
 		session.close();
 
-		assertThat( testHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 	}
 
 	@Override
