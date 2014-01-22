@@ -50,11 +50,11 @@ public abstract class AssociationStorageTestBase extends OgmTestCase {
 		sessions = configuration.buildSessionFactory();
 	}
 
-	protected int associationDocumentCount() {
-		return testHelper.getNumberOfAssociations( AssociationStorageType.ASSOCIATION_DOCUMENT, sessions );
+	protected long associationDocumentCount() {
+		return testHelper.getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
-	protected int inEntityAssociationCount() {
-		return testHelper.getNumberOfAssociations( AssociationStorageType.IN_ENTITY, sessions );
+	protected long inEntityAssociationCount() {
+		return testHelper.getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY );
 	}
 }

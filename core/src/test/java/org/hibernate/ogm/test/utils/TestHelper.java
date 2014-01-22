@@ -40,6 +40,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -102,6 +103,15 @@ public class TestHelper {
 
 	public static long getNumberOfAssociations(SessionFactory sessionFactory) {
 		return helper.getNumberOfAssociations( sessionFactory );
+	}
+
+	/**
+	 * Returns the number of associations of the given type.
+	 * <p>
+	 * Optional operation which only is supported for document datastores.
+	 */
+	public static long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		return helper.getNumberOfAssociations( sessionFactory, type );
 	}
 
 	public static boolean backendSupportsTransactions() {

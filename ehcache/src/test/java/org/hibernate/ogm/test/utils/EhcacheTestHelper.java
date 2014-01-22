@@ -32,6 +32,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 /**
  * @author Alex Snaps
@@ -91,5 +92,10 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		return null;
+	}
+
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 }
