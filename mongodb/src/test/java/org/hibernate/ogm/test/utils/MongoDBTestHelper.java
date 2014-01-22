@@ -29,7 +29,9 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -38,6 +40,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -270,7 +273,11 @@ public class MongoDBTestHelper implements TestableGridDialect {
 				return getNumberOfEmbeddedAssociations( sessionFactory );
 			default:
 				throw new IllegalArgumentException( "Unexpected association storaget type " + type );
-
 		}
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( MongoDB.class );
 	}
 }

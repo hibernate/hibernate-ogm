@@ -27,10 +27,13 @@ import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.infinispan.Infinispan;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.infinispan.Cache;
 
 /**
@@ -89,5 +92,10 @@ public class InfinispanTestHelper implements TestableGridDialect {
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
 		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( Infinispan.class );
 	}
 }

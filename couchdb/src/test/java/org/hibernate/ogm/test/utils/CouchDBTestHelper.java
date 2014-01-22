@@ -26,7 +26,9 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -35,6 +37,7 @@ import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.impl.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -124,5 +127,10 @@ public class CouchDBTestHelper implements TestableGridDialect {
 			throw new RuntimeException( "DatastoreProvider is not an instance of " + CouchDBDatastoreProvider.class );
 		}
 		return (CouchDBDatastoreProvider) provider;
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( CouchDB.class );
 	}
 }
