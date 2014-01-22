@@ -41,6 +41,7 @@ import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -224,5 +225,15 @@ public class TestHelper {
 		}
 
 		return configuration;
+	}
+
+	/**
+	 * Returns a {@link GlobalContext} for configuring the current datastore.
+	 *
+	 * @param configuration the target the configuration will be applied to
+	 * @return a context object for configuring the current datastore.
+	 */
+	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return helper.configureDatastore( configuration );
 	}
 }

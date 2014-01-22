@@ -23,8 +23,10 @@ package org.hibernate.ogm.test.utils;
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
@@ -90,4 +92,12 @@ public interface TestableGridDialect {
 	 * This is typical of the host and port defined using an environment variable.
 	 */
 	Map<String, String> getEnvironmentProperties();
+
+	/**
+	 * Returns the store-specific {@link GlobalContext} for applying configuration options.
+	 *
+	 * @param configuration the {@link OgmConfiguration} to which the options should be applied to
+	 * @return the store-specific {@link GlobalContext}
+	 */
+	GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration);
 }
