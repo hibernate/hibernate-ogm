@@ -22,12 +22,14 @@ package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.PropertyValidator;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
@@ -60,6 +62,8 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	private static final Log log = LoggerFactory.getLogger();
 
+	private static final TimeoutValidator TIMEOUT_VALIDATOR = new TimeoutValidator();
+
 	private final AssociationDocumentType associationDocumentStorage;
 	private final int timeout;
 	private final WriteConcern writeConcern;
@@ -71,8 +75,8 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 		this.timeout = propertyReader.property( MongoDBProperties.TIMEOUT, int.class )
 				.withDefault( DEFAULT_TIMEOUT )
+				.withValidator( TIMEOUT_VALIDATOR )
 				.getValue();
-		validateTimeout( timeout );
 
 		this.associationDocumentStorage = propertyReader.property( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE, AssociationDocumentType.class )
 				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
@@ -110,12 +114,6 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return writeConcern;
 	}
 
-	private static void validateTimeout(int timeout) {
-		if ( timeout < 0 ) {
-			throw log.mongoDBTimeOutIllegalValue( timeout );
-		}
-	}
-
 	/**
 	 * Create a {@link MongoClientOptions} using the {@link MongoDBConfiguration}.
 	 *
@@ -127,5 +125,15 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		optionsBuilder.writeConcern( writeConcern );
 
 		return optionsBuilder.build();
+	}
+
+	private static class TimeoutValidator implements PropertyValidator<Integer> {
+
+		@Override
+		public void validate(Integer value) throws HibernateException {
+			if ( value < 0 ) {
+				throw log.mongoDBTimeOutIllegalValue( value );
+			}
+		}
 	}
 }

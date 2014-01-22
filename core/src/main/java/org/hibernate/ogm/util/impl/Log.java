@@ -166,10 +166,10 @@ public interface Log extends BasicLogger {
 	@Message(id = 49, value = "Unknown association storage strategy: [%s]. Supported values are: %s" )
 	HibernateException unknownAssociationStorageStrategy(String databaseName, String supportedValues);
 
-	@Message(id = 50, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '[%s]'.")
+	@Message(id = 50, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '%s'.")
 	HibernateException illegalPortValue(int value);
 
-	@Message(id = 51, value = "The value set for the configuration property '%1$s' must be an integer number. Found '[%2$s]'.")
+	@Message(id = 51, value = "The value set for the configuration property '%1$s' must be an integer number. Found '%2$s'.")
 	HibernateException notAnInteger(String propertyName, String value);
 
 	@Message(id = 52, value = "Unknown value given for configuration property '%1$s'; Found '%2$s', but supported values are: %3$s" )
@@ -178,6 +178,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 53, value = "Missing value for property '%s'")
 	HibernateException missingConfigurationProperty(String propertyName);
 
-	@Message(id = 54, value = "Vale of unsupported type given for configuration property '%1$s': %2$s")
+	@Message(id = 54, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
 	HibernateException unsupportedPropertyType(String propertyName, String value);
 }

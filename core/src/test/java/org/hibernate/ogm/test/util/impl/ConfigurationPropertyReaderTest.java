@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.ogm.cfg.impl.Validators;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.Instantiator;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.ShortNameResolver;
@@ -262,6 +263,21 @@ public class ConfigurationPropertyReaderTest {
 
 		reader.property( "foo", ElementType.class )
 				.required()
+				.getValue();
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToInvalidPropertyValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "myPort", 98765 );
+
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000050" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "myPort", int.class )
+				.withValidator( Validators.PORT )
 				.getValue();
 	}
 

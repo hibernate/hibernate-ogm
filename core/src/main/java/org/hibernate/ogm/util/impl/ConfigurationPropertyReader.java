@@ -20,10 +20,13 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
 import org.hibernate.cfg.Configuration;
@@ -75,6 +78,22 @@ public class ConfigurationPropertyReader {
 	public interface Instantiator<T> {
 
 		T newInstance(Class<? extends T> clazz);
+	}
+
+	/**
+	 * Implementations validate given property values.
+	 *
+	 * @author Gunnar Morling
+	 */
+	public interface PropertyValidator<T> {
+
+		/**
+		 * Validates the given property value.
+		 *
+		 * @param value the value to validate
+		 * @throws HibernateException in case the given property value is not valid
+		 */
+		void validate(T value) throws HibernateException;
 	}
 
 	private static class NoOpNameResolver implements ShortNameResolver {
@@ -278,6 +297,7 @@ public class ConfigurationPropertyReader {
 		private final Map<?, ?> configurationValues;
 		private final String propertyName;
 		private final Class<T> clazz;
+		private final List<PropertyValidator<T>> validators;
 
 		private T defaultValue;
 		private boolean isRequired;
@@ -286,6 +306,7 @@ public class ConfigurationPropertyReader {
 			this.configurationValues = configurationValues;
 			this.propertyName = propertyName;
 			this.clazz = clazz;
+			this.validators = new ArrayList<PropertyValidator<T>>();
 		}
 
 		/**
@@ -306,6 +327,14 @@ public class ConfigurationPropertyReader {
 		}
 
 		/**
+		 * Adds a validator used to validate the value of the given property. Several validators can be added.
+		 */
+		public PropertyReaderContext<T> withValidator(PropertyValidator<T> validator) {
+			validators.add( validator );
+			return this;
+		}
+
+		/**
 		 * Returns the value of the specified property.
 		 *
 		 * @return the value of the specified property; may be {@code null} in case the property is not present in the
@@ -319,20 +348,29 @@ public class ConfigurationPropertyReader {
 				throw log.missingConfigurationProperty( propertyName );
 			}
 
+			T typedValue = null;
+
 			if ( clazz == String.class ) {
-				return (T) getAsString( value );
+				typedValue = (T) getAsString( value );
 			}
 			else if ( clazz == boolean.class ) {
-				return (T) getAsBoolean( value );
+				typedValue = (T) getAsBoolean( value );
 			}
 			else if ( clazz == int.class ) {
-				return (T) getAsInt( value );
+				typedValue = (T) getAsInt( value );
 			}
 			else if ( clazz.isEnum() ) {
-				return (T) getAsEnum( value );
+				typedValue = (T) getAsEnum( value );
+			}
+			else {
+				throw log.unsupportedPropertyType( propertyName, value.toString() );
 			}
 
-			throw log.unsupportedPropertyType( propertyName, value.toString() );
+			for ( PropertyValidator<T> validator : validators ) {
+				validator.validate( typedValue );
+			}
+
+			return typedValue;
 		}
 
 		private String getAsString(Object value) {

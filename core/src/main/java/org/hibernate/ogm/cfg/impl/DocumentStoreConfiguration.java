@@ -26,8 +26,6 @@ import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Provides access to properties common to different document datastores.
@@ -42,8 +40,6 @@ public abstract class DocumentStoreConfiguration {
 	private static final String DEFAULT_HOST = "localhost";
 
 	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
-
-	private static final Log log = LoggerFactory.make();
 
 	private final String host;
 	private final int port;
@@ -62,8 +58,8 @@ public abstract class DocumentStoreConfiguration {
 
 		this.port =  propertyReader.property( OgmProperties.PORT, int.class )
 				.withDefault( defaultPort )
+				.withValidator( Validators.PORT )
 				.getValue();
-		validatePort( port );
 
 		this.databaseName = propertyReader.property( OgmProperties.DATABASE, String.class )
 				.required()
@@ -79,12 +75,6 @@ public abstract class DocumentStoreConfiguration {
 		associationStorage = propertyReader.property( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.class )
 				.withDefault( DEFAULT_ASSOCIATION_STORAGE )
 				.getValue();
-	}
-
-	private static void validatePort(int port) {
-		if ( port < 1 || port > 65535 ) {
-			throw log.illegalPortValue( port );
-		}
 	}
 
 	/**
