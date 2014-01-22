@@ -37,6 +37,7 @@ import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -260,4 +261,16 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		}
 	}
 
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		switch ( type ) {
+			case ASSOCIATION_DOCUMENT:
+				return getNumberOfAssociationsFromGlobalCollection( sessionFactory );
+			case IN_ENTITY:
+				return getNumberOfEmbeddedAssociations( sessionFactory );
+			default:
+				throw new IllegalArgumentException( "Unexpected association storaget type " + type );
+
+		}
+	}
 }

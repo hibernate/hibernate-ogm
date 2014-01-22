@@ -37,6 +37,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -128,5 +129,10 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying provider" );
 		}
 		return Neo4jDatastoreProvider.class.cast( provider );
+	}
+
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 }

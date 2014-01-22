@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
@@ -47,6 +48,15 @@ public interface TestableGridDialect {
 	 * @param sessionFactory
 	 */
 	long getNumberOfAssociations(SessionFactory sessionFactory);
+
+	/**
+	 * Returns the number of associations of the given type in the datastore
+	 *
+	 * @param sessionFactory factory used to connect to the store
+	 * @param type the association type of interest
+	 * @return the number of associations of the given type
+	 */
+	long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type);
 
 	/**
 	 * Loads a specific entity tuple directly from the data store by entity key

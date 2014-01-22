@@ -52,7 +52,8 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		return getDataStore( sessionFactory ).getNumberOfEntities();
 	}
 
-	public int getNumberOfAssociations(AssociationStorageType type, SessionFactory sessionFactory) {
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
 		Integer count = getDataStore( sessionFactory ).getNumberOfAssociations().get( type );
 		return count != null ? count : 0;
 	}
