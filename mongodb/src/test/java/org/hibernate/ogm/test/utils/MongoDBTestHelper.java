@@ -99,12 +99,12 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return associationCount;
 	}
 
-	private long getNumberOfAssociationsFromGlobalCollection(SessionFactory sessionFactory) {
+	public long getNumberOfAssociationsFromGlobalCollection(SessionFactory sessionFactory) {
 		DB db = getProvider( sessionFactory ).getDatabase();
 		return db.getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE ).count();
 	}
 
-	private long getNumberOfAssociationsFromDedicatedCollections(SessionFactory sessionFactory) {
+	public long getNumberOfAssociationsFromDedicatedCollections(SessionFactory sessionFactory) {
 		DB db = getProvider( sessionFactory ).getDatabase();
 
 		Set<String> associationCollections = getDedicatedAssociationCollections( sessionFactory );
@@ -118,7 +118,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 	// TODO Use aggregation framework for a more efficient solution; Given that there will only be a few
 	// test collections/entities, that's good enough for now
-	private long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
+	public long getNumberOfEmbeddedAssociations(SessionFactory sessionFactory) {
 		DB db = getProvider( sessionFactory ).getDatabase();
 		long associationCount = 0;
 

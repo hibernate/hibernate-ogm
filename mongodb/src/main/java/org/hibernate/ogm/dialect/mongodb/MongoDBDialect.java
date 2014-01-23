@@ -35,6 +35,7 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
@@ -54,6 +55,7 @@ import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
+import org.hibernate.ogm.options.mongodb.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.type.ByteStringType;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
@@ -548,8 +550,12 @@ public class MongoDBDialect implements GridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
+		AssociationDocumentType associationDocumentType = associationContext
+				.getOptionsContext()
+				.getUnique( AssociationDocumentStorageOption.class );
+
 		if ( associationStorage != null ) {
-			return AssociationStorageStrategy.getInstance( associationStorage );
+			return AssociationStorageStrategy.getInstance( associationStorage, associationDocumentType );
 		}
 
 		return provider.getAssociationStorageStrategy();
