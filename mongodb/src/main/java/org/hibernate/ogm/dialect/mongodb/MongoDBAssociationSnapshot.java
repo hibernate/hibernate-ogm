@@ -21,7 +21,6 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,7 +117,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
-		if ( isEmbeddedInEntity( associationKey, storageStrategy ) ) {
+		if ( storageStrategy.isEmbeddedInEntity() ) {
 			return getAssociationFieldOrNull( associationKey, dbObject );
 		}
 		else {

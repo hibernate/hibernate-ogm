@@ -39,6 +39,15 @@ public class AssociationStorageStrategy {
 		this.isGlobalCollection = isGlobalCollection;
 	}
 
+	public static AssociationStorageStrategy getInstance(AssociationStorageType associationStorage) {
+		if ( associationStorage == AssociationStorageType.IN_ENTITY ) {
+			return new AssociationStorageStrategy( true, false );
+		}
+		else {
+			return new AssociationStorageStrategy( false, true );
+		}
+	}
+
 	public static AssociationStorageStrategy getInstance(AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {
 		if ( associationStorage == AssociationStorageType.IN_ENTITY ) {
 			return new AssociationStorageStrategy( true, false );
