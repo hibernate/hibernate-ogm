@@ -28,7 +28,4 @@ package org.hibernate.ogm.options.spi;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public interface GlobalOptions<T> {
-
-	T namedQuery(String name, String hql);
-
 }

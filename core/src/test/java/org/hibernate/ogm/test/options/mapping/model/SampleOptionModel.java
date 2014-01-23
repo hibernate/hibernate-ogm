@@ -30,6 +30,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.examples.NamedQueryOption;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -42,6 +43,8 @@ public class SampleOptionModel {
 
 	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
 		SampleGlobalContext force(boolean force);
+		SampleGlobalContext namedQuery(String name, String hql);
+
 	}
 
 	public interface SampleEntityContext extends EntityContext<SampleEntityContext, SamplePropertyContext> {
@@ -64,6 +67,12 @@ public class SampleOptionModel {
 		@Override
 		public SampleGlobalContext force(boolean force) {
 			addGlobalOption( new ForceExampleOption(), force );
+			return this;
+		}
+
+		@Override
+		public SampleGlobalContext namedQuery(String name, String hql) {
+			addGlobalOption( new NamedQueryOption( name ), hql );
 			return this;
 		}
 	}

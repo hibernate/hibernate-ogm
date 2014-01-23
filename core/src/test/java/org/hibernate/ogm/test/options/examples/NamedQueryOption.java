@@ -18,32 +18,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.generic;
+package org.hibernate.ogm.test.options.examples;
 
-import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.options.spi.Option;
 
 /**
- * {@code UniqueOption} for the quorum.
+ * An {@link Option} representing a named query.
+ * The value represents the HQL query
  *
  * @author Davide D'Alto <davide@hibernate.org>
- *
  */
-public class QuorumOption extends UniqueOption {
+public class NamedQueryOption extends Option<String, String> {
 
-	private final int read;
-	private final int write;
+	private final String name;
 
-	public QuorumOption(int read, int write) {
-		this.read = read;
-		this.write = write;
+	public NamedQueryOption(String name) {
+		this.name = name;
 	}
 
-	public int getRead() {
-		return read;
+	@Override
+	public String getOptionIdentifier() {
+		return name;
 	}
 
-	public int getWrite() {
-		return write;
+	public String getName() {
+		return name;
 	}
-
 }
