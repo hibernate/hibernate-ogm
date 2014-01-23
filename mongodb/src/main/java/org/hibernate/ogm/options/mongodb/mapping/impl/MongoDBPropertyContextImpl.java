@@ -24,8 +24,8 @@ import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.impl.AssociationDocumentStorageOption;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
+import org.hibernate.ogm.options.mongodb.mapping.MongoDBEntityContext;
+import org.hibernate.ogm.options.mongodb.mapping.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.document.DocumentStorePropertyContextImpl;
 
