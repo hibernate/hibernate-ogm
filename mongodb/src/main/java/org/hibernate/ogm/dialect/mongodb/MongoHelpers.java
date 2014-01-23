@@ -26,7 +26,6 @@ import java.util.Collections;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKind;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -60,8 +59,7 @@ public class MongoHelpers {
 	}
 
 	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorageStrategy storageStrategy) {
-		return ( key != null && key.getAssociationKind() == AssociationKind.EMBEDDED )
-				|| storageStrategy.isEmbeddedInEntity();
+		return storageStrategy.isEmbeddedInEntity();
 	}
 
 	//only for embedded
