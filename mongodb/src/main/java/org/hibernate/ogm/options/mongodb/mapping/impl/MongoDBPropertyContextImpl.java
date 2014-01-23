@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
+import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
+import org.hibernate.ogm.options.mongodb.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBEntityContext;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
@@ -29,6 +31,7 @@ import org.hibernate.ogm.options.navigation.impl.document.DocumentStorePropertyC
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
 public abstract class MongoDBPropertyContextImpl extends DocumentStorePropertyContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements
 		MongoDBPropertyContext {
@@ -40,6 +43,12 @@ public abstract class MongoDBPropertyContextImpl extends DocumentStorePropertyCo
 	@Override
 	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
 		addPropertyOption( new AssociationStorageOption(), storage );
+		return this;
+	}
+
+	@Override
+	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
+		addPropertyOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
 		return this;
 	}
 }
