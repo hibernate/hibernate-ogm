@@ -40,7 +40,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -277,7 +277,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+	public MongoDBGlobalContext configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( MongoDB.class );
 	}
 }
