@@ -20,20 +20,21 @@
  */
 package org.hibernate.ogm.test.mongodb.datastore;
 
-import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
-import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.test.utils.TestHelper;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.fest.assertions.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import org.hibernate.HibernateException;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -46,9 +47,9 @@ public class DatastoreInitializationTest {
 	@Test
 	public void testAuthentication() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
-		cfg.put( Environment.MONGODB_DATABASE, "test" );
-		cfg.put( Environment.MONGODB_USERNAME, "notauser" );
-		cfg.put( Environment.MONGODB_PASSWORD, "test" );
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.configure( cfg );
 		error.expect( HibernateException.class );
@@ -65,7 +66,7 @@ public class DatastoreInitializationTest {
 			cfg.put( (String) entry.getKey(), (String) entry.getValue() );
 		}
 		//IP is a test IP that is never assigned
-		cfg.put( Environment.MONGODB_HOST, "203.0.113.1" );
+		cfg.put( OgmProperties.HOST, "203.0.113.1" );
 		//FIXME put the timeout setting as soon as OGM-219 is implemented
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.configure( cfg );
@@ -85,9 +86,9 @@ public class DatastoreInitializationTest {
 		String host = "203.0.113.1";
 
 		Map<String, Object> cfg = new HashMap<String, Object>();
-		cfg.put( Environment.MONGODB_TIMEOUT, "30" );
-		cfg.put( Environment.MONGODB_HOST, host );
-		cfg.put( Environment.MONGODB_DATABASE, "ogm_test_database" );
+		cfg.put( MongoDBProperties.TIMEOUT, "30" );
+		cfg.put( OgmProperties.HOST, host );
+		cfg.put( OgmProperties.DATABASE, "ogm_test_database" );
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 
 		/*

@@ -20,8 +20,7 @@
  */
 package org.hibernate.ogm.options.couchdb.mapping;
 
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.context.EntityContext;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
 
 /**
  * Allows to configure CouchDB-specific options applying on a per-entity level. These options can be overridden for
@@ -29,14 +28,5 @@ import org.hibernate.ogm.options.navigation.context.EntityContext;
  *
  * @author Gunnar Morling
  */
-public interface CouchDBEntityContext extends EntityContext<CouchDBEntityContext, CouchDBPropertyContext> {
-
-	/**
-	 * Specifies how associations of the configured entity should be persisted.
-	 *
-	 * @param associationStorage the association storage type to be used when not configured on the property level.
-	 * Overrides any settings on the global level.
-	 * @return this context, allowing for further fluent API invocations
-	 */
-	CouchDBEntityContext associationStorage(AssociationStorageType associationStorage);
+public interface CouchDBEntityContext extends DocumentStoreEntityContext<CouchDBEntityContext, CouchDBPropertyContext> {
 }

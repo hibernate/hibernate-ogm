@@ -20,8 +20,7 @@
  */
 package org.hibernate.ogm.options.couchdb.mapping;
 
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
 
 /**
  * Allows to configure CouchDB-specific options applying on a global level. These options may be overridden for single
@@ -29,14 +28,5 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
  *
  * @author Gunnar Morling
  */
-public interface CouchDBGlobalContext extends GlobalContext<CouchDBGlobalContext, CouchDBEntityContext> {
-
-	/**
-	 * Specifies how associations should be persisted.
-	 *
-	 * @param associationStorage the association storage type to be used when not configured on the entity or property
-	 * level
-	 * @return this context, allowing for further fluent API invocations
-	 */
-	CouchDBGlobalContext associationStorage(AssociationStorageType associationStorage);
+public interface CouchDBGlobalContext extends DocumentStoreGlobalContext<CouchDBGlobalContext, CouchDBEntityContext> {
 }

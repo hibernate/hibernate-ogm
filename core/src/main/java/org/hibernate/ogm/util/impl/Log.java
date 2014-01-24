@@ -32,6 +32,7 @@ import javax.transaction.SystemException;
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
 import org.hibernate.hql.internal.ast.QuerySyntaxException;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -161,4 +162,22 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 48, value = "Unexpected option configurer type %1$s. Make sure to pass an option configurer which is parameterized with the global context type of the current datastore configuration type %2$s.")
 	HibernateException unexpectedOptionConfigurerType(String configurerTypeName, String datastoreConfigurationTypeName, @Cause Exception cause);
+
+	@Message(id = 49, value = "Unknown association storage strategy: [%s]. Supported values are: %s" )
+	HibernateException unknownAssociationStorageStrategy(String databaseName, String supportedValues);
+
+	@Message(id = 50, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '%s'.")
+	HibernateException illegalPortValue(int value);
+
+	@Message(id = 51, value = "The value set for the configuration property '%1$s' must be an integer number. Found '%2$s'.")
+	HibernateException notAnInteger(String propertyName, String value);
+
+	@Message(id = 52, value = "Unknown value given for configuration property '%1$s'; Found '%2$s', but supported values are: %3$s" )
+	HibernateException unknownEnumerationValue(String propertyName, String value, String supportedValues);
+
+	@Message(id = 53, value = "Missing value for property '%s'")
+	HibernateException missingConfigurationProperty(String propertyName);
+
+	@Message(id = 54, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
+	HibernateException unsupportedPropertyType(String propertyName, String value);
 }

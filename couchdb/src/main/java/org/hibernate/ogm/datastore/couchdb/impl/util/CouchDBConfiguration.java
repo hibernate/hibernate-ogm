@@ -22,8 +22,7 @@ package org.hibernate.ogm.datastore.couchdb.impl.util;
 
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 
 /**
  * Provides utility methods to access the CouchDB configuration value
@@ -31,64 +30,11 @@ import org.hibernate.ogm.options.couchdb.AssociationStorageType;
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling
  */
-public class CouchDBConfiguration {
+public class CouchDBConfiguration extends DocumentStoreConfiguration {
 
-	public static final String DEFAULT_COUCHDB_PORT = "5984";
-	public static final String LOCALHOST = "localhost";
-	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
+	public static final int DEFAULT_PORT = 5984;
 
-	private Map<?, ?> configurationValues;
-
-	public void setConfigurationValues(Map<?, ?> configurationValues) {
-		this.configurationValues = configurationValues;
-	}
-
-	public String getDatabaseHost() {
-		return getPropertyValue( CouchDB.HOST, LOCALHOST );
-	}
-
-	public int getDatabasePort() {
-		return Integer.valueOf( getPropertyValue( CouchDB.PORT, DEFAULT_COUCHDB_PORT ) );
-	}
-
-	public String getDatabaseName() {
-		return getPropertyValue( CouchDB.DATABASE, null );
-	}
-
-	public String getUsername() {
-		return getPropertyValue( CouchDB.USERNAME, null );
-	}
-
-	public String getPassword() {
-		return getPropertyValue( CouchDB.PASSWORD, null );
-	}
-
-	public boolean isDatabaseToBeCreated() {
-		return Boolean.valueOf( getPropertyValue( CouchDB.CREATE_DATABASE, Boolean.toString( false ) ) );
-	}
-
-	public AssociationStorageType getAssociationStorageStrategy() {
-		String propertyValue = getPropertyValue( CouchDB.ASSOCIATIONS_STORE, null );
-		return propertyValue != null ? AssociationStorageType.valueOf( propertyValue ) : DEFAULT_ASSOCIATION_STORAGE;
-	}
-
-	public boolean isDatabaseNameConfigured() {
-		return isValueConfigured( getDatabaseName() );
-	}
-
-	private String getPropertyValue(String propertyKey, String defaultValue) {
-		final String value = getConfigurationValue( propertyKey );
-		if ( isValueConfigured( value ) ) {
-			return value;
-		}
-		return defaultValue;
-	}
-
-	private String getConfigurationValue(String propertyName) {
-		return (String) configurationValues.get( propertyName );
-	}
-
-	private boolean isValueConfigured(String property) {
-		return property != null && !property.trim().equals( "" );
+	public CouchDBConfiguration(Map<?, ?> configurationValues) {
+		super( configurationValues, DEFAULT_PORT );
 	}
 }

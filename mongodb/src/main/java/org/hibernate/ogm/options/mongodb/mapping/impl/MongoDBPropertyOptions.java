@@ -20,8 +20,8 @@
  */
 package org.hibernate.ogm.options.mongodb.mapping.impl;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
@@ -40,5 +40,4 @@ public abstract class MongoDBPropertyOptions extends BasePropertyContext<MongoDB
 		addPropertyOption( new AssociationStorageOption(), storage );
 		return this;
 	}
-
 }

@@ -32,12 +32,11 @@ import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
-import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -202,13 +201,11 @@ public class MongoDBDialect implements GridDialect {
 	}
 
 	private DBCollection getAssociationCollection(AssociationKey key) {
-		switch ( provider.getAssociationStorage() ) {
-		case GLOBAL_COLLECTION:
-			return getCollection( Environment.MONGODB_DEFAULT_ASSOCIATION_STORE );
-		case COLLECTION:
+		if ( provider.getAssociationStorageStrategy().isGlobalCollection() ) {
+			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
+		}
+		else {
 			return getCollection( ASSOCIATIONS_COLLECTION_PREFIX + key.getTable() );
-		default:
-			throw new AssertionFailure( "Unknown AssociationStorage: " + provider.getAssociationStorage() );
 		}
 	}
 
@@ -266,7 +263,7 @@ public class MongoDBDialect implements GridDialect {
 
 	//not for embedded
 	private DBObject findAssociation(AssociationKey key) {
-		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
+		final DBObject associationKeyObject = MongoHelpers.associationKeyToObject( provider.getAssociationStorageStrategy(), key );
 		return this.getAssociationCollection( key ).findOne( associationKeyObject, getSearchObject( key, false ) );
 	}
 
@@ -281,10 +278,10 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+		if ( isEmbeddedInEntity( key, provider.getAssociationStorageStrategy() ) ) {
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
-				return new Association( new MongoDBAssociationSnapshot( entity, key, provider.getAssociationStorage() ) );
+				return new Association( new MongoDBAssociationSnapshot( entity, key, provider.getAssociationStorageStrategy() ) );
 			}
 			else {
 				return null;
@@ -295,7 +292,7 @@ public class MongoDBDialect implements GridDialect {
 			return null;
 		}
 		else {
-			return new Association( new MongoDBAssociationSnapshot( result, key, provider.getAssociationStorage() ) );
+			return new Association( new MongoDBAssociationSnapshot( result, key, provider.getAssociationStorageStrategy() ) );
 		}
 	}
 
@@ -310,7 +307,7 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+		if ( isEmbeddedInEntity( key, provider.getAssociationStorageStrategy() ) ) {
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			boolean insert = false;
 			if ( entity == null ) {
@@ -332,15 +329,15 @@ public class MongoDBDialect implements GridDialect {
 					addEmptyAssociationField( key, entity );
 				}
 			}
-			return new Association( new MongoDBAssociationSnapshot( entity, key, provider.getAssociationStorage() ) );
+			return new Association( new MongoDBAssociationSnapshot( entity, key, provider.getAssociationStorageStrategy() ) );
 		}
 		DBCollection associations = getAssociationCollection( key );
-		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
+		DBObject assoc = MongoHelpers.associationKeyToObject( provider.getAssociationStorageStrategy(), key );
 
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
 		associations.insert( assoc );
 
-		return new Association( new MongoDBAssociationSnapshot( assoc, key, provider.getAssociationStorage() ) );
+		return new Association( new MongoDBAssociationSnapshot( assoc, key, provider.getAssociationStorageStrategy() ) );
 	}
 
 	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey, String associationField) {
@@ -374,7 +371,7 @@ public class MongoDBDialect implements GridDialect {
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		String associationField;
 
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+		if ( isEmbeddedInEntity( key, provider.getAssociationStorageStrategy() ) ) {
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
@@ -412,7 +409,7 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isEmbeddedInEntity( key, provider.getAssociationStorage() ) ) {
+		if ( isEmbeddedInEntity( key, provider.getAssociationStorageStrategy() ) ) {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
@@ -422,7 +419,7 @@ public class MongoDBDialect implements GridDialect {
 		}
 		else {
 			DBCollection collection = getAssociationCollection( key );
-			DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorage(), key );
+			DBObject query = MongoHelpers.associationKeyToObject( provider.getAssociationStorageStrategy(), key );
 
 			int nAffected = collection.remove( query ).getN();
 			log.removedAssociation( nAffected );

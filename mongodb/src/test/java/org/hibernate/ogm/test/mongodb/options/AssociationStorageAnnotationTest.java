@@ -22,9 +22,9 @@ package org.hibernate.ogm.test.mongodb.options;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.options.mongodb.AssociationStorage;
-import org.hibernate.ogm.options.mongodb.AssociationStorageOption;
+import org.hibernate.ogm.options.generic.document.AssociationStorage;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
@@ -53,7 +53,7 @@ public class AssociationStorageAnnotationTest {
 	@Test
 	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
 		OptionsContainer methodOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" );
-		assertThat( methodOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.GLOBAL_COLLECTION );
+		assertThat( methodOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
 	private static final class EntityAnnotatedOnField {
@@ -67,7 +67,7 @@ public class AssociationStorageAnnotationTest {
 
 		public String method;
 
-		@AssociationStorage(AssociationStorageType.GLOBAL_COLLECTION)
+		@AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
 		public String getMethod() {
 			return method;
 		}

@@ -21,13 +21,12 @@
 package org.hibernate.ogm.options.mongodb.mapping.spi;
 
 import org.hibernate.ogm.datastore.mongodb.WriteConcernType;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface MongoDBGlobalContext extends GlobalContext<MongoDBGlobalContext, MongoDBEntityContext> {
+public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> {
 
 	MongoDBGlobalContext writeConcern(WriteConcernType concern);
-
 }

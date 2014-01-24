@@ -25,11 +25,11 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -44,9 +44,9 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorageType.IN_ENTITY.toString().toLowerCase()
+		cfg.getProperties().put(
+				DocumentStoreProperties.ASSOCIATIONS_STORE,
+				AssociationStorageType.IN_ENTITY
 		);
 	}
 
@@ -64,6 +64,7 @@ public class LoadSelectedColumnsInEntityTest extends LoadSelectedColumnsCollecti
 		collection.update( query, updater );
 	}
 
+	@Override
 	protected void checkLoading(DBObject associationObject) {
 		/*
 		 * The only column (except _id) that needs to be retrieved is "modules"

@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 
@@ -37,8 +37,8 @@ import com.mongodb.DBObject;
  */
 public class MongoHelpers {
 
-	public static DBObject associationKeyToObject(AssociationStorageType storage, AssociationKey key) {
-		if ( isEmbeddedInEntity( key, storage ) ) {
+	public static DBObject associationKeyToObject(AssociationStorageStrategy storageStrategy, AssociationKey key) {
+		if ( isEmbeddedInEntity( key, storageStrategy ) ) {
 			throw new AssertionFailure( MongoHelpers.class.getName()
 					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
 		}
@@ -52,16 +52,16 @@ public class MongoHelpers {
 
 		BasicDBObject idObject = new BasicDBObject( 1 );
 
-		if ( storage == AssociationStorageType.GLOBAL_COLLECTION ) {
+		if ( storageStrategy.isGlobalCollection() ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
 		idObject.put( MongoDBDialect.ID_FIELDNAME, columns );
 		return idObject;
 	}
 
-	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorageType storage) {
+	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorageStrategy storageStrategy) {
 		return ( key != null && key.getAssociationKind() == AssociationKind.EMBEDDED )
-				|| storage == AssociationStorageType.IN_ENTITY;
+				|| storageStrategy.isEmbeddedInEntity();
 	}
 
 	//only for embedded

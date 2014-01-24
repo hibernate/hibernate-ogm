@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,23 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
+package org.hibernate.ogm.util.impl.configurationreader;
 
-package org.hibernate.ogm.datastore.ehcache.impl.configuration;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 
 /**
- * Configuration options for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.
+ * A {@link PropertyReaderContext} which allows to set the class loader service to be used to load implementation types
+ * by name.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
+ * @param <T>
  */
-public interface Environment {
+public interface ClassPropertyReaderContextExpectingClassLoaderService<T> {
 
 	/**
-	 * An URL to an XML file compliant with the ehcache.xsd schema.
+	 * Sets the class loader service to be used to load the implementation class of the given property
 	 */
-	String RESOURCE_NAME = "hibernate.ogm.ehcache.configuration_resourcename";
-
-	/**
-	 * An URL to the default ehcache configuration file.
-	 */
-	String DEFAULT_CONFIG = "/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml";
+	ClassPropertyReaderContext<T> withClassLoaderService(ClassLoaderService classLoaderService);
 }

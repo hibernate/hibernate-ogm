@@ -31,7 +31,7 @@ import java.util.Properties;
 import javax.persistence.OptimisticLockException;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialectTest;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.Document;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
@@ -147,15 +147,15 @@ public class CouchDBDatastoreTest {
 	}
 
 	private String getPassword() {
-		return properties.getProperty( CouchDB.PASSWORD );
+		return properties.getProperty( OgmProperties.PASSWORD );
 	}
 
 	private String getUserName() {
-		return properties.getProperty( CouchDB.USERNAME );
+		return properties.getProperty( OgmProperties.USERNAME );
 	}
 
 	private int getDatabasePort() {
-		final String port = properties.getProperty( CouchDB.PORT );
+		final String port = properties.getProperty( OgmProperties.PORT );
 		if ( isValueProvided( port ) ) {
 			return Integer.valueOf( port );
 		}
@@ -165,11 +165,11 @@ public class CouchDBDatastoreTest {
 	}
 
 	private String getDatabaseName() {
-		return properties.getProperty( CouchDB.DATABASE );
+		return properties.getProperty( OgmProperties.DATABASE );
 	}
 
 	private String getDatabaseHost() {
-		final String host = properties.getProperty( CouchDB.HOST );
+		final String host = properties.getProperty( OgmProperties.HOST );
 		if ( isValueProvided( host ) ) {
 			return host;
 		}

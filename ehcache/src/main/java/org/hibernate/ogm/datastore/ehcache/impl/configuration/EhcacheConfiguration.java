@@ -22,6 +22,8 @@ package org.hibernate.ogm.datastore.ehcache.impl.configuration;
 
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
+
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.
  *
@@ -35,11 +37,10 @@ public class EhcacheConfiguration {
 	 * Initialize the internal values from the given {@link Map}.
 	 *
 	 * @see Environment
-	 * @param configurationMap
-	 *            The values to use as configuration
+	 * @param configurationMap The values to use as configuration
 	 */
 	public void initialize(Map configurationMap) {
-		this.url = (String) configurationMap.get( Environment.RESOURCE_NAME );
+		this.url = (String) configurationMap.get( EhcacheProperties.RESOURCE_NAME );
 	}
 
 	/**

@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -39,6 +38,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
 
 /**
@@ -53,15 +53,15 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	private boolean isCacheStarted;
 	private MongoClient mongo;
 	private DB mongoDb;
-	private final MongoDBConfiguration config = new MongoDBConfiguration();
+	private MongoDBConfiguration config;
 
 	@Override
 	public void configure(Map configurationValues) {
-		this.config.initialize( configurationValues );
+		this.config = new MongoDBConfiguration( configurationValues );
 	}
 
-	public AssociationStorageType getAssociationStorage() {
-		return config.getAssociationStorage();
+	public AssociationStorageStrategy getAssociationStorageStrategy() {
+		return AssociationStorageStrategy.getInstance( config.getAssociationStorageStrategy(), config.getAssociationDocumentStorage() );
 	}
 
 	@Override
@@ -79,7 +79,11 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		if ( !isCacheStarted ) {
 			try {
 				ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
-				this.mongo = new MongoClient( serverAddress, config.buildOptions() );
+				MongoClientOptions clientOptions = config.buildOptions();
+
+				log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
+
+				this.mongo = new MongoClient( serverAddress, clientOptions );
 				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
@@ -111,10 +115,13 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					throw log.authenticationFailed( config.getUsername() );
 				}
 			}
-			if ( !this.mongo.getDatabaseNames().contains( config.getDatabaseName() ) ) {
-				log.creatingDatabase( config.getDatabaseName() );
+			String databaseName = config.getDatabaseName();
+			log.connectingToMongoDatabase( databaseName );
+
+			if ( !this.mongo.getDatabaseNames().contains( databaseName ) ) {
+				log.creatingDatabase( databaseName );
 			}
-			return this.mongo.getDB( config.getDatabaseName() );
+			return this.mongo.getDB( databaseName );
 		}
 		catch ( HibernateException e ) {
 			throw e;

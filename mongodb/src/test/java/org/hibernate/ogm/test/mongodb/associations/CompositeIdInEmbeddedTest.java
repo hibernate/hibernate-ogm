@@ -20,8 +20,8 @@
  */
 package org.hibernate.ogm.test.mongodb.associations;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.test.id.CompositeIdTest;
 import org.hibernate.ogm.test.utils.jpa.GetterPersistenceUnitInfo;
 
@@ -33,6 +33,6 @@ public class CompositeIdInEmbeddedTest extends CompositeIdTest {
 	protected void refineInfo(GetterPersistenceUnitInfo info) {
 		super.refineInfo( info );
 		info.getProperties()
-			.setProperty( Environment.MONGODB_ASSOCIATIONS_STORE, AssociationStorageType.IN_ENTITY.name() );
+			.put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.IN_ENTITY );
 	}
 }

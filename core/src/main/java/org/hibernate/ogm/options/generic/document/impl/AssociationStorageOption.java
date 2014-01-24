@@ -18,25 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
+package org.hibernate.ogm.options.generic.document.impl;
 
-package org.hibernate.ogm.datastore.infinispan.impl.configuration;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * Configuration options for {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}
+ * Represents the type of association storage as configured via the API or annotations for a given element.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
-public interface Environment {
-	/**
-	 * The configuration property to use as key to define a custom configuration for Infinispan.
-	 */
-	String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
-
-	/**
-	 * The key for the configuration property to define the jndi name of the cachemanager.
-	 * If this property is defined, the cachemanager will be looked up via JNDI.
-	 * JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are used to define the context properties.
-	 */
-	String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
-	String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
+public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
 }

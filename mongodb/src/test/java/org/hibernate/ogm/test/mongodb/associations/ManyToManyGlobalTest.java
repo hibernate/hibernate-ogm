@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.mongodb.associations;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.test.associations.collection.manytomany.ManyToManyTest;
 
 /**
@@ -32,9 +32,9 @@ public class ManyToManyGlobalTest extends ManyToManyTest {
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorageType.GLOBAL_COLLECTION.toString().toLowerCase()
+		cfg.getProperties().put(
+				DocumentStoreProperties.ASSOCIATIONS_STORE,
+				AssociationStorageType.ASSOCIATION_DOCUMENT
 		);
 	}
 }

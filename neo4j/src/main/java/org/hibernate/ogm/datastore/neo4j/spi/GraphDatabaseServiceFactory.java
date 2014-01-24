@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.spi;
 
-import java.util.Properties;
+import java.util.Map;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -37,7 +37,7 @@ public interface GraphDatabaseServiceFactory {
 	 * @param properties
 	 *            configuration properties
 	 */
-	void initialize(Properties properties);
+	void initialize(Map<?, ?> properties);
 
 	/**
 	 * Creates a {@link GraphDatabaseService}.

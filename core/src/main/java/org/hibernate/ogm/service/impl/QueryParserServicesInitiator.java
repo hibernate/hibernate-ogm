@@ -24,16 +24,16 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * Initiator which contributes a {@link QueryParserService} implementation.
  * <p>
- * The implementation can be configured via {@link OgmConfiguration#OGM_QUERY_PARSER_SERVICE}. If no implementation is
+ * The implementation can be configured via {@link OgmProperties#QUERY_PARSER_SERVICE}. If no implementation is
  * configured that way, the default implementation as retrieved from the current {@link DatastoreProvider} will be used.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
@@ -50,9 +50,11 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 
 	@Override
 	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
 
-		return propertyReader.property( OgmConfiguration.OGM_QUERY_PARSER_SERVICE, QueryParserService.class )
+		return propertyReader.property( OgmProperties.QUERY_PARSER_SERVICE, QueryParserService.class )
+				.instantiate()
+				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType() )
 				.getValue();
 	}

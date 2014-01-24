@@ -21,8 +21,10 @@
 package org.hibernate.ogm.test.mongodb.associations;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.test.associations.onetoone.OneToOneTest;
 
 /**
@@ -32,9 +34,13 @@ public class OneToOneCollectionTest extends OneToOneTest {
 	@Override
 	protected void configure(Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty(
-				Environment.MONGODB_ASSOCIATIONS_STORE,
-				AssociationStorageType.COLLECTION.name()
+		cfg.getProperties().put(
+				DocumentStoreProperties.ASSOCIATIONS_STORE,
+				AssociationStorageType.ASSOCIATION_DOCUMENT
+		);
+		cfg.getProperties().put(
+				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
+				AssociationDocumentType.COLLECTION_PER_ASSOCIATION
 		);
 	}
 }

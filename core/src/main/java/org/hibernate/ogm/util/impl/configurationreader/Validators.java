@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,25 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
+package org.hibernate.ogm.util.impl.configurationreader;
+
+import org.hibernate.HibernateException;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Defines the various association storage strategies
+ * Provides common property implementations.
  *
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public enum AssociationStorageType {
+public class Validators {
+
 	/**
-	 * Store the association info in a unique MongoDB collection for all associations
+	 * A {@link PropertyValidator} which asserts that a given number is a valid port number.
 	 */
-	GLOBAL_COLLECTION,
-	/**
-	 * Store the association in a dedicated MongoDB collection per association
-	 */
-	COLLECTION,
-	/**
-	 * Store association information from within the entity
-	 */
-	IN_ENTITY
+	public static final PropertyValidator<Integer> PORT = new PropertyValidator<Integer>() {
+
+		@Override
+		public void validate(Integer value) throws HibernateException {
+			if ( value < 1 || value > 65535 ) {
+				throw log.illegalPortValue( value );
+			}
+		}
+	};
+
+	private static final Log log = LoggerFactory.make();
+
+	private Validators() {
+	};
 }

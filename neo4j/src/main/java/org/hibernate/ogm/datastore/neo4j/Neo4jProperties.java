@@ -26,55 +26,42 @@ package org.hibernate.ogm.datastore.neo4j;
  * @author Davide D'Alto
  * @see org.hibernate.ogm.dialect.neo4j.Neo4jDialect
  */
-public interface Environment {
+public final class Neo4jProperties {
 
 	/**
 	 * The absolute path representing the location of the Neo4j database, ex.: /home/user/neo4jdb/mydb
 	 */
-	String NEO4J_DATABASE_PATH = "hibernate.ogm.neo4j.database.path";
+	public static final String DATABASE_PATH = "hibernate.ogm.neo4j.database.path";
 
 	/**
 	 * Location of the Neo4j embedded properties file. It can be an URL or an absolute file path.
 	 */
-	String NEO4J_CONFIGURATION_LOCATION = "hibernate.ogm.neo4j.properties.location";
+	public static final String CONFIGURATION_LOCATION = "hibernate.ogm.neo4j.properties.location";
 
 	/**
 	 * Name of the neo4j index containing the stored entities. Default to {@link #DEFAULT_NEO4J_ENTITY_INDEX_NAME}
 	 */
-	String NEO4J_ENTITY_INDEX_NAME = "hibernate.ogm.neo4j.index.entity";
+	public static final String ENTITY_INDEX_NAME = "hibernate.ogm.neo4j.index.entity";
 
 	/**
 	 * Name of the Neo4j index containing the stored associations. Default to
 	 * {@link #DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME}
 	 */
-	String NEO4J_ASSOCIATION_INDEX_NAME = "hibernate.ogm.neo4j.index.association";
+	public static final String ASSOCIATION_INDEX_NAME = "hibernate.ogm.neo4j.index.association";
 
 	/**
 	 * Name of the index that stores the next available value for a sequence. Default to
 	 * {@link #DEFAULT_NEO4J_SEQUENCE_INDEX_NAME}
 	 */
-	String NEO4J_SEQUENCE_INDEX_NAME = "hibernate.ogm.neo4j.index.sequence";
+	public static final String SEQUENCE_INDEX_NAME = "hibernate.ogm.neo4j.index.sequence";
 
 	/**
 	 * Qualified class name for the creation of a new {@link org.neo4j.graphdb.GraphDatabaseService}.
 	 * <p>
 	 * The class must implement the interface {@link org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory}.
 	 */
-	String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb.factoryclass";
+	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb.factoryclass";
 
-	/**
-	 * Default name of the index that stores entities.
-	 */
-	String DEFAULT_NEO4J_ENTITY_INDEX_NAME = "_nodes_ogm_index";
-
-	/**
-	 * Default name of the index that stores associations.
-	 */
-	String DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME = "_relationships_ogm_index";
-
-	/**
-	 * Default Name of the index that stores the next available value for sequences.
-	 */
-	String DEFAULT_NEO4J_SEQUENCE_INDEX_NAME = "_sequences_ogm_index";
-
+	private Neo4jProperties() {
+	}
 }

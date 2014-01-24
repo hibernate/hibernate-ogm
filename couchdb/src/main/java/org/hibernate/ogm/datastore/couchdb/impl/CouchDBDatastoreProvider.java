@@ -23,7 +23,6 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.net.MalformedURLException;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -31,7 +30,7 @@ import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
 import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
@@ -52,15 +51,14 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private CouchDBDatastore datastore;
 
-	private final CouchDBConfiguration configuration;
+	private CouchDBConfiguration configuration;
 
 	public CouchDBDatastoreProvider() {
-		configuration = new CouchDBConfiguration();
 	}
 
 	@Override
 	public void configure(Map configurationValues) {
-		configuration.setConfigurationValues( configurationValues );
+		configuration = new CouchDBConfiguration( configurationValues );
 	}
 
 	@Override
@@ -119,21 +117,16 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	private DataBaseURL retrieveDataBaseURL() {
-		if ( isDatabaseNameConfigured() ) {
-			try {
-				return new DataBaseURL( getDatabaseHost(), getDatabasePort(), getDatabaseName() );
-			}
-			catch (MalformedURLException e) {
-				throw logger.malformedDataBaseUrl( e, getDatabaseHost(), getDatabasePort(), getDatabaseName() );
-			}
+		try {
+			return new DataBaseURL( getDatabaseHost(), getDatabasePort(), getDatabaseName() );
 		}
-		else {
-			throw logger.missingConfigurationProperty( CouchDB.DATABASE );
+		catch (MalformedURLException e) {
+			throw logger.malformedDataBaseUrl( e, getDatabaseHost(), getDatabasePort(), getDatabaseName() );
 		}
 	}
 
 	private boolean isCreateDatabase() {
-		return configuration.isDatabaseToBeCreated();
+		return configuration.isCreateDatabase();
 	}
 
 	private String retrievePassword() {
@@ -144,20 +137,16 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 		return configuration.getUsername();
 	}
 
-	private boolean isDatabaseNameConfigured() {
-		return configuration.isDatabaseNameConfigured();
-	}
-
 	private String getDatabaseName() {
 		return configuration.getDatabaseName();
 	}
 
 	private String getDatabaseHost() {
-		return configuration.getDatabaseHost();
+		return configuration.getHost();
 	}
 
 	private int getDatabasePort() {
-		return configuration.getDatabasePort();
+		return configuration.getPort();
 	}
 
 }

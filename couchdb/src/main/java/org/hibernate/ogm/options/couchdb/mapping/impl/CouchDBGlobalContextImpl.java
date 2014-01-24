@@ -20,8 +20,9 @@
  */
 package org.hibernate.ogm.options.couchdb.mapping.impl;
 
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
 import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 

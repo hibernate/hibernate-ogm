@@ -20,10 +20,10 @@
  */
 package org.hibernate.ogm.service.impl;
 
-import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.service.Service;
-
 import java.util.Map;
+
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.service.Service;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -32,7 +32,7 @@ public class ConfigurationService implements Service {
 	private final boolean isOn;
 
 	public ConfigurationService(Map config) {
-		Object option = config.get( OgmConfiguration.OGM_ON );
+		Object option = config.get( OgmProperties.OGM_ON );
 		isOn = option != null && "true".equalsIgnoreCase( option.toString() );
 	}
 	public boolean isOgmOn() {

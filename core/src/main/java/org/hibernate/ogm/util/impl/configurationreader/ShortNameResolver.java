@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,13 +18,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.mongodb;
-
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.options.spi.UniqueOption;
+package org.hibernate.ogm.util.impl.configurationreader;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * Implementations map short names into fully-qualified class names.
+ *
+ * @author Gunnar Morling
  */
-public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
+public interface ShortNameResolver {
+
+	boolean isShortName(String name);
+
+	String resolve(String shortName);
 }

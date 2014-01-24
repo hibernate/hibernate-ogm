@@ -36,7 +36,6 @@ import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
-import org.hibernate.ogm.datastore.ehcache.impl.configuration.Environment;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.ehcache.EhcacheDialect;
@@ -53,6 +52,11 @@ import org.hibernate.service.spi.Stoppable;
  */
 public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
+
+	/**
+	 * Name of the default Ehcache configuration file
+	 */
+	private static final String DEFAULT_CONFIG = "/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml";
 
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
@@ -91,7 +95,7 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 			}
 		}
 		else {
-			url = this.getClass().getResource( Environment.DEFAULT_CONFIG );
+			url = this.getClass().getResource( DEFAULT_CONFIG );
 		}
 		final Configuration configuration = ConfigurationFactory.parseConfiguration( url );
 		if ( jtaPlatform != null ) {

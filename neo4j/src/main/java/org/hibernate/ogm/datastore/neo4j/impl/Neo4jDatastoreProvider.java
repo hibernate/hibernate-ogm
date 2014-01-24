@@ -20,16 +20,10 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.Environment.DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME;
-import static org.hibernate.ogm.datastore.neo4j.Environment.DEFAULT_NEO4J_ENTITY_INDEX_NAME;
-import static org.hibernate.ogm.datastore.neo4j.Environment.DEFAULT_NEO4J_SEQUENCE_INDEX_NAME;
-import static org.hibernate.ogm.datastore.neo4j.Environment.NEO4J_ASSOCIATION_INDEX_NAME;
-import static org.hibernate.ogm.datastore.neo4j.Environment.NEO4J_ENTITY_INDEX_NAME;
-import static org.hibernate.ogm.datastore.neo4j.Environment.NEO4J_SEQUENCE_INDEX_NAME;
-
 import java.util.Map;
-import java.util.Properties;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -38,6 +32,8 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -50,7 +46,22 @@ import org.neo4j.graphdb.index.Index;
  *
  * @author Davide D'Alto
  */
-public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable {
+public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+
+	/**
+	 * Default name of the index that stores entities.
+	 */
+	private static final String DEFAULT_NEO4J_ENTITY_INDEX_NAME = "_nodes_ogm_index";
+
+	/**
+	 * Default name of the index that stores associations.
+	 */
+	private static final String DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME = "_relationships_ogm_index";
+
+	/**
+	 * Default Name of the index that stores the next available value for sequences.
+	 */
+	private static final String DEFAULT_NEO4J_SEQUENCE_INDEX_NAME = "_sequences_ogm_index";
 
 	private String sequenceIndexName = DEFAULT_NEO4J_SEQUENCE_INDEX_NAME;
 
@@ -64,6 +75,13 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 
 	private GraphDatabaseServiceFactory graphDbFactory;
 
+	private ServiceRegistryImplementor registry;
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.registry = serviceRegistry;
+	}
+
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
 		return LuceneBasedQueryParserService.class;
@@ -71,10 +89,10 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 
 	@Override
 	public void configure(Map cfg) {
-		graphDbFactory = new Neo4jGraphDatabaseServiceFactoryProvider().load( properties( cfg ) );
-		sequenceIndexName = defaultIfNull( cfg, NEO4J_SEQUENCE_INDEX_NAME, DEFAULT_NEO4J_SEQUENCE_INDEX_NAME );
-		nodeIndexName = defaultIfNull( cfg, NEO4J_ENTITY_INDEX_NAME, DEFAULT_NEO4J_ENTITY_INDEX_NAME );
-		relationshipIndexName = defaultIfNull( cfg, NEO4J_ASSOCIATION_INDEX_NAME, DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME );
+		graphDbFactory = new Neo4jGraphDatabaseServiceFactoryProvider().load( cfg, registry.getService( ClassLoaderService.class ) );
+		sequenceIndexName = defaultIfNull( cfg, Neo4jProperties.SEQUENCE_INDEX_NAME, DEFAULT_NEO4J_SEQUENCE_INDEX_NAME );
+		nodeIndexName = defaultIfNull( cfg, Neo4jProperties.ENTITY_INDEX_NAME, DEFAULT_NEO4J_ENTITY_INDEX_NAME );
+		relationshipIndexName = defaultIfNull( cfg, Neo4jProperties.ASSOCIATION_INDEX_NAME, DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME );
 	}
 
 	private String defaultIfNull(Map<?, ?> cfg, String key, String defaultValue) {
@@ -92,12 +110,6 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 		this.neo4jDb = graphDbFactory.create();
 		this.neo4jSequenceGenerator = new Neo4jSequenceGenerator( neo4jDb, sequenceIndexName );
 		this.graphDbFactory = null;
-	}
-
-	private Properties properties(Map<?, ?> configuration) {
-		Properties properties = new Properties();
-		properties.putAll( configuration );
-		return properties;
 	}
 
 	@Override

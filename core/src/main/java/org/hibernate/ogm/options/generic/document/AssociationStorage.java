@@ -18,31 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.mongodb;
+package org.hibernate.ogm.options.generic.document;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.mongodb.AssociationStorageType;
-import org.hibernate.ogm.options.mongodb.AssociationStorage.AssociationStorageConverter;
+import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
- * Define the association storage type
+ * Define the association storage type for the annotated entity or property.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
-@Target({ METHOD, FIELD })
+@Target({ METHOD, FIELD, TYPE })
 @Retention(RUNTIME)
-@MappingOption(AssociationStorageConverter.class)
+@MappingOption(AssociationStorage.AssociationStorageConverter.class)
 public @interface AssociationStorage {
 
+	/**
+	 * The strategy for storing associations of the annotated element
+	 *
+	 * @return the strategy for storing associations of the annotated element
+	 */
 	AssociationStorageType value();
 
 	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {

@@ -27,7 +27,7 @@ import java.lang.annotation.ElementType;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.navigation.context.EntityContext;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.navigation.context.PropertyContext;
@@ -109,7 +109,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerInstance() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, new SampleOptionConfigurer() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, new SampleOptionConfigurer() );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();
@@ -118,7 +118,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerType() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();
@@ -127,7 +127,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	@Test
 	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerTypeName() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmConfiguration.OGM_OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
 		setupSessionFactory( configuration );
 
 		assertOptionsSetViaConfigurer();
@@ -146,7 +146,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	@Override
 	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
+		cfg.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
 	}
 
 	@Override
@@ -166,7 +166,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 	private OgmConfiguration getConfiguration() {
 		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configuration.getProperties().put( DatastoreProviderInitiator.DATASTORE_PROVIDER, SampleDatastoreProvider.class.getName() );
+		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, SampleDatastoreProvider.class );
 
 		return configuration;
 	}

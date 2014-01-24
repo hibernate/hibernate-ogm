@@ -88,9 +88,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	HibernateException malformedDataBaseUrl(@Cause MalformedURLException e, String databaseHost, int databasePort,
 			String databaseName);
 
-	@Message(id = 1316, value = "Missing property value: %s")
-	HibernateException missingConfigurationProperty(String propertyValue);
-
 	@Message(id = 1317, value = "Could not parse date string: %s")
 	HibernateException errorParsingStringToDate(@Cause ParseException pe, String date);
 

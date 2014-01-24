@@ -37,34 +37,11 @@ import org.hibernate.ogm.options.navigation.context.GlobalContext;
 /**
  * An instance of {@link OgmConfiguration} allows the application
  * to specify properties and mapping documents to be used when
- * creating an {@link OgmSessionFactoryImpl}.
+ * creating an {@link OgmSessionFactory}.
  *
  * @author Davide D'Alto
  */
 public class OgmConfiguration extends Configuration implements Configurable {
-
-	public static final String OGM_ON = "hibernate.ogm._activate";
-
-	/**
-	 * Name of the configuration option for specifying the {@link org.hibernate.ogm.service.impl.QueryParserService} to
-	 * be used. Accepts a fully-qualified class name. If not specified, the parser type returned by
-	 * {@link org.hibernate.ogm.datastore.spi.DatastoreProvider#getDefaultQueryParserServiceType()}
-	 * will be used.
-	 */
-	public static final String OGM_QUERY_PARSER_SERVICE = "hibernate.ogm.query.parser";
-
-	/**
-	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} when
-	 * bootstrapping Hibernate OGM. Supported value types are:
-	 * <ul>
-	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurer} type</li>
-	 * <li>{@link Class}: the class object representing an {@code OptionConfigurer} type</li>
-	 * <li>{@code OptionConfigurer}: a configurer instance</li>
-	 * </ul>
-	 */
-	public static final String OGM_OPTION_CONFIGURER = "hibernate.ogm.option.configurer";
-
-	public static final String OGM_GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
 
 	public OgmConfiguration() {
 		super();
@@ -73,7 +50,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
-		setProperty( OGM_ON, "true" );
+		setProperty( OgmProperties.OGM_ON, "true" );
 		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
 		// false
 		setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
@@ -93,8 +70,8 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		super.setProperties( properties );
 		//Unless the new configuration properties explicitly disable OGM's default properties
 		//assume there was no intention to disable them:
-		if ( ! properties.containsKey( OGM_ON ) ) {
-			setProperty( OGM_ON, "true" );
+		if ( ! properties.containsKey( OgmProperties.OGM_ON ) ) {
+			setProperty( OgmProperties.OGM_ON, "true" );
 		}
 		if ( ! properties.containsKey(  AvailableSettings.QUERY_STARTUP_CHECKING ) ) {
 			setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );

@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.couchdb.associations;
 
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.options.couchdb.AssociationStorageType;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.test.utils.CouchDBTestHelper;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.TestHelper;

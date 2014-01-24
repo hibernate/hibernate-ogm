@@ -86,10 +86,10 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 						.clazz( Member.class.getName() )
 						.getOrCreateProperties()
 							.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "couchdb" ).up()
-							.createProperty().name( "hibernate.ogm.couchdb.host" ).value( couchDBHostName ).up()
-							.createProperty().name( "hibernate.ogm.couchdb.couchDBPortNumber" ).value( couchDBPortNumber ).up()
-							.createProperty().name( "hibernate.ogm.couchdb.database" ).value( "ogm_test_database" ).up()
-							.createProperty().name( "hibernate.org.couchdb.createdatabase" ).value( "true" ).up()
+							.createProperty().name( "hibernate.ogm.datastore.host" ).value( couchDBHostName ).up()
+							.createProperty().name( "hibernate.ogm.datastore.port" ).value( couchDBPortNumber ).up()
+							.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
+							.createProperty().name( "hibernate.org.datastore.createdatabase" ).value( "true" ).up()
 					.up().up();
 	}
 

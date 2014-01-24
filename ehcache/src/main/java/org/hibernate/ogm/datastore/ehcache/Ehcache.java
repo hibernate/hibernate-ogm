@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,22 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.couchdb;
+package org.hibernate.ogm.datastore.ehcache;
+
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 
 /**
- * A strategy for storing association information in CouchDB.
+ * Allows to configure options specific to the Ehcache data store.
  *
  * @author Gunnar Morling
  */
-public enum AssociationStorageType {
+public class Ehcache implements DatastoreConfiguration<GlobalContext<?, ?>> {
 
-	/**
-	 * Stores association information in a dedicated CouchDB document per association.
-	 */
-	ASSOCIATION_DOCUMENT,
-
-	/**
-	 * Store association information within the entity.
-	 */
-	IN_ENTITY
+	@Override
+	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
+		return GenericOptionModel.createGlobalContext( context );
+	}
 }

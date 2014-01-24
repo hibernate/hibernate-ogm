@@ -21,17 +21,18 @@
 
 package org.hibernate.ogm.test.mongodb.datastore;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mongodb.WriteConcern;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.Environment;
-import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
-
-import static org.junit.Assert.assertEquals;
+import com.mongodb.WriteConcern;
 
 /**
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
@@ -46,9 +47,9 @@ public class WriteConcernTest {
 	@BeforeClass
 	public static void initCfg() {
 		cfg = new HashMap<String, String>();
-		cfg.put( Environment.MONGODB_HOST, Environment.MONGODB_DEFAULT_HOST );
-		cfg.put( Environment.MONGODB_PORT, "27017" );
-		cfg.put( Environment.MONGODB_DATABASE, "database" );
+		cfg.put( OgmProperties.HOST, "localhost" );
+		cfg.put( OgmProperties.PORT, "27017" );
+		cfg.put( OgmProperties.DATABASE, "database" );
 	}
 
 	/**
@@ -57,11 +58,10 @@ public class WriteConcernTest {
 	 */
 	@Test
 	public void testNoConfiguration() {
-		cfg.put( Environment.MONGODB_WRITE_CONCERN, null );
+		cfg.put( MongoDBProperties.WRITE_CONCERN, null );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
-		assertEquals( config.buildOptions().getWriteConcern(), Environment.MONGODB_DEFAULT_WRITE_CONCERN );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
+		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
 	}
 
 	/**
@@ -70,11 +70,10 @@ public class WriteConcernTest {
 	 */
 	@Test
 	public void testWrongConfiguration() {
-		cfg.put( Environment.MONGODB_WRITE_CONCERN, "wrongValue" );
+		cfg.put( MongoDBProperties.WRITE_CONCERN, "wrongValue" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
-		assertEquals( config.buildOptions().getWriteConcern(), Environment.MONGODB_DEFAULT_WRITE_CONCERN );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
+		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
 	}
 
 	/**
@@ -83,10 +82,9 @@ public class WriteConcernTest {
 	 */
 	@Test
 	public void testCorrectValue() {
-		cfg.put( Environment.MONGODB_WRITE_CONCERN, "JOURNAL_SAFE" );
+		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNAL_SAFE" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration();
-		config.initialize( cfg );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNAL_SAFE );
 	}
 }
