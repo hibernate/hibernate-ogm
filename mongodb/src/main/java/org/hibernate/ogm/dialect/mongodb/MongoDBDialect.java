@@ -25,9 +25,13 @@ import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -43,7 +47,13 @@ import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.Operation;
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
+import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -84,7 +94,7 @@ import com.mongodb.DBObject;
  * @author Alan Fitton <alan at eth0.org.uk>
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MongoDBDialect implements GridDialect {
+public class MongoDBDialect implements BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -114,13 +124,13 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
-		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
+		return found != null ? new Tuple( new MongoDBTupleSnapshot( found ) ) : null;
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		DBObject toSave = this.prepareIdObject( key );
-		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, true ) );
 	}
 
 	private DBObject getObjectAsEmbeddedAssociation(AssociationKey key) {
@@ -220,14 +230,36 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+		BasicDBObject idObject = this.prepareIdObject( key );
+		DBObject updater = createObject( tuple, key, idObject );
+		this.getCollection( key ).update( idObject, updater, true, false );
+	}
 
+	// Creates a dbObject that can be pass to the mongoDB batch insert function
+	private BasicDBObject createDBObjectForInsert(Tuple tuple, EntityKey key, BasicDBObject dbObject) {
+		for ( TupleOperation operation : tuple.getOperations() ) {
+			String column = operation.getColumn();
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !columnInIdField( key.getColumnNames(), column ) ) {
+				switch ( operation.getType() ) {
+					case PUT_NULL:
+					case PUT:
+						dbObject.append( column, operation.getValue() );
+						break;
+					case REMOVE:
+						dbObject.remove( column );
+						break;
+				}
+			}
+		}
+		return dbObject;
+	}
+
+	private DBObject createObject(Tuple tuple, EntityKey key, DBObject idObject) {
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
-					column
-			) ) {
+			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME )
+					&& !columnInIdField( key.getColumnNames(), column ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -239,7 +271,6 @@ public class MongoDBDialect implements GridDialect {
 				}
 			}
 		}
-		BasicDBObject idObject = this.prepareIdObject( key );
 		/*
 		* Needed because in case of object with only an ID field
 		* the "_id" won't be persisted properly.
@@ -249,9 +280,21 @@ public class MongoDBDialect implements GridDialect {
 		*	of the custom id
 		 */
 		if ( updater.size() == 0 ) {
-			updater = idObject;
+			return idObject;
 		}
-		this.getCollection( key ).update( idObject, updater, true, false );
+		return updater;
+	}
+
+	public boolean columnInIdField(String[] columnNames, String column) {
+		if ( columnNames == null ) {
+			return false;
+		}
+		for ( String idColumn : columnNames ) {
+			if ( column.equals( idColumn ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -502,6 +545,85 @@ public class MongoDBDialect implements GridDialect {
 		if ( metadatas.length != 1 ) {
 			throw log.requireMetadatas();
 		}
+	}
+
+	@Override
+	public void executeBatch(OperationsQueue queue) {
+		Operation operation = queue.poll();
+		Map<EntityKey, DBObject> updates = new HashMap<EntityKey, DBObject>();
+		while ( operation != null ) {
+			if ( operation instanceof UpdateTupleOperation ) {
+				UpdateTupleOperation tupleOperation = (UpdateTupleOperation) operation;
+				MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
+				EntityKey entityKey = tupleOperation.getEntityKey();
+				Tuple tuple = tupleOperation.getTuple();
+				if ( snapshot.isNewlyInserted() && notContainsInvalidChars( tupleOperation ) ) {
+					DBObject updated = createDBObject( updates, snapshot, entityKey, tuple );
+					updates.put( entityKey, updated );
+				}
+				else {
+					flushUpdates( updates );
+					updateTuple( tuple, entityKey );
+				}
+			}
+			else if ( operation instanceof RemoveTupleOperation ) {
+				flushUpdates( updates );
+				RemoveTupleOperation tupleOperation = (RemoveTupleOperation) operation;
+				removeTuple( tupleOperation.getEntityKey() );
+			}
+			else if ( operation instanceof UpdateAssociationOperation ) {
+				flushUpdates( updates );
+				UpdateAssociationOperation associationOperation = (UpdateAssociationOperation) operation;
+				updateAssociation( associationOperation.getAssociation(), associationOperation.getAssociationKey(), associationOperation.getContext() );
+			}
+			else if ( operation instanceof RemoveAssociationOperation ) {
+				flushUpdates( updates );
+				RemoveAssociationOperation associationOperation = (RemoveAssociationOperation) operation;
+				removeAssociation( associationOperation.getAssociationKey(), associationOperation.getContext() );
+			}
+			else {
+				throw new UnsupportedOperationException( operation.getClass().getName() );
+			}
+			operation = queue.poll();
+		}
+		flushUpdates( updates );
+	}
+
+	private DBObject createDBObject(Map<EntityKey, DBObject> objects, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
+		BasicDBObject dbObject = null;
+		if ( !objects.containsKey( entityKey ) ) {
+			dbObject = (BasicDBObject) snapshot.getDbObject();
+		}
+		else {
+			dbObject = (BasicDBObject) objects.get( entityKey );
+		}
+		return createDBObjectForInsert( tuple, entityKey, dbObject );
+	}
+
+	// Field cannot have some characters in the name
+	private boolean notContainsInvalidChars(UpdateTupleOperation tupleOperation) {
+		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
+		for ( String column : columnNames ) {
+			if ( column.contains( "." ) || column.contains( "$" ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void flushUpdates(Map<EntityKey, DBObject> updates) {
+		Map<DBCollection, List<DBObject>> inserts = new HashMap<DBCollection, List<DBObject>>();
+		for ( Map.Entry<EntityKey, DBObject> entry : updates.entrySet() ) {
+			DBCollection collection = getCollection( entry.getKey() );
+			if ( !inserts.containsKey( collection ) ) {
+				inserts.put( collection, new ArrayList<DBObject>() );
+			}
+			inserts.get( collection ).add( entry.getValue() );
+		}
+		for ( Map.Entry<DBCollection, List<DBObject>> entry : inserts.entrySet() ) {
+			entry.getKey().insert( entry.getValue() );
+		}
+		updates.clear();
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
