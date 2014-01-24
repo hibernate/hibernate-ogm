@@ -58,9 +58,10 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 
 	@Override
 	public DatastoreProvider initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
 
-		DatastoreProvider datastoreProvider = propertyReader.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+		DatastoreProvider datastoreProvider = propertyReader.propertyByType( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( DEFAULT_DATASTORE_PROVIDER )
 				.withShortNameResolver( DatastoreProviderShortNameResolver.INSTANCE )
 				.getValue();

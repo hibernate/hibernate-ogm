@@ -38,6 +38,7 @@ import org.hibernate.service.spi.Stoppable;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
 
 /**
@@ -78,7 +79,11 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		if ( !isCacheStarted ) {
 			try {
 				ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
-				this.mongo = new MongoClient( serverAddress, config.buildOptions() );
+				MongoClientOptions clientOptions = config.buildOptions();
+
+				log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
+
+				this.mongo = new MongoClient( serverAddress, clientOptions );
 				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
@@ -110,10 +115,13 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 					throw log.authenticationFailed( config.getUsername() );
 				}
 			}
-			if ( !this.mongo.getDatabaseNames().contains( config.getDatabaseName() ) ) {
-				log.creatingDatabase( config.getDatabaseName() );
+			String databaseName = config.getDatabaseName();
+			log.connectingToMongoDatabase( databaseName );
+
+			if ( !this.mongo.getDatabaseNames().contains( databaseName ) ) {
+				log.creatingDatabase( databaseName );
 			}
-			return this.mongo.getDB( config.getDatabaseName() );
+			return this.mongo.getDB( databaseName );
 		}
 		catch ( HibernateException e ) {
 			throw e;

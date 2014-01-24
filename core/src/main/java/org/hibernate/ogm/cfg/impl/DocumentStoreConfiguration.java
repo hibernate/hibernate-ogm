@@ -20,12 +20,12 @@
  */
 package org.hibernate.ogm.cfg.impl;
 
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Map;
 
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -34,19 +34,105 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  *
  * @author Gunnar Morling
  */
-public class DocumentStoreConfiguration {
+public abstract class DocumentStoreConfiguration {
+
+	/**
+	 * The default host to connect to in case the {@link OgmProperties#HOST} property is not set
+	 */
+	private static final String DEFAULT_HOST = "localhost";
 
 	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
 
 	private static final Log log = LoggerFactory.make();
 
-	protected Map<?, ?> configurationValues;
-
+	private final String host;
+	private final int port;
+	private final String databaseName;
+	private final String username;
+	private final String password;
+	private final boolean createDatabase;
 	private final AssociationStorageType associationStorage;
 
-	public DocumentStoreConfiguration(Map<?, ?> configurationValues) {
-		associationStorage = buildAssociationStorage( configurationValues );
-		this.configurationValues = configurationValues;
+	public DocumentStoreConfiguration(Map<?, ?> configurationValues, int defaultPort) {
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
+
+		this.host = propertyReader.property( OgmProperties.HOST, String.class )
+				.withDefault( DEFAULT_HOST )
+				.getValue();
+
+		this.port =  propertyReader.property( OgmProperties.PORT, int.class )
+				.withDefault( defaultPort )
+				.getValue();
+		validatePort( port );
+
+		this.databaseName = propertyReader.property( OgmProperties.DATABASE, String.class )
+				.required()
+				.getValue();
+
+		this.username = propertyReader.property( OgmProperties.USERNAME, String.class ).getValue();
+		this.password = propertyReader.property( OgmProperties.PASSWORD, String.class ).getValue();
+
+		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
+				.withDefault( false )
+				.getValue();
+
+		associationStorage = propertyReader.property( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.class )
+				.withDefault( DEFAULT_ASSOCIATION_STORAGE )
+				.getValue();
+	}
+
+	private static void validatePort(int port) {
+		if ( port < 1 || port > 65535 ) {
+			throw log.illegalPortValue( port );
+		}
+	}
+
+	/**
+	 * @see OgmProperties#HOST
+	 * @return The host name of the data store instance
+	 */
+	public String getHost() {
+		return host;
+	}
+
+	/**
+	 * @see OgmProperties#PORT
+	 * @return The port of the data store instance to connect to
+	 */
+	public int getPort() {
+		return port;
+	}
+
+	/**
+	 * @see OgmProperties#DATABASE
+	 * @return the name of the database to connect to
+	 */
+	public String getDatabaseName() {
+		return databaseName;
+	}
+
+	/**
+	 * @see OgmProperties#USERNAME
+	 * @return The user name to be used for connecting with the data store
+	 */
+	public String getUsername() {
+		return username;
+	}
+
+	/**
+	 * @see OgmProperties#PASSWORD
+	 * @return The password to be used for connecting with the data store
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * @see OgmProperties#CREATE_DATABASE
+	 * @return whether to create the database to connect to if not existent or not
+	 */
+	public boolean isCreateDatabase() {
+		return createDatabase;
 	}
 
 	/**
@@ -55,25 +141,5 @@ public class DocumentStoreConfiguration {
 	 */
 	public AssociationStorageType getAssociationStorageStrategy() {
 		return associationStorage;
-	}
-
-	private AssociationStorageType buildAssociationStorage(Map<?, ?> cfg) {
-		Object value = cfg.get( DocumentStoreProperties.ASSOCIATIONS_STORE );
-
-		if ( value == null ) {
-			return DEFAULT_ASSOCIATION_STORAGE;
-		}
-		else if ( value instanceof AssociationStorageType ) {
-			return (AssociationStorageType) value;
-		}
-		else {
-			String associationStorageString = (String) value;
-			try {
-				return AssociationStorageType.valueOf( associationStorageString.toUpperCase( Locale.ENGLISH ) );
-			}
-			catch (IllegalArgumentException e) {
-				throw log.unknownAssociationStorageStrategy( associationStorageString, Arrays.toString( AssociationStorageType.class.getEnumConstants() ) );
-			}
-		}
 	}
 }

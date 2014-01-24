@@ -24,7 +24,6 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
@@ -50,9 +49,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1203, value = "Unable to find or initialize a connection to the MongoDB server")
 	HibernateException unableToInitializeMongoDB(@Cause RuntimeException e);
 
-	@Message(id = 1204, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '[%s]'.")
-	HibernateException mongoPortIllegalValue(String value);
-
 	@Message(id = 1205, value = "Could not resolve MongoDB hostname [%s]")
 	HibernateException mongoOnUnknownHost(String hostname);
 
@@ -63,9 +59,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = INFO)
 	@Message(id = 1207, value = "Connecting to Mongo database named [%s].")
 	void connectingToMongoDatabase(String dbName);
-
-	@Message(id = 1208, value = "The configuration property '" + OgmProperties.DATABASE + "' was not set. Can't connect to MongoDB.")
-	HibernateException mongoDbNameMissing();
 
 	@Message(id = 1209, value = "The database named [%s] cannot be dropped")
 	HibernateException unableToDropDatabase(@Cause MongoException e, String databaseName);
@@ -85,7 +78,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	HibernateException unableToConnectToDatastore(String host, int port, @Cause Exception e);
 
 	@Message(id = 1215, value = "The value set for the configuration property" + MongoDBProperties.TIMEOUT + " must be a number greater than 0. Found '[%s]'.")
-	HibernateException mongoDBTimeOutIllegalValue(String value);
+	HibernateException mongoDBTimeOutIllegalValue(int timeout);
 
 	@Message(id = 1216, value = "'%s' cannot be set as an available value for " + MongoDBProperties.WRITE_CONCERN +
 			" you must choose between [ACKNOWLEDGED, ERRORS_IGNORED, FSYNC_IGNORED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED," +
@@ -94,7 +87,4 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1217, value = "The result of a native query in MongoDB must be mapped by an entity")
 	HibernateException requireMetadatas();
-
-	@Message(id = 1218, value = "Unknown association document storage strategy: [%s]. Supported values are: %s" )
-	HibernateException unknownAssociationDocumentStorageStrategy(String strategy, String supportedValues);
 }

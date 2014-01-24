@@ -20,16 +20,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
-import java.util.Arrays;
-import java.util.Locale;
 import java.util.Map;
 
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
@@ -48,18 +46,6 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 */
 	public static final WriteConcern DEFAULT_WRITE_CONCERN = WriteConcern.ACKNOWLEDGED;
 
-	/**
-	 * The default host used to connect to MongoDB: if the {@link OgmProperties#HOST} property is not set, we'll attempt
-	 * to connect to localhost.
-	 */
-	public static final String DEFAULT_HOST = "127.0.0.1";
-
-	/**
-	 * The default port used to connect to MongoDB: if the {@link OgmProperties#PORT} property is not set, we'll try
-	 * this port.
-	 */
-	public static final int DEFAULT_PORT = 27017;
-
 	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
 
 	/**
@@ -70,62 +56,29 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 */
 	public static final int DEFAULT_TIMEOUT = 5000;
 
+	private static final int DEFAULT_PORT = 27017;
+
 	private static final Log log = LoggerFactory.getLogger();
 
-	private final String host;
-	private final int port;
 	private final AssociationDocumentType associationDocumentStorage;
-	private final String databaseName;
-	private final String username;
-	private final String password;
 	private final int timeout;
 	private final WriteConcern writeConcern;
 
-	public MongoDBConfiguration(Map<?, ?> configurationMap) {
-		super( configurationMap );
+	public MongoDBConfiguration(Map<?, ?> configurationValues) {
+		super( configurationValues, DEFAULT_PORT );
 
-		this.host = this.buildHost( configurationMap );
-		this.port = this.buildPort( configurationMap );
-		this.timeout = this.buildTimeout( configurationMap );
-		log.connectingToMongo( host, port, timeout );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
 
-		this.associationDocumentStorage = this.buildAssociationDocumentStorage( configurationMap );
-		this.writeConcern = this.buildWriteConcern( configurationMap );
-		this.databaseName = this.buildDatabase( configurationMap );
-		this.username = this.buildUsername( configurationMap );
-		this.password = this.buildPassword( configurationMap );
-	}
+		this.timeout = propertyReader.property( MongoDBProperties.TIMEOUT, int.class )
+				.withDefault( DEFAULT_TIMEOUT )
+				.getValue();
+		validateTimeout( timeout );
 
-	/**
-	 * @see OgmProperties#HOST
-	 * @return The hostname of the MongoDB instance
-	 */
-	public String getHost() {
-		return host;
-	}
+		this.associationDocumentStorage = propertyReader.property( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE, AssociationDocumentType.class )
+				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
+				.getValue();
 
-	/**
-	 * @see OgmProperties#PASSWORD
-	 * @return The password of the MongoDB admin database with authentication enabled
-	 */
-	public String getPassword() {
-		return password;
-	}
-
-	/**
-	 * @see OgmProperties#USERNAME
-	 * @return The username of the MongoDB admin database with authentication enabled
-	 */
-	public String getUsername() {
-		return username;
-	}
-
-	/**
-	 * @see OgmProperties#DATABASE
-	 * @return the MongoDB Database name to connect to
-	 */
-	public String getDatabaseName() {
-		return databaseName;
+		this.writeConcern = this.buildWriteConcern( configurationValues );
 	}
 
 	/**
@@ -134,59 +87,6 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 */
 	public AssociationDocumentType getAssociationDocumentStorage() {
 		return associationDocumentStorage;
-	}
-
-	/**
-	 * @see OgmProperties#PORT
-	 * @return The port of the MongoDB instance
-	 */
-	public int getPort() {
-		return port;
-	}
-
-	private String buildHost(Map<?, ?> cfg) {
-		Object cfgHost = cfg.get( OgmProperties.HOST );
-		return cfgHost != null ? cfgHost.toString() : DEFAULT_HOST;
-	}
-
-	private int buildPort(Map<?, ?> cfg) {
-		Object cfgPort = cfg.get( OgmProperties.PORT );
-		if ( cfgPort != null ) {
-			try {
-				int temporaryPort = Integer.valueOf( cfgPort.toString() );
-				if ( temporaryPort < 1 || temporaryPort > 65535 ) {
-					throw log.mongoPortIllegalValue( cfgPort.toString() );
-				}
-				return temporaryPort;
-			}
-			catch ( NumberFormatException e ) {
-				throw log.mongoPortIllegalValue( cfgPort.toString() );
-			}
-		}
-		else {
-			return DEFAULT_PORT;
-		}
-	}
-
-	private AssociationDocumentType buildAssociationDocumentStorage(Map<?, ?> cfg) {
-		Object value = cfg.get( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE );
-
-		if ( value == null ) {
-			// default value
-			return AssociationDocumentType.GLOBAL_COLLECTION;
-		}
-		else if ( value instanceof AssociationDocumentType ) {
-			return (AssociationDocumentType) value;
-		}
-		else {
-			String documentTypeString = (String) value;
-			try {
-				return AssociationDocumentType.valueOf( documentTypeString.toUpperCase( Locale.ENGLISH ) );
-			}
-			catch (IllegalArgumentException e) {
-				throw log.unknownAssociationDocumentStorageStrategy( documentTypeString, Arrays.toString( AssociationDocumentType.class.getEnumConstants() ) );
-			}
-		}
 	}
 
 	private WriteConcern buildWriteConcern(Map<?, ?> cfg) {
@@ -210,42 +110,10 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return writeConcern;
 	}
 
-	private int buildTimeout(Map<?, ?> cfg) {
-		Object cfgTimeout = cfg.get( MongoDBProperties.TIMEOUT );
-		if ( cfgTimeout != null ) {
-			try {
-				int temporaryTimeout = Integer.valueOf( cfgTimeout.toString() );
-				if ( temporaryTimeout < 0 ) {
-					throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
-				}
-				return temporaryTimeout;
-			}
-			catch ( NumberFormatException e ) {
-				throw log.mongoDBTimeOutIllegalValue( cfgTimeout.toString() );
-			}
+	private static void validateTimeout(int timeout) {
+		if ( timeout < 0 ) {
+			throw log.mongoDBTimeOutIllegalValue( timeout );
 		}
-		else {
-			return DEFAULT_TIMEOUT;
-		}
-	}
-
-	private String buildDatabase(Map<?, ?> cfg) {
-		Object dbNameObject = cfg.get( OgmProperties.DATABASE );
-		if ( dbNameObject == null ) {
-			throw log.mongoDbNameMissing();
-		}
-		String dbName = (String) dbNameObject;
-		log.connectingToMongoDatabase( dbName );
-		return dbName;
-	}
-
-	private String buildUsername(Map<?, ?> cfg) {
-		return (String) cfg.get( OgmProperties.USERNAME );
-	}
-
-	private String buildPassword(Map<?, ?> cfg) {
-		Object passwordObject = cfg.get( OgmProperties.PASSWORD );
-		return passwordObject != null ? passwordObject.toString() : "";
 	}
 
 	/**

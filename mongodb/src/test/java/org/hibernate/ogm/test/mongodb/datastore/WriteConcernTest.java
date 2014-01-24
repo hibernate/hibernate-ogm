@@ -47,7 +47,7 @@ public class WriteConcernTest {
 	@BeforeClass
 	public static void initCfg() {
 		cfg = new HashMap<String, String>();
-		cfg.put( OgmProperties.HOST, MongoDBConfiguration.DEFAULT_HOST );
+		cfg.put( OgmProperties.HOST, "localhost" );
 		cfg.put( OgmProperties.PORT, "27017" );
 		cfg.put( OgmProperties.DATABASE, "database" );
 	}

@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.couchdb.impl.util;
 
 import java.util.Map;
 
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 
 /**
@@ -33,54 +32,9 @@ import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
  */
 public class CouchDBConfiguration extends DocumentStoreConfiguration {
 
-	public static final String DEFAULT_COUCHDB_PORT = "5984";
-	public static final String LOCALHOST = "localhost";
+	public static final int DEFAULT_PORT = 5984;
 
 	public CouchDBConfiguration(Map<?, ?> configurationValues) {
-		super( configurationValues );
-	}
-
-	public String getDatabaseHost() {
-		return getPropertyValue( OgmProperties.HOST, LOCALHOST );
-	}
-
-	public int getDatabasePort() {
-		return Integer.valueOf( getPropertyValue( OgmProperties.PORT, DEFAULT_COUCHDB_PORT ) );
-	}
-
-	public String getDatabaseName() {
-		return getPropertyValue( OgmProperties.DATABASE, null );
-	}
-
-	public String getUsername() {
-		return getPropertyValue( OgmProperties.USERNAME, null );
-	}
-
-	public String getPassword() {
-		return getPropertyValue( OgmProperties.PASSWORD, null );
-	}
-
-	public boolean isDatabaseToBeCreated() {
-		return Boolean.valueOf( getPropertyValue( OgmProperties.CREATE_DATABASE, Boolean.toString( false ) ) );
-	}
-
-	public boolean isDatabaseNameConfigured() {
-		return isValueConfigured( getDatabaseName() );
-	}
-
-	private String getPropertyValue(String propertyKey, String defaultValue) {
-		final String value = getConfigurationValue( propertyKey );
-		if ( isValueConfigured( value ) ) {
-			return value;
-		}
-		return defaultValue;
-	}
-
-	private String getConfigurationValue(String propertyName) {
-		return (String) configurationValues.get( propertyName );
-	}
-
-	private boolean isValueConfigured(String property) {
-		return property != null && !property.trim().equals( "" );
+		super( configurationValues, DEFAULT_PORT );
 	}
 }

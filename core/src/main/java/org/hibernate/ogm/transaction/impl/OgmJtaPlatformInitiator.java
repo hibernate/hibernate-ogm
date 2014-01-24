@@ -62,8 +62,9 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 
 	//TODO OGM-370 get rid of this!!!
 	private boolean isNeo4j(Map configuration, ClassLoaderService classLoaderService) {
-		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration, classLoaderService )
-			.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration )
+			.propertyByType( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+			.withClassLoaderService( classLoaderService )
 			.withShortNameResolver( new DatastoreProviderInitiator.DatastoreProviderShortNameResolver() )
 			.getValue();
 

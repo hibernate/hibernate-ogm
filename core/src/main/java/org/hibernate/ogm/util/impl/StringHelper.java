@@ -30,6 +30,10 @@ public class StringHelper {
 		return value != null ? value.length() == 0 : true;
 	}
 
+	public static boolean isNullOrEmptyString(Object value) {
+		return value == null || value.toString().trim().isEmpty();
+	}
+
 	public static String toString(Object[] array) {
 		int len = array.length;
 		if ( len == 0 ) {
