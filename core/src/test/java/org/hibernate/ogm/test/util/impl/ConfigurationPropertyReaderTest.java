@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -28,10 +28,10 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.ogm.cfg.impl.Validators;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.Instantiator;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.ShortNameResolver;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.Instantiator;
+import org.hibernate.ogm.util.impl.configurationreader.ShortNameResolver;
+import org.hibernate.ogm.util.impl.configurationreader.Validators;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -52,7 +52,8 @@ public class ConfigurationPropertyReaderTest {
 		properties.put( "service", new MyServiceImpl() );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
@@ -65,7 +66,8 @@ public class ConfigurationPropertyReaderTest {
 		properties.put( "service", MyServiceImpl.class );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
@@ -78,7 +80,8 @@ public class ConfigurationPropertyReaderTest {
 		properties.put( "service", MyServiceImpl.class.getName() );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
@@ -90,7 +93,8 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyOtherServiceImpl.class )
 				.getValue();
@@ -104,7 +108,8 @@ public class ConfigurationPropertyReaderTest {
 		properties.put( "service", "other" );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withShortNameResolver( new MyShortNameResolver() )
 				.getValue();
@@ -117,7 +122,8 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyServiceImpl.class.getName() )
 				.getValue();
@@ -130,7 +136,8 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
-		MyService value = reader.propertyByType( "service", MyService.class )
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyYetAnotherServiceImpl.class )
 				.withInstantiator( new MyInstantiator() )
@@ -149,7 +156,8 @@ public class ConfigurationPropertyReaderTest {
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
 
-		reader.propertyByType( "service", MyService.class )
+		reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}
@@ -164,7 +172,8 @@ public class ConfigurationPropertyReaderTest {
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
 
-		reader.propertyByType( "service", MyService.class )
+		reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}
@@ -179,7 +188,8 @@ public class ConfigurationPropertyReaderTest {
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
 
-		reader.propertyByType( "service", MyService.class )
+		reader.property( "service", MyService.class )
+				.instantiate()
 				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}

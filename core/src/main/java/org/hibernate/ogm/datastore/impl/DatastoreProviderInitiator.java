@@ -26,8 +26,8 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.ShortNameResolver;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.ShortNameResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -60,7 +60,8 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 	public DatastoreProvider initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
 
-		DatastoreProvider datastoreProvider = propertyReader.propertyByType( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+		DatastoreProvider datastoreProvider = propertyReader.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( DEFAULT_DATASTORE_PROVIDER )
 				.withShortNameResolver( DatastoreProviderShortNameResolver.INSTANCE )

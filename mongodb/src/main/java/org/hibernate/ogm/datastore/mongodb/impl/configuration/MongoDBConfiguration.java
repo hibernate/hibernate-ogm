@@ -28,8 +28,8 @@ import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.logging.mongodb.impl.Log;
 import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.PropertyValidator;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.PropertyValidator;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;

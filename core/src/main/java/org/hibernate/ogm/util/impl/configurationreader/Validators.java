@@ -18,10 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.cfg.impl;
+package org.hibernate.ogm.util.impl.configurationreader;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.PropertyValidator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

@@ -25,7 +25,8 @@ import java.util.Map;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.Validators;
 
 /**
  * Provides access to properties common to different document datastores.

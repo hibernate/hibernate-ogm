@@ -34,7 +34,7 @@ import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -63,7 +63,8 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 	//TODO OGM-370 get rid of this!!!
 	private boolean isNeo4j(Map configuration, ClassLoaderService classLoaderService) {
 		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration )
-			.propertyByType( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+			.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
+			.instantiate()
 			.withClassLoaderService( classLoaderService )
 			.withShortNameResolver( new DatastoreProviderInitiator.DatastoreProviderShortNameResolver() )
 			.getValue();

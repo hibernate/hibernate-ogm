@@ -25,7 +25,7 @@ import java.util.Map;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 
 /**
  * Creates an instance of {@link GraphDatabaseServiceFactory} using the implementation selected in the properties.
@@ -40,7 +40,8 @@ public class Neo4jGraphDatabaseServiceFactoryProvider {
 
 	public GraphDatabaseServiceFactory load(Map<?, ?> properties, ClassLoaderService classLoaderService) {
 		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader(properties )
-			.propertyByType( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
+			.property( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
+			.instantiate()
 			.withClassLoaderService( classLoaderService )
 			.withDefaultImplementation( EmbeddedGraphDatabaseFactory.class )
 			.getValue();

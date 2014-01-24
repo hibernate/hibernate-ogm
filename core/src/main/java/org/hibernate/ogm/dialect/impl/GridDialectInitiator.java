@@ -30,8 +30,8 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader.Instantiator;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.configurationreader.Instantiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -60,7 +60,8 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
 
-		return propertyReader.propertyByType( OgmProperties.GRID_DIALECT, GridDialect.class )
+		return propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
+				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
 				.withInstantiator( new GridDialectInstantiator( datastore ) )

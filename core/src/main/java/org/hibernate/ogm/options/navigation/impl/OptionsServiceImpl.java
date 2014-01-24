@@ -31,9 +31,9 @@ import org.hibernate.ogm.cfg.spi.OptionConfigurer;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.util.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -60,10 +60,12 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 	public void configure(Map configurationValues) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
 
-		OptionsServiceContext context = propertyReader.propertyByType( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class )
+		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class )
+				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.getValue();
-		OptionConfigurer configurer = propertyReader.propertyByType( OgmProperties.OPTION_CONFIGURER, OptionConfigurer.class )
+		OptionConfigurer configurer = propertyReader.property( OgmProperties.OPTION_CONFIGURER, OptionConfigurer.class )
+				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.getValue();
 
