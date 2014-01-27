@@ -256,31 +256,6 @@ public class CouchDBDialect implements GridDialect {
 		}
 	}
 
-	/**
-	 * Returns the number of associations stored inside the database
-	 *
-	 * @return the number of associations
-	 */
-	public int getAssociationSize() {
-		Map<AssociationStorageType, Integer> associationCountByType = getDataStore().getNumberOfAssociations();
-
-		int totalCount = 0;
-		for ( int count : associationCountByType.values() ) {
-			totalCount += count;
-		}
-
-		return totalCount;
-	}
-
-	/**
-	 * Returns the number of entities stored inside the database
-	 *
-	 * @return the number of entities
-	 */
-	public int getEntitiesSize() {
-		return getDataStore().getNumberOfEntities();
-	}
-
 	private void forTuple(Consumer consumer, EntityKeyMetadata entityKeyMetadata) {
 		List<Tuple> tuples = getTuples( entityKeyMetadata );
 		for ( Tuple tuple : tuples ) {
@@ -297,7 +272,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	private void removeDocumentIfPresent(String id) {
-		String currentRevision = getDataStore().getCurrentRevision( id );
+		String currentRevision = getDataStore().getCurrentRevision( id, false );
 		if ( currentRevision != null ) {
 			getDataStore().deleteDocument( id, currentRevision );
 		}

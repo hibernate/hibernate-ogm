@@ -20,9 +20,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
@@ -30,20 +28,15 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.facade.DatabaseClient;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.facade.ServerClient;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.AssociationCountResponse;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.AssociationDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.Document;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityCountResponse;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.GenericResponse;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.SequenceDocument;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.AssociationsDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.DesignDocument;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.EntityTupleRows;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.TuplesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
@@ -51,7 +44,6 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
@@ -63,17 +55,20 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
  * Provides access and interaction with a database instance of CouchDB.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBDatastore {
 
 	private static final Log logger = LoggerFactory.getLogger();
 	private final DatabaseClient databaseClient;
 	private final ServerClient serverClient;
+	private final DataBaseURL databaseUrl;
 
 	private CouchDBDatastore(DataBaseURL databaseUrl, String userName, String password) {
 		logger.connectingToCouchDB( databaseUrl.toString() );
 		serverClient = createServerClient( databaseUrl );
 		databaseClient = createDataBaseClient( databaseUrl );
+		this.databaseUrl = databaseUrl;
 	}
 
 	/**
@@ -90,14 +85,19 @@ public class CouchDBDatastore {
 		RegisterBuiltin.register( ResteasyProviderFactory.getInstance() );
 
 		CouchDBDatastore couchDBDatastore = new CouchDBDatastore( databaseURL, userName, password );
-
-		if ( createDatabase ) {
-			couchDBDatastore.createDatabase( databaseURL );
-		}
-
-		couchDBDatastore.createDesignDocumentsIfNotExist();
+		couchDBDatastore.initialize( createDatabase );
 
 		return couchDBDatastore;
+	}
+
+	private void initialize(boolean createDatabase) {
+		if ( createDatabase ) {
+			createDatabase();
+		}
+
+		if ( !exists( TuplesDesignDocument.DOCUMENT_ID, true ) ) {
+			saveDocument( new TuplesDesignDocument() );
+		}
 	}
 
 	/**
@@ -186,14 +186,15 @@ public class CouchDBDatastore {
 	/**
 	 * Returns the current revision of the document with the given id.
 	 *
-	 * @param id the document's id
+	 * @param documentId the document's id
+	 * @param isDesignDocument whether the given id identifies a design document or not
 	 * @return the current revision of the specified document or {@code null} if no document with the given id exists
 	 */
-	public String getCurrentRevision(String id) {
+	public String getCurrentRevision(String documentId, boolean isDesignDocument) {
 		Response response = null;
 
 		try {
-			response = databaseClient.getCurrentRevision( id );
+			response = isDesignDocument ? databaseClient.getCurrentRevisionOfDesignDocument( documentId ) : databaseClient.getCurrentRevision( documentId );
 
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				//The revision is returned as ETag for HEAD requests
@@ -204,7 +205,7 @@ public class CouchDBDatastore {
 			}
 			else {
 				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.errorRetrievingCurrentRevision( id, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
+				throw logger.errorRetrievingCurrentRevision( documentId, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
 			}
 		}
 		catch (ResteasyClientException e) {
@@ -215,6 +216,13 @@ public class CouchDBDatastore {
 				response.close();
 			}
 		}
+	}
+
+	/**
+	 * Whether the given document exists in the datastore or not.
+	 */
+	public boolean exists(String documentId, boolean isDesignDocument) {
+		return getCurrentRevision( documentId, isDesignDocument ) != null;
 	}
 
 	/**
@@ -300,66 +308,6 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Retrieves the number of associations stored in the database
-	 *
-	 * @return the number of associations stored in the database
-	 */
-	public Map<AssociationStorageType, Integer> getNumberOfAssociations() {
-		Response response = null;
-		try {
-			response = databaseClient.getNumberOfAssociations( true );
-			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				AssociationCountResponse countResponse = response.readEntity( AssociationCountResponse.class );
-
-				Map<AssociationStorageType, Integer> countsByType = new HashMap<AssociationStorageType, Integer>( 2 );
-				countsByType.put( AssociationStorageType.IN_ENTITY, countResponse.getInEntityAssociationCount() );
-				countsByType.put( AssociationStorageType.ASSOCIATION_DOCUMENT, countResponse.getAssociationDocumentCount() );
-
-				return countsByType;
-			}
-			else {
-				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
-			}
-		}
-		catch (ResteasyClientException e) {
-			throw logger.couchDBConnectionProblem( e );
-		}
-		finally {
-			if ( response != null ) {
-				response.close();
-			}
-		}
-	}
-
-	/**
-	 * Retrieves the number of CouchDBEntity stored in the database
-	 *
-	 * @return the number of CouchDBEntity stored in the database
-	 */
-	public int getNumberOfEntities() {
-		Response response = null;
-		try {
-			response = databaseClient.getNumberOfEntities();
-			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				return response.readEntity( EntityCountResponse.class ).getCount();
-			}
-			else {
-				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.unableToRetrieveTheNumberOfEntities( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
-			}
-		}
-		catch (ResteasyClientException e) {
-			throw logger.couchDBConnectionProblem( e );
-		}
-		finally {
-			if ( response != null ) {
-				response.close();
-			}
-		}
-	}
-
-	/**
 	 * Deletes the database
 	 */
 	public void dropDatabase() {
@@ -387,14 +335,22 @@ public class CouchDBDatastore {
 	public void shutDown() {
 	}
 
-	private void createDatabase(DataBaseURL url) {
+	/**
+	 * Returns the URL of the underlying CouchDB instance.
+	 * @return the URL of the underlying CouchDB instance
+	 */
+	public DataBaseURL getDatabaseUrl() {
+		return databaseUrl;
+	}
+
+	private void createDatabase() {
 		Response response = null;
 		try {
-			if ( !databaseExists( url.getDataBaseName() ) ) {
-				response = serverClient.createDatabase( url.getDataBaseName() );
+			if ( !databaseExists( databaseUrl.getDataBaseName() ) ) {
+				response = serverClient.createDatabase( databaseUrl.getDataBaseName() );
 				if ( response.getStatus() != Response.Status.CREATED.getStatusCode() ) {
 					GenericResponse entity = response.readEntity( GenericResponse.class );
-					throw logger.errorCreatingDatabase( url.getDataBaseName(), response.getStatus(), entity.getError(), entity.getReason() );
+					throw logger.errorCreatingDatabase( databaseUrl.getDataBaseName(), response.getStatus(), entity.getError(), entity.getReason() );
 				}
 			}
 		}
@@ -524,28 +480,4 @@ public class CouchDBDatastore {
 			}
 		}
 	}
-
-	private void createDesignDocumentsIfNotExist() {
-		if ( !designDocumentsExist() ) {
-			createDesignDocuments();
-		}
-	}
-
-	private void createDesignDocuments() {
-		saveDocument( new EntitiesDesignDocument() );
-		saveDocument( new AssociationsDesignDocument() );
-		saveDocument( new TuplesDesignDocument() );
-	}
-
-	private boolean designDocumentsExist() {
-		try {
-			getNumberOfEntities();
-			getNumberOfAssociations();
-			return true;
-		}
-		catch (HibernateException e) {
-			return false;
-		}
-	}
-
 }
