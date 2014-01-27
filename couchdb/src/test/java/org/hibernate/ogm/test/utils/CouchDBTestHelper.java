@@ -24,6 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
@@ -33,44 +38,112 @@ import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
+import org.hibernate.ogm.dialect.couchdb.impl.backend.json.GenericResponse;
 import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.impl.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.logging.couchdb.impl.Log;
+import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.hibernate.ogm.test.utils.backend.facade.DatabaseTestClient;
+import org.hibernate.ogm.test.utils.backend.json.AssociationCountResponse;
+import org.hibernate.ogm.test.utils.backend.json.EntityCountResponse;
+import org.hibernate.ogm.test.utils.backend.json.designdocument.AssociationsDesignDocument;
+import org.hibernate.ogm.test.utils.backend.json.designdocument.EntitiesDesignDocument;
+import org.jboss.resteasy.client.exception.ResteasyClientException;
+import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 
 /**
+ * Testing infrastructure for CouchDB.
+ *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBTestHelper implements TestableGridDialect {
 
-	static {
-		RegisterBuiltin.register( ResteasyProviderFactory.getInstance() );
-	}
+	private static final Log logger = LoggerFactory.getLogger();
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		return getDataStore( sessionFactory ).getNumberOfEntities();
+		return getNumberOfEntities( getDataStore( sessionFactory ) );
+	}
+
+	public long getNumberOfEntities(CouchDBDatastore dataStore) {
+		DatabaseTestClient databaseTestClient = getDatabaseTestClient( dataStore );
+
+		Response response = null;
+
+		try {
+			response = databaseTestClient.getNumberOfEntities();
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				return response.readEntity( EntityCountResponse.class ).getCount();
+			}
+			else {
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
+				throw logger.unableToRetrieveTheNumberOfEntities( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
+			}
+		}
+		catch (ResteasyClientException e) {
+			throw logger.couchDBConnectionProblem( e );
+		}
+		finally {
+			if ( response != null ) {
+				response.close();
+			}
+		}
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
-		Integer count = getDataStore( sessionFactory ).getNumberOfAssociations().get( type );
+		DatabaseTestClient databaseTestClient = getDatabaseTestClient( getDataStore( sessionFactory ) );
+		Long count = getNumberOfAssociations( databaseTestClient ).get( type );
 		return count != null ? count : 0;
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		CouchDBDatastore dataStore = getDataStore( sessionFactory );
+		DatabaseTestClient databaseTestClient = getDatabaseTestClient( getDataStore( sessionFactory ) );
 
-		Map<AssociationStorageType, Integer> associationCountByType = dataStore.getNumberOfAssociations();
-		int totalCount = 0;
-		for ( int count : associationCountByType.values() ) {
+		Map<AssociationStorageType, Long> associationCountByType = getNumberOfAssociations( databaseTestClient );
+		long totalCount = 0;
+		for ( long count : associationCountByType.values() ) {
 			totalCount += count;
 		}
 		return totalCount;
+	}
+
+	/**
+	 * Retrieves the number of associations stored in the database
+	 *
+	 * @return the number of associations stored in the database
+	 */
+	public Map<AssociationStorageType, Long> getNumberOfAssociations(DatabaseTestClient databaseTestClient) {
+		Response response = null;
+		try {
+			response = databaseTestClient.getNumberOfAssociations( true );
+			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
+				AssociationCountResponse countResponse = response.readEntity( AssociationCountResponse.class );
+
+				Map<AssociationStorageType, Long> countsByType = new HashMap<AssociationStorageType, Long>( 2 );
+				countsByType.put( AssociationStorageType.IN_ENTITY, countResponse.getInEntityAssociationCount() );
+				countsByType.put( AssociationStorageType.ASSOCIATION_DOCUMENT, countResponse.getAssociationDocumentCount() );
+
+				return countsByType;
+			}
+			else {
+				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
+				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
+			}
+		}
+		catch (ResteasyClientException e) {
+			throw logger.couchDBConnectionProblem( e );
+		}
+		finally {
+			if ( response != null ) {
+				response.close();
+			}
+		}
 	}
 
 	@Override
@@ -116,17 +189,30 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	private CouchDBDatastore getDataStore(SessionFactory sessionFactory) {
-		CouchDBDatastoreProvider provider = getProvider( sessionFactory );
-		return provider.getDataStore();
-	}
+		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory )
+				.getServiceRegistry()
+				.getService( DatastoreProvider.class );
 
-	private CouchDBDatastoreProvider getProvider(SessionFactory sessionFactory) {
-		DatastoreProvider provider = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService(
-				DatastoreProvider.class );
 		if ( !( provider instanceof CouchDBDatastoreProvider ) ) {
 			throw new RuntimeException( "DatastoreProvider is not an instance of " + CouchDBDatastoreProvider.class );
 		}
-		return (CouchDBDatastoreProvider) provider;
+
+		return ( (CouchDBDatastoreProvider) provider ).getDataStore();
+	}
+
+	private DatabaseTestClient getDatabaseTestClient(CouchDBDatastore dataStore) {
+		if ( !dataStore.exists( AssociationsDesignDocument.DOCUMENT_ID, true ) ) {
+			dataStore.saveDocument( new AssociationsDesignDocument() );
+		}
+		if ( !dataStore.exists( EntitiesDesignDocument.DOCUMENT_ID, true ) ) {
+			dataStore.saveDocument( new EntitiesDesignDocument() );
+		}
+
+		Client client = ClientBuilder.newBuilder().build();
+		WebTarget target = client.target( dataStore.getDatabaseUrl().toString() );
+		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
+
+		return rtarget.proxy( DatabaseTestClient.class );
 	}
 
 	@Override

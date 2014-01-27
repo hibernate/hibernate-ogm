@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.couchdb;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -42,6 +43,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.test.utils.CouchDBTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -95,7 +97,7 @@ public class CouchDBDialectTest {
 
 		dialect.removeTuple( key );
 
-		assertThat( dialect.getEntitiesSize(), is( 0 ) );
+		assertThat( new CouchDBTestHelper().getNumberOfEntities( datastoreProvider.getDataStore() ) ).isEqualTo( 0 );
 	}
 
 	@Test
@@ -153,43 +155,6 @@ public class CouchDBDialectTest {
 
 		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
 		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
-	}
-
-	@Test
-	public void getNumberOfAssociationsShouldReturnTheCorrectNumber() {
-
-		String tableName = "user_address";
-		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
-		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
-		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-
-		AssociationKey key = createAssociationKey(
-				entityKey, "addresses", tableName, new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
-		);
-		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
-
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "user_id", "Emmanuel" );
-		properties.put( "addresses_id", 1 );
-		Tuple tuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
-
-		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
-		createAssociation.put( rowKey, tuple );
-		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
-
-		assertThat( dialect.getAssociationSize(), is( 1 ) );
-	}
-
-	@Test
-	public void getNumberOfEntitiesShouldReturnTheCorrectNumber() {
-
-		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key );
-		createdTuple.put( "name", "and" );
-
-		dialect.updateTuple( createdTuple, key );
-
-		assertThat( dialect.getEntitiesSize(), is( 1 ) );
 	}
 
 	private EntityKey createEntityKey(String tableName, String[] columnNames, Object[] values) {

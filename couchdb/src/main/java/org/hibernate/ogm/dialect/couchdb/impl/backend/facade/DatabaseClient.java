@@ -32,9 +32,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.Document;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.AssociationsDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.DesignDocument;
-import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.TuplesDesignDocument;
 
 /**
@@ -121,27 +119,6 @@ public interface DatabaseClient {
 	Response getKeyValueById(@PathParam("id") String id);
 
 	/**
-	 * Retrieve the number of associations stored in the database.
-	 *
-	 * @return the response in form of a {@link org.hibernate.ogm.dialect.couchdb.impl.backend.json.AssociationCountResponse}
-	 * entity
-	 */
-	@GET
-	// TODO Can the parameter be avoided? It is always set to true, but adding "?group=true" to the path itself causes
-	// the question mark to be URL-encoded
-	@Path(AssociationsDesignDocument.ASSOCIATION_COUNT_PATH)
-	Response getNumberOfAssociations(@QueryParam("group") boolean group);
-
-	/**
-	 * Retrieve the number of entities stored in the database
-	 *
-	 * @return the Response CouchDB with the {@link org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.Rows}
-	 */
-	@GET
-	@Path(EntitiesDesignDocument.ENTITY_COUNT_PATH)
-	Response getNumberOfEntities();
-
-	/**
 	 * Retrieve all the entity tuples with the table name equals to the given one.
 	 *
 	 * @param tableName name of the entity
@@ -162,4 +139,15 @@ public interface DatabaseClient {
 	@HEAD
 	@Path("{id}")
 	Response getCurrentRevision(@PathParam("id") String id);
+
+	/**
+	 * Retrieves the current revision of the design document with the given id.
+	 *
+	 * @param id the id of the design document of which to get the current revision
+	 * @return the current revision of the specified design document, contained in the response's ETag. If the specified
+	 * design document doesn't exist, the response's status will be 404.
+	 */
+	@HEAD
+	@Path("_design/{id}")
+	Response getCurrentRevisionOfDesignDocument(@PathParam("id") String id);
 }

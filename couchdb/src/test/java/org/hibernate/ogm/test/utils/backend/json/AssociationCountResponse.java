@@ -18,22 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.impl.backend.json;
+package org.hibernate.ogm.test.utils.backend.json;
 
 /**
- * Represents the result returned by the entity count list functions.
+ * Represents the result returned by the association count list functions.
  *
  * @author Gunnar Morling
  */
-public class EntityCountResponse {
+public class AssociationCountResponse {
 
-	private int count;
+	private long associationDocumentCount;
 
-	public int getCount() {
-		return count;
+	private long inEntityAssociationCount;
+
+	public long getAssociationDocumentCount() {
+		return associationDocumentCount;
 	}
 
-	public void setCount(int count) {
-		this.count = count;
+	public void setAssociationDocumentCount(long associationDocumentCount) {
+		this.associationDocumentCount = associationDocumentCount;
+	}
+
+	public long getInEntityAssociationCount() {
+		return inEntityAssociationCount;
+	}
+
+	public void setInEntityAssociationCount(long inEntityAssociationCount) {
+		this.inEntityAssociationCount = inEntityAssociationCount;
 	}
 }
