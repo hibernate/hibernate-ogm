@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -25,6 +25,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -52,7 +53,7 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
 
-		return propertyReader.property( OgmProperties.QUERY_PARSER_SERVICE, QueryParserService.class )
+		return propertyReader.property( InternalProperties.QUERY_PARSER_SERVICE, QueryParserService.class )
 				.instantiate()
 				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType() )

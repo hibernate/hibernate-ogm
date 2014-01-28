@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -50,7 +50,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 
 	private void resetOgm() {
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
-		setProperty( OgmProperties.OGM_ON, "true" );
+		setProperty( InternalProperties.OGM_ON, "true" );
 		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
 		// false
 		setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
@@ -70,8 +70,8 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		super.setProperties( properties );
 		//Unless the new configuration properties explicitly disable OGM's default properties
 		//assume there was no intention to disable them:
-		if ( ! properties.containsKey( OgmProperties.OGM_ON ) ) {
-			setProperty( OgmProperties.OGM_ON, "true" );
+		if ( ! properties.containsKey( InternalProperties.OGM_ON ) ) {
+			setProperty( InternalProperties.OGM_ON, "true" );
 		}
 		if ( ! properties.containsKey(  AvailableSettings.QUERY_STARTUP_CHECKING ) ) {
 			setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
