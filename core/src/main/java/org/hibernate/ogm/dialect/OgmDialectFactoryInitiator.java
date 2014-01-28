@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.sql.Connection;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
@@ -28,6 +27,7 @@ import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.dialect.internal.DialectFactoryInitiator;
 import org.hibernate.engine.jdbc.dialect.spi.DialectFactory;
+import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfoSource;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -56,7 +56,7 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 	private static class NoopDialectFactory implements DialectFactory {
 
 		@Override
-		public Dialect buildDialect(Map configValues, Connection connection) throws HibernateException {
+		public Dialect buildDialect(Map configValues, DialectResolutionInfoSource resolutionInfoSource) throws HibernateException {
 			return new NoopDialect();
 		}
 	}

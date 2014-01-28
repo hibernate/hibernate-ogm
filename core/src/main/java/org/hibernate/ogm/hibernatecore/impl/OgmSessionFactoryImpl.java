@@ -32,6 +32,7 @@ import javax.naming.StringRefAddr;
 
 import org.hibernate.Cache;
 import org.hibernate.CustomEntityDirtinessStrategy;
+import org.hibernate.EntityNameResolver;
 import org.hibernate.HibernateException;
 import org.hibernate.Interceptor;
 import org.hibernate.MappingException;
@@ -474,5 +475,10 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 				OgmSessionFactoryObjectFactory.class.getName(),
 				null
 				);
+	}
+
+	@Override
+	public Iterable<EntityNameResolver> iterateEntityNameResolvers() {
+		return delegate.iterateEntityNameResolvers();
 	}
 }

@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.persister;
 
+import java.util.Set;
+
 import org.hibernate.HibernateException;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
@@ -41,6 +43,11 @@ public class UnionSubclassOgmEntityPersister extends OgmEntityPersister {
 			Mapping mapping) throws HibernateException {
 		super( persistentClass, cacheAccessStrategy, naturalIdRegionAccessStrategy, factory, mapping,
 				new TablePerClassDiscriminator( persistentClass ) );
+	}
+
+	@Override
+	protected String filterFragment(String alias, Set<String> treatAsDeclarations) {
+		return null;
 	}
 
 }

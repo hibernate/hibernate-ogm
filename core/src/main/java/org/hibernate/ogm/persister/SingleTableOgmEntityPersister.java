@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.persister;
 
+import java.util.Set;
+
 import org.hibernate.HibernateException;
 import org.hibernate.cache.spi.access.EntityRegionAccessStrategy;
 import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
@@ -61,6 +63,11 @@ public class SingleTableOgmEntityPersister extends OgmEntityPersister {
 		else {
 			return NotNeededDiscriminator.INSTANCE;
 		}
+	}
+
+	@Override
+	protected String filterFragment(String alias, Set<String> treatAsDeclarations) {
+		return null;
 	}
 
 }

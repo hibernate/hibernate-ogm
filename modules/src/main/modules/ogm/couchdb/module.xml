@@ -27,7 +27,6 @@
         <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
         <module name="javax.ws.rs.api" />
         <module name="javax.persistence.api" />
-        <module name="org.jboss.resteasy.resteasy-client" />
         <module name="org.jboss.resteasy.resteasy-jackson-provider" />
         <module name="org.jboss.resteasy.resteasy-jaxrs" />
         <module name="org.jboss.logging" />
