@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.util.impl;
+package org.hibernate.ogm.test.util.configurationreader.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -28,10 +28,10 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.configurationreader.Instantiator;
-import org.hibernate.ogm.util.impl.configurationreader.ShortNameResolver;
-import org.hibernate.ogm.util.impl.configurationreader.Validators;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
+import org.hibernate.ogm.util.configurationreader.impl.ShortNameResolver;
+import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.util.impl.configurationreader;
+package org.hibernate.ogm.util.configurationreader.impl;
 
 /**
  * Implementations instantiate given classes. By default an implementation invoking the no-args constructor of the

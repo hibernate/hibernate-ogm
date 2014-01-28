@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.util.impl.configurationreader;
+package org.hibernate.ogm.util.configurationreader.impl;
 
 /**
  * Implementations map short names into fully-qualified class names.
