@@ -51,6 +51,7 @@ public class OgmQuery extends AbstractQueryImpl {
 
 	private final OgmSession session;
 	private final QueryParserService queryParserService;
+	private final LockOptions lockOptions = new LockOptions();
 
 	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session,
 			ParameterMetadata parameterMetadata, QueryParserService queryParserService) {
@@ -104,20 +105,22 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public Query setLockOptions(LockOptions lockOptions) {
-		throw new NotSupportedException( "TBD", "QueryQuery#setLockOptions not implemented" );
+	public Query setLockMode(String alias, LockMode lockMode) {
+		lockOptions.setAliasSpecificLockMode( alias, lockMode );
+		return this;
 	}
 
 	@Override
-	public Query setLockMode(String alias, LockMode lockMode) {
-		throw new NotSupportedException( "TBD", "QueryQuery#setLockMode not implemented" );
+	public Query setLockOptions(LockOptions lockOption) {
+		this.lockOptions.setLockMode( lockOption.getLockMode() );
+		this.lockOptions.setScope( lockOption.getScope() );
+		this.lockOptions.setTimeOut( lockOption.getTimeOut() );
+		return this;
 	}
 
 	@Override
 	public LockOptions getLockOptions() {
-		//We could return a default LockOptions, but that would expose mutable setters
-		//so better implement those setters first.
-		throw new NotSupportedException( "TBD", "AbstractQueryImplQuery#getLockOptions not implemented" );
+		return lockOptions;
 	}
 
 }

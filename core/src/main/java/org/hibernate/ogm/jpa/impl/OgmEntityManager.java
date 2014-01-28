@@ -50,6 +50,8 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.jpa.internal.QueryImpl;
+import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
@@ -64,6 +66,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 public class OgmEntityManager implements EntityManager {
 	private final EntityManager hibernateEm;
 	private final OgmEntityManagerFactory factory;
+	private final LockOptions lockOptions = new LockOptions();
 
 	public OgmEntityManager(OgmEntityManagerFactory factory, EntityManager hibernateEm) {
 		this.hibernateEm = hibernateEm;
@@ -193,7 +196,24 @@ public class OgmEntityManager implements EntityManager {
 			//pretend you care
 			return new LetThroughExecuteUpdateQuery();
 		}
-		throw new NotSupportedException( "OGM-21", "JP-QL queries are not supported yet" );
+
+		Session session = (Session) getDelegate();
+		return applyProperties( new OgmNativeQuery<Object>( session.createQuery( qlString ), (AbstractEntityManagerImpl) hibernateEm ) );
+	}
+
+	private Query applyProperties(Query query) {
+		if ( lockOptions.getLockMode() != LockMode.NONE ) {
+			query.setLockMode( getLockMode( lockOptions.getLockMode() ) );
+		}
+		Object queryTimeout;
+		if ( ( queryTimeout = getProperties().get( QueryHints.SPEC_HINT_TIMEOUT ) ) != null ) {
+			query.setHint( QueryHints.SPEC_HINT_TIMEOUT, queryTimeout );
+		}
+		Object lockTimeout;
+		if ( ( lockTimeout = getProperties().get( AvailableSettings.LOCK_TIMEOUT ) ) != null ) {
+			query.setHint( AvailableSettings.LOCK_TIMEOUT, lockTimeout );
+		}
+		return query;
 	}
 
 	@Override
