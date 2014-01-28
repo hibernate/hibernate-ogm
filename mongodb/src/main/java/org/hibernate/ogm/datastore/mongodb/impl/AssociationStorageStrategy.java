@@ -34,18 +34,9 @@ public class AssociationStorageStrategy {
 	private final boolean isEmbeddedInEntity;
 	private final boolean isGlobalCollection;
 
-	public AssociationStorageStrategy(boolean isEmbeddedInEntity, boolean isGlobalCollection) {
+	private AssociationStorageStrategy(boolean isEmbeddedInEntity, boolean isGlobalCollection) {
 		this.isEmbeddedInEntity = isEmbeddedInEntity;
 		this.isGlobalCollection = isGlobalCollection;
-	}
-
-	public static AssociationStorageStrategy getInstance(AssociationStorageType associationStorage) {
-		if ( associationStorage == AssociationStorageType.IN_ENTITY ) {
-			return new AssociationStorageStrategy( true, false );
-		}
-		else {
-			return new AssociationStorageStrategy( false, true );
-		}
 	}
 
 	public static AssociationStorageStrategy getInstance(AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {

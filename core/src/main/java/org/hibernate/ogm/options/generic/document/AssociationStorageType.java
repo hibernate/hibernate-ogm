@@ -21,14 +21,14 @@
 package org.hibernate.ogm.options.generic.document;
 
 /**
- * A strategy for storing association information in CouchDB.
+ * A strategy for storing association information in a document datastore.
  *
  * @author Gunnar Morling
  */
 public enum AssociationStorageType {
 
 	/**
-	 * Stores association information in a dedicated CouchDB document per association.
+	 * Stores association information in a dedicated document per association.
 	 */
 	ASSOCIATION_DOCUMENT,
 

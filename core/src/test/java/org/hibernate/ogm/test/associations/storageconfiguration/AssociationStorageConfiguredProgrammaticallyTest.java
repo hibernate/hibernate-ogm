@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.mongodb.associations.storageconfiguration;
+package org.hibernate.ogm.test.associations.storageconfiguration;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -29,86 +29,108 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.test.utils.MongoDBTestHelper;
-import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
+import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
+import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
+import org.hibernate.ogm.test.utils.GridDialectType;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test for configuring the different association document storage modes via the option API.
+ * Test for configuring the different association storage modes via the option API.
  *
  * @author Gunnar Morling
  */
-public class AssociationDocumentStorageConfiguredViaApiTest extends OgmTestCase {
-
-	private final MongoDBTestHelper testHelper = new MongoDBTestHelper();
-
-	private OgmConfiguration configuration;
-	private OgmSessionFactory sessions;
+@SkipByGridDialect(
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J },
+		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
+)
+public class AssociationStorageConfiguredProgrammaticallyTest extends AssociationStorageTestBase {
 
 	private Cloud cloud;
 
-	@Before
-	public void setupConfiguration() {
-		configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
-		configure( configuration );
-	}
-
-	protected void setupSessionFactory() {
-		sessions = configuration.buildSessionFactory();
-	}
-
 	@Test
-	public void associationDocumentStorageSetOnGlobalLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
-			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-			.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION );
+	public void associationStorageSetToAssociationDocumentOnGlobalLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
-		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessions ) ).isEqualTo( 1 );
+		assertThat( associationDocumentCount() ).isEqualTo( 1 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
 	}
 
 	@Test
-	public void associationDocumentStorageSetOnEntityLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
-			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-				.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION );
+	public void associationStorageSetToInEntityOnGlobalLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+			.associationStorage( AssociationStorageType.IN_ENTITY );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
 
-		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessions ) ).isEqualTo( 1 );
+		assertThat( associationDocumentCount() ).isEqualTo( 0 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
 	}
 
 	@Test
-	public void associationDocumentStorageSetOnPropertyLevel() throws Exception {
-		testHelper.configureDatastore( configuration )
+	public void associationStorageSetToAssociationDocumentOnEntityLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
 			.entity( Cloud.class )
-				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		setupSessionFactory();
+		createCloudWithTwoProducedSnowflakes();
+
+		assertThat( associationDocumentCount() ).isEqualTo( 1 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 0 );
+	}
+
+	@Test
+	public void associationStorageSetToInEntityOnEntityLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+			.entity( Cloud.class )
+				.associationStorage( AssociationStorageType.IN_ENTITY );
+
+		setupSessionFactory();
+		createCloudWithTwoProducedSnowflakes();
+
+		assertThat( associationDocumentCount() ).isEqualTo( 0 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+	}
+
+	@Test
+	public void associationStorageSetOnPropertyLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+			.entity( Cloud.class )
 				.property( "producedSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
+					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "backupSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentType.GLOBAL_COLLECTION );
+					.associationStorage( AssociationStorageType.IN_ENTITY );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();
 
-		assertThat( testHelper.getNumberOfEmbeddedAssociations( sessions ) ).isEqualTo( 0 );
-		assertThat( testHelper.getNumberOfAssociationsFromGlobalCollection( sessions ) ).isEqualTo( 1 );
-		assertThat( testHelper.getNumberOfAssociationsFromDedicatedCollections( sessions ) ).isEqualTo( 1 );
+		assertThat( associationDocumentCount() ).isEqualTo( 1 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
+	}
+
+	@Test
+	public void associationStorageSetOnPropertyLevelTakesPrecedenceOverEntityLevel() throws Exception {
+		( (DocumentStoreGlobalContext<?, ?>) TestHelper.configureDatastore( configuration ) )
+		.entity( Cloud.class )
+			.associationStorage( AssociationStorageType.IN_ENTITY )
+			.property( "backupSnowFlakes", ElementType.METHOD )
+				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		setupSessionFactory();
+		createCloudWithTwoProducedAndOneBackupSnowflake();
+
+		assertThat( associationDocumentCount() ).isEqualTo( 1 );
+		assertThat( inEntityAssociationCount() ).isEqualTo( 1 );
 	}
 
 	private void createCloudWithTwoProducedSnowflakes() {
@@ -202,8 +224,6 @@ public class AssociationDocumentStorageConfiguredViaApiTest extends OgmTestCase 
 
 		assertThat( TestHelper.getNumberOfEntities( sessions ) ).isEqualTo( 0 );
 		assertThat( TestHelper.getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
-
-		sessions.close();
 	}
 
 	@Override
