@@ -94,6 +94,9 @@ public class CouchDBDatastore {
 		if ( createDatabase ) {
 			createDatabase();
 		}
+		else if ( !databaseExists( databaseUrl.getDataBaseName() ) ) {
+			throw logger.databaseDoesNotExistException( databaseUrl.getDataBaseName() );
+		}
 
 		if ( !exists( TuplesDesignDocument.DOCUMENT_ID, true ) ) {
 			saveDocument( new TuplesDesignDocument() );
@@ -204,8 +207,14 @@ public class CouchDBDatastore {
 				return null;
 			}
 			else {
-				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.errorRetrievingCurrentRevision( documentId, response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
+				GenericResponse responseEntity = response.hasEntity() ? response.readEntity( GenericResponse.class ) : null;
+
+				throw logger.errorRetrievingCurrentRevision(
+						documentId,
+						response.getStatus(),
+						responseEntity != null ? responseEntity.getError() : null,
+						responseEntity != null ? responseEntity.getReason() : null
+				);
 			}
 		}
 		catch (ResteasyClientException e) {

@@ -28,6 +28,7 @@ import java.text.ParseException;
 import javax.persistence.OptimisticLockException;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
@@ -99,4 +100,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1320, value = "The document with id %s has been concurrently modified.")
 	OptimisticLockException getDocumentHasBeenConcurrentlyModifiedException(String id);
+
+	@Message(id = 1321, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
+	HibernateException databaseDoesNotExistException(String databaseName);
 }
