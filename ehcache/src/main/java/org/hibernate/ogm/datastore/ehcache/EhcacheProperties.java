@@ -20,13 +20,15 @@
  */
 package org.hibernate.ogm.datastore.ehcache;
 
+import org.hibernate.ogm.cfg.OgmProperties;
+
 /**
  * Properties for configuring the Ehcache datastore via {@code persistence.xml} or
  * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
  *
  * @author Gunnar Morling
  */
-public final class EhcacheProperties {
+public final class EhcacheProperties implements OgmProperties {
 
 	/**
 	 * Configuration property for specifying the name of the Ehcache configuration file

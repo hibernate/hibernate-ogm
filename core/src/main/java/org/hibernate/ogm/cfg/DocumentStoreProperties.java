@@ -26,10 +26,12 @@ package org.hibernate.ogm.cfg;
  * <p>
  * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
  * find out the supported configuration properties.
+ * <p>
+ * This interface should not be implemented by client code, only its constants are intended to be referenced.
  *
  * @author Gunnar Morling
  */
-public final class DocumentStoreProperties {
+public interface DocumentStoreProperties extends OgmProperties {
 
 	/**
 	 * Property for configuring the strategy for storing associations. Valid values are the
@@ -39,8 +41,5 @@ public final class DocumentStoreProperties {
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.
 	 */
-	public static final String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.associations.store";
-
-	private DocumentStoreProperties() {
-	}
+	String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.associations.store";
 }
