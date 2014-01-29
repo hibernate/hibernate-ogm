@@ -20,13 +20,15 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
+
 /**
  * Properties for configuring the MongoDB datastore via {@code persistence.xml} or
  * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
  *
  * @author Gunnar Morling
  */
-public final class MongoDBProperties {
+public final class MongoDBProperties implements DocumentStoreProperties {
 
 	/**
 	 * Configuration property for defining the acknowledgement of write operations

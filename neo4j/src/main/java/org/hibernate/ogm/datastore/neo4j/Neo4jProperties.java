@@ -20,13 +20,15 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
+import org.hibernate.ogm.cfg.OgmProperties;
+
 /**
  * Neo4j GridDialect configuration options.
  *
  * @author Davide D'Alto
  * @see org.hibernate.ogm.dialect.neo4j.Neo4jDialect
  */
-public final class Neo4jProperties {
+public final class Neo4jProperties implements OgmProperties {
 
 	/**
 	 * The absolute path representing the location of the Neo4j database, ex.: /home/user/neo4jdb/mydb
