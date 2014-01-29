@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,9 +21,9 @@
 package org.hibernate.ogm.test.associations.manytoone;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.get;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -53,11 +53,11 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( emmanuel );
 		session.persist( jerome );
 		session.flush();
-		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 		transaction.commit();
-		assertThat( assertNumberOfEntities( 3, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		session.clear();
 
@@ -69,8 +69,8 @@ public class ManyToOneTest extends OgmTestCase {
 		session.delete( jerome );
 		session.delete( jug );
 		transaction.commit();
-		assertThat( assertNumberOfEntities( 0, sessions ) ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
 
 		session.close();
 

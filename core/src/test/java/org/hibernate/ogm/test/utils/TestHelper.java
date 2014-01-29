@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -40,6 +40,8 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -62,8 +64,8 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, EntityManager em) {
-		return assertNumberOfEntities( numberOfEntities, em.unwrap( Session.class ) );
+	public static long getNumberOfEntities(EntityManager em) {
+		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
 	private static TestableGridDialect createStoreSpecificHelper() {
@@ -88,21 +90,29 @@ public class TestHelper {
 		return GridDialectType.valueFromHelperClass( helper.getClass() );
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, Session session) {
-		return assertNumberOfEntities( numberOfEntities, session.getSessionFactory() );
+	public static long getNumberOfEntities( Session session) {
+		return getNumberOfEntities( session.getSessionFactory() );
 	}
 
-	public static boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return helper.assertNumberOfEntities( numberOfEntities, sessionFactory );
+	public static long getNumberOfEntities(SessionFactory sessionFactory) {
+		return helper.getNumberOfEntities( sessionFactory );
 	}
 
 	public static Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		return helper.extractEntityTuple( sessionFactory, key );
 	}
 
-	public static boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		boolean result = helper.assertNumberOfAssociations( numberOfAssociations, sessionFactory );
-		return result;
+	public static long getNumberOfAssociations(SessionFactory sessionFactory) {
+		return helper.getNumberOfAssociations( sessionFactory );
+	}
+
+	/**
+	 * Returns the number of associations of the given type.
+	 * <p>
+	 * Optional operation which only is supported for document datastores.
+	 */
+	public static long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		return helper.getNumberOfAssociations( sessionFactory, type );
 	}
 
 	public static boolean backendSupportsTransactions() {
@@ -183,8 +193,8 @@ public class TestHelper {
 	}
 
 	public static void checkCleanCache(SessionFactory sessionFactory) {
-		assertThat( assertNumberOfEntities( 0, sessionFactory ) ).as( "Entity cache should be empty" ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessionFactory ) ).as( "Association cache should be empty" ).isTrue();
+		assertThat( getNumberOfEntities( sessionFactory ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessionFactory ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 
 	/**
@@ -215,5 +225,15 @@ public class TestHelper {
 		}
 
 		return configuration;
+	}
+
+	/**
+	 * Returns a {@link GlobalContext} for configuring the current datastore.
+	 *
+	 * @param configuration the target the configuration will be applied to
+	 * @return a context object for configuring the current datastore.
+	 */
+	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return helper.configureDatastore( configuration );
 	}
 }

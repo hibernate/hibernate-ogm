@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -42,7 +42,7 @@ public class InfinispanConfiguration {
 	private String jndi;
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#INFINISPAN_CONFIGURATION_RESOURCENAME
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CONFIGURATION_RESOURCENAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
 	 */
 	public String getConfigurationName() {
@@ -66,7 +66,7 @@ public class InfinispanConfiguration {
 	public void initConfiguration(Map configurationMap) {
 		this.jndi = (String) configurationMap.get( InfinispanProperties.CACHE_MANAGER_RESOURCE_PROP );
 
-		this.configName = (String) configurationMap.get( InfinispanProperties.INFINISPAN_CONFIGURATION_RESOURCENAME );
+		this.configName = (String) configurationMap.get( InfinispanProperties.CONFIGURATION_RESOURCENAME );
 		if ( StringHelper.isEmpty( configName ) ) {
 			this.configName = INFINISPAN_DEFAULT_CONFIG;
 		}

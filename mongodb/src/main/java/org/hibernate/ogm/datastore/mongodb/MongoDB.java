@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,10 +21,10 @@
 package org.hibernate.ogm.datastore.mongodb;
 
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBEntityOptions;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalOptions;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBPropertyOptions;
-import org.hibernate.ogm.options.mongodb.mapping.spi.MongoDBGlobalContext;
+import org.hibernate.ogm.options.mongodb.mapping.MongoDBGlobalContext;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBEntityContextImpl;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalContextImpl;
+import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
@@ -36,6 +36,6 @@ public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext> {
 
 	@Override
 	public MongoDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
-		return context.createGlobalContext( MongoDBGlobalOptions.class, MongoDBEntityOptions.class, MongoDBPropertyOptions.class );
+		return context.createGlobalContext( MongoDBGlobalContextImpl.class, MongoDBEntityContextImpl.class, MongoDBPropertyContextImpl.class );
 	}
 }

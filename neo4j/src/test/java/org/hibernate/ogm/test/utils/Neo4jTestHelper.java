@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -31,12 +31,16 @@ import java.util.Set;
 import org.fest.util.Files;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.dialect.neo4j.Neo4jDialect;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -49,13 +53,29 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return numberOfEntities == countEntities( sessionFactory );
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
+		String allEntitiesQuery = Neo4jDialect.TABLE_PROPERTY + ":*";
+		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
+		int count = 0;
+		while ( iterator.hasNext() ) {
+			iterator.next();
+			count++;
+		}
+		iterator.close();
+		return count;
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return numberOfAssociations == countAssociations( sessionFactory );
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
+		Set<String> associations = new HashSet<String>();
+		while ( relationships.hasNext() ) {
+			Relationship relationship = relationships.next();
+			if ( !associations.contains( relationship.getType().name() ) ) {
+				associations.add( relationship.getType().name() );
+			}
+		}
+		return associations.size();
 	}
 
 	@Override
@@ -114,28 +134,13 @@ public class Neo4jTestHelper implements TestableGridDialect {
 		return Neo4jDatastoreProvider.class.cast( provider );
 	}
 
-	public int countAssociations(SessionFactory sessionFactory) {
-		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
-		Set<String> associations = new HashSet<String>();
-		while ( relationships.hasNext() ) {
-			Relationship relationship = relationships.next();
-			if ( !associations.contains( relationship.getType().name() ) ) {
-				associations.add( relationship.getType().name() );
-			}
-		}
-		return associations.size();
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
 	}
 
-	public int countEntities(SessionFactory sessionFactory) {
-		String allEntitiesQuery = Neo4jDialect.TABLE_PROPERTY + ":*";
-		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
-		int count = 0;
-		while ( iterator.hasNext() ) {
-			Node node = iterator.next();
-			count++;
-		}
-		iterator.close();
-		return count;
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( Neo4j.class );
 	}
-
 }

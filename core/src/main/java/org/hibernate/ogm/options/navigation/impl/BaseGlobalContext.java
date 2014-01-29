@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
@@ -33,16 +32,5 @@ public abstract class BaseGlobalContext<G extends GlobalOptions<G>> extends Base
 
 	public BaseGlobalContext(ConfigurationContext context) {
 		super( context );
-	}
-
-	@Override
-	public G namedQuery(String name, String hql) {
-		addGlobalOption( new NamedQueryOption( name ), hql );
-
-		// safe unless a provider developer screwed up the specific context definition
-		@SuppressWarnings("unchecked")
-		G globalContext = (G) this;
-
-		return globalContext;
 	}
 }

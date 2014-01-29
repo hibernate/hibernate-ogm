@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.utils;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfAssociations;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfAssociations;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEntities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -108,11 +108,11 @@ public abstract class OgmTestCase {
 	}
 
 	protected SessionFactoryImplementor sfi() {
-		return (SessionFactoryImplementor) sessions;
+		return sessions;
 	}
 
 	protected void checkCleanCache() {
-		assertThat( assertNumberOfEntities( 0, sessions ) ).as( "Entity cache should be empty" ).isTrue();
-		assertThat( assertNumberOfAssociations( 0, sessions ) ).as( "Association cache should be empty" ).isTrue();
+		assertThat( getNumberOfEntities( sessions ) ).as( "Entity cache should be empty" ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).as( "Association cache should be empty" ).isEqualTo( 0 );
 	}
 }

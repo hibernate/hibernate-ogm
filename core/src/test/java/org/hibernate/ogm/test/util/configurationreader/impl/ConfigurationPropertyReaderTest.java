@@ -1,0 +1,329 @@
+/*
+ * Hibernate, Relational Persistence for Idiomatic Java
+ *
+ * JBoss, Home of Professional Open Source
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU Lesser General Public License, v. 2.1.
+ * This program is distributed in the hope that it will be useful, but WITHOUT A
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License,
+ * v.2.1 along with this distribution; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA  02110-1301, USA.
+ */
+package org.hibernate.ogm.test.util.configurationreader.impl;
+
+import static org.fest.assertions.Assertions.assertThat;
+
+import java.lang.annotation.ElementType;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
+import org.hibernate.ogm.util.configurationreader.impl.ShortNameResolver;
+import org.hibernate.ogm.util.configurationreader.impl.Validators;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+/**
+ * Unit test for {@link ConfigurationPropertyReader}.
+ *
+ * @author Gunnar Morling
+ */
+public class ConfigurationPropertyReaderTest {
+
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+	@Test
+	public void shouldRetrievePropertyWithInstanceValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", new MyServiceImpl() );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyWithClassValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", MyServiceImpl.class );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyWithStringValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", MyServiceImpl.class.getName() );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyWithDefaultImplementation() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.withDefaultImplementation( MyOtherServiceImpl.class )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyOtherServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyWithShortName() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", "other" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.withShortNameResolver( new MyShortNameResolver() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyOtherServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyWithDefaultImplementationName() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.withDefaultImplementation( MyServiceImpl.class.getName() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRetrievePropertyUsingCustomInstantiator() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		MyService value = reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.withDefaultImplementation( MyYetAnotherServiceImpl.class )
+				.withInstantiator( new MyInstantiator() )
+				.getValue();
+
+		assertThat( value.getClass() ).isEqualTo( MyYetAnotherServiceImpl.class );
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToWrongInstanceType() {
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000046" );
+
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", 42 );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToWrongClassType() {
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000045" );
+
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", Integer.class );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToWrongClassTypeGivenAsString() {
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000045" );
+
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "service", Integer.class.getName() );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "service", MyService.class )
+				.instantiate()
+				.withClassLoaderService( new ClassLoaderServiceImpl() )
+				.getValue();
+	}
+
+	@Test
+	public void shouldRetrieveStringProperty() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "foo", "bar" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		String value = reader.property( "foo", String.class ).getValue();
+		assertThat( value ).isEqualTo( "bar" );
+	}
+
+	@Test
+	public void shouldRetrieveIntProperty() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "foo", "123" );
+		properties.put( "bar", 456 );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		int value = reader.property( "foo", int.class ).getValue();
+		assertThat( value ).isEqualTo( 123 );
+
+		value = reader.property( "bar", int.class ).getValue();
+		assertThat( value ).isEqualTo( 456 );
+	}
+
+	@Test
+	public void shouldRetrieveBooleanProperty() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "foo", "true" );
+		properties.put( "bar", true );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		boolean value = reader.property( "foo", boolean.class ).getValue();
+		assertThat( value ).isEqualTo( true );
+
+		value = reader.property( "bar", boolean.class ).getValue();
+		assertThat( value ).isEqualTo( true );
+	}
+
+	@Test
+	public void shouldRetrieveEnumProperty() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "foo", "ANNOTATION_TYPE" );
+		properties.put( "bar", ElementType.FIELD );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		ElementType value = reader.property( "foo", ElementType.class ).getValue();
+		assertThat( value ).isEqualTo( ElementType.ANNOTATION_TYPE );
+
+		value = reader.property( "bar", ElementType.class ).getValue();
+		assertThat( value ).isEqualTo( ElementType.FIELD );
+	}
+
+	@Test
+	public void shouldRetrieveEnumPropertyWithDefaultValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		ElementType value = reader.property( "foo", ElementType.class )
+				.withDefault( ElementType.ANNOTATION_TYPE )
+				.getValue();
+		assertThat( value ).isEqualTo( ElementType.ANNOTATION_TYPE );
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToMissingRequiredProperty() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000053" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "foo", ElementType.class )
+				.required()
+				.getValue();
+	}
+
+	@Test
+	public void shouldRaiseExceptionDueToInvalidPropertyValue() {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "myPort", 98765 );
+
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000050" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		reader.property( "myPort", int.class )
+				.withValidator( Validators.PORT )
+				.getValue();
+	}
+
+	private interface MyService {
+	}
+
+	public static class MyServiceImpl implements MyService {
+	}
+
+	public static class MyOtherServiceImpl implements MyService {
+	}
+
+	public static class MyYetAnotherServiceImpl implements MyService {
+
+		public MyYetAnotherServiceImpl(String name) {
+		}
+	}
+
+	private static class MyShortNameResolver implements ShortNameResolver {
+
+		@Override
+		public boolean isShortName(String name) {
+			return "other".equals( name );
+		}
+
+		@Override
+		public String resolve(String shortName) {
+			return MyOtherServiceImpl.class.getName();
+		}
+	}
+
+	private static class MyInstantiator implements Instantiator<MyService> {
+
+		@Override
+		public MyService newInstance(Class<? extends MyService> clazz) {
+			return new MyYetAnotherServiceImpl( "foo" );
+		}
+	}
+}

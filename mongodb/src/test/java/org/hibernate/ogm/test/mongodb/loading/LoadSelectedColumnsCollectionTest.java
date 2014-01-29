@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -48,7 +48,6 @@ import org.hibernate.ogm.dialect.mongodb.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
-import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
@@ -130,7 +129,6 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
 		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
 		AssociationKey associationKey = new AssociationKey( metadata, new Object[] { "projectID" } );
-		associationKey.setAssociationKind( AssociationKind.ASSOCIATION );
 		associationKey.setCollectionRole( "modules" );
 		associationKey.setOwnerEntityKey( new EntityKey( new EntityKeyMetadata( "Project", new String[] { "id" } ), new String[] { "projectID" } ) );
 		AssociationContext associationContext = new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Project.class, "modules" ) );

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -27,13 +27,13 @@ import java.lang.annotation.ElementType;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.options.generic.NamedQueryOption;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.examples.NamedQueryOption;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.jpa;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.assertNumberOfEntities;
 import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEntities;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -67,10 +67,10 @@ public class JPAResourceLocalStandaloneTest {
 				poem2.setName( "Wazaaaaa" );
 				em.persist( poem2 );
 				em.flush();
-				assertThat( assertNumberOfEntities( 2, em ) ).isTrue();
+				assertThat( getNumberOfEntities( em ) ).isEqualTo( 2 );
 				em.getTransaction().rollback();
 
-				assertThat( assertNumberOfEntities( 1, em ) ).isTrue();
+				assertThat( getNumberOfEntities( em ) ).isEqualTo( 1 );
 
 				em.getTransaction().begin();
 				poem = em.find( Poem.class, poem.getId() );

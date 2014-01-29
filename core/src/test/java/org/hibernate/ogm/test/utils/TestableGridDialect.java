@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -23,7 +23,10 @@ package org.hibernate.ogm.test.utils;
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,
@@ -35,18 +38,27 @@ import org.hibernate.ogm.grid.EntityKey;
 public interface TestableGridDialect {
 
 	/**
-	 * Check that the number of entities present matches expectations
+	 * Returns the number of entities in the datastore
 	 *
 	 * @param sessionFactory
 	 */
-	boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory);
+	long getNumberOfEntities(SessionFactory sessionFactory);
 
 	/**
-	 * Check that the number of entities present matches expectations
+	 * Returns the number of associations in the datastore
 	 *
 	 * @param sessionFactory
 	 */
-	boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory);
+	long getNumberOfAssociations(SessionFactory sessionFactory);
+
+	/**
+	 * Returns the number of associations of the given type in the datastore
+	 *
+	 * @param sessionFactory factory used to connect to the store
+	 * @param type the association type of interest
+	 * @return the number of associations of the given type
+	 */
+	long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type);
 
 	/**
 	 * Loads a specific entity tuple directly from the data store by entity key
@@ -80,4 +92,12 @@ public interface TestableGridDialect {
 	 * This is typical of the host and port defined using an environment variable.
 	 */
 	Map<String, String> getEnvironmentProperties();
+
+	/**
+	 * Returns the store-specific {@link GlobalContext} for applying configuration options.
+	 *
+	 * @param configuration the {@link OgmConfiguration} to which the options should be applied to
+	 * @return the store-specific {@link GlobalContext}
+	 */
+	GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration);
 }

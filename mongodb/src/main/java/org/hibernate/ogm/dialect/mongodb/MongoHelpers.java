@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -23,10 +23,7 @@ package org.hibernate.ogm.dialect.mongodb;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKind;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -36,33 +33,6 @@ import com.mongodb.DBObject;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class MongoHelpers {
-
-	public static DBObject associationKeyToObject(AssociationStorageStrategy storageStrategy, AssociationKey key) {
-		if ( isEmbeddedInEntity( key, storageStrategy ) ) {
-			throw new AssertionFailure( MongoHelpers.class.getName()
-					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
-		}
-		Object[] columnValues = key.getColumnValues();
-		DBObject columns = new BasicDBObject( columnValues.length );
-
-		int i = 0;
-		for ( String name : key.getColumnNames() ) {
-			columns.put( name, columnValues[i++] );
-		}
-
-		BasicDBObject idObject = new BasicDBObject( 1 );
-
-		if ( storageStrategy.isGlobalCollection() ) {
-			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
-		}
-		idObject.put( MongoDBDialect.ID_FIELDNAME, columns );
-		return idObject;
-	}
-
-	public static boolean isEmbeddedInEntity(AssociationKey key, AssociationStorageStrategy storageStrategy) {
-		return ( key != null && key.getAssociationKind() == AssociationKind.EMBEDDED )
-				|| storageStrategy.isEmbeddedInEntity();
-	}
 
 	//only for embedded
 	public static Collection<DBObject> getAssociationFieldOrNull(AssociationKey key, DBObject entity) {

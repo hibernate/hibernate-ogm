@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -24,11 +24,15 @@ import java.util.Map;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.MapDatastore;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
@@ -36,13 +40,13 @@ import org.hibernate.ogm.grid.RowKey;
 public class HashMapTestHelper implements TestableGridDialect {
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return getEntityMap( sessionFactory ).size() == numberOfEntities;
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
+		return getEntityMap( sessionFactory ).size();
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).size() == numberOfAssociations;
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		return getAssociationCache( sessionFactory ).size();
 	}
 
 	@Override
@@ -83,4 +87,13 @@ public class HashMapTestHelper implements TestableGridDialect {
 		return null;
 	}
 
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( MapDatastore.class );
+	}
 }

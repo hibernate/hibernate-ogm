@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -30,6 +30,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
+import org.hibernate.ogm.test.options.examples.NamedQueryOption;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
@@ -42,6 +43,8 @@ public class SampleOptionModel {
 
 	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
 		SampleGlobalContext force(boolean force);
+		SampleGlobalContext namedQuery(String name, String hql);
+
 	}
 
 	public interface SampleEntityContext extends EntityContext<SampleEntityContext, SamplePropertyContext> {
@@ -64,6 +67,12 @@ public class SampleOptionModel {
 		@Override
 		public SampleGlobalContext force(boolean force) {
 			addGlobalOption( new ForceExampleOption(), force );
+			return this;
+		}
+
+		@Override
+		public SampleGlobalContext namedQuery(String name, String hql) {
+			addGlobalOption( new NamedQueryOption( name ), hql );
 			return this;
 		}
 	}

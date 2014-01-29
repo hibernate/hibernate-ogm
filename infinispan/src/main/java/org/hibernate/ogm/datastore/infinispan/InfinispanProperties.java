@@ -20,18 +20,21 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
+import org.hibernate.ogm.cfg.OgmProperties;
+
 /**
  * Properties for configuring the Infinispan datastore via {@code persistence.xml} or
  * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
  *
+ * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Gunnar Morling
  */
-public final class InfinispanProperties {
+public final class InfinispanProperties implements OgmProperties {
 
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
 	 */
-	public static final String INFINISPAN_CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
+	public static final String CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
 
 	/**
 	 * The key for the configuration property to define the JNDI name of the cache manager. If this property is defined,

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -26,7 +26,9 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.couchdb.CouchDB;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -35,6 +37,7 @@ import org.hibernate.ogm.dialect.couchdb.impl.model.CouchDBTupleSnapshot;
 import org.hibernate.ogm.dialect.couchdb.impl.util.Identifier;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -48,25 +51,18 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return getNumberOfEntities( sessionFactory ) == numberOfEntities;
-	}
-
-	public int getNumberOfEntities(SessionFactory sessionFactory) {
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getDataStore( sessionFactory ).getNumberOfEntities();
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return getNumberOfAssociations( sessionFactory ) == numberOfAssociations;
-	}
-
-	public int getNumberOfAssociations(AssociationStorageType type, SessionFactory sessionFactory) {
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
 		Integer count = getDataStore( sessionFactory ).getNumberOfAssociations().get( type );
 		return count != null ? count : 0;
 	}
 
-	public int getNumberOfAssociations(SessionFactory sessionFactory) {
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );
 
 		Map<AssociationStorageType, Integer> associationCountByType = dataStore.getNumberOfAssociations();
@@ -131,5 +127,10 @@ public class CouchDBTestHelper implements TestableGridDialect {
 			throw new RuntimeException( "DatastoreProvider is not an instance of " + CouchDBDatastoreProvider.class );
 		}
 		return (CouchDBDatastoreProvider) provider;
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( CouchDB.class );
 	}
 }

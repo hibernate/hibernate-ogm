@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -31,9 +31,9 @@ import org.hibernate.ogm.cfg.spi.OptionConfigurer;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.configurationreader.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -60,13 +60,15 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 	public void configure(Map configurationValues) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
 
+		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
+
 		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class )
 				.instantiate()
-				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
+				.withClassLoaderService( classLoaderService )
 				.getValue();
 		OptionConfigurer configurer = propertyReader.property( OgmProperties.OPTION_CONFIGURER, OptionConfigurer.class )
 				.instantiate()
-				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
+				.withClassLoaderService( classLoaderService )
 				.getValue();
 
 		if ( context != null && configurer != null ) {

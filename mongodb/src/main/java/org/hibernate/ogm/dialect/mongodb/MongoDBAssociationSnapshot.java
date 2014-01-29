@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,7 +21,6 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.getAssociationFieldOrNull;
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.isEmbeddedInEntity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,7 +117,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
-		if ( isEmbeddedInEntity( associationKey, storageStrategy ) ) {
+		if ( storageStrategy.isEmbeddedInEntity() ) {
 			return getAssociationFieldOrNull( associationKey, dbObject );
 		}
 		else {

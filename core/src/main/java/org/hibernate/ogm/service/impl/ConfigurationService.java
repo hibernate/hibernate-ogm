@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -22,19 +22,24 @@ package org.hibernate.ogm.service.impl;
 
 import java.util.Map;
 
-import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.Service;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class ConfigurationService implements Service {
+
 	private final boolean isOn;
 
 	public ConfigurationService(Map config) {
-		Object option = config.get( OgmProperties.OGM_ON );
-		isOn = option != null && "true".equalsIgnoreCase( option.toString() );
+		isOn = new ConfigurationPropertyReader( config )
+			.property( InternalProperties.OGM_ON, boolean.class )
+			.withDefault( false )
+			.getValue();
 	}
+
 	public boolean isOgmOn() {
 		return isOn;
 	}

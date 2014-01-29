@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,31 +20,36 @@
  */
 package org.hibernate.ogm.test.utils;
 
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
+import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+
 import java.util.Map;
 
 import net.sf.ehcache.Cache;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.ehcache.Ehcache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
-
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.navigation.context.GlobalContext;
 
 /**
  * @author Alex Snaps
  */
 public class EhcacheTestHelper implements TestableGridDialect {
+
 	@Override
-	public boolean assertNumberOfEntities(int numberOfEntities, SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).getSize() == numberOfEntities;
+	public long getNumberOfEntities(SessionFactory sessionFactory) {
+		return getEntityCache( sessionFactory ).getSize();
 	}
 
 	@Override
-	public boolean assertNumberOfAssociations(int numberOfAssociations, SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).getSize() == numberOfAssociations;
+	public long getNumberOfAssociations(SessionFactory sessionFactory) {
+		return getAssociationCache( sessionFactory ).getSize();
 	}
 
 	@Override
@@ -90,5 +95,15 @@ public class EhcacheTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
 		return null;
+	}
+
+	@Override
+	public long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type) {
+		throw new UnsupportedOperationException( "This datastore does not support different association storage strategies." );
+	}
+
+	@Override
+	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
+		return configuration.configureOptionsFor( Ehcache.class );
 	}
 }

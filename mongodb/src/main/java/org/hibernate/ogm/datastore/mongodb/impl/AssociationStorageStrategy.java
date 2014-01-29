@@ -34,7 +34,7 @@ public class AssociationStorageStrategy {
 	private final boolean isEmbeddedInEntity;
 	private final boolean isGlobalCollection;
 
-	public AssociationStorageStrategy(boolean isEmbeddedInEntity, boolean isGlobalCollection) {
+	private AssociationStorageStrategy(boolean isEmbeddedInEntity, boolean isGlobalCollection) {
 		this.isEmbeddedInEntity = isEmbeddedInEntity;
 		this.isGlobalCollection = isGlobalCollection;
 	}
@@ -43,11 +43,11 @@ public class AssociationStorageStrategy {
 		if ( associationStorage == AssociationStorageType.IN_ENTITY ) {
 			return new AssociationStorageStrategy( true, false );
 		}
-		else if ( associationDocumentStorage == AssociationDocumentType.GLOBAL_COLLECTION ) {
-			return new AssociationStorageStrategy( false, true );
+		else if ( associationDocumentStorage == AssociationDocumentType.COLLECTION_PER_ASSOCIATION ) {
+			return new AssociationStorageStrategy( false, false );
 		}
 		else {
-			return new AssociationStorageStrategy( false, false );
+			return new AssociationStorageStrategy( false, true );
 		}
 	}
 
