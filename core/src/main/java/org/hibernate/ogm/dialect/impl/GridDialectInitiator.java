@@ -30,6 +30,7 @@ import org.hibernate.event.spi.EventType;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
@@ -108,7 +109,9 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 
 				if ( gridDialect instanceof BatchableGridDialect ) {
-					addListeners( (BatchableGridDialect) gridDialect );
+					BatchOperationsDelegator delegator = new BatchOperationsDelegator( (BatchableGridDialect) gridDialect );
+					addListeners( delegator );
+					gridDialect = delegator;
 				}
 
 				log.useGridDialect( gridDialect.getClass().getName() );
@@ -126,7 +129,7 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 			}
 		}
 
-		private void addListeners(BatchableGridDialect gridDialect) {
+		private void addListeners(BatchOperationsDelegator gridDialect) {
 			eventListenerRegistry.addDuplicationStrategy( new FlushBatchManagerEventListener.FlushDuplicationStrategy() );
 			eventListenerRegistry.addDuplicationStrategy( new AutoFlushBatchManagerEventListener.AutoFlushDuplicationStrategy() );
 			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushBatchManagerEventListener( gridDialect ) );

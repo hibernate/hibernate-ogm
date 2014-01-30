@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import java.util.List;
 
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
@@ -32,6 +33,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class TupleContext {
 	private final List<String> selectableColumns;
+	private OperationsQueue operationsQueue;
 
 	public TupleContext(List<String> selectableColumns) {
 		this.selectableColumns = selectableColumns;
@@ -39,6 +41,14 @@ public class TupleContext {
 
 	public List<String> getSelectableColumns() {
 		return selectableColumns;
+	}
+
+	public OperationsQueue getOperationsQueue() {
+		return operationsQueue;
+	}
+
+	public void setOperationsQueue(OperationsQueue operationsQueue) {
+		this.operationsQueue = operationsQueue;
 	}
 
 	@Override

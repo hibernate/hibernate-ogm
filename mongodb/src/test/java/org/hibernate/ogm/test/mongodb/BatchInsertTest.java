@@ -29,6 +29,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.test.simpleentity.Helicopter;
 import org.hibernate.ogm.test.utils.OgmTestCase;
@@ -160,9 +161,9 @@ public class BatchInsertTest extends OgmTestCase {
 		}
 
 		@Override
-		public void executeBatch() {
-			queueSize = getOperationsQueue().size();
-			super.executeBatch();
+		public void executeBatch(OperationsQueue queue) {
+			queueSize = queue.size();
+			super.executeBatch( queue );
 		}
 
 	}

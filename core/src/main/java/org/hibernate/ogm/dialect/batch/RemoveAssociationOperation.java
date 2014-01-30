@@ -18,22 +18,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect;
+package org.hibernate.ogm.dialect.batch;
 
-import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.grid.AssociationKey;
 
 /**
- * A {@link GridDialect} that can batch operations and execute them using the mechanism provided by the underlying database.
- * <p>
- * Which operations can be batched and when they are executed depends on the underlying database.
+ * An operation representing the removal of an association
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public interface BatchableGridDialect extends GridDialect {
+public class RemoveAssociationOperation implements Operation {
 
-	/**
-	 * Executes the batched operations using the mechanism provided by the db
-	 */
-	void executeBatch(OperationsQueue queue);
+	private final AssociationKey associationKey;
+	private final AssociationContext context;
+
+	public RemoveAssociationOperation(AssociationKey associationKey, AssociationContext context) {
+		this.associationKey = associationKey;
+		this.context = context;
+	}
+
+	public AssociationKey getAssociationKey() {
+		return associationKey;
+	}
+
+	public AssociationContext getContext() {
+		return context;
+	}
 
 }

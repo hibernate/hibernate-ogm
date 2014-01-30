@@ -180,4 +180,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 54, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
 	HibernateException unsupportedPropertyType(String propertyName, String value);
+
+	@Message(id = 55, value = "It is not possible to add or poll operations from a closed queue")
+	HibernateException closedOperationQueue();
 }
