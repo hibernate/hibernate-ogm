@@ -45,7 +45,6 @@ import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
-import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 import org.jboss.resteasy.plugins.providers.RegisterBuiltin;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
@@ -57,15 +56,31 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
  */
 public class CouchDBDatastore {
 
+	/**
+	 * Size of the client connection pool used by the RestEasy HTTP client
+	 */
+	private static final int CONNECTION_POOL_SIZE = 10;
+
 	private static final Log logger = LoggerFactory.getLogger();
-	private final DatabaseClient databaseClient;
-	private final ServerClient serverClient;
+
 	private final DatabaseIdentifier database;
+
+	/**
+	 * Client for accessing the server
+	 */
+	private final ResteasyClient client;
+
+	/**
+	 * Proxy providing safe access to the database functionality
+	 */
+	private final DatabaseClient databaseClient;
 
 	private CouchDBDatastore(DatabaseIdentifier database) {
 		logger.connectingToCouchDB( database.getDatabaseName() + "@" + database.getServerUri().toString() );
-		serverClient = createServerClient( database );
-		databaseClient = createDataBaseClient( database );
+
+		client = createRestClient( database );
+		databaseClient = client.target( database.getDatabaseUri() ).proxy( DatabaseClient.class );
+
 		this.database = database;
 	}
 
@@ -87,13 +102,17 @@ public class CouchDBDatastore {
 	}
 
 	private void initialize(boolean createDatabase) {
+		// create database if required
+		ServerClient serverClient = client.target( database.getServerUri() ).proxy( ServerClient.class );
+
 		if ( createDatabase ) {
-			createDatabase();
+			createDatabase( serverClient );
 		}
-		else if ( !databaseExists( database.getDatabaseName() ) ) {
+		else if ( !databaseExists( serverClient, database.getDatabaseName() ) ) {
 			throw logger.databaseDoesNotExistException( database.getDatabaseName() );
 		}
 
+		// create tuple design document if required
 		if ( !exists( TuplesDesignDocument.DOCUMENT_ID, true ) ) {
 			saveDocument( new TuplesDesignDocument() );
 		}
@@ -338,6 +357,9 @@ public class CouchDBDatastore {
 	 * Releases all the resources
 	 */
 	public void shutDown() {
+		if ( client != null ) {
+			client.close();
+		}
 	}
 
 	/**
@@ -348,10 +370,10 @@ public class CouchDBDatastore {
 		return database;
 	}
 
-	private void createDatabase() {
+	private void createDatabase(ServerClient serverClient) {
 		Response response = null;
 		try {
-			if ( !databaseExists( database.getDatabaseName() ) ) {
+			if ( !databaseExists( serverClient, database.getDatabaseName() ) ) {
 				response = serverClient.createDatabase( database.getDatabaseName() );
 				if ( response.getStatus() != Response.Status.CREATED.getStatusCode() ) {
 					GenericResponse entity = response.readEntity( GenericResponse.class );
@@ -369,7 +391,7 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private boolean databaseExists(String databaseName) {
+	private boolean databaseExists(ServerClient serverClient, String databaseName) {
 		Response response = null;
 		try {
 			response = serverClient.getAllDatabaseNames();
@@ -427,30 +449,17 @@ public class CouchDBDatastore {
 		return entityKeyMetadata.getTable();
 	}
 
-	private static ServerClient createServerClient(DatabaseIdentifier database) {
+	private static ResteasyClient createRestClient(DatabaseIdentifier database) {
 		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
 
 		if ( database.getUserName() != null ) {
 			clientBuilder.register( new BasicAuthentication( database.getUserName(), database.getPassword() ) );
 		}
 
-		ResteasyClient client = clientBuilder.build();
-		ResteasyWebTarget target = client.target( database.getServerUri() );
-
-		return target.proxy( ServerClient.class );
-	}
-
-	private static DatabaseClient createDataBaseClient(DatabaseIdentifier database) {
-		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
-
-		if ( database.getUserName() != null ) {
-			clientBuilder.register( new BasicAuthentication( database.getUserName(), database.getPassword() ) );
-		}
-
-		ResteasyClient client = clientBuilder.build();
-		ResteasyWebTarget target = client.target( database.getDatabaseUri() );
-
-		return target.proxy( DatabaseClient.class );
+		// using a connection pool size > 1 causes a thread-safe pool implementation to be used under the hoods
+		return clientBuilder
+				.connectionPoolSize( CONNECTION_POOL_SIZE )
+				.build();
 	}
 
 	private void updateDocumentRevision(Document document, String revision) {
