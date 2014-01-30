@@ -21,6 +21,7 @@
 package org.hibernate.ogm.service.impl;
 
 import org.hibernate.event.spi.AbstractEvent;
+import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -36,14 +37,14 @@ abstract class BatchManagerEventListener<L, E extends AbstractEvent> {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final BatchableGridDialect gridDialect;
+	private final BatchOperationsDelegator gridDialect;
 
 	private L delegate;
 
 	/**
 	 * @param gridDialect the dialect that can execute batch operations
 	 */
-	public BatchManagerEventListener(BatchableGridDialect gridDialect) {
+	public BatchManagerEventListener(BatchOperationsDelegator gridDialect) {
 		this.gridDialect = gridDialect;
 	}
 

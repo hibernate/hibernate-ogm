@@ -55,7 +55,9 @@ import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -120,8 +122,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
-	private final ThreadLocal<OperationsQueue> operationsQueue = new ThreadLocal<OperationsQueue>();
-
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
 
@@ -141,7 +141,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		if ( found != null ) {
 			return new Tuple( new MongoDBTupleSnapshot( (BasicDBObject) found, key, UPDATE ) );
 		}
-		else if ( isInTheQueue( key ) ) {
+		else if ( isInTheQueue( key, tupleContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
 			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key, INSERT ) );
 		}
@@ -150,13 +150,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 	}
 
-	private boolean isInTheQueue(EntityKey key) {
-		OperationsQueue queue = getOperationsQueue();
+	private boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
+		OperationsQueue queue = tupleContext.getOperationsQueue();
 		return queue != null && queue.contains( key );
-	}
-
-	protected OperationsQueue getOperationsQueue() {
-		return operationsQueue.get();
 	}
 
 	@Override
@@ -262,15 +258,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		if ( getOperationsQueue() == null ) {
-			doUpdateTuple( tuple, key );
-		}
-		else {
-			getOperationsQueue().add( new UpdateTupleOperation( tuple, key ) );
-		}
-	}
-
-	private void doUpdateTuple(Tuple tuple, EntityKey key) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 		DBObject updater = objectForUpdate( tuple, key, idObject );
 		getCollection( key ).update( idObject, updater, true, false );
@@ -334,15 +321,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		if ( getOperationsQueue() == null ) {
-			doRemove( key );
-		}
-		else {
-			getOperationsQueue().add( new RemoveTupleOperation( key ) );
-		}
-	}
-
-	private void doRemove(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
 		collection.remove( toDelete );
@@ -368,10 +346,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
+		// We need to execute the previous operations first or it won't be able to find the key that should have
+		// been created
+		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			// We need to execute the previous operations first or it won't be able to find the key that should have
-			// been created
-			executeBatch();
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
@@ -468,10 +446,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
+		// We need to execute the previous operations first or it won't be able to find the key that should have
+		// been created
+		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			// We need to execute the previous operations first or it won't be able to find the key that should have
-			// been created
-			executeBatch();
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
@@ -667,27 +645,26 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public void prepareBatch() {
-		operationsQueue.set( new OperationsQueue() );
-	}
-
-	@Override
-	public void clearBatch() {
-		operationsQueue.remove();
-	}
-
-	@Override
-	public void executeBatch() {
-		OperationsQueue queue = getOperationsQueue();
-		if ( queue != null ) {
+	public void executeBatch(OperationsQueue queue) {
+		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
 			Map<DBCollection, Map<DBObject, DBObject>> inserts = new HashMap<DBCollection, Map<DBObject, DBObject>>();
 			while ( operation != null ) {
 				if ( operation instanceof UpdateTupleOperation ) {
-					executeBatchUpdate( inserts, (UpdateTupleOperation) operation );
+					UpdateTupleOperation update = (UpdateTupleOperation) operation;
+					executeBatchUpdate( inserts, update );
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
-					executeBatchRemove( inserts, (RemoveTupleOperation) operation );
+					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
+					executeBatchRemove( inserts, tupleOp );
+				}
+				else if ( operation instanceof UpdateAssociationOperation ) {
+					UpdateAssociationOperation update = (UpdateAssociationOperation) operation;
+					updateAssociation( update.getAssociation(), update.getAssociationKey(), update.getContext() );
+				}
+				else if ( operation instanceof RemoveAssociationOperation ) {
+					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
+					removeAssociation( remove.getAssociationKey(), remove.getContext() );
 				}
 				else {
 					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
@@ -695,7 +672,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 				operation = queue.poll();
 			}
 			flushInserts( inserts );
-			clearBatch();
+			queue.close();
 		}
 	}
 
@@ -708,7 +685,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			documents.remove( entityKey );
 		}
 		else {
-			doRemove( entityKey );
+			removeTuple( entityKey );
 		}
 	}
 
@@ -721,7 +698,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 		else {
 			// Object already exists in the db or has invalid fields:
-			doUpdateTuple( tuple, entityKey );
+			updateTuple( tuple, entityKey );
 		}
 	}
 

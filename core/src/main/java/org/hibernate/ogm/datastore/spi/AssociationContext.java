@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
+
 /**
  * Provides context information to {@link org.hibernate.ogm.dialect.GridDialect}s when accessing {@link Association}s.
  *
@@ -29,9 +31,18 @@ package org.hibernate.ogm.datastore.spi;
 public class AssociationContext {
 
 	private final OptionsContext optionsContext;
+	private OperationsQueue operationsQueue;
 
 	public AssociationContext(OptionsContext optionsContext) {
 		this.optionsContext = optionsContext;
+	}
+
+	public OperationsQueue getOperationsQueue() {
+		return operationsQueue;
+	}
+
+	public void setOperationsQueue(OperationsQueue operationsQueue) {
+		this.operationsQueue = operationsQueue;
 	}
 
 	/**

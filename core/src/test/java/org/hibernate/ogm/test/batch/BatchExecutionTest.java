@@ -37,6 +37,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -59,28 +60,11 @@ import org.junit.Test;
 public class BatchExecutionTest extends OgmTestCase {
 
 	static boolean batchExecuted = false;
-	static boolean clearExecuted = false;
-	static boolean throwException = false;
 
 
 	@Before
 	public void before() {
 		batchExecuted = false;
-		clearExecuted = false;
-		throwException = false;
-	}
-
-	@Test
-	public void testClearBatchIsCalledWhenErrorOccures() throws Exception {
-		throwException = true;
-		try {
-			final Session session = openSession();
-			session.flush();
-			session.close();
-		}
-		catch (Exception ex) {
-			Assertions.assertThat( clearExecuted ).as( "Batched operations should be executed during flush" ).isTrue();
-		}
 	}
 
 	@Test
@@ -115,6 +99,11 @@ public class BatchExecutionTest extends OgmTestCase {
 		cfg.setProperty( OgmProperties.DATASTORE_PROVIDER, SampleBatchableDatastoreProvider.class.getName() );
 	}
 
+	@Override
+	protected Class<?>[] getAnnotatedClasses() {
+		return new Class[] { Hypothesis.class };
+	}
+
 	public static class SampleBatchableDatastoreProvider implements DatastoreProvider {
 
 		@Override
@@ -135,14 +124,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public void prepareBatch() {
-			if ( throwException ) {
-				throw new RuntimeException();
-			}
-		}
-
-		@Override
-		public void executeBatch() {
+		public void executeBatch(OperationsQueue queue) {
 			batchExecuted = true;
 		}
 
@@ -210,15 +192,6 @@ public class BatchExecutionTest extends OgmTestCase {
 			return null;
 		}
 
-		@Override
-		public void clearBatch() {
-			clearExecuted = true;
-		}
-
 	}
 
-	@Override
-	protected Class<?>[] getAnnotatedClasses() {
-		return new Class[] { Hypothesis.class };
-	}
 }

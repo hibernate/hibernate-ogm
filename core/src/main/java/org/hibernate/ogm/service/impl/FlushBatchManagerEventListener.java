@@ -24,7 +24,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.event.service.spi.DuplicationStrategy;
 import org.hibernate.event.spi.FlushEvent;
 import org.hibernate.event.spi.FlushEventListener;
-import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 
 /**
  * Prepares and executes batched operations when a {@link FlushEvent} is caught
@@ -34,7 +34,7 @@ import org.hibernate.ogm.dialect.BatchableGridDialect;
  */
 public class FlushBatchManagerEventListener extends BatchManagerEventListener<FlushEventListener, FlushEvent> implements FlushEventListener {
 
-	public FlushBatchManagerEventListener(BatchableGridDialect gridDialect) {
+	public FlushBatchManagerEventListener(BatchOperationsDelegator gridDialect) {
 		super( gridDialect );
 	}
 
