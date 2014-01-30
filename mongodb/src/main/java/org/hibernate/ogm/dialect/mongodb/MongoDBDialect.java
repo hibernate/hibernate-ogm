@@ -21,12 +21,19 @@
 package org.hibernate.ogm.dialect.mongodb;
 
 import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
+import static org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType.INSERT;
+import static org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.HibernateException;
@@ -45,7 +52,12 @@ import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.Operation;
+import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
+import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -85,11 +97,16 @@ import com.mongodb.DBObject;
  * Collection of embeddable are stored within the owning entity document under the
  * unqualified collection role
  *
+ * In MongoDB is possible to batch operations but only for the creation of new documents
+ * and only if they don't have invalid characters in the field name.
+ * If these conditions are not met, the MongoDB mechanism for batch operations
+ * is not going to be used.
+ *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Alan Fitton <alan at eth0.org.uk>
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class MongoDBDialect implements GridDialect {
+public class MongoDBDialect implements BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -102,6 +119,8 @@ public class MongoDBDialect implements GridDialect {
 	private static final Integer ONE = Integer.valueOf( 1 );
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
+
+	private final ThreadLocal<OperationsQueue> operationsQueue = new ThreadLocal<OperationsQueue>();
 
 	private final MongoDBDatastoreProvider provider;
 	private final DB currentDB;
@@ -119,13 +138,31 @@ public class MongoDBDialect implements GridDialect {
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
-		return found != null ? new Tuple( new MongoDBTupleSnapshot( found, key ) ) : null;
+		if ( found != null ) {
+			return new Tuple( new MongoDBTupleSnapshot( (BasicDBObject) found, key, UPDATE ) );
+		}
+		else if ( isInTheQueue( key ) ) {
+			// The key has not been inserted in the db but it is in the queue
+			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key, INSERT ) );
+		}
+		else {
+			return null;
+		}
+	}
+
+	private boolean isInTheQueue(EntityKey key) {
+		OperationsQueue queue = getOperationsQueue();
+		return queue != null && queue.contains( key );
+	}
+
+	protected OperationsQueue getOperationsQueue() {
+		return operationsQueue.get();
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
 		DBObject toSave = this.prepareIdObject( key );
-		return new Tuple( new MongoDBTupleSnapshot( toSave, key ) );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key, SnapshotType.INSERT ) );
 	}
 
 	private DBObject getObjectAsEmbeddedAssociation(AssociationKey key) {
@@ -225,14 +262,47 @@ public class MongoDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
+		if ( getOperationsQueue() == null ) {
+			doUpdateTuple( tuple, key );
+		}
+		else {
+			getOperationsQueue().add( new UpdateTupleOperation( tuple, key ) );
+		}
+	}
+
+	private void doUpdateTuple(Tuple tuple, EntityKey key) {
+		BasicDBObject idObject = this.prepareIdObject( key );
+		DBObject updater = objectForUpdate( tuple, key, idObject );
+		getCollection( key ).update( idObject, updater, true, false );
+	}
+
+	// Creates a dbObject that can be pass to the mongoDB batch insert function
+	private DBObject objectForInsert(Tuple tuple, EntityKey key, BasicDBObject dbObject) {
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+		for ( TupleOperation operation : tuple.getOperations() ) {
+			String column = operation.getColumn();
+			if ( notInIdField( snapshot, column ) ) {
+				switch ( operation.getType() ) {
+					case PUT_NULL:
+					case PUT:
+						dbObject.append( column, operation.getValue() );
+						break;
+					case REMOVE:
+						dbObject.remove( column );
+						break;
+					}
+			}
+		}
+		return dbObject;
+	}
+
+	private DBObject objectForUpdate(Tuple tuple, EntityKey key, DBObject idObject) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
-			if ( !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField(
-					column
-			) ) {
+			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
 				case PUT_NULL:
 				case PUT:
@@ -244,7 +314,6 @@ public class MongoDBDialect implements GridDialect {
 				}
 			}
 		}
-		BasicDBObject idObject = this.prepareIdObject( key );
 		/*
 		* Needed because in case of object with only an ID field
 		* the "_id" won't be persisted properly.
@@ -254,13 +323,26 @@ public class MongoDBDialect implements GridDialect {
 		*	of the custom id
 		 */
 		if ( updater.size() == 0 ) {
-			updater = idObject;
+			return idObject;
 		}
-		this.getCollection( key ).update( idObject, updater, true, false );
+		return updater;
+	}
+
+	private boolean notInIdField(MongoDBTupleSnapshot snapshot, String column) {
+		return !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField( column );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key) {
+		if ( getOperationsQueue() == null ) {
+			doRemove( key );
+		}
+		else {
+			getOperationsQueue().add( new RemoveTupleOperation( key ) );
+		}
+	}
+
+	private void doRemove(EntityKey key) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
 		collection.remove( toDelete );
@@ -287,6 +369,9 @@ public class MongoDBDialect implements GridDialect {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
+			// We need to execute the previous operations first or it won't be able to find the key that should have
+			// been created
+			executeBatch();
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
@@ -384,6 +469,9 @@ public class MongoDBDialect implements GridDialect {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
+			// We need to execute the previous operations first or it won't be able to find the key that should have
+			// been created
+			executeBatch();
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
@@ -559,6 +647,118 @@ public class MongoDBDialect implements GridDialect {
 		}
 
 		return provider.getAssociationStorageStrategy();
+	}
+
+	/**
+	 * When creating documents in batch, MongoDB doesn't allow the name of the fields to contain
+	 * the characters '$' or '.'
+	 *
+	 * @return false if the {@link UpdateTupleOperation} affects fields containing invalid characters for the execution
+	 * of operations in batch, true otherwise.
+	 */
+	private boolean columnNamesAllowBatchInsert(UpdateTupleOperation tupleOperation) {
+		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
+		for ( String column : columnNames ) {
+			if ( column.contains( "." ) || column.contains( "$" ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void prepareBatch() {
+		operationsQueue.set( new OperationsQueue() );
+	}
+
+	@Override
+	public void clearBatch() {
+		operationsQueue.remove();
+	}
+
+	@Override
+	public void executeBatch() {
+		OperationsQueue queue = getOperationsQueue();
+		if ( queue != null ) {
+			Operation operation = queue.poll();
+			Map<DBCollection, Map<DBObject, DBObject>> inserts = new HashMap<DBCollection, Map<DBObject, DBObject>>();
+			while ( operation != null ) {
+				if ( operation instanceof UpdateTupleOperation ) {
+					executeBatchUpdate( inserts, (UpdateTupleOperation) operation );
+				}
+				else if ( operation instanceof RemoveTupleOperation ) {
+					executeBatchRemove( inserts, (RemoveTupleOperation) operation );
+				}
+				else {
+					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
+				}
+				operation = queue.poll();
+			}
+			flushInserts( inserts );
+			clearBatch();
+		}
+	}
+
+	private void executeBatchRemove(Map<DBCollection, Map<DBObject, DBObject>> inserts, RemoveTupleOperation tupleOperation) {
+		EntityKey entityKey = tupleOperation.getEntityKey();
+		DBCollection collection = getCollection( entityKey );
+		BasicDBObject idObject = prepareIdObject( entityKey );
+		Map<DBObject, DBObject> documents = inserts.get( collection );
+		if ( documents != null && documents.containsKey( idObject ) ) {
+			documents.remove( entityKey );
+		}
+		else {
+			doRemove( entityKey );
+		}
+	}
+
+	private void executeBatchUpdate(Map<DBCollection, Map<DBObject, DBObject>> inserts, UpdateTupleOperation tupleOperation) {
+		EntityKey entityKey = tupleOperation.getEntityKey();
+		Tuple tuple = tupleOperation.getTuple();
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
+		if ( INSERT == snapshot.getOperationType() && columnNamesAllowBatchInsert( tupleOperation ) ) {
+			prepareForInsert( inserts, snapshot, entityKey, tuple );
+		}
+		else {
+			// Object already exists in the db or has invalid fields:
+			doUpdateTuple( tuple, entityKey );
+		}
+	}
+
+	private void prepareForInsert(Map<DBCollection, Map<DBObject, DBObject>> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
+		DBCollection collection = getCollection( entityKey );
+		Map<DBObject, DBObject> documents = getOrCreateDocuments( inserts, collection );
+		DBObject idObject = prepareIdObject( entityKey );
+		DBObject document = getCurrentDocument( snapshot, idObject, documents );
+		DBObject newDocument = objectForInsert( tuple, entityKey, (BasicDBObject) document );
+		inserts.get( collection ).put( idObject, newDocument );
+	}
+
+	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, DBObject idObject, Map<DBObject, DBObject> documents) {
+		if ( documents.containsKey( idObject ) ) {
+			return documents.get( idObject );
+		}
+		else {
+			return snapshot.getDbObject();
+		}
+	}
+
+	private Map<DBObject, DBObject> getOrCreateDocuments(Map<DBCollection, Map<DBObject, DBObject>> inserts, DBCollection collection) {
+		if ( !inserts.containsKey( collection ) ) {
+			Map<DBObject, DBObject> map = new HashMap<DBObject, DBObject>();
+			inserts.put( collection, map );
+		}
+		Map<DBObject, DBObject> documents = inserts.get( collection );
+		return documents;
+	}
+
+	private void flushInserts(Map<DBCollection, Map<DBObject, DBObject>> inserts) {
+		for ( Map.Entry<DBCollection, Map<DBObject, DBObject>> entry : inserts.entrySet() ) {
+			DBCollection collection = entry.getKey();
+			Collection<DBObject> documents = entry.getValue().values();
+			collection.insert( new ArrayList<DBObject>( documents ) );
+		}
+		inserts.clear();
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {

@@ -33,6 +33,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 
@@ -95,7 +96,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public Tuple get(RowKey column) {
 		DBObject row = this.map.get( column );
-		return row == null ? null : new Tuple( new MongoDBTupleSnapshot( row, column ) );
+		return row == null ? null : new Tuple( new MongoDBTupleSnapshot( row, column, SnapshotType.SELECT ) );
 	}
 
 	//not for embedded
