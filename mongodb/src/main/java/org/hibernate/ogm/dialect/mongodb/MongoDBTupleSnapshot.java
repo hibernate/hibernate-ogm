@@ -41,6 +41,15 @@ import com.mongodb.DBObject;
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
+	/**
+	 * Identify the purpose for the creation of a {@link MongoDBTupleSnapshot}
+	 *
+	 * @author Davide D'Alto <davide@hibernate.org>
+	 */
+	public enum SnapshotType {
+		INSERT, UPDATE, SELECT
+	}
+
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private final DBObject dbObject;
@@ -48,18 +57,21 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	private final EntityKey entityKey;
 	//use it so it avoids multiple calls to Arrays.asList()
 	private final List<String> columnNames;
+	private final SnapshotType operationType;
 
 	//consider RowKey columns and values as part of the Tuple
-	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey) {
+	public MongoDBTupleSnapshot(DBObject dbObject, RowKey rowKey, SnapshotType operationType) {
 		this.dbObject = dbObject;
 		this.rowKey = rowKey;
+		this.operationType = operationType;
 		this.entityKey = null;
 		this.columnNames = null;
 	}
 
-	public MongoDBTupleSnapshot(DBObject dbObject, EntityKey entityKey) {
+	public MongoDBTupleSnapshot(DBObject dbObject, EntityKey entityKey, SnapshotType operationType) {
 		this.dbObject = dbObject;
 		this.entityKey = entityKey;
+		this.operationType = operationType;
 		this.columnNames  = Arrays.asList( entityKey.getColumnNames());
 		this.rowKey = null;
 	}
@@ -128,4 +140,9 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 	public boolean columnInIdField(String column) {
 		return (this.columnNames == null) ? false : this.columnNames.contains( column );
 	}
+
+	public SnapshotType getOperationType() {
+		return operationType;
+	}
+
 }

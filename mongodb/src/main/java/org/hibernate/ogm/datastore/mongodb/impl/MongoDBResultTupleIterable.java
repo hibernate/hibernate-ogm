@@ -27,6 +27,7 @@ import java.util.Iterator;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot;
+import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 
@@ -91,7 +92,7 @@ public class MongoDBResultTupleIterable implements Iterable<Tuple>, Closeable {
 					new Object[] { dbObject.get( MongoDBDialect.ID_FIELDNAME ) }
 					);
 
-			return new Tuple( new MongoDBTupleSnapshot( dbObject, rowKey ) );
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, rowKey, SnapshotType.SELECT) );
 		}
 
 		@Override
