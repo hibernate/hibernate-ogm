@@ -22,11 +22,11 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
-import org.hibernate.ogm.dialect.couchdb.impl.util.DatabaseIdentifier;
+import org.hibernate.ogm.dialect.couchdb.backend.impl.CouchDBDatastore;
+import org.hibernate.ogm.dialect.couchdb.util.impl.DatabaseIdentifier;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
