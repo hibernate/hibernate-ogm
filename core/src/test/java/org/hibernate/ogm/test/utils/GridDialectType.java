@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -26,29 +26,32 @@ package org.hibernate.ogm.test.utils;
  * is also used to disable some tests for a specific GridDialect.
  *
 * @author Sanne Grinovero <sanne@hibernate.org>
+* @author Gunnar Morling
 */
 public enum GridDialectType {
 
-	HASHMAP( "org.hibernate.ogm.test.utils.HashMapTestHelper" ) {
+	HASHMAP( "org.hibernate.ogm.test.utils.HashMapTestHelper", false ) {
 		@Override public Class<?> loadTestableGridDialectClass() {
 			return null; //this one is special, we want it only as fallback when all others fail
 		}
 	},
 
-	INFINISPAN( "org.hibernate.ogm.test.utils.InfinispanTestHelper" ),
+	INFINISPAN( "org.hibernate.ogm.test.utils.InfinispanTestHelper", false ),
 
-	EHCACHE( "org.hibernate.ogm.test.utils.EhcacheTestHelper" ),
+	EHCACHE( "org.hibernate.ogm.test.utils.EhcacheTestHelper", false ),
 
-	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper" ),
+	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper", true ),
 
-	NEO4J( "org.hibernate.ogm.test.utils.Neo4jTestHelper" ),
+	NEO4J( "org.hibernate.ogm.test.utils.Neo4jTestHelper", false ),
 
-	COUCHDB( "org.hibernate.ogm.test.utils.CouchDBTestHelper" );
+	COUCHDB( "org.hibernate.ogm.test.utils.CouchDBTestHelper", true );
 
 	private final String testHelperClassName;
+	private final boolean isDocumentStore;
 
-	GridDialectType(String testHelperClassName) {
+	GridDialectType(String testHelperClassName, boolean isDocumentStore) {
 		this.testHelperClassName = testHelperClassName;
+		this.isDocumentStore = isDocumentStore;
 	}
 
 	public Class<?> loadTestableGridDialectClass() {
@@ -60,6 +63,14 @@ public enum GridDialectType {
 			//ignore this: might not be available
 		}
 		return classForName;
+	}
+
+	/**
+	 * Whether this store is a document store or not.
+	 * @return {@code true} if this is a document store, {@code false} otherwise.
+	 */
+	public boolean isDocumentStore() {
+		return isDocumentStore;
 	}
 
 	public static GridDialectType valueFromHelperClass(Class<? extends TestableGridDialect> class1) {

@@ -61,6 +61,14 @@ public interface TestableGridDialect {
 	long getNumberOfAssociations(SessionFactory sessionFactory, AssociationStorageType type);
 
 	/**
+	 * Returns the number of collections stored embedded within an entity structure in the datastore
+	 *
+	 * @param sessionFactory factory used to connect to the store
+	 * @return the number of embedded collections
+	 */
+	long getNumberOEmbeddedCollections(SessionFactory sessionFactory);
+
+	/**
 	 * Loads a specific entity tuple directly from the data store by entity key
 	 *
 	 * @param sessionFactory

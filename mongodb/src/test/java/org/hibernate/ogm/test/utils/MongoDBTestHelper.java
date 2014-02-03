@@ -134,6 +134,23 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return associationCount;
 	}
 
+	@Override
+	public long getNumberOEmbeddedCollections(SessionFactory sessionFactory) {
+		DB db = getProvider( sessionFactory ).getDatabase();
+		long embeddedCollectionCount = 0;
+
+		for ( String entityCollection : getEntityCollections( sessionFactory ) ) {
+			DBCursor entities = db.getCollection( entityCollection ).find();
+
+			while ( entities.hasNext() ) {
+				DBObject entity = entities.next();
+				embeddedCollectionCount += getNumberOfEmbeddedCollections( entity );
+			}
+		}
+
+		return embeddedCollectionCount;
+	}
+
 	private int getNumberOfReferences(DBObject entity) {
 		int numberOfReferences = 0;
 
@@ -147,6 +164,19 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return numberOfReferences;
 	}
 
+	private int getNumberOfEmbeddedCollections(DBObject entity) {
+		int numberOfEmbeddedCollections = 0;
+
+		for ( String fieldName : entity.keySet() ) {
+			Object field = entity.get( fieldName );
+			if ( field instanceof List && !isReference( field ) ) {
+				numberOfEmbeddedCollections++;
+			}
+		}
+
+		return numberOfEmbeddedCollections;
+	}
+
 	private boolean isReference(Object field) {
 		// TODO: *ToOne references?
 		if ( !( field instanceof List ) ) {
@@ -156,7 +186,16 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		@SuppressWarnings("unchecked")
 		List<DBObject> list = (List<DBObject>) field;
 		for ( DBObject element : list ) {
-			if ( element.keySet().size() != 1 || !element.keySet().iterator().next().endsWith( "_id" ) ) {
+			boolean containsReference = false;
+
+			for ( String key : element.keySet() ) {
+				if ( key.endsWith( "_id" ) ) {
+					containsReference = true;
+					break;
+				}
+			}
+
+			if ( !containsReference ) {
 				return false;
 			}
 		}

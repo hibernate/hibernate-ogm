@@ -21,20 +21,31 @@
 package org.hibernate.ogm.test.associations.collection.types;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.getCurrentDialectType;
 import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfAssociations;
 import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEmbeddedCollections;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.test.utils.GridDialectType;
 import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.test.utils.SkipByGridDialect;
 import org.junit.Test;
 
 /**
+ * Tests that map contents are stored in a separate association document if configured so, while the contents of
+ * embedded collections should always be stored within the entity document.
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-public class MapTest extends OgmTestCase {
+@SkipByGridDialect(
+		value = { GridDialectType.EHCACHE, GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.NEO4J, GridDialectType.COUCHDB },
+		comment = "Only the document stores CouchDB and MongoDB support the configuration of specific association storage strategies"
+)
+public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 
 	@Test
 	public void testMapAndElementCollection() throws Exception {
@@ -60,17 +71,15 @@ public class MapTest extends OgmTestCase {
 
 		session.clear();
 
-		if ( getCurrentDialectType().isDocumentStore() ) {
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
-					.describedAs( "Map contents should be stored within the entity document" )
-					.isEqualTo( 1 );
-			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
-					.describedAs( "Map contents should be stored within the entity document" )
-					.isEqualTo( 0 );
-			assertThat( getNumberOfEmbeddedCollections( sessions ) )
-					.describedAs( "Element collection contents should be stored within the entity document" )
-					.isEqualTo( 2 );
-		}
+		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
+				.describedAs( "Map contents should be stored in separate document" )
+				.isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
+				.describedAs( "Map contents should be stored in association document" )
+				.isEqualTo( 1 );
+		assertThat( getNumberOfEmbeddedCollections( sessions ) )
+				.describedAs( "Element collection contents should be stored within the entity document" )
+				.isEqualTo( 2 );
 
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
@@ -108,5 +117,10 @@ public class MapTest extends OgmTestCase {
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { User.class, Address.class };
+	}
+
+	@Override
+	protected void configure(Configuration cfg) {
+		cfg.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 }

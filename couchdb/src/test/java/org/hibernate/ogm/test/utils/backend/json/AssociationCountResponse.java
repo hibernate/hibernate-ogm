@@ -31,6 +31,8 @@ public class AssociationCountResponse {
 
 	private long inEntityAssociationCount;
 
+	private long embeddedCollectionCount;
+
 	public long getAssociationDocumentCount() {
 		return associationDocumentCount;
 	}
@@ -45,5 +47,13 @@ public class AssociationCountResponse {
 
 	public void setInEntityAssociationCount(long inEntityAssociationCount) {
 		this.inEntityAssociationCount = inEntityAssociationCount;
+	}
+
+	public long getEmbeddedCollectionCount() {
+		return embeddedCollectionCount;
+	}
+
+	public void setEmbeddedCollectionCount(long embeddedCollectionCount) {
+		this.embeddedCollectionCount = embeddedCollectionCount;
 	}
 }
