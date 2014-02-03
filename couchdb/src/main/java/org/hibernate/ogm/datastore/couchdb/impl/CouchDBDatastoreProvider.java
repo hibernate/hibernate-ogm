@@ -20,14 +20,13 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
-import java.net.MalformedURLException;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.couchdb.impl.util.CouchDBConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
+import org.hibernate.ogm.dialect.couchdb.impl.util.DatabaseIdentifier;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
@@ -76,7 +75,7 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public void start() {
 		if ( isDatastoreNotInitialized() ) {
-			datastore = CouchDBDatastore.newInstance( retrieveDataBaseURL(), retrieveUsername(), retrievePassword(), isCreateDatabase() );
+			datastore = CouchDBDatastore.newInstance( getDatabase(), configuration.isCreateDatabase() );
 		}
 	}
 
@@ -116,37 +115,21 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 		return datastore == null;
 	}
 
-	private DataBaseURL retrieveDataBaseURL() {
+	private DatabaseIdentifier getDatabase() {
 		try {
-			return new DataBaseURL( getDatabaseHost(), getDatabasePort(), getDatabaseName() );
+			return new DatabaseIdentifier(
+					configuration.getHost(),
+					configuration.getPort(),
+					configuration.getDatabaseName(),
+					configuration.getUsername(),
+					configuration.getPassword()
+			);
 		}
-		catch (MalformedURLException e) {
-			throw logger.malformedDataBaseUrl( e, getDatabaseHost(), getDatabasePort(), getDatabaseName() );
+		catch (Exception e) {
+			throw logger.malformedDataBaseUrl(
+					e, configuration.getHost(), configuration.getPort(), configuration.getDatabaseName()
+			);
 		}
-	}
-
-	private boolean isCreateDatabase() {
-		return configuration.isCreateDatabase();
-	}
-
-	private String retrievePassword() {
-		return configuration.getPassword();
-	}
-
-	private String retrieveUsername() {
-		return configuration.getUsername();
-	}
-
-	private String getDatabaseName() {
-		return configuration.getDatabaseName();
-	}
-
-	private String getDatabaseHost() {
-		return configuration.getHost();
-	}
-
-	private int getDatabasePort() {
-		return configuration.getPort();
 	}
 
 }

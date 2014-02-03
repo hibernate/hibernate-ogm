@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,48 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.dialect.couchdb.impl.util;
+package org.hibernate.ogm.dialect.couchdb.util;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import static org.fest.assertions.Assertions.assertThat;
+
+import org.hibernate.ogm.dialect.couchdb.impl.util.DatabaseIdentifier;
+import org.junit.Test;
 
 /**
- * Represent the URL pointing to an instance of the CouchDB
- *
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
-public class DataBaseURL {
+public class DatabaseIdentifierTest {
 
-	private static final String PROTOCOL = "http";
-	private static final String SLASH = "/";
+	@Test
+	public void shouldReturnTheCorrectServerUri() throws Exception {
+		String expectedServerUri = "http://localhost:5984";
+		DatabaseIdentifier databaseIdentifier = new DatabaseIdentifier( "localhost", 5984, "databasename", "", "" );
 
-	private URL databaseURL;
-
-	public DataBaseURL(String host, int port, String databaseName) throws MalformedURLException {
-		databaseURL = new URL( PROTOCOL, host, port, SLASH + databaseName );
+		assertThat( databaseIdentifier.getServerUri().toString() ).isEqualTo( expectedServerUri );
 	}
 
-	/**
-	 * The name of the database
-	 *
-	 * @return the name of the database
-	 */
-	public String getDataBaseName() {
-		return databaseURL.getPath().substring( 1 );
-	}
+	@Test
+	public void shouldReturnTheCorrectDatabaseName() throws Exception {
+		String expectedName = "not_important";
+		DatabaseIdentifier databaseIdentifier = new DatabaseIdentifier( "localhost", 5984, expectedName, "", "" );
 
-	/**
-	 * The server URL
-	 *
-	 * @return the server Url
-	 */
-	public String getServerUrl() {
-		return toString().replace( SLASH + getDataBaseName(), "" );
+		assertThat( databaseIdentifier.getDatabaseName() ).isEqualTo( expectedName );
 	}
-
-	@Override
-	public String toString() {
-		return databaseURL.toString();
-	}
-
 }

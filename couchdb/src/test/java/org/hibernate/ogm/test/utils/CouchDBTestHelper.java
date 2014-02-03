@@ -209,7 +209,7 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		}
 
 		Client client = ClientBuilder.newBuilder().build();
-		WebTarget target = client.target( dataStore.getDatabaseUrl().toString() );
+		WebTarget target = client.target( dataStore.getDatabaseIdentifier().getDatabaseUri() );
 		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
 
 		return rtarget.proxy( DatabaseTestClient.class );

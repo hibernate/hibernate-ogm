@@ -22,7 +22,6 @@ package org.hibernate.ogm.logging.couchdb.impl;
 
 import static org.jboss.logging.Logger.Level.INFO;
 
-import java.net.MalformedURLException;
 import java.text.ParseException;
 
 import javax.persistence.OptimisticLockException;
@@ -83,10 +82,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = INFO)
 	@Message(id = 1314, value = "Connecting to CouchDB at %s")
-	void connectingToCouchDB(String databaseUrl);
+	void connectingToCouchDB(String database);
 
 	@Message(id = 1315, value = "An error occurred, malformed database URL. Database host: %s, database port: %03d, database name: %s")
-	HibernateException malformedDataBaseUrl(@Cause MalformedURLException e, String databaseHost, int databasePort,
+	HibernateException malformedDataBaseUrl(@Cause Exception e, String databaseHost, int databasePort,
 			String databaseName);
 
 	@Message(id = 1317, value = "Could not parse date string: %s")

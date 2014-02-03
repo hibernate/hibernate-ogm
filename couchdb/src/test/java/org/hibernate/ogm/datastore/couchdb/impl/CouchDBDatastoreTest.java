@@ -25,7 +25,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Properties;
 
 import javax.persistence.OptimisticLockException;
@@ -35,7 +34,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.couchdb.CouchDBDialectTest;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.Document;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.EntityDocument;
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
+import org.hibernate.ogm.dialect.couchdb.impl.util.DatabaseIdentifier;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.junit.After;
@@ -89,9 +88,9 @@ public class CouchDBDatastoreTest {
 	}
 
 	@Test(expected = HibernateException.class)
-	public void testCreatingInstanceWithWrongUrlUpdatingADocumentUsingAWrongDatabaseUrlConfiguration() throws Exception {
+	public void testCreatingInstanceWithUnavaibleHost() throws Exception {
 		dataStore = null;
-		CouchDBDatastore.newInstance( getWrongDatabaseURL(), getUserName(), getPassword(), true );
+		CouchDBDatastore.newInstance( getDatabaseIdentifierWithUnavailableHost(), true );
 	}
 
 	@Test
@@ -125,20 +124,24 @@ public class CouchDBDatastoreTest {
 	}
 
 	@Test
-	public void testGetEntityWithWoringIdReturnNullValue() {
+	public void testGetEntityWithWrongIdReturnNullValue() {
 		Document createdDocument = dataStore.saveDocument( createEntity() );
 		EntityDocument entity = dataStore.getEntity( createdDocument.getId() + "_1" );
 		assertThat( entity, nullValue() );
 	}
 
-	private void setUpDatastore() throws IOException {
+	private void setUpDatastore() throws Exception {
 		dataBaseDropped = false;
 		loadProperties();
-		dataStore = CouchDBDatastore.newInstance( getDatabaseURL(), getUserName(), getPassword(), true );
+		Object createDatabase = properties.get( OgmProperties.CREATE_DATABASE );
+		dataStore = CouchDBDatastore.newInstance(
+				getDatabaseIdentifier(),
+				createDatabase != null ? Boolean.valueOf( createDatabase.toString() ) : false
+		);
 	}
 
-	private DataBaseURL getDatabaseURL() throws MalformedURLException {
-		return new DataBaseURL( getDatabaseHost(), getDatabasePort(), getDatabaseName() );
+	private DatabaseIdentifier getDatabaseIdentifier() throws Exception {
+		return new DatabaseIdentifier( getDatabaseHost(), getDatabasePort(), getDatabaseName(), getUserName(), getPassword() );
 	}
 
 	private void loadProperties() throws IOException {
@@ -187,8 +190,8 @@ public class CouchDBDatastoreTest {
 		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
 	}
 
-	private DataBaseURL getWrongDatabaseURL() throws MalformedURLException {
-		return new DataBaseURL( "localhost", 1234, "no_existing" );
+	private DatabaseIdentifier getDatabaseIdentifierWithUnavailableHost() throws Exception {
+		return new DatabaseIdentifier( "localhost", 1234, "no_existing", getUserName(), getPassword() );
 	}
 
 	private boolean isValueProvided(String property) {

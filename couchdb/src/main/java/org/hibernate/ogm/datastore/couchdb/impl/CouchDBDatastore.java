@@ -23,9 +23,6 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 import java.util.List;
 
 import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -39,12 +36,13 @@ import org.hibernate.ogm.dialect.couchdb.impl.backend.json.SequenceDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.DesignDocument;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.EntityTupleRows;
 import org.hibernate.ogm.dialect.couchdb.impl.backend.json.designdocument.TuplesDesignDocument;
-import org.hibernate.ogm.dialect.couchdb.impl.util.DataBaseURL;
+import org.hibernate.ogm.dialect.couchdb.impl.util.DatabaseIdentifier;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
+import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
@@ -62,29 +60,27 @@ public class CouchDBDatastore {
 	private static final Log logger = LoggerFactory.getLogger();
 	private final DatabaseClient databaseClient;
 	private final ServerClient serverClient;
-	private final DataBaseURL databaseUrl;
+	private final DatabaseIdentifier database;
 
-	private CouchDBDatastore(DataBaseURL databaseUrl, String userName, String password) {
-		logger.connectingToCouchDB( databaseUrl.toString() );
-		serverClient = createServerClient( databaseUrl );
-		databaseClient = createDataBaseClient( databaseUrl );
-		this.databaseUrl = databaseUrl;
+	private CouchDBDatastore(DatabaseIdentifier database) {
+		logger.connectingToCouchDB( database.getDatabaseName() + "@" + database.getServerUri().toString() );
+		serverClient = createServerClient( database );
+		databaseClient = createDataBaseClient( database );
+		this.database = database;
 	}
 
 	/**
 	 * Creates an instance of CouchDBDatastore, check if the CouchDB Design Document necessary to retrieve some data
 	 * (e.g. number of associations and entities) are present and create them if not
 	 *
-	 * @param databaseURL the url of the database
-	 * @param userName the username of the database user or null if authentication is not required
-	 * @param password the password of the database user or null if authentication is not required
+	 * @param database a handle to the database
 	 * @param createDatabase if true the database is created
 	 * @return an instance of CouchDBDatastore
 	 */
-	public static CouchDBDatastore newInstance(DataBaseURL databaseURL, String userName, String password, boolean createDatabase) {
+	public static CouchDBDatastore newInstance(DatabaseIdentifier database, boolean createDatabase) {
 		RegisterBuiltin.register( ResteasyProviderFactory.getInstance() );
 
-		CouchDBDatastore couchDBDatastore = new CouchDBDatastore( databaseURL, userName, password );
+		CouchDBDatastore couchDBDatastore = new CouchDBDatastore( database );
 		couchDBDatastore.initialize( createDatabase );
 
 		return couchDBDatastore;
@@ -94,8 +90,8 @@ public class CouchDBDatastore {
 		if ( createDatabase ) {
 			createDatabase();
 		}
-		else if ( !databaseExists( databaseUrl.getDataBaseName() ) ) {
-			throw logger.databaseDoesNotExistException( databaseUrl.getDataBaseName() );
+		else if ( !databaseExists( database.getDatabaseName() ) ) {
+			throw logger.databaseDoesNotExistException( database.getDatabaseName() );
 		}
 
 		if ( !exists( TuplesDesignDocument.DOCUMENT_ID, true ) ) {
@@ -345,21 +341,21 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Returns the URL of the underlying CouchDB instance.
-	 * @return the URL of the underlying CouchDB instance
+	 * Returns a handle to the underlying CouchDB instance and database
+	 * @return a handle to the underlying CouchDB instance and database
 	 */
-	public DataBaseURL getDatabaseUrl() {
-		return databaseUrl;
+	public DatabaseIdentifier getDatabaseIdentifier() {
+		return database;
 	}
 
 	private void createDatabase() {
 		Response response = null;
 		try {
-			if ( !databaseExists( databaseUrl.getDataBaseName() ) ) {
-				response = serverClient.createDatabase( databaseUrl.getDataBaseName() );
+			if ( !databaseExists( database.getDatabaseName() ) ) {
+				response = serverClient.createDatabase( database.getDatabaseName() );
 				if ( response.getStatus() != Response.Status.CREATED.getStatusCode() ) {
 					GenericResponse entity = response.readEntity( GenericResponse.class );
-					throw logger.errorCreatingDatabase( databaseUrl.getDataBaseName(), response.getStatus(), entity.getError(), entity.getReason() );
+					throw logger.errorCreatingDatabase( database.getDatabaseName(), response.getStatus(), entity.getError(), entity.getReason() );
 				}
 			}
 		}
@@ -431,19 +427,30 @@ public class CouchDBDatastore {
 		return entityKeyMetadata.getTable();
 	}
 
-	private ServerClient createServerClient(DataBaseURL databaseUrl) {
-		ResteasyClient client = new ResteasyClientBuilder().build();
-		ResteasyWebTarget target = client.target( databaseUrl.getServerUrl() );
-		ServerClient serverClient = target.proxy( ServerClient.class );
-		return serverClient;
+	private static ServerClient createServerClient(DatabaseIdentifier database) {
+		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
+
+		if ( database.getUserName() != null ) {
+			clientBuilder.register( new BasicAuthentication( database.getUserName(), database.getPassword() ) );
+		}
+
+		ResteasyClient client = clientBuilder.build();
+		ResteasyWebTarget target = client.target( database.getServerUri() );
+
+		return target.proxy( ServerClient.class );
 	}
 
-	private DatabaseClient createDataBaseClient(DataBaseURL databaseUrl) {
-		Client client = ClientBuilder.newBuilder().build();
-		WebTarget target = client.target( databaseUrl.toString() );
-		ResteasyWebTarget rtarget = (ResteasyWebTarget) target;
-		DatabaseClient dbClient = rtarget.proxy( DatabaseClient.class );
-		return dbClient;
+	private static DatabaseClient createDataBaseClient(DatabaseIdentifier database) {
+		ResteasyClientBuilder clientBuilder = new ResteasyClientBuilder();
+
+		if ( database.getUserName() != null ) {
+			clientBuilder.register( new BasicAuthentication( database.getUserName(), database.getPassword() ) );
+		}
+
+		ResteasyClient client = clientBuilder.build();
+		ResteasyWebTarget target = client.target( database.getDatabaseUri() );
+
+		return target.proxy( DatabaseClient.class );
 	}
 
 	private void updateDocumentRevision(Document document, String revision) {
