@@ -41,7 +41,7 @@ public class AssociationStorageStrategy {
 	}
 
 	public static AssociationStorageStrategy getInstance(AssociationKind associationKind, AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {
-		if ( associationKind == AssociationKind.EMBEDDED || associationStorage == AssociationStorageType.IN_ENTITY ) {
+		if ( associationKind == AssociationKind.EMBEDDED_COLLECTION || associationStorage == AssociationStorageType.IN_ENTITY ) {
 			return new AssociationStorageStrategy( true, false );
 		}
 		else if ( associationDocumentStorage == AssociationDocumentType.COLLECTION_PER_ASSOCIATION ) {

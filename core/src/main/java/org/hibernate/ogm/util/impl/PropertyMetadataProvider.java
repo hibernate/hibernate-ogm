@@ -143,8 +143,12 @@ public class PropertyMetadataProvider {
 				keyColumnNames = associationKeyMetadata.getColumnNames();
 				rowKeyColumnNames = associationKeyMetadata.getRowKeyColumnNames();
 			}
+
 			final Object[] columnValues = getKeyColumnValues();
-			collectionMetadataKey = new AssociationKey( associationKeyMetadata, columnValues );
+			String collectionRole = null;
+			EntityKey ownerEntityKey = null;
+			AssociationKind associationKind = null;
+
 			// We have a collection on the main side
 			if (collectionPersister != null) {
 				EntityKey entityKey;
@@ -157,26 +161,26 @@ public class PropertyMetadataProvider {
 							(Serializable) key,
 							session
 					);
-					collectionMetadataKey.setCollectionRole( buildCollectionRole( collectionPersister ) );
+					collectionRole = buildCollectionRole( collectionPersister );
 				}
 				else {
 					//we are on the right side, use the association property
-					collectionMetadataKey.setCollectionRole( getUnqualifiedRole( collectionPersister ) );
+					collectionRole = getUnqualifiedRole( collectionPersister );
 					entityKey = EntityKeyBuilder.fromPersister(
 							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
 							(Serializable) key,
 							session
 					);
 				}
-				collectionMetadataKey.setOwnerEntityKey( entityKey );
+				ownerEntityKey = entityKey;
 				//TODO add information on the collection type, set, map, bag, list etc
 
-				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED;
-				collectionMetadataKey.setAssociationKind( type );
+				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION;
+				associationKind = type;
 			}
 			// We have a to-one on the main side
 			else if ( propertyType != null ) {
-				collectionMetadataKey.setAssociationKind( propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED );
+				associationKind = propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION;
 				if ( propertyType instanceof EntityType ) {
 					EntityType entityType = (EntityType) propertyType;
 					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
@@ -184,8 +188,8 @@ public class PropertyMetadataProvider {
 							associatedPersister.getEntityKeyMetadata(),
 							columnValues
 					);
-					collectionMetadataKey.setOwnerEntityKey( entityKey );
-					collectionMetadataKey.setCollectionRole( getCollectionRoleFromToOne( associatedPersister ) );
+					ownerEntityKey = entityKey;
+					collectionRole = getCollectionRoleFromToOne( associatedPersister );
 				}
 				else {
 					throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
@@ -194,7 +198,10 @@ public class PropertyMetadataProvider {
 			else {
 				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
+
+			collectionMetadataKey = new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, associationKind );
 		}
+
 		return collectionMetadataKey;
 	}
 

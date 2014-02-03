@@ -129,10 +129,17 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		GridDialect gridDialect = this.getGridDialect();
 		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
 		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
-		AssociationKey associationKey = new AssociationKey( metadata, new Object[] { "projectID" } );
-		associationKey.setAssociationKind( AssociationKind.ASSOCIATION );
-		associationKey.setCollectionRole( "modules" );
-		associationKey.setOwnerEntityKey( new EntityKey( new EntityKeyMetadata( "Project", new String[] { "id" } ), new String[] { "projectID" } ) );
+		AssociationKey associationKey = new AssociationKey(
+				metadata,
+				new Object[] { "projectID" },
+				"modules",
+				new EntityKey(
+						new EntityKeyMetadata( "Project", new String[] { "id" } ),
+						new String[] { "projectID" }
+				),
+				AssociationKind.ASSOCIATION
+		);
+
 		AssociationContext associationContext = new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Project.class, "modules" ) );
 		final Association association = gridDialect.getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
