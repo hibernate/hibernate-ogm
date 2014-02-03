@@ -48,6 +48,7 @@ import org.hibernate.ogm.dialect.mongodb.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
@@ -129,6 +130,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
 		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
 		AssociationKey associationKey = new AssociationKey( metadata, new Object[] { "projectID" } );
+		associationKey.setAssociationKind( AssociationKind.ASSOCIATION );
 		associationKey.setCollectionRole( "modules" );
 		associationKey.setOwnerEntityKey( new EntityKey( new EntityKeyMetadata( "Project", new String[] { "id" } ), new String[] { "projectID" } ) );
 		AssociationContext associationContext = new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Project.class, "modules" ) );

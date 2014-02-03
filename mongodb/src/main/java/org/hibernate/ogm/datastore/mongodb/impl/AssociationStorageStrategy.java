@@ -21,11 +21,12 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 
 /**
- * Represents a strategy for storing associations in MongoDB. Provides an aggregated view on the
- * {@link AssociationStorageType} and {@link AssociationDocumentType} options.
+ * Represents a strategy for storing associations in MongoDB. Provides an aggregated view on {@link AssociationKind} as
+ * well as the {@link AssociationStorageType} and {@link AssociationDocumentType} options.
  *
  * @author Gunnar Morling
  */
@@ -39,8 +40,8 @@ public class AssociationStorageStrategy {
 		this.isGlobalCollection = isGlobalCollection;
 	}
 
-	public static AssociationStorageStrategy getInstance(AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {
-		if ( associationStorage == AssociationStorageType.IN_ENTITY ) {
+	public static AssociationStorageStrategy getInstance(AssociationKind associationKind, AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {
+		if ( associationKind == AssociationKind.EMBEDDED || associationStorage == AssociationStorageType.IN_ENTITY ) {
 			return new AssociationStorageStrategy( true, false );
 		}
 		else if ( associationDocumentStorage == AssociationDocumentType.COLLECTION_PER_ASSOCIATION ) {
@@ -51,6 +52,14 @@ public class AssociationStorageStrategy {
 		}
 	}
 
+	/**
+	 * Whether the given association is to be stored embedded within the document of the owning entity. That's the case
+	 * if the association is either an embedded element collection or the association is configured as to be stored
+	 * embedded as per the {@link AssociationStorageType} and {@link AssociationDocumentType} options.
+	 *
+	 * @return {@code true} if this association is to be stored embedded within the document of the owning entity,
+	 * {@code false} otherwise.
+	 */
 	public boolean isEmbeddedInEntity() {
 		return isEmbeddedInEntity;
 	}

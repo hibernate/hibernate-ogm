@@ -550,15 +550,19 @@ public class MongoDBDialect implements GridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
+		if ( associationStorage == null ) {
+			associationStorage = provider.getAssociationStorage();
+		}
+
 		AssociationDocumentType associationDocumentType = associationContext
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		if ( associationStorage != null ) {
-			return AssociationStorageStrategy.getInstance( associationStorage, associationDocumentType );
+		if ( associationDocumentType == null ) {
+			associationDocumentType = provider.getAssociationDocumentStorage();
 		}
 
-		return provider.getAssociationStorageStrategy();
+		return AssociationStorageStrategy.getInstance( key.getAssociationKind(), associationStorage, associationDocumentType );
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
