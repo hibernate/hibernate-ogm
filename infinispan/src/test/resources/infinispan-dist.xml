@@ -33,8 +33,7 @@
     <global>
         <globalJmxStatistics
             enabled="false"
-            cacheManagerName="HibernateOGM-Testsuite-Dist"
-            allowDuplicateDomains="true" />
+            allowDuplicateDomains="false" />
         <transport
             clusterName="HibernateOGM-Infinispan-cluster"
             >
