@@ -355,6 +355,13 @@
                 <artifactId>infinispan-lucene-directory</artifactId>
                 <version>${infinispanVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-core</artifactId>
+                <version>${infinispanVersion}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
 
             <!-- MongoDB -->
             <dependency>
