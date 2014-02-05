@@ -115,6 +115,15 @@ public class TestHelper {
 		return helper.getNumberOfAssociations( sessionFactory, type );
 	}
 
+	/**
+	 * Returns the number of collections stored embedded within an entity structure in the datastore
+	 * <p>
+	 * Optional operation which only is supported for document datastores.
+	 */
+	public static long getNumberOfEmbeddedCollections(SessionFactory sessionFactory) {
+		return helper.getNumberOEmbeddedCollections( sessionFactory );
+	}
+
 	public static boolean backendSupportsTransactions() {
 		return helper.backendSupportsTransactions();
 	}

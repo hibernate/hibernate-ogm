@@ -43,13 +43,18 @@ public final class AssociationKey implements Serializable {
 	//role and entity key are not part of the object identity
 	private transient String collectionRole;
 	private transient EntityKey entityKey;
+	private transient AssociationKind associationKind;
 
-	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues) {
+	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind) {
 		this.metadata = metadata;
 		if ( metadata.getColumnNames().length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
 		}
 		this.columnValues = columnValues;
+		this.collectionRole = collectionRole;
+		this.entityKey = entityKey;
+		this.associationKind = associationKind;
+
 		this.hashCode = metadata.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
 
@@ -66,17 +71,24 @@ public final class AssociationKey implements Serializable {
 	}
 
 	/**
-	 * Association role. May be null but is typically filled for collection of embeddable.
+	 * Returns the association role.
 	 */
 	public String getCollectionRole() {
 		return collectionRole;
 	}
 
 	/**
-	 * Owning entity key. May be null but is typically filled for collection of embeddable.
+	 * Returns the owning entity key.
 	 */
 	public EntityKey getEntityKey() {
 		return entityKey;
+	}
+
+	/**
+	 * Returns the type of association
+	 */
+	public AssociationKind getAssociationKind() {
+		return associationKind;
 	}
 
 	public String[] getRowKeyColumnNames() {
@@ -125,14 +137,6 @@ public final class AssociationKey implements Serializable {
 		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
 		return sb.toString();
-	}
-
-	public void setCollectionRole(String role) {
-		this.collectionRole = role;
-	}
-
-	public void setOwnerEntityKey(EntityKey entityKey) {
-		this.entityKey = entityKey;
 	}
 
 	/**

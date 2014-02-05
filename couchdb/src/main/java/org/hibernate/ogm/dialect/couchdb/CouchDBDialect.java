@@ -47,6 +47,7 @@ import org.hibernate.ogm.dialect.couchdb.type.impl.CouchDBByteType;
 import org.hibernate.ogm.dialect.couchdb.type.impl.CouchDBLongType;
 import org.hibernate.ogm.dialect.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -209,7 +210,8 @@ public class CouchDBDialect implements GridDialect {
 			associationStorage = provider.getDefaultAssociationStorageStrategy();
 		}
 
-		return associationStorage == AssociationStorageType.IN_ENTITY;
+		return associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
+				associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 
 	@Override

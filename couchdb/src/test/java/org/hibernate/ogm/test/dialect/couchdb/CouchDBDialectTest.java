@@ -40,6 +40,7 @@ import org.hibernate.ogm.dialect.couchdb.CouchDBDialect;
 import org.hibernate.ogm.dialect.couchdb.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -166,10 +167,7 @@ public class CouchDBDialectTest {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames );
 		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
 
-		AssociationKey associationKey = new AssociationKey( associationKeyMetadata, columnValues );
-		associationKey.setOwnerEntityKey( ownerEntityKey );
-		associationKey.setCollectionRole( collectionRole );
-		return associationKey;
+		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
