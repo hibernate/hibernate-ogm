@@ -23,6 +23,7 @@ package org.hibernate.ogm.test.queries;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.NamedQuery;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.Analyze;
@@ -34,7 +35,10 @@ import org.hibernate.search.annotations.Indexed;
  */
 @Entity
 @Indexed
+@NamedQuery(name = Helicopter.BY_NAME, query = "FROM Helicopter WHERE name = :name")
 public class Helicopter {
+
+	public static final String BY_NAME = "HelicopterNameQuery";
 
 	private String uuid;
 	private String name;

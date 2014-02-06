@@ -58,6 +58,16 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	@Test
+	public void testGetResultListWithTypedQuery() throws Exception {
+		List<Helicopter> helicopters = em.createQuery( "FROM Helicopter WHERE name = :name", Helicopter.class )
+				.setParameter( "name", POLICE_HELICOPTER )
+				.getResultList();
+
+		assertThat( helicopters.size() ).isEqualTo( 1 );
+		assertThat( helicopters.get( 0 ).getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testGetResultListSize() throws Exception {
 		List<Helicopter> helicopters = em.createQuery( "FROM Helicopter" )
@@ -67,12 +77,43 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	@Test
+	public void testGetResultListSizeWithTypedQuery() throws Exception {
+		List<Helicopter> helicopters = em.createQuery( "FROM Helicopter", Helicopter.class )
+				.getResultList();
+
+		assertThat( helicopters.size() ).isEqualTo( 2 );
+	}
+
+	@Test( expected = IllegalArgumentException.class)
+	public void testGetResultListSizeWithWrongReturnedClass() throws Exception {
+		em.createQuery( "FROM Helicopter", Hypothesis.class );
+	}
+
+	@Test
 	public void testSingleResult() throws Exception {
 		Helicopter helicopter = (Helicopter) em.createQuery( "FROM Helicopter WHERE name = :name" )
 				.setParameter( "name", POLICE_HELICOPTER )
 				.getSingleResult();
 
 		assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test
+	public void testGetSingleResultTypedQuery() throws Exception {
+		Helicopter helicopter = em.createQuery( "FROM Helicopter WHERE name = :name", Helicopter.class )
+				.setParameter( "name", POLICE_HELICOPTER )
+				.getSingleResult();
+
+		assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test
+	public void testCreateNamedQueryTypeQuery() throws Exception {
+		Helicopter helicopter = em.createNamedQuery( Helicopter.BY_NAME, Helicopter.class )
+				.setParameter( "name", POLICE_HELICOPTER )
+				.getSingleResult();
+
+		Assertions.assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
 	}
 
 	@Before
