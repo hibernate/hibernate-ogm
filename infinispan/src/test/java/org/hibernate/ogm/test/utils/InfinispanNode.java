@@ -44,9 +44,9 @@ import org.junit.rules.ExternalResource;
  * <pre>
  * {@code
  *     @Rule
- *     final InfinispanNode nodeA = new InfinispanNode( "nodeA", "infinispan-dist.xml" );
+ *     public final InfinispanNode nodeA = new InfinispanNode( "nodeA", "infinispan-dist.xml" );
  *     @Rule
- *     final InfinispanNode nodeB = new InfinispanNode( "nodeB", "infinispan-dist.xml" );
+ *     public final InfinispanNode nodeB = new InfinispanNode( "nodeB", "infinispan-dist.xml" );
  *
  *     @Test
  *     public void testExample() throws Exception {
