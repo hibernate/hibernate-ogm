@@ -31,6 +31,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
@@ -44,6 +45,7 @@ import org.hibernate.LockOptions;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.query.spi.HQLQueryPlan;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
@@ -55,6 +57,7 @@ import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
+import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
@@ -236,7 +239,64 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-		throw new NotSupportedException( "OGM-14", "typed queries are not supported yet" );
+		// do the translation
+		Session session = (Session) getDelegate();
+		org.hibernate.Query query = session.createQuery( qlString );
+
+		resultClassChecking( resultClass, query );
+
+		// finally, build/return the query instance
+		return new QueryImpl<T>( query, (AbstractEntityManagerImpl) hibernateEm );
+	}
+
+	protected void resultClassChecking(Class resultClass, org.hibernate.Query hqlQuery) {
+		// make sure the query is a select -> HHH-7192
+		final SessionImplementor session = unwrap( SessionImplementor.class );
+		final HQLQueryPlan queryPlan = session.getFactory().getQueryPlanCache().getHQLQueryPlan(
+				hqlQuery.getQueryString(),
+				false,
+				session.getLoadQueryInfluencers().getEnabledFilters()
+		);
+		if ( queryPlan.getTranslators()[0].isManipulationStatement() ) {
+			throw new IllegalArgumentException( "Update/delete queries cannot be typed" );
+		}
+
+		// do some return type validation checking
+		if ( Object[].class.equals( resultClass ) ) {
+			// no validation needed
+		}
+		else if ( Tuple.class.equals( resultClass ) ) {
+			TupleBuilderTransformer tupleTransformer = new TupleBuilderTransformer( hqlQuery );
+			hqlQuery.setResultTransformer( tupleTransformer  );
+		}
+		else {
+			final Class dynamicInstantiationClass = queryPlan.getDynamicInstantiationResultType();
+			if ( dynamicInstantiationClass != null ) {
+				if ( ! resultClass.isAssignableFrom( dynamicInstantiationClass ) ) {
+					throw new IllegalArgumentException(
+							"Mismatch in requested result type [" + resultClass.getName() +
+									"] and actual result type [" + dynamicInstantiationClass.getName() + "]"
+					);
+				}
+			}
+			else if ( hqlQuery.getReturnTypes().length == 1 ) {
+				// if we have only a single return expression, its java type should match with the requested type
+				if ( !resultClass.isAssignableFrom( hqlQuery.getReturnTypes()[0].getReturnedClass() ) ) {
+					throw new IllegalArgumentException(
+							"Type specified for TypedQuery [" +
+									resultClass.getName() +
+									"] is incompatible with query return type [" +
+									hqlQuery.getReturnTypes()[0].getReturnedClass() + "]"
+					);
+				}
+			}
+			else {
+				throw new IllegalArgumentException(
+						"Cannot create TypedQuery for query with more than one return using requested result type [" +
+								resultClass.getName() + "]"
+				);
+			}
+		}
 	}
 
 	@Override
