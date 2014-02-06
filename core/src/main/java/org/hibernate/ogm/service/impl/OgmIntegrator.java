@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -26,7 +26,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
@@ -38,14 +37,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 /**
  * Apply required services changes to run Hibernate OGM atop Hibernate Core
  *
- * In particular:
- * - expose the OGM specific service(s)
- * - replace PersisterClassResolver
- * - replace ConnectionProvider
- * - replace DialectFactory
- * - replace (if not provided by the user) NamingStrategy
- *
- * Also enforce an OGM NamingStrategy
+ * In particular, set or override OGM specific services.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
@@ -53,15 +45,18 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 
 	@Override
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		if ( ! serviceRegistry.getService( ConfigurationService.class ).isOgmOn() ) {
-			return;
-		}
-		Version.touch();
-		configuration.setNamingStrategy( OgmNamingStrategy.INSTANCE );
+		doIntegrate( serviceRegistry );
 	}
 
 	@Override
 	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
+		doIntegrate( serviceRegistry );
+	}
+
+	private void doIntegrate(SessionFactoryServiceRegistry serviceRegistry) {
+		if ( ! serviceRegistry.getService( ConfigurationService.class ).isOgmOn() ) {
+			return;
+		}
 		Version.touch();
 	}
 
