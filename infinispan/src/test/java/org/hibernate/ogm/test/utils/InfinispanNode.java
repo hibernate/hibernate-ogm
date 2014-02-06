@@ -38,6 +38,23 @@ import org.junit.rules.ExternalResource;
 /**
  * Helper to manage a clustered Infinispan CacheManager:
  * designed to be rather defensive and avoid some common pitfalls.
+ * <p>
+ * Example:
+ * <p>
+ * <pre>
+ * {@code
+ *     @Rule
+ *     final InfinispanNode nodeA = new InfinispanNode( "nodeA", "infinispan-dist.xml" );
+ *     @Rule
+ *     final InfinispanNode nodeB = new InfinispanNode( "nodeB", "infinispan-dist.xml" );
+ *
+ *     @Test
+ *     public void testExample() throws Exception {
+ *         EmbeddedCacheManager manager = nodeA.getCacheManager( 2 ); // Number of nodes this cluster should have
+ *         ...
+ *     }
+ * }
+ * </pre>
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2014 Red Hat Inc.
  */
