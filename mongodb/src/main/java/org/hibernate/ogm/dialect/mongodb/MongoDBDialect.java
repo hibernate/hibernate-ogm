@@ -742,6 +742,117 @@ public class MongoDBDialect implements BatchableGridDialect {
 		inserts.clear();
 	}
 
+	/**
+	 * When creating documents in batch, MongoDB doesn't allow the name of the fields to contain
+	 * the characters '$' or '.'
+	 *
+	 * @return false if the {@link UpdateTupleOperation} affects fields containing invalid characters for the execution
+	 * of operations in batch, true otherwise.
+	 */
+	private boolean columnNamesAllowBatchInsert(UpdateTupleOperation tupleOperation) {
+		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
+		for ( String column : columnNames ) {
+			if ( column.contains( "." ) || column.contains( "$" ) ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void executeBatch(OperationsQueue queue) {
+		if ( !queue.isClosed() ) {
+			Operation operation = queue.poll();
+			Map<DBCollection, Map<DBObject, DBObject>> inserts = new HashMap<DBCollection, Map<DBObject, DBObject>>();
+			while ( operation != null ) {
+				if ( operation instanceof UpdateTupleOperation ) {
+					UpdateTupleOperation update = (UpdateTupleOperation) operation;
+					executeBatchUpdate( inserts, update );
+				}
+				else if ( operation instanceof RemoveTupleOperation ) {
+					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
+					executeBatchRemove( inserts, tupleOp );
+				}
+				else if ( operation instanceof UpdateAssociationOperation ) {
+					UpdateAssociationOperation update = (UpdateAssociationOperation) operation;
+					updateAssociation( update.getAssociation(), update.getAssociationKey(), update.getContext() );
+				}
+				else if ( operation instanceof RemoveAssociationOperation ) {
+					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
+					removeAssociation( remove.getAssociationKey(), remove.getContext() );
+				}
+				else {
+					throw new UnsupportedOperationException( "Operation not supported on MongoDB: " + operation.getClass().getName() );
+				}
+				operation = queue.poll();
+			}
+			flushInserts( inserts );
+			queue.close();
+		}
+	}
+
+	private void executeBatchRemove(Map<DBCollection, Map<DBObject, DBObject>> inserts, RemoveTupleOperation tupleOperation) {
+		EntityKey entityKey = tupleOperation.getEntityKey();
+		DBCollection collection = getCollection( entityKey );
+		BasicDBObject idObject = prepareIdObject( entityKey );
+		Map<DBObject, DBObject> documents = inserts.get( collection );
+		if ( documents != null && documents.containsKey( idObject ) ) {
+			documents.remove( entityKey );
+		}
+		else {
+			removeTuple( entityKey );
+		}
+	}
+
+	private void executeBatchUpdate(Map<DBCollection, Map<DBObject, DBObject>> inserts, UpdateTupleOperation tupleOperation) {
+		EntityKey entityKey = tupleOperation.getEntityKey();
+		Tuple tuple = tupleOperation.getTuple();
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
+		if ( INSERT == snapshot.getOperationType() && columnNamesAllowBatchInsert( tupleOperation ) ) {
+			prepareForInsert( inserts, snapshot, entityKey, tuple );
+		}
+		else {
+			// Object already exists in the db or has invalid fields:
+			updateTuple( tuple, entityKey );
+		}
+	}
+
+	private void prepareForInsert(Map<DBCollection, Map<DBObject, DBObject>> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
+		DBCollection collection = getCollection( entityKey );
+		Map<DBObject, DBObject> documents = getOrCreateDocuments( inserts, collection );
+		DBObject idObject = prepareIdObject( entityKey );
+		DBObject document = getCurrentDocument( snapshot, idObject, documents );
+		DBObject newDocument = objectForInsert( tuple, entityKey, (BasicDBObject) document );
+		inserts.get( collection ).put( idObject, newDocument );
+	}
+
+	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, DBObject idObject, Map<DBObject, DBObject> documents) {
+		if ( documents.containsKey( idObject ) ) {
+			return documents.get( idObject );
+		}
+		else {
+			return snapshot.getDbObject();
+		}
+	}
+
+	private Map<DBObject, DBObject> getOrCreateDocuments(Map<DBCollection, Map<DBObject, DBObject>> inserts, DBCollection collection) {
+		if ( !inserts.containsKey( collection ) ) {
+			Map<DBObject, DBObject> map = new HashMap<DBObject, DBObject>();
+			inserts.put( collection, map );
+		}
+		Map<DBObject, DBObject> documents = inserts.get( collection );
+		return documents;
+	}
+
+	private void flushInserts(Map<DBCollection, Map<DBObject, DBObject>> inserts) {
+		for ( Map.Entry<DBCollection, Map<DBObject, DBObject>> entry : inserts.entrySet() ) {
+			DBCollection collection = entry.getKey();
+			Collection<DBObject> documents = entry.getValue().values();
+			collection.insert( new ArrayList<DBObject>( documents ) );
+		}
+		inserts.clear();
+	}
+
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
 
 		private final DBCursor cursor;
