@@ -40,6 +40,7 @@ import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -49,7 +50,9 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.jpa.QueryHints;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.ogm.OgmSessionFactory;
