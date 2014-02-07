@@ -39,13 +39,20 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
+import org.hibernate.AssertionFailure;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+import org.hibernate.engine.ResultSetMappingDefinition;
 import org.hibernate.engine.query.spi.HQLQueryPlan;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryConstructorReturn;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
@@ -55,7 +62,7 @@ import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
-import org.hibernate.jpa.internal.QueryImpl;
+import org.hibernate.jpa.internal.util.LockModeTypeHelper;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -246,10 +253,115 @@ public class OgmEntityManager implements EntityManager {
 		resultClassChecking( resultClass, query );
 
 		// finally, build/return the query instance
-		return new QueryImpl<T>( query, (AbstractEntityManagerImpl) hibernateEm );
+		return new OgmNativeQuery<T>( query, (AbstractEntityManagerImpl) hibernateEm );
 	}
 
-	protected void resultClassChecking(Class resultClass, org.hibernate.Query hqlQuery) {
+	@Override
+	public Query createNamedQuery(String name) {
+		return buildQueryFromName( name, null );
+	}
+
+	private <T> TypedQuery<T> buildQueryFromName(String name, Class<T> resultType) {
+		OgmSessionFactory sessionFactory = (OgmSessionFactory) factory.getSessionFactory();
+		NamedQueryDefinition queryDefinition = sessionFactory.getNamedSQLQuery( name );
+		if ( queryDefinition == null ) {
+			queryDefinition = sessionFactory.getNamedQuery( name );
+			if ( queryDefinition == null ) {
+				throw new IllegalArgumentException( "Named query not found: " + name );
+			}
+			else {
+				return createNamedJpqlQuery( queryDefinition, resultType );
+			}
+		}
+		else {
+			return createNamedNativeQuery( (NamedSQLQueryDefinition) queryDefinition, resultType );
+		}
+	}
+
+	protected <T> TypedQuery<T> createNamedJpqlQuery(NamedQueryDefinition namedQueryDefinition, Class<T> resultType) {
+		SessionImplementor session = (SessionImplementor) getDelegate();
+		final org.hibernate.Query query = session.createQuery( namedQueryDefinition );
+		if ( resultType != null ) {
+			resultClassChecking( resultType, query );
+		}
+
+		return wrapAsJpaQuery( namedQueryDefinition, query );
+	}
+
+	protected <T> TypedQuery<T> wrapAsJpaQuery(NamedQueryDefinition namedQueryDefinition, org.hibernate.Query hibQuery) {
+		final TypedQuery<T> jpaQuery = new OgmNativeQuery<T>( hibQuery, (AbstractEntityManagerImpl) hibernateEm );
+		applySavedSettings( namedQueryDefinition, jpaQuery );
+		return jpaQuery;
+	}
+
+	protected <T> void applySavedSettings(NamedQueryDefinition namedQueryDefinition, TypedQuery<T> jpaQuery) {
+		if ( namedQueryDefinition.isCacheable() ) {
+			jpaQuery.setHint( QueryHints.HINT_CACHEABLE, true );
+			if ( namedQueryDefinition.getCacheRegion() != null ) {
+				jpaQuery.setHint( QueryHints.HINT_CACHE_REGION, namedQueryDefinition.getCacheRegion() );
+			}
+		}
+
+		if ( namedQueryDefinition.getCacheMode() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_CACHE_MODE, namedQueryDefinition.getCacheMode() );
+		}
+
+		if ( namedQueryDefinition.isReadOnly() ) {
+			jpaQuery.setHint( QueryHints.HINT_READONLY, true );
+		}
+
+		if ( namedQueryDefinition.getTimeout() != null ) {
+			jpaQuery.setHint( QueryHints.SPEC_HINT_TIMEOUT, namedQueryDefinition.getTimeout() * 1000 );
+		}
+
+		if ( namedQueryDefinition.getFetchSize() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_FETCH_SIZE, namedQueryDefinition.getFetchSize() );
+		}
+
+		if ( namedQueryDefinition.getComment() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_COMMENT, namedQueryDefinition.getComment() );
+		}
+
+		if ( namedQueryDefinition.getFirstResult() != null ) {
+			jpaQuery.setFirstResult( namedQueryDefinition.getFirstResult() );
+		}
+
+		if ( namedQueryDefinition.getMaxResults() != null ) {
+			jpaQuery.setMaxResults( namedQueryDefinition.getMaxResults() );
+		}
+
+		if ( namedQueryDefinition.getLockOptions() != null ) {
+			if ( namedQueryDefinition.getLockOptions().getLockMode() != null ) {
+				jpaQuery.setLockMode(
+						LockModeTypeHelper.getLockModeType( namedQueryDefinition.getLockOptions().getLockMode() )
+				);
+			}
+		}
+
+		if ( namedQueryDefinition.getFlushMode() != null ) {
+			if ( namedQueryDefinition.getFlushMode() == FlushMode.COMMIT ) {
+				jpaQuery.setFlushMode( FlushModeType.COMMIT );
+			}
+			else {
+				jpaQuery.setFlushMode( FlushModeType.AUTO );
+			}
+		}
+	}
+
+	private <T> TypedQuery<T> createNamedNativeQuery(NamedSQLQueryDefinition sqlDefinition, Class<T> resultType) {
+		if ( resultType != null ) {
+			resultClassChecking( resultType, sqlDefinition );
+		}
+		String sqlQueryString = sqlDefinition.getQueryString();
+		SQLQuery noSqlQuery = ( (Session) getDelegate() ).createSQLQuery( sqlQueryString );
+		if ( sqlDefinition.getQueryReturns().length == 1 ) {
+			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
+			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
+		}
+		return new OgmNativeQuery<T>( noSqlQuery, hibernateEm );
+	}
+
+	protected void resultClassChecking(Class<?> resultClass, org.hibernate.Query hqlQuery) {
 		// make sure the query is a select -> HHH-7192
 		final SessionImplementor session = unwrap( SessionImplementor.class );
 		final HQLQueryPlan queryPlan = session.getFactory().getQueryPlanCache().getHQLQueryPlan(
@@ -299,32 +411,58 @@ public class OgmEntityManager implements EntityManager {
 		}
 	}
 
-	@Override
-	public Query createNamedQuery(String name) {
-		OgmSessionFactory sessionFactory = (OgmSessionFactory) factory.getSessionFactory();
-		NamedQueryDefinition queryDefinition = sessionFactory.getNamedSQLQuery( name );
-		if ( queryDefinition == null ) {
-			queryDefinition = sessionFactory.getNamedQuery( name );
-			if ( queryDefinition == null ) {
-				throw new IllegalArgumentException( "Named query not found: " + name );
+	protected void resultClassChecking(Class resultType, NamedSQLQueryDefinition namedQueryDefinition) {
+		final SessionFactoryImplementor sfi = (SessionFactoryImplementor) factory.getSessionFactory();
+
+		final NativeSQLQueryReturn[] queryReturns;
+		if ( namedQueryDefinition.getQueryReturns() != null ) {
+			queryReturns = namedQueryDefinition.getQueryReturns();
+		}
+		else if ( namedQueryDefinition.getResultSetRef() != null ) {
+			final ResultSetMappingDefinition rsMapping = sfi.getResultSetMapping( namedQueryDefinition.getResultSetRef() );
+			queryReturns = rsMapping.getQueryReturns();
+		}
+		else {
+			throw new AssertionFailure( "Unsupported named query model. Please report the bug in Hibernate EntityManager");
+		}
+
+		if ( queryReturns.length > 1 ) {
+			throw new IllegalArgumentException( "Cannot create TypedQuery for query with more than one return" );
+		}
+
+		final NativeSQLQueryReturn nativeSQLQueryReturn = queryReturns[0];
+
+		if ( nativeSQLQueryReturn instanceof NativeSQLQueryRootReturn ) {
+			final Class<?> actualReturnedClass;
+			final String entityClassName = ( (NativeSQLQueryRootReturn) nativeSQLQueryReturn ).getReturnEntityName();
+			try {
+				actualReturnedClass = sfi.getServiceRegistry().getService( ClassLoaderService.class ).classForName( entityClassName );
 			}
-			else {
-				throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+			catch ( ClassLoadingException e ) {
+				throw new AssertionFailure(
+						"Unable to load class [" + entityClassName + "] declared on named native query [" +
+								namedQueryDefinition.getName() + "]"
+				);
+			}
+			if ( !resultType.isAssignableFrom( actualReturnedClass ) ) {
+				throw buildIncompatibleException( resultType, actualReturnedClass );
+			}
+		}
+		else if ( nativeSQLQueryReturn instanceof NativeSQLQueryConstructorReturn ) {
+			final NativeSQLQueryConstructorReturn ctorRtn = (NativeSQLQueryConstructorReturn) nativeSQLQueryReturn;
+			if ( !resultType.isAssignableFrom( ctorRtn.getTargetClass() ) ) {
+				throw buildIncompatibleException( resultType, ctorRtn.getTargetClass() );
 			}
 		}
 		else {
-			return createNativeQuery( (NamedSQLQueryDefinition) queryDefinition );
+			//TODO support other NativeSQLQueryReturn type. For now let it go.
 		}
 	}
 
-	private Query createNativeQuery(NamedSQLQueryDefinition sqlDefinition) {
-		String sqlQueryString = sqlDefinition.getQueryString();
-		SQLQuery noSqlQuery = ( (Session) getDelegate() ).createSQLQuery( sqlQueryString );
-		if ( sqlDefinition.getQueryReturns().length == 1 ) {
-			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
-			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
-		}
-		return new OgmNativeQuery( noSqlQuery, hibernateEm );
+	private IllegalArgumentException buildIncompatibleException(Class<?> resultClass, Class<?> actualResultClass) {
+		return new IllegalArgumentException(
+				"Type specified for TypedQuery [" + resultClass.getName() +
+						"] is incompatible with query return type [" + actualResultClass + "]" );
 	}
 
 	@Override

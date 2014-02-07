@@ -37,7 +37,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
 import org.hibernate.jpa.spi.HibernateEntityManagerImplementor;
-import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
@@ -81,7 +80,7 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 
 	@Override
 	public void addNamedQuery(String name, Query query) {
-		throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+		hibernateEmf.addNamedQuery( name, query );
 	}
 
 	@Override
