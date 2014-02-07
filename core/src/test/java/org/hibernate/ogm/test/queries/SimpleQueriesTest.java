@@ -393,6 +393,12 @@ public class SimpleQueriesTest extends OgmTestCase {
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
 	}
 
+	@Test
+	public void testGetNamedQuery() throws Exception {
+		Helicopter result = (Helicopter) session.getNamedQuery( Helicopter.BY_NAME ).setParameter( "name", "Lama" ).uniqueResult();
+		assertThat( result.getName() ).isEqualTo( "Lama" );
+	}
+
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		final Session session = sessions.openSession();

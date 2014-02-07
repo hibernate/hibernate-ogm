@@ -108,12 +108,38 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	@Test
+	public void testCreateNamedQuery() throws Exception {
+		Helicopter helicopter = (Helicopter) em.createNamedQuery( Helicopter.BY_NAME )
+				.setParameter( "name", POLICE_HELICOPTER )
+				.getSingleResult();
+
+		assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test
 	public void testCreateNamedQueryTypeQuery() throws Exception {
 		Helicopter helicopter = em.createNamedQuery( Helicopter.BY_NAME, Helicopter.class )
 				.setParameter( "name", POLICE_HELICOPTER )
 				.getSingleResult();
 
-		Assertions.assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
+		assertThat( helicopter.getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testCreateNamedQueryTypeQueryWithWronReturnedClass() throws Exception {
+		em.createNamedQuery( Helicopter.BY_NAME, Hypothesis.class )
+			.setParameter( "name", POLICE_HELICOPTER )
+			.getSingleResult();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testAddedNamedQuery() throws Exception {
+		final String allHelicopters = "AllHelicopters";
+		getFactory().addNamedQuery( allHelicopters, em.createQuery( "FROM Helicopter" ) );
+		List<Helicopter> helicopters = em.createNamedQuery( allHelicopters ).getResultList();
+
+		assertThat( helicopters.size() ).isEqualTo( 2 );
 	}
 
 	@Before
