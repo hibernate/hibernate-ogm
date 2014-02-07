@@ -467,7 +467,7 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-		throw new NotSupportedException( "OGM-14", "typed queries are not supported yet" );
+		return buildQueryFromName( name, resultClass );
 	}
 
 	@Override
