@@ -90,10 +90,6 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		if ( !tupleContext.getSelectableColumns().contains( Document.REVISION_FIELD_NAME ) ) {
-			log.entityShouldHaveRevisionProperty( key.getTable() );
-		}
-
 		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
 		if ( entity != null ) {
 			return new Tuple( new CouchDBTupleSnapshot( entity.getProperties() ) );
@@ -114,7 +110,7 @@ public class CouchDBDialect implements GridDialect {
 		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
 
 		// load the latest revision for updates without the revision being present; a warning about
-		// this mapping will have been issued during get
+		// this mapping will have been issued at factory start-up
 		if ( revision == null && !snapshot.isCreatedOnInsert() ) {
 			revision = getDataStore().getCurrentRevision( Identifier.createEntityId( key ), false );
 		}
