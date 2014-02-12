@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -44,6 +44,7 @@ import org.hibernate.type.Type;
  * Dialect abstracting Hibernate OGM from the grid implementation
  *
  * @author Emmanuel Bernard
+ * @author Gunnar Morling
  */
 public interface GridDialect extends Service {
 
@@ -92,6 +93,16 @@ public interface GridDialect extends Service {
 	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
 	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
+
+	/**
+	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may
+	 * support storing associations within entity documents and would have to return {@code true} if this is the case
+	 * for a given association.
+	 *
+	 * @param associationKey identifies the association of interest
+	 * @return {@code true} if the specified association is stored within an entity structure, {@code false} otherwise.
+	 */
+	boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext);
 
 	/**
 	 * Update value with the guaranteed next value with the defined increment

@@ -33,6 +33,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
@@ -140,6 +141,7 @@ class EntityDehydrator {
 							resultset,
 							persister.getPropertyColumnNames( propertyIndex )
 					);
+
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
 						doRemovePropertyMetadata(
@@ -183,8 +185,9 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
-					persister.getMappedClass()
+					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
+				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( newColumnValue )
@@ -212,6 +215,7 @@ class EntityDehydrator {
 		for ( String column : tuple.getColumnNames() ) {
 			assocEntryTuple.put( column, tuple.get( column ) );
 		}
+
 		metadataProvider.flushToCache();
 	}
 
@@ -233,8 +237,9 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
-					persister.getMappedClass()
+					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
+				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
 				.keyColumnNames( propertyColumnNames )
 				.keyColumnValues( oldColumnValue )
@@ -262,8 +267,30 @@ class EntityDehydrator {
 					.build();
 			//TODO what should we do if that's null?
 			metadataProvider.getCollectionMetadata().remove( matchingTuple );
+
+			getReferencedEntity( propertyIndex );
+
 			metadataProvider.flushToCache();
 		}
+	}
+
+	private Object getReferencedEntity(int propertyIndex) {
+		GridType propertyType = gridPropertyTypes[propertyIndex];
+		Serializable id = (Serializable) propertyType.hydrate(
+				resultset, persister.getPropertyColumnNames( propertyIndex ), session, null
+		);
+
+		if ( id != null ) {
+			EntityPersister hostingEntityPersister = session.getFactory().getEntityPersister(
+					propertyType.getReturnedClass().getName()
+			);
+
+			return session.getPersistenceContext().getEntity(
+					session.generateEntityKey( id, hostingEntityPersister )
+			);
+		}
+
+		return null;
 	}
 
 	private boolean isEmptyOrAllColumnsNull(Object[] objects) {

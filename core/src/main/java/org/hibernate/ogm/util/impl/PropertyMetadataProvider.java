@@ -44,6 +44,7 @@ import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
@@ -70,7 +71,7 @@ public class PropertyMetadataProvider {
 	private AssociationContext associationContext;
 	/*
 	 * Return true if the other side association has been searched and not been found
-	 * The other side association is searched when we are looking forward to udpate it
+	 * The other side association is searched when we are looking forward to update it
 	 * and need to build the corresponding association key.
 	 *
 	 * It uses Boolean instead of boolean to make sure it's used only after being calculated
@@ -79,12 +80,16 @@ public class PropertyMetadataProvider {
 	private AssociationKeyMetadata associationKeyMetadata;
 
 	/**
-	 * The entity type hosting the association.
+	 * The entity type hosting the association, i.e. the entity on this side of the association (not necessarily the
+	 * association owner).
 	 */
-	private final Class<?> entityType;
+	private final Class<?> hostingEntityType;
+	private Object hostingEntity;
+	private Boolean hostingEntityRequiresReadAfterUpdate;
+	private EntityPersister hostingEntityPersister;
 
 	public PropertyMetadataProvider(Class<?> entityType) {
-		this.entityType = entityType;
+		this.hostingEntityType = entityType;
 	}
 
 	//fluent methods for populating data
@@ -130,9 +135,14 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
+	public PropertyMetadataProvider hostingEntity(Object entity) {
+		this.hostingEntity = entity;
+		return this;
+	}
+
 	//action methods
 
-	private AssociationKey getCollectionMetadataKey() {
+	public AssociationKey getCollectionMetadataKey() {
 		if ( collectionMetadataKey == null ) {
 			if ( associationKeyMetadata == null ) {
 				associationKeyMetadata = new AssociationKeyMetadata( tableName, keyColumnNames );
@@ -375,7 +385,55 @@ public class PropertyMetadataProvider {
 			else {
 				gridDialect.updateAssociation( getCollectionMetadata(), getCollectionMetadataKey(), getAssociationContext() );
 			}
+
+
+			updateHostingEntityIfRequired();
 		}
+	}
+
+	/**
+	 * Reads the entity hosting the association from the datastore and applies any property changes from the server
+	 * side.
+	 */
+	private void updateHostingEntityIfRequired() {
+		if ( hostingEntity != null && hostingEntityRequiresReadAfterUpdate() ) {
+			EntityPersister entityPersister = getHostingEntityPersister();
+
+			entityPersister.processUpdateGeneratedProperties(
+					entityPersister.getIdentifier( hostingEntity, session ),
+					hostingEntity,
+					new Object[entityPersister.getPropertyNames().length],
+					session
+			);
+		}
+	}
+
+	/**
+	 * Whether the association in question is stored within an entity structure ("embedded") and this entity has
+	 * properties whose value is generated in the datastore (such as a version attribute) or not.
+	 *
+	 * @param metadataProvider persister of the association
+	 * @param ownerPersister persister of the owning entity
+	 * @return {@code true} in case the represented association is stored within an entity which has server-generated
+	 * properties, and thus must be re-read after an update to the association, {@code false} otherwise.
+	 */
+	public boolean hostingEntityRequiresReadAfterUpdate() {
+		if ( hostingEntityRequiresReadAfterUpdate == null ) {
+			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( getCollectionMetadataKey(), getAssociationContext() );
+			boolean hasUpdateGeneratedProperties = getHostingEntityPersister().hasUpdateGeneratedProperties();
+
+			hostingEntityRequiresReadAfterUpdate = storedInEntityStructure && hasUpdateGeneratedProperties;
+		}
+
+		return hostingEntityRequiresReadAfterUpdate;
+	}
+
+	private EntityPersister getHostingEntityPersister() {
+		if ( hostingEntityPersister == null ) {
+			hostingEntityPersister = session.getFactory().getEntityPersister( hostingEntityType.getName() );
+		}
+
+		return hostingEntityPersister;
 	}
 
 	public PropertyMetadataProvider collectionPersister(OgmCollectionPersister collectionPersister) {
@@ -393,7 +451,7 @@ public class PropertyMetadataProvider {
 		return this;
 	}
 
-	private AssociationContext getAssociationContext() {
+	public AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
 			OptionsServiceContext serviceContext = session.getFactory()
 					.getServiceRegistry()
@@ -401,7 +459,7 @@ public class PropertyMetadataProvider {
 					.context();
 
 			associationContext = new AssociationContext(
-					new PropertyOptionsContext( serviceContext, entityType, getCollectionMetadataKey().getCollectionRole() )
+					new PropertyOptionsContext( serviceContext, hostingEntityType, getCollectionMetadataKey().getCollectionRole() )
 			);
 		}
 

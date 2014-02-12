@@ -203,6 +203,11 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		return null;
 	}

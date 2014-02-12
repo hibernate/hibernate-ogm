@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -169,6 +169,12 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		log.tracef( "Executing native backend query: %1$s", customQuery.getSQL() );
 		return gridDialect.executeBackendQuery( customQuery, metadatas );
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKey );
+		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );
 	}
 
 	@Override
