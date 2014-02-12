@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -76,6 +76,9 @@ import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.BackrefPropertyAccessor;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.tuple.GenerationTiming;
+import org.hibernate.tuple.NonIdentifierAttribute;
+import org.hibernate.tuple.ValueGeneration;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
@@ -1206,5 +1209,65 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	public String getJpaEntityName() {
 		return jpaEntityName;
+	}
+
+	@Override
+	public void processInsertGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
+		if ( !hasUpdateGeneratedProperties() ) {
+			throw new AssertionFailure("no insert-generated properties");
+		}
+		processGeneratedProperties( id, entity, state, session, GenerationTiming.INSERT );
+	}
+
+	@Override
+	public void processUpdateGeneratedProperties(Serializable id, Object entity, Object[] state, SessionImplementor session) {
+		if ( !hasUpdateGeneratedProperties() ) {
+			throw new AssertionFailure("no update-generated properties");
+		}
+		processGeneratedProperties( id, entity, state, session, GenerationTiming.ALWAYS );
+	}
+
+	/**
+	 * Re-reads the given entity, refreshing any properties updated on the server-side during insert or update.
+	 */
+	private void processGeneratedProperties(
+			Serializable id,
+			Object entity,
+			Object[] state,
+			SessionImplementor session,
+			GenerationTiming matchTiming) {
+
+		Tuple tuple = getResultsetById( id, session );
+
+		if ( tuple == null || tuple.getSnapshot().isEmpty() ) {
+			throw new HibernateException(
+					"Unable to locate row for retrieval of generated properties: " +
+							MessageHelper.infoString( this, id, getFactory() )
+					);
+		}
+
+		int propertyIndex = -1;
+		for ( NonIdentifierAttribute attribute : getEntityMetamodel().getProperties() ) {
+			propertyIndex++;
+			final ValueGeneration valueGeneration = attribute.getValueGenerationStrategy();
+			if ( isReadRequired( valueGeneration, matchTiming ) ) {
+				Object hydratedState = gridPropertyTypes[propertyIndex].hydrate( tuple, getPropertyAliases( "", propertyIndex ), session, entity );
+				state[propertyIndex] = gridPropertyTypes[propertyIndex].resolve( hydratedState, session, entity );
+				setPropertyValue( entity, propertyIndex, state[propertyIndex] );
+			}
+		}
+	}
+
+	/**
+	 * Whether the given value generation strategy requires to read the value from the database or not.
+	 */
+	private boolean isReadRequired(ValueGeneration valueGeneration, GenerationTiming matchTiming) {
+		return valueGeneration != null && valueGeneration.getValueGenerator() == null &&
+				timingsMatch( valueGeneration.getGenerationTiming(), matchTiming );
+	}
+
+	private boolean timingsMatch(GenerationTiming timing, GenerationTiming matchTiming) {
+		return ( matchTiming == GenerationTiming.INSERT && timing.includesInsert() ) ||
+				( matchTiming == GenerationTiming.ALWAYS && timing.includesUpdate() );
 	}
 }
