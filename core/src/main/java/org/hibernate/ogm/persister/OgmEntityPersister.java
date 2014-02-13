@@ -69,7 +69,7 @@ import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
+import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
@@ -440,17 +440,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( associationKeyMetadata == null ) {
 			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
 		}
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+		AssociationPersister associationPersister = new AssociationPersister(
 					getMappedClass()
 				)
 				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
 				//does not set .collectionPersister as it does not make sense here for an entity
-				.associationMetadataKey( associationKeyMetadata )
+				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
 				.propertyType( getPropertyTypes()[propertyIndex] );
-		final Association ids = metadataProvider.getCollectionMetadataOrNull();
+		final Association ids = associationPersister.getAssociationOrNull();
 
 		if (ids == null || ids.size() == 0 ) {
 			return null;

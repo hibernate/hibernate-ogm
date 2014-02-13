@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -26,13 +26,14 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
-import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
@@ -184,18 +185,20 @@ class EntityDehydrator {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( persister.getTableName( tableIndex ), propertyColumnNames );
+		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+
+		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
-				.keyColumnNames( propertyColumnNames )
+				.associationKeyMetadata(  associationKeyMetadata )
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) )
-				.propertyType( persister.getPropertyTypes()[propertyIndex] )
-				.rowKeyColumnNames( rowKeyColumnNames );
+				.propertyType( persister.getPropertyTypes()[propertyIndex] );
 		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -211,12 +214,12 @@ class EntityDehydrator {
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, rowKeyColumnNames );
 		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues );
 
-		Tuple assocEntryTuple = metadataProvider.createAndPutAssociationTuple( rowKey );
+		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
 			assocEntryTuple.put( column, tuple.get( column ) );
 		}
 
-		metadataProvider.flushToCache();
+		associationPersister.flushToCache();
 	}
 
 	// Here the RowKey is made of the foreign key columns pointing to the associated entity
@@ -236,18 +239,20 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( persister.getTableName( tableIndex ), propertyColumnNames );
+		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+
+		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
-				.keyColumnNames( propertyColumnNames )
+				.associationKeyMetadata( associationKeyMetadata )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.tableName( persister.getTableName( tableIndex ) )
-				.propertyType( persister.getPropertyTypes()[propertyIndex] )
-				.rowKeyColumnNames( rowKeyColumnNames );
+				.propertyType( persister.getPropertyTypes()[propertyIndex] );
 		//add fk column value in TupleKey
 		Tuple tupleKey = new Tuple();
 		for (int index = 0 ; index < propertyColumnNames.length ; index++) {
@@ -256,7 +261,7 @@ class EntityDehydrator {
 		//add id value in TupleKey
 		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
 
-		Association propertyValues = metadataProvider.getCollectionMetadata();
+		Association propertyValues = associationPersister.getAssociation();
 		if ( propertyValues != null ) {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
 			//this is a StarToOne case ie the FK is on the owning entity
@@ -266,11 +271,11 @@ class EntityDehydrator {
 					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?
-			metadataProvider.getCollectionMetadata().remove( matchingTuple );
+			associationPersister.getAssociation().remove( matchingTuple );
 
 			getReferencedEntity( propertyIndex );
 
-			metadataProvider.flushToCache();
+			associationPersister.flushToCache();
 		}
 	}
 
