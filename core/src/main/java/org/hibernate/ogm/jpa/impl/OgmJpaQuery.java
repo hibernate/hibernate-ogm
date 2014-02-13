@@ -26,15 +26,16 @@ import javax.persistence.TypedQuery;
 import org.hibernate.jpa.HibernateQuery;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
+import org.hibernate.ogm.hibernatecore.impl.OgmQuery;
 
 /**
  * Hibernate OGM implementation of both {@link HibernateQuery} and {@link TypedQuery}
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmNativeQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
+public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
 
-	public OgmNativeQuery(org.hibernate.Query query, EntityManager em) {
+	public OgmJpaQuery(org.hibernate.Query query, EntityManager em) {
 		super( query, convert( em ) );
 	}
 
@@ -43,6 +44,11 @@ public class OgmNativeQuery<X> extends QueryImpl<X> implements HibernateQuery, T
 			return (AbstractEntityManagerImpl) em;
 		}
 		throw new IllegalStateException( String.format( "Unknown entity manager type [%s]", em.getClass().getName() ) );
+	}
+
+	@Override
+	protected boolean canApplyAliasSpecificLockModeHints() {
+		return super.canApplyAliasSpecificLockModeHints() || OgmQuery.class.isInstance( getHibernateQuery() );
 	}
 
 }

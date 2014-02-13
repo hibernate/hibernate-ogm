@@ -149,7 +149,11 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 
 	@Override
 	public Query createQuery(NamedQueryDefinition namedQueryDefinition) {
-		throw new NotSupportedException( "OGM-15", "Named queries are not supported yet" );
+		String queryString = namedQueryDefinition.getQueryString();
+		Query query = createQuery( queryString );
+		query.setComment( "named HQL/JP-QL query " + namedQueryDefinition.getName() );
+		query.setFlushMode( namedQueryDefinition.getFlushMode() );
+		return query;
 	}
 
 	private QueryParserService getQueryParserService() {
@@ -316,7 +320,8 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 		if (namedQuery == null) {
 			return getNamedSQLQuery( name );
 		}
-		throw new NotSupportedException( "OGM-15", "Named queries are not supported yet" );
+
+		return createQuery( namedQuery );
 	}
 
 	@Override

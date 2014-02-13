@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.jpa.impl;
+package org.hibernate.jpa.spi;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,7 @@ import javax.persistence.metamodel.Metamodel;
 
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -49,11 +50,16 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.jpa.QueryHints;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.ogm.jpa.impl.LetThroughExecuteUpdateQuery;
+import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
+import org.hibernate.ogm.jpa.impl.OgmJpaQuery;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -64,6 +70,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 public class OgmEntityManager implements EntityManager {
 	private final EntityManager hibernateEm;
 	private final OgmEntityManagerFactory factory;
+	private final LockOptions lockOptions = new LockOptions();
 
 	public OgmEntityManager(OgmEntityManagerFactory factory, EntityManager hibernateEm) {
 		this.hibernateEm = hibernateEm;
@@ -193,7 +200,24 @@ public class OgmEntityManager implements EntityManager {
 			//pretend you care
 			return new LetThroughExecuteUpdateQuery();
 		}
-		throw new NotSupportedException( "OGM-21", "JP-QL queries are not supported yet" );
+
+		Session session = (Session) getDelegate();
+		return applyProperties( new OgmJpaQuery<Object>( session.createQuery( qlString ), (AbstractEntityManagerImpl) hibernateEm ) );
+	}
+
+	private Query applyProperties(Query query) {
+		if ( lockOptions.getLockMode() != LockMode.NONE ) {
+			query.setLockMode( getLockMode( lockOptions.getLockMode() ) );
+		}
+		Object queryTimeout;
+		if ( ( queryTimeout = getProperties().get( QueryHints.SPEC_HINT_TIMEOUT ) ) != null ) {
+			query.setHint( QueryHints.SPEC_HINT_TIMEOUT, queryTimeout );
+		}
+		Object lockTimeout;
+		if ( ( lockTimeout = getProperties().get( AvailableSettings.LOCK_TIMEOUT ) ) != null ) {
+			query.setHint( AvailableSettings.LOCK_TIMEOUT, lockTimeout );
+		}
+		return query;
 	}
 
 	@Override
@@ -213,11 +237,22 @@ public class OgmEntityManager implements EntityManager {
 
 	@Override
 	public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-		throw new NotSupportedException( "OGM-14", "typed queries are not supported yet" );
+		// do the translation
+		Session session = (Session) getDelegate();
+		org.hibernate.Query query = session.createQuery( qlString );
+
+		resultClassChecking( resultClass, query );
+
+		// finally, build/return the query instance
+		return new OgmJpaQuery<T>( query, (AbstractEntityManagerImpl) hibernateEm );
 	}
 
 	@Override
 	public Query createNamedQuery(String name) {
+		return buildQueryFromName( name, null );
+	}
+
+	private <T> TypedQuery<T> buildQueryFromName(String name, Class<T> resultType) {
 		OgmSessionFactory sessionFactory = (OgmSessionFactory) factory.getSessionFactory();
 		NamedQueryDefinition queryDefinition = sessionFactory.getNamedSQLQuery( name );
 		if ( queryDefinition == null ) {
@@ -226,47 +261,81 @@ public class OgmEntityManager implements EntityManager {
 				throw new IllegalArgumentException( "Named query not found: " + name );
 			}
 			else {
-				throw new NotSupportedException( "OGM-15", "named queries are not supported yet" );
+				return createNamedJpqlQuery( queryDefinition, resultType );
 			}
 		}
 		else {
-			return createNativeQuery( (NamedSQLQueryDefinition) queryDefinition );
+			return createNamedNativeQuery( (NamedSQLQueryDefinition) queryDefinition, resultType );
 		}
 	}
 
-	private Query createNativeQuery(NamedSQLQueryDefinition sqlDefinition) {
+	protected <T> TypedQuery<T> createNamedJpqlQuery(NamedQueryDefinition namedQueryDefinition, Class<T> resultType) {
+		SessionImplementor session = (SessionImplementor) getDelegate();
+		final org.hibernate.Query query = session.createQuery( namedQueryDefinition );
+		if ( resultType != null ) {
+			resultClassChecking( resultType, query );
+		}
+
+		return wrapAsJpaQuery( namedQueryDefinition, query );
+	}
+
+	protected <T> TypedQuery<T> wrapAsJpaQuery(NamedQueryDefinition namedQueryDefinition, org.hibernate.Query hibQuery) {
+		final OgmJpaQuery<T> jpaQuery = new OgmJpaQuery<T>( hibQuery, (AbstractEntityManagerImpl) hibernateEm );
+		applySavedSettings( namedQueryDefinition, jpaQuery );
+		return jpaQuery;
+	}
+
+	protected <T> void applySavedSettings(NamedQueryDefinition namedQueryDefinition, OgmJpaQuery<T> jpaQuery) {
+		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
+		impl.applySavedSettings( namedQueryDefinition, jpaQuery );
+	}
+
+	private <T> TypedQuery<T> createNamedNativeQuery(NamedSQLQueryDefinition sqlDefinition, Class<T> resultType) {
+		if ( resultType != null ) {
+			resultClassChecking( resultType, sqlDefinition );
+		}
 		String sqlQueryString = sqlDefinition.getQueryString();
 		SQLQuery noSqlQuery = ( (Session) getDelegate() ).createSQLQuery( sqlQueryString );
 		if ( sqlDefinition.getQueryReturns().length == 1 ) {
 			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
 			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
 		}
-		return new OgmNativeQuery( noSqlQuery, hibernateEm );
+		return new OgmJpaQuery<T>( noSqlQuery, hibernateEm );
+	}
+
+	protected void resultClassChecking(Class<?> resultClass, org.hibernate.Query hqlQuery) {
+		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
+		impl.resultClassChecking( resultClass, hqlQuery );
+	}
+
+	protected void resultClassChecking(Class<?> resultType, NamedSQLQueryDefinition namedQueryDefinition) {
+		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
+		impl.resultClassChecking( resultType, namedQueryDefinition );
 	}
 
 	@Override
 	public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-		throw new NotSupportedException( "OGM-14", "typed queries are not supported yet" );
+		return buildQueryFromName( name, resultClass );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.addEntity( "alias1", resultClass.getName(), LockMode.READ );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.setResultSetMapping( resultSetMapping );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
