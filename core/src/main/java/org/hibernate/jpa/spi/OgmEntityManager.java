@@ -59,7 +59,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.jpa.impl.LetThroughExecuteUpdateQuery;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.jpa.impl.OgmNativeQuery;
+import org.hibernate.ogm.jpa.impl.OgmJpaQuery;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -202,7 +202,7 @@ public class OgmEntityManager implements EntityManager {
 		}
 
 		Session session = (Session) getDelegate();
-		return applyProperties( new OgmNativeQuery<Object>( session.createQuery( qlString ), (AbstractEntityManagerImpl) hibernateEm ) );
+		return applyProperties( new OgmJpaQuery<Object>( session.createQuery( qlString ), (AbstractEntityManagerImpl) hibernateEm ) );
 	}
 
 	private Query applyProperties(Query query) {
@@ -244,7 +244,7 @@ public class OgmEntityManager implements EntityManager {
 		resultClassChecking( resultClass, query );
 
 		// finally, build/return the query instance
-		return new OgmNativeQuery<T>( query, (AbstractEntityManagerImpl) hibernateEm );
+		return new OgmJpaQuery<T>( query, (AbstractEntityManagerImpl) hibernateEm );
 	}
 
 	@Override
@@ -280,12 +280,12 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	protected <T> TypedQuery<T> wrapAsJpaQuery(NamedQueryDefinition namedQueryDefinition, org.hibernate.Query hibQuery) {
-		final OgmNativeQuery<T> jpaQuery = new OgmNativeQuery<T>( hibQuery, (AbstractEntityManagerImpl) hibernateEm );
+		final OgmJpaQuery<T> jpaQuery = new OgmJpaQuery<T>( hibQuery, (AbstractEntityManagerImpl) hibernateEm );
 		applySavedSettings( namedQueryDefinition, jpaQuery );
 		return jpaQuery;
 	}
 
-	protected <T> void applySavedSettings(NamedQueryDefinition namedQueryDefinition, OgmNativeQuery<T> jpaQuery) {
+	protected <T> void applySavedSettings(NamedQueryDefinition namedQueryDefinition, OgmJpaQuery<T> jpaQuery) {
 		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
 		impl.applySavedSettings( namedQueryDefinition, jpaQuery );
 	}
@@ -300,7 +300,7 @@ public class OgmEntityManager implements EntityManager {
 			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
 			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
 		}
-		return new OgmNativeQuery<T>( noSqlQuery, hibernateEm );
+		return new OgmJpaQuery<T>( noSqlQuery, hibernateEm );
 	}
 
 	protected void resultClassChecking(Class<?> resultClass, org.hibernate.Query hqlQuery) {
@@ -321,21 +321,21 @@ public class OgmEntityManager implements EntityManager {
 	@Override
 	public Query createNativeQuery(String sqlString) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, Class resultClass) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.addEntity( "alias1", resultClass.getName(), LockMode.READ );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override
 	public Query createNativeQuery(String sqlString, String resultSetMapping) {
 		SQLQuery q = ( (Session) getDelegate() ).createSQLQuery( sqlString );
 		q.setResultSetMapping( resultSetMapping );
-		return new OgmNativeQuery( q, hibernateEm );
+		return new OgmJpaQuery( q, hibernateEm );
 	}
 
 	@Override

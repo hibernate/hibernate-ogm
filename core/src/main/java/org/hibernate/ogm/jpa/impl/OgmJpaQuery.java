@@ -33,9 +33,9 @@ import org.hibernate.ogm.hibernatecore.impl.OgmQuery;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class OgmNativeQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
+public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
 
-	public OgmNativeQuery(org.hibernate.Query query, EntityManager em) {
+	public OgmJpaQuery(org.hibernate.Query query, EntityManager em) {
 		super( query, convert( em ) );
 	}
 
