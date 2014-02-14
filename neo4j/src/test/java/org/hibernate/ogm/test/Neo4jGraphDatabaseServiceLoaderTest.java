@@ -44,6 +44,8 @@ import org.neo4j.graphdb.event.KernelEventHandler;
 import org.neo4j.graphdb.event.TransactionEventHandler;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.schema.Schema;
+import org.neo4j.graphdb.traversal.BidirectionalTraversalDescription;
+import org.neo4j.graphdb.traversal.TraversalDescription;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 /**
@@ -128,11 +130,6 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		}
 
 		@Override
-		public Node getReferenceNode() {
-			return null;
-		}
-
-		@Override
 		public Iterable<Node> getAllNodes() {
 			return null;
 		}
@@ -188,6 +185,21 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 
 		@Override
 		public Schema schema() {
+			return null;
+		}
+
+		@Override
+		public boolean isAvailable(long timeout) {
+			return false;
+		}
+
+		@Override
+		public TraversalDescription traversalDescription() {
+			return null;
+		}
+
+		@Override
+		public BidirectionalTraversalDescription bidirectionalTraversalDescription() {
 			return null;
 		}
 

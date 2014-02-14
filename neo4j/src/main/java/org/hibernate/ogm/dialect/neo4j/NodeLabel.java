@@ -20,48 +20,13 @@
  */
 package org.hibernate.ogm.dialect.neo4j;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Label;
 
 /**
- * Represents the Tuple snapshot as loaded by the Neo4j datastore.
- * <p>
- * Any {@link PropertyContainer} (node or relationship) can represent a tuple. The column of the tuple are mapped as
- * properties of the property container.
+ * Indetifies the role of the node created by the neo4j dialect.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public final class Neo4jTupleSnapshot implements TupleSnapshot {
-
-	private final PropertyContainer propertyContainer;
-
-	public Neo4jTupleSnapshot(PropertyContainer propertyContainer) {
-		this.propertyContainer = propertyContainer;
-	}
-
-	@Override
-	public Object get(String column) {
-		if ( propertyContainer.hasProperty( column ) ) {
-			return propertyContainer.getProperty( column );
-		}
-		return null;
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return !propertyContainer.getPropertyKeys().iterator().hasNext();
-	}
-
-	@Override
-	public Set<String> getColumnNames() {
-		Set<String> names = new HashSet<String>();
-		for ( String string : propertyContainer.getPropertyKeys() ) {
-			names.add( string );
-		}
-		return names;
-	}
-
+public enum NodeLabel implements Label {
+	ENTITY;
 }
