@@ -33,7 +33,10 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
-import org.hibernate.ogm.dialect.infinispan.impl.KeyExternalizer;
+import org.hibernate.ogm.dialect.infinispan.impl.AssociationKeyExternalizer;
+import org.hibernate.ogm.dialect.infinispan.impl.EntityKeyExternalizer;
+import org.hibernate.ogm.dialect.infinispan.impl.EntityKeyMetadataExternalizer;
+import org.hibernate.ogm.dialect.infinispan.impl.RowKeyExternalizer;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
@@ -44,6 +47,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.infinispan.Cache;
+import org.infinispan.commons.marshall.AdvancedExternalizer;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
@@ -135,13 +139,19 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 			try {
 				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationFile, false );
 
-				KeyExternalizer keyExternalizer = new KeyExternalizer();
+				AdvancedExternalizer<?> entityKeyExternalizer = EntityKeyExternalizer.INSTANCE;
+				AdvancedExternalizer<?> associationKeyExternalizer = AssociationKeyExternalizer.INSTANCE;
+				AdvancedExternalizer<?> rowKeyExternalizer = RowKeyExternalizer.INSTANCE;
+				AdvancedExternalizer<?> entityKeyMetadataExternalizer = EntityKeyMetadataExternalizer.INSTANCE;
 
-				// override global configuration from the config file to inject externalizer
+				// override global configuration from the config file to inject externalizers
 				GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder()
 					.read( tmpCacheManager.getCacheManagerConfiguration() )
 					.serialization()
-						.addAdvancedExternalizer( keyExternalizer.getId(), keyExternalizer )
+						.addAdvancedExternalizer( entityKeyExternalizer.getId(), entityKeyExternalizer )
+						.addAdvancedExternalizer( associationKeyExternalizer.getId(), associationKeyExternalizer )
+						.addAdvancedExternalizer( rowKeyExternalizer.getId(), rowKeyExternalizer )
+						.addAdvancedExternalizer( entityKeyMetadataExternalizer.getId(), entityKeyMetadataExternalizer )
 					.build();
 
 				cacheManager = new DefaultCacheManager( globalConfiguration, false );

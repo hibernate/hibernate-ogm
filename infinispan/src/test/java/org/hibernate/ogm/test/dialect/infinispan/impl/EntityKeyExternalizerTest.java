@@ -23,28 +23,25 @@ package org.hibernate.ogm.test.dialect.infinispan.impl;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.hibernate.ogm.dialect.infinispan.impl.KeyExternalizer;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.dialect.infinispan.impl.EntityKeyExternalizer;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.Key;
-import org.hibernate.ogm.grid.RowKey;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit test for {@link KeyExternalizer}.
+ * Unit test for {@link EntityKeyExternalizer}.
  *
  * @author Gunnar Morling
  */
-public class KeyExternalizerTest {
+public class EntityKeyExternalizerTest {
 
-	private ExternalizerTestHelper<Key, KeyExternalizer> externalizerHelper;
+	private ExternalizerTestHelper<EntityKey, EntityKeyExternalizer> externalizerHelper;
 
 	@Before
 	public void setupMarshallerFactory() {
-		externalizerHelper = ExternalizerTestHelper.getInstance( new KeyExternalizer() );
+		externalizerHelper = ExternalizerTestHelper.getInstance( EntityKeyExternalizer.INSTANCE );
 	}
 
 	@Test
@@ -62,53 +59,6 @@ public class KeyExternalizerTest {
 
 		// then
 		assertThat( unmarshalledKey.getClass() ).isEqualTo( EntityKey.class );
-		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
-		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
-		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
-
-		assertTrue( key.equals( unmarshalledKey ) );
-		assertTrue( unmarshalledKey.equals( key ) );
-		assertThat( unmarshalledKey.hashCode() ).isEqualTo( key.hashCode() );
-	}
-
-	@Test
-	public void shouldSerializeAndDeserializeAssociationKey() throws Exception {
-		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames );
-		Object[] values = { 123, "Hello", 456L };
-
-		// given
-		AssociationKey key = new AssociationKey( keyMetadata, values, null, null, null );
-
-		// when
-		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
-
-		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( AssociationKey.class );
-		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
-		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
-		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
-
-		assertTrue( key.equals( unmarshalledKey ) );
-		assertTrue( unmarshalledKey.equals( key ) );
-		assertThat( unmarshalledKey.hashCode() ).isEqualTo( key.hashCode() );
-	}
-
-	@Test
-	public void shouldSerializeAndDeserializeRowKey() throws Exception {
-		String[] columnNames = { "foo", "bar", "baz" };
-		Object[] values = { 123, "Hello", 456L };
-
-		// given
-		RowKey key = new RowKey( "Foobar", columnNames, values );
-
-		// when
-		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
-
-		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( RowKey.class );
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
