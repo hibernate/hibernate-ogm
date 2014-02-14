@@ -47,8 +47,8 @@ class ExternalizerTestHelper<T, E extends AdvancedExternalizer<T>> {
 		this.externalizer = externalizer;
 	}
 
-	static <T, E extends AdvancedExternalizer<T>> ExternalizerTestHelper<T, E> getInstance( E externalizer ) {
-		return new ExternalizerTestHelper<T, E>(externalizer);
+	static <T, E extends AdvancedExternalizer<T>> ExternalizerTestHelper<T, E> getInstance(E externalizer) {
+		return new ExternalizerTestHelper<T, E>( externalizer );
 	}
 
 	byte[] marshall(T object) throws Exception {
