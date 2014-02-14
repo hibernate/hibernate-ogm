@@ -20,19 +20,16 @@
  */
 package org.hibernate.ogm.test.utils;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
-
 import java.util.Map;
-
-import net.sf.ehcache.Cache;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.ehcache.Ehcache;
+import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
@@ -57,9 +54,9 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		return (Map) getEntityCache( sessionFactory ).get( key ).getValue();
 	}
 
-	private static Cache getEntityCache(SessionFactory sessionFactory) {
+	private static Cache<EntityKey> getEntityCache(SessionFactory sessionFactory) {
 		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCacheManager().getCache( ENTITY_STORE );
+		return castProvider.getEntityCache();
 	}
 
 	private static EhcacheDatastoreProvider getProvider(SessionFactory sessionFactory) {
@@ -71,9 +68,9 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		return EhcacheDatastoreProvider.class.cast( provider );
 	}
 
-	private static Cache getAssociationCache(SessionFactory sessionFactory) {
+	private static Cache<AssociationKey> getAssociationCache(SessionFactory sessionFactory) {
 		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCacheManager().getCache( ASSOCIATION_STORE );
+		return castProvider.getAssociationCache();
 	}
 
 	/**

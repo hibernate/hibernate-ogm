@@ -22,10 +22,8 @@ package org.hibernate.ogm.dialect.ehcache;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 
 import org.hibernate.LockMode;
@@ -35,13 +33,13 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.MapHelpers;
 import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -88,7 +86,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		final Cache entityCache = getEntityCache();
+		final Cache<EntityKey> entityCache = datastoreProvider.getEntityCache();
 		final Element element = entityCache.get( key );
 		if ( element != null ) {
 			return createTuple( element );
@@ -105,7 +103,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key) {
-		final Cache entityCache = getEntityCache();
+		final Cache<EntityKey> entityCache = datastoreProvider.getEntityCache();
 		final HashMap<String, Object> tuple = new HashMap<String, Object>();
 		entityCache.put( new Element( key, tuple ) );
 		return new Tuple( new MapTupleSnapshot( tuple ) );
@@ -119,12 +117,12 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key) {
-		getEntityCache().remove( key );
+		datastoreProvider.getEntityCache().remove( key );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache associationCache = getAssociationCache();
+		final Cache<AssociationKey> associationCache = datastoreProvider.getAssociationCache();
 		final Element element = associationCache.get( key );
 		if ( element == null ) {
 			return null;
@@ -136,7 +134,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache associationCache = getAssociationCache();
+		final Cache<AssociationKey> associationCache = datastoreProvider.getAssociationCache();
 		Map<RowKey, Map<String, Object>> association = new HashMap<RowKey, Map<String, Object>>();
 		associationCache.put( new Element( key, association ) );
 		return new Association( new MapAssociationSnapshot( association ) );
@@ -149,7 +147,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		getAssociationCache().remove( key );
+		datastoreProvider.getAssociationCache().remove( key );
 	}
 
 	@Override
@@ -159,7 +157,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		final Cache cache = getIdentifierCache();
+		final Cache<RowKey> cache = datastoreProvider.getIdentifierCache();
 		Element previousValue = cache.get( key );
 		if ( previousValue == null ) {
 			previousValue = cache.putIfAbsent( new Element( key, initialValue ) );
@@ -181,24 +179,10 @@ public class EhcacheDialect implements GridDialect {
 		return null;
 	}
 
-	private Cache getIdentifierCache() {
-		return datastoreProvider.getCacheManager().getCache( DefaultDatastoreNames.IDENTIFIER_STORE );
-	}
-
-	private Cache getEntityCache() {
-		return datastoreProvider.getCacheManager().getCache( DefaultDatastoreNames.ENTITY_STORE );
-	}
-
-	private Cache getAssociationCache() {
-		return datastoreProvider.getCacheManager().getCache( DefaultDatastoreNames.ASSOCIATION_STORE );
-	}
-
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Cache entityCache = getEntityCache();
-		@SuppressWarnings("unchecked")
-		List<EntityKey> keys = entityCache.getKeys();
-		for ( EntityKey key : keys ) {
+		Cache<EntityKey> entityCache = datastoreProvider.getEntityCache();
+		for ( EntityKey key : entityCache.getKeys() ) {
 			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 				// Check if there is a way to load keys applying a filter
 				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {
