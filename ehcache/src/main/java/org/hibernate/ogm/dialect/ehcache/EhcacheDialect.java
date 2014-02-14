@@ -100,7 +100,7 @@ public class EhcacheDialect implements GridDialect {
 
 	@SuppressWarnings("unchecked")
 	private Tuple createTuple(final Element element) {
-		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getValue() ) );
+		return new Tuple( new MapTupleSnapshot( (Map<String, Object>) element.getObjectValue() ) );
 	}
 
 	@Override
@@ -130,7 +130,9 @@ public class EhcacheDialect implements GridDialect {
 			return null;
 		}
 		else {
-			return new Association( new SerializableMapAssociationSnapshot( (Map<SerializableKey, Map<String, Object>>) element.getValue() ) );
+			@SuppressWarnings("unchecked")
+			Map<SerializableKey, Map<String, Object>> associationRows = (Map<SerializableKey, Map<String, Object>>) element.getObjectValue();
+			return new Association( new SerializableMapAssociationSnapshot( associationRows ) );
 		}
 	}
 
@@ -182,10 +184,10 @@ public class EhcacheDialect implements GridDialect {
 		}
 		if ( previousValue != null ) {
 			while ( !cache.replace( previousValue,
-					new Element( key, ( (Integer) previousValue.getValue() ) + increment ) ) ) {
+					new Element( key, ( (Integer) previousValue.getObjectValue() ) + increment ) ) ) {
 				previousValue = cache.get( key );
 			}
-			value.initialize( ( (Integer) previousValue.getValue() ) + increment );
+			value.initialize( ( (Integer) previousValue.getObjectValue() ) + increment );
 		}
 		else {
 			value.initialize( initialValue );
