@@ -26,10 +26,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.ehcache.Ehcache;
-import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.dialect.ehcache.impl.SerializableKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.navigation.context.GlobalContext;
@@ -41,22 +40,23 @@ public class EhcacheTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).getSize();
+		return getProvider( sessionFactory ).getEntityCache().getSize();
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).getSize();
+		return getProvider( sessionFactory ).getAssociationCache().getSize();
 	}
 
 	@Override
 	public Map<String,Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return (Map) getEntityCache( sessionFactory ).get( key ).getValue();
-	}
+		@SuppressWarnings("unchecked")
+		Map<String, Object> tuple = (Map<String, Object>) getProvider( sessionFactory )
+				.getEntityCache()
+				.get( new SerializableKey( key ) )
+				.getObjectValue();
 
-	private static Cache<EntityKey> getEntityCache(SessionFactory sessionFactory) {
-		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getEntityCache();
+		return tuple;
 	}
 
 	private static EhcacheDatastoreProvider getProvider(SessionFactory sessionFactory) {
@@ -66,11 +66,6 @@ public class EhcacheTestHelper implements TestableGridDialect {
 			throw new RuntimeException( "Not testing with Ehcache, cannot extract underlying cache" );
 		}
 		return EhcacheDatastoreProvider.class.cast( provider );
-	}
-
-	private static Cache<AssociationKey> getAssociationCache(SessionFactory sessionFactory) {
-		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getAssociationCache();
 	}
 
 	/**
