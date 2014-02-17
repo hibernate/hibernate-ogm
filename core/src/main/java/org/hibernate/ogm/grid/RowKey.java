@@ -20,15 +20,14 @@
  */
 package org.hibernate.ogm.grid;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Represents the key used to represent a row
+ *A key representing an association row or identifier sequence.
  *
  * @author Emmanuel Bernard
  */
-public final class RowKey implements Serializable, Key {
+public final class RowKey implements Key {
 
 	private final String table;
 	private final String[] columnNames;

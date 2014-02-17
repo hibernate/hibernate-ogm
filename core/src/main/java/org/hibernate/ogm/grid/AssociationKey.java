@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.grid;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import org.hibernate.annotations.common.AssertionFailure;
@@ -32,7 +31,7 @@ import org.hibernate.annotations.common.AssertionFailure;
  * @author Sanne Grinovero
  * @author Gunnar Morling
  */
-public final class AssociationKey implements Serializable, Key {
+public final class AssociationKey implements Key {
 
 	//column value types do have to be serializable so AssociationKey is serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
@@ -41,9 +40,9 @@ public final class AssociationKey implements Serializable, Key {
 	private final int hashCode;
 
 	//role and entity key are not part of the object identity
-	private transient String collectionRole;
-	private transient EntityKey entityKey;
-	private transient AssociationKind associationKind;
+	private final String collectionRole;
+	private final EntityKey entityKey;
+	private final AssociationKind associationKind;
 
 	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind) {
 		this.metadata = metadata;

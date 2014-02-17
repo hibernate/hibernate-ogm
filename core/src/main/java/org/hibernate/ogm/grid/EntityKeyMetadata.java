@@ -20,19 +20,18 @@
  */
 package org.hibernate.ogm.grid;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Stores metadata information common to all keys related
- * to a given entity.
+ * Stores metadata information common to all keys related to a given entity.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class EntityKeyMetadata implements Serializable {
+public class EntityKeyMetadata {
+
 	private final String table;
 	private final int hashCode;
-	private String[] columnNames;
+	private final String[] columnNames;
 
 	public EntityKeyMetadata(String tableName, String[] columnNames) {
 		this.table = tableName;
@@ -45,9 +44,8 @@ public class EntityKeyMetadata implements Serializable {
 	}
 
 	/**
-	 * This class should be treated as immutable. While we expose this array,
-	 * you should never make changes to it!
-	 * This is a design tradeoff vs. raw performance and memory usage.
+	 * This class should be treated as immutable. While we expose this array, you should never make changes to it! This
+	 * is a design tradeoff vs. raw performance and memory usage.
 	 */
 	public String[] getColumnNames() {
 		return columnNames;
@@ -74,7 +72,7 @@ public class EntityKeyMetadata implements Serializable {
 
 		EntityKeyMetadata entityKeyMetadata = (EntityKeyMetadata) o;
 
-		//table is easier to compare first
+		// table is easier to compare first
 		if ( !table.equals( entityKeyMetadata.table ) ) {
 			return false;
 		}
@@ -91,8 +89,8 @@ public class EntityKeyMetadata implements Serializable {
 	}
 
 	private int generateHashCode() {
-		//Note we don't hash on the column names as the hash will discriminate enough
-		//with table and Arrays.hashCode is not cheap
+		// Note we don't hash on the column names as the hash will discriminate enough
+		// with table and Arrays.hashCode is not cheap
 		int result = table.hashCode();
 		return result;
 	}
