@@ -24,10 +24,10 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
-import org.hibernate.ogm.datastore.mongodb.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
-import org.hibernate.ogm.logging.mongodb.impl.Log;
-import org.hibernate.ogm.logging.mongodb.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.PropertyValidator;
 

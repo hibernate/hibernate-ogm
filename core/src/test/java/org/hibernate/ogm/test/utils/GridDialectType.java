@@ -36,15 +36,15 @@ public enum GridDialectType {
 		}
 	},
 
-	INFINISPAN( "org.hibernate.ogm.test.utils.InfinispanTestHelper", false ),
+	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper", false ),
 
-	EHCACHE( "org.hibernate.ogm.test.utils.EhcacheTestHelper", false ),
+	EHCACHE( "org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper", false ),
 
-	MONGODB( "org.hibernate.ogm.test.utils.MongoDBTestHelper", true ),
+	MONGODB( "org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper", true ),
 
-	NEO4J( "org.hibernate.ogm.test.utils.Neo4jTestHelper", false ),
+	NEO4J( "org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper", false ),
 
-	COUCHDB( "org.hibernate.ogm.test.utils.CouchDBTestHelper", true );
+	COUCHDB( "org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper", true );
 
 	private final String testHelperClassName;
 	private final boolean isDocumentStore;

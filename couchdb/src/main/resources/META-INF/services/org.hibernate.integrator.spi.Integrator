@@ -22,4 +22,4 @@
 # Boston, MA  02110-1301  USA
 #
 
-org.hibernate.ogm.dialect.couchdb.impl.CouchDBIntegrator
+org.hibernate.ogm.datastore.couchdb.impl.CouchDBIntegrator

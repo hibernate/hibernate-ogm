@@ -20,11 +20,11 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
+import org.hibernate.ogm.datastore.couchdb.options.mapping.CouchDBGlobalContext;
+import org.hibernate.ogm.datastore.couchdb.options.mapping.impl.CouchDBEntityContextImpl;
+import org.hibernate.ogm.datastore.couchdb.options.mapping.impl.CouchDBGlobalContextImpl;
+import org.hibernate.ogm.datastore.couchdb.options.mapping.impl.CouchDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.couchdb.mapping.CouchDBGlobalContext;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBEntityContextImpl;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBGlobalContextImpl;
-import org.hibernate.ogm.options.couchdb.mapping.impl.CouchDBPropertyContextImpl;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
