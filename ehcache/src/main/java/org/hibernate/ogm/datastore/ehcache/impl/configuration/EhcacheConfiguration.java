@@ -20,9 +20,11 @@
  */
 package org.hibernate.ogm.datastore.ehcache.impl.configuration;
 
+import java.net.URL;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.
@@ -31,7 +33,12 @@ import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
  */
 public class EhcacheConfiguration {
 
-	private String url;
+	/**
+	 * Name of the default Ehcache configuration file
+	 */
+	private static final String DEFAULT_CONFIG = "org/hibernate/ogm/datastore/ehcache/default-ehcache.xml";
+
+	private URL url;
 
 	/**
 	 * Initialize the internal values from the given {@link Map}.
@@ -40,14 +47,17 @@ public class EhcacheConfiguration {
 	 * @param configurationMap The values to use as configuration
 	 */
 	public void initialize(Map configurationMap) {
-		this.url = (String) configurationMap.get( EhcacheProperties.CONFIGURATION_RESOURCE_NAME );
+		this.url = new ConfigurationPropertyReader( configurationMap )
+			.property( EhcacheProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
+			.withDefault( EhcacheConfiguration.class.getClassLoader().getResource( DEFAULT_CONFIG ) )
+			.getValue();
 	}
 
 	/**
-	 * @see Environment#RESOURCE_NAME
+	 * @see EhcacheProperties#CONFIGURATION_RESOURCENAME
 	 * @return An URL to an XML file compliant with the ehcache.xsd schema.
 	 */
-	public String getUrl() {
+	public URL getUrl() {
 		return url;
 	}
 }

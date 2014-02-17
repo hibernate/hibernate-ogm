@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,8 +20,8 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,7 +43,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 import org.infinispan.Cache;
-import org.infinispan.commons.util.FileLookupFactory;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
@@ -90,7 +89,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		try {
 			String jndiProperty = config.getJndiName();
 			if ( jndiProperty == null ) {
-				cacheManager = createCustomCacheManager( config.getConfigurationName(), jtaPlatform );
+				cacheManager = createCustomCacheManager( config.getConfigurationUrl(), jtaPlatform );
 				isCacheProvided = false;
 			}
 			else {
@@ -126,11 +125,10 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		caches.put( cacheName, cacheManager.getCache( cacheName ) );
 	}
 
-	private EmbeddedCacheManager createCustomCacheManager(String cfgName, JtaPlatform platform) {
-		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+	private EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform) {
 		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 		try {
-			InputStream configurationFile = FileLookupFactory.newInstance().lookupFileStrict( cfgName, contextClassLoader );
+			InputStream configurationFile = configUrl.openStream();
 			try {
 				cacheManager = new DefaultCacheManager( configurationFile, false );
 				// override the named cache configuration defined in the configuration file to
@@ -153,11 +151,8 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 				}
 			}
 		}
-		catch ( RuntimeException re ) {
-			throw raiseConfigurationError( re, cfgName );
-		}
-		catch (IOException e) {
-			throw raiseConfigurationError( e, cfgName );
+		catch (Exception e) {
+			throw raiseConfigurationError( e, configUrl.toString() );
 		}
 	}
 
