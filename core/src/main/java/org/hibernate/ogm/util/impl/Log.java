@@ -183,4 +183,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 55, value = "It is not possible to add or poll operations from a closed queue")
 	HibernateException closedOperationQueue();
+
+	@Message(id = 56, value = "Invalid URL given for configuration property '%1$s': %2$s; The specified resource could not be found.")
+	HibernateException invalidConfigurationUrl(String propertyName, String url);
 }
