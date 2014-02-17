@@ -33,6 +33,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.infinispan.InfinispanDialect;
+import org.hibernate.ogm.dialect.infinispan.impl.KeyExternalizer;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
@@ -45,6 +46,8 @@ import org.hibernate.service.spi.Stoppable;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -130,11 +133,23 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 		try {
 			InputStream configurationFile = configUrl.openStream();
 			try {
-				cacheManager = new DefaultCacheManager( configurationFile, false );
+				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationFile, false );
+
+				KeyExternalizer keyExternalizer = new KeyExternalizer();
+
+				// override global configuration from the config file to inject externalizer
+				GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder()
+					.read( tmpCacheManager.getCacheManagerConfiguration() )
+					.serialization()
+						.addAdvancedExternalizer( keyExternalizer.getId(), keyExternalizer )
+					.build();
+
+				cacheManager = new DefaultCacheManager( globalConfiguration, false );
+
 				// override the named cache configuration defined in the configuration file to
 				// inject the platform TransactionManager
-				for (String cacheName : cacheManager.getCacheNames() ) {
-					Configuration originalCfg = cacheManager.getCacheConfiguration( cacheName );
+				for (String cacheName : tmpCacheManager.getCacheNames() ) {
+					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
 					Configuration newCfg = new ConfigurationBuilder()
 						.read( originalCfg )
 							.transaction()
@@ -142,6 +157,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 						.build();
 					cacheManager.defineConfiguration( cacheName, newCfg );
 				}
+
 				cacheManager.start();
 				return cacheManager;
 			}

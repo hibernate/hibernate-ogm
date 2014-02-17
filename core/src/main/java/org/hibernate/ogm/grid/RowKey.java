@@ -28,7 +28,7 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public final class RowKey implements Serializable {
+public final class RowKey implements Serializable, Key {
 
 	private final String table;
 	private final String[] columnNames;
@@ -44,6 +44,7 @@ public final class RowKey implements Serializable {
 		this.hashCode = generateHashCode();
 	}
 
+	@Override
 	public String getTable() {
 		return table;
 	}
@@ -53,6 +54,7 @@ public final class RowKey implements Serializable {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
+	@Override
 	public String[] getColumnNames() {
 		return columnNames;
 	}
@@ -62,6 +64,7 @@ public final class RowKey implements Serializable {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
+	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
