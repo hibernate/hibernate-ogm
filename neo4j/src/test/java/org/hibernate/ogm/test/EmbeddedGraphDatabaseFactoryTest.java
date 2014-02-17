@@ -56,7 +56,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().toExternalForm() );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().toExternalForm() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
@@ -66,7 +66,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().getFile() );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().getFile() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
@@ -76,7 +76,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, "aKDJSAGFKJAFLASFlaLfsfaf" );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, "aKDJSAGFKJAFLASFlaLfsfaf" );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}

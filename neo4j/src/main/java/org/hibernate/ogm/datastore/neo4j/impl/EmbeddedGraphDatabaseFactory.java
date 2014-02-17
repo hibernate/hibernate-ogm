@@ -48,7 +48,7 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 	public void initialize(Map<?, ?> properties) {
 		validate( properties );
 		dbLocation = (String) properties.get( Neo4jProperties.DATABASE_PATH );
-		configurationLocation = (String) properties.get( Neo4jProperties.CONFIGURATION_LOCATION );
+		configurationLocation = (String) properties.get( Neo4jProperties.CONFIGURATION_RESOURCE_NAME );
 		configuration = properties;
 	}
 

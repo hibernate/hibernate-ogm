@@ -40,7 +40,7 @@ public class EhcacheConfiguration {
 	 * @param configurationMap The values to use as configuration
 	 */
 	public void initialize(Map configurationMap) {
-		this.url = (String) configurationMap.get( EhcacheProperties.RESOURCE_NAME );
+		this.url = (String) configurationMap.get( EhcacheProperties.CONFIGURATION_RESOURCE_NAME );
 	}
 
 	/**

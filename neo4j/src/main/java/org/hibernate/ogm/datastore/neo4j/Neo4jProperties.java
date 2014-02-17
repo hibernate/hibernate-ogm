@@ -33,12 +33,13 @@ public final class Neo4jProperties implements OgmProperties {
 	/**
 	 * The absolute path representing the location of the Neo4j database, ex.: /home/user/neo4jdb/mydb
 	 */
-	public static final String DATABASE_PATH = "hibernate.ogm.neo4j.database.path";
+	public static final String DATABASE_PATH = "hibernate.ogm.neo4j.database_path";
 
 	/**
-	 * Location of the Neo4j embedded properties file. It can be an URL or an absolute file path.
+	 * Location of the Neo4j embedded properties file. It can be the name of a class path resource, an URL or an
+	 * absolute file path.
 	 */
-	public static final String CONFIGURATION_LOCATION = "hibernate.ogm.neo4j.properties.location";
+	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.neo4j.configuration_resource_name";
 
 	/**
 	 * Name of the neo4j index containing the stored entities. Default to {@link #DEFAULT_NEO4J_ENTITY_INDEX_NAME}
@@ -62,7 +63,7 @@ public final class Neo4jProperties implements OgmProperties {
 	 * <p>
 	 * The class must implement the interface {@link org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory}.
 	 */
-	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb.factoryclass";
+	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb_factoryclass";
 
 	private Neo4jProperties() {
 	}

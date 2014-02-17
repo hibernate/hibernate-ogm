@@ -42,7 +42,7 @@ public class InfinispanConfiguration {
 	private String jndi;
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CONFIGURATION_RESOURCENAME
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CONFIGURATION_RESOURCE_NAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
 	 */
 	public String getConfigurationName() {
@@ -50,7 +50,7 @@ public class InfinispanConfiguration {
 	}
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_RESOURCE_PROP
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_JNDI_NAME
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
 	public String getJndiName() {
@@ -64,9 +64,9 @@ public class InfinispanConfiguration {
 	 *            The values to use as configuration
 	 */
 	public void initConfiguration(Map configurationMap) {
-		this.jndi = (String) configurationMap.get( InfinispanProperties.CACHE_MANAGER_RESOURCE_PROP );
+		this.jndi = (String) configurationMap.get( InfinispanProperties.CACHE_MANAGER_JNDI_NAME );
 
-		this.configName = (String) configurationMap.get( InfinispanProperties.CONFIGURATION_RESOURCENAME );
+		this.configName = (String) configurationMap.get( InfinispanProperties.CONFIGURATION_RESOURCE_NAME );
 		if ( StringHelper.isEmpty( configName ) ) {
 			this.configName = INFINISPAN_DEFAULT_CONFIG;
 		}
