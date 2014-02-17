@@ -32,7 +32,7 @@ import org.hibernate.annotations.common.AssertionFailure;
  * @author Sanne Grinovero
  * @author Gunnar Morling
  */
-public final class AssociationKey implements Serializable {
+public final class AssociationKey implements Serializable, Key {
 
 	//column value types do have to be serializable so AssociationKey is serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
@@ -58,14 +58,17 @@ public final class AssociationKey implements Serializable {
 		this.hashCode = metadata.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
 
+	@Override
 	public String getTable() {
 		return metadata.getTable();
 	}
 
+	@Override
 	public String[] getColumnNames() {
 		return metadata.getColumnNames();
 	}
 
+	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -28,11 +28,11 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public final class EntityKey implements Serializable {
+public final class EntityKey implements Serializable, Key {
 
 	private final EntityKeyMetadata keyMetadata;
 	private final int hashCode;
-	private Object[] columnValues;
+	private final Object[] columnValues;
 
 	public EntityKey(EntityKeyMetadata keyMetadata, Object[] values) {
 		this.keyMetadata = keyMetadata;
@@ -40,6 +40,7 @@ public final class EntityKey implements Serializable {
 		this.hashCode = generateHashCode();
 	}
 
+	@Override
 	public String getTable() {
 		return keyMetadata.getTable();
 	}
@@ -49,6 +50,7 @@ public final class EntityKey implements Serializable {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
+	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
@@ -58,6 +60,7 @@ public final class EntityKey implements Serializable {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
+	@Override
 	public String[] getColumnNames() {
 		return keyMetadata.getColumnNames();
 	}
