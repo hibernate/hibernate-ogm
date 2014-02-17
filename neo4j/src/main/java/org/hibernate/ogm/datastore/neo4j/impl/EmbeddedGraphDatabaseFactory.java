@@ -20,13 +20,13 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -40,23 +40,23 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 
 	private String dbLocation;
 
-	private String configurationLocation;
+	private URL configurationLocation;
 
 	private Map<?, ?> configuration;
 
 	@Override
 	public void initialize(Map<?, ?> properties) {
-		validate( properties );
-		dbLocation = (String) properties.get( Neo4jProperties.DATABASE_PATH );
-		configurationLocation = (String) properties.get( Neo4jProperties.CONFIGURATION_LOCATION );
-		configuration = properties;
-	}
+		ConfigurationPropertyReader configurationPropertyReader = new ConfigurationPropertyReader( properties );
 
-	private void validate(Map<?, ?> properties) {
-		String dbLocation = (String) properties.get( Neo4jProperties.DATABASE_PATH );
-		if ( dbLocation == null ) {
-			throw new IllegalArgumentException( "Property " + Neo4jProperties.DATABASE_PATH + " cannot be null" );
-		}
+		this.dbLocation = configurationPropertyReader.property( Neo4jProperties.DATABASE_PATH, String.class )
+				.required()
+				.getValue();
+
+		this.configurationLocation = configurationPropertyReader
+				.property( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
+				.getValue();
+
+		configuration = properties;
 	}
 
 	@Override
@@ -81,15 +81,9 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 		return neo4jConfiguration;
 	}
 
-	private void setConfigurationFromLocation(GraphDatabaseBuilder builder, String cfgLocation) {
+	private void setConfigurationFromLocation(GraphDatabaseBuilder builder, URL cfgLocation) {
 		if ( cfgLocation != null ) {
-			try {
-				builder.loadPropertiesFromURL( new URL( cfgLocation ) );
-			}
-			catch ( MalformedURLException e ) {
-				builder.loadPropertiesFromFile( cfgLocation );
-			}
+			builder.loadPropertiesFromURL( cfgLocation );
 		}
 	}
-
 }

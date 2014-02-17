@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.util.configurationreader.impl;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -29,11 +32,11 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
- * A {@link PropertyReaderContext} which allows to retrieve {@code String}, {@code int}, {@code boolean} and
- * {@code enum} properties.
+ * A {@link PropertyReaderContext} which allows to retrieve {@code String}, {@code int}, {@code boolean}, {@code enum}
+ * and {@link URL} properties.
  *
  * @author Gunnar Morling
- * @param <T>
+ * @param <T> The type of the property to retrieve
  */
 class SimplePropertyReaderContext<T> extends PropertyReaderContext<T> {
 
@@ -60,6 +63,9 @@ class SimplePropertyReaderContext<T> extends PropertyReaderContext<T> {
 		}
 		else if ( targetType.isEnum() ) {
 			typedValue = (T) getAsEnum();
+		}
+		else if ( targetType == URL.class ) {
+			typedValue = (T) getAsUrl();
 		}
 		else {
 			throw log.unsupportedPropertyType( getPropertyName(), getConfiguredValue().toString() );
@@ -122,6 +128,65 @@ class SimplePropertyReaderContext<T> extends PropertyReaderContext<T> {
 			catch (IllegalArgumentException e) {
 				throw log.unknownEnumerationValue( getPropertyName(), configuredValue.toString(), Arrays.toString( targetType.getEnumConstants() ) );
 			}
+		}
+	}
+
+	private URL getAsUrl() {
+		Object configuredValue = getConfiguredValue();
+
+		if ( StringHelper.isNullOrEmptyString( configuredValue ) ) {
+			return (URL) getDefaultValue();
+		}
+		else if ( configuredValue instanceof URL ) {
+			return (URL) configuredValue;
+		}
+		else {
+			String stringValue = configuredValue.toString().trim();
+
+			URL resource = getFromClassPath( stringValue );
+
+			if ( resource == null ) {
+				resource = getFromStringUrl( stringValue );
+			}
+			if ( resource == null ) {
+				resource = getFromFileSystemPath( stringValue );
+			}
+			if ( resource == null ) {
+				throw log.invalidConfigurationUrl( getPropertyName(), configuredValue.toString() );
+			}
+
+			return resource;
+		}
+	}
+
+	private URL getFromFileSystemPath(String stringValue) {
+		File file = new File( stringValue );
+
+		if ( !file.exists() ) {
+			return null;
+		}
+		else {
+			try {
+				return file.toURI().toURL();
+			}
+			catch (MalformedURLException e) {
+				// ignore
+				return null;
+			}
+		}
+	}
+
+	private URL getFromClassPath(String stringValue) {
+		return Thread.currentThread().getContextClassLoader().getResource( stringValue );
+	}
+
+	private URL getFromStringUrl(String stringValue) {
+		try {
+			return new URL( stringValue );
+		}
+		catch (MalformedURLException e) {
+			// ignore
+			return null;
 		}
 	}
 }

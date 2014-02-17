@@ -22,7 +22,7 @@ package org.hibernate.ogm.cfg;
 
 /**
  * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
- * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
+ * {@link OgmConfiguration}.
  * <p>
  * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
  * find out the supported configuration properties.
@@ -41,5 +41,5 @@ public interface DocumentStoreProperties extends OgmProperties {
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.
 	 */
-	String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.associations.store";
+	String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.association_storage";
 }

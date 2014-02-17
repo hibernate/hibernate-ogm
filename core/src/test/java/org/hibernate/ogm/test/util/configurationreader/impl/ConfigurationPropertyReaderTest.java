@@ -22,9 +22,14 @@ package org.hibernate.ogm.test.util.configurationreader.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.ElementType;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
@@ -263,6 +268,61 @@ public class ConfigurationPropertyReaderTest {
 	}
 
 	@Test
+	public void shouldRetrieveUrlPropertyGivenAsClassPathResource() throws Exception {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "configuration_resource", "configuration-test.properties" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		URL value = reader.property( "configuration_resource", URL.class ).getValue();
+		assertThat( value ).isNotNull();
+
+		Properties loadedProperties = loadPropertiesFromUrl( value );
+		assertThat( loadedProperties.get( "hibernate.ogm.configuration.testproperty" ) ).isEqualTo( "foobar" );
+	}
+
+	@Test
+	public void shouldRetrieveUrlPropertyGivenAsStringUrl() throws Exception {
+		URL root = ConfigurationPropertyReaderTest.class.getClassLoader().getResource( "." );
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "configuration_resource", root.toExternalForm() + "/configuration-test.properties" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		URL value = reader.property( "configuration_resource", URL.class ).getValue();
+		assertThat( value ).isNotNull();
+
+		Properties loadedProperties = loadPropertiesFromUrl( value );
+		assertThat( loadedProperties.get( "hibernate.ogm.configuration.testproperty" ) ).isEqualTo( "foobar" );
+	}
+
+	@Test
+	public void shouldRetrieveUrlPropertyGivenAsFileSystemPath() throws Exception {
+		File root = new File( ConfigurationPropertyReaderTest.class.getClassLoader().getResource( "." ).toURI() );
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "configuration_resource", root + File.separator + "configuration-test.properties" );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		URL value = reader.property( "configuration_resource", URL.class ).getValue();
+		assertThat( value ).isNotNull();
+
+		Properties loadedProperties = loadPropertiesFromUrl( value );
+		assertThat( loadedProperties.get( "hibernate.ogm.configuration.testproperty" ) ).isEqualTo( "foobar" );
+	}
+
+	@Test
+	public void shouldRetrieveUrlPropertyGivenAsUrl() throws Exception {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "configuration_resource", new URL( "file://foobar/" ) );
+
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+
+		URL value = reader.property( "configuration_resource", URL.class ).getValue();
+		assertThat( value ).isEqualTo( new URL( "file://foobar/" ) );
+	}
+
+	@Test
 	public void shouldRaiseExceptionDueToMissingRequiredProperty() {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
@@ -289,6 +349,22 @@ public class ConfigurationPropertyReaderTest {
 		reader.property( "myPort", int.class )
 				.withValidator( Validators.PORT )
 				.getValue();
+	}
+
+	private Properties loadPropertiesFromUrl(URL value) throws IOException {
+		Properties properties = new Properties();
+		InputStream stream = null;
+
+		try {
+			stream = value.openStream();
+			properties.load( stream );
+		}
+		finally {
+			if ( stream != null ) {
+				stream.close();
+			}
+		}
+		return properties;
 	}
 
 	private interface MyService {

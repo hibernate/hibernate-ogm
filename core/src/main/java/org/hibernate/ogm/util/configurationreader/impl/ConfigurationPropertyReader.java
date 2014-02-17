@@ -30,8 +30,9 @@ import org.hibernate.cfg.Configuration;
  * <p>
  * Values can be given in two ways:
  * <ul>
- * <li>as literal value e.g. a {@code String}, {@code int} or {@code enum}. These values can either be specified as
- * instance of the target type or as String which can be converted into the target type.</li>
+ * <li>as literal value e.g. a {@code String}, {@code int}, {@code enum} or {@code java.net.URL}. These values can
+ * either be specified as instance of the target type or as String which can be converted into the target type (in case
+ * of URLs this string can either represent a class path element, an URL or a file system path).</li>
  * <li>as an implementation type of the target type. In this case, values can be specified in the following
  * representations:
  * <ul>

@@ -34,14 +34,14 @@ public final class InfinispanProperties implements OgmProperties {
 	/**
 	 * The configuration property to use as key to define a custom configuration for Infinispan.
 	 */
-	public static final String CONFIGURATION_RESOURCENAME = "hibernate.ogm.infinispan.configuration_resourcename";
+	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.infinispan.configuration_resource_name";
 
 	/**
 	 * The key for the configuration property to define the JNDI name of the cache manager. If this property is defined,
 	 * the cache manager will be looked up via JNDI. JNDI properties passed in the form <tt>hibernate.jndi.*</tt> are
 	 * used to define the context properties.
 	 */
-	public static final String CACHE_MANAGER_RESOURCE_PROP = "hibernate.ogm.infinispan.cachemanager_jndiname";
+	public static final String CACHE_MANAGER_JNDI_NAME = "hibernate.ogm.infinispan.cachemanager_jndi_name";
 
 	private InfinispanProperties() {
 	}

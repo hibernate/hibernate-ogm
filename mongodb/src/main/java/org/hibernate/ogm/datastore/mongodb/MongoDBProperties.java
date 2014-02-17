@@ -36,7 +36,7 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 *
 	 * @see com.mongodb.WriteConcern
 	 */
-	public static final String WRITE_CONCERN = "hibernate.ogm.mongodb.writeconcern";
+	public static final String WRITE_CONCERN = "hibernate.ogm.mongodb.write_concern";
 
 	/**
 	 * The timeout used at the connection to the MongoDB instance. This value is set in milliseconds.
@@ -51,7 +51,7 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 * representations of its constants. Defaults to
 	 * {@link org.hibernate.ogm.options.generic.document.AssociationStorageType#GLOBAL_COLLECTION}.
 	 */
-	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.associationdocumentstorage";
+	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.association_document_storage";
 
 	private MongoDBProperties() {
 	}

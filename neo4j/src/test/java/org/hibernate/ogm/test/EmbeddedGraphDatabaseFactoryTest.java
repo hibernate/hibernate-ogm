@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.fest.util.Files;
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.EmbeddedGraphDatabaseFactory;
 import org.hibernate.ogm.test.utils.Neo4jTestHelper;
@@ -56,7 +57,7 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().toExternalForm() );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().toExternalForm() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
@@ -66,17 +67,17 @@ public class EmbeddedGraphDatabaseFactoryTest {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, neo4jPropertiesUrl().getFile() );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, neo4jPropertiesUrl().getFile() );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = HibernateException.class)
 	public void testLoadMalformedPropertiesLocation() throws Exception {
 		EmbeddedGraphDatabaseFactory factory = new EmbeddedGraphDatabaseFactory();
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		properties.put( Neo4jProperties.CONFIGURATION_LOCATION, "aKDJSAGFKJAFLASFlaLfsfaf" );
+		properties.put( Neo4jProperties.CONFIGURATION_RESOURCE_NAME, "aKDJSAGFKJAFLASFlaLfsfaf" );
 		factory.initialize( properties );
 		factory.create().shutdown();
 	}

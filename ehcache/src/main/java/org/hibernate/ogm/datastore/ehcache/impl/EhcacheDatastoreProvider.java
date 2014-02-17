@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.datastore.ehcache.impl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
 
@@ -53,11 +51,6 @@ import org.hibernate.service.spi.Stoppable;
 public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
 
-	/**
-	 * Name of the default Ehcache configuration file
-	 */
-	private static final String DEFAULT_CONFIG = "/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml";
-
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
 	private final EhcacheConfiguration config = new EhcacheConfiguration();
@@ -84,27 +77,14 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void start() {
-		final String configUrl = this.config.getUrl();
-		final URL url;
-		if ( configUrl != null ) {
-			try {
-				url = new URL( configUrl );
-			}
-			catch ( MalformedURLException e ) {
-				throw new RuntimeException( e );
-			}
-		}
-		else {
-			url = this.getClass().getResource( DEFAULT_CONFIG );
-		}
-		final Configuration configuration = ConfigurationFactory.parseConfiguration( url );
+		final Configuration configuration = ConfigurationFactory.parseConfiguration( config.getUrl() );
 		if ( jtaPlatform != null ) {
 			OgmTransactionManagerLookupDelegate.transactionManager = jtaPlatform.retrieveTransactionManager();
 			final FactoryConfiguration transactionManagerLookupParameter = new FactoryConfiguration();
 			transactionManagerLookupParameter.setClass( OgmTransactionManagerLookupDelegate.class.getName() );
 			configuration.addTransactionManagerLookup( transactionManagerLookupParameter );
 		}
-		cacheManager = CacheManager.create( url );
+		cacheManager = CacheManager.create( config.getUrl() );
 	}
 
 	@Override

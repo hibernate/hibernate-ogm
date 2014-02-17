@@ -20,12 +20,13 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl.configuration;
 
+import java.net.URL;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}.
@@ -38,19 +39,19 @@ public class InfinispanConfiguration {
 
 	private static final String INFINISPAN_DEFAULT_CONFIG = "org/hibernate/ogm/datastore/infinispan/default-config.xml";
 
-	private String configName;
+	private URL configUrl;
 	private String jndi;
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CONFIGURATION_RESOURCENAME
-	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
+	 * @see InfinispanProperties#CONFIGURATION_RESOURCE_NAME
+	 * @return an URL identifying an Infinispan configuration file
 	 */
-	public String getConfigurationName() {
-		return configName;
+	public URL getConfigurationUrl() {
+		return configUrl;
 	}
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_RESOURCE_PROP
+	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_JNDI_NAME
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
 	public String getJndiName() {
@@ -64,13 +65,17 @@ public class InfinispanConfiguration {
 	 *            The values to use as configuration
 	 */
 	public void initConfiguration(Map configurationMap) {
-		this.jndi = (String) configurationMap.get( InfinispanProperties.CACHE_MANAGER_RESOURCE_PROP );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationMap );
 
-		this.configName = (String) configurationMap.get( InfinispanProperties.CONFIGURATION_RESOURCENAME );
-		if ( StringHelper.isEmpty( configName ) ) {
-			this.configName = INFINISPAN_DEFAULT_CONFIG;
-		}
+		this.configUrl = propertyReader
+				.property( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, URL.class )
+				.withDefault( InfinispanConfiguration.class.getClassLoader().getResource( INFINISPAN_DEFAULT_CONFIG ) )
+				.getValue();
 
-		log.tracef( "Initializing Infinispan from configuration file at %1$s", configName );
+		this.jndi = propertyReader
+				.property( InfinispanProperties.CACHE_MANAGER_JNDI_NAME, String.class )
+				.getValue();
+
+		log.tracef( "Initializing Infinispan from configuration file at %1$s", configUrl );
 	}
 }

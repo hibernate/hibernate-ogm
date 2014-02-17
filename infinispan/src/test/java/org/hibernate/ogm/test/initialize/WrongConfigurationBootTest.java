@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,18 +20,16 @@
  */
 package org.hibernate.ogm.test.initialize;
 
-import java.io.FileNotFoundException;
-
 import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.test.utils.InfinispanTestHelper;
+import org.junit.Rule;
 import org.junit.Test;
-
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import org.junit.rules.ExpectedException;
 
 /**
  * Verify we provide useful information in case Infinispan is not starting correctly.
@@ -40,6 +38,9 @@ import static junit.framework.Assert.fail;
  */
 public class WrongConfigurationBootTest {
 
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
 	@Test
 	public void testSimpleInfinispanInitialization() {
 		tryBoot( "infinispan-local.xml" );
@@ -47,18 +48,10 @@ public class WrongConfigurationBootTest {
 
 	@Test
 	public void testIllegalInfinispanConfigurationReported() {
-		try {
-			tryBoot( "does-not-exist-configuration-file.xml" );
-			fail( "should have thrown an exception" );
-		}
-		catch ( HibernateException he ) {
-			assertTrue( he.getMessage().contains( "Unable to find or initialize Infinispan CacheManager" ) );
-			Throwable cause = he.getCause();
-			assertTrue( cause.getMessage().contains( "Could not start Infinispan CacheManager using as configuration file: does-not-exist-configuration-file.xml" ) );
-			Throwable originalCause = cause.getCause();
-			assertTrue( originalCause.getMessage().contains( "does-not-exist-configuration-file.xml" ) );
-			assertEquals( FileNotFoundException.class, originalCause.getClass() );
-		}
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "Invalid URL given for configuration property '" + InfinispanProperties.CONFIGURATION_RESOURCE_NAME + "': does-not-exist-configuration-file.xml; The specified resource could not be found." );
+
+		tryBoot( "does-not-exist-configuration-file.xml" );
 	}
 
 	/**
@@ -67,8 +60,8 @@ public class WrongConfigurationBootTest {
 	 */
 	private void tryBoot(String configurationResourceName) {
 		Configuration cfg = new OgmConfiguration();
-		cfg.setProperty( "hibernate.ogm.datastore.provider", "infinispan" );
-		cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", configurationResourceName );
+		cfg.setProperty( OgmProperties.DATASTORE_PROVIDER, "infinispan" );
+		cfg.setProperty( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, configurationResourceName );
 		SessionFactory sessionFactory = cfg.buildSessionFactory();
 		if ( sessionFactory != null ) {
 			try {

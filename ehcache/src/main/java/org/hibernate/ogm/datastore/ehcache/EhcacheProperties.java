@@ -34,7 +34,7 @@ public final class EhcacheProperties implements OgmProperties {
 	/**
 	 * Configuration property for specifying the name of the Ehcache configuration file
 	 */
-	public static final String RESOURCE_NAME = "hibernate.ogm.ehcache.configuration_resourcename";
+	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.ehcache.configuration_resource_name";
 
 	private EhcacheProperties() {
 	}
