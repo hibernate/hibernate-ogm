@@ -96,6 +96,12 @@
     </dependencies>
 
     <build>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -119,12 +125,16 @@
 
     <profiles>
         <profile>
-            <id>test</id>
+            <id>skip-couchdb-integration-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: COUCHDB_HOSTNAME -->
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <property>
+                    <name>!env.COUCHDB_HOSTNAME</name>
+                </property>
             </activation>
             <properties>
-                <skipUnitTests>false</skipUnitTests>
+                <skipUnitTests>true</skipUnitTests>
             </properties>
         </profile>
     </profiles>

@@ -23,6 +23,8 @@ package org.hibernate.ogm.datastore.couchdb.test.dialect;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.environmentProperties;
+import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
@@ -58,6 +60,10 @@ public class CouchDBDialectTest {
 
 	private final CouchDBDatastoreProvider datastoreProvider = new CouchDBDatastoreProvider();
 	private CouchDBDialect dialect;
+
+	static {
+		initEnvironmentProperties();
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -177,6 +183,7 @@ public class CouchDBDialectTest {
 
 	private void createDataStoreProvider() throws Exception {
 		Properties properties = new Properties();
+		properties.putAll( environmentProperties() );
 		properties.load( CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
 		datastoreProvider.configure( properties );
 		datastoreProvider.start();
