@@ -34,7 +34,7 @@ public class AssociationKeyMetadata {
 	private final int hashCode;
 
 	//role and entity key are not part of the object identity
-	private transient String[] rowKeyColumnNames;
+	private String[] rowKeyColumnNames;
 
 	public AssociationKeyMetadata(String table, String[] columnNames) {
 		this.table = table;
