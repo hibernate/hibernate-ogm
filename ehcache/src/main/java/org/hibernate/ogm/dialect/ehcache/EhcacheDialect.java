@@ -108,6 +108,7 @@ public class EhcacheDialect implements GridDialect {
 		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
 		final HashMap<String, Object> tuple = new HashMap<String, Object>();
 		entityCache.put( new Element( new SerializableKey( key ), tuple ) );
+
 		return new Tuple( new MapTupleSnapshot( tuple ) );
 	}
 
@@ -115,6 +116,9 @@ public class EhcacheDialect implements GridDialect {
 	public void updateTuple(Tuple tuple, EntityKey key) {
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+
+		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
+		entityCache.put( new Element( new SerializableKey( key ), entityRecord ) );
 	}
 
 	@Override
@@ -126,6 +130,7 @@ public class EhcacheDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		final Cache<SerializableKey> associationCache = datastoreProvider.getAssociationCache();
 		final Element element = associationCache.get( new SerializableKey( key ) );
+
 		if ( element == null ) {
 			return null;
 		}
@@ -146,21 +151,24 @@ public class EhcacheDialect implements GridDialect {
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
-		Map<SerializableKey, Map<String, Object>> map = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
+		Map<SerializableKey, Map<String, Object>> associationRows = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 
 		for ( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
 				case CLEAR:
-					map.clear();
+					associationRows.clear();
 				case PUT_NULL:
 				case PUT:
-					map.put( new SerializableKey( action.getKey() ), MapHelpers.tupleToMap( action.getValue() ) );
+					associationRows.put( new SerializableKey( action.getKey() ), MapHelpers.tupleToMap( action.getValue() ) );
 					break;
 				case REMOVE:
-					map.remove( new SerializableKey( action.getKey() ) );
+					associationRows.remove( new SerializableKey( action.getKey() ) );
 					break;
 			}
 		}
+
+		final Cache<SerializableKey> associationCache = datastoreProvider.getAssociationCache();
+		associationCache.put( new Element( new SerializableKey( key ), associationRows ) );
 	}
 
 	@Override
