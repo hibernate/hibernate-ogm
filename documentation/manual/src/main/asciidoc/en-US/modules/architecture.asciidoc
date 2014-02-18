@@ -65,6 +65,8 @@ As of today, we have implemented four datastore providers:
 * an Infinispan based datastore provider to persist your entities in Infinispan
 * a Ehcache based datastore provider to persist your entities in Ehcache
 * a MongoDB based datastore provider to persist data in a MongoDB database
+* a Neo4j based datastore provider to persist data in the Neo4j graph database
+* a CouchDB based datastore provider to persist data in the CouchDB document store
 
 
 To implement JP-QL queries, Hibernate OGM parses the JP-QL string

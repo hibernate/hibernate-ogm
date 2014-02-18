@@ -32,6 +32,13 @@
          <shortaffil>Red Hat</shortaffil>
       </affiliation>
    </author>
+   <author>
+      <firstname>Gunnar</firstname>
+      <surname>Morling</surname>
+      <affiliation>
+         <shortaffil>Red Hat</shortaffil>
+      </affiliation>
+   </author>
    <collab>
      <collabname>Guillaume Scheibel</collabname>
    </collab>
