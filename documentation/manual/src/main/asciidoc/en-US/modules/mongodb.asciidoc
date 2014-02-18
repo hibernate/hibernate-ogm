@@ -15,16 +15,18 @@ The following properties are available to configure MongoDB support:
 .MongoDB datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use MongoDB as a datastore provider, this property must be set to +mongodb+
-hibernate.ogm.mongodb.host::
-The hostname of the mongodb instance. The default value is +127.0.0.1+.
-hibernate.ogm.mongodb.port::
-The port used by the mongodb instance. The default value is +27017+
-hibernate.ogm.mongodb.database::
+hibernate.ogm.option.configurer::
+The fully-qualified class name or an instance of a programmatic option configurer (see <<ogm-mongodb-programmatic-configuration>>)
+hibernate.ogm.datastore.host::
+The hostname of the MongoDB instance. The default value is +127.0.0.1+.
+hibernate.ogm.datastore.port::
+The port used by the MongoDB instance. The default value is +27017+.
+hibernate.ogm.datastore.database::
 The database to connect to. This property has no default value.
-hibernate.ogm.mongodb.username::
+hibernate.ogm.datastore.username::
 The username used when connecting to the MongoDB server.
 This property has no default value.
-hibernate.ogm.mongodb.password::
+hibernate.ogm.datastore.password::
 The password used to connect to the MongoDB server.
 This property has no default value.
 This property is ignored if the username isn't specified.
@@ -33,21 +35,133 @@ Defines the timeout used by the driver
 when the connection to the MongoDB instance is initiated.
 This configuration is expressed in milliseconds.
 The default value is +5000+.
-hibernate.ogm.mongodb.associations.store::
-Defines the way OGM stores association information.
-There are three strategies to store association information.
-+GLOBAL_COLLECTION+ stores the association information in a unique MongoDB collection for all associations.
-+COLLECTION+ stores the association in a dedicated MongoDB collection per association.
-+IN_ENTITY+ stores association information from within the entity.
-+IN_ENTITY+  is the default.
-hibernate.ogm.mongodb.writeconcern::
-Possible values are +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+,
+hibernate.ogm.datastore.document.association_storage::
+Defines the way OGM stores association information in MongoDB.
+The following two strategies exist (values of the +org.hibernate.ogm.options.generic.document.AssociationStorageType+ enum):
++IN_ENTITY+ (store association information within the entity) and
++ASSOCIATION_DOCUMENT+ (store association information in a dedicated document per association).
++IN_ENTITY+ is the default.
+hibernate.ogm.mongodb.association_document_storage::
+Defines how to store assocation documents (applies only if the +ASSOCIATION_DOCUMENT+
+association storage strategy is used).
+Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType+ enum):
+* +GLOBAL_COLLECTION+ (default): stores the association information in a unique MongoDB collection for all associations
+* +COLLECTION_PER_ASSOCIATION+ stores the association in a dedicated MongoDB collection per association
+hibernate.ogm.mongodb.write_concern::
+Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
+Possible settings are (values of the +com.mongodb.WriteConcern+ enum): +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+,
 +FSYNCED+, +JOURNALED+, +NONE+, +NORMAL+, +SAFE+, +MAJORITY+, +FSYNC_SAFE+,
 +JOURNAL_SAFE+, +REPLICAS_SAFE+.
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
 This option is case insensitive and the default value is +ACKNOWLEDGED+.
 
+[NOTE]
+====
+When bootstrapping a session factory or entity manager factory programmatically,
+you should use the constants declared on +MongoDBProperties+ and +OgmProperties+
+when specifying the configuration properties listed above.
+====
+
+[[ogm-mongodb-annotation-configuration]]
+===== Annotation based configuration
+
+Hibernate OGM allows to configure store-specific options via Java annotations.
+When working with the MongoDB backend, you can specify how associations should be stored
+using the +AssociationStorage+ and +AssociationDocumentStorage+ annotations
+(refer to <<ogm-mongodb-storage-prinicples>> to learn more about these options).
+
+The following shows an example:
+
+.Configuring the association storage strategy using annotations
+====
+[source, JAVA]
+----
+@Entity
+@AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
+@AssociationDocumentStorage(AssociationDocumentType.COLLECTION_PER_ASSOCIATION)
+public class Zoo {
+
+    @OneToMany
+    private Set<Animal> animals;
+
+    @OneToMany
+    private Set<Person> employees;
+
+    @OneToMany
+    @AssociationStorage(AssociationStorageType.IN_ENTITY)
+    private Set<Person> visitors;
+
+    //...
+}
+----
+====
+
+The annotations on the entity level express that all associations of the +Zoo+
+class should be stored in separate assocation documents, using a dedicated collection per association.
+This setting applies to the +animals+ and +employees+ associations.
+Only the elements of the +visitors+ association will be stored in the document of the corresponding +Zoo+ entity
+as per the configuration of that specific property which takes precedence over the entity-level configuration.
+
+[[ogm-mongodb-programmatic-configuration]]
+===== Programmatic configuration
+
+In addition to the annotation mechanism,
+Hibernate OGM also provides a programmatic API for applying store-specific configuration options.
+This can be useful if you can't modify certain entity types or
+don't want to add store-specific configuration annotations to them.
+The API allows set options in a type-safe fashion on the global, entity and property levels.
+
+When working with MongoDB, you can currently configure the following options using the API:
+
+* write concern (on the global level)
+* association storage strategy (on the global, entity and property level)
+* association document storage strategy (on the global, entity and property level)
+
+To set these options via the API, you need to create an +OptionConfigurer+ implementation
+as shown in the following example:
+
+.Example of an option configurer
+====
+[source, JAVA]
+----
+public class MyOptionConfigurer extends OptionConfigurer {
+
+    @Override
+    public void configure(Configurable configurable) {
+        configurable.configureOptionsFor( MongoDB.class )
+            .writeConcern( WriteConcernType.JOURNALED )
+            .entity( Zoo.class )
+                .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+                .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
+                .property( "animals", ElementType.FIELD )
+                    .associationStorage( AssociationStorageType.IN_ENTITY )
+            .entity( Animal.class )
+                .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+    }
+}
+----
+====
+
+The call to +configureOptionsFor()+, passing the store-specific identifier type +MongoDB+,
+provides the entry point into the API. Following the fluent API pattern, you then can configure
+global options and navigate to single entities or properties to apply options specific to these.
+
+Options given on the property level precede entity-level options. So e.g. the +animals+ association of the +Zoo+
+class would be stored using the in-entity strategy, while all other associations of the +Zoo+ entity would
+be stored using separate association documents.
+
+Similarly, entity-level options take precedence over options given on the global level.
+Global-level options specified via the API complement the settings given via configuration properties.
+In case a setting is given via a configuration property and the API at the same time,
+the latter takes precedence.
+
+To register an option configurer, specify its name using the +hibernate.ogm.option.configurer+ property.
+When bootstrapping a session factory or entity manager factory programmatically,
+you also can pass in an +OptionConfigurer+ instance or the class object representing the configurer type.
+
+
+[[ogm-mongodb-storage-prinicples]]
 ==== Storage principles
 
 Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
@@ -61,8 +175,8 @@ and the MongoDB documents.
 
 Entities are stored as MongoDB documents and not as BLOBs
 which means each entity property will be translated into a document field.
-You can use the name property of [classname]+@Table+ and [classname]+@Column+ annotation
-to rename the collections and the document's field if you need to.
+You can use the name property of the [classname]+@Table+ and [classname]+@Column+ annotations
+to rename the collections and the document's fields if you need to.
 
 Note that embedded objects are mapped as nested documents.
 
@@ -124,6 +238,7 @@ Let's look at an example:
 ----
 @Entity
 public class News {
+
     @EmbeddedId
     private NewsID newsId;
     //getters, setters ...
@@ -131,6 +246,7 @@ public class News {
 
 @Embeddable
 public class NewsID implements Serializable {
+
     private String title;
     private String author;
     //getters, setters ...
@@ -150,14 +266,18 @@ public class NewsID implements Serializable {
 
 ===== Associations
 
-Hibernate OGM MongoDB proposes 3 strategies to store navigation information for associations.
-To switch between each of these strategies,
-use the +hibernate.ogm.mongodb.associations.store+ configuration property.
-The three possible values are:
+Hibernate OGM MongoDB proposes three strategies to store navigation information for associations.
+To switch between these strategies,
+either use the +@AssocationStorage+ and +@AssociationDocumentStorage+ annotations (see <<ogm-mongodb-annotation-configuration>>),
+the API for programmatic configuration (see <<ogm-mongodb-programmatic-configuration>>) or
+specify a default strategy via the +hibernate.ogm.datastore.document.association_storage+ and
++hibernate.ogm.mongodb.association_document_storage+ configuration properties.
+
+The three possible strategies are:
 
 * IN_ENTITY (default)
-* GLOBAL_COLLECTION
-* COLLECTION
+* ASSOCIATION_DOCUMENT, using a global collection for all associations
+* ASSOCIATION_DOCUMENT, using a dedicated collection for each association
 
 ====== In Entity strategy
 
@@ -173,13 +293,15 @@ The field that stores the relationship information is named like the entity prop
 ----
 @Entity
 public class AccountOwner {
-@Id
-private String id;
 
-@ManyToMany
-public Set<BankAccount> bankAccounts;
+    @Id
+    private String id;
 
-//getters, setters, ...
+    @ManyToMany
+    public Set<BankAccount> bankAccounts;
+
+    //getters, setters, ...
+}
 ----
 ====
 
@@ -299,7 +421,7 @@ Each document of an association collection has the following structure:
 
 ==== Transactions
 
-MongoDB does not support transaction.
+MongoDB does not support transactions.
 Only changes applied to the same document are done atomically.
 A change applied to more than one document will not be applied atomically.
 This problem is slightly mitigated by the fact that Hibernate OGM queues all changes
@@ -312,10 +434,16 @@ But do not consider rollback as a possibility, this won't work.
 
 ==== Queries
 
-Hibernate OGM is a work in progress
-and we are actively working on JP-QL query support.
+Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
+when using the JP-QL query support. This includes:
 
-In the mean time, you have two strategies to query entities stored by Hibernate OGM:
+* simple comparisons using "<", "<=", "=", ">=" and ">"
+* +IS NULL+ and +IS NOT NULL+
+* the boolean operators +AND+, +OR+, +NOT+
+* +LIKE+, +IN+ and +BETWEEN+
+
+Queries using these constructs will be transformed into equivalent native MongoDB queries.
+In cases where this is not enough, you have two additional strategies to query entities stored by Hibernate OGM:
 
 * use native MongoDB queries
 * use Hibernate Search
@@ -334,4 +462,3 @@ The benefit of this approach is an nice integration at the JPA / Hibernate API l
 The drawback is that you need to store the Lucene indexes somewhere
 (file system, infinispan grid etc).
 Have a look at the Infinispan section for more info on how to use Hibernate Search.
-
