@@ -24,8 +24,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.datastore.mongodb.options.mapping.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;

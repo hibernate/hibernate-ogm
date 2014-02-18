@@ -18,37 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.options.mapping.impl;
+package org.hibernate.ogm.datastore.couchdb.options.context.impl;
 
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
-import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
-import org.hibernate.ogm.datastore.mongodb.options.mapping.MongoDBEntityContext;
-import org.hibernate.ogm.datastore.mongodb.options.mapping.MongoDBPropertyContext;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
+import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBEntityContext;
+import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.document.DocumentStorePropertyContextImpl;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * Converts CouchDB property-level options.
+ *
  * @author Gunnar Morling
  */
-public abstract class MongoDBPropertyContextImpl extends DocumentStorePropertyContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements
-		MongoDBPropertyContext {
+public abstract class CouchDBPropertyContextImpl extends DocumentStorePropertyContextImpl<CouchDBEntityContext, CouchDBPropertyContext> implements CouchDBPropertyContext {
 
-	public MongoDBPropertyContextImpl(ConfigurationContext context) {
+	public CouchDBPropertyContextImpl(ConfigurationContext context) {
 		super( context );
-	}
-
-	@Override
-	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption(), storage );
-		return this;
-	}
-
-	@Override
-	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
-		addPropertyOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
-		return this;
 	}
 }

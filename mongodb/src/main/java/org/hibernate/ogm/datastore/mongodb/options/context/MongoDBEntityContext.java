@@ -18,26 +18,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.options.mapping;
+package org.hibernate.ogm.datastore.mongodb.options.context;
 
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
-import org.hibernate.ogm.options.navigation.document.DocumentStorePropertyContext;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
 
 /**
- * Allows to configure MongoDB-specific options for a single property.
+ * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
+ * entities or properties.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public interface MongoDBPropertyContext extends DocumentStorePropertyContext<MongoDBEntityContext, MongoDBPropertyContext> {
+public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {
+
+	MongoDBEntityContext writeConcern(WriteConcernType concern);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is
 	 * set to {@link org.hibernate.ogm.options.generic.document.AssociationStorageType#ASSOCIATION_DOCUMENT}.
 	 *
-	 * @param associationDocumentStorage the association document type to be used; overrides any settings on the entity
-	 * or global level
+	 * @param associationDocumentStorage the association document type to be used when not configured the property level
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage);
+	MongoDBEntityContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage);
 }

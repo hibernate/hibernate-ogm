@@ -18,22 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.couchdb.options.mapping.impl;
+package org.hibernate.ogm.datastore.couchdb.options.context;
 
-import org.hibernate.ogm.datastore.couchdb.options.mapping.CouchDBEntityContext;
-import org.hibernate.ogm.datastore.couchdb.options.mapping.CouchDBPropertyContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.document.DocumentStoreEntityContextImpl;
+import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
 
 /**
- * Converts CouchDB entity-level options.
+ * Allows to configure CouchDB-specific options applying on a per-entity level. These options can be overridden for
+ * single properties.
  *
  * @author Gunnar Morling
  */
-public abstract class CouchDBEntityContextImpl extends DocumentStoreEntityContextImpl<CouchDBEntityContext, CouchDBPropertyContext> implements
-		CouchDBEntityContext {
-
-	public CouchDBEntityContextImpl(ConfigurationContext context) {
-		super( context );
-	}
+public interface CouchDBEntityContext extends DocumentStoreEntityContext<CouchDBEntityContext, CouchDBPropertyContext> {
 }

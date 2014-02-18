@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.options.mapping.impl;
+package org.hibernate.ogm.datastore.mongodb.options.context.impl;
 
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBEntityContext;
+import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.datastore.mongodb.options.mapping.MongoDBEntityContext;
-import org.hibernate.ogm.datastore.mongodb.options.mapping.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.document.DocumentStoreGlobalContextImpl;
 

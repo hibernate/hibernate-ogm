@@ -18,24 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
+package org.hibernate.ogm.datastore.couchdb.options.context;
 
-import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBEntityContextImpl;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBGlobalContextImpl;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBPropertyContextImpl;
-import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.document.DocumentStorePropertyContext;
 
 /**
- * Allows to configure options specific to the MongoDB document data store.
+ * Allows to configure CouchDB-specific options applying on a per-entity level.
  *
  * @author Gunnar Morling
  */
-public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext> {
-
-	@Override
-	public MongoDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
-		return context.createGlobalContext( MongoDBGlobalContextImpl.class, MongoDBEntityContextImpl.class, MongoDBPropertyContextImpl.class );
-	}
+public interface CouchDBPropertyContext extends DocumentStorePropertyContext<CouchDBEntityContext, CouchDBPropertyContext> {
 }
