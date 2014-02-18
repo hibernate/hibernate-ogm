@@ -65,6 +65,27 @@ public class CouchDBTestHelper implements TestableGridDialect {
 
 	private static final Log logger = LoggerFactory.getLogger();
 
+	static {
+		initEnvironmentProperties();
+	}
+
+	public static void initEnvironmentProperties() {
+		// Read host and port from environment variable
+		// Maven's surefire plugin set it to the string 'null'
+		String couchdbHostName = System.getenv( "COUCHDB_HOSTNAME" );
+		if ( isNotNull( couchdbHostName ) ) {
+			System.getProperties().setProperty( OgmProperties.HOST, couchdbHostName );
+		}
+		String couchdbPort = System.getenv( "COUCHDB_PORT" );
+		if ( isNotNull( couchdbPort ) ) {
+			System.getProperties().setProperty( OgmProperties.PORT, couchdbPort );
+		}
+	}
+
+	private static boolean isNotNull(String couchdbHostName) {
+		return couchdbHostName != null && couchdbHostName.length() > 0 && ! "null".equals( couchdbHostName );
+	}
+
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
 		return getNumberOfEntities( getDataStore( sessionFactory ) );
@@ -198,6 +219,10 @@ public class CouchDBTestHelper implements TestableGridDialect {
 
 	@Override
 	public Map<String, String> getEnvironmentProperties() {
+		return environmentProperties();
+	}
+
+	public static Map<String, String> environmentProperties() {
 		Map<String, String> envProps = new HashMap<String, String>( 2 );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.HOST, envProps );
 		copyFromSystemPropertiesToLocalEnvironment( OgmProperties.PORT, envProps );
@@ -208,7 +233,7 @@ public class CouchDBTestHelper implements TestableGridDialect {
 		return envProps;
 	}
 
-	private void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
+	private static void copyFromSystemPropertiesToLocalEnvironment(String environmentVariableName, Map<String, String> envProps) {
 		String value = System.getProperties().getProperty( environmentVariableName );
 		if ( value != null && value.length() > 0 ) {
 			envProps.put( environmentVariableName, value );

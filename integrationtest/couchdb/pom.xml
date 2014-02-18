@@ -29,9 +29,6 @@
                 <artifactId>maven-deploy-plugin</artifactId>
             </plugin>
             <plugin>
-                <artifactId>maven-failsafe-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
             </plugin>
         </plugins>
@@ -50,4 +47,24 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>run-couchdb-wildfly-tests</id>
+            <!-- To run the tests you need to define the 
+                environment property: COUCHDB_HOSTNAME -->
+            <activation>
+                <property>
+                    <name>env.COUCHDB_HOSTNAME</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

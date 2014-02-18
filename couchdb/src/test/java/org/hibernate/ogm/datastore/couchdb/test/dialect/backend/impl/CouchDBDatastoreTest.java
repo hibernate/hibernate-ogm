@@ -22,6 +22,8 @@ package org.hibernate.ogm.datastore.couchdb.test.dialect.backend.impl;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.environmentProperties;
+import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -52,6 +54,10 @@ public class CouchDBDatastoreTest {
 	private CouchDBDatastore dataStore;
 	private Properties properties;
 	private boolean dataBaseDropped;
+
+	static {
+		initEnvironmentProperties();
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -147,6 +153,7 @@ public class CouchDBDatastoreTest {
 
 	private void loadProperties() throws IOException {
 		properties = new Properties();
+		properties.putAll( environmentProperties() );
 		properties.load( CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
 	}
 
