@@ -192,6 +192,9 @@ public class BatchExecutionTest extends OgmTestCase {
 			return null;
 		}
 
+		@Override
+		public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+			return false;
+		}
 	}
-
 }

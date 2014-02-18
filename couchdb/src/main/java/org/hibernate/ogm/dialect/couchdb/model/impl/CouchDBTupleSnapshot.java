@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.dialect.couchdb.model.impl;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -29,21 +28,23 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * Fundamentally a {@link org.hibernate.ogm.datastore.impl.MapTupleSnapshot}
- * except that the {@link org.hibernate.ogm.grid.EntityKey} column names and values
- * are copied.
+ * A {@link TupleSnapshot} based on the properties of a CouchDB
+ * {@link org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument}.
+ * <p>
+ * Fundamentally a {@link org.hibernate.ogm.datastore.impl.MapTupleSnapshot} except that the
+ * {@link org.hibernate.ogm.grid.EntityKey} column names and values are copied.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 public class CouchDBTupleSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
-
-	public CouchDBTupleSnapshot() {
-		this.properties = Collections.emptyMap();
-	}
+	private final boolean createdOnInsert;
 
 	public CouchDBTupleSnapshot(EntityKey key) {
+		createdOnInsert = true;
+
 		properties = new HashMap<String, Object>();
 		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
 			properties.put( key.getColumnNames()[i], key.getColumnValues()[i] );
@@ -51,6 +52,7 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	}
 
 	public CouchDBTupleSnapshot(Map<String, Object> properties) {
+		createdOnInsert = false;
 		this.properties = properties;
 	}
 
@@ -67,5 +69,15 @@ public class CouchDBTupleSnapshot implements TupleSnapshot {
 	@Override
 	public Set<String> getColumnNames() {
 		return properties.keySet();
+	}
+
+	/**
+	 * Whether this snapshot has been created during an insert or not.
+	 *
+	 * @return {@code true} if the snapshot has been created during an insert, {@code false} if it has been created
+	 * during an update.
+	 */
+	public boolean isCreatedOnInsert() {
+		return createdOnInsert;
 	}
 }

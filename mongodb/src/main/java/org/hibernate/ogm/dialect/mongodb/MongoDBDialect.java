@@ -20,9 +20,9 @@
  */
 package org.hibernate.ogm.dialect.mongodb;
 
-import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
 import static org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.dialect.mongodb.MongoHelpers.addEmptyAssociationField;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -139,7 +139,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		if ( found != null ) {
-			return new Tuple( new MongoDBTupleSnapshot( (BasicDBObject) found, key, UPDATE ) );
+			return new Tuple( new MongoDBTupleSnapshot( found, key, UPDATE ) );
 		}
 		else if ( isInTheQueue( key, tupleContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
@@ -544,6 +544,12 @@ public class MongoDBDialect implements BatchableGridDialect {
 		else {
 			throw new HibernateException( "Cannot increment a non numeric field" );
 		}
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, associationContext );
+		return storageStrategy.isEmbeddedInEntity();
 	}
 
 	@Override

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -138,6 +138,11 @@ public class Neo4jDialect implements GridDialect {
 		for ( AssociationOperation action : association.getOperations() ) {
 			applyAssociationOperation( key, action, associationContext );
 		}
+	}
+
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return false;
 	}
 
 	@Override

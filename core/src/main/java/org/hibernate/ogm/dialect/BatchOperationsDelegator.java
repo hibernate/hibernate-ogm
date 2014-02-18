@@ -188,4 +188,8 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 		return dialect.executeBackendQuery( customQuery, metadatas );
 	}
 
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		return dialect.isStoredInEntityStructure( associationKey, associationContext );
+	}
 }

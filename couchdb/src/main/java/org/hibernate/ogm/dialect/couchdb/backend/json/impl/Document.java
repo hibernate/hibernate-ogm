@@ -44,10 +44,12 @@ public abstract class Document {
 	 */
 	public static final String TYPE_DISCRIMINATOR_FIELD_NAME = "$type";
 
+	public static final String REVISION_FIELD_NAME = "_rev";
+
 	@JsonProperty("_id")
 	private String id;
 
-	@JsonProperty("_rev")
+	@JsonProperty(REVISION_FIELD_NAME)
 	private String revision;
 
 	public Document() {
@@ -55,6 +57,11 @@ public abstract class Document {
 
 	public Document(String id) {
 		this.id = id;
+	}
+
+	public Document(String id, String revision) {
+		this.id = id;
+		this.revision = revision;
 	}
 
 	@JsonIgnore

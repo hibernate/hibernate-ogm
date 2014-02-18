@@ -38,6 +38,7 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.couchdb.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.dialect.couchdb.backend.json.impl.AssociationDocument;
+import org.hibernate.ogm.dialect.couchdb.backend.json.impl.Document;
 import org.hibernate.ogm.dialect.couchdb.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.dialect.couchdb.model.impl.CouchDBAssociation;
 import org.hibernate.ogm.dialect.couchdb.model.impl.CouchDBAssociationSnapshot;
@@ -51,6 +52,8 @@ import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.logging.couchdb.impl.Log;
+import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.options.generic.document.AssociationStorageType;
 import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
@@ -71,6 +74,8 @@ import org.hibernate.type.Type;
  * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final CouchDBDatastoreProvider provider;
 
@@ -100,12 +105,18 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key) {
-		EntityDocument entity = getDataStore().getEntity( Identifier.createEntityId( key ) );
-		if ( entity == null ) {
-			entity = new EntityDocument( key );
+		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
+
+		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
+
+		// load the latest revision for updates without the revision being present; a warning about
+		// this mapping will have been issued at factory start-up
+		if ( revision == null && !snapshot.isCreatedOnInsert() ) {
+			revision = getDataStore().getCurrentRevision( Identifier.createEntityId( key ), false );
 		}
-		entity.update( tuple );
-		getDataStore().saveDocument( entity );
+
+		// this will raise an optimistic locking exception if the revision is either null or not the current one
+		getDataStore().saveDocument( new EntityDocument( key, revision, tuple ) );
 	}
 
 	@Override
@@ -201,7 +212,8 @@ public class CouchDBDialect implements GridDialect {
 		return new Tuple();
 	}
 
-	private boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+	@Override
+	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		AssociationStorageType associationStorage = associationContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
