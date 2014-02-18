@@ -30,8 +30,8 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.ogm.options.generic.document.AssociationStorage;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.AssociationStorage;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
 
 /**

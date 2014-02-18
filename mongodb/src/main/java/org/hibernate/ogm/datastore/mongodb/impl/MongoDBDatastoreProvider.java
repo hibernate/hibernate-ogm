@@ -32,7 +32,7 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Startable;

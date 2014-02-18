@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,15 +18,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.generic.document.impl;
+package org.hibernate.ogm.options.context.impl;
 
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.options.spi.EntityOptions;
 
 /**
- * Represents the type of association storage as configured via the API or annotations for a given element.
+ * Base implementation for options declared by {@link EntityOptions}.
  *
+ * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
+public abstract class BaseEntityContext<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
+
+	public BaseEntityContext(ConfigurationContext context) {
+		super( context );
+	}
+
 }

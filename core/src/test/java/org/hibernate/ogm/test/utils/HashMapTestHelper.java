@@ -31,8 +31,8 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 
 /**
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.

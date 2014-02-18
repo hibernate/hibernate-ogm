@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context.impl;
 
 import java.util.Map;
 
@@ -29,7 +29,7 @@ import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.spi.OptionConfigurer;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.context.GlobalContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;

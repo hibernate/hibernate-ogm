@@ -25,8 +25,8 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 
 /**
  * For testing purposes we need to be able to extract more information than what is mandated from the GridDialect,

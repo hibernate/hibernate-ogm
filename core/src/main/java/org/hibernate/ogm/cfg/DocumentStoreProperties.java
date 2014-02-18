@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.cfg;
 
+
 /**
  * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
  * {@link OgmConfiguration}.

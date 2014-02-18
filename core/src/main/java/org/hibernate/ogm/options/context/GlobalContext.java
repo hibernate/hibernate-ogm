@@ -18,20 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context;
 
-import org.hibernate.ogm.options.spi.EntityOptions;
+import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
- * Base implementation for options declared by {@link EntityOptions}.
+ * Global level and entry point to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.context.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.context.impl.BaseGlobalContext}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
- * @author Gunnar Morling
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @param <G> the type of a provider-specific global context definition, following the self-referential generic type
+ * pattern
+ * @param <E> the type of provider-specific entity context definition, associated with the specific global context type
  */
-public abstract class BaseEntityContext<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
+public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalOptions<G> {
 
-	public BaseEntityContext(ConfigurationContext context) {
-		super( context );
-	}
+	/**
+	 * Specify mapping for the entity {@code type}
+	 */
+	E entity(Class<?> type);
 
 }

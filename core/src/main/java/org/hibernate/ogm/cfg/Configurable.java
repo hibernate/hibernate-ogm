@@ -21,7 +21,7 @@
 package org.hibernate.ogm.cfg;
 
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
+import org.hibernate.ogm.options.context.GlobalContext;
 
 /**
  * Implementations allow to apply configuration options specific to given datastores.

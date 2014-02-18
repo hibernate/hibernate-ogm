@@ -18,34 +18,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl.document;
+package org.hibernate.ogm.options.context.document.impl;
 
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
-import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
-import org.hibernate.ogm.options.navigation.document.DocumentStorePropertyContext;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.document.DocumentStoreEntityContext;
+import org.hibernate.ogm.options.context.document.DocumentStorePropertyContext;
+import org.hibernate.ogm.options.context.impl.BaseEntityContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.impl.AssociationStorageOption;
 
 /**
- * Converts document store property-level options.
+ * Converts document store entity-level options.
  *
  * @author Gunnar Morling
  */
-public abstract class DocumentStorePropertyContextImpl<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends
-		BasePropertyContext<P> implements DocumentStorePropertyContext<E, P> {
+public abstract class DocumentStoreEntityContextImpl<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends
+		BaseEntityContext<E> implements DocumentStoreEntityContext<E, P> {
 
-	public DocumentStorePropertyContextImpl(ConfigurationContext context) {
+	public DocumentStoreEntityContextImpl(ConfigurationContext context) {
 		super( context );
 	}
 
 	@Override
-	public P associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption(), storage );
+	public E associationStorage(AssociationStorageType associationStorage) {
+		addEntityOption( new AssociationStorageOption(), associationStorage );
 
 		// ok; an error would only occur for inconsistently defined context types
 		@SuppressWarnings("unchecked")
-		P context = (P) this;
+		E context = (E) this;
 		return context;
 	}
 }

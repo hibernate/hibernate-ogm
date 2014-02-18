@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.mongodb.impl;
 
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.grid.AssociationKind;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 
 /**
  * Represents a strategy for storing associations in MongoDB. Provides an aggregated view on {@link AssociationKind} as

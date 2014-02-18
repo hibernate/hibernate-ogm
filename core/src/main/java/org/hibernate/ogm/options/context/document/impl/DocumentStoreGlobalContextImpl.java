@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl.document;
+package org.hibernate.ogm.options.context.document.impl;
 
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.generic.document.impl.AssociationStorageOption;
-import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
-import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.document.DocumentStoreEntityContext;
+import org.hibernate.ogm.options.context.document.DocumentStoreGlobalContext;
+import org.hibernate.ogm.options.context.impl.BaseGlobalContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.impl.AssociationStorageOption;
 
 /**
  * Converts global document store options.

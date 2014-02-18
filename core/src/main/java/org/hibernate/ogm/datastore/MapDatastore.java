@@ -21,9 +21,9 @@
 package org.hibernate.ogm.datastore;
 
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.impl.GenericOptionModel;
 
 /**
  * Allows to configure options specific to OGM's simple map data store.

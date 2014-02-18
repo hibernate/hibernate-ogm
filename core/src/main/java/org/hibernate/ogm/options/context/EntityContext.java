@@ -18,25 +18,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.context;
+package org.hibernate.ogm.options.context;
 
-import org.hibernate.ogm.options.spi.GlobalOptions;
+import java.lang.annotation.ElementType;
+
+import org.hibernate.ogm.options.spi.EntityOptions;
 
 /**
- * Global level and entry point to the mapping API. Implementations must declare a constructor with a single parameter of type
- * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
- * {@link org.hibernate.ogm.options.navigation.impl.BaseGlobalContext}.
+ * Entity level to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.context.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.context.impl.BaseEntityContext}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @param <G> the type of a provider-specific global context definition, following the self-referential generic type
+ * @param <E> the type of a provider-specific entity context definition, following the self-referential generic type
  * pattern
- * @param <E> the type of provider-specific entity context definition, associated with the specific global context type
+ * @param <P> the type of provider-specific property context definition, associated with the specific entity context
+ * type
  */
-public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalOptions<G> {
+public interface EntityContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends EntityOptions<E> {
 
 	/**
 	 * Specify mapping for the entity {@code type}
 	 */
 	E entity(Class<?> type);
 
+	/**
+	 * Specify mapping for the given property.
+	 *
+	 * @param propertyName the name of the property to be configured, following to the JavaBeans naming convention
+	 * @param target the target element type of the property, must either be {@link ElementType#FIELD} or
+	 * {@link ElementType#METHOD}).
+	 */
+	P property(String propertyName, ElementType target);
 }

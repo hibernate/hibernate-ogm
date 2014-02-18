@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
-import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
+import org.hibernate.ogm.options.context.impl.OptionsServiceInitiator;
 import org.hibernate.ogm.type.impl.TypeTranslatorInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
