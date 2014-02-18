@@ -74,16 +74,23 @@ which is a good starting point for new users - you don't have to set any propert
 .Infinispan datastore configuration properties
 +hibernate.ogm.datastore.provider+::
 To use Infinispan as a datastore provider set it to +infinispan+.
-+hibernate.ogm.infinispan.cachemanager_jndiname+::
++hibernate.ogm.infinispan.cachemanager_jndi_name+::
 If you have an Infinispan [classname]+EmbeddedCacheManager+  registered in JNDI,
 provide the JNDI name and Hibernate OGM will use this instance
 instead of starting a new +CacheManager+.
 This will ignore any further configuration properties
 as Infinispan is assumed being already configured.
-+hibernate.ogm.infinispan.configuration_resourcename+::
++hibernate.ogm.infinispan.configuration_resource_name+::
 Should point to the resource name of an Infinispan configuration file.
 This is ignored in case [acronym]+JNDI+  lookup is set.
 Defaults to +org/hibernate/ogm/datastore/infinispan/default-config.xml+.
+
+[NOTE]
+====
+When bootstrapping a session factory or entity manager factory programmatically,
+you should use the constants declared on +OgmProperties+ and +InfinspanProperties+
+when specifying the configuration properties listed above.
+====
 
 ===== Cache names used by Hibernate OGM
 
@@ -116,8 +123,9 @@ the basic structure is shown in the following example:
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
-    xmlns="urn:infinispan:config:5.1">
+    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
+    xmlns="urn:infinispan:config:6.0">
+
 
     <global>
     </global>
@@ -312,8 +320,8 @@ Let's see how to reconfigure this:
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
-    xmlns="urn:infinispan:config:5.1">
+    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
+    xmlns="urn:infinispan:config:6.0">
 
     <global>
         <transport
