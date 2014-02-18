@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010-2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -54,9 +54,9 @@ import org.hibernate.ogm.persister.EntityKeyBuilder;
 import org.hibernate.ogm.persister.OgmCollectionPersister;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.PropertyMetadataProvider;
 import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.Loadable;
@@ -480,16 +480,16 @@ public class OgmLoader implements UniqueEntityLoader {
 				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
 			}
 			final OgmCollectionPersister persister = (OgmCollectionPersister) getCollectionPersisters()[0];
-			PropertyMetadataProvider metadataProvider = new PropertyMetadataProvider(
+			AssociationPersister associationPersister = new AssociationPersister(
 					persister.getOwnerEntityPersister().getMappedClass()
 				)
 				.gridDialect( gridDialect )
 				.key( id )
 				.keyGridType( persister.getKeyGridType() )
 				.collectionPersister( persister )
-				.associationMetadataKey( persister.getAssociationKeyMetadata() )
+				.associationKeyMetadata( persister.getAssociationKeyMetadata() )
 				.session( session );
-			Association assoc = metadataProvider.getCollectionMetadataOrNull();
+			Association assoc = associationPersister.getAssociationOrNull();
 			if ( assoc != null ) {
 				for ( RowKey rowKey : assoc.getKeys() ) {
 					resultset.addTuple( assoc.get( rowKey ) );

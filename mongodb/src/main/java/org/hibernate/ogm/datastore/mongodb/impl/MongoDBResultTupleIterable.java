@@ -24,10 +24,10 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
+import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.mongodb.MongoDBDialect;
-import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot;
-import org.hibernate.ogm.dialect.mongodb.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 

@@ -26,7 +26,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
  * Neo4j GridDialect configuration options.
  *
  * @author Davide D'Alto
- * @see org.hibernate.ogm.dialect.neo4j.Neo4jDialect
+ * @see org.hibernate.ogm.datastore.neo4j.Neo4jDialect
  */
 public final class Neo4jProperties implements OgmProperties {
 
@@ -61,7 +61,7 @@ public final class Neo4jProperties implements OgmProperties {
 	/**
 	 * Qualified class name for the creation of a new {@link org.neo4j.graphdb.GraphDatabaseService}.
 	 * <p>
-	 * The class must implement the interface {@link org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory}.
+	 * The class must implement the interface {@link org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory}.
 	 */
 	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb_factoryclass";
 

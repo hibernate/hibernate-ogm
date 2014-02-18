@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.io.Serializable;
 import java.lang.annotation.ElementType;
 
 import javax.transaction.SystemException;
@@ -186,4 +187,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 56, value = "Invalid URL given for configuration property '%1$s': %2$s; The specified resource could not be found.")
 	HibernateException invalidConfigurationUrl(String propertyName, String url);
+
+	@Message(id = 57, value = "Unable to load record for retrieval of generated properties; Entity type: %1$s, id: %2$s")
+	HibernateException couldNotRetrieveEntityForRetrievalOfGeneratedProperties(String entityType, Serializable id);
 }

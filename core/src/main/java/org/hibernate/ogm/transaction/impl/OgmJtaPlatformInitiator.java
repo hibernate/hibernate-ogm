@@ -54,7 +54,7 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 		if ( isNeo4j( configurationValues, registry.getService( ClassLoaderService.class ) ) ) {
-			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.transaction.neo4j.impl.Neo4jJtaPlatform" );
+			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jJtaPlatform" );
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 		return new JBossStandAloneJtaPlatform();

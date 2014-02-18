@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
-import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
+import org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**

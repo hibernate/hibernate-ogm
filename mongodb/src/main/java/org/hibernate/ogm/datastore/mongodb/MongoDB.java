@@ -20,11 +20,11 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
+import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBEntityContextImpl;
+import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBGlobalContextImpl;
+import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.mongodb.mapping.MongoDBGlobalContext;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBEntityContextImpl;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBGlobalContextImpl;
-import org.hibernate.ogm.options.mongodb.mapping.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
