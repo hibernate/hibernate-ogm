@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context.impl;
 
-import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
+import org.hibernate.ogm.options.context.EntityContext;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.context.PropertyContext;
 
 /**
  * A generic option model that provides no store-specific options.

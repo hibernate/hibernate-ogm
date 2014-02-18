@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.mongodb.options.context;
 
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
-import org.hibernate.ogm.options.navigation.document.DocumentStoreEntityContext;
+import org.hibernate.ogm.options.context.document.DocumentStoreEntityContext;
 
 /**
  * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
@@ -37,7 +37,7 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is
-	 * set to {@link org.hibernate.ogm.options.generic.document.AssociationStorageType#ASSOCIATION_DOCUMENT}.
+	 * set to {@link org.hibernate.ogm.options.document.AssociationStorageType#ASSOCIATION_DOCUMENT}.
 	 *
 	 * @param associationDocumentStorage the association document type to be used when not configured the property level
 	 * @return this context, allowing for further fluent API invocations

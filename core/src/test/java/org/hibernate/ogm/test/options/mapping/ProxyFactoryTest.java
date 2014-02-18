@@ -24,8 +24,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;

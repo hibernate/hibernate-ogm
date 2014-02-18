@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBEntityCon
 import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBGlobalContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
 
 /**
  * Allows to configure options specific to the MongoDB document data store.

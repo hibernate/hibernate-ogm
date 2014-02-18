@@ -18,24 +18,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.context;
+package org.hibernate.ogm.options.context;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.options.spi.EntityOptions;
+import org.hibernate.ogm.options.spi.PropertyOptions;
 
 /**
- * Entity level to the mapping API. Implementations must declare a constructor with a single parameter of type
- * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
- * {@link org.hibernate.ogm.options.navigation.impl.BaseEntityContext}.
+ * Property level to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * {@link org.hibernate.ogm.options.context.impl.ConfigurationContext} and should preferably be derived from
+ * {@link org.hibernate.ogm.options.context.impl.BasePropertyContext}.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @param <E> the type of a provider-specific entity context definition, following the self-referential generic type
- * pattern
- * @param <P> the type of provider-specific property context definition, associated with the specific entity context
+ * @param <E> the type of provider-specific entity context definition, associated with the specific property context
  * type
+ * @param <P> the type of a provider-specific property context definition, following the self-referential generic type
+ * pattern
  */
-public interface EntityContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends EntityOptions<E> {
+public interface PropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends PropertyOptions<P> {
 
 	/**
 	 * Specify mapping for the entity {@code type}

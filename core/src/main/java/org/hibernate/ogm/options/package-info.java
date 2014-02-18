@@ -42,16 +42,16 @@
  * <p>
  * If you wish to also set provider specific mappings,
  * </p>
- * {@link org.hibernate.ogm.options.navigation.context.GlobalContext}, {@link org.hibernate.ogm.options.navigation.context.EntityContext} and {@link org.hibernate.ogm.options.navigation.context.PropertyContext} describe the API used by the user
+ * {@link org.hibernate.ogm.options.context.GlobalContext}, {@link org.hibernate.ogm.options.context.EntityContext} and {@link org.hibernate.ogm.options.context.PropertyContext} describe the API used by the user
  * programmatically to navigate from one context to another. There are three types of context:
  * <ul>
- *   <li>global - {@link org.hibernate.ogm.options.navigation.context.GlobalContext}
- *   <li>specific to an entity - {@link org.hibernate.ogm.options.navigation.context.EntityContext}
- *   <li>specific to a property - {@link org.hibernate.ogm.options.navigation.context.PropertyContext}
+ *   <li>global - {@link org.hibernate.ogm.options.context.GlobalContext}
+ *   <li>specific to an entity - {@link org.hibernate.ogm.options.context.EntityContext}
+ *   <li>specific to a property - {@link org.hibernate.ogm.options.context.PropertyContext}
  * </ul>
  * <p>
  * Each context contract is linked to one another via the parameterized type system.
- * {@link org.hibernate.ogm.options.navigation.context.GlobalContext} or its subinterfaces is the entry point to programmatically define a mapping.
+ * {@link org.hibernate.ogm.options.context.GlobalContext} or its subinterfaces is the entry point to programmatically define a mapping.
  * </p>
  * <p>
  * Context specific options are hosted on {@link org.hibernate.ogm.options.spi.GlobalOptions}, {@link org.hibernate.ogm.options.spi.EntityOptions} and {@link org.hibernate.ogm.options.spi.PropertyOptions}.

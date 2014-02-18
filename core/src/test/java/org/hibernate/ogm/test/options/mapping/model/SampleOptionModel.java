@@ -20,13 +20,13 @@
  */
 package org.hibernate.ogm.test.options.mapping.model;
 
-import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
-import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
-import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.EntityContext;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.context.PropertyContext;
+import org.hibernate.ogm.options.context.impl.BaseEntityContext;
+import org.hibernate.ogm.options.context.impl.BaseGlobalContext;
+import org.hibernate.ogm.options.context.impl.BasePropertyContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;

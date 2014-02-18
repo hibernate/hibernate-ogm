@@ -18,22 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.generic.document;
+package org.hibernate.ogm.options.document.impl;
+
+import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * A strategy for storing association information in a document datastore.
+ * Represents the type of association storage as configured via the API or annotations for a given element.
  *
  * @author Gunnar Morling
  */
-public enum AssociationStorageType {
-
-	/**
-	 * Stores association information in a dedicated document per association.
-	 */
-	ASSOCIATION_DOCUMENT,
-
-	/**
-	 * Store association information within the entity.
-	 */
-	IN_ENTITY
+public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
 }

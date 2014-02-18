@@ -18,14 +18,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context.impl;
 
 import org.hibernate.ogm.options.spi.Option;
 
 /**
- * Base class for {@link org.hibernate.ogm.options.navigation.context.GlobalContext},
- * {@link org.hibernate.ogm.options.navigation.context.EntityContext} and
- * {@link org.hibernate.ogm.options.navigation.context.PropertyContext} implementations which allows to add options for
+ * Base class for {@link org.hibernate.ogm.options.context.GlobalContext},
+ * {@link org.hibernate.ogm.options.context.EntityContext} and
+ * {@link org.hibernate.ogm.options.context.PropertyContext} implementations which allows to add options for
  * the different kinds of context.
  *
  * @author Gunnar Morling

@@ -25,7 +25,7 @@ import static org.fest.assertions.MapAssert.entry;
 
 import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
 import org.hibernate.ogm.datastore.spi.OptionsContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.context.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;

@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,20 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context.impl;
 
-import org.hibernate.ogm.options.spi.PropertyOptions;
+import org.hibernate.ogm.options.spi.GlobalOptions;
 
 /**
- * Base implementation for options declared by {@link PropertyOptions}.
+ * Base implementation for options declared by {@link GlobalOptions}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BasePropertyContext<P extends PropertyOptions<P>> extends BaseContext implements PropertyOptions<P> {
+public abstract class BaseGlobalContext<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
 
-	public BasePropertyContext(ConfigurationContext context) {
+	public BaseGlobalContext(ConfigurationContext context) {
 		super( context );
 	}
-
 }

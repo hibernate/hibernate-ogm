@@ -22,8 +22,8 @@ package org.hibernate.ogm.datastore.couchdb.options.context.impl;
 
 import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBEntityContext;
 import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.document.DocumentStoreGlobalContextImpl;
+import org.hibernate.ogm.options.context.document.impl.DocumentStoreGlobalContextImpl;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
 
 /**
  * Converts global CouchDB options.

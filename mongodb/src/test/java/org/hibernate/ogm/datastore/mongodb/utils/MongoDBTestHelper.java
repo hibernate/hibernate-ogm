@@ -40,7 +40,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.test.utils.TestableGridDialect;
 
 import com.mongodb.BasicDBObject;

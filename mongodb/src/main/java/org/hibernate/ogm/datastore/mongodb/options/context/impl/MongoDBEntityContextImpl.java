@@ -26,8 +26,8 @@ import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBPropertyContext;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.document.DocumentStoreEntityContextImpl;
+import org.hibernate.ogm.options.context.document.impl.DocumentStoreEntityContextImpl;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>

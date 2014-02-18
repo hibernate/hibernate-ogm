@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.navigation.impl;
+package org.hibernate.ogm.options.context.impl;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
@@ -27,9 +27,9 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.MethodHandler;
 import javassist.util.proxy.ProxyFactory;
 
-import org.hibernate.ogm.options.navigation.context.EntityContext;
-import org.hibernate.ogm.options.navigation.context.GlobalContext;
-import org.hibernate.ogm.options.navigation.context.PropertyContext;
+import org.hibernate.ogm.options.context.EntityContext;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.context.PropertyContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -38,7 +38,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
 /**
  * Keeps track of the entities and properties configured using the fluent configuration API. There is one instance of
  * this context per invocation of this API (beginning with the creation of a
- * {@link org.hibernate.ogm.options.navigation.context.GlobalContext}). This instance is passed between the individual
+ * {@link org.hibernate.ogm.options.context.GlobalContext}). This instance is passed between the individual
  * context types created in the course of using the fluent API. The book-keeping of configured options is delegated to
  * {@link WritableOptionsServiceContext}.
  *

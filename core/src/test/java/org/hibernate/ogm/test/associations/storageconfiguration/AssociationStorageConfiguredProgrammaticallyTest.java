@@ -29,8 +29,8 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
-import org.hibernate.ogm.options.navigation.document.DocumentStoreGlobalContext;
+import org.hibernate.ogm.options.context.document.DocumentStoreGlobalContext;
+import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.test.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.test.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.test.utils.GridDialectType;
