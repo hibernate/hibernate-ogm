@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.cfg;
 
+import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+
 /**
  * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
  * {@link OgmConfiguration}.
@@ -35,8 +37,8 @@ public interface DocumentStoreProperties extends OgmProperties {
 
 	/**
 	 * Property for configuring the strategy for storing associations. Valid values are the
-	 * {@link org.hibernate.ogm.options.couchdb.AssociationStorageType} enumeration and the String representation of its
-	 * constants. Defaults to the in-entity storage strategy.
+	 * {@link AssociationStorageType} enumeration and the String representation of its constants. Defaults to the
+	 * in-entity storage strategy.
 	 * <p>
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.

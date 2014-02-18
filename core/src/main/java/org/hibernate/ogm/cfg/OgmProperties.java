@@ -88,5 +88,5 @@ public interface OgmProperties {
 	 * false. The user defined with {@link #USERNAME} must have the privileges for the creation of a new database. The
 	 * database will have the name defined with {@link #DATABASE}. Accepts "true" or "false".
 	 */
-	String CREATE_DATABASE = "hibernate.org.datastore.create_database";
+	String CREATE_DATABASE = "hibernate.ogm.datastore.create_database";
 }
