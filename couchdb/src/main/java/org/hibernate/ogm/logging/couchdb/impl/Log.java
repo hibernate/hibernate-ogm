@@ -106,6 +106,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@LogMessage(level = WARN)
 	@Message(id = 1322, value = "Entity '%s' does not have a revision property; In order to make use of CouchDB's "
-			+ "built-in optimistic locking mechanism, it is recommended to define a property '@Generated @Version _rev'.")
+			+ "built-in optimistic locking mechanism, it is recommended to define a property '@Generated @Version String _rev'.")
 	void entityShouldHaveRevisionProperty(String entityName);
 }

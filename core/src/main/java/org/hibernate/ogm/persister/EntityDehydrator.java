@@ -273,8 +273,6 @@ class EntityDehydrator {
 			//TODO what should we do if that's null?
 			associationPersister.getAssociation().remove( matchingTuple );
 
-			getReferencedEntity( propertyIndex );
-
 			associationPersister.flushToCache();
 		}
 	}

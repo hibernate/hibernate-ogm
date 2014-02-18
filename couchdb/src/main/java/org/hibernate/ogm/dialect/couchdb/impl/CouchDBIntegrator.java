@@ -28,12 +28,15 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
+import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.couchdb.backend.json.impl.Document;
 import org.hibernate.ogm.logging.couchdb.impl.Log;
 import org.hibernate.ogm.logging.couchdb.impl.LoggerFactory;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.service.impl.ConfigurationService;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
@@ -73,7 +76,21 @@ public class CouchDBIntegrator implements Integrator {
 
 		@Override
 		public void sessionFactoryCreated(SessionFactory factory) {
-			validateEntityMappings( (SessionFactoryImplementor) factory );
+			SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) factory;
+
+			// only perform the validation if OGM is enabled and uses the CouchDB datastore
+			if ( !currentDialectIsCouchDB( sessionFactoryImplementor ) ) {
+				return;
+			}
+
+			validateEntityMappings( sessionFactoryImplementor );
+		}
+
+		private boolean currentDialectIsCouchDB(SessionFactoryImplementor sessionFactoryImplementor) {
+			ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+
+			return registry.getService( ConfigurationService.class ).isOgmOn() &&
+					( registry.getService( DatastoreProvider.class ) instanceof CouchDBDatastoreProvider );
 		}
 
 		@Override
@@ -82,10 +99,6 @@ public class CouchDBIntegrator implements Integrator {
 		}
 
 		private void validateEntityMappings(SessionFactoryImplementor factory) {
-			if ( ! factory.getServiceRegistry().getService( ConfigurationService.class ).isOgmOn() ) {
-				return;
-			}
-
 			for ( Entry<String, EntityPersister> entityAndPersister : factory.getEntityPersisters().entrySet() ) {
 				if ( !hasRevisionColumn( ( (OgmEntityPersister) entityAndPersister.getValue() ) ) ) {
 					logger.entityShouldHaveRevisionProperty( entityAndPersister.getKey() );

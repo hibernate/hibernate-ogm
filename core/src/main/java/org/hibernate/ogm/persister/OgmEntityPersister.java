@@ -67,9 +67,9 @@ import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
+import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Loadable;
@@ -1240,10 +1240,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Tuple tuple = getResultsetById( id, session );
 
 		if ( tuple == null || tuple.getSnapshot().isEmpty() ) {
-			throw new HibernateException(
-					"Unable to locate row for retrieval of generated properties: " +
-							MessageHelper.infoString( this, id, getFactory() )
-					);
+			throw log.couldNotRetrieveEntityForRetrievalOfGeneratedProperties( getEntityName(), id );
 		}
 
 		int propertyIndex = -1;
