@@ -20,12 +20,12 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
-import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBGlobalContext;
-import org.hibernate.ogm.datastore.couchdb.options.context.impl.CouchDBEntityContextImpl;
-import org.hibernate.ogm.datastore.couchdb.options.context.impl.CouchDBGlobalContextImpl;
-import org.hibernate.ogm.datastore.couchdb.options.context.impl.CouchDBPropertyContextImpl;
+import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBGlobalContext;
+import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBEntityContextImpl;
+import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBGlobalContextImpl;
+import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * Allows to configure options specific to the CouchDB document data store.

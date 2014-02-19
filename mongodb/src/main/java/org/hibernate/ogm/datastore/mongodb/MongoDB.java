@@ -20,12 +20,12 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import org.hibernate.ogm.datastore.mongodb.options.context.MongoDBGlobalContext;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBEntityContextImpl;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBGlobalContextImpl;
-import org.hibernate.ogm.datastore.mongodb.options.context.impl.MongoDBPropertyContextImpl;
+import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
+import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBEntityContextImpl;
+import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBGlobalContextImpl;
+import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * Allows to configure options specific to the MongoDB document data store.

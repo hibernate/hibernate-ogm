@@ -21,7 +21,7 @@
 package org.hibernate.ogm.datastore.document.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.options.context.PropertyContext;
+import org.hibernate.ogm.options.navigation.PropertyContext;
 
 /**
  * Allows to configure document store options applying on a per-entity level.

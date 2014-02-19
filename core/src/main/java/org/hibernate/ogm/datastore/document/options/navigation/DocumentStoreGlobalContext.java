@@ -21,7 +21,7 @@
 package org.hibernate.ogm.datastore.document.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
  * Allows to configure document store options applying on a global level. These options may be overridden for single

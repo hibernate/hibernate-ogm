@@ -24,8 +24,8 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
-import org.hibernate.ogm.options.context.impl.BaseEntityContext;
-import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
  * Converts document store entity-level options.
