@@ -65,9 +65,18 @@ which is a good starting point for new users - you don't have to set any propert
 .Ehcache datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use Ehcache as a datastore provider set it to +ehcache+.
-hibernate.ogm.ehcache.configuration_resourcename::
+hibernate.ogm.ehcache.configuration_resource_name::
 Should point to the resource name of an Ehcache configuration file.
-Defaults to +/org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
+Defaults to +org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
+
+[NOTE]
+====
+When bootstrapping a session factory or entity manager factory programmatically,
+you should use the constants accessible via +EhcacheProperties+
+when specifying the configuration properties listed above.
+Common properties shared between stores are declared on +OgmProperties+.
+To ease migration between stores, it is recommended to reference these constants directly from there.
+====
 
 [[ogm-ehcache-transactions]]
 

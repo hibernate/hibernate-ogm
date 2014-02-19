@@ -6,7 +6,7 @@ http://www.neo4j.org[Neo4j] is a robust (fully ACID) transactional property grap
 This kind of databases are suited for those type of problems that can be represented with a graph 
 like social relationships or road maps for example.
 
-At the moment only the support for the embeedded Neo4j is included in OGM.
+At the moment only the support for the embedded Neo4j is included in OGM.
 
 This is our first version and a bit experimental. In particular we plan on using node navigation much more than index lookup in a future version.
 
@@ -32,7 +32,7 @@ Alternatively you can find the required libraries in the distribution package on
 [subs="verbatim,attributes"]
 ----
 hibernate.ogm.datastore.provider = neo4j_embedded
-hibernate.ogm.neo4j.database.path = C:\example\mydb
+hibernate.ogm.neo4j.database_path = C:\example\mydb
 ----
 
 ==== Configuring Neo4j
@@ -40,16 +40,25 @@ hibernate.ogm.neo4j.database.path = C:\example\mydb
 The following properties are available to configure Neo4j support:
 
 .Neo4j datastore configuration properties
-hibernate.ogm.neo4j.database.path::
+hibernate.ogm.neo4j.database_path::
 The absolute path representing the location of the Neo4j database. Example: +C:\neo4jdb\mydb+
-hibernate.ogm.neo4j.properties.location (optional)::
-Location of the Neo4j embedded properties file. It can be an URL or an absolute file path.
+hibernate.ogm.neo4j.configuration_resource_name (optional)::
+Location of the Neo4j embedded properties file. It can be an URL, name of a classpath resource or file system path.
 hibernate.ogm.neo4j.index.entity (optional)::
 Name of the neo4j index containing the stored entities. Default to +_nodes_ogm_index+
 hibernate.ogm.neo4j.index.association (optional)::
 Name of the Neo4j index containing the stored associations. Default to +_relationships_ogm_index+
 hibernate.ogm.neo4j.index.sequence (optional)::
 Name of the index that stores the next available value for a sequence. Default to +_sequences_ogm_index+
+
+[NOTE]
+====
+When bootstrapping a session factory or entity manager factory programmatically,
+you should use the constants accessible via +Neo4jProperties+
+when specifying the configuration properties listed above.
+Common properties shared between stores are declared on +OgmProperties+.
+To ease migration between stores, it is recommended to reference these constants directly from there.
+====
 
 ==== Storage principles
 

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
+import org.hibernate.ogm.datastore.neo4j.impl.InternalProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jGraphDatabaseServiceFactoryProvider;
 import org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
@@ -65,7 +66,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 	public void testSelectedGraphDatabaseServiceIsLoaded() throws Exception {
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
-		properties.put( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
+		properties.put( InternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
 		Neo4jGraphDatabaseServiceFactoryProvider graphService = new Neo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
@@ -76,7 +77,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 	public void testPropertiesArePassed() throws Exception {
 		Properties properties = new Properties();
 		properties.put( Neo4jProperties.DATABASE_PATH, Neo4jTestHelper.dbLocation() );
-		properties.put( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
+		properties.put( InternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, MockGraphServiceFactory.class.getName() );
 		Neo4jGraphDatabaseServiceFactoryProvider graphService = new Neo4jGraphDatabaseServiceFactoryProvider();
 		MockGraphDatabaseService db = (MockGraphDatabaseService) graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
@@ -90,7 +91,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		@Override
 		public void initialize(Map<?, ?> properties) {
 			configurationReadable = MockGraphServiceFactory.class.getName().equals(
-					properties.get( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS ) );
+					properties.get( InternalProperties.NEO4J_GRAPHDB_FACTORYCLASS ) );
 		}
 
 		@Override

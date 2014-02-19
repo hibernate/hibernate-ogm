@@ -6,10 +6,11 @@ Currently Hibernate OGM supports the following datastores:
 
 * Map: stores data in an in-memory Java map to store data.
   Use it only for unit tests.
-* Infinispan: stores data into http://infinispan.org[Infinispan] (data grid)
-* Ehcache: stores data into http://ehcache.org[Ehcache] (cache)
-* MongoDB: stores data into http://www.mongodb.org[MongoDB] (document store)
-
+* Infinispan: stores data into http://infinispan.org/[Infinispan] (data grid)
+* Ehcache: stores data into http://ehcache.org/[Ehcache] (cache)
+* MongoDB: stores data into http://www.mongodb.org/[MongoDB] (document store)
+* Neo4j: stores data into http://www.neo4j.org/[Neo4j] (graph database)
+* CouchDB: stores data into https://couchdb.apache.org/[CouchDB] (document store)
 
 More are planned, if you are interested,
 come talk to us (see <<ogm-howtocontribute>>).
@@ -25,17 +26,34 @@ Hibernate OGM interacts with NoSQL datastores via two contracts:
 
 The main thing you need to do is to configure which datastore provider you want to use.
 This is done via the +hibernate.ogm.datastore.provider+ option.
-Possible values are the fully qualified class name
-of a [classname]+DatastoreProvider+ implementation
-or one preferably of the following shortcuts:
+Possible values are
 
-* +map+: stores data in an in-memory Java map to store data.
-  Use it only for unit tests.
-* +infinispan+: stores data into http://infinispan.org[Infinispan] (data grid)
-* +ehcache+: stores data into http://ehcache.org[Ehcache] (cache)
-* +mongodb+: stores data into http://www.mongodb.org[MongoDB] (document store)
-* +neo4j+: stores data into http://http://www.neo4j.org/[Neo4j] (graph)
+* the fully qualified class name of a [classname]+DatastoreProvider+ implementation or
+* one preferably of the following shortcuts: +map+ (only to be used for unit tests),
++infinispan+, +ehcache+, +mongodb+, +neo4j+ or +couchdb+
 
+[NOTE]
+====
+When bootstrapping a session factory or entity manager factory programmatically,
+you should use the constants declared on +OgmProperties+ to specify configuration properties
+such as +hibernate.ogm.datastore.provider+.
+
+In this case you also can specify the provider in form of a class object of a datastore provider type
+or pass an instance of a datastore provider type:
+
+[source, JAVA]
+----
+Map<String, Object> properties = new HashMap<String, Object>();
+
+// pass the type
+properties.put( OgmProperties.DATASTORE_PROVIDER, MyDatastoreProvider.class );
+// or an instance
+properties.put( OgmProperties.DATASTORE_PROVIDER, new MyDatastoreProvider() );
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory( "my-pu", properties );
+----
+
+====
 
 You also need to add the relevant Hibernate OGM module in your classpath.
 In maven that would look like:
@@ -50,8 +68,8 @@ In maven that would look like:
 </dependency>
 ----
 
-We have respectively
-+hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+, +hibernate-ogm-mongodb+ and +hibernate-ogm-neo4j+.
+The module names are
++hibernate-ogm-infinispan+, +hibernate-ogm-ehcache+, +hibernate-ogm-mongodb+, +hibernate-ogm-neo4j+ and +hibernate-ogm-couchdb+.
 The map datastore is included in the Hibernate OGM engine module.
 
 By default, a datastore provider chooses the best grid dialect transparently
@@ -67,3 +85,5 @@ include::modules/ehcache.asciidoc[]
 include::modules/mongodb.asciidoc[]
 
 include::modules/neo4j.asciidoc[]
+
+include::modules/couchdb.asciidoc[]

@@ -23,7 +23,6 @@ package org.hibernate.ogm.datastore.neo4j.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
@@ -40,7 +39,7 @@ public class Neo4jGraphDatabaseServiceFactoryProvider {
 
 	public GraphDatabaseServiceFactory load(Map<?, ?> properties, ClassLoaderService classLoaderService) {
 		GraphDatabaseServiceFactory factory = new ConfigurationPropertyReader(properties )
-			.property( Neo4jProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
+			.property( InternalProperties.NEO4J_GRAPHDB_FACTORYCLASS, GraphDatabaseServiceFactory.class )
 			.instantiate()
 			.withClassLoaderService( classLoaderService )
 			.withDefaultImplementation( EmbeddedGraphDatabaseFactory.class )

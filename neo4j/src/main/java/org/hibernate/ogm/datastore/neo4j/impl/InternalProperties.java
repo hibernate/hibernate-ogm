@@ -18,30 +18,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.cfg;
-
-import org.hibernate.ogm.options.generic.document.AssociationStorageType;
+package org.hibernate.ogm.datastore.neo4j.impl;
 
 /**
- * Common properties for configuring document datastores such as MongoDB or CouchDB via {@code persistence.xml} or
- * {@link OgmConfiguration}.
- * <p>
- * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
- * find out the supported configuration properties.
- * <p>
- * This interface should not be implemented by client code, only its constants are intended to be referenced.
+ * Internal properties not intended to be set by the user.
  *
  * @author Gunnar Morling
  */
-public interface DocumentStoreProperties extends OgmProperties {
+public class InternalProperties {
 
 	/**
-	 * Property for configuring the strategy for storing associations. Valid values are the
-	 * {@link AssociationStorageType} enumeration and the String representation of its constants. Defaults to the
-	 * in-entity storage strategy.
+	 * Qualified class name for the creation of a new {@link org.neo4j.graphdb.GraphDatabaseService}.
 	 * <p>
-	 * Note that any value specified via this property will be overridden by values configured via annotations or the
-	 * programmatic API.
+	 * The class must implement the interface
+	 * {@link org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory}.
 	 */
-	String ASSOCIATIONS_STORE = "hibernate.ogm.datastore.document.association_storage";
+	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb_factoryclass";
+
+	private InternalProperties() {
+	}
 }
