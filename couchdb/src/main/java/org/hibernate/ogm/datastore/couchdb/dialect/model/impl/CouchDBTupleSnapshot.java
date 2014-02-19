@@ -31,7 +31,7 @@ import org.hibernate.ogm.grid.EntityKey;
  * A {@link TupleSnapshot} based on the properties of a CouchDB
  * {@link org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument}.
  * <p>
- * Fundamentally a {@link org.hibernate.ogm.datastore.impl.MapTupleSnapshot} except that the
+ * Fundamentally a {@link org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot} except that the
  * {@link org.hibernate.ogm.grid.EntityKey} column names and values are copied.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>

@@ -20,18 +20,18 @@
  */
 package org.hibernate.ogm.test.type;
 
-import org.hibernate.ogm.datastore.map.impl.HashMapDialect;
+import java.util.UUID;
+
+import org.hibernate.ogm.datastore.map.MapDialect;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
-import java.util.UUID;
-
 /**
 * @author Emmanuel Bernard <emmanuel@hibernate.org>
 */
-public class OverridingTypeDialect extends HashMapDialect {
+public class OverridingTypeDialect extends MapDialect {
 
 	public OverridingTypeDialect(MapDatastoreProvider provider) {
 		super( provider );

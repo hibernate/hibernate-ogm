@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.map.impl;
+package org.hibernate.ogm.datastore.map;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -31,8 +31,12 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.impl.MapHelpers;
-import org.hibernate.ogm.datastore.impl.MapTupleSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
+import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
+import org.hibernate.ogm.datastore.map.impl.MapHelpers;
+import org.hibernate.ogm.datastore.map.impl.MapPessimisticReadLockingStrategy;
+import org.hibernate.ogm.datastore.map.impl.MapPessimisticWriteLockingStrategy;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -48,13 +52,15 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 /**
+ * Grid dialect which uses a plain map for storing objects in memory. For testing purposes.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
-public class HashMapDialect implements GridDialect {
+public class MapDialect implements GridDialect {
 
 	private final MapDatastoreProvider provider;
 
-	public HashMapDialect(MapDatastoreProvider provider) {
+	public MapDialect(MapDatastoreProvider provider) {
 		this.provider = provider;
 	}
 

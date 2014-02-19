@@ -25,7 +25,7 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
-import org.hibernate.ogm.datastore.MapDatastore;
+import org.hibernate.ogm.datastore.map.MapDatastore;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.AssociationKey;

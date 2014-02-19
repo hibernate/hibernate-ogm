@@ -34,6 +34,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.persistence.PessimisticLockException;
 
+import org.hibernate.ogm.datastore.map.MapDialect;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -75,7 +76,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
-		return HashMapDialect.class;
+		return MapDialect.class;
 	}
 
 	@Override
