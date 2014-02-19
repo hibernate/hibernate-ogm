@@ -32,7 +32,7 @@ import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
-import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application

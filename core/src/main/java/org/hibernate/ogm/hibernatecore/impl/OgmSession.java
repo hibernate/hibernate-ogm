@@ -59,7 +59,7 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
-import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
