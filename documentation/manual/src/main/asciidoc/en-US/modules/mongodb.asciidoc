@@ -455,17 +455,108 @@ In cases where this is not enough, you have two additional strategies to query e
 * use native MongoDB queries
 * use Hibernate Search (brings advanced full-text and geospatial queries)
 
-Because Hibernate OGM stores data in MongoDB in a natural way,
-you can use the MongoDB driver and execute queries on the datastore directly
-without involving Hibernate OGM.
-The benefit of this approach is to use the query capabilities of MongoDB.
-The drawback is that raw MongoDB documents will be returned and not managed entities.
+===== Native MongoDB queries
 
-The alternative approach is to index your entities with Hibernate Search.
+Hibernate OGM supports native queries for MongoDB with some limitations:
+
+* parameters are not supported
+* the result of a native query must be mapped by one entity
+
+If your use case meet this restrictions you can execute a native query like
+in the following examples:
+
+.Using the EntityManager
+====
+[source, JAVA]
+----
+@Entity
+public class Poem {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    private String author;
+
+   // getters, setters ...
+
+}
+
+...
+
+javax.persistence.EntityManager em = ...
+
+String query1 = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
+Poem poem = (Poem) em.createNativeQuery( query1, Poem.class ).getSingleResult();
+
+String query2 = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
+List<Poem> poems = em.createNativeQuery( query2, Poem.class ).getResultList();
+----
+====
+
+.Using the Hibernate Session
+====
+[source, JAVA]
+----
+org.hibernate.Session session = ...
+
+String query1 = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
+Poem poem = session.createSQLQuery( query1 )
+                      .addEntity( "Poem", Poem.class )
+                      .uniqueResult();
+
+String query2 = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
+List<Poem> poems = session.createSQLQuery( query2 )
+                      .addEntity( "Poem", Poem.class )
+                      .list();
+----
+====
+
+The method in +Session#createSQLQuery(...)+ might look misleading since we are not
+running a SQL query but the +Session+ API was initially thought for relationa databases
+and we decided it was simpler to reuse the same method than invent something new that could
+increase the confusion.
+
+The result of the query is a managed entity or a list of managed entities.
+
+Native queries can also be created using the +@NamedNativeQuery+ annotation:
+
+.Using @NamedNativeQuery
+====
+[source, JAVA]
+----
+@Entity
+@NamedNativeQuery(
+   name = "AthanasiaPoem",
+   query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }",
+   resultClass = Poem.class )
+public class Poem { ... }
+
+...
+
+// Using the EntityManager
+Poem poem1 = (Poem) em.createNamedQuery( "AthanasiaPoem" )
+                     .getSingleResult();
+
+// Using the Session
+Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
+                     .uniqueResult();
+----
+====
+
+Hibernate OGM stores data in a natural way so you can still execute queries using the
+MongoDB driver, the main drawback is that the results are going to be raw MongoDB
+documents and not managed entities.
+
+===== Hibernate Search
+
+You can index your entities using Hibernate Search.
 That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search
 and you can write queries on top of them.
-The benefit of this approach is an nice integration at the JPA / Hibernate API level
+The benefit of this approach is a nice integration at the JPA / Hibernate API level
 (managed entities are returned by the queries).
 The drawback is that you need to store the Lucene indexes somewhere
-(file system, infinispan grid etc).
-Have a look at the Infinispan section for more info on how to use Hibernate Search.
+(file system, infinispan grid, etc).
+Have a look at the Infinispan section (<<ogm-infinispan-indexstorage>>)
+for more info on how to use Hibernate Search.
