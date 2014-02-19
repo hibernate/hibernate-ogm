@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,22 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.document;
+package org.hibernate.ogm.datastore.document.options.navigation;
+
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.options.context.EntityContext;
 
 /**
- * A strategy for storing association information in a document datastore.
+ * Allows to configure document store options applying on a per-entity level. These options can be overridden for single
+ * properties.
  *
  * @author Gunnar Morling
  */
-public enum AssociationStorageType {
+public interface DocumentStoreEntityContext<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends EntityContext<E, P> {
 
 	/**
-	 * Stores association information in a dedicated document per association.
+	 * Specifies how associations of the configured entity should be persisted.
+	 *
+	 * @param associationStorage the association storage type to be used when not configured on the property level.
+	 * Overrides any settings on the global level.
+	 * @return this context, allowing for further fluent API invocations
 	 */
-	ASSOCIATION_DOCUMENT,
-
-	/**
-	 * Store association information within the entity.
-	 */
-	IN_ENTITY
+	E associationStorage(AssociationStorageType associationStorage);
 }

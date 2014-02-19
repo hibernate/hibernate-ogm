@@ -27,9 +27,9 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;

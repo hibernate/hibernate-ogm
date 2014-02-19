@@ -18,25 +18,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.context.document;
+package org.hibernate.ogm.datastore.document.options.navigation;
 
-import org.hibernate.ogm.options.context.EntityContext;
-import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.options.context.GlobalContext;
 
 /**
- * Allows to configure document store options applying on a per-entity level. These options can be overridden for single
- * properties.
+ * Allows to configure document store options applying on a global level. These options may be overridden for single
+ * entities or properties.
  *
  * @author Gunnar Morling
  */
-public interface DocumentStoreEntityContext<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends EntityContext<E, P> {
+public interface DocumentStoreGlobalContext<G extends DocumentStoreGlobalContext<G, E>, E extends DocumentStoreEntityContext<E, ?>> extends GlobalContext<G, E> {
 
 	/**
-	 * Specifies how associations of the configured entity should be persisted.
+	 * Specifies how associations should be persisted.
 	 *
-	 * @param associationStorage the association storage type to be used when not configured on the property level.
-	 * Overrides any settings on the global level.
+	 * @param associationStorage the association storage type to be used when not configured on the entity or property
+	 * level
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	E associationStorage(AssociationStorageType associationStorage);
+	G associationStorage(AssociationStorageType associationStorage);
 }

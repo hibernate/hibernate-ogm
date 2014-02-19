@@ -18,10 +18,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.context.document;
+package org.hibernate.ogm.datastore.document.options.navigation;
 
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.options.context.PropertyContext;
-import org.hibernate.ogm.options.document.AssociationStorageType;
 
 /**
  * Allows to configure document store options applying on a per-entity level.

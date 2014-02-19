@@ -33,8 +33,8 @@ import javax.persistence.Version;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 import org.hibernate.annotations.OptimisticLock;
-import org.hibernate.ogm.options.document.AssociationStorage;
-import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.AssociationStorage;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**

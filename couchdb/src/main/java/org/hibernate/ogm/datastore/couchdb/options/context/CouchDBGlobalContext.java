@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.options.context;
 
-import org.hibernate.ogm.options.context.document.DocumentStoreGlobalContext;
+import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 
 /**
  * Allows to configure CouchDB-specific options applying on a global level. These options may be overridden for single

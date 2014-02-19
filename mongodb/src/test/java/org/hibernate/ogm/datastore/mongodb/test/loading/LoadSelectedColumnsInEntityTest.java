@@ -26,10 +26,10 @@ import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.options.document.AssociationStorageType;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;

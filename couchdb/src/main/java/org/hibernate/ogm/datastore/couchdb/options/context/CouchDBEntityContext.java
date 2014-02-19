@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.options.context;
 
-import org.hibernate.ogm.options.context.document.DocumentStoreEntityContext;
+import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 
 /**
  * Allows to configure CouchDB-specific options applying on a per-entity level. These options can be overridden for

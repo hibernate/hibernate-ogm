@@ -28,7 +28,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
-import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.test.utils.GridDialectType;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.SkipByGridDialect;
