@@ -41,7 +41,7 @@ import org.hibernate.ogm.test.options.mapping.model.Microwave;
 import org.hibernate.ogm.test.options.mapping.model.Refrigerator;
 import org.hibernate.ogm.test.options.mapping.model.SampleDatastoreProvider;
 import org.hibernate.ogm.test.options.mapping.model.SampleNoSqlDatastore;
-import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurer;
+import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurator;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.hibernate.ogm.test.utils.TestHelper;
 import org.junit.After;
@@ -107,33 +107,33 @@ public class OptionIntegrationTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerInstance() throws Exception {
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorInstance() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, new SampleOptionConfigurer() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, new SampleOptionConfigurator() );
 		setupSessionFactory( configuration );
 
-		assertOptionsSetViaConfigurer();
+		assertOptionsSetViaConfigurator();
 	}
 
 	@Test
-	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerType() throws Exception {
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorType() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class );
 		setupSessionFactory( configuration );
 
-		assertOptionsSetViaConfigurer();
+		assertOptionsSetViaConfigurator();
 	}
 
 	@Test
-	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfigurerTypeName() throws Exception {
+	public void testThatOptionsCanBeSetAndRetrievedUsingOptionConfiguratorTypeName() throws Exception {
 		OgmConfiguration configuration = getConfiguration();
-		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURER, SampleOptionConfigurer.class.getName() );
+		configuration.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, SampleOptionConfigurator.class.getName() );
 		setupSessionFactory( configuration );
 
-		assertOptionsSetViaConfigurer();
+		assertOptionsSetViaConfigurator();
 	}
 
-	private void assertOptionsSetViaConfigurer() {
+	private void assertOptionsSetViaConfigurator() {
 		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 

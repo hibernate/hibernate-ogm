@@ -104,7 +104,7 @@ public class DocumentStoreConfigurationTest {
 	@Test
 	public void shouldRaiseAnExceptionIfTheDatabaseNameConfigurationValueIsTheEmptyString() {
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000053" );
+		thrown.expectMessage( "OGM000052" );
 
 		configurationValues.put( OgmProperties.DATABASE, "" );
 		new TestDocumentStoreConfiguration( configurationValues );

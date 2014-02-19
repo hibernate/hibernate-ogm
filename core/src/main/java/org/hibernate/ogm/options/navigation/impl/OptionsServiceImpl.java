@@ -27,7 +27,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.spi.OptionConfigurer;
+import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -66,16 +66,16 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 				.instantiate()
 				.withClassLoaderService( classLoaderService )
 				.getValue();
-		OptionConfigurer configurer = propertyReader.property( OgmProperties.OPTION_CONFIGURER, OptionConfigurer.class )
+		OptionConfigurator configurator = propertyReader.property( OgmProperties.OPTION_CONFIGURATOR, OptionConfigurator.class )
 				.instantiate()
 				.withClassLoaderService( classLoaderService )
 				.getValue();
 
-		if ( context != null && configurer != null ) {
-			throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURER );
+		if ( context != null && configurator != null ) {
+			throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURATOR );
 		}
-		else if ( configurer != null ) {
-			sessionFactoryOptions = invoke( configurer );
+		else if ( configurator != null ) {
+			sessionFactoryOptions = invoke( configurator );
 		}
 		else if ( context != null ) {
 			sessionFactoryOptions = context;
@@ -97,15 +97,15 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 	}
 
 	/**
-	 * Invokes the given configurer, obtaining the correct global context type via the datastore configuration type of
+	 * Invokes the given configurator, obtaining the correct global context type via the datastore configuration type of
 	 * the current datastore provider.
 	 *
-	 * @param configurer the configurer to invoke
-	 * @return a context object containing the options set via the given configurer
+	 * @param configurator the configurator to invoke
+	 * @return a context object containing the options set via the given configurator
 	 */
-	private <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> OptionsServiceContext invoke(OptionConfigurer configurer) {
+	private <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> OptionsServiceContext invoke(OptionConfigurator configurator) {
 		ConfigurableImpl configurable = new ConfigurableImpl();
-		configurer.configure( configurable );
+		configurator.configure( configurable );
 
 		return configurable.getContext();
 	}
