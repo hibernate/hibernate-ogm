@@ -21,13 +21,17 @@ which is already able to convert simple queries
 using Hibernate Search under the precondition that:
 
 * no join, aggregation, or other relational operations are implied
-* you are using the Hibernate Session API (JPA integration is coming)
 * the target entities and properties are indexed by Hibernate Search
-  (no validation is happening today)
 
+You can make use of the following JP-QL constructs:
 
-We do realize these are strong limitations,
-so while it might be interesting to try it out,
+* simple comparisons using "<", "<=", "=", ">=" and ">"
+* +IS NULL+ and +IS NOT NULL+
+* the boolean operators +AND+, +OR+, +NOT+
+* +LIKE+, +IN+ and +BETWEEN+
+
+We do realize that this leaves many cases uncovered.
+So while it might be interesting to try it out,
 for real usage we suggest for now to use either Hibernate Search full-text queries
 or the native query technology of the NoSQL storage you are using.
 
