@@ -28,6 +28,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcern.WriteConcernConverter;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
@@ -35,7 +36,8 @@ import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
- * Define the write concern type
+ * Note: This is not implemented yet! You can specify a globally applying write-concern via
+ * {@link MongoDBProperties#WRITE_CONCERN}. Define the write concern type
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */

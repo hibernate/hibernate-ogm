@@ -117,7 +117,6 @@ The API allows set options in a type-safe fashion on the global, entity and prop
 
 When working with MongoDB, you can currently configure the following options using the API:
 
-* write concern (on the global level)
 * association storage strategy (on the global, entity and property level)
 * association document storage strategy (on the global, entity and property level)
 
@@ -133,7 +132,6 @@ public class MyOptionConfigurator extends OptionConfigurator {
     @Override
     public void configure(Configurable configurable) {
         configurable.configureOptionsFor( MongoDB.class )
-            .writeConcern( WriteConcernType.JOURNALED )
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
                 .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
