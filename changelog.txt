@@ -67,6 +67,7 @@ Hibernate OGM Changelog
     * [OGM-423] - Upgrade to Hibernate Search 4.5.0.CR1 and related HQL Parser 1.0.0.Alpha6
     * [OGM-430] - Go for version 4.1 after the move to JPA 2.1
     * [OGM-438] - Introduce a helper to test Infinispan in clustered mode
+    * [OGM-459] - Don't deploy distribution (tar.gz, zip) to Nexus
 
 
 4.0.0.Beta4 (25-10-2013)

@@ -39,6 +39,7 @@
 
     <properties>
         <assembly.name>hibernate-ogm-${project.version}</assembly.name>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <build>
