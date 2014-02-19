@@ -1,6 +1,74 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Beta1 (19-02-2014)
+-------------------------
+
+** Sub-task
+    * [OGM-384] - Add documentation for CouchDB dialect
+
+** Bug
+    * [OGM-387] - Add integration test for an app deploying both an ORM PU and an OGM PU
+    * [OGM-394] - Avoid test failures to fail other tests as well
+    * [OGM-397] - Correctly access "tuplesByTableName" CouchDB view
+    * [OGM-413] - Make sure OGM specific property settings are set and kept on
+    * [OGM-416] - Stackoverflow when using an OGM and ORM PU at the same time
+    * [OGM-440] - Remove unused naming strategy setting in OgmIntegrator
+    * [OGM-443] - Updates operations in Ehcache dialect are only applied in memory
+
+** Improvement
+    * [OGM-37] - Use externalizers for serializable types in Infinispan
+    * [OGM-107] - Collect properties and regroup them under a Environment interface or something equivalent
+    * [OGM-200] - Rethink packaging for datastores
+    * [OGM-232] - Introduce a settings interface to host configuration names constants
+    * [OGM-292] - Reorganize OGM packages for datastores
+    * [OGM-351] - Provide typed APIs for putting and retrieving multi-valued and unique options
+    * [OGM-378] - Make dependency to hibernate-search-orm mandatory for Infinispan module
+    * [OGM-381] - Add Neo4j dependencies only once to distribution file
+    * [OGM-391] - Avoid fetching complete document just for deletion with CouchDB backend
+    * [OGM-393] - Split notion of option and option value
+    * [OGM-398] - Create separate design documents for production and test views in CouchDB
+    * [OGM-400] - Store bytes as numeric value in CouchDB, calendar/date as ISO8601 strings
+    * [OGM-402] - Only skip CouchDB tests instead of complete module when no server is configured
+    * [OGM-403] - Remove unnecessary repos and dependency
+    * [OGM-408] - Align classname hosting each datastore provider properties names
+    * [OGM-410] - Use common ConfigurationPropertyReader for accessing configuration values
+    * [OGM-415] - Support authenticated access to CouchDB
+    * [OGM-422] - Adapt CheckStyle rules to allow imports only used in JavaDoc
+    * [OGM-425] - Documentation updates for 4.1.0.Beta1 release
+    * [OGM-432] - Never store @ElementCollection members in association documents
+    * [OGM-435] - Make key objects not Serializable
+    * [OGM-444] - Align name and access semantics of properties representing external configuration files
+
+** New Feature
+    * [OGM-14] - Support TypedQuery in OgmEntityManager
+    * [OGM-15] - Support named queries
+    * [OGM-21] - Support EntityManager#createQuery(String)
+    * [OGM-207] - Make MongoDB's association storage strategy available per association
+    * [OGM-262] - Support CouchDB database
+    * [OGM-363] - Add support for @NamedNativeQuery
+    * [OGM-389] - Support entity embedded mode for associations with CouchDB backend
+
+** Task
+    * [OGM-206] - Rename PropertyMetadataProvider and local variables
+    * [OGM-310] - Upgrade Hibernate ORM to 4.3.0.Beta4
+    * [OGM-340] - Create integration tests for Wildfly
+    * [OGM-352] - Describe option configuration mechanism in the reference documentation
+    * [OGM-361] - Remove the started flag from InfinispanDatastoreProvider
+    * [OGM-362] - Update to Infinspan 6.x
+    * [OGM-375] - Upgrade Hibernate ORM to 4.3.0.Final
+    * [OGM-380] - Javadoc improvement for Option class
+    * [OGM-385] - Use more natural format for CouchDB documents
+    * [OGM-392] - Make CouchDB _rev attribute usable in entities
+    * [OGM-395] - Remove reference to build property buildDocs
+    * [OGM-399] - Upgrade to Infinispan 6.0.0.Final
+    * [OGM-404] - BuiltInTypeTest sometimes fails because of the TimeZone
+    * [OGM-418] - Upgrade to WildFly 8.0.0.CR1
+    * [OGM-423] - Upgrade to Hibernate Search 4.5.0.CR1 and related HQL Parser 1.0.0.Alpha6
+    * [OGM-430] - Go for version 4.1 after the move to JPA 2.1
+    * [OGM-438] - Introduce a helper to test Infinispan in clustered mode
+
+
 4.0.0.Beta4 (25-10-2013)
 -------------------------
 
