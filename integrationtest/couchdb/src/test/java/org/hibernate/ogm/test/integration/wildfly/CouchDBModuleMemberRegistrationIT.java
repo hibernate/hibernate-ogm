@@ -89,7 +89,7 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 							.createProperty().name( "hibernate.ogm.datastore.host" ).value( couchDBHostName ).up()
 							.createProperty().name( "hibernate.ogm.datastore.port" ).value( couchDBPortNumber ).up()
 							.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
-							.createProperty().name( "hibernate.org.datastore.create_database" ).value( "true" ).up()
+							.createProperty().name( "hibernate.ogm.datastore.create_database" ).value( "true" ).up()
 					.up().up();
 	}
 

@@ -72,8 +72,10 @@ Defaults to +org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on +OgmProperties+ and +EhcacheProperties+
+you should use the constants accessible via +EhcacheProperties+
 when specifying the configuration properties listed above.
+Common properties shared between stores are declared on +OgmProperties+.
+To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
 [[ogm-ehcache-transactions]]

@@ -15,8 +15,8 @@ The following properties are available to configure MongoDB support:
 .MongoDB datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use MongoDB as a datastore provider, this property must be set to +mongodb+
-hibernate.ogm.option.configurer::
-The fully-qualified class name or an instance of a programmatic option configurer (see <<ogm-mongodb-programmatic-configuration>>)
+hibernate.ogm.option.configurator::
+The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-mongodb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
 The hostname of the MongoDB instance. The default value is +127.0.0.1+.
 hibernate.ogm.datastore.port::
@@ -37,10 +37,11 @@ This configuration is expressed in milliseconds.
 The default value is +5000+.
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
-The following two strategies exist (values of the +org.hibernate.ogm.options.generic.document.AssociationStorageType+ enum):
+The following two strategies exist (values of the +org.hibernate.ogm.datastore.document.options.AssociationStorageType+ enum):
 +IN_ENTITY+ (store association information within the entity) and
 +ASSOCIATION_DOCUMENT+ (store association information in a dedicated document per association).
-+IN_ENTITY+ is the default.
++IN_ENTITY+ is the default and recommended option
+unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
 hibernate.ogm.mongodb.association_document_storage::
 Defines how to store assocation documents (applies only if the +ASSOCIATION_DOCUMENT+
 association storage strategy is used).
@@ -59,8 +60,10 @@ This option is case insensitive and the default value is +ACKNOWLEDGED+.
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on +MongoDBProperties+ and +OgmProperties+
+you should use the constants accessible via +MongoDBProperties+
 when specifying the configuration properties listed above.
+Common properties shared between (document) stores are declared on +OgmProperties+ and +DocumentStoreProperties+, respectively.
+To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
 [[ogm-mongodb-annotation-configuration]]
@@ -118,14 +121,14 @@ When working with MongoDB, you can currently configure the following options usi
 * association storage strategy (on the global, entity and property level)
 * association document storage strategy (on the global, entity and property level)
 
-To set these options via the API, you need to create an +OptionConfigurer+ implementation
+To set these options via the API, you need to create an +OptionConfigurator+ implementation
 as shown in the following example:
 
-.Example of an option configurer
+.Example of an option configurator
 ====
 [source, JAVA]
 ----
-public class MyOptionConfigurer extends OptionConfigurer {
+public class MyOptionConfigurator extends OptionConfigurator {
 
     @Override
     public void configure(Configurable configurable) {
@@ -156,9 +159,13 @@ Global-level options specified via the API complement the settings given via con
 In case a setting is given via a configuration property and the API at the same time,
 the latter takes precedence.
 
-To register an option configurer, specify its name using the +hibernate.ogm.option.configurer+ property.
+Note that for a given level (property, entity, global),
+an option set via annotations is overridden by the same option set programmatically.
+This allows you to change settings in a more flexible way if required.
+
+To register an option configurator, specify its class name using the +hibernate.ogm.option.configurator+ property.
 When bootstrapping a session factory or entity manager factory programmatically,
-you also can pass in an +OptionConfigurer+ instance or the class object representing the configurer type.
+you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
 
 
 [[ogm-mongodb-storage-prinicples]]
@@ -446,7 +453,7 @@ Queries using these constructs will be transformed into equivalent native MongoD
 In cases where this is not enough, you have two additional strategies to query entities stored by Hibernate OGM:
 
 * use native MongoDB queries
-* use Hibernate Search
+* use Hibernate Search (brings advanced full-text and geospatial queries)
 
 Because Hibernate OGM stores data in MongoDB in a natural way,
 you can use the MongoDB driver and execute queries on the datastore directly

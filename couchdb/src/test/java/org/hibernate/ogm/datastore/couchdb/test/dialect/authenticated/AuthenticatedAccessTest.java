@@ -90,7 +90,7 @@ public class AuthenticatedAccessTest {
 		OgmConfiguration configuration = getConfiguration();
 
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
-		host = propertyReader.property( OgmProperties.HOST, String.class ).getValue();
+		host = propertyReader.property( OgmProperties.HOST, String.class ).withDefault( "localhost" ).getValue();
 		port = propertyReader.property( OgmProperties.PORT, int.class ).withDefault( 5984 ).getValue();
 		serverUri = "http://" + host + ":" + port;
 

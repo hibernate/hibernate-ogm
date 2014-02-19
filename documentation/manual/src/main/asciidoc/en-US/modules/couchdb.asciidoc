@@ -24,8 +24,8 @@ The following properties are available to configure CouchDB support in Hibernate
 .CouchDB datastore configuration properties
 hibernate.ogm.datastore.provider::
 To use CouchDB as a datastore provider, this property must be set to +couchdb+
-hibernate.ogm.option.configurer::
-The fully-qualified class name or an instance of a programmatic option configurer (see <<ogm-couchdb-programmatic-configuration>>)
+hibernate.ogm.option.configurator::
+The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-couchdb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
 The hostname of the CouchDB instance. The default value is +127.0.0.1+.
 hibernate.ogm.datastore.port::
@@ -48,16 +48,19 @@ This property has no default value.
 This property is ignored if the username isn't specified.
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in CouchDB.
-The following two strategies exist (values of the +org.hibernate.ogm.options.generic.document.AssociationStorageType+ enum):
+The following two strategies exist (values of the +org.hibernate.ogm.datastore.document.options.AssociationStorageType+ enum):
 +IN_ENTITY+ (store association information within the entity) and
 +ASSOCIATION_DOCUMENT+ (store association information in a dedicated document per association).
-+IN_ENTITY+ is the default.
++IN_ENTITY+ is the default and recommended option
+unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on +OgmProperties+
+you should use the constants accessible via +CouchDBProperties+
 when specifying the configuration properties listed above.
+Common properties shared between (document) stores are declared on +OgmProperties+ and +DocumentStoreProperties+, respectively.
+To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
 [[ogm-couchdb-annotation-configuration]]
@@ -112,14 +115,14 @@ When working with CouchDB, you can currently configure the following options usi
 
 * association storage strategy (on the global, entity and property level)
 
-To set this option via the API, you need to create an +OptionConfigurer+ implementation
+To set this option via the API, you need to create an +OptionConfigurator+ implementation
 as shown in the following example:
 
-.Example of an option configurer
+.Example of an option configurator
 ====
 [source, JAVA]
 ----
-public class MyOptionConfigurer extends OptionConfigurer {
+public class MyOptionConfigurator extends OptionConfigurator {
 
     @Override
     public void configure(Configurable configurable) {
@@ -148,9 +151,13 @@ Global-level options specified via the API complement the settings given via con
 In case a setting is given via a configuration property and the API at the same time,
 the latter takes precedence.
 
-To register an option configurer, specify its name using the +hibernate.ogm.option.configurer+ property.
+Note that for a given level (property, entity, global),
+an option set via annotations is overridden by the same option set programmatically.
+This allows you to change settings in a more flexible way if required.
+
+To register an option configurator, specify its class name using the +hibernate.ogm.option.configurator+ property.
 When bootstrapping a session factory or entity manager factory programmatically,
-you also can pass in an +OptionConfigurer+ instance or the class object representing the configurer type.
+you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
 
 [[ogm-couchdb-storage-prinicples]]
 ==== Storage principles
@@ -176,7 +183,7 @@ CouchDB will raise an optimistic locking error
 
 For this mechanism to work, you need to declare a property for the +_rev+ attribute in all your entity types
 and mark it with the +@Version+ and +@Generated+ annotations.
-The first markes it as a property used for optimistic locking, while the latter advices Hibernate OGM
+The first marks it as a property used for optimistic locking, while the latter advices Hibernate OGM
 to refresh that property after writes since its value is managed by the datastore.
 
 [NOTE]
@@ -229,7 +236,7 @@ Note that CouchDB doesn't have a concept of "tables" or "collections" as e.g. Mo
 Instead all documents are stored in one large bucket.
 Thus Hibernate OGM needs to add two additional attributes:
 +$type+ which contains the type of a document (entity vs. association documents)
-and +$table+ which specifies the entity type.
+and +$table+ which specifies the entity name as derived from the type or given via the +@Table+ annotation.
 
 [NOTE]
 ====

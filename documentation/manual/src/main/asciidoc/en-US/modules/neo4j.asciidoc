@@ -54,8 +54,10 @@ Name of the index that stores the next available value for a sequence. Default t
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants declared on +OgmProperties+ and +Neo4jProperties+
+you should use the constants accessible via +Neo4jProperties+
 when specifying the configuration properties listed above.
+Common properties shared between stores are declared on +OgmProperties+.
+To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
 ==== Storage principles
