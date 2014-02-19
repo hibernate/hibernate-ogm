@@ -20,15 +20,16 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.spi.EntityOptions;
+import org.hibernate.ogm.options.navigation.EntityContext;
+import org.hibernate.ogm.options.navigation.PropertyContext;
 
 /**
- * Base implementation for options declared by {@link EntityOptions}.
+ * Base implementation for {@link EntityContext}s.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BaseEntityContext<E extends EntityOptions<E>> extends BaseContext implements EntityOptions<E> {
+public abstract class BaseEntityContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends BaseContext implements EntityContext<E, P> {
 
 	public BaseEntityContext(ConfigurationContext context) {
 		super( context );

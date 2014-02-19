@@ -20,10 +20,11 @@
  */
 package org.hibernate.ogm.options.navigation;
 
-import org.hibernate.ogm.options.spi.GlobalOptions;
-
 /**
- * Global level and entry point to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * Entry point to the options navigation API. Let's you define global level options as well as navigate to a specific
+ * entity level.
+ * <p>
+ * Implementations must declare a constructor with a single parameter of type
  * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
  * {@link org.hibernate.ogm.options.navigation.impl.BaseGlobalContext}.
  *
@@ -32,7 +33,7 @@ import org.hibernate.ogm.options.spi.GlobalOptions;
  * pattern
  * @param <E> the type of provider-specific entity context definition, associated with the specific global context type
  */
-public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends GlobalOptions<G> {
+public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> {
 
 	/**
 	 * Specify mapping for the entity {@code type}

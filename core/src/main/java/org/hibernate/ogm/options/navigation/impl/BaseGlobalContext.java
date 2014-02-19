@@ -20,15 +20,16 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.ogm.options.spi.GlobalOptions;
+import org.hibernate.ogm.options.navigation.EntityContext;
+import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
- * Base implementation for options declared by {@link GlobalOptions}.
+ * Base implementation {@link GlobalContext}s.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public abstract class BaseGlobalContext<G extends GlobalOptions<G>> extends BaseContext implements GlobalOptions<G> {
+public abstract class BaseGlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends BaseContext implements GlobalContext<G, E> {
 
 	public BaseGlobalContext(ConfigurationContext context) {
 		super( context );
