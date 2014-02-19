@@ -37,8 +37,22 @@ Possible values are
 When bootstrapping a session factory or entity manager factory programmatically,
 you should use the constants declared on +OgmProperties+ to specify configuration properties
 such as +hibernate.ogm.datastore.provider+.
+
 In this case you also can specify the provider in form of a class object of a datastore provider type
-or pass an instance of a datastore provider type.
+or pass an instance of a datastore provider type:
+
+[source, JAVA]
+----
+Map<String, Object> properties = new HashMap<String, Object>();
+
+// pass the type
+properties.put( OgmProperties.DATASTORE_PROVIDER, MyDatastoreProvider.class );
+// or an instance
+properties.put( OgmProperties.DATASTORE_PROVIDER, new MyDatastoreProvider() );
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory( "my-pu", properties );
+----
+
 ====
 
 You also need to add the relevant Hibernate OGM module in your classpath.
