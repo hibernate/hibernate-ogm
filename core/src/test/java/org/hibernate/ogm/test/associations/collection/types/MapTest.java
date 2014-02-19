@@ -27,7 +27,7 @@ import static org.hibernate.ogm.test.utils.TestHelper.getNumberOfEmbeddedCollect
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.test.utils.OgmTestCase;
 import org.junit.Test;
 

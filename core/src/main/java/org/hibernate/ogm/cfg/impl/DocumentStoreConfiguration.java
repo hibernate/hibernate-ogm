@@ -24,7 +24,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.options.document.AssociationStorageType;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 

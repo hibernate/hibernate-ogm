@@ -30,10 +30,10 @@ import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.ogm.datastore.document.options.AssociationStorage;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorage;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
-import org.hibernate.ogm.options.document.AssociationStorage;
-import org.hibernate.ogm.options.document.AssociationStorageType;
 
 /**
  * @author Gunnar Morling

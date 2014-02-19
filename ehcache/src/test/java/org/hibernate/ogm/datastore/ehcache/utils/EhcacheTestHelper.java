@@ -25,13 +25,13 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.ehcache.Ehcache;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.context.GlobalContext;
-import org.hibernate.ogm.options.document.AssociationStorageType;
 import org.hibernate.ogm.test.utils.TestableGridDialect;
 
 /**

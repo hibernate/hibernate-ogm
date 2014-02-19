@@ -22,7 +22,7 @@ package org.hibernate.ogm.datastore.couchdb.options.context.impl;
 
 import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBEntityContext;
 import org.hibernate.ogm.datastore.couchdb.options.context.CouchDBPropertyContext;
-import org.hibernate.ogm.options.context.document.impl.DocumentStorePropertyContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStorePropertyContextImpl;
 import org.hibernate.ogm.options.context.impl.ConfigurationContext;
 
 /**
