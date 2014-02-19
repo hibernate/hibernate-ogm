@@ -8,8 +8,8 @@ This file is not fleshed out, it's just a collection of tips.
 
 A soft limit of 100 characters is recommended.
 At the end of each sentence, go to the next line.
-Consider going to the next line for each new clause, in particular if the sentence would go beyond 80 characters.
-But do not obsess: if a multi-clause sentence is below 80 characters,
+Consider going to the next line for each new clause, in particular if the sentence would go beyond 100 characters.
+But do not obsess: if a multi-clause sentence is below 100 characters,
 don't split it to limit the _verticality_ of the document.
 For long links, tend to go to the next line.
 
