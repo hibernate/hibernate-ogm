@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,38 +18,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.impl;
+package org.hibernate.ogm.datastore.map;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.options.context.GlobalContext;
+import org.hibernate.ogm.options.context.impl.ConfigurationContext;
+import org.hibernate.ogm.options.context.impl.GenericOptionModel;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * Allows to configure options specific to OGM's simple map data store.
+ *
+ * @author Gunnar Morling
  */
-public final class MapTupleSnapshot implements TupleSnapshot {
-	private final Map<String, Object> map;
-
-	public MapTupleSnapshot(Map<String, Object> map) {
-		this.map = map;
-	}
-	@Override
-	public Object get(String column) {
-		return map.get( column );
-	}
+public class MapDatastore implements DatastoreConfiguration<GlobalContext<?, ?>> {
 
 	@Override
-	public boolean isEmpty() {
-		return map.isEmpty();
-	}
-
-	@Override
-	public Set<String> getColumnNames() {
-		return map.keySet();
-	}
-
-	public Map<String, Object> getMap() {
-		return map;
+	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
+		return GenericOptionModel.createGlobalContext( context );
 	}
 }
