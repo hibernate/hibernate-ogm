@@ -37,7 +37,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * Loads the appropriate {@link DatastoreProvider}. Driven by the {@link OgmProperties#DATASTORE_PROVIDER} property.
  * <p>
  * This is a {@link SessionFactoryServiceInitiator} because a {@code DatastoreProvider} can be a
- * {@link org.hibernate.ogm.datastore.StartStoppable} service - the
+ * {@link org.hibernate.ogm.datastore.spi.StartStoppable} service - the
  * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry} calls {@code StartStoppable} and passes the
  * {@link org.hibernate.SessionFactory}.
  *

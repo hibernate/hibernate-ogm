@@ -23,7 +23,7 @@ package org.hibernate.ogm.service.impl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.datastore.StartStoppable;
+import org.hibernate.ogm.datastore.spi.StartStoppable;
 import org.hibernate.service.Service;
 import org.hibernate.service.internal.SessionFactoryServiceRegistryImpl;
 import org.hibernate.service.spi.Configurable;
