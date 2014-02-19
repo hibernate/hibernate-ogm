@@ -33,7 +33,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  * @author Gunnar Morling
  */
 public abstract class DocumentStoreGlobalContextImpl<G extends DocumentStoreGlobalContext<G, E>, E extends DocumentStoreEntityContext<E, ?>> extends
-		BaseGlobalContext<G> implements DocumentStoreGlobalContext<G, E> {
+		BaseGlobalContext<G, E> implements DocumentStoreGlobalContext<G, E> {
 
 	public DocumentStoreGlobalContextImpl(ConfigurationContext context) {
 		super( context );

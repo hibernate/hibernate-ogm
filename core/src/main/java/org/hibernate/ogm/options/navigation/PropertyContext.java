@@ -22,10 +22,11 @@ package org.hibernate.ogm.options.navigation;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.options.spi.PropertyOptions;
-
 /**
- * Property level to the mapping API. Implementations must declare a constructor with a single parameter of type
+ * Property level to the options navigation API. Let's you define property level options as well as navigate to a
+ * another property level of the current entity or to another entity.
+ * <p>
+ * Implementations must declare a constructor with a single parameter of type
  * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
  * {@link org.hibernate.ogm.options.navigation.impl.BasePropertyContext}.
  *
@@ -35,7 +36,7 @@ import org.hibernate.ogm.options.spi.PropertyOptions;
  * @param <P> the type of a provider-specific property context definition, following the self-referential generic type
  * pattern
  */
-public interface PropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends PropertyOptions<P> {
+public interface PropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> {
 
 	/**
 	 * Specify mapping for the entity {@code type}

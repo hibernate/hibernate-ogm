@@ -36,7 +36,7 @@ public class GenericOptionModel {
 		return context.createGlobalContext( GenericGlobalOptions.class, GenericEntityOptions.class, GenericPropertyOptions.class );
 	}
 
-	private abstract static class GenericGlobalOptions extends BaseGlobalContext<GenericGlobalOptions> implements
+	private abstract static class GenericGlobalOptions extends BaseGlobalContext<GenericGlobalOptions, GenericEntityOptions> implements
 			GlobalContext<GenericGlobalOptions, GenericEntityOptions> {
 
 		public GenericGlobalOptions(ConfigurationContext context) {
@@ -44,14 +44,16 @@ public class GenericOptionModel {
 		}
 	}
 
-	private abstract static class GenericEntityOptions extends BaseEntityContext<GenericEntityOptions> implements EntityContext<GenericEntityOptions, GenericPropertyOptions> {
+	private abstract static class GenericEntityOptions extends BaseEntityContext<GenericEntityOptions, GenericPropertyOptions> implements
+			EntityContext<GenericEntityOptions, GenericPropertyOptions> {
 
 		public GenericEntityOptions(ConfigurationContext context) {
 			super( context );
 		}
 	}
 
-	private abstract static class GenericPropertyOptions extends BasePropertyContext<GenericPropertyOptions> implements PropertyContext<GenericEntityOptions, GenericPropertyOptions> {
+	private abstract static class GenericPropertyOptions extends BasePropertyContext<GenericEntityOptions, GenericPropertyOptions> implements
+			PropertyContext<GenericEntityOptions, GenericPropertyOptions> {
 
 		public GenericPropertyOptions(ConfigurationContext context) {
 			super( context );

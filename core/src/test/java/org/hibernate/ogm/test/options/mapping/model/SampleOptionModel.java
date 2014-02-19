@@ -42,12 +42,15 @@ public class SampleOptionModel {
 	}
 
 	public interface SampleGlobalContext extends GlobalContext<SampleGlobalContext, SampleEntityContext> {
+
 		SampleGlobalContext force(boolean force);
+
 		SampleGlobalContext namedQuery(String name, String hql);
 
 	}
 
 	public interface SampleEntityContext extends EntityContext<SampleEntityContext, SamplePropertyContext> {
+
 		// inherited
 		SampleEntityContext force(boolean force);
 
@@ -55,10 +58,11 @@ public class SampleOptionModel {
 	}
 
 	public interface SamplePropertyContext extends PropertyContext<SampleEntityContext, SamplePropertyContext> {
+
 		SamplePropertyContext embed(Object object);
 	}
 
-	public abstract static class SampleGlobalContextImpl extends BaseGlobalContext<SampleGlobalContext> implements SampleGlobalContext {
+	public abstract static class SampleGlobalContextImpl extends BaseGlobalContext<SampleGlobalContext, SampleEntityContext> implements SampleGlobalContext {
 
 		public SampleGlobalContextImpl(ConfigurationContext context) {
 			super( context );
@@ -77,7 +81,7 @@ public class SampleOptionModel {
 		}
 	}
 
-	public abstract static class SampleEntityContextImpl extends BaseEntityContext<SampleEntityContext> implements SampleEntityContext {
+	public abstract static class SampleEntityContextImpl extends BaseEntityContext<SampleEntityContext, SamplePropertyContext> implements SampleEntityContext {
 
 		public SampleEntityContextImpl(ConfigurationContext context) {
 			super( context );
@@ -96,7 +100,8 @@ public class SampleOptionModel {
 		}
 	}
 
-	public abstract static class SamplePropertyContextImpl extends BasePropertyContext<SamplePropertyContext> implements SamplePropertyContext {
+	public abstract static class SamplePropertyContextImpl extends BasePropertyContext<SampleEntityContext, SamplePropertyContext> implements
+			SamplePropertyContext {
 
 		public SamplePropertyContextImpl(ConfigurationContext context) {
 			super( context );
