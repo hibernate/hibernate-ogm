@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,22 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.cfg.spi;
+package org.hibernate.ogm.test.options.mapping.model;
+
+import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.cfg.Configurable;
+import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 
 /**
- * A callback invoked at bootstrap time to apply configuration options. Can be passed via the option
- * {@link org.hibernate.ogm.cfg.OgmConfiguration#OGM_OPTION_CONFIGURER}.
- *
  * @author Gunnar Morling
  */
-public abstract class OptionConfigurer {
+public class SampleOptionConfigurator extends OptionConfigurator {
 
-	/**
-	 * Callback for applying configuration options.
-	 *
-	 * @param configurable allows to apply store-specific configuration options
-	 */
-	public abstract void configure(Configurable configurable);
+	@Override
+	public void configure(Configurable configurable) {
+		configurable.configureOptionsFor( SampleNoSqlDatastore.class )
+			.entity( Refrigerator.class )
+				.force( true )
+				.property( "temperature", ElementType.FIELD )
+					.embed( "Embedded" )
+			.entity( Microwave.class )
+				.name( "test" );
+	}
 }

@@ -34,15 +34,15 @@ package org.hibernate.ogm.cfg;
 public interface OgmProperties {
 
 	/**
-	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} when
+	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurator} when
 	 * bootstrapping Hibernate OGM. Supported value types are:
 	 * <ul>
-	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurer} type</li>
-	 * <li>{@link Class}: the class object representing an {@code OptionConfigurer} type</li>
-	 * <li>{@code OptionConfigurer}: a configurer instance</li>
+	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurator} type</li>
+	 * <li>{@link Class}: the class object representing an {@code OptionConfigurator} type</li>
+	 * <li>{@code OptionConfigurator}: a configurator instance</li>
 	 * </ul>
 	 */
-	String OPTION_CONFIGURER = "hibernate.ogm.option.configurer";
+	String OPTION_CONFIGURATOR = "hibernate.ogm.option.configurator";
 
 	String GRID_DIALECT = "hibernate.ogm.datastore.grid_dialect";
 

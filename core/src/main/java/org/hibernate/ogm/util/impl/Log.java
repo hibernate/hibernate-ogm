@@ -158,36 +158,33 @@ public interface Log extends BasicLogger {
 	@Message(id = 46, value = "Object %2$s of type %3$s specified via configuration property '%1$s' is not of the expected type %4$s")
 	HibernateException unexpectedInstanceType(String propertyName, String instance, String actualClassName, String expectedClassName);
 
-	@Message(id = 47, value = "Either an option configurer may be specified via configuration property '%1$s' or OgmConfiguration#configureOptions() may be called, but not both at the same time.")
+	@Message(id = 47, value = "Either an option configurator may be specified via configuration property '%1$s' or OgmConfiguration#configureOptions() may be called, but not both at the same time.")
 	HibernateException ambigiousOptionConfiguration(String propertyName);
 
-	@Message(id = 48, value = "Unexpected option configurer type %1$s. Make sure to pass an option configurer which is parameterized with the global context type of the current datastore configuration type %2$s.")
-	HibernateException unexpectedOptionConfigurerType(String configurerTypeName, String datastoreConfigurationTypeName, @Cause Exception cause);
-
-	@Message(id = 49, value = "Unknown association storage strategy: [%s]. Supported values are: %s" )
+	@Message(id = 48, value = "Unknown association storage strategy: [%s]. Supported values are: %s" )
 	HibernateException unknownAssociationStorageStrategy(String databaseName, String supportedValues);
 
-	@Message(id = 50, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '%s'.")
+	@Message(id = 49, value = "The value set for the configuration property '" + OgmProperties.PORT + "' must be a number between 1 and 65535. Found '%s'.")
 	HibernateException illegalPortValue(int value);
 
-	@Message(id = 51, value = "The value set for the configuration property '%1$s' must be an integer number. Found '%2$s'.")
+	@Message(id = 50, value = "The value set for the configuration property '%1$s' must be an integer number. Found '%2$s'.")
 	HibernateException notAnInteger(String propertyName, String value);
 
-	@Message(id = 52, value = "Unknown value given for configuration property '%1$s'; Found '%2$s', but supported values are: %3$s" )
+	@Message(id = 51, value = "Unknown value given for configuration property '%1$s'; Found '%2$s', but supported values are: %3$s" )
 	HibernateException unknownEnumerationValue(String propertyName, String value, String supportedValues);
 
-	@Message(id = 53, value = "Missing value for property '%s'")
+	@Message(id = 52, value = "Missing value for property '%s'")
 	HibernateException missingConfigurationProperty(String propertyName);
 
-	@Message(id = 54, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
+	@Message(id = 53, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
 	HibernateException unsupportedPropertyType(String propertyName, String value);
 
-	@Message(id = 55, value = "It is not possible to add or poll operations from a closed queue")
+	@Message(id = 54, value = "It is not possible to add or poll operations from a closed queue")
 	HibernateException closedOperationQueue();
 
-	@Message(id = 56, value = "Invalid URL given for configuration property '%1$s': %2$s; The specified resource could not be found.")
+	@Message(id = 55, value = "Invalid URL given for configuration property '%1$s': %2$s; The specified resource could not be found.")
 	HibernateException invalidConfigurationUrl(String propertyName, String url);
 
-	@Message(id = 57, value = "Unable to load record for retrieval of generated properties; Entity type: %1$s, id: %2$s")
+	@Message(id = 56, value = "Unable to load record for retrieval of generated properties; Entity type: %1$s, id: %2$s")
 	HibernateException couldNotRetrieveEntityForRetrievalOfGeneratedProperties(String entityType, Serializable id);
 }

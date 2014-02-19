@@ -327,7 +327,7 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000053" );
+		thrown.expectMessage( "OGM000052" );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
 
@@ -342,7 +342,7 @@ public class ConfigurationPropertyReaderTest {
 		properties.put( "myPort", 98765 );
 
 		thrown.expect( HibernateException.class );
-		thrown.expectMessage( "OGM000050" );
+		thrown.expectMessage( "OGM000049" );
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
 

@@ -41,7 +41,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Test for specifying the name of an {@link org.hibernate.ogm.cfg.spi.OptionConfigurer} type in persistence.xml.
+ * Test for specifying the name of an {@link org.hibernate.ogm.cfg.spi.OptionConfigurator} type in persistence.xml.
  *
  * @author Gunnar Morling
  */
@@ -51,7 +51,7 @@ public class JPAOptionIntegrationTest {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone-options.xml", Refrigerator.class );
 
 	@Test
-	public void shouldApplyOptionConfigurerSpecifiedInPersistenceXml() throws Exception {
+	public void shouldApplyOptionConfiguratorSpecifiedInPersistenceXml() throws Exception {
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-options" );
 		OptionsServiceContext optionsContext = getOptionsContext( emf );
 
