@@ -21,7 +21,6 @@
 package org.hibernate.ogm.datastore.mongodb.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
-import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
@@ -35,8 +34,11 @@ import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> {
 
 	/**
-	 * Note: This is not implemented yet! You can specify a globally applying write-concern via
-	 * {@link MongoDBProperties#WRITE_CONCERN}. Define the write concern type
+	 * Defines the type of write concern to be applied when performing write operations against the datastore.
+	 *
+	 * @param concern the write concern type
+	 * @return this context, allowing for further fluent API invocations
+	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
 	MongoDBGlobalContext writeConcern(WriteConcernType concern);
 

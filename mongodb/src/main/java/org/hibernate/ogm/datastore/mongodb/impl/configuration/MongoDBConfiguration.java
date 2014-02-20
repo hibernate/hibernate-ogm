@@ -25,9 +25,13 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
+import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.PropertyValidator;
 
@@ -35,20 +39,21 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.WriteConcern;
 
 /**
- * Configuration for {@link org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider}.
+ * Configuration for {@link MongoDBDatastoreProvider}.
  *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
 public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
+	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
+
 	/**
-	 * The default value used to set up the acknowledgement of write operations.
+	 * The default write concern.
 	 *
 	 * @see MongoDBProperties#WRITE_CONCERN
 	 */
-	public static final WriteConcern DEFAULT_WRITE_CONCERN = WriteConcern.ACKNOWLEDGED;
-
-	public static final String DEFAULT_ASSOCIATION_STORE = "Associations";
+	private static final WriteConcernType DEFAULT_WRITE_CONCERN = WriteConcernType.ACKNOWLEDGED;
 
 	/**
 	 * The default value used to set the timeout during the connection to the MongoDB instance This value is set in
@@ -56,7 +61,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 *
 	 * @see MongoDBProperties#TIMEOUT
 	 */
-	public static final int DEFAULT_TIMEOUT = 5000;
+	private static final int DEFAULT_TIMEOUT = 5000;
 
 	private static final int DEFAULT_PORT = 27017;
 
@@ -68,7 +73,13 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private final int timeout;
 	private final WriteConcern writeConcern;
 
-	public MongoDBConfiguration(Map<?, ?> configurationValues) {
+	/**
+	 * Creates a new {@link MongoDBConfiguration}.
+	 *
+	 * @param configurationValues configuration values given via {@code persistence.xml} etc.
+	 * @param globalOptions global settings given via an option configurator
+	 */
+	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContainer globalOptions) {
 		super( configurationValues, DEFAULT_PORT );
 
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
@@ -82,7 +93,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
 				.getValue();
 
-		this.writeConcern = this.buildWriteConcern( configurationValues );
+		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ) );
 	}
 
 	/**
@@ -93,25 +104,21 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return associationDocumentStorage;
 	}
 
-	private WriteConcern buildWriteConcern(Map<?, ?> cfg) {
-		Object cfgWriteConcern = cfg.get( MongoDBProperties.WRITE_CONCERN );
-		WriteConcern writeConcern = DEFAULT_WRITE_CONCERN;
-		String wcLogMessage = "ACKNOWLEDGED";
-		if ( cfgWriteConcern != null ) {
-			final String confWC = cfgWriteConcern.toString();
-			writeConcern = WriteConcern.valueOf( confWC );
+	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcernType apiConfiguredWriteConcern) {
+		WriteConcernType writeConcern;
 
-			if ( writeConcern == null ) {
-				writeConcern = DEFAULT_WRITE_CONCERN;
-				wcLogMessage = "ACKNOWLEDGED";
-			}
-			else {
-				wcLogMessage = confWC;
-			}
+		if ( apiConfiguredWriteConcern != null ) {
+			writeConcern = apiConfiguredWriteConcern;
 		}
-		// using a custom string representation because neither toString() nor getWString() return a user-friendly message
-		log.useWriteConcern( wcLogMessage );
-		return writeConcern;
+		else {
+			writeConcern = propertyReader.property( MongoDBProperties.WRITE_CONCERN, WriteConcernType.class )
+				.withDefault( DEFAULT_WRITE_CONCERN )
+				.getValue();
+		}
+
+		log.usingWriteConcern( writeConcern );
+
+		return writeConcern.getWriteConcern();
 	}
 
 	/**

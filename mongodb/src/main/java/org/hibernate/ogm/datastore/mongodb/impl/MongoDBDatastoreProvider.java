@@ -33,8 +33,11 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
 
@@ -44,13 +47,16 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
 
 /**
- * Provides access to MongoDB system
+ * Provides access to a MongoDB instance
  *
  * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
-public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable {
+public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final Log log = LoggerFactory.getLogger();
+
+	private ServiceRegistryImplementor serviceRegistry;
 
 	private boolean isCacheStarted;
 	private MongoClient mongo;
@@ -59,7 +65,13 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void configure(Map configurationValues) {
-		this.config = new MongoDBConfiguration( configurationValues );
+		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
+		this.config = new MongoDBConfiguration( configurationValues, optionsService.context().getGlobalOptions() );
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	public AssociationStorageType getAssociationStorage() {
@@ -136,5 +148,4 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			throw log.unableToConnectToDatastore( this.config.getHost(), this.config.getPort(), e );
 		}
 	}
-
 }

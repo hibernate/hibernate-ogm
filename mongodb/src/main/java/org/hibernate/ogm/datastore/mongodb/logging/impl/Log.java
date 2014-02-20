@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.TRACE;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
@@ -68,8 +69,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void removedAssociation(int nAffected);
 
 	@LogMessage(level = INFO)
-	@Message(id = 1211, value = "The configuration property '" + MongoDBProperties.WRITE_CONCERN + "' is set to %s")
-	void useWriteConcern(String writeConcern);
+	@Message(id = 1211, value = "Using write concern %s if not explicitly configured otherwise for specific entities")
+	void usingWriteConcern(WriteConcernType writeConcern);
 
 	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
 	HibernateException authenticationFailed(String username);
@@ -79,11 +80,6 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1215, value = "The value set for the configuration property" + MongoDBProperties.TIMEOUT + " must be a number greater than 0. Found '[%s]'.")
 	HibernateException mongoDBTimeOutIllegalValue(int timeout);
-
-	@Message(id = 1216, value = "'%s' cannot be set as an available value for " + MongoDBProperties.WRITE_CONCERN +
-			" you must choose between [ACKNOWLEDGED, ERRORS_IGNORED, FSYNC_IGNORED, UNACKNOWLEDGED, FSYNCED, JOURNALED, REPLICA_ACKNOWLEDGED," +
-			"NONE, NORMAL, SAFE, MAJORITY, FSYNC_SAFE, JOURNAL_SAFE, REPLICAS_SAFE]")
-	HibernateException unableToSetWriteConcern(String value);
 
 	@Message(id = 1217, value = "The result of a native query in MongoDB must be mapped by an entity")
 	HibernateException requireMetadatas();

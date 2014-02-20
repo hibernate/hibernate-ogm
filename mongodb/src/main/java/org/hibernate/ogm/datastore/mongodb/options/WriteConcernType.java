@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options;
 
+import com.mongodb.WriteConcern;
+
 /**
- * Define the various WriteConcern options for MongoDB.
+ * Write concern options for MongoDB. Represents the non-deprecated constants from {@link WriteConcern}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -30,42 +32,53 @@ public enum WriteConcernType {
 	/**
 	 * No exceptions are raised, even for network issues.
 	 */
-	ERRORS_IGNORED,
+	ERRORS_IGNORED(WriteConcern.ERRORS_IGNORED),
 
 	/**
 	 * Write operations that use this write concern will wait for acknowledgement from the primary server before
 	 * returning. Exceptions are raised for network issues, and server errors.
 	 */
-	ACKNOWLEDGED,
-
+	ACKNOWLEDGED(WriteConcern.ACKNOWLEDGED),
 	/**
 	 * Write operations that use this write concern will return as soon as the message is written to the socket.
 	 * Exceptions are raised for network issues, but not server errors.
 	 */
-	UNACKNOWLEDGED,
+	UNACKNOWLEDGED(WriteConcern.UNACKNOWLEDGED),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; the write operation waits for the server to flush
 	 * the data to disk.
 	 */
-	FSYNCED,
+	FSYNCED(WriteConcern.FSYNCED),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; the write operation waits for the server to group
 	 * commit to the journal file on disk.
 	 */
-	JOURNALED,
+	JOURNALED(WriteConcern.JOURNALED),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; waits for at least 2 servers for the write
 	 * operation.
 	 */
-	REPLICA_ACKNOWLEDGED,
+	REPLICA_ACKNOWLEDGED(WriteConcern.REPLICA_ACKNOWLEDGED),
 
 	/**
 	 * Exceptions are raised for network issues, and server errors; waits on a majority of servers for the write
 	 * operation.
 	 */
-	MAJORITY;
+	MAJORITY(WriteConcern.MAJORITY);
 
+	private WriteConcern writeConcern;
+
+	private WriteConcernType(WriteConcern writeConcern) {
+		this.writeConcern = writeConcern;
+	}
+
+	/**
+	 * Returns the {@link WriteConcern} associated with this enum value.
+	 */
+	public WriteConcern getWriteConcern() {
+		return writeConcern;
+	}
 }
