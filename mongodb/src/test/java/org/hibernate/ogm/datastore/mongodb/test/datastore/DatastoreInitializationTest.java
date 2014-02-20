@@ -22,6 +22,8 @@ package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +33,10 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.test.utils.TestHelper;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -51,6 +56,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.USERNAME, "notauser" );
 		cfg.put( OgmProperties.PASSWORD, "test" );
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry() );
 		provider.configure( cfg );
 		error.expect( HibernateException.class );
 		error.expectMessage( "OGM001213" );
@@ -69,6 +75,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.HOST, "203.0.113.1" );
 		//FIXME put the timeout setting as soon as OGM-219 is implemented
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry() );
 		provider.configure( cfg );
 		error.expect( HibernateException.class );
 		error.expectMessage( "OGM001214" );
@@ -96,6 +103,7 @@ public class DatastoreInitializationTest {
 		 * operation should not take more than 3 seconds.
 		  */
 		final long estimateSpentTime = 3L * 1000L * 1000L * 1000L;
+		provider.injectServices( getServiceRegistry() );
 		provider.configure( cfg );
 
 		Exception exception = null;
@@ -110,5 +118,13 @@ public class DatastoreInitializationTest {
 		if ( exception == null ) {
 			fail( "The expected exception has not been raised, a MongoDB instance runs on " + host );
 		}
+	}
+
+	private static ServiceRegistryImplementor getServiceRegistry() {
+		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
+		OptionsService optionService = mock( OptionsService.class );
+		when( optionService.context() ).thenReturn( new WritableOptionsServiceContext() );
+		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionService );
+		return serviceRegistry;
 	}
 }

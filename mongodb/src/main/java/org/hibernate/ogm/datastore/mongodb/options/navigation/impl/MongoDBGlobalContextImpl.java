@@ -30,6 +30,8 @@ import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalConte
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
+ * Converts global MongoDB options.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */

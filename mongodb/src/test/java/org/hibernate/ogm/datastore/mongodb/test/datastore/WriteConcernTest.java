@@ -27,64 +27,69 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
-import org.junit.BeforeClass;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.WriteConcern;
 
 /**
+ * Test for the write concern setting.
+ *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Gunnar Morling
  */
 public class WriteConcernTest {
 
-	private static Map<String, String> cfg;
+	private Map<String, String> cfg;
+	private WritableOptionsServiceContext optionsContext;
+	private MongoDBGlobalContext configuration;
 
-	/**
-	 * Set the basic configuration properties required to initialize a {@link MongoDBConfiguration}
-	 */
-	@BeforeClass
-	public static void initCfg() {
+	@Before
+	public void setupConfigurationMapAndContexts() {
 		cfg = new HashMap<String, String>();
-		cfg.put( OgmProperties.HOST, "localhost" );
-		cfg.put( OgmProperties.PORT, "27017" );
 		cfg.put( OgmProperties.DATABASE, "database" );
+
+		optionsContext = new WritableOptionsServiceContext();
+		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
 	}
 
-	/**
-	 * Test the case when the WriteConcern value has not been set at all.
-	 * The default value should then be used
-	 */
 	@Test
-	public void testNoConfiguration() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, null );
-
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
-		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
+	public void shouldUseAcknoledgedByDefault() {
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY );
+		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.ACKNOWLEDGED );
 	}
 
-	/**
-	 * Test the case when an invalid value has been set.
-	 * The default value should be used.
-	 */
 	@Test
-	public void testWrongConfiguration() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, "wrongValue" );
+	public void shouldApplyValueGivenViaProperties() {
+		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
-		assertEquals( config.buildOptions().getWriteConcern(), MongoDBConfiguration.DEFAULT_WRITE_CONCERN );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY );
+		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNALED );
 	}
 
-	/**
-	 * Test the case when a correct value has been set
-	 * It should translate the string property into the right WriteConcern value
-	 */
 	@Test
-	public void testCorrectValue() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNAL_SAFE" );
+	public void shouldApplyValueGivenViaGlobalOptions() {
+		configuration.writeConcern( WriteConcernType.FSYNCED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNAL_SAFE );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions() );
+		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
+	}
+
+	@Test
+	public void shouldPreferValueGivenViaGlobalOptionsOverValueFromProperties() {
+		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
+
+		configuration.writeConcern( WriteConcernType.FSYNCED );
+
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions() );
+		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
 	}
 }
