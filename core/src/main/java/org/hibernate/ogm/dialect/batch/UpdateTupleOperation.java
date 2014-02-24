@@ -21,6 +21,7 @@
 package org.hibernate.ogm.dialect.batch;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
@@ -32,10 +33,12 @@ public class UpdateTupleOperation implements Operation {
 
 	private final Tuple tuple;
 	private final EntityKey entityKey;
+	private final TupleContext tupleContext;
 
-	public UpdateTupleOperation(Tuple tuple, EntityKey entityKey) {
+	public UpdateTupleOperation(Tuple tuple, EntityKey entityKey, TupleContext tupleContext) {
 		this.tuple = tuple;
 		this.entityKey = entityKey;
+		this.tupleContext = tupleContext;
 	}
 
 	public Tuple getTuple() {
@@ -46,4 +49,7 @@ public class UpdateTupleOperation implements Operation {
 		return entityKey;
 	}
 
+	public TupleContext getTupleContext() {
+		return tupleContext;
+	}
 }

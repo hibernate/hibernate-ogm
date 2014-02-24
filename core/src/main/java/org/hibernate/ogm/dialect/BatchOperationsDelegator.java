@@ -108,27 +108,27 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
-		return dialect.createTuple( key );
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
+		return dialect.createTuple( key, tupleContext );
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			dialect.updateTuple( tuple, key );
+			dialect.updateTuple( tuple, key, tupleContext );
 		}
 		else {
-			getOperationQueue().add( new UpdateTupleOperation( tuple, key ) );
+			getOperationQueue().add( new UpdateTupleOperation( tuple, key, tupleContext ) );
 		}
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			dialect.removeTuple( key );
+			dialect.removeTuple( key, tupleContext );
 		}
 		else {
-			getOperationQueue().add( new RemoveTupleOperation( key ) );
+			getOperationQueue().add( new RemoveTupleOperation( key, tupleContext ) );
 		}
 	}
 

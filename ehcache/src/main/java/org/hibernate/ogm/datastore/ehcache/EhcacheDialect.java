@@ -104,7 +104,7 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
 		final HashMap<String, Object> tuple = new HashMap<String, Object>();
 		entityCache.put( new Element( new SerializableKey( key ), tuple ) );
@@ -113,7 +113,7 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 
@@ -122,7 +122,7 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		datastoreProvider.getEntityCache().remove( new SerializableKey( key ) );
 	}
 

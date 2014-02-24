@@ -55,6 +55,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -64,6 +65,7 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -116,6 +118,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
 
+	private final OptionsService optionsService;
+
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
@@ -130,6 +134,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		this.gridDialect = serviceRegistry.getService( GridDialect.class );
+		this.optionsService = serviceRegistry.getService( OptionsService.class );
 
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
@@ -223,7 +228,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( discriminator.getColumnName() != null ) {
 			columnNames.add( discriminator.getColumnName() );
 		}
-		this.tupleContext = new TupleContext( columnNames );
+		this.tupleContext = new TupleContext( columnNames, OptionsContextImpl.forEntity( optionsService.context(), getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata
@@ -413,10 +418,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		 * TODO should we use cache.replace() it seems more expensive to pass the resultset around "just" the atomicity of the operation
 		 */
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
+		final Tuple resultset = gridDialect.getTuple( key, getTupleContext() );
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.updateTuple( resultset, key );
+		gridDialect.updateTuple( resultset, key, getTupleContext() );
 		return nextVersion;
 	}
 
@@ -813,7 +818,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 				//dehydrate
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				gridDialect.updateTuple( resultset, key );
+				gridDialect.updateTuple( resultset, key, getTupleContext() );
 			}
 		}
 	}
@@ -932,7 +937,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			//dehydrate
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
-			gridDialect.updateTuple( resultset, key );
+			gridDialect.updateTuple( resultset, key, getTupleContext() );
 		}
 	}
 
@@ -952,7 +957,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Serializable id,
 			SessionImplementor session) {
 		if (resultset == null) {
-			resultset = gridDialect.createTuple( key );
+			resultset = gridDialect.createTuple( key, getTupleContext() );
 			gridIdentifierType.nullSafeSet( resultset, id, getIdentifierColumnNames(), session );
 		}
 		return resultset;
@@ -1052,9 +1057,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.onlyRemovePropertyMetadata()
 				.dehydrate();
 
-			gridDialect.removeTuple( key );
+			gridDialect.removeTuple( key, getTupleContext() );
 		}
-
 	}
 
 	@Override
@@ -1204,7 +1208,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	public TupleContext getTupleContext() {
-		return this.tupleContext;
+		return tupleContext;
 	}
 
 	public String getJpaEntityName() {

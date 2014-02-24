@@ -20,13 +20,18 @@
  */
 package org.hibernate.ogm.test.batch;
 
+import java.util.Collections;
+
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -47,13 +52,13 @@ public class OperationsQueueTest {
 	@Test(expected = HibernateException.class)
 	public void testAddCauseExceptionWhenQueueIsClosed() throws Exception {
 		queue.close();
-		queue.add( new RemoveTupleOperation( null ) );
+		queue.add( new RemoveTupleOperation( null, getEmptyTupleContext() ) );
 	}
 
 	@Test(expected = HibernateException.class)
 	public void testAddUpdateTupleCauseExceptionWhenQueueIsClosed() throws Exception {
 		queue.close();
-		queue.add( new UpdateTupleOperation( null, null ) );
+		queue.add( new UpdateTupleOperation( null, null, getEmptyTupleContext() ) );
 	}
 
 	@Test(expected = HibernateException.class)
@@ -65,7 +70,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testContainsKeyWhenAddingUpdateTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		UpdateTupleOperation expected = new UpdateTupleOperation( null, key );
+		UpdateTupleOperation expected = new UpdateTupleOperation( null, key, getEmptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( queue.contains( key ) ).isTrue();
@@ -74,7 +79,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testContainsKeyIsFalseWhenAddingRemoveTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		RemoveTupleOperation expected = new RemoveTupleOperation( key );
+		RemoveTupleOperation expected = new RemoveTupleOperation( key, getEmptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( queue.contains( key ) ).isFalse();
@@ -83,7 +88,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testAddRemoveTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		RemoveTupleOperation expected = new RemoveTupleOperation( key );
+		RemoveTupleOperation expected = new RemoveTupleOperation( key, getEmptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( expected ).isEqualTo( queue.poll() );
@@ -92,7 +97,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testAddUpdateTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		UpdateTupleOperation expected = new UpdateTupleOperation( null, key );
+		UpdateTupleOperation expected = new UpdateTupleOperation( null, key, getEmptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( expected ).isEqualTo( queue.poll() );
@@ -105,14 +110,14 @@ public class OperationsQueueTest {
 
 	@Test
 	public void testQueueSizeWhenAddingUpdateTupleOperation() throws Exception {
-		queue.add( new UpdateTupleOperation( null, entityKey() ) );
+		queue.add( new UpdateTupleOperation( null, entityKey(), getEmptyTupleContext() ) );
 
 		Assertions.assertThat( 1 ).isEqualTo( queue.size() );
 	}
 
 	@Test
 	public void testQueueSizeWhenAddingRemoveTupleOperation() throws Exception {
-		queue.add( new RemoveTupleOperation( entityKey() ) );
+		queue.add( new RemoveTupleOperation( entityKey(), getEmptyTupleContext() ) );
 
 		Assertions.assertThat( 1 ).isEqualTo( queue.size() );
 	}
@@ -121,5 +126,12 @@ public class OperationsQueueTest {
 		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "MetadataTable", new String[] {} );
 		EntityKey key = new EntityKey( keyMetadata, new Object[] {} );
 		return key;
+	}
+
+	private TupleContext getEmptyTupleContext() {
+		return new TupleContext(
+				Collections.<String>emptyList(),
+				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+		);
 	}
 }

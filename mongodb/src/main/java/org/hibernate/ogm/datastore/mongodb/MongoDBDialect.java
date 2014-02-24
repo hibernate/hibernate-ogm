@@ -159,7 +159,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject toSave = this.prepareIdObject( key );
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key, SnapshotType.INSERT ) );
 	}
@@ -260,7 +260,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 		DBObject updater = objectForUpdate( tuple, key, idObject );
 		getCollection( key ).update( idObject, updater, true, false );
@@ -323,7 +323,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		DBCollection collection = this.getCollection( key );
 		DBObject toDelete = this.prepareIdObject( key );
 		collection.remove( toDelete );
@@ -698,7 +698,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			batchedInserts.remove( entityKey );
 		}
 		else {
-			removeTuple( entityKey );
+			removeTuple( entityKey, tupleOperation.getTupleContext() );
 		}
 	}
 
@@ -711,7 +711,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 		else {
 			// Object already exists in the db or has invalid fields:
-			updateTuple( tuple, entityKey );
+			updateTuple( tuple, entityKey, tupleOperation.getTupleContext() );
 		}
 	}
 

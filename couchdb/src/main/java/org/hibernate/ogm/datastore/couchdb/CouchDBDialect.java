@@ -99,12 +99,12 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		return new Tuple( new CouchDBTupleSnapshot( key ) );
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
 
 		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
@@ -120,7 +120,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		removeDocumentIfPresent( Identifier.createEntityId( key ) );
 	}
 

@@ -59,17 +59,17 @@ public interface GridDialect extends Service {
 	 * Return a new tuple for a given key
 	 * Only used if the tuple is not present
 	 */
-	Tuple createTuple(EntityKey key);
+	Tuple createTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Update the tuple for a given key or null if not present
 	 */
-	void updateTuple(Tuple tuple, EntityKey key);
+	void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Remove the tuple for a given key
 	 */
-	void removeTuple(EntityKey key);
+	void removeTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Return the list of tuples corresponding to a given association and the given context

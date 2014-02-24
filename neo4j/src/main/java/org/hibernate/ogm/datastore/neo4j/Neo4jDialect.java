@@ -98,18 +98,18 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		return new Tuple();
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Node node = createNodeUnlessExists( key );
 		applyTupleOperations( node, tuple.getOperations() );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		Node entityNode = findNode( key );
 		if ( entityNode != null ) {
 			removeRelationships( entityNode );
