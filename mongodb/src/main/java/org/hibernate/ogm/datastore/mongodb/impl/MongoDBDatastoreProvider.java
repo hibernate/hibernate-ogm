@@ -45,6 +45,7 @@ import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
 import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
 
 /**
  * Provides access to a MongoDB instance
@@ -58,10 +59,19 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	private ServiceRegistryImplementor serviceRegistry;
 
-	private boolean isCacheStarted;
 	private MongoClient mongo;
 	private DB mongoDb;
 	private MongoDBConfiguration config;
+
+	public MongoDBDatastoreProvider() {
+	}
+
+	/**
+	 * Only used in tests.
+	 */
+	public MongoDBDatastoreProvider(MongoClient mongoClient) {
+		this.mongo = mongoClient;
+	}
 
 	@Override
 	public void configure(Map configurationValues) {
@@ -82,6 +92,10 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 		return config.getAssociationDocumentStorage();
 	}
 
+	public WriteConcern getWriteConcern() {
+		return config.getWriteConcern();
+	}
+
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return MongoDBDialect.class;
@@ -94,7 +108,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void start() {
-		if ( !isCacheStarted ) {
+		if ( mongo == null ) {
 			try {
 				ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
 				MongoClientOptions clientOptions = config.buildOptions();
@@ -102,7 +116,6 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 				log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
 
 				this.mongo = new MongoClient( serverAddress, clientOptions );
-				this.isCacheStarted = true;
 			}
 			catch ( UnknownHostException e ) {
 				throw log.mongoOnUnknownHost( config.getHost() );
@@ -110,8 +123,8 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 			catch ( RuntimeException e ) {
 				throw log.unableToInitializeMongoDB( e );
 			}
-			mongoDb = extractDatabase();
 		}
+		mongoDb = extractDatabase();
 	}
 
 	@Override

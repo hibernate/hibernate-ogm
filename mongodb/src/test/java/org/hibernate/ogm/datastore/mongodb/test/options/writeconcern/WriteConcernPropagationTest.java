@@ -1,0 +1,337 @@
+/*
+ * Hibernate, Relational Persistence for Idiomatic Java
+ *
+ * JBoss, Home of Professional Open Source
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
+ * as indicated by the @authors tag. All rights reserved.
+ * See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This copyrighted material is made available to anyone wishing to use,
+ * modify, copy, or redistribute it subject to the terms and conditions
+ * of the GNU Lesser General Public License, v. 2.1.
+ * This program is distributed in the hope that it will be useful, but WITHOUT A
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+ * PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License,
+ * v.2.1 along with this distribution; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA  02110-1301, USA.
+ */
+package org.hibernate.ogm.datastore.mongodb.test.options.writeconcern;
+
+import static org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.mockClient;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.util.List;
+
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.utils.MockMongoClientBuilder.MockMongoClient;
+import org.hibernate.ogm.test.utils.TestHelper;
+import org.junit.After;
+import org.junit.Test;
+
+import com.mongodb.BasicDBList;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
+
+/**
+ * Tests that the configured write concern is applied when performing operations against MongoDB.
+ *
+ * @author Gunnar Morling
+ */
+public class WriteConcernPropagationTest {
+
+	private OgmSessionFactory sessions;
+
+	@After
+	public void closeSessionFactory() {
+		sessions.close();
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void shouldApplyConfiguredWriteConcernForInsertOfTuple() {
+		// given an empty database
+		MockMongoClient mockClient = mockClient().build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		final Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when inserting a golf player
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1 );
+		session.persist( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect one (batched) insert with the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( List.class ), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForUpdateOfTuple() {
+		// given a database with a golf player
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", getPlayer() )
+				.build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		final Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when updating the golf player
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.2 );
+		session.merge( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect one (batched) insert with the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForRemoveTuple() {
+		// given a database with a golf player
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", getPlayer() )
+				.build();
+
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		final Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when removing the golf player
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1 );
+		session.delete( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect a call to remove with the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ) ).remove( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForCreationOfEmbeddedAssociation() {
+		// given an empty database
+		MockMongoClient mockClient = mockClient().build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when inserting a player with an associated course
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1, new GolfCourse( 1L, "Bepple Peach" ) );
+		session.persist( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect insert and update using the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForCreationOfAssociationStoredAsDocument() {
+		// given an empty database
+		MockMongoClient mockClient = mockClient().build();
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ), AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when inserting a player with an associated course
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1, new GolfCourse( 1L, "Bepple Peach" ) );
+		session.persist( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect association operations using the configured write concern
+		verify( mockClient.getCollection( "Associations" ) ).insert( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "Associations" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForUpdateOfEmbeddedAssociation() {
+		// given a persisted player with one associated golf course
+		BasicDBObject player = getPlayer();
+		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
+
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", player )
+				.insert( "GolfCourse", getGolfCourse() )
+				.build();
+
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when merging the player with two associated courses
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1, new GolfCourse( 1L, "Bepple Peach" ), new GolfCourse( 2L, "Ant Sandrews" ) );
+		session.merge( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect updates to the player document using the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 3 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForUpdateOfAssociationStoredAsDocument() {
+		// given a persisted player with one associated golf course
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", getPlayer() )
+				.insert( "GolfCourse", getGolfCourse() )
+				.insert( "Associations", getPlayedCoursesAssociationAsDocument() )
+				.build();
+
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ), AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when merging the player with two associated courses
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1, new GolfCourse( 1L, "Bepple Peach" ), new GolfCourse( 2L, "Ant Sandrews" ) );
+		session.merge( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect two updates to the association collection
+		verify( mockClient.getCollection( "Associations" ), times( 2) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForRemovalOfEmbeddedAssociation() {
+		// given a persisted player with one associated golf course
+		BasicDBObject player = getPlayer();
+		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
+
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", player )
+				.insert( "GolfCourse", getGolfCourse() )
+				.build();
+
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when removing the association
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1 );
+		session.merge( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect one call to update using the configured write concern
+		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+	}
+
+	@Test
+	public void shouldApplyConfiguredWriteConcernForRemovalOfAssociationStoredAsDocument() {
+		// given a persisted player with one associated golf course
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", getPlayer() )
+				.insert( "GolfCourse", getGolfCourse() )
+				.insert( "Associations", getPlayedCoursesAssociationAsDocument() )
+				.build();
+
+		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) , AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		Session session = sessions.openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// when removing the association
+		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1 );
+		session.merge( ben );
+
+		transaction.commit();
+		session.close();
+
+		// then expect one call to remove with the configured write concern
+		verify( mockClient.getCollection( "Associations" ) ).remove( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
+	}
+
+	private Class<?>[] getAnnotatedClasses() {
+		return new Class<?>[] { GolfPlayer.class, GolfCourse.class };
+	}
+
+	private void setupSessionFactory(MongoDBDatastoreProvider provider) {
+		setupSessionFactory( provider, null );
+	}
+
+	private void setupSessionFactory(MongoDBDatastoreProvider provider, AssociationStorageType associationStorage) {
+		OgmConfiguration configuration = TestHelper.getDefaultTestConfiguration( getAnnotatedClasses() );
+
+		configuration.getProperties().put( OgmProperties.DATASTORE_PROVIDER, provider );
+
+		if ( associationStorage != null ) {
+			configuration.getProperties().put( DocumentStoreProperties.ASSOCIATIONS_STORE, associationStorage );
+		}
+
+		sessions = configuration.buildSessionFactory();
+	}
+
+	private BasicDBObject getGolfCourse() {
+		BasicDBObject bepplePeach = new BasicDBObject();
+		bepplePeach.put( "_id", 1L );
+		bepplePeach.put( "name", "Bepple Peach" );
+		return bepplePeach;
+	}
+
+	private BasicDBObject getPlayer() {
+		BasicDBObject golfPlayer = new BasicDBObject();
+		golfPlayer.put( "_id", 1L );
+		golfPlayer.put( "name", "Ben" );
+		golfPlayer.put( "handicap", 0.1 );
+		return golfPlayer;
+	}
+
+	private BasicDBList getPlayedCoursesAssociationEmbedded() {
+		BasicDBObject bepplePeachRef = new BasicDBObject();
+		bepplePeachRef.put( "playedCourses_id", 1L );
+
+		BasicDBList playedCourses = new BasicDBList();
+		playedCourses.add( bepplePeachRef );
+
+		return playedCourses;
+	}
+
+	private BasicDBObject getPlayedCoursesAssociationAsDocument() {
+		BasicDBObject id = new BasicDBObject();
+		id.put( "golfPlayer_id", 1L );
+		id.put( "table", "GolfPlayer_GolfCourse" );
+
+		BasicDBObject row = new BasicDBObject();
+		row.put( "playedCourses_id", 1L );
+
+		BasicDBList rows = new BasicDBList();
+		rows.add( row );
+
+		BasicDBObject association = new BasicDBObject();
+		association.put( "_id", id );
+		association.put( "rows", rows );
+		return association;
+	}
+}
