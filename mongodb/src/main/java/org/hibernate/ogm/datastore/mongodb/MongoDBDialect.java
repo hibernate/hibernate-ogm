@@ -54,7 +54,9 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -85,6 +87,8 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+//import com.mongodb.WriteConcern;
+import com.mongodb.WriteConcern;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -263,7 +267,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 		DBObject updater = objectForUpdate( tuple, key, idObject );
-		getCollection( key ).update( idObject, updater, true, false );
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+
+		getCollection( key ).update( idObject, updater, true, false, writeConcern );
 	}
 
 	// Creates a dbObject that can be pass to the mongoDB batch insert function
@@ -324,9 +330,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		DBCollection collection = this.getCollection( key );
-		DBObject toDelete = this.prepareIdObject( key );
-		collection.remove( toDelete );
+		DBCollection collection = getCollection( key );
+		DBObject toDelete = prepareIdObject( key );
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+
+		collection.remove( toDelete, writeConcern );
 	}
 
 	//not for embedded
@@ -382,6 +390,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
 			DBObject entity = getObjectAsEmbeddedAssociation( key );
@@ -394,7 +403,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 				if ( insert ) {
 					//adding assoc before insert
 					addEmptyAssociationField( key, entity );
-					getCollection( key.getEntityKey() ).insert( entity );
+					getCollection( key.getEntityKey() ).insert( entity, writeConcern );
 				}
 				else {
 					BasicDBObject updater = new BasicDBObject();
@@ -411,7 +420,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 		DBObject assoc = associationKeyToObject( key, storageStrategy );
 
 		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
-		associations.insert( assoc );
+
+		associations.insert( assoc, writeConcern );
 
 		return new Association( new MongoDBAssociationSnapshot( assoc, key, storageStrategy ) );
 	}
@@ -448,6 +458,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		String associationField;
 
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
@@ -483,7 +494,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			}
 
 			if ( update != null ) {
-				collection.update( query, update, true, false );
+				collection.update( query, update, true, false, writeConcern );
 			}
 		}
 	}
@@ -491,20 +502,21 @@ public class MongoDBDialect implements BatchableGridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
-				this.addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
-				this.getCollection( key.getEntityKey() ).update( entity, updater, true, false );
+				addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
+				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
 		}
 		else {
 			DBCollection collection = getAssociationCollection( key, storageStrategy );
 			DBObject query = associationKeyToObject( key, storageStrategy );
 
-			int nAffected = collection.remove( query ).getN();
+			int nAffected = collection.remove( query, writeConcern ).getN();
 			log.removedAssociation( nAffected );
 		}
 	}
@@ -516,7 +528,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		DBCollection currentCollection = this.currentDB.getCollection( key.getTable() );
+		DBCollection currentCollection = getCollection( key.getTable() );
 		DBObject query = this.prepareIdObject( key );
 		//all columns should match to find the value
 
@@ -661,7 +673,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
-			Map<DBCollection, BatchInsertionTask> inserts = new HashMap<DBCollection, MongoDBDialect.BatchInsertionTask>();
+			Map<DBCollection, BatchInsertionTask> inserts = new HashMap<DBCollection, BatchInsertionTask>();
 			while ( operation != null ) {
 				if ( operation instanceof UpdateTupleOperation ) {
 					UpdateTupleOperation update = (UpdateTupleOperation) operation;
@@ -706,8 +718,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 		EntityKey entityKey = tupleOperation.getEntityKey();
 		Tuple tuple = tupleOperation.getTuple();
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
+		WriteConcern writeConcern = getWriteConcern( tupleOperation.getTupleContext() );
+
 		if ( INSERT == snapshot.getOperationType() && columnNamesAllowBatchInsert( tupleOperation ) ) {
-			prepareForInsert( inserts, snapshot, entityKey, tuple );
+			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
 		}
 		else {
 			// Object already exists in the db or has invalid fields:
@@ -715,9 +729,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 	}
 
-	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
+	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
 		DBCollection collection = getCollection( entityKey );
-		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection );
+		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
 		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
 		DBObject newDocument = objectForInsert( tuple, entityKey, (BasicDBObject) document );
 		inserts.get( collection ).put( entityKey, newDocument );
@@ -728,11 +742,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
 	}
 
-	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, DBCollection collection) {
+	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, DBCollection collection, WriteConcern writeConcern) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
-			insertsForCollection = new BatchInsertionTask();
+			insertsForCollection = new BatchInsertionTask( writeConcern );
 			inserts.put( collection, insertsForCollection );
 		}
 
@@ -742,9 +756,19 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
 		for ( Map.Entry<DBCollection, BatchInsertionTask> entry : inserts.entrySet() ) {
 			DBCollection collection = entry.getKey();
-			collection.insert( entry.getValue().getAll() );
+			collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
 		}
 		inserts.clear();
+	}
+
+	private WriteConcern getWriteConcern(TupleContext tupleContext) {
+		WriteConcernType writeConcern = tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return writeConcern != null ? writeConcern.getWriteConcern() : provider.getWriteConcern();
+	}
+
+	private WriteConcern getWriteConcern(AssociationContext associationContext) {
+		WriteConcernType writeConcern = associationContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return writeConcern != null ? writeConcern.getWriteConcern() : provider.getWriteConcern();
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
@@ -782,11 +806,13 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private static class BatchInsertionTask {
 
 		private final Map<EntityKey, DBObject> inserts;
+		private final WriteConcern writeConcern;
 
-		public BatchInsertionTask() {
+		public BatchInsertionTask(WriteConcern writeConcern) {
 			this.inserts = new HashMap<EntityKey, DBObject>();
-
+			this.writeConcern = writeConcern;
 		}
+
 		public List<DBObject> getAll() {
 			return new ArrayList<DBObject>( inserts.values() );
 		}
@@ -805,6 +831,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 		public void put(EntityKey entityKey, DBObject object) {
 			inserts.put( entityKey, object );
+		}
+
+		public WriteConcern getWriteConcern() {
+			return writeConcern;
 		}
 	}
 }

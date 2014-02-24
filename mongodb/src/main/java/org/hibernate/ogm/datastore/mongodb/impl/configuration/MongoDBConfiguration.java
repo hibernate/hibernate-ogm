@@ -104,6 +104,10 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return associationDocumentStorage;
 	}
 
+	public WriteConcern getWriteConcern() {
+		return writeConcern;
+	}
+
 	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcernType apiConfiguredWriteConcern) {
 		WriteConcernType writeConcern;
 
