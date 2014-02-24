@@ -27,7 +27,6 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addE
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,8 +46,8 @@ import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOptio
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MassIndexingMongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
@@ -235,7 +234,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private DBCollection getCollection(String table) {
-		return this.currentDB.getCollection( table );
+		return currentDB.getCollection( table );
 	}
 
 	private DBCollection getCollection(EntityKey key) {
@@ -662,7 +661,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
-			Map<DBCollection, Map<DBObject, DBObject>> inserts = new HashMap<DBCollection, Map<DBObject, DBObject>>();
+			Map<DBCollection, BatchInsertionTask> inserts = new HashMap<DBCollection, MongoDBDialect.BatchInsertionTask>();
 			while ( operation != null ) {
 				if ( operation instanceof UpdateTupleOperation ) {
 					UpdateTupleOperation update = (UpdateTupleOperation) operation;
@@ -690,20 +689,20 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 	}
 
-	private void executeBatchRemove(Map<DBCollection, Map<DBObject, DBObject>> inserts, RemoveTupleOperation tupleOperation) {
+	private void executeBatchRemove(Map<DBCollection, BatchInsertionTask> inserts, RemoveTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
 		DBCollection collection = getCollection( entityKey );
-		BasicDBObject idObject = prepareIdObject( entityKey );
-		Map<DBObject, DBObject> documents = inserts.get( collection );
-		if ( documents != null && documents.containsKey( idObject ) ) {
-			documents.remove( entityKey );
+		BatchInsertionTask batchedInserts = inserts.get( collection );
+
+		if ( batchedInserts != null && batchedInserts.containsKey( entityKey ) ) {
+			batchedInserts.remove( entityKey );
 		}
 		else {
 			removeTuple( entityKey );
 		}
 	}
 
-	private void executeBatchUpdate(Map<DBCollection, Map<DBObject, DBObject>> inserts, UpdateTupleOperation tupleOperation) {
+	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, UpdateTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
 		Tuple tuple = tupleOperation.getTuple();
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
@@ -716,38 +715,34 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 	}
 
-	private void prepareForInsert(Map<DBCollection, Map<DBObject, DBObject>> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
+	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple) {
 		DBCollection collection = getCollection( entityKey );
-		Map<DBObject, DBObject> documents = getOrCreateDocuments( inserts, collection );
-		DBObject idObject = prepareIdObject( entityKey );
-		DBObject document = getCurrentDocument( snapshot, idObject, documents );
+		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection );
+		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
 		DBObject newDocument = objectForInsert( tuple, entityKey, (BasicDBObject) document );
-		inserts.get( collection ).put( idObject, newDocument );
+		inserts.get( collection ).put( entityKey, newDocument );
 	}
 
-	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, DBObject idObject, Map<DBObject, DBObject> documents) {
-		if ( documents.containsKey( idObject ) ) {
-			return documents.get( idObject );
-		}
-		else {
-			return snapshot.getDbObject();
-		}
+	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
+		DBObject fromBatchInsertion = batchInsert.get( entityKey );
+		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
 	}
 
-	private Map<DBObject, DBObject> getOrCreateDocuments(Map<DBCollection, Map<DBObject, DBObject>> inserts, DBCollection collection) {
-		if ( !inserts.containsKey( collection ) ) {
-			Map<DBObject, DBObject> map = new HashMap<DBObject, DBObject>();
-			inserts.put( collection, map );
+	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, DBCollection collection) {
+		BatchInsertionTask insertsForCollection = inserts.get( collection );
+
+		if ( insertsForCollection == null ) {
+			insertsForCollection = new BatchInsertionTask();
+			inserts.put( collection, insertsForCollection );
 		}
-		Map<DBObject, DBObject> documents = inserts.get( collection );
-		return documents;
+
+		return insertsForCollection;
 	}
 
-	private void flushInserts(Map<DBCollection, Map<DBObject, DBObject>> inserts) {
-		for ( Map.Entry<DBCollection, Map<DBObject, DBObject>> entry : inserts.entrySet() ) {
+	private void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
+		for ( Map.Entry<DBCollection, BatchInsertionTask> entry : inserts.entrySet() ) {
 			DBCollection collection = entry.getKey();
-			Collection<DBObject> documents = entry.getValue().values();
-			collection.insert( new ArrayList<DBObject>( documents ) );
+			collection.insert( entry.getValue().getAll() );
 		}
 		inserts.clear();
 	}
@@ -782,7 +777,34 @@ public class MongoDBDialect implements BatchableGridDialect {
 		public void close() throws IOException {
 			cursor.close();
 		}
-
 	}
 
+	private static class BatchInsertionTask {
+
+		private final Map<EntityKey, DBObject> inserts;
+
+		public BatchInsertionTask() {
+			this.inserts = new HashMap<EntityKey, DBObject>();
+
+		}
+		public List<DBObject> getAll() {
+			return new ArrayList<DBObject>( inserts.values() );
+		}
+
+		public DBObject get(EntityKey entityKey) {
+			return inserts.get( entityKey );
+
+		}
+		public boolean containsKey(EntityKey entityKey) {
+			return inserts.containsKey( entityKey );
+		}
+
+		public DBObject remove(EntityKey entityKey) {
+			return inserts.remove( entityKey );
+		}
+
+		public void put(EntityKey entityKey, DBObject object) {
+			inserts.put( entityKey, object );
+		}
+	}
 }
