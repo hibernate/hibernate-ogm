@@ -125,10 +125,11 @@
                                 </goals>
                                 <configuration>
                                     <source>
+                                        def mongoDir = project.properties['embeddedMongoDbTempDir'].replace('\\','/');
                                         println "[INFO] ------------------------------------------------------------------------";
                                         println "[INFO] MONGO DB BUILD INFO                                                     ";
                                         println "[INFO] ------------------------------------------------------------------------";
-                                        println "[INFO] Extracting MongoDB distribution to ${embeddedMongoDbTempDir} and        ";
+                                        println "[INFO] Extracting MongoDB distribution to ${mongoDir} and        ";
                                         println "[INFO] launching MongoDB process on port ${embeddedMongoDbPort}. The properties";
                                         println "[INFO] 'embeddedMongoDbTempDir' and 'embeddedMongoDbPort' can be used to       ";
                                         println "[INFO] specify another directory and/or port like this:                        ";
@@ -154,15 +155,18 @@
                                 </goals>
                                 <configuration>
                                     <source>
-                                        def tempDir = new File(project.properties['embeddedMongoDbTempDir']);
+                                        def mongoDir = project.properties['embeddedMongoDbTempDir'].replace('\\','/');
+                                        def mongoLogDir = project.properties['embeddedMongoDbLogDir'].replace('\\','/');
+
+                                        def tempDir = new File(mongoDir);
                                         ant.delete(dir : tempDir);
                                         ant.mkdir(dir : tempDir);
 
-                                        def logDir = new File(project.properties['embeddedMongoDbLogDir']);
+                                        def logDir = new File(mongoLogDir);
                                         ant.delete(dir : logDir);
                                         ant.mkdir(dir : logDir);
 
-                                        System.setProperty( "de.flapdoodle.embed.io.tmpdir", "${embeddedMongoDbTempDir}" );
+                                        System.setProperty( "de.flapdoodle.embed.io.tmpdir", "${mongoDir}" );
                                     </source>
                                 </configuration>
                             </execution>
