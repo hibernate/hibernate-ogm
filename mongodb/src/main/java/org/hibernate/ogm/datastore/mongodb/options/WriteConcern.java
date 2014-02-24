@@ -36,6 +36,10 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Specifies the write concern to be applied when performing write operations to the annotated entity or property.
+ * <p>
+ * When given on the property-level, this setting will only take affect when the property represents an association and
+ * this association is stored as a separate association document. If given for non-association properties or embedded
+ * associations, the setting on the property-level will be ignored and the setting from the entiy will be applied.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -44,6 +48,9 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
 @MappingOption(WriteConcernConverter.class)
 public @interface WriteConcern {
 
+	/**
+	 * Specifies the write concern to be applied when performing write operations to the annotated entity or property.
+	 */
 	WriteConcernType value();
 
 	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {

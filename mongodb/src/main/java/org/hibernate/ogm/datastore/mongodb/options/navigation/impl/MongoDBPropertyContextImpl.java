@@ -20,16 +20,18 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStorePropertyContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBPropertyContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
+ * Converts MongoDB property-level options.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
@@ -41,14 +43,14 @@ public abstract class MongoDBPropertyContextImpl extends DocumentStorePropertyCo
 	}
 
 	@Override
-	public MongoDBPropertyContext associationStorage(AssociationStorageType storage) {
-		addPropertyOption( new AssociationStorageOption(), storage );
+	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
+		addPropertyOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
 		return this;
 	}
 
 	@Override
-	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
-		addPropertyOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
+	public MongoDBPropertyContext writeConcern(WriteConcernType concern) {
+		addPropertyOption( new WriteConcernOption(), concern );
 		return this;
 	}
 }

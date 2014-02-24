@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
 /**
  * Allows to configure MongoDB-specific options for a single property.
@@ -31,6 +32,17 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
  * @author Gunnar Morling
  */
 public interface MongoDBPropertyContext extends DocumentStorePropertyContext<MongoDBEntityContext, MongoDBPropertyContext> {
+
+	/**
+	 * Defines the type of write concern to be applied when performing write operations in case the current property
+	 * represents an association and the association storage strategy is set to
+	 * {@link AssociationStorageType#ASSOCIATION_DOCUMENT}. Otherwise the setting takes no effect.
+	 *
+	 * @param concern the write concern type
+	 * @return this context, allowing for further fluent API invocations
+	 * @see http://docs.mongodb.org/manual/core/write-concern/
+	 */
+	MongoDBPropertyContext writeConcern(WriteConcernType concern);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the current property represents an

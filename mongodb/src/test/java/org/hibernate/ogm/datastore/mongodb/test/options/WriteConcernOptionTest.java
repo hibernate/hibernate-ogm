@@ -22,6 +22,8 @@ package org.hibernate.ogm.datastore.mongodb.test.options;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.lang.annotation.ElementType;
+
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
@@ -62,13 +64,18 @@ public class WriteConcernOptionTest {
 		mongoOptions
 			.writeConcern( WriteConcernType.ERRORS_IGNORED )
 			.entity( ExampleForMongoDBMapping.class )
-				.writeConcern( WriteConcernType.MAJORITY );
+				.writeConcern( WriteConcernType.MAJORITY )
+				.property( "content", ElementType.FIELD )
+					.writeConcern( WriteConcernType.FSYNCED );
 
 		OptionsContainer options = optionsContext.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
 
 		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.MAJORITY );
+
+		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.FSYNCED );
 	}
 
 	@SuppressWarnings("unused")
