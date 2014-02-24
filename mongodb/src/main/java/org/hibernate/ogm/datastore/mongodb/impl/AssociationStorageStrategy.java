@@ -71,4 +71,9 @@ public class AssociationStorageStrategy {
 	public boolean isCollectionPerAssociation() {
 		return !isEmbeddedInEntity && !isGlobalCollection;
 	}
+
+	@Override
+	public String toString() {
+		return "AssociationStorageStrategy [isEmbeddedInEntity=" + isEmbeddedInEntity + ", isGlobalCollection=" + isGlobalCollection + "]";
+	}
 }

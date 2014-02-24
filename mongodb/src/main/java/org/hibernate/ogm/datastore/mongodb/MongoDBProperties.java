@@ -21,11 +21,13 @@
 package org.hibernate.ogm.datastore.mongodb;
 
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
 /**
- * Properties for configuring the MongoDB datastore via {@code persistence.xml} or
- * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
+ * Properties for configuring the MongoDB datastore via {@code persistence.xml} or {@link OgmConfiguration}.
  *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
@@ -33,23 +35,24 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 public final class MongoDBProperties implements DocumentStoreProperties {
 
 	/**
-	 * Configuration property for defining the acknowledgement of write operations
+	 * Configuration property for defining the acknowledgement of write operations. Supported values are the
+	 * {@link WriteConcernType} enum or the String representations of its constants. Defaults to
+	 * {@link WriteConcernType#ACKNOWLEDGED}.
 	 *
 	 * @see com.mongodb.WriteConcern
 	 */
 	public static final String WRITE_CONCERN = "hibernate.ogm.mongodb.write_concern";
 
 	/**
-	 * The timeout used at the connection to the MongoDB instance. This value is set in milliseconds.
+	 * The timeout used at the connection to the MongoDB instance. This value is set in milliseconds. Defaults to 5000.
 	 */
 	public static final String TIMEOUT = "hibernate.ogm.mongodb.connection_timeout";
 
 	/**
 	 * Configuration property for specifying how to store association documents. Only applicable if
-	 * {@link org.hibernate.ogm.cfg.DocumentStoreProperties#ASSOCIATIONS_STORE} is set to
-	 * {@link org.hibernate.ogm.datastore.document.options.AssociationStorageType#ASSOCIATION_DOCUMENT}. Supported values are the
-	 * {@link AssociationDocumentType} enum or the String representations of its constants. Defaults to
-	 * {@link AssociationDocumentType#GLOBAL_COLLECTION}.
+	 * {@link DocumentStoreProperties#ASSOCIATIONS_STORE} is set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
+	 * Supported values are the {@link AssociationDocumentType} enum or the String representations of its constants.
+	 * Defaults to {@link AssociationDocumentType#GLOBAL_COLLECTION}.
 	 */
 	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.association_document_storage";
 
