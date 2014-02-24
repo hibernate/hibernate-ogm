@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation;
 
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
@@ -44,7 +45,7 @@ public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDB
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is
-	 * set to {@link org.hibernate.ogm.datastore.document.options.AssociationStorageType#ASSOCIATION_DOCUMENT}.
+	 * set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
 	 *
 	 * @param associationDocumentStorage the association document type to be used when not configured on the entity or
 	 * property level

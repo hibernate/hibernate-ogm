@@ -126,7 +126,6 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		GridDialect gridDialect = this.getGridDialect();
 		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
 		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
 		AssociationKey associationKey = new AssociationKey(
@@ -141,7 +140,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 
 		AssociationContext associationContext = new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Project.class, "modules" ) );
-		final Association association = gridDialect.getAssociation( associationKey, associationContext );
+		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();
 		this.checkLoading( assocObject );
@@ -152,21 +151,20 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		session.close();
 	}
 
-	public Tuple getTuple(String collectionName, String id, List<String> selectedColumns) {
-		EntityKey key = new EntityKey( new EntityKeyMetadata( collectionName,
-				new String[] { MongoDBDialect.ID_FIELDNAME } ), new Object[] { id } );
+	private Tuple getTuple(String collectionName, String id, List<String> selectedColumns) {
+		EntityKey key = new EntityKey(
+				new EntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
+				new Object[] { id }
+		);
 		TupleContext tupleContext = new TupleContext( selectedColumns );
-		return this.getGridDialect().getTuple( key, tupleContext );
+
+		return getService( GridDialect.class ).getTuple( key, tupleContext );
 	}
 
-	protected Service getService(Class<? extends Service> serviceImpl) {
+	protected <S extends Service> S getService(Class<S> serviceRole) {
 		SessionFactoryImplementor factory = super.sfi();
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
-		return serviceRegistry.getService( serviceImpl );
-	}
-
-	protected GridDialect getGridDialect() {
-		return sfi().getServiceRegistry().getService( GridDialect.class );
+		return serviceRegistry.getService( serviceRole );
 	}
 
 	@Override

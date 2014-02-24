@@ -28,6 +28,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
@@ -35,7 +36,9 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Specifies whether association documents should be stored in a separate collection per association type or in one
- * global collection for all associations.
+ * global collection for all associations. Only applies if the association storage option is set to
+ * {@link AssociationStorageType#ASSOCIATION_DOCUMENT}. When given for non-association properties, this setting is
+ * ignored.
  *
  * @author Gunnar Morling
  */
