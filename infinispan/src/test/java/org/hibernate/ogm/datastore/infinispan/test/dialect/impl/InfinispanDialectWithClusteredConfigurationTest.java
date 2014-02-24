@@ -24,6 +24,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,16 +32,19 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -90,9 +94,9 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		EntityKey key = new EntityKey( keyMetadata, values );
 
 		// when
-		Tuple tuple = dialect1.createTuple( key );
+		Tuple tuple = dialect1.createTuple( key, getEmptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.updateTuple( tuple, key );
+		dialect1.updateTuple( tuple, key, getEmptyTupleContext() );
 
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
@@ -146,5 +150,12 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
 
 		return serviceRegistry;
+	}
+
+	private TupleContext getEmptyTupleContext() {
+		return new TupleContext(
+				Collections.<String>emptyList(),
+				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+		);
 	}
 }

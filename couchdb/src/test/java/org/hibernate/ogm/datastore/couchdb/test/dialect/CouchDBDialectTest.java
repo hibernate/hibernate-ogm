@@ -27,7 +27,6 @@ import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.enviro
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +36,7 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
+import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -81,7 +80,7 @@ public class CouchDBDialectTest {
 	public void createTupleShouldReturnANewTuple() {
 
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key );
+		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 
 		int actualIdValue = (Integer) createdTuple.get( "age" );
 		assertThat( actualIdValue, is( 36 ) );
@@ -90,11 +89,11 @@ public class CouchDBDialectTest {
 	@Test
 	public void getTupleShouldReturnTheSearchedOne() {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key );
+		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 
-		dialect.updateTuple( createdTuple, key );
+		dialect.updateTuple( createdTuple, key, emptyTupleContext() );
 
-		Tuple actualTuple = dialect.getTuple( key, new TupleContext( Collections.<String>emptyList() ) );
+		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext() );
 
 		assertThat( actualTuple.get( "id" ), is( createdTuple.get( "id" ) ) );
 	}
@@ -102,9 +101,9 @@ public class CouchDBDialectTest {
 	@Test
 	public void removeTupleShouldDeleteTheCreatedTuple() {
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		dialect.createTuple( key );
+		dialect.createTuple( key, emptyTupleContext() );
 
-		dialect.removeTuple( key );
+		dialect.removeTuple( key, emptyTupleContext() );
 
 		assertThat( new CouchDBTestHelper().getNumberOfEntities( datastoreProvider.getDataStore() ) ).isEqualTo( 0 );
 	}
@@ -113,12 +112,12 @@ public class CouchDBDialectTest {
 	public void updateTupleShouldAddTheNewColumnValue() {
 
 		EntityKey key = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple createdTuple = dialect.createTuple( key );
+		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 		createdTuple.put( "name", "and" );
 
-		dialect.updateTuple( createdTuple, key );
+		dialect.updateTuple( createdTuple, key, emptyTupleContext() );
 
-		Tuple tuple = dialect.getTuple( key, new TupleContext( new ArrayList<String>() ) );
+		Tuple tuple = dialect.getTuple( key, emptyTupleContext() );
 		assertThat( (String) tuple.get( "name" ), is( "and" ) );
 	}
 
@@ -145,8 +144,8 @@ public class CouchDBDialectTest {
 		String[] rowKeyColumnNames = new String[] { "user_id", "addresses_id" };
 		Object[] rowKeyColumnValues = new Object[] { "Emmanuel", 1 };
 		EntityKey entityKey = createEntityKey( "user", new String[] { "id", "age" }, new Object[] { "17", 36 } );
-		Tuple tuple = dialect.createTuple( entityKey );
-		dialect.updateTuple( tuple, entityKey );
+		Tuple tuple = dialect.createTuple( entityKey, emptyTupleContext() );
+		dialect.updateTuple( tuple, entityKey, emptyTupleContext() );
 
 		AssociationKey key = createAssociationKey(
 				entityKey, "addresses", "user_address", new String[] { "user_id" }, new Object[] { "Emmanuel" }, rowKeyColumnNames
@@ -190,6 +189,13 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( new PropertyOptionsContext( new WritableOptionsServiceContext(), Object.class, "" ) );
+		return new AssociationContext( OptionsContextImpl.forProperty( new WritableOptionsServiceContext(), Object.class, "" ) );
+	}
+
+	private TupleContext emptyTupleContext() {
+		return new TupleContext(
+				Collections.<String>emptyList(),
+				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+		);
 	}
 }

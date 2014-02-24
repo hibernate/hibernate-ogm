@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -30,32 +30,42 @@ import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * Provides access to the options effectively applying for a given entity property.
+ * Provides access to the options effectively applying for a given entity or property.
  *
  * @author Gunnar Morling
  */
-public class PropertyOptionsContext implements OptionsContext {
+public class OptionsContextImpl implements OptionsContext {
 
 	private final OptionsServiceContext optionsServiceContext;
 	private final Class<?> entityType;
 	private final String propertyName;
 	private final List<Class<?>> hierarchy;
 
-	public PropertyOptionsContext(OptionsServiceContext optionsServiceContext, Class<?> entityType, String propertyName) {
+	private OptionsContextImpl(OptionsServiceContext optionsServiceContext, Class<?> entityType, String propertyName) {
 		this.optionsServiceContext = optionsServiceContext;
 		this.entityType = entityType;
 		this.propertyName = propertyName;
 		this.hierarchy = getClassHierarchy( entityType );
 	}
 
+	public static OptionsContext forProperty(OptionsServiceContext optionsServiceContext, Class<?> entityType, String propertyName) {
+		return new OptionsContextImpl( optionsServiceContext, entityType, propertyName );
+	}
+
+	public static OptionsContext forEntity(OptionsServiceContext optionsServiceContext, Class<?> entityType) {
+		return new OptionsContextImpl( optionsServiceContext, entityType, null );
+	}
+
 	@Override
 	public <I, V> V get(Class<? extends Option<I, V>> optionType, I identifier) {
 		V optionValue;
 
-		for ( Class<?> clazz : hierarchy ) {
-			optionValue = optionsServiceContext.getPropertyOptions( clazz, propertyName ).get( optionType, identifier );
-			if ( optionValue != null ) {
-				return optionValue;
+		if ( propertyName != null ) {
+			for ( Class<?> clazz : hierarchy ) {
+				optionValue = optionsServiceContext.getPropertyOptions( clazz, propertyName ).get( optionType, identifier );
+				if ( optionValue != null ) {
+					return optionValue;
+				}
 			}
 		}
 
@@ -73,10 +83,12 @@ public class PropertyOptionsContext implements OptionsContext {
 	public <V> V getUnique(Class<? extends UniqueOption<V>> optionType) {
 		V optionValue;
 
-		for ( Class<?> clazz : hierarchy ) {
-			optionValue = optionsServiceContext.getPropertyOptions( clazz, propertyName ).getUnique( optionType );
-			if ( optionValue != null ) {
-				return optionValue;
+		if ( propertyName != null ) {
+			for ( Class<?> clazz : hierarchy ) {
+				optionValue = optionsServiceContext.getPropertyOptions( clazz, propertyName ).getUnique( optionType );
+				if ( optionValue != null ) {
+					return optionValue;
+				}
 			}
 		}
 
@@ -94,10 +106,12 @@ public class PropertyOptionsContext implements OptionsContext {
 	public <I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType) {
 		Map<I, V> optionValues;
 
-		for ( Class<?> clazz : hierarchy ) {
-			optionValues = optionsServiceContext.getPropertyOptions( clazz, propertyName ).getAll( optionType );
-			if ( optionValues != null ) {
-				return optionValues;
+		if ( propertyName != null ) {
+			for ( Class<?> clazz : hierarchy ) {
+				optionValues = optionsServiceContext.getPropertyOptions( clazz, propertyName ).getAll( optionType );
+				if ( optionValues != null ) {
+					return optionValues;
+				}
 			}
 		}
 
@@ -130,6 +144,6 @@ public class PropertyOptionsContext implements OptionsContext {
 
 	@Override
 	public String toString() {
-		return "PropertyOptionsContext [optionsServiceContext=" + optionsServiceContext + ", entityType=" + entityType + ", propertyName=" + propertyName + "]";
+		return "OptionsContextImpl [optionsServiceContext=" + optionsServiceContext + ", entityType=" + entityType + ", propertyName=" + propertyName + "]";
 	}
 }

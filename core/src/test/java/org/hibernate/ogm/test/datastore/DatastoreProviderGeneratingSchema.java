@@ -109,16 +109,16 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public Tuple createTuple(EntityKey key) {
+		public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 			return null;
 		}
 
 		@Override
-		public void updateTuple(Tuple tuple, EntityKey key) {
+		public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		}
 
 		@Override
-		public void removeTuple(EntityKey key) {
+		public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		}
 
 		@Override

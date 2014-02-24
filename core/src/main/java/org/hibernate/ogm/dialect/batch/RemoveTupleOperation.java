@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.dialect.batch;
 
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
@@ -30,13 +31,18 @@ import org.hibernate.ogm.grid.EntityKey;
 public class RemoveTupleOperation implements Operation {
 
 	private final EntityKey entityKey;
+	private final TupleContext tupleContext;
 
-	public RemoveTupleOperation(EntityKey entityKey) {
+	public RemoveTupleOperation(EntityKey entityKey, TupleContext tupleContext) {
 		this.entityKey = entityKey;
+		this.tupleContext = tupleContext;
 	}
 
 	public EntityKey getEntityKey() {
 		return entityKey;
 	}
 
+	public TupleContext getTupleContext() {
+		return tupleContext;
+	}
 }

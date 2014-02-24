@@ -88,26 +88,26 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public Tuple createTuple(EntityKey key) {
+	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Build Tuple object with key %1$s (does not trigger access to the datastore)", key );
-		return gridDialect.createTuple( key );
+		return gridDialect.createTuple( key, tupleContext );
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key) {
+	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		if ( tuple.getSnapshot().isEmpty() ) {
 			log.tracef( "Creating Tuple with key %1$s in datastore", key );
 		}
 		else {
 			log.tracef( "Updating Tuple with key %1$s in datastore", key );
 		}
-		gridDialect.updateTuple( tuple, key );
+		gridDialect.updateTuple( tuple, key, tupleContext );
 	}
 
 	@Override
-	public void removeTuple(EntityKey key) {
+	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Removing Tuple with key %1$s from datastore", key );
-		gridDialect.removeTuple( key );
+		gridDialect.removeTuple( key, tupleContext );
 	}
 
 	@Override

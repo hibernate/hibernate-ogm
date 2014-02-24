@@ -23,7 +23,7 @@ package org.hibernate.ogm.test.options;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
 
-import org.hibernate.ogm.datastore.impl.PropertyOptionsContext;
+import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.OptionsContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -32,11 +32,11 @@ import org.hibernate.ogm.test.options.examples.annotations.NameExample;
 import org.junit.Test;
 
 /**
- * Unit test for {@link PropertyOptionsContext}.
+ * Unit test for {@link OptionsContextImpl}.
  *
  * @author Gunnar Morling
  */
-public class PropertyOptionsContextTest {
+public class OptionsContextImplTest {
 
 	@Test
 	public void shouldProvideUniqueOptionValueFromPropertyLevel() {
@@ -47,7 +47,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foobar" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -62,7 +62,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foobar" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -77,7 +77,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addGlobalOption( new NameExampleOption(), "foobar" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -93,7 +93,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.get( PermissionOption.class, "user" ) ).isEqualTo( "read" );
@@ -110,7 +110,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -134,7 +134,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addEntityOption( entityType, new PermissionOption( "admin" ), "read,write,delete" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -155,7 +155,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "barfoo" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "barfoo" );
@@ -170,7 +170,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -185,7 +185,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -199,7 +199,7 @@ public class PropertyOptionsContextTest {
 		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -214,7 +214,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -229,7 +229,7 @@ public class PropertyOptionsContextTest {
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
 
 		// when
-		OptionsContext context = new PropertyOptionsContext( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
