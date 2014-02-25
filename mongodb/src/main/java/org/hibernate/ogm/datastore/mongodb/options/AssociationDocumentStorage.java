@@ -29,10 +29,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
-import org.hibernate.ogm.options.spi.AnnotationConverter;
+import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Specifies whether association documents should be stored in a separate collection per association type or in one
@@ -44,7 +42,7 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)
-@MappingOption(AssociationDocumentStorage.AssociationDocumentStorageConverter.class)
+@MappingOption(AssociationDocumentStorageConverter.class)
 public @interface AssociationDocumentStorage {
 
 	/**
@@ -52,12 +50,4 @@ public @interface AssociationDocumentStorage {
 	 * collection for all associations
 	 */
 	AssociationDocumentType value();
-
-	static class AssociationDocumentStorageConverter implements AnnotationConverter<AssociationDocumentStorage> {
-
-		@Override
-		public OptionValuePair<?> convert(AssociationDocumentStorage annotation) {
-			return OptionValuePair.getInstance( new AssociationDocumentStorageOption(), annotation.value() );
-		}
-	}
 }
