@@ -187,4 +187,10 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 56, value = "Unable to load record for retrieval of generated properties; Entity type: %1$s, id: %2$s")
 	HibernateException couldNotRetrieveEntityForRetrievalOfGeneratedProperties(String entityType, Serializable id);
+
+	@Message(id = 57, value = "'%s' must not be null")
+	IllegalArgumentException mustNotBeNull(String name);
+
+	@Message(id = 58, value = "Parameter '%s' must not be null")
+	IllegalArgumentException parameterMustNotBeNull(String parameterName);
 }

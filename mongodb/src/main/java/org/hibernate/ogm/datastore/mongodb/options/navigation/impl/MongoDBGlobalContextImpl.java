@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.util.impl.Contracts;
 
 /**
  * Converts global MongoDB options.
@@ -43,13 +44,15 @@ public abstract class MongoDBGlobalContextImpl extends DocumentStoreGlobalContex
 	}
 
 	@Override
-	public MongoDBGlobalContext writeConcern(WriteConcernType concern) {
-		addGlobalOption( new WriteConcernOption(), concern );
+	public MongoDBGlobalContext writeConcern(WriteConcernType writeConcern) {
+		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
+		addGlobalOption( new WriteConcernOption(), writeConcern );
 		return this;
 	}
 
 	@Override
 	public MongoDBGlobalContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
+		Contracts.assertParameterNotNull( associationDocumentStorage, "associationDocumentStorage" );
 		addGlobalOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
 		return this;
 	}
