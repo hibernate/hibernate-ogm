@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -21,38 +21,16 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.batch.OperationsQueue;
 
 /**
- * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
+ * Defines operations common to all context objects passed to {@link GridDialect} operations.
  *
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
  * @author Gunnar Morling
  */
-public class AssociationContext implements GridDialectOperationContext {
+public interface GridDialectOperationContext {
 
-	private final OptionsContext optionsContext;
-	private OperationsQueue operationsQueue;
-
-	public AssociationContext(OptionsContext optionsContext) {
-		this.optionsContext = optionsContext;
-	}
-
-	public OperationsQueue getOperationsQueue() {
-		return operationsQueue;
-	}
-
-	public void setOperationsQueue(OperationsQueue operationsQueue) {
-		this.operationsQueue = operationsQueue;
-	}
-
-	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
-	}
-
-	@Override
-	public String toString() {
-		return "AssociationContext [optionsContext=" + optionsContext + "]";
-	}
+	/**
+	 * Returns a context object providing access to the options effectively applying for a given entity or property.
+	 */
+	OptionsContext getOptionsContext();
 }

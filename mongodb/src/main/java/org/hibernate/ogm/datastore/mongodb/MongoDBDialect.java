@@ -60,6 +60,7 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
+import org.hibernate.ogm.datastore.spi.GridDialectOperationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
@@ -760,13 +761,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 		inserts.clear();
 	}
 
-	private WriteConcern getWriteConcern(TupleContext tupleContext) {
-		WriteConcern writeConcern = tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
-		return writeConcern != null ? writeConcern : provider.getWriteConcern();
-	}
-
-	private WriteConcern getWriteConcern(AssociationContext associationContext) {
-		WriteConcern writeConcern = associationContext.getOptionsContext().getUnique( WriteConcernOption.class );
+	private WriteConcern getWriteConcern(GridDialectOperationContext operationContext) {
+		WriteConcern writeConcern = operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
 		return writeConcern != null ? writeConcern : provider.getWriteConcern();
 	}
 
