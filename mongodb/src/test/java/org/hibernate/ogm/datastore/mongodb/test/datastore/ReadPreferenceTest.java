@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -26,13 +26,12 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
@@ -40,15 +39,14 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.mongodb.WriteConcern;
+import com.mongodb.ReadPreference;
 
 /**
- * Test for the write concern setting.
+ * Test for the {@link MongoDBProperties#READ_PREFERENCE} setting.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Gunnar Morling
  */
-public class WriteConcernTest {
+public class ReadPreferenceTest {
 
 	private Map<String, Object> cfg;
 	private WritableOptionsServiceContext optionsContext;
@@ -64,57 +62,34 @@ public class WriteConcernTest {
 	}
 
 	@Test
-	public void shouldUseAcknowledgedByDefault() {
+	public void shouldUsePrimaryByDefault() {
 		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.ACKNOWLEDGED );
+		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.primary() );
 	}
 
 	@Test
 	public void shouldApplyValueGivenViaProperties() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
+		cfg.put( MongoDBProperties.READ_PREFERENCE, "SECONDARY" );
 
 		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNALED );
+		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondary() );
 	}
 
 	@Test
 	public void shouldApplyValueGivenViaGlobalOptions() {
-		configuration.writeConcern( WriteConcernType.FSYNCED );
+		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
 		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
+		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
 	}
 
 	@Test
 	public void shouldPreferValueGivenViaGlobalOptionsOverValueFromProperties() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
+		cfg.put( MongoDBProperties.READ_PREFERENCE, "SECONDARY" );
 
-		configuration.writeConcern( WriteConcernType.FSYNCED );
+		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
 		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
-	}
-
-	@Test
-	public void shouldApplyCustomWriteConcernType() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
-		cfg.put( MongoDBProperties.WRITE_CONCERN_TYPE, MultipleDataCenters.class );
-
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getWriteConcern(), new MultipleDataCenters() );
-	}
-
-	@Test(expected = HibernateException.class )
-	public void shouldRaiseErrorIfStrategyIsCUSTOMButNoTypeIsGiven() {
-		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
-		new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
-	}
-
-	@SuppressWarnings("serial")
-	public static class MultipleDataCenters extends com.mongodb.WriteConcern {
-
-		public MultipleDataCenters() {
-			super( "MultipleDataCenters", 0, false, true, false );
-		}
+		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
 	}
 }

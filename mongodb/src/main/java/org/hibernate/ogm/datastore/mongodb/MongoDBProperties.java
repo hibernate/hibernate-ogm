@@ -24,8 +24,10 @@ import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
+import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
 /**
@@ -57,6 +59,16 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 * Only takes affect if {@link #WRITE_CONCERN} is set to {@link WriteConcernType#CUSTOM}.
 	 */
 	public static final String WRITE_CONCERN_TYPE = "hibernate.ogm.mongodb.write_concern_type";
+
+	/**
+	 * Configuration property for setting the read preference. Supported values are the {@link ReadPreferenceType} enum
+	 * or the String representations of its constants.
+	 * <p>
+	 * Defaults to {@link ReadPreferenceType#PRIMARY}.
+	 *
+	 * @see ReadPreference
+	 */
+	public static final String READ_PREFERENCE = "hibernate.ogm.mongodb.read_preference";
 
 	/**
 	 * The timeout used at the connection to the MongoDB instance. This value is set in milliseconds. Defaults to 5000.
