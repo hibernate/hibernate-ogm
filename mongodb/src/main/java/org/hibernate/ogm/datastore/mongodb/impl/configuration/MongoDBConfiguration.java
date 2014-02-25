@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
@@ -78,8 +79,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 *
 	 * @param configurationValues configuration values given via {@code persistence.xml} etc.
 	 * @param globalOptions global settings given via an option configurator
+	 * @param classLoaderService class loader service for loading classes by name
 	 */
-	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContainer globalOptions) {
+	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContainer globalOptions, ClassLoaderService classLoaderService) {
 		super( configurationValues, DEFAULT_PORT );
 
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
@@ -93,7 +95,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
 				.getValue();
 
-		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ) );
+		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ), classLoaderService );
 	}
 
 	/**
@@ -108,21 +110,41 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return writeConcern;
 	}
 
-	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcernType apiConfiguredWriteConcern) {
-		WriteConcernType writeConcern;
+	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcern apiConfiguredWriteConcern, ClassLoaderService classLoaderService) {
+		WriteConcern writeConcern;
 
+		// API-configured value takes precedence
 		if ( apiConfiguredWriteConcern != null ) {
 			writeConcern = apiConfiguredWriteConcern;
 		}
 		else {
-			writeConcern = propertyReader.property( MongoDBProperties.WRITE_CONCERN, WriteConcernType.class )
+			WriteConcernType writeConcernType = propertyReader.property( MongoDBProperties.WRITE_CONCERN, WriteConcernType.class )
 				.withDefault( DEFAULT_WRITE_CONCERN )
 				.getValue();
+
+			// load/instantiate custom type
+			if ( writeConcernType == WriteConcernType.CUSTOM ) {
+				writeConcern = propertyReader.property( MongoDBProperties.WRITE_CONCERN_TYPE, WriteConcern.class )
+					.instantiate()
+					.withClassLoaderService( classLoaderService )
+					.required()
+					.getValue();
+			}
+			// take pre-defined value
+			else {
+				writeConcern = writeConcernType.getWriteConcern();
+			}
 		}
 
-		log.usingWriteConcern( writeConcern );
+		log.usingWriteConcern(
+				writeConcern.getWString(),
+				writeConcern.getWtimeout(),
+				writeConcern.getFsync(),
+				writeConcern.getJ(),
+				writeConcern.getContinueOnErrorForInsert()
+		);
 
-		return writeConcern.getWriteConcern();
+		return writeConcern;
 	}
 
 	/**

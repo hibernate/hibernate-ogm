@@ -25,6 +25,8 @@ import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEnti
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
+import com.mongodb.WriteConcern;
+
 /**
  * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
  * entities or properties.
@@ -42,6 +44,15 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
 	MongoDBEntityContext writeConcern(WriteConcernType concern);
+
+	/**
+	 * Specifies a custom {@link WriteConcern} implementation to be applied when performing write operations for the
+	 * current entity. Either use this option or {@link #writeConcern(WriteConcernType)} but not both at the same type.
+	 *
+	 * @param writeConcern the write concern
+	 * @return this context, allowing for further fluent API invocations
+	 */
+	MongoDBEntityContext writeConcern(WriteConcern writeConcern);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is

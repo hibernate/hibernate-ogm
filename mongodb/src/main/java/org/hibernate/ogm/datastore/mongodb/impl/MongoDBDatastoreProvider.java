@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
@@ -76,7 +77,9 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public void configure(Map configurationValues) {
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
-		this.config = new MongoDBConfiguration( configurationValues, optionsService.context().getGlobalOptions() );
+		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
+
+		this.config = new MongoDBConfiguration( configurationValues, optionsService.context().getGlobalOptions(), classLoaderService );
 	}
 
 	@Override

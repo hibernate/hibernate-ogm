@@ -26,6 +26,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
@@ -48,13 +50,13 @@ import com.mongodb.WriteConcern;
  */
 public class WriteConcernTest {
 
-	private Map<String, String> cfg;
+	private Map<String, Object> cfg;
 	private WritableOptionsServiceContext optionsContext;
 	private MongoDBGlobalContext configuration;
 
 	@Before
 	public void setupConfigurationMapAndContexts() {
-		cfg = new HashMap<String, String>();
+		cfg = new HashMap<String, Object>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
 		optionsContext = new WritableOptionsServiceContext();
@@ -63,7 +65,7 @@ public class WriteConcernTest {
 
 	@Test
 	public void shouldUseAcknoledgedByDefault() {
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.ACKNOWLEDGED );
 	}
 
@@ -71,7 +73,7 @@ public class WriteConcernTest {
 	public void shouldApplyValueGivenViaProperties() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNALED );
 	}
 
@@ -79,7 +81,7 @@ public class WriteConcernTest {
 	public void shouldApplyValueGivenViaGlobalOptions() {
 		configuration.writeConcern( WriteConcernType.FSYNCED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
 	}
 
@@ -89,7 +91,30 @@ public class WriteConcernTest {
 
 		configuration.writeConcern( WriteConcernType.FSYNCED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
+	}
+
+	@Test
+	public void shouldApplyCustomWriteConcernType() {
+		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
+		cfg.put( MongoDBProperties.WRITE_CONCERN_TYPE, MultipleDataCenters.class );
+
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		assertEquals( config.buildOptions().getWriteConcern(), new MultipleDataCenters() );
+	}
+
+	@Test(expected = HibernateException.class )
+	public void shouldRaiseErrorIfStrategyIsCUSTOMButNoTypeIsGiven() {
+		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
+		new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+	}
+
+	@SuppressWarnings("serial")
+	public static class MultipleDataCenters extends com.mongodb.WriteConcern {
+
+		public MultipleDataCenters() {
+			super( "MultipleDataCenters", 0, false, true, false );
+		}
 	}
 }

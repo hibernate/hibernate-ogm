@@ -34,6 +34,8 @@ import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.mongodb.WriteConcern;
+
 /**
  * Test the {@link WriteConcernOption} used to set the {@link WriteConcernType} in MongoDB.
  *
@@ -51,16 +53,26 @@ public class WriteConcernOptionTest {
 	}
 
 	@Test
-	public void testWriteConcernMappingOption() throws Exception {
+	public void testWriteConcernGivenByTypeOnGlobalLevel() throws Exception {
 		mongoOptions
 			.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
 		OptionsContainer options = optionsContext.getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
 	}
 
 	@Test
-	public void testWriteConcernedContextPriority() throws Exception {
+	public void testWriteConcernGivenByInstanceOnGlobalLevel() throws Exception {
+		ReplicaConfigurableWriteConcern writeConcern = new ReplicaConfigurableWriteConcern( 5 );
+
+		mongoOptions.writeConcern( writeConcern );
+
+		OptionsContainer options = optionsContext.getGlobalOptions();
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( writeConcern );
+	}
+
+	@Test
+	public void testWriteConcernGivenByTypePriority() throws Exception {
 		mongoOptions
 			.writeConcern( WriteConcernType.ERRORS_IGNORED )
 			.entity( ExampleForMongoDBMapping.class )
@@ -69,17 +81,69 @@ public class WriteConcernOptionTest {
 					.writeConcern( WriteConcernType.FSYNCED );
 
 		OptionsContainer options = optionsContext.getGlobalOptions();
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
 
 		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.MAJORITY );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.MAJORITY );
 
 		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.FSYNCED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.FSYNCED );
+	}
+
+	@Test
+	public void testWriteConcernGivenByInstancePriority() throws Exception {
+		mongoOptions
+			.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
+			.entity( ExampleForMongoDBMapping.class )
+				.writeConcern( new ReplicaConfigurableWriteConcern( 3 ) )
+				.property( "content", ElementType.FIELD )
+					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
+
+		OptionsContainer options = optionsContext.getGlobalOptions();
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
+
+		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 3 ) );
+
+		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 4 ) );
+	}
+
+	@Test
+	public void testWriteConcernGivenByInstanceTakesPrecedenceOverType() throws Exception {
+		mongoOptions
+			.writeConcern( WriteConcernType.ACKNOWLEDGED )
+			.writeConcern( new ReplicaConfigurableWriteConcern( 2 ) )
+			.entity( ExampleForMongoDBMapping.class )
+				.writeConcern( WriteConcernType.ACKNOWLEDGED )
+				.writeConcern( new ReplicaConfigurableWriteConcern( 3 ) )
+				.property( "content", ElementType.FIELD )
+					.writeConcern( WriteConcernType.ACKNOWLEDGED )
+					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
+
+		OptionsContainer options = optionsContext.getGlobalOptions();
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
+
+		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 3 ) );
+
+		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 4 ) );
 	}
 
 	@SuppressWarnings("unused")
 	private static final class ExampleForMongoDBMapping {
 		String content;
+	}
+
+	/**
+	 * A write concern which allows to specify the number of replicas which need to acknowledge a write.
+	 */
+	@SuppressWarnings("serial")
+	private static class ReplicaConfigurableWriteConcern extends WriteConcern {
+
+		public ReplicaConfigurableWriteConcern(int numberOfRequiredReplicas) {
+			super( numberOfRequiredReplicas, 0, false, true, false );
+		}
 	}
 }

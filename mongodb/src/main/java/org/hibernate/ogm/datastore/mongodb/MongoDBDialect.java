@@ -54,7 +54,6 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
@@ -762,13 +761,13 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private WriteConcern getWriteConcern(TupleContext tupleContext) {
-		WriteConcernType writeConcern = tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
-		return writeConcern != null ? writeConcern.getWriteConcern() : provider.getWriteConcern();
+		WriteConcern writeConcern = tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return writeConcern != null ? writeConcern : provider.getWriteConcern();
 	}
 
 	private WriteConcern getWriteConcern(AssociationContext associationContext) {
-		WriteConcernType writeConcern = associationContext.getOptionsContext().getUnique( WriteConcernOption.class );
-		return writeConcern != null ? writeConcern.getWriteConcern() : provider.getWriteConcern();
+		WriteConcern writeConcern = associationContext.getOptionsContext().getUnique( WriteConcernOption.class );
+		return writeConcern != null ? writeConcern : provider.getWriteConcern();
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {

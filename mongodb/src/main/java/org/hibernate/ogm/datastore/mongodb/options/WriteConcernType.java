@@ -67,16 +67,21 @@ public enum WriteConcernType {
 	 * Exceptions are raised for network issues, and server errors; waits on a majority of servers for the write
 	 * operation.
 	 */
-	MAJORITY(WriteConcern.MAJORITY);
+	MAJORITY(WriteConcern.MAJORITY),
 
-	private WriteConcern writeConcern;
+	/**
+	 * A custom {@link WriteConcern} implementation is specified.
+	 */
+	CUSTOM( null );
+
+	private final WriteConcern writeConcern;
 
 	private WriteConcernType(WriteConcern writeConcern) {
 		this.writeConcern = writeConcern;
 	}
 
 	/**
-	 * Returns the {@link WriteConcern} associated with this enum value.
+	 * Returns the {@link WriteConcern} associated with this enum value; {@code null} in the case of {@link #CUSTOM}.
 	 */
 	public WriteConcern getWriteConcern() {
 		return writeConcern;

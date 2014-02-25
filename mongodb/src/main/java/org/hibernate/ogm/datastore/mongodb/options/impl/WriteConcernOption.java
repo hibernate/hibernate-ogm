@@ -20,11 +20,15 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.impl;
 
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.options.spi.UniqueOption;
 
+import com.mongodb.WriteConcern;
+
 /**
+ * Option for specifying the {@link WriteConcern} in MongoDB.
+ *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @see http://docs.mongodb.org/manual/reference/write-concern/
  */
-public class WriteConcernOption extends UniqueOption<WriteConcernType> {
+public class WriteConcernOption extends UniqueOption<WriteConcern> {
 }
