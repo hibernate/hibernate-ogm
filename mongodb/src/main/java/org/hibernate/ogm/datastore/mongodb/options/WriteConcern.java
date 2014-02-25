@@ -28,13 +28,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
-import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcern.WriteConcernConverter;
-import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.options.spi.AnnotationConverter;
+import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Specifies the write concern to be applied when performing write operations to the annotated entity or property. Can
@@ -67,28 +62,4 @@ public @interface WriteConcern {
 	 * to {@link WriteConcernType#CUSTOM}. The specified type must have a default (no-args) constructor.
 	 */
 	Class<? extends com.mongodb.WriteConcern> type() default com.mongodb.WriteConcern.class;
-
-	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
-
-		private static final Log log = LoggerFactory.getLogger();
-
-		@Override
-		public OptionValuePair<?> convert(WriteConcern annotation) {
-			com.mongodb.WriteConcern writeConcern = null;
-
-			if ( annotation.value() == WriteConcernType.CUSTOM ) {
-				try {
-					writeConcern = annotation.type().newInstance();
-				}
-				catch (Exception e) {
-					throw log.unableToInstantiateType( annotation.type().getName(), e );
-				}
-			}
-			else {
-				writeConcern = annotation.value().getWriteConcern();
-			}
-
-			return OptionValuePair.getInstance( new WriteConcernOption(), writeConcern );
-		}
-	}
 }

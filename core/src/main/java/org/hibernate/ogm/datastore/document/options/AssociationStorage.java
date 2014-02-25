@@ -28,10 +28,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
-import org.hibernate.ogm.options.spi.AnnotationConverter;
+import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
-import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
  * Define the association storage type for the annotated entity or property. When given for a property which doesn't
@@ -41,7 +39,7 @@ import org.hibernate.ogm.options.spi.OptionValuePair;
  */
 @Target({ METHOD, FIELD, TYPE })
 @Retention(RUNTIME)
-@MappingOption(AssociationStorage.AssociationStorageConverter.class)
+@MappingOption(AssociationStorageConverter.class)
 public @interface AssociationStorage {
 
 	/**
@@ -50,12 +48,4 @@ public @interface AssociationStorage {
 	 * @return the strategy for storing associations of the annotated element
 	 */
 	AssociationStorageType value();
-
-	public static class AssociationStorageConverter implements AnnotationConverter<AssociationStorage> {
-
-		@Override
-		public OptionValuePair<?> convert(AssociationStorage annotation) {
-			return OptionValuePair.getInstance( new AssociationStorageOption(), annotation.value() );
-		}
-	}
 }
