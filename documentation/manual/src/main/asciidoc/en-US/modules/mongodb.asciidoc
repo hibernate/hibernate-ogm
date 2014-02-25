@@ -50,9 +50,15 @@ Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.opti
 * +COLLECTION_PER_ASSOCIATION+ stores the association in a dedicated MongoDB collection per association
 hibernate.ogm.mongodb.write_concern::
 Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
-Possible settings are (values of the +com.mongodb.WriteConcern+ enum): +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+,
-+FSYNCED+, +JOURNALED+, +NONE+, +NORMAL+, +SAFE+, +MAJORITY+, +FSYNC_SAFE+,
-+JOURNAL_SAFE+, +REPLICAS_SAFE+.
+Possible settings are (values of the +WriteConcernType+ enum):
++ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
+When set to +CUSTOM+, a custom +WriteConcern+ implementation type is to be specified.
+hibernate.ogm.mongodb.write_concern_type::
+Specifies a custom +WriteConcern+ implementation type (fully-qualified name, class object or instance).
+This is useful in cases where the pre-defined configurations are not sufficient,
+e.g. if you want to ensure that writes are propagated to a specific number of replicas or given "tag set".
+Only takes affect if +hibernate.ogm.mongodb.write_concern+ is set to +CUSTOM+.
+
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
 This option is case insensitive and the default value is +ACKNOWLEDGED+.
@@ -70,8 +76,10 @@ To ease migration between stores, it is recommended to reference these constants
 ===== Annotation based configuration
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
-When working with the MongoDB backend, you can specify how associations should be stored
-using the +AssociationStorage+ and +AssociationDocumentStorage+ annotations
+When working with the MongoDB backend, you can specify the following settings:
+
+* the write concern for entities and associations using the +@WriteConcern+ annotation
+* a strategy for storing associations using the +@AssociationStorage+ and +@AssociationDocumentStorage+ annotations
 (refer to <<ogm-mongodb-storage-prinicples>> to learn more about these options).
 
 The following shows an example:
@@ -81,6 +89,7 @@ The following shows an example:
 [source, JAVA]
 ----
 @Entity
+@WriteConcern(WriteConcernType.JOURNALED)
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
 @AssociationDocumentStorage(AssociationDocumentType.COLLECTION_PER_ASSOCIATION)
 public class Zoo {
@@ -100,7 +109,8 @@ public class Zoo {
 ----
 ====
 
-The annotations on the entity level express that all associations of the +Zoo+
+The +@WriteConcern+ annotation on the entity level expresses that all writes should be done using the +JOURNALED+ setting.
+The other two annotations specify that all associations of the +Zoo+
 class should be stored in separate assocation documents, using a dedicated collection per association.
 This setting applies to the +animals+ and +employees+ associations.
 Only the elements of the +visitors+ association will be stored in the document of the corresponding +Zoo+ entity
@@ -117,8 +127,9 @@ The API allows set options in a type-safe fashion on the global, entity and prop
 
 When working with MongoDB, you can currently configure the following options using the API:
 
-* association storage strategy (on the global, entity and property level)
-* association document storage strategy (on the global, entity and property level)
+* write concern
+* association storage strategy
+* association document storage strategy
 
 To set these options via the API, you need to create an +OptionConfigurator+ implementation
 as shown in the following example:
@@ -132,12 +143,14 @@ public class MyOptionConfigurator extends OptionConfigurator {
     @Override
     public void configure(Configurable configurable) {
         configurable.configureOptionsFor( MongoDB.class )
+            .writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
                 .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
                 .property( "animals", ElementType.FIELD )
                     .associationStorage( AssociationStorageType.IN_ENTITY )
             .entity( Animal.class )
+                .writeConcern( new RequiringReplicaCountOf( 3 ) )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
     }
 }
@@ -146,7 +159,11 @@ public class MyOptionConfigurator extends OptionConfigurator {
 
 The call to +configureOptionsFor()+, passing the store-specific identifier type +MongoDB+,
 provides the entry point into the API. Following the fluent API pattern, you then can configure
-global options and navigate to single entities or properties to apply options specific to these.
+global options (+writeConcern()+) and navigate to single entities or properties to apply options
+specific to these (+associationStorage()+ etc.).
+The call to +writeConcern()+  for the +Animal+  entity shows how a specific write concern type can be used.
+Here +RequiringReplicaCountOf+ is a custom implementation of +WriteConcern+ which ensures
+that writes are propagated to a given number of replicas before a write is acknowledged.
 
 Options given on the property level precede entity-level options. So e.g. the +animals+ association of the +Zoo+
 class would be stored using the in-entity strategy, while all other associations of the +Zoo+ entity would
