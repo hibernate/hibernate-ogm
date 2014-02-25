@@ -146,10 +146,10 @@ public interface Log extends BasicLogger {
 	@Message(id = 42, value = "The given element type %1$s is neither FIELD nor METHOD.")
 	HibernateException getUnsupportedElementTypeException(ElementType elementType);
 
-	@Message(id = 43, value = "Cannot instantiate type %1$s")
+	@Message(id = 43, value = "Cannot instantiate type %1$s. Does it define a default constructor?")
 	HibernateException unableToInstantiateType(String className, @Cause Exception e);
 
-	@Message(id = 44, value = "Can not load class %2$s specified via configuration property '%1$s'")
+	@Message(id = 44, value = "Cannot load class %2$s specified via configuration property '%1$s'")
 	HibernateException unableToLoadClass(String propertyName, String className, @Cause Exception e);
 
 	@Message(id = 45, value = "Type %2$s specified via configuration property '%1$s' is not a sub-type of expected type %3$s")
@@ -176,7 +176,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 52, value = "Missing value for property '%s'")
 	HibernateException missingConfigurationProperty(String propertyName);
 
-	@Message(id = 53, value = "Vale of unsupported type given for configuration property '%1$s': '%2$s'")
+	@Message(id = 53, value = "Value of unsupported type given for configuration property '%1$s': '%2$s'")
 	HibernateException unsupportedPropertyType(String propertyName, String value);
 
 	@Message(id = 54, value = "It is not possible to add or poll operations from a closed queue")

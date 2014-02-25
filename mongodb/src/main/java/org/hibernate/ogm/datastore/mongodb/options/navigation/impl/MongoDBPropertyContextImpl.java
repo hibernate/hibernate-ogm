@@ -30,6 +30,8 @@ import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBPropertyCon
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.util.impl.Contracts;
 
+import com.mongodb.WriteConcern;
+
 /**
  * Converts MongoDB property-level options.
  *
@@ -51,9 +53,16 @@ public abstract class MongoDBPropertyContextImpl extends DocumentStorePropertyCo
 	}
 
 	@Override
-	public MongoDBPropertyContext writeConcern(WriteConcernType writeConcern) {
+	public MongoDBPropertyContext writeConcern(WriteConcern writeConcern) {
 		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
 		addPropertyOption( new WriteConcernOption(), writeConcern );
+		return this;
+	}
+
+	@Override
+	public MongoDBPropertyContext writeConcern(WriteConcernType writeConcern) {
+		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
+		addPropertyOption( new WriteConcernOption(), writeConcern.getWriteConcern() );
 		return this;
 	}
 }

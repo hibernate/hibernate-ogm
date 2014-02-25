@@ -45,32 +45,42 @@ public class WriteConcernAnnotationTest {
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
 		OptionsContainer options = optionsContext.getEntityOptions( EntityWriteConcernExample.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ERRORS_IGNORED );
+	}
+
+	@Test
+	public void testWriteConcernByTypeForEntity() throws Exception {
+		OptionsContainer options = optionsContext.getEntityOptions( EntityWriteConcernUsingTypeExample.class );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new MultipleDataCenters() );
 	}
 
 	@Test
 	public void testWriteConcernForField() throws Exception {
 		OptionsContainer options = optionsContext.getPropertyOptions( FieldWriteConcernExample.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.FSYNCED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.FSYNCED );
 	}
 
 	@Test
 	public void testWriteConcernForMethod() throws Exception {
 		OptionsContainer options = optionsContext.getPropertyOptions( MethodWriteConcernExample.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.JOURNALED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.JOURNALED );
 	}
 
 	@Test
 	public void testWriteConcernAnnotationPriorities() throws Exception {
 		OptionsContainer options = optionsContext.getEntityOptions( AnnotatedClass.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ACKNOWLEDGED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ACKNOWLEDGED );
 
 		options = optionsContext.getPropertyOptions( AnnotatedClass.class, "title");
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcernType.ERRORS_IGNORED );
+		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ERRORS_IGNORED );
 	}
 
 	@WriteConcern(WriteConcernType.ERRORS_IGNORED)
 	private static final class EntityWriteConcernExample {
+	}
+
+	@WriteConcern(value = WriteConcernType.CUSTOM, type = MultipleDataCenters.class)
+	private static final class EntityWriteConcernUsingTypeExample {
 	}
 
 	private static final class FieldWriteConcernExample {
@@ -91,5 +101,13 @@ public class WriteConcernAnnotationTest {
 	private static final class AnnotatedClass {
 		@WriteConcern(WriteConcernType.ERRORS_IGNORED)
 		public String title;
+	}
+
+	@SuppressWarnings("serial")
+	public static class MultipleDataCenters extends com.mongodb.WriteConcern {
+
+		public MultipleDataCenters() {
+			super( "MultipleDataCenters", 0, false, true, false );
+		}
 	}
 }

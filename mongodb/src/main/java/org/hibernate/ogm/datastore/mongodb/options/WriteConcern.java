@@ -28,6 +28,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
+import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcern.WriteConcernConverter;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
@@ -35,13 +37,16 @@ import org.hibernate.ogm.options.spi.MappingOption;
 import org.hibernate.ogm.options.spi.OptionValuePair;
 
 /**
- * Specifies the write concern to be applied when performing write operations to the annotated entity or property.
+ * Specifies the write concern to be applied when performing write operations to the annotated entity or property. Can
+ * either be given using a pre-configured write concern such as {@link WriteConcernType#JOURNALED} or by specifying the
+ * type of a custom {@link WriteConcern} implementation.
  * <p>
  * When given on the property-level, this setting will only take affect when the property represents an association and
  * this association is stored as a separate association document. If given for non-association properties or embedded
- * associations, the setting on the property-level will be ignored and the setting from the entiy will be applied.
+ * associations, the setting on the property-level will be ignored and the setting from the entity will be applied.
  *
  * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)
@@ -50,14 +55,40 @@ public @interface WriteConcern {
 
 	/**
 	 * Specifies the write concern to be applied when performing write operations to the annotated entity or property.
+	 * <p>
+	 * Use {@link WriteConcernType#CUSTOM} in conjunction with {@link #type()} to specify a custom {@link WriteConcern}
+	 * implementation. This is useful in cases where the pre-defined configurations are not sufficient, e.g. if you want
+	 * to ensure that writes are propagated to a specific number of replicas or given "tag set".
 	 */
 	WriteConcernType value();
 
+	/**
+	 * Specifies a custom {@link com.mongodb.WriteConcern} implementation. Only takes effect if {@link #value()} is set
+	 * to {@link WriteConcernType#CUSTOM}. The specified type must have a default (no-args) constructor.
+	 */
+	Class<? extends com.mongodb.WriteConcern> type() default com.mongodb.WriteConcern.class;
+
 	static class WriteConcernConverter implements AnnotationConverter<WriteConcern> {
+
+		private static final Log log = LoggerFactory.getLogger();
 
 		@Override
 		public OptionValuePair<?> convert(WriteConcern annotation) {
-			return OptionValuePair.getInstance( new WriteConcernOption(), annotation.value() );
+			com.mongodb.WriteConcern writeConcern = null;
+
+			if ( annotation.value() == WriteConcernType.CUSTOM ) {
+				try {
+					writeConcern = annotation.type().newInstance();
+				}
+				catch (Exception e) {
+					throw log.unableToInstantiateType( annotation.type().getName(), e );
+				}
+			}
+			else {
+				writeConcern = annotation.value().getWriteConcern();
+			}
+
+			return OptionValuePair.getInstance( new WriteConcernOption(), writeConcern );
 		}
 	}
 }

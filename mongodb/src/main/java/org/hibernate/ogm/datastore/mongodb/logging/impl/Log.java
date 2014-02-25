@@ -25,7 +25,6 @@ import static org.jboss.logging.Logger.Level.TRACE;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
-import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
@@ -69,8 +68,8 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	void removedAssociation(int nAffected);
 
 	@LogMessage(level = INFO)
-	@Message(id = 1211, value = "Using write concern %s if not explicitly configured otherwise for specific entities")
-	void usingWriteConcern(WriteConcernType writeConcern);
+	@Message(id = 1211, value = "Using write concern { w : %s, wtimeout : %s, fsync : %s, journaled : %s, continueOnErrorForInsert : %s } if not explicitly configured otherwise for specific entities")
+	void usingWriteConcern(String writeStrategy, int wtimeout, boolean fsync, boolean journaled, boolean continueOnErrorForInsert);
 
 	@Message(id = 1213, value = "MongoDB authentication failed with username [%s]" )
 	HibernateException authenticationFailed(String username);

@@ -30,6 +30,8 @@ import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalConte
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.util.impl.Contracts;
 
+import com.mongodb.WriteConcern;
+
 /**
  * Converts global MongoDB options.
  *
@@ -45,6 +47,13 @@ public abstract class MongoDBGlobalContextImpl extends DocumentStoreGlobalContex
 
 	@Override
 	public MongoDBGlobalContext writeConcern(WriteConcernType writeConcern) {
+		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
+		addGlobalOption( new WriteConcernOption(), writeConcern.getWriteConcern() );
+		return this;
+	}
+
+	@Override
+	public MongoDBGlobalContext writeConcern(WriteConcern writeConcern) {
 		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
 		addGlobalOption( new WriteConcernOption(), writeConcern );
 		return this;
