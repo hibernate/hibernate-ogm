@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.test.options;
+package org.hibernate.ogm.datastore.mongodb.test.options.writeconcern;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -54,53 +54,12 @@ public class WriteConcernAnnotationTest {
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new MultipleDataCenters() );
 	}
 
-	@Test
-	public void testWriteConcernForField() throws Exception {
-		OptionsContainer options = optionsContext.getPropertyOptions( FieldWriteConcernExample.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.FSYNCED );
-	}
-
-	@Test
-	public void testWriteConcernForMethod() throws Exception {
-		OptionsContainer options = optionsContext.getPropertyOptions( MethodWriteConcernExample.class, "content" );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.JOURNALED );
-	}
-
-	@Test
-	public void testWriteConcernAnnotationPriorities() throws Exception {
-		OptionsContainer options = optionsContext.getEntityOptions( AnnotatedClass.class );
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ACKNOWLEDGED );
-
-		options = optionsContext.getPropertyOptions( AnnotatedClass.class, "title");
-		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ERRORS_IGNORED );
-	}
-
 	@WriteConcern(WriteConcernType.ERRORS_IGNORED)
 	private static final class EntityWriteConcernExample {
 	}
 
 	@WriteConcern(value = WriteConcernType.CUSTOM, type = MultipleDataCenters.class)
 	private static final class EntityWriteConcernUsingTypeExample {
-	}
-
-	private static final class FieldWriteConcernExample {
-		@WriteConcern(WriteConcernType.FSYNCED)
-		public String content;
-	}
-
-	private static final class MethodWriteConcernExample {
-		public String content;
-
-		@WriteConcern(WriteConcernType.JOURNALED)
-		public String getContent() {
-			return content;
-		}
-	}
-
-	@WriteConcern(WriteConcernType.ACKNOWLEDGED)
-	private static final class AnnotatedClass {
-		@WriteConcern(WriteConcernType.ERRORS_IGNORED)
-		public String title;
 	}
 
 	@SuppressWarnings("serial")

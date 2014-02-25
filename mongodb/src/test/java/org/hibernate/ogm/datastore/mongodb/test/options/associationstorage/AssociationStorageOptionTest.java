@@ -18,59 +18,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.test.options;
+package org.hibernate.ogm.datastore.mongodb.test.options.associationstorage;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.datastore.document.options.AssociationStorage;
+import java.lang.annotation.ElementType;
+
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsContainer;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the {@link AssociationStorage} annotation used to set the {@link AssociationStorageType} in MongoDB.
+ * Test the {@link AssociationStorageOption} used to set the {@link AssociationStorageType} in MongoDB.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class AssociationStorageAnnotationTest {
-
-	private WritableOptionsServiceContext optionsContext;
-
-	@Before
-	public void setupContexts() {
-		optionsContext = new WritableOptionsServiceContext();
-	}
+public class AssociationStorageOptionTest {
 
 	@Test
-	public void testAssociationStorageMappingOptionOnField() throws Exception {
-		OptionsContainer fieldOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" );
-		assertThat( fieldOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.IN_ENTITY );
+	public void testAssociationStorageMappingOption() throws Exception {
+		WritableOptionsServiceContext optionsContext = new WritableOptionsServiceContext();
+		ConfigurationContext context = new ConfigurationContext( optionsContext );
+
+		new MongoDB().getConfigurationBuilder( context )
+			.entity( ExampleForMongoDBMapping.class )
+				.property( "content", ElementType.FIELD )
+					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
+
+		OptionsContainer options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 
-	@Test
-	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
-		OptionsContainer methodOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" );
-		assertThat( methodOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
-	}
-
-	private static final class EntityAnnotatedOnField {
-
-		@AssociationStorage(AssociationStorageType.IN_ENTITY)
-		public String field;
-
-	}
-
-	private static final class EntityAnnotatedOnMethod {
-
-		public String method;
-
-		@AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
-		public String getMethod() {
-			return method;
-		}
-
+	@SuppressWarnings("unused")
+	private static final class ExampleForMongoDBMapping {
+		String content;
 	}
 }
