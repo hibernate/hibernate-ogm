@@ -32,7 +32,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Gunnar Morling
  */
-public class TupleContext {
+public class TupleContext implements GridDialectOperationContext {
 
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
@@ -51,9 +51,7 @@ public class TupleContext {
 		return selectableColumns;
 	}
 
-	/**
-	 * A context object providing access to the options effectively applying for a given entity.
-	 */
+	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
 	}
