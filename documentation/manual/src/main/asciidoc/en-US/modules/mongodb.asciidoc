@@ -58,6 +58,12 @@ Specifies a custom +WriteConcern+ implementation type (fully-qualified name, cla
 This is useful in cases where the pre-defined configurations are not sufficient,
 e.g. if you want to ensure that writes are propagated to a specific number of replicas or given "tag set".
 Only takes effect if +hibernate.ogm.mongodb.write_concern+ is set to +CUSTOM+.
+hibernate.ogm.mongodb.read_preference::
+Specifies the +ReadPreference+ to be applied when issuing reads against the MongoDB datastore.
+Possible settings are (values of the +ReadPreferenceType+ enum):
++PRIMARY+, +PRIMARY_PREFERRED+, +SECONDARY+, +SECONDARY_PREFERRED+ and +NEAREST+.
+It's currently not possible to plug in custom read preference types.
+If you're interested in such a feature, please let us know.
 
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
@@ -79,6 +85,7 @@ Hibernate OGM allows to configure store-specific options via Java annotations.
 When working with the MongoDB backend, you can specify the following settings:
 
 * the write concern for entities and associations using the +@WriteConcern+ annotation
+* the read preference for entities and associations using the +@ReadPreference+ annotation
 * a strategy for storing associations using the +@AssociationStorage+ and +@AssociationDocumentStorage+ annotations
 (refer to <<ogm-mongodb-storage-prinicples>> to learn more about these options).
 
@@ -90,6 +97,7 @@ The following shows an example:
 ----
 @Entity
 @WriteConcern(WriteConcernType.JOURNALED)
+@ReadPreference(ReadPreferenceType.PRIMARY_PREFERRED)
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
 @AssociationDocumentStorage(AssociationDocumentType.COLLECTION_PER_ASSOCIATION)
 public class Zoo {
@@ -110,7 +118,8 @@ public class Zoo {
 ====
 
 The +@WriteConcern+ annotation on the entity level expresses that all writes should be done using the +JOURNALED+ setting.
-The other two annotations specify that all associations of the +Zoo+
+Similarly, the +@ReadPreference+ annotation advices the engine to preferribly read that entity from the primary node if possible.
+The other two annotations on the type-level specify that all associations of the +Zoo+
 class should be stored in separate assocation documents, using a dedicated collection per association.
 This setting applies to the +animals+ and +employees+ associations.
 Only the elements of the +visitors+ association will be stored in the document of the corresponding +Zoo+ entity
@@ -128,6 +137,7 @@ The API allows set options in a type-safe fashion on the global, entity and prop
 When working with MongoDB, you can currently configure the following options using the API:
 
 * write concern
+* read preference
 * association storage strategy
 * association document storage strategy
 
@@ -144,6 +154,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
     public void configure(Configurable configurable) {
         configurable.configureOptionsFor( MongoDB.class )
             .writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
+            .ReadPreference(ReadPreferenceType.NEAREST )
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
                 .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
@@ -159,7 +170,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
 
 The call to +configureOptionsFor()+, passing the store-specific identifier type +MongoDB+,
 provides the entry point into the API. Following the fluent API pattern, you then can configure
-global options (+writeConcern()+) and navigate to single entities or properties to apply options
+global options (+writeConcern()+, +readPreference()+) and navigate to single entities or properties to apply options
 specific to these (+associationStorage()+ etc.).
 The call to +writeConcern()+  for the +Animal+  entity shows how a specific write concern type can be used.
 Here +RequiringReplicaCountOf+ is a custom implementation of +WriteConcern+ which ensures
