@@ -52,12 +52,12 @@ hibernate.ogm.mongodb.write_concern::
 Defines the write concern setting to be applied when issuing writes against the MongoDB datastore.
 Possible settings are (values of the +WriteConcernType+ enum):
 +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
-When set to +CUSTOM+, a custom +WriteConcern+ implementation type is to be specified.
+When set to +CUSTOM+, a custom +WriteConcern+ implementation type has to be specified.
 hibernate.ogm.mongodb.write_concern_type::
 Specifies a custom +WriteConcern+ implementation type (fully-qualified name, class object or instance).
 This is useful in cases where the pre-defined configurations are not sufficient,
 e.g. if you want to ensure that writes are propagated to a specific number of replicas or given "tag set".
-Only takes affect if +hibernate.ogm.mongodb.write_concern+ is set to +CUSTOM+.
+Only takes effect if +hibernate.ogm.mongodb.write_concern+ is set to +CUSTOM+.
 
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
