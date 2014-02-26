@@ -408,8 +408,6 @@ public class AssociationPersister {
 	 * Whether the association in question is stored within an entity structure ("embedded") and this entity has
 	 * properties whose value is generated in the datastore (such as a version attribute) or not.
 	 *
-	 * @param metadataProvider persister of the association
-	 * @param ownerPersister persister of the owning entity
 	 * @return {@code true} in case the represented association is stored within an entity which has server-generated
 	 * properties, and thus must be re-read after an update to the association, {@code false} otherwise.
 	 */
