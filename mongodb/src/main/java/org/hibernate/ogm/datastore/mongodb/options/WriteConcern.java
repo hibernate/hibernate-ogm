@@ -36,9 +36,9 @@ import org.hibernate.ogm.options.spi.MappingOption;
  * either be given using a pre-configured write concern such as {@link WriteConcernType#JOURNALED} or by specifying the
  * type of a custom {@link WriteConcern} implementation.
  * <p>
- * When given on the property-level, this setting will only take affect when the property represents an association and
- * this association is stored as a separate association document. If given for non-association properties or embedded
- * associations, the setting on the property-level will be ignored and the setting from the entity will be applied.
+ * When given on the property-level, this setting will only take effect when the property represents an association. If
+ * given for non-association properties, the setting on the property-level will be ignored and the setting from the
+ * entity will be applied.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling

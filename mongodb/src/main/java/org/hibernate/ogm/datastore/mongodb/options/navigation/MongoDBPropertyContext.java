@@ -37,8 +37,7 @@ public interface MongoDBPropertyContext extends DocumentStorePropertyContext<Mon
 
 	/**
 	 * Defines the type of write concern to be applied when performing write operations in case the current property
-	 * represents an association and the association storage strategy is set to
-	 * {@link AssociationStorageType#ASSOCIATION_DOCUMENT}. Otherwise the setting takes no effect.
+	 * represents an association. Otherwise the setting takes no effect.
 	 *
 	 * @param concern the write concern type
 	 * @return this context, allowing for further fluent API invocations
@@ -48,8 +47,7 @@ public interface MongoDBPropertyContext extends DocumentStorePropertyContext<Mon
 
 	/**
 	 * Specifies a custom {@link WriteConcern} implementation to be applied when performing write operations in case the
-	 * current property represents an association and the association storage strategy is set to
-	 * {@link AssociationStorageType#ASSOCIATION_DOCUMENT}. Otherwise the setting takes no effect.
+	 * current property represents an association. Otherwise the setting takes no effect.
 	 * <p>
 	 * Either use this option or {@link #writeConcern(WriteConcernType)} but not both at the same type.
 	 *
