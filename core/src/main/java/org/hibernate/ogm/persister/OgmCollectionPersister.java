@@ -687,27 +687,31 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.collectionPersister( this )
 					.session( session );
 
-			// shortcut to avoid loop if we can
-			if ( associationType != AssociationType.OTHER ) {
-				for ( RowKey assocEntryKey : associationPersister.getAssociation().getKeys() ) {
-					// we unfortunately cannot mass change the update of the associated entity
-					updateInverseSideOfAssociationNavigation(
-							session,
-							null,
-							associationPersister.getAssociation().get( assocEntryKey ),
-							Action.REMOVE,
-							assocEntryKey
-					);
+			Association association = associationPersister.getAssociationOrNull();
+
+			if ( association != null ) {
+				// shortcut to avoid loop if we can
+				if ( associationType != AssociationType.OTHER ) {
+					for ( RowKey assocEntryKey : association.getKeys() ) {
+						// we unfortunately cannot mass change the update of the associated entity
+						updateInverseSideOfAssociationNavigation(
+								session,
+								null,
+								association.get( assocEntryKey ),
+								Action.REMOVE,
+								assocEntryKey
+								);
+					}
 				}
-			}
-			associationPersister.getAssociation().clear();
+				association.clear();
 
-			if ( associationPersister.hostingEntityRequiresReadAfterUpdate() ) {
-				Object owner = session.getPersistenceContext().getCollectionOwner( id, this );
-				associationPersister.hostingEntity( owner );
-			}
+				if ( associationPersister.hostingEntityRequiresReadAfterUpdate() ) {
+					Object owner = session.getPersistenceContext().getCollectionOwner( id, this );
+					associationPersister.hostingEntity( owner );
+				}
 
-			associationPersister.flushToCache();
+				associationPersister.flushToCache();
+			}
 
 			if ( log.isDebugEnabled() ) {
 				log.debug( "done deleting collection" );
