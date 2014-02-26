@@ -43,12 +43,12 @@ import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MassIndexingMongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
-import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -256,7 +256,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private DBCollection getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy) {
-		if ( storageStrategy.isGlobalCollection() ) {
+		if ( storageStrategy == AssociationStorageStrategy.GLOBAL_COLLECTION ) {
 			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
 		}
 		else {
@@ -371,7 +371,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
 		executeBatch( associationContext.getOperationsQueue() );
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = getEmbeddingEntity( key, associationContext );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
@@ -403,7 +403,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = getEmbeddingEntity( key, associationContext );
 
 			boolean insert = false;
@@ -476,7 +476,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
 		executeBatch( associationContext.getOperationsQueue() );
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
@@ -517,7 +517,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
@@ -576,8 +576,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, associationContext );
-		return storageStrategy.isEmbeddedInEntity();
+		return getAssociationStorageStrategy( associationKey, associationContext ) == AssociationStorageStrategy.IN_ENTITY;
 	}
 
 	@Override
@@ -619,7 +618,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private DBObject associationKeyToObject(AssociationKey key, AssociationStorageStrategy storageStrategy) {
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			throw new AssertionFailure( MongoHelpers.class.getName()
 					+ ".associationKeyToObject should not be called for associations embedded in entity documents");
 		}
@@ -633,7 +632,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 		BasicDBObject idObject = new BasicDBObject( 1 );
 
-		if ( storageStrategy.isGlobalCollection() ) {
+		if ( storageStrategy == AssociationStorageStrategy.GLOBAL_COLLECTION ) {
 			columns.put( MongoDBDialect.TABLE_FIELDNAME, key.getTable() );
 		}
 		idObject.put( MongoDBDialect.ID_FIELDNAME, columns );

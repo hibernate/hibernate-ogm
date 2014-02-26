@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.impl;
+package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
@@ -30,50 +30,19 @@ import org.hibernate.ogm.grid.AssociationKind;
  *
  * @author Gunnar Morling
  */
-public class AssociationStorageStrategy {
+public enum AssociationStorageStrategy {
 
-	private final boolean isEmbeddedInEntity;
-	private final boolean isGlobalCollection;
-
-	private AssociationStorageStrategy(boolean isEmbeddedInEntity, boolean isGlobalCollection) {
-		this.isEmbeddedInEntity = isEmbeddedInEntity;
-		this.isGlobalCollection = isGlobalCollection;
-	}
+	IN_ENTITY, GLOBAL_COLLECTION, COLLECTION_PER_ASSOCIATION;
 
 	public static AssociationStorageStrategy getInstance(AssociationKind associationKind, AssociationStorageType associationStorage, AssociationDocumentType associationDocumentStorage) {
 		if ( associationKind == AssociationKind.EMBEDDED_COLLECTION || associationStorage == AssociationStorageType.IN_ENTITY ) {
-			return new AssociationStorageStrategy( true, false );
+			return IN_ENTITY;
 		}
 		else if ( associationDocumentStorage == AssociationDocumentType.COLLECTION_PER_ASSOCIATION ) {
-			return new AssociationStorageStrategy( false, false );
+			return COLLECTION_PER_ASSOCIATION;
 		}
 		else {
-			return new AssociationStorageStrategy( false, true );
+			return GLOBAL_COLLECTION;
 		}
-	}
-
-	/**
-	 * Whether the given association is to be stored embedded within the document of the owning entity. That's the case
-	 * if the association is either an embedded element collection or the association is configured as to be stored
-	 * embedded as per the {@link AssociationStorageType} and {@link AssociationDocumentType} options.
-	 *
-	 * @return {@code true} if this association is to be stored embedded within the document of the owning entity,
-	 * {@code false} otherwise.
-	 */
-	public boolean isEmbeddedInEntity() {
-		return isEmbeddedInEntity;
-	}
-
-	public boolean isGlobalCollection() {
-		return isGlobalCollection;
-	}
-
-	public boolean isCollectionPerAssociation() {
-		return !isEmbeddedInEntity && !isGlobalCollection;
-	}
-
-	@Override
-	public String toString() {
-		return "AssociationStorageStrategy [isEmbeddedInEntity=" + isEmbeddedInEntity + ", isGlobalCollection=" + isGlobalCollection + "]";
 	}
 }
