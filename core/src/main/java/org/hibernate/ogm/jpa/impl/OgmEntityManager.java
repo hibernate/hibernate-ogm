@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.jpa.spi;
+package org.hibernate.ogm.jpa.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +31,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
@@ -38,12 +39,20 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
 
+import org.hibernate.AssertionFailure;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+import org.hibernate.engine.ResultSetMappingDefinition;
+import org.hibernate.engine.query.spi.HQLQueryPlan;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryConstructorReturn;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
@@ -53,13 +62,14 @@ import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
+import org.hibernate.jpa.internal.QueryImpl;
+import org.hibernate.jpa.internal.util.LockModeTypeHelper;
+import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
+import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
-import org.hibernate.ogm.jpa.impl.LetThroughExecuteUpdateQuery;
-import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.jpa.impl.OgmJpaQuery;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -285,11 +295,6 @@ public class OgmEntityManager implements EntityManager {
 		return jpaQuery;
 	}
 
-	protected <T> void applySavedSettings(NamedQueryDefinition namedQueryDefinition, OgmJpaQuery<T> jpaQuery) {
-		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
-		impl.applySavedSettings( namedQueryDefinition, jpaQuery );
-	}
-
 	private <T> TypedQuery<T> createNamedNativeQuery(NamedSQLQueryDefinition sqlDefinition, Class<T> resultType) {
 		if ( resultType != null ) {
 			resultClassChecking( resultType, sqlDefinition );
@@ -303,14 +308,162 @@ public class OgmEntityManager implements EntityManager {
 		return new OgmJpaQuery<T>( noSqlQuery, hibernateEm );
 	}
 
-	protected void resultClassChecking(Class<?> resultClass, org.hibernate.Query hqlQuery) {
-		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
-		impl.resultClassChecking( resultClass, hqlQuery );
+	/*
+	 *  Copied from org.hibernate.jpa.spi.AbstractEntityManagerImpl
+	 */
+	protected void resultClassChecking(Class resultType, NamedSQLQueryDefinition namedQueryDefinition) {
+		final SessionFactoryImplementor sfi = (SessionFactoryImplementor) factory.getSessionFactory();
+
+		final NativeSQLQueryReturn[] queryReturns;
+		if ( namedQueryDefinition.getQueryReturns() != null ) {
+			queryReturns = namedQueryDefinition.getQueryReturns();
+		}
+		else if ( namedQueryDefinition.getResultSetRef() != null ) {
+			final ResultSetMappingDefinition rsMapping = sfi.getResultSetMapping( namedQueryDefinition.getResultSetRef() );
+			queryReturns = rsMapping.getQueryReturns();
+		}
+		else {
+			throw new AssertionFailure( "Unsupported named query model. Please report the bug in Hibernate EntityManager");
+		}
+
+		if ( queryReturns.length > 1 ) {
+			throw new IllegalArgumentException( "Cannot create TypedQuery for query with more than one return" );
+		}
+
+		final NativeSQLQueryReturn nativeSQLQueryReturn = queryReturns[0];
+
+		if ( nativeSQLQueryReturn instanceof NativeSQLQueryRootReturn ) {
+			final Class<?> actualReturnedClass;
+			final String entityClassName = ( (NativeSQLQueryRootReturn) nativeSQLQueryReturn ).getReturnEntityName();
+			try {
+				actualReturnedClass = sfi.getServiceRegistry().getService( ClassLoaderService.class ).classForName( entityClassName );
+			}
+			catch ( ClassLoadingException e ) {
+				throw new AssertionFailure(
+						"Unable to load class [" + entityClassName + "] declared on named native query [" +
+								namedQueryDefinition.getName() + "]"
+				);
+			}
+			if ( !resultType.isAssignableFrom( actualReturnedClass ) ) {
+				throw buildIncompatibleException( resultType, actualReturnedClass );
+			}
+		}
+		else if ( nativeSQLQueryReturn instanceof NativeSQLQueryConstructorReturn ) {
+			final NativeSQLQueryConstructorReturn ctorRtn = (NativeSQLQueryConstructorReturn) nativeSQLQueryReturn;
+			if ( !resultType.isAssignableFrom( ctorRtn.getTargetClass() ) ) {
+				throw buildIncompatibleException( resultType, ctorRtn.getTargetClass() );
+			}
+		}
+		else {
+			//TODO support other NativeSQLQueryReturn type. For now let it go.
+		}
 	}
 
-	protected void resultClassChecking(Class<?> resultType, NamedSQLQueryDefinition namedQueryDefinition) {
-		AbstractEntityManagerImpl impl = (AbstractEntityManagerImpl) hibernateEm;
-		impl.resultClassChecking( resultType, namedQueryDefinition );
+	/*
+	 *  Copied from org.hibernate.jpa.spi.AbstractEntityManagerImpl
+	 */
+	private void resultClassChecking(Class resultClass, org.hibernate.Query hqlQuery) {
+		// make sure the query is a select -> HHH-7192
+		final SessionImplementor session = unwrap( SessionImplementor.class );
+		final HQLQueryPlan queryPlan = session.getFactory().getQueryPlanCache()
+				.getHQLQueryPlan( hqlQuery.getQueryString(), false, session.getLoadQueryInfluencers().getEnabledFilters() );
+		if ( queryPlan.getTranslators()[0].isManipulationStatement() ) {
+			throw new IllegalArgumentException( "Update/delete queries cannot be typed" );
+		}
+
+		// do some return type validation checking
+		if ( Object[].class.equals( resultClass ) ) {
+			// no validation needed
+		}
+		else if ( Tuple.class.equals( resultClass ) ) {
+			TupleBuilderTransformer tupleTransformer = new TupleBuilderTransformer( hqlQuery );
+			hqlQuery.setResultTransformer( tupleTransformer );
+		}
+		else {
+			final Class dynamicInstantiationClass = queryPlan.getDynamicInstantiationResultType();
+			if ( dynamicInstantiationClass != null ) {
+				if ( !resultClass.isAssignableFrom( dynamicInstantiationClass ) ) {
+					throw new IllegalArgumentException( "Mismatch in requested result type [" + resultClass.getName() + "] and actual result type ["
+							+ dynamicInstantiationClass.getName() + "]" );
+				}
+			}
+			else if ( hqlQuery.getReturnTypes().length == 1 ) {
+				// if we have only a single return expression, its java type should match with the requested type
+				if ( !resultClass.isAssignableFrom( hqlQuery.getReturnTypes()[0].getReturnedClass() ) ) {
+					throw new IllegalArgumentException( "Type specified for TypedQuery [" + resultClass.getName()
+							+ "] is incompatible with query return type [" + hqlQuery.getReturnTypes()[0].getReturnedClass() + "]" );
+				}
+			}
+			else {
+				throw new IllegalArgumentException( "Cannot create TypedQuery for query with more than one return using requested result type ["
+						+ resultClass.getName() + "]" );
+			}
+		}
+	}
+
+	/*
+	 *  Copied from org.hibernate.jpa.spi.AbstractEntityManagerImpl
+	 */
+	private IllegalArgumentException buildIncompatibleException(Class<?> resultClass, Class<?> actualResultClass) {
+		return new IllegalArgumentException(
+				"Type specified for TypedQuery [" + resultClass.getName() +
+						"] is incompatible with query return type [" + actualResultClass + "]"
+		);
+	}
+
+	/*
+	 *  Copied from org.hibernate.jpa.spi.AbstractEntityManagerImpl
+	 */
+	private void applySavedSettings(NamedQueryDefinition namedQueryDefinition, QueryImpl jpaQuery) {
+		if ( namedQueryDefinition.isCacheable() ) {
+			jpaQuery.setHint( QueryHints.HINT_CACHEABLE, true );
+			if ( namedQueryDefinition.getCacheRegion() != null ) {
+				jpaQuery.setHint( QueryHints.HINT_CACHE_REGION, namedQueryDefinition.getCacheRegion() );
+			}
+		}
+
+		if ( namedQueryDefinition.getCacheMode() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_CACHE_MODE, namedQueryDefinition.getCacheMode() );
+		}
+
+		if ( namedQueryDefinition.isReadOnly() ) {
+			jpaQuery.setHint( QueryHints.HINT_READONLY, true );
+		}
+
+		if ( namedQueryDefinition.getTimeout() != null ) {
+			jpaQuery.setHint( QueryHints.SPEC_HINT_TIMEOUT, namedQueryDefinition.getTimeout() * 1000 );
+		}
+
+		if ( namedQueryDefinition.getFetchSize() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_FETCH_SIZE, namedQueryDefinition.getFetchSize() );
+		}
+
+		if ( namedQueryDefinition.getComment() != null ) {
+			jpaQuery.setHint( QueryHints.HINT_COMMENT, namedQueryDefinition.getComment() );
+		}
+
+		if ( namedQueryDefinition.getFirstResult() != null ) {
+			jpaQuery.setFirstResult( namedQueryDefinition.getFirstResult() );
+		}
+
+		if ( namedQueryDefinition.getMaxResults() != null ) {
+			jpaQuery.setMaxResults( namedQueryDefinition.getMaxResults() );
+		}
+
+		if ( namedQueryDefinition.getLockOptions() != null ) {
+			if ( namedQueryDefinition.getLockOptions().getLockMode() != null ) {
+				jpaQuery.setLockMode( LockModeTypeHelper.getLockModeType( namedQueryDefinition.getLockOptions().getLockMode() ) );
+			}
+		}
+
+		if ( namedQueryDefinition.getFlushMode() != null ) {
+			if ( namedQueryDefinition.getFlushMode() == FlushMode.COMMIT ) {
+				jpaQuery.setFlushMode( FlushModeType.COMMIT );
+			}
+			else {
+				jpaQuery.setFlushMode( FlushModeType.AUTO );
+			}
+		}
 	}
 
 	@Override
