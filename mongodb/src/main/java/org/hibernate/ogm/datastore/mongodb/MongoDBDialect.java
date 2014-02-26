@@ -87,7 +87,6 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-//import com.mongodb.WriteConcern;
 import com.mongodb.WriteConcern;
 
 /**
@@ -168,7 +167,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return new Tuple( new MongoDBTupleSnapshot( toSave, key, SnapshotType.INSERT ) );
 	}
 
-	private DBObject getObjectAsEmbeddedAssociation(AssociationKey key) {
+	/**
+	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
+	 */
+	private DBObject getEmbeddingEntity(AssociationKey key) {
 		DBCollection collection = this.getCollection( key.getEntityKey() );
 		DBObject searchObject = this.prepareIdObject( key.getEntityKey() );
 		DBObject restrictionObject = this.getSearchObject( key, true );
@@ -361,7 +363,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		// been created
 		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			DBObject entity = getObjectAsEmbeddedAssociation( key );
+			DBObject entity = getEmbeddingEntity( key );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
 			}
@@ -393,12 +395,13 @@ public class MongoDBDialect implements BatchableGridDialect {
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			DBObject entity = getObjectAsEmbeddedAssociation( key );
+			DBObject entity = getEmbeddingEntity( key );
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
 				entity = this.prepareIdObject( key.getEntityKey() );
 			}
+
 			if ( getAssociationFieldOrNull( key, entity ) == null ) {
 				if ( insert ) {
 					//adding assoc before insert
@@ -409,7 +412,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 					BasicDBObject updater = new BasicDBObject();
 					this.addSubQuery( "$set", updater, key.getCollectionRole(),  Collections.EMPTY_LIST );
 					//TODO use entity filter with only the ids
-					this.getCollection( key.getEntityKey() ).update( entity, updater, true, false );
+					this.getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 					//adding assoc after update because the query takes the whole object today
 					addEmptyAssociationField( key, entity );
 				}

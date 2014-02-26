@@ -132,23 +132,30 @@ public class WriteConcernPropagationTest {
 
 	@Test
 	public void shouldApplyConfiguredWriteConcernForCreationOfEmbeddedAssociation() {
-		// given an empty database
-		MockMongoClient mockClient = mockClient().build();
+		// given a persisted player and a golf course
+		BasicDBObject player = getPlayer();
+		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
+
+		MockMongoClient mockClient = mockClient()
+				.insert( "GolfPlayer", getPlayer() )
+				.insert( "GolfCourse", getGolfCourse() )
+				.build();
+
 		setupSessionFactory( new MongoDBDatastoreProvider( mockClient.getClient() ) );
 
 		Session session = sessions.openSession();
 		Transaction transaction = session.beginTransaction();
 
-		// when inserting a player with an associated course
+		// when associating the golf course to the player
 		GolfPlayer ben = new GolfPlayer( 1L, "Ben", 0.1, new GolfCourse( 1L, "Bepple Peach" ) );
-		session.persist( ben );
+		session.merge( ben );
 
 		transaction.commit();
 		session.close();
 
-		// then expect insert and update using the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
-		verify( mockClient.getCollection( "GolfPlayer" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		// then expect two updates using the configured write concern (one for creating the association, one for adding
+		// the row )
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 2)  ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test
