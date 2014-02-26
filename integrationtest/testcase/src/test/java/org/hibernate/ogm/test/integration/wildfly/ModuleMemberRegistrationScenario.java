@@ -63,6 +63,18 @@ public abstract class ModuleMemberRegistrationScenario {
 	}
 
 	@Test
+	public void shouldFindPersistedMemberByIdWithQuery() throws Exception {
+		Member newMember = memberRegistration.getNewMember();
+		newMember.setName( "Peter O'Tall" );
+		memberRegistration.register();
+
+		Member found = memberRegistration.findWithyQuery( newMember.getId() );
+
+		assertNotNull( "Expected at least one result using HQL", found );
+		assertEquals( "HQL hasn't found a new member", newMember.getName(), found.getName() );
+	}
+
+	@Test
 	public void shouldReturnNullWhenIdDoesNotExist() throws Exception {
 		Member found = memberRegistration.find( -12L );
 

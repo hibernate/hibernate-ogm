@@ -54,6 +54,16 @@ public class MemberRegistration {
 		return em.find( Member.class, id );
 	}
 
+	public Member findWithNativeQuery(String nativeQuery) {
+		return (Member) em.createNativeQuery( nativeQuery, Member.class).getSingleResult();
+	}
+
+	public Member findWithyQuery(Long id) {
+		return (Member) em.createQuery( "FROM Member WHERE id = :id", Member.class)
+				.setParameter( "id", id )
+				.getSingleResult();
+	}
+
 	@PostConstruct
 	public void initNewMember() {
 		newMember = new Member();

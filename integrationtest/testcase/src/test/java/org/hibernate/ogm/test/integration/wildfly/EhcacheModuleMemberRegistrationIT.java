@@ -55,6 +55,7 @@ public class EhcacheModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties()
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "ehcache" ).up()
+					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
 	}
 

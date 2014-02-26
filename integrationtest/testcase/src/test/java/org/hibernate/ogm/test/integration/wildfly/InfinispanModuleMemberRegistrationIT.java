@@ -58,6 +58,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 				.clazz( Member.class.getName() ).getOrCreateProperties()
 				.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "infinispan" ).up()
 				.createProperty().name( "hibernate.ogm.infinispan.configuration_resourcename" ).value( "infinispan.xml" ).up()
+				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 			.up().up();
 	}
 
