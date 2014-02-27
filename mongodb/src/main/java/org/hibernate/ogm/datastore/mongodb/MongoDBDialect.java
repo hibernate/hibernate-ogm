@@ -175,34 +175,39 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
 		ReadPreference readPreference = getReadPreference( associationContext );
 
-		DBCollection collection = this.getCollection( key.getEntityKey() );
-		DBObject searchObject = this.prepareIdObject( key.getEntityKey() );
-		DBObject restrictionObject = this.getSearchObject( key, true );
+		DBCollection collection = getCollection( key.getEntityKey() );
+		DBObject searchObject = prepareIdObject( key.getEntityKey() );
+		DBObject projection = getProjection( key, true );
 
-		return collection.findOne( searchObject, restrictionObject, readPreference );
+		return collection.findOne( searchObject, projection, readPreference );
 	}
 
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
 		ReadPreference readPreference = getReadPreference( tupleContext );
 
-		DBCollection collection = this.getCollection( key );
-		DBObject searchObject = this.prepareIdObject( key );
-		BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
+		DBCollection collection = getCollection( key );
+		DBObject searchObject = prepareIdObject( key );
+		BasicDBObject projection = getProjection( tupleContext );
 
-		return collection.findOne( searchObject, restrictionObject, readPreference );
+		return collection.findOne( searchObject, projection, readPreference );
 	}
 
-	private BasicDBObject getSearchObject(TupleContext tupleContext) {
-		return this.getSearchObject( tupleContext.getSelectableColumns() );
+	private BasicDBObject getProjection(TupleContext tupleContext) {
+		return getProjection( tupleContext.getSelectableColumns() );
 	}
 
-	private BasicDBObject getSearchObject(List<String> selectedColumns) {
-		BasicDBObject searchObject = new BasicDBObject();
-		for ( String column : selectedColumns ) {
-			searchObject.append( column, 1 );
+	/**
+	 * Returns a projection object for specifying the fields to retrieve during a specific find operation.
+	 */
+	private BasicDBObject getProjection(List<String> fieldNames) {
+		BasicDBObject projection = new BasicDBObject( fieldNames.size() );
+		for ( String column : fieldNames ) {
+			projection.put( column, 1 );
 		}
-		return searchObject;
+
+		return projection;
 	}
+
 	/**
 	 * Create a DBObject which represents the _id field.
 	 * In case of simple id objects the json representation will look like {_id: "theIdValue"}
@@ -282,8 +287,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
 	}
 
-	// Creates a dbObject that can be pass to the mongoDB batch insert function
-	private DBObject objectForInsert(Tuple tuple, EntityKey key, BasicDBObject dbObject) {
+	/**
+	 * Creates a dbObject that can be pass to the mongoDB batch insert function
+	 */
+	private DBObject objectForInsert(Tuple tuple, DBObject dbObject) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
@@ -291,10 +298,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 				switch ( operation.getType() ) {
 					case PUT_NULL:
 					case PUT:
-						dbObject.append( column, operation.getValue() );
+						dbObject.put( column, operation.getValue() );
 						break;
 					case REMOVE:
-						dbObject.remove( column );
+						dbObject.removeField( column );
 						break;
 					}
 			}
@@ -352,15 +359,15 @@ public class MongoDBDialect implements BatchableGridDialect {
 		ReadPreference readPreference = getReadPreference( associationContext );
 		final DBObject associationKeyObject = associationKeyToObject( key, storageStrategy );
 
-		return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getSearchObject( key, false ), readPreference );
+		return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getProjection( key, false ), readPreference );
 	}
 
-	private DBObject getSearchObject(AssociationKey key, boolean embedded) {
+	private DBObject getProjection(AssociationKey key, boolean embedded) {
 		if ( embedded ) {
-			return getSearchObject( Collections.singletonList( key.getCollectionRole() ) );
+			return getProjection( Collections.singletonList( key.getCollectionRole() ) );
 		}
 		else {
-			return getSearchObject( ROWS_FIELDNAME_LIST );
+			return getProjection( ROWS_FIELDNAME_LIST );
 		}
 	}
 
@@ -745,7 +752,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		DBCollection collection = getCollection( entityKey );
 		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
 		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
-		DBObject newDocument = objectForInsert( tuple, entityKey, (BasicDBObject) document );
+		DBObject newDocument = objectForInsert( tuple, document );
 		inserts.get( collection ).put( entityKey, newDocument );
 	}
 

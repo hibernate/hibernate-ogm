@@ -324,7 +324,7 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 
 	@Override
 	public StatelessSessionBuilder withStatelessOptions() {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		throw new NotSupportedException( "OGM-18", "Stateless session is not implemented in OGM" );
 	}
 
 	@Override
