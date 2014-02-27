@@ -51,7 +51,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.test.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.TestableGridDialect;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 

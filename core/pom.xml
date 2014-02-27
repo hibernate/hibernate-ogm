@@ -182,6 +182,7 @@
                             <excludes>
                                 <exclude>**/hibernate.properties</exclude>
                                 <exclude>**/log4j.properties</exclude>
+                                <exclude>org/hibernate/ogm/test/**/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>

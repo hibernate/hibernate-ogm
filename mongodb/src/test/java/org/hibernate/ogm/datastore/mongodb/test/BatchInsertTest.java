@@ -26,13 +26,13 @@ import java.util.List;
 import org.fest.assertions.Assertions;
 import org.hibernate.Session;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.backendtck.simpleentity.Helicopter;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.test.simpleentity.Helicopter;
-import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Test;
 

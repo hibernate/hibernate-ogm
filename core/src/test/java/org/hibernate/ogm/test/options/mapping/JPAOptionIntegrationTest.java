@@ -21,7 +21,7 @@
 package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
+import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -36,7 +36,7 @@ import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.mapping.model.Microwave;
 import org.hibernate.ogm.test.options.mapping.model.Refrigerator;
-import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
 

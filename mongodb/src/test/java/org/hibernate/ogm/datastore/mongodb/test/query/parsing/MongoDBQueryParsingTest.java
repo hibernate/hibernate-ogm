@@ -32,7 +32,7 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBProcessingC
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBQueryParsingResult;
 import org.hibernate.ogm.datastore.mongodb.test.query.parsing.model.IndexedEntity;
 import org.hibernate.ogm.datastore.mongodb.utils.MapBasedEntityNamesResolver;
-import org.hibernate.ogm.test.utils.OgmTestCase;
+import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Before;
 import org.junit.Test;
 

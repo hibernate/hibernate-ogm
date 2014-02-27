@@ -23,7 +23,7 @@ package org.hibernate.ogm.test.datastore;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

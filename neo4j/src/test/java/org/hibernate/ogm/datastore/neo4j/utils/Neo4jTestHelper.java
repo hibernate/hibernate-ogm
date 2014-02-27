@@ -41,7 +41,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.test.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.TestableGridDialect;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;

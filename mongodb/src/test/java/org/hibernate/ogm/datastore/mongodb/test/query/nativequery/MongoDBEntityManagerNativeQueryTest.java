@@ -28,9 +28,9 @@ import javax.persistence.EntityManager;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
-import org.hibernate.ogm.test.jpa.Poem;
-import org.hibernate.ogm.test.utils.PackagingRule;
-import org.hibernate.ogm.test.utils.jpa.JpaTestCase;
+import org.hibernate.ogm.backendtck.jpa.Poem;
+import org.hibernate.ogm.utils.PackagingRule;
+import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
