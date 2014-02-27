@@ -25,7 +25,6 @@ import java.util.List;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.util.impl.StringHelper;
 
-
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
  *
@@ -36,11 +35,18 @@ public class TupleContext implements GridDialectOperationContext {
 
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
-	private OperationsQueue operationsQueue;
+	private final OperationsQueue operationsQueue;
 
 	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext) {
 		this.selectableColumns = selectableColumns;
 		this.optionsContext = optionsContext;
+		this.operationsQueue = null;
+	}
+
+	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, OperationsQueue operationsQueue) {
+		this.selectableColumns = selectableColumns;
+		this.optionsContext = optionsContext;
+		this.operationsQueue = operationsQueue;
 	}
 
 	/**
@@ -56,12 +62,15 @@ public class TupleContext implements GridDialectOperationContext {
 		return optionsContext;
 	}
 
+	/**
+	 * Provides access to the operations queue of the current flush cycle if the active dialect supports the batched
+	 * execution of operations.
+	 *
+	 * @return the operations queue of the current flush or {@code null} if the active dialect does the batched
+	 * execution of operations
+	 */
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
-	}
-
-	public void setOperationsQueue(OperationsQueue operationsQueue) {
-		this.operationsQueue = operationsQueue;
 	}
 
 	@Override
