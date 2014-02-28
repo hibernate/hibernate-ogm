@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -28,39 +28,27 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernConverter;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 
 /**
- * Specifies the write concern to be applied when performing write operations to the annotated entity or property. Can
- * either be given using a pre-configured write concern such as {@link WriteConcernType#JOURNALED} or by specifying the
- * type of a custom {@link WriteConcern} implementation.
+ * Specifies the "read preference" to be applied when performing read operations for the annotated entity or property.
  * <p>
  * When given on the property-level, this setting will only take effect when the property represents an association. If
  * given for non-association properties, the setting on the property-level will be ignored and the setting from the
  * entity will be applied.
  *
- * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
- * @see http://docs.mongodb.org/manual/core/write-concern/
+ * @see http://docs.mongodb.org/manual/core/read-preference/
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)
-@MappingOption(WriteConcernConverter.class)
-public @interface WriteConcern {
+@MappingOption(ReadPreferenceConverter.class)
+public @interface ReadPreference {
 
 	/**
-	 * Specifies the write concern to be applied when performing write operations to the annotated entity or property.
-	 * <p>
-	 * Use {@link WriteConcernType#CUSTOM} in conjunction with {@link #type()} to specify a custom {@link WriteConcern}
-	 * implementation. This is useful in cases where the pre-defined configurations are not sufficient, e.g. if you want
-	 * to ensure that writes are propagated to a specific number of replicas or given "tag set".
+	 * Specifies the read concern setting to be applied when performing read operations for the annotated entity or
+	 * property.
 	 */
-	WriteConcernType value();
-
-	/**
-	 * Specifies a custom {@link com.mongodb.WriteConcern} implementation. Only takes effect if {@link #value()} is set
-	 * to {@link WriteConcernType#CUSTOM}. The specified type must have a default (no-args) constructor.
-	 */
-	Class<? extends com.mongodb.WriteConcern> type() default com.mongodb.WriteConcern.class;
+	ReadPreferenceType value();
 }

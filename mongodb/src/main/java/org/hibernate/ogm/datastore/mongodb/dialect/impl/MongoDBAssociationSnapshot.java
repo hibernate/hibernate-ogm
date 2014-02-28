@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
-import org.hibernate.ogm.datastore.mongodb.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -119,7 +118,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	@SuppressWarnings("unchecked")
 	private Collection<DBObject> getRows() {
-		if ( storageStrategy.isEmbeddedInEntity() ) {
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			return getAssociationFieldOrNull( associationKey, dbObject );
 		}
 		else {

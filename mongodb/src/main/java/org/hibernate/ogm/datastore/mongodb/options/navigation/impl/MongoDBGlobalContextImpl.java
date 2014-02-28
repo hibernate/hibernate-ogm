@@ -22,8 +22,10 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
 import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStoreGlobalContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
@@ -56,6 +58,13 @@ public abstract class MongoDBGlobalContextImpl extends DocumentStoreGlobalContex
 	public MongoDBGlobalContext writeConcern(WriteConcern writeConcern) {
 		Contracts.assertParameterNotNull( writeConcern, "writeConcern" );
 		addGlobalOption( new WriteConcernOption(), writeConcern );
+		return this;
+	}
+
+	@Override
+	public MongoDBGlobalContext readPreference(ReadPreferenceType readPreference) {
+		Contracts.assertParameterNotNull( readPreference, "readPreference" );
+		addGlobalOption( new ReadPreferenceOption(), readPreference.getReadPreference() );
 		return this;
 	}
 

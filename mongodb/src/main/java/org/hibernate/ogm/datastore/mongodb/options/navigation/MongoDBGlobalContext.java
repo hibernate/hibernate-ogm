@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
 import com.mongodb.WriteConcern;
@@ -53,6 +54,15 @@ public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDB
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	MongoDBGlobalContext writeConcern(WriteConcern writeConcern);
+
+	/**
+	 * Defines the type of read preference to be applied when performing read operations against the datastore.
+	 *
+	 * @param readPreference the read preference type
+	 * @return this context, allowing for further fluent API invocations
+	 * @see http://docs.mongodb.org/manual/core/read-preference/
+	 */
+	MongoDBGlobalContext readPreference(ReadPreferenceType readPreference);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is

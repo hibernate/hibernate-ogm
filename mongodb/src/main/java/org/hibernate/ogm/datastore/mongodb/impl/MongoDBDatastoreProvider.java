@@ -45,6 +45,7 @@ import org.hibernate.service.spi.Stoppable;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 
@@ -97,6 +98,10 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	public WriteConcern getWriteConcern() {
 		return config.getWriteConcern();
+	}
+
+	public ReadPreference getReadPreference() {
+		return config.getReadPreference();
 	}
 
 	@Override

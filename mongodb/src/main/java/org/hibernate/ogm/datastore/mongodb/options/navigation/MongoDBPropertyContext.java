@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStorePropertyContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
 import com.mongodb.WriteConcern;
@@ -55,6 +56,16 @@ public interface MongoDBPropertyContext extends DocumentStorePropertyContext<Mon
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	MongoDBPropertyContext writeConcern(WriteConcern writeConcern);
+
+	/**
+	 * Defines the type of read preference to be applied when performing read operations in case the current property
+	 * represents an association. Otherwise the setting takes no effect.
+	 *
+	 * @param readPreference the read preference type
+	 * @return this context, allowing for further fluent API invocations
+	 * @see http://docs.mongodb.org/manual/core/read-preference/
+	 */
+	MongoDBPropertyContext readPreference(ReadPreferenceType readPreference);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the current property represents an

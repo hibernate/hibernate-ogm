@@ -23,13 +23,14 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
 import com.mongodb.WriteConcern;
 
 /**
  * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
- * entities or properties.
+ * properties.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
@@ -39,11 +40,11 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 	/**
 	 * Defines the type of write concern to be applied when performing write operations for the current entity.
 	 *
-	 * @param concern the write concern type
+	 * @param writeConcern the write concern type
 	 * @return this context, allowing for further fluent API invocations
 	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
-	MongoDBEntityContext writeConcern(WriteConcernType concern);
+	MongoDBEntityContext writeConcern(WriteConcernType writeConcern);
 
 	/**
 	 * Specifies a custom {@link WriteConcern} implementation to be applied when performing write operations for the
@@ -53,6 +54,15 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	MongoDBEntityContext writeConcern(WriteConcern writeConcern);
+
+	/**
+	 * Defines the type of read preference to be applied when performing read operations against the datastore.
+	 *
+	 * @param readPreference the read preference type
+	 * @return this context, allowing for further fluent API invocations
+	 * @see http://docs.mongodb.org/manual/core/read-preference/
+	 */
+	MongoDBEntityContext readPreference(ReadPreferenceType readPreference);
 
 	/**
 	 * Specifies how association documents should be persisted. Only applies when the association storage strategy is

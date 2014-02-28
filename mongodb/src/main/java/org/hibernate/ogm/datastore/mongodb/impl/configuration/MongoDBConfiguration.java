@@ -30,13 +30,16 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContainer;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.PropertyValidator;
 
 import com.mongodb.MongoClientOptions;
+import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
 /**
@@ -57,6 +60,13 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private static final WriteConcernType DEFAULT_WRITE_CONCERN = WriteConcernType.ACKNOWLEDGED;
 
 	/**
+	 * The default read preference.
+	 *
+	 * @see MongoDBProperties#READ_PREFERENCE
+	 */
+	private static final ReadPreferenceType DEFAULT_READ_PREFERENCE = ReadPreferenceType.PRIMARY;
+
+	/**
 	 * The default value used to set the timeout during the connection to the MongoDB instance This value is set in
 	 * milliseconds.
 	 *
@@ -73,6 +83,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private final AssociationDocumentType associationDocumentStorage;
 	private final int timeout;
 	private final WriteConcern writeConcern;
+	private final ReadPreference readPreference;
 
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
@@ -96,6 +107,18 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.getValue();
 
 		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ), classLoaderService );
+
+		ReadPreference apiConfiguredReadPreference = globalOptions.getUnique( ReadPreferenceOption.class );
+		if ( apiConfiguredReadPreference != null ) {
+			readPreference = apiConfiguredReadPreference;
+		}
+		else {
+			readPreference = propertyReader
+				.property( MongoDBProperties.READ_PREFERENCE, ReadPreferenceType.class )
+				.withDefault( DEFAULT_READ_PREFERENCE )
+				.getValue()
+				.getReadPreference();
+		}
 	}
 
 	/**
@@ -108,6 +131,10 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	public WriteConcern getWriteConcern() {
 		return writeConcern;
+	}
+
+	public ReadPreference getReadPreference() {
+		return readPreference;
 	}
 
 	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcern apiConfiguredWriteConcern, ClassLoaderService classLoaderService) {
@@ -154,8 +181,10 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 */
 	public MongoClientOptions buildOptions() {
 		MongoClientOptions.Builder optionsBuilder = new MongoClientOptions.Builder();
+
 		optionsBuilder.connectTimeout( timeout );
 		optionsBuilder.writeConcern( writeConcern );
+		optionsBuilder.readPreference( readPreference );
 
 		return optionsBuilder.build();
 	}
