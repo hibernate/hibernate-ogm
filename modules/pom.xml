@@ -37,6 +37,7 @@
 
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
+        <hibernate.hql.module.slot>${hibernateParserVersion}</hibernate.hql.module.slot>
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
@@ -50,12 +51,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
             <optional>true</optional>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hibernate.hpql</groupId>
-                    <artifactId>hibernate-hql-parser</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
