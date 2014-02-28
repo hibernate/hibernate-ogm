@@ -342,6 +342,7 @@ You can download the pre-packaged module from:
 Unpack the archive into the +modules+ folder of your WildFly 8.0 installation.
 The modules included are:
 
+* _org.hibernate.hql:1.0.0.Alpha6_, containing the query parser
 * _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
 * _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
 * _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
