@@ -42,6 +42,7 @@ import org.hibernate.ogm.options.spi.MappingOption;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
+ * @see http://docs.mongodb.org/manual/core/write-concern/
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)

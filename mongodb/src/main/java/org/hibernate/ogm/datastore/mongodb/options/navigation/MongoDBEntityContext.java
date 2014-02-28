@@ -30,7 +30,7 @@ import com.mongodb.WriteConcern;
 
 /**
  * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
- * entities or properties.
+ * properties.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
@@ -40,11 +40,11 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 	/**
 	 * Defines the type of write concern to be applied when performing write operations for the current entity.
 	 *
-	 * @param concern the write concern type
+	 * @param writeConcern the write concern type
 	 * @return this context, allowing for further fluent API invocations
 	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
-	MongoDBEntityContext writeConcern(WriteConcernType concern);
+	MongoDBEntityContext writeConcern(WriteConcernType writeConcern);
 
 	/**
 	 * Specifies a custom {@link WriteConcern} implementation to be applied when performing write operations for the
