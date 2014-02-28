@@ -102,9 +102,13 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		OperationsQueue queue = getOperationQueue();
-		tupleContext.setOperationsQueue( queue );
-		return dialect.getTuple( key, tupleContext );
+		TupleContext contextWithQueue = new TupleContext(
+				tupleContext.getSelectableColumns(),
+				tupleContext.getOptionsContext(),
+				getOperationQueue()
+		);
+
+		return dialect.getTuple( key, contextWithQueue );
 	}
 
 	@Override
