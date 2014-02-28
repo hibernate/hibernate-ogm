@@ -118,7 +118,7 @@ public class Zoo {
 ====
 
 The +@WriteConcern+ annotation on the entity level expresses that all writes should be done using the +JOURNALED+ setting.
-Similarly, the +@ReadPreference+ annotation advices the engine to preferribly read that entity from the primary node if possible.
+Similarly, the +@ReadPreference+ annotation advices the engine to preferably read that entity from the primary node if possible.
 The other two annotations on the type-level specify that all associations of the +Zoo+
 class should be stored in separate assocation documents, using a dedicated collection per association.
 This setting applies to the +animals+ and +employees+ associations.
@@ -154,7 +154,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
     public void configure(Configurable configurable) {
         configurable.configureOptionsFor( MongoDB.class )
             .writeConcern( WriteConcernType.REPLICA_ACKNOWLEDGED )
-            .ReadPreference(ReadPreferenceType.NEAREST )
+            .readPreference( ReadPreferenceType.NEAREST )
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
                 .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
