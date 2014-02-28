@@ -21,11 +21,11 @@
 package org.hibernate.ogm.datastore.mongodb.test.associations;
 
 import org.hibernate.cfg.Configuration;
+import org.hibernate.ogm.backendtck.associations.onetoone.OneToOneTest;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
-import org.hibernate.ogm.test.associations.onetoone.OneToOneTest;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>

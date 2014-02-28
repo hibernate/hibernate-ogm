@@ -42,8 +42,8 @@ import org.hibernate.ogm.test.options.mapping.model.Refrigerator;
 import org.hibernate.ogm.test.options.mapping.model.SampleDatastoreProvider;
 import org.hibernate.ogm.test.options.mapping.model.SampleNoSqlDatastore;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionConfigurator;
-import org.hibernate.ogm.test.utils.OgmTestCase;
-import org.hibernate.ogm.test.utils.TestHelper;
+import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Test;
 

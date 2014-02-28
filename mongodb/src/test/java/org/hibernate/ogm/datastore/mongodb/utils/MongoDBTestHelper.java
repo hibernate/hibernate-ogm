@@ -41,7 +41,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.test.utils.TestableGridDialect;
+import org.hibernate.ogm.utils.TestableGridDialect;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;

@@ -21,8 +21,8 @@
 package org.hibernate.ogm.test.type;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.test.utils.TestHelper.dropSchemaAndDatabase;
-import static org.hibernate.ogm.test.utils.jpa.JpaTestCase.extractJBossTransactionManager;
+import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
+import static org.hibernate.ogm.utils.jpa.JpaTestCase.extractJBossTransactionManager;
 
 import java.util.Date;
 import java.util.UUID;
@@ -33,7 +33,7 @@ import javax.persistence.Persistence;
 import javax.transaction.RollbackException;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Rule;
 import org.junit.Test;
 

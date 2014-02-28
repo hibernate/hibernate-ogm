@@ -23,7 +23,7 @@ package org.hibernate.ogm.test.jpa;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import org.hibernate.ogm.test.utils.PackagingRule;
+import org.hibernate.ogm.utils.PackagingRule;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
