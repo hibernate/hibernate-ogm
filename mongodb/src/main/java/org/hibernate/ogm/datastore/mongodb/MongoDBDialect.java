@@ -55,6 +55,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
+import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -87,6 +88,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
 /**
@@ -170,18 +172,24 @@ public class MongoDBDialect implements BatchableGridDialect {
 	/**
 	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
 	 */
-	private DBObject getEmbeddingEntity(AssociationKey key) {
+	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
+		ReadPreference readPreference = getReadPreference( associationContext );
+
 		DBCollection collection = this.getCollection( key.getEntityKey() );
 		DBObject searchObject = this.prepareIdObject( key.getEntityKey() );
 		DBObject restrictionObject = this.getSearchObject( key, true );
-		return collection.findOne( searchObject, restrictionObject );
+
+		return collection.findOne( searchObject, restrictionObject, readPreference );
 	}
 
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
+		ReadPreference readPreference = getReadPreference( tupleContext );
+
 		DBCollection collection = this.getCollection( key );
 		DBObject searchObject = this.prepareIdObject( key );
 		BasicDBObject restrictionObject = this.getSearchObject( tupleContext );
-		return collection.findOne( searchObject, restrictionObject );
+
+		return collection.findOne( searchObject, restrictionObject, readPreference );
 	}
 
 	private BasicDBObject getSearchObject(TupleContext tupleContext) {
@@ -340,10 +348,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	//not for embedded
-	private DBObject findAssociation(AssociationKey key, AssociationStorageStrategy storageStrategy) {
+	private DBObject findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
+		ReadPreference readPreference = getReadPreference( associationContext );
 		final DBObject associationKeyObject = associationKeyToObject( key, storageStrategy );
 
-		return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getSearchObject( key, false ) );
+		return getAssociationCollection( key, storageStrategy ).findOne( associationKeyObject, getSearchObject( key, false ), readPreference );
 	}
 
 	private DBObject getSearchObject(AssociationKey key, boolean embedded) {
@@ -363,7 +372,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		// been created
 		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			DBObject entity = getEmbeddingEntity( key );
+			DBObject entity = getEmbeddingEntity( key, associationContext );
 			if ( getAssociationFieldOrNull( key, entity ) != null ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
 			}
@@ -371,7 +380,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 				return null;
 			}
 		}
-		final DBObject result = findAssociation( key, storageStrategy );
+		final DBObject result = findAssociation( key, associationContext, storageStrategy );
 		if ( result == null ) {
 			return null;
 		}
@@ -395,7 +404,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy.isEmbeddedInEntity() ) {
-			DBObject entity = getEmbeddingEntity( key );
+			DBObject entity = getEmbeddingEntity( key, associationContext );
+
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
@@ -767,6 +777,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private WriteConcern getWriteConcern(GridDialectOperationContext operationContext) {
 		WriteConcern writeConcern = operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
 		return writeConcern != null ? writeConcern : provider.getWriteConcern();
+	}
+
+	private ReadPreference getReadPreference(GridDialectOperationContext operationContext) {
+		ReadPreference readPreference = operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+		return readPreference != null ? readPreference : provider.getReadPreference();
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {

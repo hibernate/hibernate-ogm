@@ -34,6 +34,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
@@ -71,7 +72,7 @@ public class MockMongoClientBuilder {
 			DBCollection collection = mock( DBCollection.class );
 			collections.put( collectionName, collection );
 
-			when( collection.findOne( any( DBObject.class ), any( DBObject.class ) ) ).thenReturn( object );
+			when( collection.findOne( any( DBObject.class ), any( DBObject.class ), any( ReadPreference.class ) ) ).thenReturn( object );
 
 			WriteResult writeResult = mock( WriteResult.class );
 			when( collection.remove( any( DBObject.class ), any( WriteConcern.class ) ) ).thenReturn( writeResult );
