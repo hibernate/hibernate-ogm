@@ -146,6 +146,7 @@ public final class AssociationKey implements Key {
 	 *
 	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
 	 */
+	//TODO Move to AssociationKeyMetadata and cache if required
 	public boolean isKeyColumn(String columnName) {
 		for ( String keyColumName : getColumnNames() ) {
 			if ( keyColumName.equals( columnName ) ) {

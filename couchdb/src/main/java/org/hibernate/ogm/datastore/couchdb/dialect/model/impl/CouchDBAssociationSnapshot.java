@@ -69,7 +69,7 @@ public class CouchDBAssociationSnapshot implements AssociationSnapshot {
 	 * obtained from there, all other columns from the given map.
 	 */
 	private static Map<String, Object> getRowKeyColumnValues(Map<String, Object> row, AssociationKey key) {
-		Map<String, Object> rowKeyColumnValues = new HashMap<String, Object>();
+		Map<String, Object> rowKeyColumnValues = new HashMap<String, Object>( key.getRowKeyColumnNames().length );
 
 		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
 			rowKeyColumnValues.put(
