@@ -186,8 +186,11 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( persister.getTableName( tableIndex ), propertyColumnNames );
-		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
+				persister.getTableName( tableIndex ),
+				propertyColumnNames,
+				rowKeyColumnNames
+		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
@@ -240,8 +243,11 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( persister.getTableName( tableIndex ), propertyColumnNames );
-		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
+				persister.getTableName( tableIndex ),
+				propertyColumnNames,
+				rowKeyColumnNames
+		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()

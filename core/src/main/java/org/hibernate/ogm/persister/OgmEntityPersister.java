@@ -248,8 +248,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
 				String[] propertyColumnNames = getPropertyColumnNames( index );
-				AssociationKeyMetadata metadata = new AssociationKeyMetadata( getTableName(), propertyColumnNames );
-				metadata.setRowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames ) );
+				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+						getTableName(),
+						propertyColumnNames,
+						buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames )
+				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
 		}

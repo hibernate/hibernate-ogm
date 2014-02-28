@@ -121,11 +121,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
-		associationKeyMetadata = new AssociationKeyMetadata( getTableName(), getKeyColumnNames() );
-		associationKeyMetadata.setRowKeyColumnNames( getRowKeyColumnNames() );
+		associationKeyMetadata = new AssociationKeyMetadata(
+				getTableName(),
+				getKeyColumnNames(),
+				getRowKeyColumnNames()
+		);
 
-		associationKeyMetadataFromElement = new AssociationKeyMetadata( getTableName(), getElementColumnNames() );
-		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
+		associationKeyMetadataFromElement = new AssociationKeyMetadata(
+				getTableName(),
+				getElementColumnNames(),
+				getRowKeyColumnNames()
+		);
 
 		nodeName = collection.getNodeName();
 	}
