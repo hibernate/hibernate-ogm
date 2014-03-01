@@ -64,11 +64,10 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 	@Override
 	public GridDialect initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
 
 		return propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.instantiate()
-				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
 				.withInstantiator( new GridDialectInstantiator( datastore, registry.getService( EventListenerRegistry.class ) ) )
 				.getValue();
@@ -82,7 +81,7 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 	private static class GridDialectInstantiator implements Instantiator<GridDialect> {
 
 		private final DatastoreProvider datastore;
-		private EventListenerRegistry eventListenerRegistry;
+		private final EventListenerRegistry eventListenerRegistry;
 
 		public GridDialectInstantiator(DatastoreProvider datastore, EventListenerRegistry eventListenerRegistry) {
 			this.datastore = datastore;

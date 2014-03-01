@@ -56,10 +56,9 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", new MyServiceImpl() );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
 		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
@@ -70,10 +69,9 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", MyServiceImpl.class );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
 		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
@@ -84,10 +82,9 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", MyServiceImpl.class.getName() );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 
 		assertThat( value.getClass() ).isEqualTo( MyServiceImpl.class );
@@ -97,10 +94,9 @@ public class ConfigurationPropertyReaderTest {
 	public void shouldRetrievePropertyWithDefaultImplementation() {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyOtherServiceImpl.class )
 				.getValue();
 
@@ -112,10 +108,9 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", "other" );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withShortNameResolver( new MyShortNameResolver() )
 				.getValue();
 
@@ -126,10 +121,9 @@ public class ConfigurationPropertyReaderTest {
 	public void shouldRetrievePropertyWithDefaultImplementationName() {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyServiceImpl.class.getName() )
 				.getValue();
 
@@ -140,10 +134,9 @@ public class ConfigurationPropertyReaderTest {
 	public void shouldRetrievePropertyUsingCustomInstantiator() {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 		MyService value = reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.withDefaultImplementation( MyYetAnotherServiceImpl.class )
 				.withInstantiator( new MyInstantiator() )
 				.getValue();
@@ -159,11 +152,10 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", 42 );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 
 		reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}
 
@@ -175,11 +167,10 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", Integer.class );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 
 		reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}
 
@@ -191,11 +182,10 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		properties.put( "service", Integer.class.getName() );
 
-		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties );
+		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
 
 		reader.property( "service", MyService.class )
 				.instantiate()
-				.withClassLoaderService( new ClassLoaderServiceImpl() )
 				.getValue();
 	}
 

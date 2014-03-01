@@ -23,6 +23,8 @@ package org.hibernate.ogm.util.configurationreader.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -40,20 +42,23 @@ public abstract class PropertyReaderContext<T> {
 	private final Object configuredValue;
 	private final String propertyName;
 	private final Class<T> targetType;
+	private final ClassLoaderService classLoaderService;
 
 	private T defaultValue;
 	private boolean isRequired;
 	private final List<PropertyValidator<T>> validators;
 
-	PropertyReaderContext(Object configuredValue, String propertyName, Class<T> targetType) {
+	PropertyReaderContext(ClassLoaderService classLoaderService, Object configuredValue, String propertyName, Class<T> targetType) {
+		this.classLoaderService = classLoaderService;
 		this.configuredValue = configuredValue;
 		this.propertyName = propertyName;
 		this.targetType = targetType;
 		this.validators = new ArrayList<PropertyValidator<T>>();
 	}
 
-	PropertyReaderContext(Object configuredValue, String propertyName, Class<T> targetType, T defaultValue, boolean isRequired,
+	PropertyReaderContext(ClassLoaderService classLoaderService, Object configuredValue, String propertyName, Class<T> targetType, T defaultValue, boolean isRequired,
 			List<PropertyValidator<T>> validators) {
+		this.classLoaderService = classLoaderService;
 		this.configuredValue = configuredValue;
 		this.propertyName = propertyName;
 		this.targetType = targetType;
@@ -92,8 +97,9 @@ public abstract class PropertyReaderContext<T> {
 	 * Returns a context which allows to specify how the implementation type represented by the given property should be
 	 * instantiated.
 	 */
-	public ClassPropertyReaderContextExpectingClassLoaderService<T> instantiate() {
-		return new ClassPropertyReaderContext<T>( configuredValue, propertyName, targetType, defaultValue, isRequired, validators );
+	public ClassPropertyReaderContext<T> instantiate() {
+		Contracts.assertNotNull( classLoaderService, "classLoaderService" );
+		return new ClassPropertyReaderContext<T>( classLoaderService, configuredValue, propertyName, targetType, defaultValue, isRequired, validators );
 	}
 
 	/**

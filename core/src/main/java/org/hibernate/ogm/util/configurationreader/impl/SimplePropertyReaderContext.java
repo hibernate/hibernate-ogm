@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -42,8 +43,8 @@ class SimplePropertyReaderContext<T> extends PropertyReaderContext<T> {
 
 	private static final Log log = LoggerFactory.make();
 
-	SimplePropertyReaderContext(Map<?, ?> configurationValues, String propertyName, Class<T> clazz) {
-		super( configurationValues.get( propertyName ), propertyName, clazz );
+	SimplePropertyReaderContext(ClassLoaderService classLoaderService, Map<?, ?> configurationValues, String propertyName, Class<T> clazz) {
+		super( classLoaderService, configurationValues.get( propertyName ), propertyName, clazz );
 	}
 
 	@Override
