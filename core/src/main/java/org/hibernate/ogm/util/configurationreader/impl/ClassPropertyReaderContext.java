@@ -34,27 +34,19 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * @author Gunnar Morling
  * @param <T>
  */
-public class ClassPropertyReaderContext<T> extends PropertyReaderContext<T> implements ClassPropertyReaderContextExpectingClassLoaderService<T> {
+public class ClassPropertyReaderContext<T> extends PropertyReaderContext<T> {
 
 	private static final Log log = LoggerFactory.make();
 
-	private ClassLoaderService classLoaderService;
+	private final ClassLoaderService classLoaderService;
 	private Class<? extends T> defaultImplementation;
 	private String defaultImplementationName;
 	private Instantiator<T> instantiator;
 	private ShortNameResolver shortNameResolver;
 
-	ClassPropertyReaderContext(Object value, String propertyName, Class<T> clazz, T defaultValue, boolean isRequired, List<PropertyValidator<T>> validators) {
-		super( value, propertyName, clazz, defaultValue, isRequired, validators );
-	}
-
-	/**
-	 * Sets the class loader service to be used to load classes by name.
-	 */
-	@Override
-	public ClassPropertyReaderContext<T> withClassLoaderService(ClassLoaderService classLoaderService) {
+	ClassPropertyReaderContext(ClassLoaderService classLoaderService, Object value, String propertyName, Class<T> clazz, T defaultValue, boolean isRequired, List<PropertyValidator<T>> validators) {
+		super( classLoaderService, value, propertyName, clazz, defaultValue, isRequired, validators );
 		this.classLoaderService = classLoaderService;
-		return this;
 	}
 
 	/**

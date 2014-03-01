@@ -22,6 +22,7 @@ package org.hibernate.ogm.util.configurationreader.impl;
 
 import java.util.Map;
 
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Configuration;
 
 /**
@@ -51,13 +52,23 @@ import org.hibernate.cfg.Configuration;
 public class ConfigurationPropertyReader {
 
 	private final Map<?, ?> properties;
+	private final ClassLoaderService classLoaderService;
 
 	public ConfigurationPropertyReader(Configuration configuration) {
-		this( configuration.getProperties() );
+		this( configuration.getProperties(), null );
 	}
 
 	public ConfigurationPropertyReader(Map<?, ?> properties) {
+		this( properties, null );
+	}
+
+	public ConfigurationPropertyReader(Configuration configuration, ClassLoaderService classLoaderService) {
+		this( configuration.getProperties(), classLoaderService );
+	}
+
+	public ConfigurationPropertyReader(Map<?, ?> properties, ClassLoaderService classLoaderService) {
 		this.properties = properties;
+		this.classLoaderService = classLoaderService;
 	}
 
 	/**
@@ -69,6 +80,6 @@ public class ConfigurationPropertyReader {
 	 * @return a context for retrieving the specified property
 	 */
 	public <T> PropertyReaderContext<T> property(String propertyName, Class<T> targetType) {
-		return new SimplePropertyReaderContext<T>( properties, propertyName, targetType );
+		return new SimplePropertyReaderContext<T>( classLoaderService, properties, propertyName, targetType );
 	}
 }

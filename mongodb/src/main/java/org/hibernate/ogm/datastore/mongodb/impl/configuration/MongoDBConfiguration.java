@@ -95,7 +95,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContainer globalOptions, ClassLoaderService classLoaderService) {
 		super( configurationValues, DEFAULT_PORT );
 
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
 
 		this.timeout = propertyReader.property( MongoDBProperties.TIMEOUT, int.class )
 				.withDefault( DEFAULT_TIMEOUT )
@@ -106,7 +106,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
 				.getValue();
 
-		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ), classLoaderService );
+		this.writeConcern = this.buildWriteConcern( propertyReader, globalOptions.getUnique( WriteConcernOption.class ) );
 
 		ReadPreference apiConfiguredReadPreference = globalOptions.getUnique( ReadPreferenceOption.class );
 		if ( apiConfiguredReadPreference != null ) {
@@ -137,7 +137,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		return readPreference;
 	}
 
-	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcern apiConfiguredWriteConcern, ClassLoaderService classLoaderService) {
+	private WriteConcern buildWriteConcern(ConfigurationPropertyReader propertyReader, WriteConcern apiConfiguredWriteConcern) {
 		WriteConcern writeConcern;
 
 		// API-configured value takes precedence
@@ -153,7 +153,6 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 			if ( writeConcernType == WriteConcernType.CUSTOM ) {
 				writeConcern = propertyReader.property( MongoDBProperties.WRITE_CONCERN_TYPE, WriteConcern.class )
 					.instantiate()
-					.withClassLoaderService( classLoaderService )
 					.required()
 					.getValue();
 			}
