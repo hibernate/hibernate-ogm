@@ -29,6 +29,7 @@ import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
@@ -48,7 +49,7 @@ public class OptionValueSources {
 	}
 
 	public static List<OptionValueSource> getDefaultSources(ConfigurationPropertyReader propertyReader) {
-		ProgrammaticOptionValueSource programmaticOptions = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, ProgrammaticOptionValueSource.class )
+		AppendableConfigurationContext programmaticOptions = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, AppendableConfigurationContext.class )
 				.instantiate()
 				.getValue();
 		OptionConfigurator configurator = propertyReader.property( OgmProperties.OPTION_CONFIGURATOR, OptionConfigurator.class )
@@ -60,11 +61,11 @@ public class OptionValueSources {
 				throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURATOR );
 			}
 
-			programmaticOptions = invoke( configurator );
+			programmaticOptions = invokeOptionConfigurator( configurator );
 		}
 
 		return programmaticOptions != null ?
-				Arrays.<OptionValueSource>asList( programmaticOptions, new AnnotationOptionValueSource() ) :
+				Arrays.<OptionValueSource>asList( new ProgrammaticOptionValueSource( programmaticOptions ), new AnnotationOptionValueSource() ) :
 				Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() );
 	}
 
@@ -75,10 +76,11 @@ public class OptionValueSources {
 	 * @param configurator the configurator to invoke
 	 * @return a context object containing the options set via the given configurator
 	 */
-	private static <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> ProgrammaticOptionValueSource invoke(OptionConfigurator configurator) {
+	private static <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> AppendableConfigurationContext invokeOptionConfigurator(
+			OptionConfigurator configurator) {
+
 		ConfigurableImpl configurable = new ConfigurableImpl();
 		configurator.configure( configurable );
-
 		return configurable.getContext();
 	}
 }

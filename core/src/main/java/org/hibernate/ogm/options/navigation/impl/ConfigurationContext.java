@@ -30,7 +30,6 @@ import javassist.util.proxy.ProxyFactory;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
-import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -38,10 +37,9 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
 
 /**
  * Keeps track of the entities and properties configured using the fluent configuration API. There is one instance of
- * this context per invocation of this API (beginning with the creation of a
- * {@link org.hibernate.ogm.options.navigation.GlobalContext}). This instance is passed between the individual
- * context types created in the course of using the fluent API. The book-keeping of configured options is delegated to
- * {@link WritableOptionsServiceContext}.
+ * this context per invocation of this API (beginning with the creation of a {@link GlobalContext}). This instance is
+ * passed between the individual context types created in the course of using the fluent API. The book-keeping of
+ * configured options is delegated to {@link AppendableConfigurationContext}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
@@ -53,13 +51,13 @@ public class ConfigurationContext {
 	/**
 	 * Contains all options configured via this and other configuration contexts.
 	 */
-	private final ProgrammaticOptionValueSource allOptions;
+	private final AppendableConfigurationContext allOptions;
 
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
-	public ConfigurationContext(ProgrammaticOptionValueSource globalContext) {
-		this.allOptions = globalContext;
+	public ConfigurationContext(AppendableConfigurationContext appendableContext) {
+		this.allOptions = appendableContext;
 	}
 
 	public <V> void addGlobalOption(Option<?, V> option, V value) {

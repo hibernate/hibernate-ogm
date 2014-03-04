@@ -25,7 +25,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreference;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;

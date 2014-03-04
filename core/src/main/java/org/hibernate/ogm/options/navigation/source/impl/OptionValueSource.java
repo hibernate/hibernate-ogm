@@ -20,7 +20,7 @@
  */
 package org.hibernate.ogm.options.navigation.source.impl;
 
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
 
 /**
  * A source for option values. Implementations retrieve option values e.g. using annotations, API invocations or

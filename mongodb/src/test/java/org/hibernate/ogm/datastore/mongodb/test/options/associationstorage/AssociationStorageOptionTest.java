@@ -27,8 +27,8 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.junit.Test;
 
