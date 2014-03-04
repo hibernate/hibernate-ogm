@@ -27,8 +27,10 @@ import java.lang.annotation.ElementType;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
@@ -47,20 +49,20 @@ import org.junit.Test;
  */
 public class ProgrammaticOptionValueSourceTest {
 
-	private ProgrammaticOptionValueSource optionsContext;
 	private SampleGlobalContext configuration;
+	private AppendableConfigurationContext configurationContext;
 
 	@Before
 	public void setupContexts() {
-		optionsContext = new ProgrammaticOptionValueSource();
-		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( optionsContext ) );
+		configurationContext = new AppendableConfigurationContext();
+		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( configurationContext ) );
 	}
 
 	@Test
 	public void shouldBeAbleToAddGlobalOption() throws Exception {
 		configuration.force( true );
 
-		assertThat( optionsContext.getGlobalOptions().getUnique( ForceExampleOption.class ) ).isTrue();
+		assertThat( getSource().getGlobalOptions().getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
 	@Test
@@ -69,7 +71,7 @@ public class ProgrammaticOptionValueSourceTest {
 			.namedQuery( "foo", "from foo" )
 			.namedQuery( "bar", "from bar" );
 
-		Map<String, String> queries = optionsContext.getGlobalOptions().getAll( NamedQueryOption.class );
+		Map<String, String> queries = getSource().getGlobalOptions().getAll( NamedQueryOption.class );
 		assertThat( queries )
 			.hasSize( 2 )
 			.includes(
@@ -84,7 +86,7 @@ public class ProgrammaticOptionValueSourceTest {
 			.entity( ContextExample.class )
 				.force( true );
 
-		OptionsContainer optionsContainer = optionsContext.getEntityOptions( ContextExample.class );
+		OptionsContainer optionsContainer = getSource().getEntityOptions( ContextExample.class );
 		assertThat( optionsContainer.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
@@ -95,7 +97,7 @@ public class ProgrammaticOptionValueSourceTest {
 				.force( true )
 				.name( "test" );
 
-		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+		OptionsContainer refrigatorOptions = getSource().getEntityOptions( Refrigerator.class );
 
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 		assertThat( refrigatorOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
@@ -108,7 +110,7 @@ public class ProgrammaticOptionValueSourceTest {
 				.property( "property", ElementType.FIELD )
 					.embed( "Foo" );
 
-		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
+		OptionsContainer optionsContainer = getSource().getPropertyOptions( ContextExample.class, "property" );
 		assertThat( optionsContainer.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Foo" );
 	}
 
@@ -119,7 +121,7 @@ public class ProgrammaticOptionValueSourceTest {
 				.property( "property", ElementType.METHOD )
 					.embed( "Foo" );
 
-		OptionsContainer optionsContainer = optionsContext.getPropertyOptions( ContextExample.class, "property" );
+		OptionsContainer optionsContainer = getSource().getPropertyOptions( ContextExample.class, "property" );
 		assertThat( optionsContainer.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Foo" );
 	}
 
@@ -137,7 +139,7 @@ public class ProgrammaticOptionValueSourceTest {
 			.entity( Refrigerator.class )
 				.force( true );
 
-		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+		OptionsContainer refrigatorOptions = getSource().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
@@ -148,8 +150,12 @@ public class ProgrammaticOptionValueSourceTest {
 				.force( true )
 				.force( false );
 
-		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+		OptionsContainer refrigatorOptions = getSource().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isFalse();
+	}
+
+	private OptionValueSource getSource() {
+		return new ProgrammaticOptionValueSource( configurationContext );
 	}
 
 	private static class ContextExample {

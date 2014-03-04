@@ -26,7 +26,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainerBuilder;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.impl.PropertyKey;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
@@ -52,18 +53,18 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 
 	@Override
 	public OptionsContainer getEntityOptions(Class<?> entityType) {
-		OptionsContainer options = convertOptionAnnotations( entityType.getAnnotations() );
-		return options != null ? options : OptionsContainer.EMPTY;
+		OptionsContainerBuilder options = convertOptionAnnotations( entityType.getAnnotations() );
+		return options != null ? options.build() : OptionsContainer.EMPTY;
 	}
 
 	@Override
 	public OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName) {
-		OptionsContainer options = getPropertyOptions( entityType ).get( new PropertyKey( entityType, propertyName ) );
-		return options != null ? options : OptionsContainer.EMPTY;
+		OptionsContainerBuilder options = getPropertyOptions( entityType ).get( new PropertyKey( entityType, propertyName ) );
+		return options != null ? options.build() : OptionsContainer.EMPTY;
 	}
 
-	private Map<PropertyKey, OptionsContainer> getPropertyOptions(final Class<?> entityClass) {
-		final Map<PropertyKey, OptionsContainer> optionsByProperty = new HashMap<PropertyKey, OptionsContainer>();
+	private Map<PropertyKey, OptionsContainerBuilder> getPropertyOptions(final Class<?> entityClass) {
+		final Map<PropertyKey, OptionsContainerBuilder> optionsByProperty = new HashMap<PropertyKey, OptionsContainerBuilder>();
 
 		for ( final Method method : entityClass.getMethods() ) {
 			String propertyName = ReflectionHelper.getPropertyName( method );
@@ -71,15 +72,15 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 				continue;
 			}
 
-			final OptionsContainer optionsOfProperty = convertOptionAnnotations( method.getAnnotations() );
+			final OptionsContainerBuilder optionsOfProperty = convertOptionAnnotations( method.getAnnotations() );
 			optionsByProperty.put( new PropertyKey( entityClass, propertyName ), optionsOfProperty );
 		}
 
 		for ( final Field field : entityClass.getDeclaredFields() ) {
 			PropertyKey key = new PropertyKey( entityClass, field.getName() );
-			OptionsContainer optionsOfField = convertOptionAnnotations( field.getAnnotations() );
+			OptionsContainerBuilder optionsOfField = convertOptionAnnotations( field.getAnnotations() );
 
-			OptionsContainer optionsOfProperty = optionsByProperty.get( key );
+			OptionsContainerBuilder optionsOfProperty = optionsByProperty.get( key );
 			if ( optionsOfProperty != null ) {
 				optionsOfProperty.addAll( optionsOfField );
 			}
@@ -91,8 +92,8 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 		return optionsByProperty;
 	}
 
-	private OptionsContainer convertOptionAnnotations(Annotation[] annotations) {
-		OptionsContainer options = new OptionsContainer();
+	private OptionsContainerBuilder convertOptionAnnotations(Annotation[] annotations) {
+		OptionsContainerBuilder options = new OptionsContainerBuilder();
 
 		for ( Annotation annotation : annotations ) {
 			processAnnotation( options, annotation );
@@ -101,7 +102,7 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 		return options;
 	}
 
-	private <A extends Annotation> void processAnnotation(OptionsContainer options, A annotation) {
+	private <A extends Annotation> void processAnnotation(OptionsContainerBuilder options, A annotation) {
 		AnnotationConverter<Annotation> converter = getConverter( annotation );
 
 		if ( converter != null ) {
@@ -131,7 +132,7 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 		}
 	}
 
-	private <V> void add(OptionsContainer options, OptionValuePair<V> optionValue) {
+	private <V> void add(OptionsContainerBuilder options, OptionValuePair<V> optionValue) {
 		options.add( optionValue.getOption(), optionValue.getValue() );
 	}
 }

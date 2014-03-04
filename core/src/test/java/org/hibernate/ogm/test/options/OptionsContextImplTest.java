@@ -26,6 +26,7 @@ import static org.fest.assertions.MapAssert.entry;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
@@ -34,6 +35,7 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -43,17 +45,22 @@ import org.junit.Test;
  */
 public class OptionsContextImplTest {
 
+	private AppendableConfigurationContext optionsServiceContext;
+
+	@Before
+	public void setupContext() {
+		optionsServiceContext = new AppendableConfigurationContext();
+	}
+
 	@Test
 	public void shouldProvideUniqueOptionValueFromPropertyLevel() {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foobar" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -64,12 +71,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foobar" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -80,12 +86,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addGlobalOption( new NameExampleOption(), "foobar" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -96,13 +101,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.get( PermissionOption.class, "user" ) ).isEqualTo( "read" );
@@ -114,13 +118,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -138,14 +141,13 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
 		optionsServiceContext.addEntityOption( entityType, new PermissionOption( "admin" ), "read,write,delete" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -161,13 +163,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foobar" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "barfoo" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "barfoo" );
@@ -178,12 +179,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Baz.class;
 		String propertyName = "qux";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -194,12 +194,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Baz.class;
 		String propertyName = "qux";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -210,11 +209,9 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -225,12 +222,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -241,15 +237,17 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
-		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( getSources(), entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
+	}
+
+	private List<OptionValueSource> getSources() {
+		return Arrays.<OptionValueSource>asList( new ProgrammaticOptionValueSource( optionsServiceContext ), new AnnotationOptionValueSource() );
 	}
 
 	private static class Foo {

@@ -22,7 +22,7 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;

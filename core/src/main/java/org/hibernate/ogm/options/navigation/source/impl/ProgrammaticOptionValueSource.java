@@ -20,12 +20,16 @@
  */
 package org.hibernate.ogm.options.navigation.source.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
-import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainerBuilder;
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.PropertyKey;
-import org.hibernate.ogm.options.spi.Option;
 
 /**
  * A {@link OptionValueSource} which provides access to options set via the programmatic option API.
@@ -38,35 +42,24 @@ import org.hibernate.ogm.options.spi.Option;
  */
 public class ProgrammaticOptionValueSource implements OptionValueSource {
 
-	private final OptionsContainer globalOptions = new OptionsContainer();
-	private final ConcurrentMap<Class<?>, OptionsContainer> optionsPerEntity = new ConcurrentHashMap<Class<?>, OptionsContainer>();
-	private final ConcurrentMap<PropertyKey, OptionsContainer> optionsPerProperty = new ConcurrentHashMap<PropertyKey, OptionsContainer>();
+	private final OptionsContainer globalOptions;
+	private final Map<Class<?>, OptionsContainer> optionsPerEntity;
+	private final Map<PropertyKey, OptionsContainer> optionsPerProperty;
 
-	public <V> void addGlobalOption(Option<?, V> option, V value) {
-		globalOptions.add( option, value );
+	public ProgrammaticOptionValueSource(AppendableConfigurationContext programmaticOptions) {
+		globalOptions = programmaticOptions.getGlobalOptions().build();
+		optionsPerEntity = immutable( programmaticOptions.getEntityOptions() );
+		optionsPerProperty = immutable( programmaticOptions.getPropertyOptions() );
 	}
 
-	public <V> void addEntityOption(Class<?> entityType, Option<?, V> option, V value) {
-		OptionsContainer entityOptions = optionsPerEntity.get( entityType );
+	private static <K> Map<K, OptionsContainer> immutable(Map<K, OptionsContainerBuilder> options) {
+		Map<K, OptionsContainer> result = newHashMap( options.size() );
 
-		if ( entityOptions == null ) {
-			entityOptions = new OptionsContainer();
-			optionsPerEntity.put( entityType, entityOptions );
+		for ( Entry<K, OptionsContainerBuilder> option : options.entrySet() ) {
+			result.put( option.getKey(), option.getValue().build() );
 		}
 
-		entityOptions.add( option, value );
-	}
-
-	public <V> void addPropertyOption(Class<?> entityType, String propertyName, Option<?, V> option, V value) {
-		PropertyKey key = new PropertyKey( entityType, propertyName );
-		OptionsContainer propertyOptions = optionsPerProperty.get( key );
-
-		if ( propertyOptions == null ) {
-			propertyOptions = new OptionsContainer();
-			optionsPerProperty.put( key, propertyOptions );
-		}
-
-		propertyOptions.add( option, value );
+		return Collections.unmodifiableMap( result );
 	}
 
 	@Override

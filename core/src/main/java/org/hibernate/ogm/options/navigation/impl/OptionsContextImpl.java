@@ -88,7 +88,10 @@ public class OptionsContextImpl implements OptionsContext {
 		}
 
 		for ( OptionValueSource source : sources ) {
-			return source.getGlobalOptions().get( optionType, identifier );
+			optionValue = source.getGlobalOptions().get( optionType, identifier );
+			if ( optionValue != null ) {
+				return optionValue;
+			}
 		}
 
 		return null;
@@ -121,7 +124,10 @@ public class OptionsContextImpl implements OptionsContext {
 		}
 
 		for ( OptionValueSource source : sources ) {
-			return source.getGlobalOptions().getUnique( optionType );
+			optionValue = source.getGlobalOptions().getUnique( optionType );
+			if ( optionValue != null ) {
+				return optionValue;
+			}
 		}
 
 		return null;
@@ -154,7 +160,10 @@ public class OptionsContextImpl implements OptionsContext {
 		}
 
 		for ( OptionValueSource source : sources ) {
-			return source.getGlobalOptions().getAll( optionType );
+			optionValues = source.getGlobalOptions().getAll( optionType );
+			if ( optionValues != null ) {
+				return optionValues;
+			}
 		}
 
 		return Collections.emptyMap();
