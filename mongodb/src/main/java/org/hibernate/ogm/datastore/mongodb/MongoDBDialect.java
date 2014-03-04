@@ -656,17 +656,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		if ( associationStorage == null ) {
-			associationStorage = provider.getAssociationStorage();
-		}
-
 		AssociationDocumentType associationDocumentType = associationContext
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
-
-		if ( associationDocumentType == null ) {
-			associationDocumentType = provider.getAssociationDocumentStorage();
-		}
 
 		return AssociationStorageStrategy.getInstance( key.getAssociationKind(), associationStorage, associationDocumentType );
 	}
@@ -781,13 +773,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private WriteConcern getWriteConcern(GridDialectOperationContext operationContext) {
-		WriteConcern writeConcern = operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
-		return writeConcern != null ? writeConcern : provider.getWriteConcern();
+		return operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
 	private ReadPreference getReadPreference(GridDialectOperationContext operationContext) {
-		ReadPreference readPreference = operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
-		return readPreference != null ? readPreference : provider.getReadPreference();
+		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {

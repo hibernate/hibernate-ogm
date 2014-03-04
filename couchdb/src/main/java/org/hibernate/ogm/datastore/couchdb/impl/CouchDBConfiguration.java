@@ -20,9 +20,8 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
-import java.util.Map;
-
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**
  * Provides utility methods to access the CouchDB configuration value
@@ -34,7 +33,7 @@ public class CouchDBConfiguration extends DocumentStoreConfiguration {
 
 	public static final int DEFAULT_PORT = 5984;
 
-	public CouchDBConfiguration(Map<?, ?> configurationValues) {
-		super( configurationValues, DEFAULT_PORT );
+	public CouchDBConfiguration(ConfigurationPropertyReader reader) {
+		super( reader, DEFAULT_PORT );
 	}
 }

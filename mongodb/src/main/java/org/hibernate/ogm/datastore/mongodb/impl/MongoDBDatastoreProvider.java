@@ -25,17 +25,16 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -45,9 +44,7 @@ import org.hibernate.service.spi.Stoppable;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
-import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
-import com.mongodb.WriteConcern;
 
 /**
  * Provides access to a MongoDB instance
@@ -79,29 +76,14 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 	public void configure(Map configurationValues) {
 		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
 
-		this.config = new MongoDBConfiguration( configurationValues, optionsService.context().getGlobalOptions(), classLoaderService );
+		this.config = new MongoDBConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
 	}
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
 		this.serviceRegistry = serviceRegistry;
-	}
-
-	public AssociationStorageType getAssociationStorage() {
-		return config.getAssociationStorageStrategy();
-	}
-
-	public AssociationDocumentType getAssociationDocumentStorage() {
-		return config.getAssociationDocumentStorage();
-	}
-
-	public WriteConcern getWriteConcern() {
-		return config.getWriteConcern();
-	}
-
-	public ReadPreference getReadPreference() {
-		return config.getReadPreference();
 	}
 
 	@Override

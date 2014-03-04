@@ -20,7 +20,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.impl;
 
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 import com.mongodb.ReadPreference;
 
@@ -31,4 +34,18 @@ import com.mongodb.ReadPreference;
  * @see http://docs.mongodb.org/manual/core/read-preference/
  */
 public class ReadPreferenceOption extends UniqueOption<ReadPreference> {
+
+	/**
+	 * The default read preference.
+	 */
+	private static final ReadPreferenceType DEFAULT_READ_PREFERENCE = ReadPreferenceType.PRIMARY;
+
+	@Override
+	public ReadPreference getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader
+				.property( MongoDBProperties.READ_PREFERENCE, ReadPreferenceType.class )
+				.withDefault( DEFAULT_READ_PREFERENCE )
+				.getValue()
+				.getReadPreference();
+	}
 }
