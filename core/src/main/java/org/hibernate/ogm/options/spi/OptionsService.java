@@ -53,20 +53,29 @@ public interface OptionsService extends Service {
 	public interface OptionsServiceContext {
 
 		/**
-		 * @return the {@link OptionsContainer} with all the global options
+		 * Returns a context with the options applying on the global level, as either configured programmatically or via
+		 * configuration options.
+		 *
+		 * @return a context with the options applying on the global level
 		 */
-		OptionsContainer getGlobalOptions();
+		OptionsContext getGlobalOptions();
 
 		/**
-		 * @return the {@link OptionsContainer} with entity related options
+		 * Returns a context with the options effectively applying for the given entity, as configured programmatically,
+		 * via annotations or configuration options, falling back to the global configuration level if a specific option
+		 * is not specifically set for the given entity
+		 *
+		 * @return a context with the options effectively applying for the given entity
 		 */
-		OptionsContainer getEntityOptions(Class<?> entityType);
+		OptionsContext getEntityOptions(Class<?> entityType);
 
 		/**
-		 * @return the {@link OptionsContainer} with the property related options
+		 * Returns a context with the options effectively applying for the given entity, as configured programmatically,
+		 * via annotations or configuration options, falling back to the entity and global configuration levels if a
+		 * specific option is not specifically set for the given property
+		 *
+		 * @return a context with the options effectively applying for the given property
 		 */
-		OptionsContainer getPropertyOptions(Class<?> entityType, String propertyName);
-
+		OptionsContext getPropertyOptions(Class<?> entityType, String propertyName);
 	}
-
 }

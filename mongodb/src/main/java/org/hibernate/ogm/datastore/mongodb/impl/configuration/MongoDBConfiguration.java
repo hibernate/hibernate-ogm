@@ -34,7 +34,7 @@ import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.PropertyValidator;
 
@@ -92,7 +92,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	 * @param globalOptions global settings given via an option configurator
 	 * @param classLoaderService class loader service for loading classes by name
 	 */
-	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContainer globalOptions, ClassLoaderService classLoaderService) {
+	public MongoDBConfiguration(Map<?, ?> configurationValues, OptionsContext globalOptions, ClassLoaderService classLoaderService) {
 		super( configurationValues, DEFAULT_PORT );
 
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );

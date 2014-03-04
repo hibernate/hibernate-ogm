@@ -20,16 +20,14 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
-import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
@@ -61,26 +59,7 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
 
-		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class )
-				.instantiate()
-				.getValue();
-		OptionConfigurator configurator = propertyReader.property( OgmProperties.OPTION_CONFIGURATOR, OptionConfigurator.class )
-				.instantiate()
-				.getValue();
-
-		if ( context != null && configurator != null ) {
-			throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURATOR );
-		}
-		else if ( configurator != null ) {
-			sessionFactoryOptions = invoke( configurator );
-		}
-		else if ( context != null ) {
-			sessionFactoryOptions = context;
-		}
-		// use default context which provides access to annotation options
-		else {
-			sessionFactoryOptions = new WritableOptionsServiceContext();
-		}
+		sessionFactoryOptions = new OptionsServiceContextImpl( OptionValueSources.getDefaultSources( propertyReader ) );
 	}
 
 	@Override
@@ -93,17 +72,27 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
 	}
 
-	/**
-	 * Invokes the given configurator, obtaining the correct global context type via the datastore configuration type of
-	 * the current datastore provider.
-	 *
-	 * @param configurator the configurator to invoke
-	 * @return a context object containing the options set via the given configurator
-	 */
-	private <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> OptionsServiceContext invoke(OptionConfigurator configurator) {
-		ConfigurableImpl configurable = new ConfigurableImpl();
-		configurator.configure( configurable );
+	private static class OptionsServiceContextImpl implements OptionsServiceContext {
 
-		return configurable.getContext();
+		private final List<OptionValueSource> sources;
+
+		public OptionsServiceContextImpl(List<OptionValueSource> sources) {
+			this.sources = sources;
+		}
+
+		@Override
+		public OptionsContext getGlobalOptions() {
+			return OptionsContextImpl.forGlobal( sources );
+		}
+
+		@Override
+		public OptionsContext getEntityOptions(Class<?> entityType) {
+			return OptionsContextImpl.forEntity( sources, entityType );
+		}
+
+		@Override
+		public OptionsContext getPropertyOptions(Class<?> entityType, String propertyName) {
+			return OptionsContextImpl.forProperty( sources, entityType, propertyName );
+		}
 	}
 }

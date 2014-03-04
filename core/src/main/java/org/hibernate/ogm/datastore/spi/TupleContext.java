@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.spi;
 import java.util.List;
 
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**

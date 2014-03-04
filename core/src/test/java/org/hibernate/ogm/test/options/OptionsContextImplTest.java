@@ -23,9 +23,14 @@ package org.hibernate.ogm.test.options;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
 
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
-import org.hibernate.ogm.datastore.spi.OptionsContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import java.util.Arrays;
+import java.util.List;
+
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
@@ -43,11 +48,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foobar" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -58,11 +64,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foobar" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -73,11 +80,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addGlobalOption( new NameExampleOption(), "foobar" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
@@ -88,12 +96,13 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.get( PermissionOption.class, "user" ) ).isEqualTo( "read" );
@@ -105,12 +114,13 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -128,13 +138,14 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "user" ), "read" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new PermissionOption( "author" ), "read,write" );
 		optionsServiceContext.addEntityOption( entityType, new PermissionOption( "admin" ), "read,write,delete" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getAll( PermissionOption.class ) ).
@@ -150,12 +161,13 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Foo.class;
 		String propertyName = "bar";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foobar" );
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "barfoo" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "barfoo" );
@@ -166,11 +178,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Baz.class;
 		String propertyName = "qux";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -181,11 +194,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = Baz.class;
 		String propertyName = "qux";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -196,10 +210,11 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
@@ -210,11 +225,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addPropertyOption( entityType, propertyName, new NameExampleOption(), "foo" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foo" );
@@ -225,11 +241,12 @@ public class OptionsContextImplTest {
 		// given
 		Class<?> entityType = BazExt.class;
 		String propertyName = "qux";
-		WritableOptionsServiceContext optionsServiceContext = new WritableOptionsServiceContext();
+		ProgrammaticOptionValueSource optionsServiceContext = new ProgrammaticOptionValueSource();
 		optionsServiceContext.addEntityOption( entityType, new NameExampleOption(), "foo" );
+		List<OptionValueSource> sources = Arrays.<OptionValueSource>asList( optionsServiceContext, new AnnotationOptionValueSource() );
 
 		// when
-		OptionsContext context = OptionsContextImpl.forProperty( optionsServiceContext, entityType, propertyName );
+		OptionsContext context = OptionsContextImpl.forProperty( sources, entityType, propertyName );
 
 		// then
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );

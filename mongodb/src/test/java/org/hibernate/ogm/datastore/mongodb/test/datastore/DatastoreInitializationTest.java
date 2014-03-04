@@ -32,8 +32,9 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
@@ -118,9 +119,13 @@ public class DatastoreInitializationTest {
 	}
 
 	private static ServiceRegistryImplementor getServiceRegistry() {
-		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
+		OptionsServiceContext optionsServiceContext = mock( OptionsServiceContext.class );
+		when( optionsServiceContext.getGlobalOptions() ) .thenReturn( EmptyOptionsContext.INSTANCE );
+
 		OptionsService optionService = mock( OptionsService.class );
-		when( optionService.context() ).thenReturn( new WritableOptionsServiceContext() );
+		when( optionService.context() ).thenReturn( optionsServiceContext );
+
+		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
 		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionService );
 		return serviceRegistry;
 	}

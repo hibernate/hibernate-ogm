@@ -55,7 +55,6 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -228,7 +227,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( discriminator.getColumnName() != null ) {
 			columnNames.add( discriminator.getColumnName() );
 		}
-		this.tupleContext = new TupleContext( columnNames, OptionsContextImpl.forEntity( optionsService.context(), getMappedClass() ) );
+		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata

@@ -18,12 +18,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.options.spi;
+package org.hibernate.ogm.options.navigation.impl;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.hibernate.ogm.options.spi.Option;
+import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
  * Container for a group of options. Can hold unique as well as non-unique options. While several options of a given
