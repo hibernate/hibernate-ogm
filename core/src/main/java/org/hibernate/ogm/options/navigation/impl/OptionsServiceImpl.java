@@ -22,6 +22,8 @@ package org.hibernate.ogm.options.navigation.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionImplementor;
@@ -30,8 +32,6 @@ import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -43,8 +43,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  * @author Gunnar Morling
  */
 public class OptionsServiceImpl implements OptionsService, Configurable, ServiceRegistryAwareService {
-
-	private static final Log log = LoggerFactory.make();
 
 	private OptionsServiceContext sessionFactoryOptions;
 	private ServiceRegistryImplementor registry;
@@ -76,23 +74,66 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 
 		private final List<OptionValueSource> sources;
 
+		private final OptionsContext globalOptions;
+		private final ConcurrentMap<Class<?>, OptionsContext> entityContexts;
+		private final ConcurrentMap<PropertyKey, OptionsContext> propertyContexts;
+
 		public OptionsServiceContextImpl(List<OptionValueSource> sources) {
 			this.sources = sources;
+
+			globalOptions = OptionsContextImpl.forGlobal( sources );
+			entityContexts = new ConcurrentHashMap<Class<?>, OptionsContext>();
+			propertyContexts = new ConcurrentHashMap<PropertyKey, OptionsContext>();
 		}
 
 		@Override
 		public OptionsContext getGlobalOptions() {
-			return OptionsContextImpl.forGlobal( sources );
+			return globalOptions;
 		}
 
 		@Override
 		public OptionsContext getEntityOptions(Class<?> entityType) {
-			return OptionsContextImpl.forEntity( sources, entityType );
+			OptionsContext entityOptions = entityContexts.get( entityType );
+
+			if ( entityOptions == null ) {
+				entityOptions = getAndCacheEntityOptions( entityType );
+			}
+
+			return entityOptions;
 		}
 
 		@Override
 		public OptionsContext getPropertyOptions(Class<?> entityType, String propertyName) {
-			return OptionsContextImpl.forProperty( sources, entityType, propertyName );
+			PropertyKey key = new PropertyKey( entityType, propertyName );
+			OptionsContext propertyOptions = propertyContexts.get( key );
+
+			if ( propertyOptions == null ) {
+				propertyOptions = getAndCachePropertyOptions( key );
+			}
+
+			return propertyOptions;
+		}
+
+		private OptionsContext getAndCacheEntityOptions(Class<?> entityType) {
+			OptionsContext entityOptions = OptionsContextImpl.forEntity( sources, entityType );
+
+			OptionsContext cachedOptions = entityContexts.putIfAbsent( entityType, entityOptions );
+			if ( cachedOptions != null ) {
+				entityOptions = cachedOptions;
+			}
+
+			return entityOptions;
+		}
+
+		private OptionsContext getAndCachePropertyOptions(PropertyKey key) {
+			OptionsContext propertyOptions = OptionsContextImpl.forProperty( sources, key.getEntity(), key.getProperty() );
+
+			OptionsContext cachedOptions = propertyContexts.putIfAbsent( key, propertyOptions );
+			if ( cachedOptions != null ) {
+				propertyOptions = cachedOptions;
+			}
+
+			return propertyOptions;
 		}
 	}
 }
