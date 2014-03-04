@@ -29,12 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.HibernateException;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
@@ -63,7 +64,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.PASSWORD, "test" );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
-		provider.injectServices( getServiceRegistry() );
+		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
 		error.expect( HibernateException.class );
@@ -78,7 +79,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
-		provider.injectServices( getServiceRegistry() );
+		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
 		error.expect( HibernateException.class );
@@ -101,7 +102,7 @@ public class DatastoreInitializationTest {
 		 * operation should not take more than 3 seconds.
 		  */
 		final long estimateSpentTime = 3L * 1000L * 1000L * 1000L;
-		provider.injectServices( getServiceRegistry() );
+		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
 		Exception exception = null;
@@ -118,15 +119,15 @@ public class DatastoreInitializationTest {
 		}
 	}
 
-	private static ServiceRegistryImplementor getServiceRegistry() {
-		OptionsServiceContext optionsServiceContext = mock( OptionsServiceContext.class );
-		when( optionsServiceContext.getGlobalOptions() ) .thenReturn( EmptyOptionsContext.INSTANCE );
-
-		OptionsService optionService = mock( OptionsService.class );
-		when( optionService.context() ).thenReturn( optionsServiceContext );
-
+	private ServiceRegistryImplementor getServiceRegistry(Map<String, ?> cfg) {
 		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
-		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionService );
+		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
+
+		OptionsServiceImpl optionsService = new OptionsServiceImpl();
+		optionsService.injectServices( serviceRegistry );
+		optionsService.configure( cfg );
+		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionsService );
+
 		return serviceRegistry;
 	}
 }

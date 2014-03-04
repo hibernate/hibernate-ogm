@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
@@ -51,6 +52,9 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
@@ -138,7 +142,14 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				AssociationKind.ASSOCIATION
 		);
 
-		AssociationContext associationContext = new AssociationContext( EmptyOptionsContext.INSTANCE );
+		AssociationContext associationContext = new AssociationContext(
+				OptionsContextImpl.forProperty(
+						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
+						Project.class,
+						"modules"
+				)
+		);
+
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();

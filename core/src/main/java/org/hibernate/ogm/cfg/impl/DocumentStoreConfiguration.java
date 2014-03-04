@@ -20,11 +20,7 @@
  */
 package org.hibernate.ogm.cfg.impl;
 
-import java.util.Map;
-
-import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 
@@ -40,7 +36,7 @@ public abstract class DocumentStoreConfiguration {
 	 */
 	private static final String DEFAULT_HOST = "localhost";
 
-	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
+
 
 	private final String host;
 	private final int port;
@@ -48,11 +44,8 @@ public abstract class DocumentStoreConfiguration {
 	private final String username;
 	private final String password;
 	private final boolean createDatabase;
-	private final AssociationStorageType associationStorage;
 
-	public DocumentStoreConfiguration(Map<?, ?> configurationValues, int defaultPort) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
-
+	public DocumentStoreConfiguration(ConfigurationPropertyReader propertyReader, int defaultPort) {
 		this.host = propertyReader.property( OgmProperties.HOST, String.class )
 				.withDefault( DEFAULT_HOST )
 				.getValue();
@@ -71,10 +64,6 @@ public abstract class DocumentStoreConfiguration {
 
 		this.createDatabase = propertyReader.property( OgmProperties.CREATE_DATABASE, boolean.class )
 				.withDefault( false )
-				.getValue();
-
-		associationStorage = propertyReader.property( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.class )
-				.withDefault( DEFAULT_ASSOCIATION_STORAGE )
 				.getValue();
 	}
 
@@ -124,13 +113,5 @@ public abstract class DocumentStoreConfiguration {
 	 */
 	public boolean isCreateDatabase() {
 		return createDatabase;
-	}
-
-	/**
-	 * @see DocumentStoreProperties#ASSOCIATIONS_STORE
-	 * @return where to store associations
-	 */
-	public AssociationStorageType getAssociationStorageStrategy() {
-		return associationStorage;
 	}
 }

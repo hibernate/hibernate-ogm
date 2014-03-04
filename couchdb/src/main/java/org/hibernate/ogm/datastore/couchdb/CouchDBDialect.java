@@ -218,10 +218,6 @@ public class CouchDBDialect implements GridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		if ( associationStorage == null ) {
-			associationStorage = provider.getDefaultAssociationStorageStrategy();
-		}
-
 		return associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}

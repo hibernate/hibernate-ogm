@@ -27,11 +27,11 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
-import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -57,7 +57,7 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public void configure(Map configurationValues) {
-		configuration = new CouchDBConfiguration( configurationValues );
+		configuration = new CouchDBConfiguration( new ConfigurationPropertyReader( configurationValues ) );
 	}
 
 	@Override
@@ -96,19 +96,6 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	 */
 	public CouchDBDatastore getDataStore() {
 		return datastore;
-	}
-
-	/**
-	 * Returns the default association storage strategy to be used if none is configured explicitly via annotations or
-	 * API. This default strategy can be specified via the
-	 * {@link org.hibernate.ogm.datastore.couchdb.CouchDB#ASSOCIATIONS_STORE} property. If no value is given for that
-	 * property, {@link AssociationStorageType#IN_ENTITY} will be returned.
-	 *
-	 * @return the default association storage strategy to be used if none is configured explicitly via annotations or
-	 * API
-	 */
-	public AssociationStorageType getDefaultAssociationStorageStrategy() {
-		return configuration.getAssociationStorageStrategy();
 	}
 
 	private boolean isDatastoreNotInitialized() {
