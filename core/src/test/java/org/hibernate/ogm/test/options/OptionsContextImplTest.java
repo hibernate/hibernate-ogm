@@ -22,19 +22,22 @@ package org.hibernate.ogm.test.options;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.fest.assertions.MapAssert.entry;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
-import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
-import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,10 +49,13 @@ import org.junit.Test;
 public class OptionsContextImplTest {
 
 	private AppendableConfigurationContext optionsServiceContext;
+	private Map<String, Object> cfg;
 
 	@Before
 	public void setupContext() {
 		optionsServiceContext = new AppendableConfigurationContext();
+		cfg = newHashMap();
+		cfg.put( InternalProperties.OGM_OPTION_CONTEXT, optionsServiceContext );
 	}
 
 	@Test
@@ -246,8 +252,33 @@ public class OptionsContextImplTest {
 		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "qux" );
 	}
 
+	@Test
+	public void shouldProvideAccessToGlobalOptionSetViaProperty() {
+		// given
+		cfg.put( NameExampleOption.NAME_OPTION, "foobarqax" );
+
+		// when
+		OptionsContext context = OptionsContextImpl.forGlobal( getSources() );
+
+		// then
+		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobarqax" );
+	}
+
+	@Test
+	public void shouldGiveGlobalOptionSetViaApiPrecedenceOverValueSetViaProperty() {
+		// given
+		cfg.put( NameExampleOption.NAME_OPTION, "foobarqax" );
+		optionsServiceContext.addGlobalOption( new NameExampleOption(), "foobar" );
+
+		// when
+		OptionsContext context = OptionsContextImpl.forGlobal( getSources() );
+
+		// then
+		assertThat( context.getUnique( NameExampleOption.class ) ).isEqualTo( "foobar" );
+	}
+
 	private List<OptionValueSource> getSources() {
-		return Arrays.<OptionValueSource>asList( new ProgrammaticOptionValueSource( optionsServiceContext ), new AnnotationOptionValueSource() );
+		return OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() ) );
 	}
 
 	private static class Foo {

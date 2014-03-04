@@ -65,8 +65,8 @@ public class OptionValueSources {
 		}
 
 		return programmaticOptions != null ?
-				Arrays.<OptionValueSource>asList( new ProgrammaticOptionValueSource( programmaticOptions ), new AnnotationOptionValueSource() ) :
-				Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() );
+				Arrays.<OptionValueSource>asList( new ProgrammaticOptionValueSource( programmaticOptions ), new AnnotationOptionValueSource(), new ConfigurationOptionValueSource( propertyReader ) ) :
+				Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource(), new ConfigurationOptionValueSource( propertyReader ) );
 	}
 
 	/**
