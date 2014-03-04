@@ -26,8 +26,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.options.container.impl.OptionsContainerBuilder;
 import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainerBuilder;
 import org.hibernate.ogm.options.navigation.impl.PropertyKey;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
@@ -73,19 +73,23 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 			}
 
 			final OptionsContainerBuilder optionsOfProperty = convertOptionAnnotations( method.getAnnotations() );
-			optionsByProperty.put( new PropertyKey( entityClass, propertyName ), optionsOfProperty );
+			if ( optionsOfProperty != null ) {
+				optionsByProperty.put( new PropertyKey( entityClass, propertyName ), optionsOfProperty );
+			}
 		}
 
 		for ( final Field field : entityClass.getDeclaredFields() ) {
 			PropertyKey key = new PropertyKey( entityClass, field.getName() );
 			OptionsContainerBuilder optionsOfField = convertOptionAnnotations( field.getAnnotations() );
 
-			OptionsContainerBuilder optionsOfProperty = optionsByProperty.get( key );
-			if ( optionsOfProperty != null ) {
-				optionsOfProperty.addAll( optionsOfField );
-			}
-			else {
-				optionsByProperty.put( key, optionsOfField );
+			if ( optionsOfField != null ) {
+				OptionsContainerBuilder optionsOfProperty = optionsByProperty.get( key );
+				if ( optionsOfProperty != null ) {
+					optionsOfProperty.addAll( optionsOfField );
+				}
+				else {
+					optionsByProperty.put( key, optionsOfField );
+				}
 			}
 		}
 
@@ -93,21 +97,26 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 	}
 
 	private OptionsContainerBuilder convertOptionAnnotations(Annotation[] annotations) {
-		OptionsContainerBuilder options = new OptionsContainerBuilder();
+		OptionsContainerBuilder builder = null;
 
 		for ( Annotation annotation : annotations ) {
-			processAnnotation( options, annotation );
+			builder = processAnnotation( builder, annotation );
 		}
 
-		return options;
+		return builder;
 	}
 
-	private <A extends Annotation> void processAnnotation(OptionsContainerBuilder options, A annotation) {
+	private <A extends Annotation> OptionsContainerBuilder processAnnotation(OptionsContainerBuilder builder, A annotation) {
 		AnnotationConverter<Annotation> converter = getConverter( annotation );
 
 		if ( converter != null ) {
-			add( options, converter.convert( annotation ) );
+			if ( builder == null ) {
+				builder = new OptionsContainerBuilder();
+			}
+			add( builder, converter.convert( annotation ) );
 		}
+
+		return builder;
 	}
 
 	/**
@@ -132,7 +141,7 @@ public class AnnotationOptionValueSource implements OptionValueSource {
 		}
 	}
 
-	private <V> void add(OptionsContainerBuilder options, OptionValuePair<V> optionValue) {
-		options.add( optionValue.getOption(), optionValue.getValue() );
+	private <V> void add(OptionsContainerBuilder builder, OptionValuePair<V> optionValue) {
+		builder.add( optionValue.getOption(), optionValue.getValue() );
 	}
 }
