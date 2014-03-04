@@ -30,6 +30,7 @@ import javassist.util.proxy.ProxyFactory;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -52,12 +53,12 @@ public class ConfigurationContext {
 	/**
 	 * Contains all options configured via this and other configuration contexts.
 	 */
-	private final WritableOptionsServiceContext allOptions;
+	private final ProgrammaticOptionValueSource allOptions;
 
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
-	public ConfigurationContext(WritableOptionsServiceContext globalContext) {
+	public ConfigurationContext(ProgrammaticOptionValueSource globalContext) {
 		this.allOptions = globalContext;
 	}
 

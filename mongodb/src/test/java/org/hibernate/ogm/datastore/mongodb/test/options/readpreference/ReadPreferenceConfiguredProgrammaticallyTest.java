@@ -29,8 +29,8 @@ import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,20 +43,20 @@ import com.mongodb.ReadPreference;
  */
 public class ReadPreferenceConfiguredProgrammaticallyTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private ProgrammaticOptionValueSource source;
 	private MongoDBGlobalContext mongoOptions;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new WritableOptionsServiceContext();
-		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		source = new ProgrammaticOptionValueSource();
+		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( source ) );
 	}
 
 	@Test
 	public void testReadPreferenceGivenOnGlobalLevel() throws Exception {
 		mongoOptions.readPreference( ReadPreferenceType.SECONDARY );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( ReadPreferenceOption.class ) ).isEqualTo( ReadPreference.secondary() );
 	}
 
@@ -66,7 +66,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 			.entity( MyEntity.class )
 				.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
-		OptionsContainer options = optionsContext.getEntityOptions( MyEntity.class );
+		OptionsContainer options = source.getEntityOptions( MyEntity.class );
 		assertThat( options.getUnique( ReadPreferenceOption.class ) ).isEqualTo( ReadPreference.secondaryPreferred() );
 	}
 
@@ -77,7 +77,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 				.property( "content", ElementType.FIELD )
 				.readPreference( ReadPreferenceType.NEAREST );
 
-		OptionsContainer options = optionsContext.getPropertyOptions( MyEntity.class, "content" );
+		OptionsContainer options = source.getPropertyOptions( MyEntity.class, "content" );
 		assertThat( options.getUnique( ReadPreferenceOption.class ) ).isEqualTo( ReadPreference.nearest() );
 	}
 

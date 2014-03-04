@@ -26,7 +26,6 @@ import java.util.Arrays;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -438,7 +437,7 @@ public class AssociationPersister {
 					.context();
 
 			associationContext = new AssociationContext(
-					OptionsContextImpl.forProperty( serviceContext, hostingEntityType, getAssociationKey().getCollectionRole() )
+					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() )
 			);
 		}
 

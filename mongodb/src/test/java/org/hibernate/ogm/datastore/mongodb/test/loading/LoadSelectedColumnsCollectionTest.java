@@ -35,7 +35,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
@@ -52,7 +51,7 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -139,7 +138,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				AssociationKind.ASSOCIATION
 		);
 
-		AssociationContext associationContext = new AssociationContext( OptionsContextImpl.forProperty( new WritableOptionsServiceContext(), Project.class, "modules" ) );
+		AssociationContext associationContext = new AssociationContext( EmptyOptionsContext.INSTANCE );
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();
@@ -158,7 +157,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 		TupleContext tupleContext = new TupleContext(
 				selectedColumns,
-				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+				EmptyOptionsContext.INSTANCE
 		);
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

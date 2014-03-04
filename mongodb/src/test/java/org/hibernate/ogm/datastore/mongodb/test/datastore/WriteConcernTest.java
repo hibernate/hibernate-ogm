@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +36,10 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +54,7 @@ import com.mongodb.WriteConcern;
 public class WriteConcernTest {
 
 	private Map<String, Object> cfg;
-	private WritableOptionsServiceContext optionsContext;
+	private ProgrammaticOptionValueSource programmaticOptionValueSource;
 	private MongoDBGlobalContext configuration;
 
 	@Before
@@ -59,13 +62,13 @@ public class WriteConcernTest {
 		cfg = new HashMap<String, Object>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
-		optionsContext = new WritableOptionsServiceContext();
-		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		programmaticOptionValueSource = new ProgrammaticOptionValueSource();
+		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( programmaticOptionValueSource ) );
 	}
 
 	@Test
 	public void shouldUseAcknowledgedByDefault() {
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.ACKNOWLEDGED );
 	}
 
@@ -73,7 +76,7 @@ public class WriteConcernTest {
 	public void shouldApplyValueGivenViaProperties() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, "JOURNALED" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.JOURNALED );
 	}
 
@@ -81,7 +84,7 @@ public class WriteConcernTest {
 	public void shouldApplyValueGivenViaGlobalOptions() {
 		configuration.writeConcern( WriteConcernType.FSYNCED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContextImpl.forGlobal( Arrays.<OptionValueSource>asList( programmaticOptionValueSource ) ), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
 	}
 
@@ -91,7 +94,7 @@ public class WriteConcernTest {
 
 		configuration.writeConcern( WriteConcernType.FSYNCED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContextImpl.forGlobal( Arrays.<OptionValueSource>asList( programmaticOptionValueSource ) ), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), WriteConcern.FSYNCED );
 	}
 
@@ -100,14 +103,14 @@ public class WriteConcernTest {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
 		cfg.put( MongoDBProperties.WRITE_CONCERN_TYPE, MultipleDataCenters.class );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getWriteConcern(), new MultipleDataCenters() );
 	}
 
 	@Test(expected = HibernateException.class )
 	public void shouldRaiseErrorIfStrategyIsCUSTOMButNoTypeIsGiven() {
 		cfg.put( MongoDBProperties.WRITE_CONCERN, WriteConcernType.CUSTOM );
-		new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 	}
 
 	@SuppressWarnings("serial")

@@ -22,6 +22,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.

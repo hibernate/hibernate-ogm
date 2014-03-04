@@ -32,7 +32,6 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
@@ -44,7 +43,7 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -155,7 +154,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+				EmptyOptionsContext.INSTANCE
 		);
 	}
 }

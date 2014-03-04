@@ -29,8 +29,8 @@ import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,13 +43,13 @@ import com.mongodb.WriteConcern;
  */
 public class WriteConcernOptionTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private ProgrammaticOptionValueSource source;
 	private MongoDBGlobalContext mongoOptions;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new WritableOptionsServiceContext();
-		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		source = new ProgrammaticOptionValueSource();
+		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( source ) );
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class WriteConcernOptionTest {
 		mongoOptions
 			.writeConcern( WriteConcernType.ERRORS_IGNORED );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
 	}
 
@@ -67,7 +67,7 @@ public class WriteConcernOptionTest {
 
 		mongoOptions.writeConcern( writeConcern );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( writeConcern );
 	}
 
@@ -80,13 +80,13 @@ public class WriteConcernOptionTest {
 				.property( "content", ElementType.FIELD )
 					.writeConcern( WriteConcernType.FSYNCED );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.ERRORS_IGNORED );
 
-		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		options = source.getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.MAJORITY );
 
-		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		options = source.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( WriteConcern.FSYNCED );
 	}
 
@@ -99,13 +99,13 @@ public class WriteConcernOptionTest {
 				.property( "content", ElementType.FIELD )
 					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
 
-		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		options = source.getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 3 ) );
 
-		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		options = source.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 4 ) );
 	}
 
@@ -121,13 +121,13 @@ public class WriteConcernOptionTest {
 					.writeConcern( WriteConcernType.ACKNOWLEDGED )
 					.writeConcern( new ReplicaConfigurableWriteConcern( 4 ) );
 
-		OptionsContainer options = optionsContext.getGlobalOptions();
+		OptionsContainer options = source.getGlobalOptions();
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 2 ) );
 
-		options = optionsContext.getEntityOptions( ExampleForMongoDBMapping.class );
+		options = source.getEntityOptions( ExampleForMongoDBMapping.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 3 ) );
 
-		options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		options = source.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new ReplicaConfigurableWriteConcern( 4 ) );
 	}
 

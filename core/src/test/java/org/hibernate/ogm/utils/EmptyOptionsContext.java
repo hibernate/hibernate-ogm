@@ -18,20 +18,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.utils;
 
-import org.hibernate.ogm.dialect.GridDialect;
+import java.util.Collections;
+import java.util.Map;
+
+import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
- * Defines operations common to all context objects passed to {@link GridDialect} operations.
+ * An empty {@link OptionsContext} for testing purposes.
  *
  * @author Gunnar Morling
  */
-public interface GridDialectOperationContext {
+public class EmptyOptionsContext implements OptionsContext {
 
-	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
-	 */
-	OptionsContext getOptionsContext();
+	public static final OptionsContext INSTANCE = new EmptyOptionsContext();
+
+	private EmptyOptionsContext() {
+	}
+
+	@Override
+	public <I, V> V get(Class<? extends Option<I, V>> optionType, I identifier) {
+		return null;
+	}
+
+	@Override
+	public <V> V getUnique(Class<? extends UniqueOption<V>> optionType) {
+		return null;
+	}
+
+	@Override
+	public <I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType) {
+		return Collections.emptyMap();
+	}
 }

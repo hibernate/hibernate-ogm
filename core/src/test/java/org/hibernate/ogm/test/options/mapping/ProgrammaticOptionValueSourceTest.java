@@ -28,8 +28,8 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
@@ -40,19 +40,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test for putting/retrieving values into/from {@link WritableOptionsServiceContext}.
+ * Test for putting/retrieving values into/from {@link ProgrammaticOptionValueSource}.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  * @author Gunnar Morling
  */
-public class OptionsContextTest {
+public class ProgrammaticOptionValueSourceTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private ProgrammaticOptionValueSource optionsContext;
 	private SampleGlobalContext configuration;
 
 	@Before
 	public void setupContexts() {
-		optionsContext = new WritableOptionsServiceContext();
+		optionsContext = new ProgrammaticOptionValueSource();
 		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( optionsContext ) );
 	}
 

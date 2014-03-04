@@ -20,16 +20,18 @@
  */
 package org.hibernate.ogm.options.spi;
 
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+
 /**
  * A configuration option describing a generic or datastore-specific setting for which a (set of) value is attached. A
  * setting can apply globally, for a given entity type or for a given entity property.
  * <p/>
- * Options are maintained in {@link OptionsContainer}s and can be unique or non-unique. Unique options are the most
- * common type. An example is "show_query". Non-unique options really represent a family of options differentiated by a
- * key. An example is named query where the identifying key is the query name.
+ * Options are maintained in {@link OptionsContext}s and can be unique or non-unique. Unique options are the most common
+ * type. An example is "show_query". Non-unique options really represent a family of options differentiated by a key. An
+ * example is named query where the identifying key is the query name.
  * <p/>
- * When adding a unique option to a given container several times this option will only be contained exactly once.
- * When in contrast adding a non-unique option several times, all the values set are stored and retrievable from the
+ * When adding a unique option to a given container several times this option will only be contained exactly once. When
+ * in contrast adding a non-unique option several times, all the values set are stored and retrievable from the
  * container.
  * <p/>
  * Unique option types should be derived from {@link UniqueOption}.
@@ -42,7 +44,7 @@ package org.hibernate.ogm.options.spi;
  * @param <I> The type of this option's identifier
  * @param <V> The type of value associated to the option
  * @see UniqueOption
- * @see OptionsContainer
+ * @see OptionsContext
  */
 public abstract class Option<I, V> {
 
@@ -62,7 +64,7 @@ public abstract class Option<I, V> {
 			return false;
 		}
 
-		Option<?,?> option = (Option<?,?>) o;
+		Option<?, ?> option = (Option<?, ?>) o;
 
 		if ( !getOptionIdentifier().equals( option.getOptionIdentifier() ) ) {
 			return false;
@@ -76,6 +78,10 @@ public abstract class Option<I, V> {
 		int result = getClass().hashCode();
 		result = 31 * result + getOptionIdentifier().hashCode();
 		return result;
+	}
+
+	public V getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return null;
 	}
 
 }

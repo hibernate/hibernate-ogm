@@ -31,7 +31,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
@@ -70,7 +70,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		setupSessionFactory( configuration );
 
-		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		OptionsContext refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 	}
 
@@ -85,10 +85,10 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		setupSessionFactory( configuration );
 
-		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		OptionsContext refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 
-		OptionsContainer microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
+		OptionsContext microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
 		assertThat( microwaveOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
 	}
 
@@ -102,7 +102,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 
 		setupSessionFactory( configuration );
 
-		OptionsContainer temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
+		OptionsContext temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 
@@ -134,13 +134,13 @@ public class OptionIntegrationTest extends OgmTestCase {
 	}
 
 	private void assertOptionsSetViaConfigurator() {
-		OptionsContainer refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
+		OptionsContext refrigatorOptions = getOptionsContext().getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 
-		OptionsContainer microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
+		OptionsContext microwaveOptions = getOptionsContext().getEntityOptions( Microwave.class );
 		assertThat( microwaveOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
 
-		OptionsContainer temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
+		OptionsContext temperatureOptions = getOptionsContext().getPropertyOptions( Refrigerator.class, "temperature" );
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 	}
 

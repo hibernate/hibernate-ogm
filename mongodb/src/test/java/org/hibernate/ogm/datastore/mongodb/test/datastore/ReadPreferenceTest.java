@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,8 +35,10 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,7 +52,7 @@ import com.mongodb.ReadPreference;
 public class ReadPreferenceTest {
 
 	private Map<String, Object> cfg;
-	private WritableOptionsServiceContext optionsContext;
+	private ProgrammaticOptionValueSource programmaticOptionValueSource;
 	private MongoDBGlobalContext configuration;
 
 	@Before
@@ -57,13 +60,13 @@ public class ReadPreferenceTest {
 		cfg = new HashMap<String, Object>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
-		optionsContext = new WritableOptionsServiceContext();
-		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		programmaticOptionValueSource = new ProgrammaticOptionValueSource();
+		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( programmaticOptionValueSource ) );
 	}
 
 	@Test
 	public void shouldUsePrimaryByDefault() {
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.primary() );
 	}
 
@@ -71,7 +74,7 @@ public class ReadPreferenceTest {
 	public void shouldApplyValueGivenViaProperties() {
 		cfg.put( MongoDBProperties.READ_PREFERENCE, "SECONDARY" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, EmptyOptionsContext.INSTANCE, new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondary() );
 	}
 
@@ -79,7 +82,7 @@ public class ReadPreferenceTest {
 	public void shouldApplyValueGivenViaGlobalOptions() {
 		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContextImpl.forGlobal( Arrays.<OptionValueSource>asList( programmaticOptionValueSource ) ), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
 	}
 
@@ -89,7 +92,7 @@ public class ReadPreferenceTest {
 
 		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContextImpl.forGlobal( Arrays.<OptionValueSource>asList( programmaticOptionValueSource ) ), new ClassLoaderServiceImpl() );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
 	}
 }
