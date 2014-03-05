@@ -43,24 +43,15 @@ public class InfinispanConfiguration {
 	private String jndi;
 
 	/**
-<<<<<<< HEAD:infinispan/src/main/java/org/hibernate/ogm/datastore/infinispan/impl/configuration/InfinispanConfiguration.java
-	 * @see InfinispanProperties#CONFIGURATION_RESOURCE_NAME
-	 * @return an URL identifying an Infinispan configuration file
-=======
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CONFIGURATION_RESOURCENAME
+	 * @see org.hibernate.ogm.datastore.infinispan.InfinispanProperties#CONFIGURATION_RESOURCENAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
->>>>>>> OGM-292 Backend modules: Moving everything to org.hibernate.ogm.dialect.<%dialect%>.*:infinispan/src/main/java/org/hibernate/ogm/dialect/infinispan/datastore/impl/configuration/InfinispanConfiguration.java
 	 */
 	public URL getConfigurationUrl() {
 		return configUrl;
 	}
 
 	/**
-<<<<<<< HEAD:infinispan/src/main/java/org/hibernate/ogm/datastore/infinispan/impl/configuration/InfinispanConfiguration.java
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_JNDI_NAME
-=======
-	 * @see org.hibernate.ogm.datastore.infinispan.Infinispan#CACHE_MANAGER_RESOURCE_PROP
->>>>>>> OGM-292 Backend modules: Moving everything to org.hibernate.ogm.dialect.<%dialect%>.*:infinispan/src/main/java/org/hibernate/ogm/dialect/infinispan/datastore/impl/configuration/InfinispanConfiguration.java
+	 * @see org.hibernate.ogm.datastore.infinispan.InfinispanProperties#CACHE_MANAGER_JNDI_NAME
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
 	public String getJndiName() {
