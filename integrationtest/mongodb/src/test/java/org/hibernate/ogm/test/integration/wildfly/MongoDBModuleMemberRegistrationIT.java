@@ -20,6 +20,9 @@
  */
 package org.hibernate.ogm.test.integration.wildfly;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import org.hibernate.ogm.test.integration.wildfly.model.Member;
 import org.hibernate.ogm.test.integration.wildfly.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -29,6 +32,7 @@ import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -68,10 +72,25 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		return propertiesContext
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "mongodb" ).up()
 					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
+					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
 	}
 
 	private static boolean isNotNull(String mongoHostName) {
 		return mongoHostName != null && mongoHostName.length() > 0 && ! "null".equals( mongoHostName );
 	}
+
+	@Test
+	public void shouldFindPersistedMemberByIdWithNativeQuery() throws Exception {
+		Member newMember = memberRegistration.getNewMember();
+		newMember.setName( "Peter O'Tall" );
+		memberRegistration.register();
+
+		String nativeQuery = "{ _id: " + newMember.getId() + " }";
+		Member found = memberRegistration.findWithNativeQuery( nativeQuery );
+
+		assertNotNull( "Expected at least one result using a native query", found );
+		assertEquals( "Native query hasn't found a new member", newMember.getName(), found.getName() );
+	}
+
 }

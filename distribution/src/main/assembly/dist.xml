@@ -57,6 +57,7 @@
                             <include>org.hibernate.common:hibernate-commons-annotations</include>
                             <include>antlr:antlr</include>
                             <include>org.antlr:antlr-runtime</include>
+                            <include>org.antlr:stringtemplate</include>
                             <include>org.apache.avro:avro</include>
                             <include>dom4j:dom4j</include>
                             <include>org.hibernate:hibernate-core</include>

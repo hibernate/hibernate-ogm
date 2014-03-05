@@ -37,7 +37,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
 import org.hibernate.jpa.spi.HibernateEntityManagerImplementor;
-import org.hibernate.jpa.spi.OgmEntityManager;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**

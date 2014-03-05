@@ -30,6 +30,8 @@
     <dependencies>
         <module name="org.hibernate" export="true" />
         <module name="org.hibernate.commons-annotations" />
+        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" export="true" services="export" optional="true" />
+        <module name="org.hibernate.search.orm" export="true" services="export" optional="true" />
         <module name="org.slf4j" />
 
         <module name="javax.api" />
