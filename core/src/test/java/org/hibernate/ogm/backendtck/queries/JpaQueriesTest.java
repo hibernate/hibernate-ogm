@@ -58,6 +58,17 @@ public class JpaQueriesTest extends JpaTestCase {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
+	public void testGetResultListWithSelect() throws Exception {
+		List<Helicopter> helicopters = em.createQuery( "SELECT h FROM Helicopter h WHERE h.name = :name" )
+				.setParameter( "name", POLICE_HELICOPTER )
+				.getResultList();
+
+		assertThat( helicopters.size() ).isEqualTo( 1 );
+		assertThat( helicopters.get( 0 ).getName() ).isEqualTo( POLICE_HELICOPTER );
+	}
+
+	@Test
 	public void testGetResultListWithTypedQuery() throws Exception {
 		List<Helicopter> helicopters = em.createQuery( "FROM Helicopter WHERE name = :name", Helicopter.class )
 				.setParameter( "name", POLICE_HELICOPTER )

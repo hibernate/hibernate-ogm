@@ -20,6 +20,7 @@
  */
 package org.hibernate.ogm.service.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import org.hibernate.Query;
@@ -34,6 +35,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
+import org.hibernate.search.ProjectionConstants;
 import org.hibernate.search.Search;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
@@ -67,12 +69,26 @@ public class LuceneBasedQueryParserService extends BaseQueryParserService {
 		log.createdQuery( queryString, parsingResult.getQuery() );
 
 		FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( parsingResult.getQuery(), parsingResult.getTargetEntity() );
-		fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
+		if ( requiresProjections( parsingResult.getProjections() ) ) {
+			fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
+		}
 
 		// Following options are mandatory to load matching entities without using a query
 		// (chicken and egg problem)
 		fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );
 		return fullTextQuery;
+	}
+
+	private boolean requiresProjections(List<String> projections) {
+		if ( projections.size() == 0 ) {
+			return false;
+		}
+		else if ( projections.size() == 1 && ProjectionConstants.THIS.equals( projections.get( 0 ) ) ) {
+			return false;
+		}
+		else {
+			return true;
+		}
 	}
 
 	private LuceneProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters, FullTextSession fullTextSession) {
