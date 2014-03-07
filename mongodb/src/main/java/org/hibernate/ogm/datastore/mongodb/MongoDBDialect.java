@@ -64,6 +64,7 @@ import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
@@ -146,9 +147,12 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		DBObject found = this.getObject( key, tupleContext );
-		if ( found != null ) {
-			return new Tuple( new MongoDBTupleSnapshot( found, key, UPDATE ) );
+		DBObject entityObject = this.getObject( key, tupleContext );
+		if ( entityObject != null ) {
+			if ( !tupleContext.getTupleTypeContext().getEmbeddedAssociations().isEmpty() ) {
+				tupleContext.getSessionContext().put( key, entityObject );
+			}
+			return new Tuple( new MongoDBTupleSnapshot( entityObject, key, UPDATE ) );
 		}
 		else if ( isInTheQueue( key, tupleContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
@@ -174,13 +178,20 @@ public class MongoDBDialect implements BatchableGridDialect {
 	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
 	 */
 	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
-		ReadPreference readPreference = getReadPreference( associationContext );
+		DBObject embeddingEntity = (DBObject) associationContext.getSessionContext().get( key.getEntityKey() );
 
-		DBCollection collection = getCollection( key.getEntityKey() );
-		DBObject searchObject = prepareIdObject( key.getEntityKey() );
-		DBObject projection = getProjection( key, true );
+		if ( embeddingEntity != null ) {
+			return embeddingEntity;
+		}
+		else {
+			ReadPreference readPreference = getReadPreference( associationContext );
 
-		return collection.findOne( searchObject, projection, readPreference );
+			DBCollection collection = getCollection( key.getEntityKey() );
+			DBObject searchObject = prepareIdObject( key.getEntityKey() );
+			DBObject projection = getProjection( key, true );
+
+			return collection.findOne( searchObject, projection, readPreference );
+		}
 	}
 
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
@@ -194,7 +205,16 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private BasicDBObject getProjection(TupleContext tupleContext) {
-		return getProjection( tupleContext.getTupleTypeContext().getSelectableColumns() );
+		TupleTypeContext tupleTypeContext = tupleContext.getTupleTypeContext();
+
+		List<String> projectedFields = new ArrayList<String>( tupleTypeContext.getSelectableColumns().size() + tupleTypeContext.getEmbeddedAssociations().size() );
+		projectedFields.addAll( tupleTypeContext.getSelectableColumns() );
+
+		for ( AssociationKeyMetadata embeddedAssociation : tupleTypeContext.getEmbeddedAssociations() ) {
+			projectedFields.add( embeddedAssociation.getCollectionRole() );
+		}
+
+		return getProjection( projectedFields );
 	}
 
 	/**
@@ -286,6 +306,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
+
+		tupleContext.getSessionContext().remove( key );
 	}
 
 	/**
@@ -353,6 +375,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		collection.remove( toDelete, writeConcern );
+
+		tupleContext.getSessionContext().remove( key );
 	}
 
 	//not for embedded
@@ -435,6 +459,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 					addEmptyAssociationField( key, entity );
 				}
 			}
+
+			associationContext.getSessionContext().remove( key.getEntityKey() );
+
 			return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
 		}
 		DBCollection associations = getAssociationCollection( key, storageStrategy );
@@ -488,6 +515,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getCollectionRole();
+
+			associationContext.getSessionContext().remove( key.getEntityKey() );
 		}
 		else {
 			collection = getAssociationCollection( key, storageStrategy );
@@ -532,6 +561,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 				addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
 				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
+
+			associationContext.getSessionContext().remove( key.getEntityKey() );
 		}
 		else {
 			DBCollection collection = getAssociationCollection( key, storageStrategy );
