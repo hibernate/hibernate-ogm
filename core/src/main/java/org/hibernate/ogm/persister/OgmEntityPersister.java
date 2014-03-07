@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.HibernateException;
@@ -57,6 +58,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Association;
+import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -65,6 +67,8 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.impl.AssociationKeyMetadataBuilder;
+import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.hibernatecore.impl.SessionStore;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.GridType;
@@ -112,15 +116,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
-	private final TupleContext tupleContext;
 
 	//service references
 	private final GridDialect gridDialect;
 	private final EntityKeyMetadata entityKeyMetadata;
 	private volatile Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
+	private volatile Map<String, OgmCollectionPersister> toManyAssociations;
 
 	private final OptionsService optionsService;
-
+	private final List<String> columnNames;
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
@@ -229,7 +233,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( discriminator.getColumnName() != null ) {
 			columnNames.add( discriminator.getColumnName() );
 		}
-		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
+
+		this.columnNames = Collections.unmodifiableList( columnNames );
+
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		initCustomSQLStrings();
@@ -242,11 +248,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		customSQLDelete = new String[TABLE_SPAN];
 	}
 
-	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata(SessionFactoryImplementor factory) {
-		Map<String,AssociationKeyMetadata> toOneAssociations = newHashMap( 5 );
+	private void initAssociationKeyMetadata(SessionFactoryImplementor factory) {
+		Map<String, AssociationKeyMetadata> toOneAssociations = newHashMap( 5 );
+		Map<String, OgmCollectionPersister> tmpToManyAssociations = newHashMap( 5 );
 
 		for (int index = 0 ; index < getPropertySpan() ; index++) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
+			String propertyName = getPropertyNames()[index];
+
 			if ( uniqueKeyType.isEntityType() ) {
 				String[] propertyColumnNames = getPropertyColumnNames( index );
 
@@ -258,11 +267,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						.setPropertyType( uniqueKeyType )
 						.build();
 
-				toOneAssociations.put( getPropertyNames()[index], metadata );
+				toOneAssociations.put( propertyName, metadata );
+			}
+
+			else if ( uniqueKeyType.isAssociationType() ) {
+				OgmCollectionPersister collectionPersister = (OgmCollectionPersister) getFactory().getCollectionPersister( getName() + "." + propertyName );
+				tmpToManyAssociations.put( propertyName, collectionPersister );
 			}
 		}
 
-		return toOneAssociations;
+		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( toOneAssociations );
+		toManyAssociations = Collections.unmodifiableMap( tmpToManyAssociations );
 	}
 
 	@Override
@@ -272,7 +287,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected void doPostInstantiate() {
-		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata( getFactory() ) );
+		initAssociationKeyMetadata( getFactory() );
 	}
 
 	public GridType getGridIdentifierType() {
@@ -928,6 +943,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 			}
 
+
+
 			final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 			Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
 			// add the discriminator
@@ -1218,7 +1235,44 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	public TupleContext getTupleContext() {
+		//TODO retrieve this from passed session
+		SessionStore sessionStore = OgmSession.getSessionStore();
+		TupleContext tupleContext = sessionStore.getTupleContextCache().get( this );
+
+		if ( tupleContext == null ) {
+			// this information actually is constant for a persister; we can't do it in doPostInitiate() though as the
+			// required collection persisters are not yet completely set up at that time; Should this be cached at the
+			// SF level after being calculated once?
+			List<AssociationKeyMetadata> embeddedAssociations = Collections.unmodifiableList( getEmbeddedAssocations( sessionStore ) );
+
+			tupleContext = new TupleContext(
+					columnNames,
+					optionsService.context().getEntityOptions( getMappedClass() ),
+					sessionStore.getSessionContext(),
+					embeddedAssociations
+			);
+
+			sessionStore.getTupleContextCache().put( this, tupleContext );
+		}
+
 		return tupleContext;
+	}
+
+	private List<AssociationKeyMetadata> getEmbeddedAssocations(SessionStore sessionStore) {
+		List<AssociationKeyMetadata> embeddedAssociations = new ArrayList<AssociationKeyMetadata>();
+
+		for ( Entry<String, OgmCollectionPersister> association : toManyAssociations.entrySet() ) {
+			AssociationContext associationContext = new AssociationContext(
+					optionsService.context().getPropertyOptions( getMappedClass(), association.getKey() ),
+					sessionStore.getSessionContext()
+			);
+
+			if ( gridDialect.isStoredInEntityStructure( association.getValue().getAssociationKeyMetadata(), associationContext ) ) {
+				embeddedAssociations.add( association.getValue().getAssociationKeyMetadata() );
+			}
+		}
+
+		return embeddedAssociations;
 	}
 
 	public String getJpaEntityName() {

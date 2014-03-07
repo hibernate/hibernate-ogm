@@ -43,6 +43,7 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.hibernatecore.impl.SessionStore;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
@@ -154,7 +155,9 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				EmptyOptionsContext.INSTANCE
+				EmptyOptionsContext.INSTANCE,
+				new SessionStore(),
+				Collections.<AssociationKeyMetadata>emptyList()
 		);
 	}
 }

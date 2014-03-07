@@ -46,8 +46,7 @@ import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
-import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.hibernatecore.impl.SessionStore;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.junit.After;
 import org.junit.Before;
@@ -191,13 +190,18 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ) );
+		return new AssociationContext(
+				EmptyOptionsContext.INSTANCE,
+				new SessionStore()
+		);
 	}
 
 	private TupleContext emptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				EmptyOptionsContext.INSTANCE
+				EmptyOptionsContext.INSTANCE,
+				new SessionStore(),
+				Collections.<AssociationKeyMetadata>emptyList()
 		);
 	}
 }

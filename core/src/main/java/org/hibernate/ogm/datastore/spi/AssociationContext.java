@@ -34,9 +34,11 @@ public class AssociationContext implements GridDialectOperationContext {
 
 	private final OptionsContext optionsContext;
 	private OperationsQueue operationsQueue;
+	private final SessionContext sessionContext;
 
-	public AssociationContext(OptionsContext optionsContext) {
+	public AssociationContext(OptionsContext optionsContext, SessionContext sessionContext) {
 		this.optionsContext = optionsContext;
+		this.sessionContext = sessionContext;
 	}
 
 	public OperationsQueue getOperationsQueue() {
@@ -50,6 +52,11 @@ public class AssociationContext implements GridDialectOperationContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	@Override
+	public SessionContext getSessionContext() {
+		return sessionContext;
 	}
 
 	@Override

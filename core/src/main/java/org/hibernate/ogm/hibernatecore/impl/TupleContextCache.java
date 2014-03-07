@@ -18,22 +18,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.hibernatecore.impl;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.OptionsContext;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
+
+import java.util.Map;
+
+import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.persister.OgmEntityPersister;
+
 
 /**
- * Defines operations common to all context objects passed to {@link GridDialect} operations.
- *
  * @author Gunnar Morling
+ *
  */
-public interface GridDialectOperationContext {
+public class TupleContextCache {
 
-	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
-	 */
-	OptionsContext getOptionsContext();
+	private final Map<OgmEntityPersister, TupleContext> contextsByPersister;
 
-	SessionContext getSessionContext();
+	public TupleContextCache() {
+		contextsByPersister = newHashMap();
+	}
+
+	public TupleContext get(OgmEntityPersister ogmEntityPersister) {
+		return contextsByPersister.get( ogmEntityPersister );
+	}
+
+	public TupleContext put(OgmEntityPersister entityPersister, TupleContext tupleContext) {
+		return contextsByPersister.put( entityPersister, tupleContext );
+	}
 }

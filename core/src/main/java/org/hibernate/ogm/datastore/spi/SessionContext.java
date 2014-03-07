@@ -20,20 +20,31 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.OptionsContext;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
- * Defines operations common to all context objects passed to {@link GridDialect} operations.
- *
  * @author Gunnar Morling
+ *
  */
-public interface GridDialectOperationContext {
+public class SessionContext {
 
-	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
-	 */
-	OptionsContext getOptionsContext();
+	private final Map<Object, Object> values;
 
-	SessionContext getSessionContext();
+	public SessionContext() {
+		this.values = new HashMap<Object, Object>();
+	}
+
+	public Object get(Object key) {
+		return values.get( key );
+	}
+
+	public Object put(Object key, Object value) {
+		return values.put( key, value );
+	}
+
+	public Object remove(Object key) {
+		return values.remove( key );
+	}
 }

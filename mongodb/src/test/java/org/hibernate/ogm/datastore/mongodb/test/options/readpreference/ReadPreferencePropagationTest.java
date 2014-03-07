@@ -105,9 +105,7 @@ public class ReadPreferencePropagationTest {
 		session.close();
 
 		// then expect a findOne() call for the entity and one for the association  with the configured read preferences
-		// TODO Ideally only one fetch would be required, see OGM-469
 		verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.secondaryPreferred() ) );
-		verify( mockClient.getCollection( "GolfPlayer" ) ).findOne( any( DBObject.class ), any( DBObject.class ), eq( ReadPreference.primaryPreferred() ) );
 	}
 
 	@Test

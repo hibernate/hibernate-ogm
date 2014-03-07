@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.spi;
 import java.util.List;
 
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.StringHelper;
 
@@ -36,17 +37,24 @@ public class TupleContext implements GridDialectOperationContext {
 
 	private final List<String> selectableColumns;
 	private final OptionsContext optionsContext;
+	private final SessionContext sessionContext;
+	private final List<AssociationKeyMetadata> embeddedAssociations;
+
 	private final OperationsQueue operationsQueue;
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext) {
+	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, SessionContext sessionContext, List<AssociationKeyMetadata> embeddedAssociations) {
 		this.selectableColumns = selectableColumns;
 		this.optionsContext = optionsContext;
+		this.sessionContext = sessionContext;
+		this.embeddedAssociations = embeddedAssociations;
 		this.operationsQueue = null;
 	}
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, SessionContext sessionContext, List<AssociationKeyMetadata> embeddedAssociations, OperationsQueue operationsQueue) {
 		this.selectableColumns = selectableColumns;
 		this.optionsContext = optionsContext;
+		this.sessionContext = sessionContext;
+		this.embeddedAssociations = embeddedAssociations;
 		this.operationsQueue = operationsQueue;
 	}
 
@@ -61,6 +69,15 @@ public class TupleContext implements GridDialectOperationContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	@Override
+	public SessionContext getSessionContext() {
+		return sessionContext;
+	}
+
+	public List<AssociationKeyMetadata> getEmbeddedAssociations() {
+		return embeddedAssociations;
 	}
 
 	/**

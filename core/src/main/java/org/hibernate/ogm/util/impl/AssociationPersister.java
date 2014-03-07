@@ -32,6 +32,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.EntityKeyBuilder;
@@ -273,7 +274,7 @@ public class AssociationPersister {
 	 */
 	public boolean hostingEntityRequiresReadAfterUpdate() {
 		if ( hostingEntityRequiresReadAfterUpdate == null ) {
-			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( getAssociationKey(), getAssociationContext() );
+			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( associationKeyMetadata, getAssociationContext() );
 			boolean hasUpdateGeneratedProperties = getHostingEntityPersister().hasUpdateGeneratedProperties();
 
 			hostingEntityRequiresReadAfterUpdate = storedInEntityStructure && hasUpdateGeneratedProperties;
@@ -298,7 +299,8 @@ public class AssociationPersister {
 					.context();
 
 			associationContext = new AssociationContext(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() )
+					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ),
+					OgmSession.getSessionStore().getSessionContext()
 			);
 		}
 

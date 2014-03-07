@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -44,6 +45,7 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -151,7 +153,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
 						Project.class,
 						"modules"
-				)
+				),
+				new SessionContext()
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
@@ -172,7 +175,9 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 		TupleContext tupleContext = new TupleContext(
 				selectedColumns,
-				EmptyOptionsContext.INSTANCE
+				EmptyOptionsContext.INSTANCE,
+				new SessionContext(),
+				Collections.<AssociationKeyMetadata>emptyList()
 		);
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

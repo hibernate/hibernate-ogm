@@ -25,10 +25,12 @@ import java.util.Collections;
 
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
@@ -133,7 +135,9 @@ public class OperationsQueueTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class )
+				OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class ),
+				new SessionContext(),
+				Collections.<AssociationKeyMetadata>emptyList()
 		);
 	}
 }

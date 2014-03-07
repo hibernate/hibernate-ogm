@@ -106,7 +106,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 		TupleContext contextWithQueue = new TupleContext(
 				tupleContext.getSelectableColumns(),
 				tupleContext.getOptionsContext(),
-				tupleContext.getSessionStore(),
+				tupleContext.getSessionContext(),
 				tupleContext.getEmbeddedAssociations(),
 				getOperationQueue()
 		);

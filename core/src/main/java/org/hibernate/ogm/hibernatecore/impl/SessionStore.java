@@ -18,22 +18,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.hibernatecore.impl;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.Session;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 
 /**
- * Defines operations common to all context objects passed to {@link GridDialect} operations.
+ * A storage area tied to the lifecycle of a {@link Session}.
  *
  * @author Gunnar Morling
  */
-public interface GridDialectOperationContext {
+public class SessionStore {
 
-	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
-	 */
-	OptionsContext getOptionsContext();
+	private final TupleContextCache tupleContextCache;
+	private final SessionContext sessionContext;
 
-	SessionContext getSessionContext();
+	public SessionStore() {
+		tupleContextCache = new TupleContextCache();
+		sessionContext = new SessionContext();
+	}
+
+	public TupleContextCache getTupleContextCache() {
+		return tupleContextCache;
+	}
+
+	public SessionContext getSessionContext() {
+		return sessionContext;
+	}
 }
