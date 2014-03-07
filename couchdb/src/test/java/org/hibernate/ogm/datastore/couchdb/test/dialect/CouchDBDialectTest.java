@@ -36,18 +36,20 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -170,10 +172,11 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames );
-		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
+				tableName, columnNames, rowKeyColumnNames, AssociationKind.ASSOCIATION, collectionRole, false
+		);
 
-		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
+		return new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey );
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
@@ -189,13 +192,20 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( new WritableOptionsServiceContext(), Object.class, "" ) );
+		return new AssociationContext(
+				new AssociationTypeContext( EmptyOptionsContext.INSTANCE ),
+				new SessionContext()
+		);
 	}
 
 	private TupleContext emptyTupleContext() {
 		return new TupleContext(
-				Collections.<String>emptyList(),
-				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+				new TupleTypeContext(
+						Collections.<String>emptyList(),
+						EmptyOptionsContext.INSTANCE,
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 	}
 }

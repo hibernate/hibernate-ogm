@@ -40,6 +40,7 @@ import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -193,7 +194,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+		public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext) {
 			return false;
 		}
 	}

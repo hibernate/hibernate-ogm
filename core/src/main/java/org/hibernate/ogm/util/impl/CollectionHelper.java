@@ -21,8 +21,11 @@
 package org.hibernate.ogm.util.impl;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Provides commonly used functionality around collections.
@@ -53,5 +56,29 @@ public class CollectionHelper {
 			Collections.addAll( set, ts );
 			return Collections.unmodifiableSet( set );
 		}
+	}
+
+	public static <K, V> HashMap<K, V> newHashMap() {
+		return new HashMap<K, V>();
+	}
+
+	public static <K, V> HashMap<K, V> newHashMap(int initialCapacity) {
+		return new HashMap<K, V>( initialCapacity );
+	}
+
+	public static <K, V> HashMap<K, V> newHashMap(Map<? extends K, ? extends V> other) {
+		return new HashMap<K, V>( other );
+	}
+
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
+		return new ConcurrentHashMap<K, V>();
+	}
+
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(int initialCapacity) {
+		return new ConcurrentHashMap<K, V>( initialCapacity );
+	}
+
+	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> other) {
+		return new ConcurrentHashMap<K, V>( other );
 	}
 }

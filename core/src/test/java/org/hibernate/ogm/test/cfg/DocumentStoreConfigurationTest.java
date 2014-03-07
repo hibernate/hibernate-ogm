@@ -28,6 +28,7 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -194,7 +195,7 @@ public class DocumentStoreConfigurationTest {
 	private static class TestDocumentStoreConfiguration extends DocumentStoreConfiguration {
 
 		public TestDocumentStoreConfiguration(Map<?, ?> configurationValues) {
-			super( configurationValues, 1234 );
+			super( new ConfigurationPropertyReader( configurationValues ), 1234 );
 		}
 	}
 }

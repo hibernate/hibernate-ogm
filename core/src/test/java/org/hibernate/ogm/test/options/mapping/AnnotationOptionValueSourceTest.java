@@ -22,15 +22,12 @@ package org.hibernate.ogm.test.options.mapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.annotations.EmbedExample;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
-import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel;
-import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -40,49 +37,36 @@ import org.junit.Test;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Gunnar Morling
  */
-public class AnnotationBasedOptionsTest {
+public class AnnotationOptionValueSourceTest {
 
-	private WritableOptionsServiceContext context;
+	private AnnotationOptionValueSource source;
 
 	@Before
 	public void setupContext() {
-		context = new WritableOptionsServiceContext();
+		source = new AnnotationOptionValueSource();
 	}
 
 	@Test
 	public void testAnnotatedEntity() throws Exception {
-		OptionsContainer entityOptions = context.getEntityOptions( Example.class );
+		OptionsContainer entityOptions = source.getEntityOptions( Example.class );
 		assertThat( entityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Batman" );
 	}
 
 	@Test
-	public void testAnnotationIsOverriddenByAPI() throws Exception {
-		ConfigurationContext configurationContext = new ConfigurationContext( context );
-
-		SampleGlobalContext sampleMapping = SampleOptionModel.createGlobalContext( configurationContext );
-		sampleMapping
-			.entity( Example.class )
-				.name( "Name replaced" );
-
-		OptionsContainer entityOptions = context.getEntityOptions( Example.class );
-		assertThat( entityOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "Name replaced" );
-	}
-
-	@Test
 	public void testAnnotationGivenOnPropertyCanBeRetrievedFromOptionsContext() {
-		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "exampleProperty" );
+		OptionsContainer propertyOptions = source.getPropertyOptions( Example.class, "exampleProperty" );
 		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Test" );
 	}
 
 	@Test
 	public void testAnnotationGivenOnBooleanPropertyCanBeRetrievedFromOptionsContext() {
-		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "helpful" );
+		OptionsContainer propertyOptions = source.getPropertyOptions( Example.class, "helpful" );
 		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Another Test" );
 	}
 
 	@Test
 	public void testAnnotationGivenOnPrivateFieldCanBeRetrievedFromOptionsContext() {
-		OptionsContainer propertyOptions = context.getPropertyOptions( Example.class, "anotherProperty" );
+		OptionsContainer propertyOptions = source.getPropertyOptions( Example.class, "anotherProperty" );
 		assertThat( propertyOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Yet Another Test" );
 	}
 

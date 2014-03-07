@@ -29,8 +29,5 @@ import org.hibernate.ogm.dialect.GridDialect;
  */
 public interface GridDialectOperationContext {
 
-	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
-	 */
-	OptionsContext getOptionsContext();
+	SessionContext getSessionContext();
 }

@@ -25,8 +25,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcern;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,22 +35,22 @@ import org.junit.Test;
  */
 public class WriteConcernAnnotationTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private AnnotationOptionValueSource source;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new WritableOptionsServiceContext();
+		source = new AnnotationOptionValueSource();
 	}
 
 	@Test
 	public void testWriteConcernForEntity() throws Exception {
-		OptionsContainer options = optionsContext.getEntityOptions( EntityWriteConcernExample.class );
+		OptionsContainer options = source.getEntityOptions( EntityWriteConcernExample.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( com.mongodb.WriteConcern.ERRORS_IGNORED );
 	}
 
 	@Test
 	public void testWriteConcernByTypeForEntity() throws Exception {
-		OptionsContainer options = optionsContext.getEntityOptions( EntityWriteConcernUsingTypeExample.class );
+		OptionsContainer options = source.getEntityOptions( EntityWriteConcernUsingTypeExample.class );
 		assertThat( options.getUnique( WriteConcernOption.class ) ).isEqualTo( new MultipleDataCenters() );
 	}
 

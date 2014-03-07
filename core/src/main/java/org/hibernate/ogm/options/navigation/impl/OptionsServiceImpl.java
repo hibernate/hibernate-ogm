@@ -20,20 +20,18 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
-import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
-import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -46,8 +44,6 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  */
 public class OptionsServiceImpl implements OptionsService, Configurable, ServiceRegistryAwareService {
 
-	private static final Log log = LoggerFactory.make();
-
 	private OptionsServiceContext sessionFactoryOptions;
 	private ServiceRegistryImplementor registry;
 
@@ -58,32 +54,10 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 
 	@Override
 	public void configure(Map configurationValues) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues );
-
 		ClassLoaderService classLoaderService = registry.getService( ClassLoaderService.class );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
 
-		OptionsServiceContext context = propertyReader.property( InternalProperties.OGM_OPTION_CONTEXT, OptionsServiceContext.class )
-				.instantiate()
-				.withClassLoaderService( classLoaderService )
-				.getValue();
-		OptionConfigurator configurator = propertyReader.property( OgmProperties.OPTION_CONFIGURATOR, OptionConfigurator.class )
-				.instantiate()
-				.withClassLoaderService( classLoaderService )
-				.getValue();
-
-		if ( context != null && configurator != null ) {
-			throw log.ambigiousOptionConfiguration( OgmProperties.OPTION_CONFIGURATOR );
-		}
-		else if ( configurator != null ) {
-			sessionFactoryOptions = invoke( configurator );
-		}
-		else if ( context != null ) {
-			sessionFactoryOptions = context;
-		}
-		// use default context which provides access to annotation options
-		else {
-			sessionFactoryOptions = new WritableOptionsServiceContext();
-		}
+		sessionFactoryOptions = new OptionsServiceContextImpl( OptionValueSources.getDefaultSources( propertyReader ) );
 	}
 
 	@Override
@@ -96,17 +70,70 @@ public class OptionsServiceImpl implements OptionsService, Configurable, Service
 		throw new UnsupportedOperationException( "OGM-343 Session specific options are not currently supported" );
 	}
 
-	/**
-	 * Invokes the given configurator, obtaining the correct global context type via the datastore configuration type of
-	 * the current datastore provider.
-	 *
-	 * @param configurator the configurator to invoke
-	 * @return a context object containing the options set via the given configurator
-	 */
-	private <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> OptionsServiceContext invoke(OptionConfigurator configurator) {
-		ConfigurableImpl configurable = new ConfigurableImpl();
-		configurator.configure( configurable );
+	private static class OptionsServiceContextImpl implements OptionsServiceContext {
 
-		return configurable.getContext();
+		private final List<OptionValueSource> sources;
+
+		private final OptionsContext globalOptions;
+		private final ConcurrentMap<Class<?>, OptionsContext> entityContexts;
+		private final ConcurrentMap<PropertyKey, OptionsContext> propertyContexts;
+
+		public OptionsServiceContextImpl(List<OptionValueSource> sources) {
+			this.sources = sources;
+
+			globalOptions = OptionsContextImpl.forGlobal( sources );
+			entityContexts = new ConcurrentHashMap<Class<?>, OptionsContext>();
+			propertyContexts = new ConcurrentHashMap<PropertyKey, OptionsContext>();
+		}
+
+		@Override
+		public OptionsContext getGlobalOptions() {
+			return globalOptions;
+		}
+
+		@Override
+		public OptionsContext getEntityOptions(Class<?> entityType) {
+			OptionsContext entityOptions = entityContexts.get( entityType );
+
+			if ( entityOptions == null ) {
+				entityOptions = getAndCacheEntityOptions( entityType );
+			}
+
+			return entityOptions;
+		}
+
+		@Override
+		public OptionsContext getPropertyOptions(Class<?> entityType, String propertyName) {
+			PropertyKey key = new PropertyKey( entityType, propertyName );
+			OptionsContext propertyOptions = propertyContexts.get( key );
+
+			if ( propertyOptions == null ) {
+				propertyOptions = getAndCachePropertyOptions( key );
+			}
+
+			return propertyOptions;
+		}
+
+		private OptionsContext getAndCacheEntityOptions(Class<?> entityType) {
+			OptionsContext entityOptions = OptionsContextImpl.forEntity( sources, entityType );
+
+			OptionsContext cachedOptions = entityContexts.putIfAbsent( entityType, entityOptions );
+			if ( cachedOptions != null ) {
+				entityOptions = cachedOptions;
+			}
+
+			return entityOptions;
+		}
+
+		private OptionsContext getAndCachePropertyOptions(PropertyKey key) {
+			OptionsContext propertyOptions = OptionsContextImpl.forProperty( sources, key.getEntity(), key.getProperty() );
+
+			OptionsContext cachedOptions = propertyContexts.putIfAbsent( key, propertyOptions );
+			if ( cachedOptions != null ) {
+				propertyOptions = cachedOptions;
+			}
+
+			return propertyOptions;
+		}
 	}
 }

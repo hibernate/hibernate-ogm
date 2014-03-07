@@ -51,11 +51,10 @@ class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<Que
 
 	@Override
 	public QueryParserService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration );
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
 
 		return propertyReader.property( InternalProperties.QUERY_PARSER_SERVICE, QueryParserService.class )
 				.instantiate()
-				.withClassLoaderService( registry.getService( ClassLoaderService.class ) )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultQueryParserServiceType() )
 				.getValue();
 	}

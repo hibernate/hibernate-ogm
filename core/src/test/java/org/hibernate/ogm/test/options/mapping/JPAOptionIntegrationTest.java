@@ -28,7 +28,7 @@ import javax.persistence.Persistence;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
@@ -55,13 +55,13 @@ public class JPAOptionIntegrationTest {
 		final EntityManagerFactory emf = Persistence.createEntityManagerFactory( "jpajtastandalone-options" );
 		OptionsServiceContext optionsContext = getOptionsContext( emf );
 
-		OptionsContainer refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
+		OptionsContext refrigatorOptions = optionsContext.getEntityOptions( Refrigerator.class );
 		assertThat( refrigatorOptions.getUnique( ForceExampleOption.class ) ).isTrue();
 
-		OptionsContainer microwaveOptions = optionsContext.getEntityOptions( Microwave.class );
+		OptionsContext microwaveOptions = optionsContext.getEntityOptions( Microwave.class );
 		assertThat( microwaveOptions.getUnique( NameExampleOption.class ) ).isEqualTo( "test" );
 
-		OptionsContainer temperatureOptions = optionsContext.getPropertyOptions( Refrigerator.class, "temperature" );
+		OptionsContext temperatureOptions = optionsContext.getPropertyOptions( Refrigerator.class, "temperature" );
 		assertThat( temperatureOptions.getUnique( EmbedExampleOption.class ) ).isEqualTo( "Embedded" );
 
 		dropSchemaAndDatabase( emf );

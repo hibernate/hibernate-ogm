@@ -22,11 +22,9 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.getAssociationFieldOrNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,6 +34,7 @@ import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -60,37 +59,33 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		this.dbObject = document;
 		this.map = new LinkedHashMap<RowKey, DBObject>();
 		this.associationKey = key;
-		//for each element in the association property
-		for ( DBObject row : getRows() ) {
-			DBObject mongodbColumnData = row;
-			Collection<String> columnNames = Arrays.asList( key.getRowKeyColumnNames() );
 
-			//build data to construct the associated RowKey is column names and values
-			List<Object> columnValues = new ArrayList<Object>();
-			for ( String columnKey : columnNames ) {
-				boolean getFromMongoData = true;
-				int length = key.getColumnNames().length;
-				// try and find the value in the key metadata
-				for ( int index = 0 ; index < length; index++ ) {
-					String assocColumn = key.getColumnNames()[index];
-					if ( assocColumn.equals( columnKey ) ) {
-						columnValues.add( associationKey.getColumnValues()[index] );
-						getFromMongoData = false;
-						break;
-					}
-				}
-				//otherwise read it from the database structure
-				if ( getFromMongoData == true ) {
-					columnValues.add( mongodbColumnData.get( columnKey ) );
-				}
-			}
-			RowKey rowKey = new RowKey(
-					key.getTable(),
-					columnNames.toArray( new String[columnNames.size()] ),
-					columnValues.toArray() );
-			//Stock database structure per RowKey
-			this.map.put( rowKey, row );
+		for ( DBObject row : getRows() ) {
+			RowKey rowKey = new RowKeyBuilder()
+					.tableName( key.getTable() )
+					.addColumns( key.getRowKeyColumnNames() )
+					.values( getRowKeyColumnValues( row, key ) )
+					.build();
+
+			map.put( rowKey, row );
 		}
+	}
+
+	/**
+	 * Returns the values of the row key of the given association; columns present in the given association key will be
+	 * obtained from there, all other columns from the given {@link DBObject}.
+	 */
+	private static Map<String, Object> getRowKeyColumnValues(DBObject row, AssociationKey key) {
+		Map<String, Object> rowKeyColumnValues = new HashMap<String, Object>( key.getRowKeyColumnNames().length );
+
+		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
+			rowKeyColumnValues.put(
+					rowKeyColumnName,
+					key.isKeyColumn( rowKeyColumnName ) ? key.getColumnValue( rowKeyColumnName ) : row.get( rowKeyColumnName )
+			);
+		}
+
+		return rowKeyColumnValues;
 	}
 
 	@Override

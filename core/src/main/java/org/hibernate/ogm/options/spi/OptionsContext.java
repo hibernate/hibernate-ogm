@@ -18,12 +18,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.options.spi;
 
 import java.util.Map;
-
-import org.hibernate.ogm.options.spi.Option;
-import org.hibernate.ogm.options.spi.UniqueOption;
 
 /**
  * Provides access to the options effectively applying for a given element (e.g. a property or entity type). The

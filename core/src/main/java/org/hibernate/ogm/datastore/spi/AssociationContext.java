@@ -31,11 +31,13 @@ import org.hibernate.ogm.dialect.batch.OperationsQueue;
  */
 public class AssociationContext implements GridDialectOperationContext {
 
-	private final OptionsContext optionsContext;
+	AssociationTypeContext associationTypeContext;
 	private OperationsQueue operationsQueue;
+	private final SessionContext sessionContext;
 
-	public AssociationContext(OptionsContext optionsContext) {
-		this.optionsContext = optionsContext;
+	public AssociationContext(AssociationTypeContext associationTypeContext, SessionContext sessionContext) {
+		this.associationTypeContext = associationTypeContext;
+		this.sessionContext = sessionContext;
 	}
 
 	public OperationsQueue getOperationsQueue() {
@@ -46,13 +48,12 @@ public class AssociationContext implements GridDialectOperationContext {
 		this.operationsQueue = operationsQueue;
 	}
 
-	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
+	public AssociationTypeContext getAssociationTypeContext() {
+		return associationTypeContext;
 	}
 
 	@Override
-	public String toString() {
-		return "AssociationContext [optionsContext=" + optionsContext + "]";
+	public SessionContext getSessionContext() {
+		return sessionContext;
 	}
 }

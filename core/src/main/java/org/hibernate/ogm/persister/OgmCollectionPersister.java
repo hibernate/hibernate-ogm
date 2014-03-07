@@ -49,6 +49,7 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.AssociationKeyMetadataBuilder;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.OgmBasicCollectionLoader;
@@ -83,8 +84,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final GridType gridTypeOfAssociatedId;
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
-	private final AssociationKeyMetadata associationKeyMetadata;
-	private final AssociationKeyMetadata associationKeyMetadataFromElement;
+	private volatile AssociationKeyMetadata associationKeyMetadata;
+	private volatile AssociationKeyMetadata associationKeyMetadataFromElement;
 
 	private final String nodeName;
 
@@ -121,11 +122,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
-		associationKeyMetadata = new AssociationKeyMetadata( getTableName(), getKeyColumnNames() );
-		associationKeyMetadata.setRowKeyColumnNames( getRowKeyColumnNames() );
-
-		associationKeyMetadataFromElement = new AssociationKeyMetadata( getTableName(), getElementColumnNames() );
-		associationKeyMetadataFromElement.setRowKeyColumnNames( getRowKeyColumnNames() );
 
 		nodeName = collection.getNodeName();
 	}
@@ -753,7 +749,24 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public void postInstantiate() throws MappingException {
-		// we don't have custom query loader, nothing to do
+		associationKeyMetadata = new AssociationKeyMetadataBuilder()
+				.setTable( getTableName() )
+				.setColumnNames( getKeyColumnNames() )
+				.setRowKeyColumnNames( getRowKeyColumnNames() )
+				.setSessionFactory( getFactory() )
+				.setCollectionPersister( this )
+				.build();
+
+		if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
+			associationKeyMetadataFromElement = new AssociationKeyMetadataBuilder()
+					.setTable( getTableName() )
+					.setColumnNames( getElementColumnNames() )
+					.setRowKeyColumnNames( getRowKeyColumnNames() )
+					.setSessionFactory( getFactory() )
+					.setCollectionPersister( this )
+					.inverse()
+					.build();
+		}
 	}
 
 	@Override

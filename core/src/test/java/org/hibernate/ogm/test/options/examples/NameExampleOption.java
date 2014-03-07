@@ -21,6 +21,7 @@
 package org.hibernate.ogm.test.options.examples;
 
 import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**
  * An option that can be used to set the name of something.
@@ -30,4 +31,11 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class NameExampleOption extends UniqueOption<String> {
+
+	public static final String NAME_OPTION = "hibernate.ogm.test.options.name";
+
+	@Override
+	public String getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader.property( NAME_OPTION, String.class ).getValue();
+	}
 }

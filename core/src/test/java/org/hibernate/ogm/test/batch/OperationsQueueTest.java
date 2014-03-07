@@ -20,18 +20,23 @@
  */
 package org.hibernate.ogm.test.batch;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -130,8 +135,12 @@ public class OperationsQueueTest {
 
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
-				Collections.<String>emptyList(),
-				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+				new TupleTypeContext(
+						Collections.<String>emptyList(),
+						OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class ),
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 	}
 }

@@ -25,8 +25,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreference;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,16 +37,16 @@ import org.junit.Test;
  */
 public class ReadPreferenceAnnotationTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private AnnotationOptionValueSource source;
 
 	@Before
 	public void setupBuilder() {
-		optionsContext = new WritableOptionsServiceContext();
+		source = new AnnotationOptionValueSource();
 	}
 
 	@Test
 	public void shouldObtainReadPreferenceOptionFromAnnotation() throws Exception {
-		OptionsContainer options = optionsContext.getEntityOptions( MyEntity.class );
+		OptionsContainer options = source.getEntityOptions( MyEntity.class );
 		assertThat( options.getUnique( ReadPreferenceOption.class ) ).isEqualTo( com.mongodb.ReadPreference.secondaryPreferred() );
 	}
 

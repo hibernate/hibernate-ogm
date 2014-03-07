@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.impl;
 
+import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**
  * Specifies whether association documents should be stored in a separate collection per association type or in one
@@ -30,4 +32,11 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * @author Gunnar Morling
  */
 public class AssociationDocumentStorageOption extends UniqueOption<AssociationDocumentType> {
+
+	@Override
+	public AssociationDocumentType getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader.property( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE, AssociationDocumentType.class )
+				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
+				.getValue();
+	}
 }

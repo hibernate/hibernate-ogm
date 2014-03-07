@@ -18,21 +18,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.util.configurationreader.impl;
+package org.hibernate.ogm.hibernatecore.impl;
 
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
+
+import java.util.Map;
+
+import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.persister.OgmEntityPersister;
+
 
 /**
- * A {@link PropertyReaderContext} which allows to set the class loader service to be used to load implementation types
- * by name.
- *
  * @author Gunnar Morling
- * @param <T>
+ *
  */
-public interface ClassPropertyReaderContextExpectingClassLoaderService<T> {
+public class TupleContextCache {
 
-	/**
-	 * Sets the class loader service to be used to load the implementation class of the given property
-	 */
-	ClassPropertyReaderContext<T> withClassLoaderService(ClassLoaderService classLoaderService);
+	private final Map<OgmEntityPersister, TupleContext> contextsByPersister;
+
+	public TupleContextCache() {
+		contextsByPersister = newHashMap();
+	}
+
+	public TupleContext get(OgmEntityPersister ogmEntityPersister) {
+		return contextsByPersister.get( ogmEntityPersister );
+	}
+
+	public TupleContext put(OgmEntityPersister entityPersister, TupleContext tupleContext) {
+		return contextsByPersister.put( entityPersister, tupleContext );
+	}
 }

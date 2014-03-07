@@ -32,15 +32,24 @@ public class AssociationKeyMetadata {
 	private final String table;
 	private final String[] columnNames;
 	private final int hashCode;
+	private final AssociationKind associationKind;
 
-	//role and entity key are not part of the object identity
-	private String[] rowKeyColumnNames;
+	// not part of the object identity
+	private final String[] rowKeyColumnNames;
+	private final String collectionRole;
+	private final Boolean isBidirectional;
 
-	public AssociationKeyMetadata(String table, String[] columnNames) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, AssociationKind associationKind, String collectionRole, Boolean isBidirectional) {
 		this.table = table;
 		this.columnNames = columnNames;
+		this.rowKeyColumnNames = rowKeyColumnNames;
+		this.associationKind = associationKind;
+		this.collectionRole = collectionRole;
+
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
+
+		this.isBidirectional = isBidirectional;
 	}
 
 	public String getTable() {
@@ -55,8 +64,16 @@ public class AssociationKeyMetadata {
 		return rowKeyColumnNames;
 	}
 
-	public void setRowKeyColumnNames(String[] rowKeyColumnNames) {
-		this.rowKeyColumnNames = rowKeyColumnNames;
+	public AssociationKind getAssociationKind() {
+		return associationKind;
+	}
+
+	public String getCollectionRole() {
+		return collectionRole;
+	}
+
+	public Boolean getIsBidirectional() {
+		return isBidirectional;
 	}
 
 	@Override

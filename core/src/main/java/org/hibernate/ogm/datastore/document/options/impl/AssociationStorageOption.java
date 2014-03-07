@@ -20,8 +20,10 @@
  */
 package org.hibernate.ogm.datastore.document.options.impl;
 
+import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.options.spi.UniqueOption;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 
 /**
  * Represents the type of association storage as configured via the API or annotations for a given element.
@@ -29,4 +31,13 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * @author Gunnar Morling
  */
 public class AssociationStorageOption extends UniqueOption<AssociationStorageType> {
+
+	private static final AssociationStorageType DEFAULT_ASSOCIATION_STORAGE = AssociationStorageType.IN_ENTITY;
+
+	@Override
+	public AssociationStorageType getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader.property( DocumentStoreProperties.ASSOCIATIONS_STORE, AssociationStorageType.class )
+				.withDefault( DEFAULT_ASSOCIATION_STORAGE )
+				.getValue();
+	}
 }

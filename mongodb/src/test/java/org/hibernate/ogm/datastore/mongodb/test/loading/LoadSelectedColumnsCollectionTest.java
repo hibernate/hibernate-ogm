@@ -26,16 +26,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.impl.OptionsContextImpl;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
@@ -43,16 +44,22 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -126,20 +133,34 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
-		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
+		AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+				"Project_Module",
+				new String[] { "Project_id" },
+				new String[] { "Project_id", "module_id" },
+				AssociationKind.ASSOCIATION,
+				"modules",
+				false
+		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
 				new Object[] { "projectID" },
-				"modules",
 				new EntityKey(
 						new EntityKeyMetadata( "Project", new String[] { "id" } ),
 						new String[] { "projectID" }
-				),
-				AssociationKind.ASSOCIATION
+				)
 		);
 
-		AssociationContext associationContext = new AssociationContext( OptionsContextImpl.forProperty( new WritableOptionsServiceContext(), Project.class, "modules" ) );
+		AssociationContext associationContext = new AssociationContext(
+				new AssociationTypeContext(
+						OptionsContextImpl.forProperty(
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
+								Project.class,
+								"modules"
+						)
+				),
+				new SessionContext()
+		);
+
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
 		final MongoDBAssociationSnapshot associationSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		final DBObject assocObject = associationSnapshot.getDBObject();
@@ -157,8 +178,12 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new Object[] { id }
 		);
 		TupleContext tupleContext = new TupleContext(
-				selectedColumns,
-				OptionsContextImpl.forEntity( new WritableOptionsServiceContext(), Object.class )
+				new TupleTypeContext(
+						selectedColumns,
+						EmptyOptionsContext.INSTANCE,
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

@@ -27,9 +27,10 @@ import java.lang.annotation.ElementType;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.junit.Test;
 
 /**
@@ -41,15 +42,15 @@ public class AssociationStorageOptionTest {
 
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
-		WritableOptionsServiceContext optionsContext = new WritableOptionsServiceContext();
-		ConfigurationContext context = new ConfigurationContext( optionsContext );
+		AppendableConfigurationContext context = new AppendableConfigurationContext();
+		ConfigurationContext configurationContext = new ConfigurationContext( context );
 
-		new MongoDB().getConfigurationBuilder( context )
+		new MongoDB().getConfigurationBuilder( configurationContext )
 			.entity( ExampleForMongoDBMapping.class )
 				.property( "content", ElementType.FIELD )
 					.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT );
 
-		OptionsContainer options = optionsContext.getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
+		OptionsContainer options = new ProgrammaticOptionValueSource( context ).getPropertyOptions( ExampleForMongoDBMapping.class, "content" );
 		assertThat( options.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 

@@ -20,10 +20,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import java.util.List;
-
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -33,33 +30,29 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class TupleContext implements GridDialectOperationContext {
 
-	private final List<String> selectableColumns;
-	private final OptionsContext optionsContext;
+	private final TupleTypeContext tupleTypeContext;
+	private final SessionContext sessionContext;
 	private final OperationsQueue operationsQueue;
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext) {
-		this.selectableColumns = selectableColumns;
-		this.optionsContext = optionsContext;
+	public TupleContext(TupleTypeContext tupleTypeContext, SessionContext sessionContext) {
+		this.tupleTypeContext = tupleTypeContext;
+		this.sessionContext = sessionContext;
 		this.operationsQueue = null;
 	}
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, OperationsQueue operationsQueue) {
-		this.selectableColumns = selectableColumns;
-		this.optionsContext = optionsContext;
+	public TupleContext(TupleTypeContext tupleTypeContext, SessionContext sessionContext, OperationsQueue operationsQueue) {
+		this.tupleTypeContext = tupleTypeContext;
+		this.sessionContext = sessionContext;
 		this.operationsQueue = operationsQueue;
 	}
 
-	/**
-	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
-	 * the complete document/record.
-	 */
-	public List<String> getSelectableColumns() {
-		return selectableColumns;
+	public TupleTypeContext getTupleTypeContext() {
+		return tupleTypeContext;
 	}
 
 	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
+	public SessionContext getSessionContext() {
+		return sessionContext;
 	}
 
 	/**
@@ -71,15 +64,5 @@ public class TupleContext implements GridDialectOperationContext {
 	 */
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
-
-		builder.append( StringHelper.join( selectableColumns, ", " ) );
-		builder.append( "}" );
-
-		return builder.toString();
 	}
 }

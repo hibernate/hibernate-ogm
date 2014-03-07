@@ -32,6 +32,7 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -172,9 +173,9 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKey );
-		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext) {
+		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKeyMetadata );
+		return gridDialect.isStoredInEntityStructure( associationKeyMetadata, associationContext );
 	}
 
 	@Override

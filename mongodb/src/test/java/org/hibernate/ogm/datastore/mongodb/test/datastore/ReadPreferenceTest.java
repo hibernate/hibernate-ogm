@@ -27,15 +27,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
-import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
+import org.hibernate.ogm.options.spi.OptionsContext;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,21 +51,21 @@ import com.mongodb.ReadPreference;
 public class ReadPreferenceTest {
 
 	private Map<String, Object> cfg;
-	private WritableOptionsServiceContext optionsContext;
-	private MongoDBGlobalContext configuration;
+	private OptionsContext globalOptions;
+	private ConfigurationPropertyReader reader;
 
 	@Before
 	public void setupConfigurationMapAndContexts() {
 		cfg = new HashMap<String, Object>();
 		cfg.put( OgmProperties.DATABASE, "database" );
 
-		optionsContext = new WritableOptionsServiceContext();
-		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( optionsContext ) );
+		reader = new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() );
+		globalOptions = OptionsContextImpl.forGlobal( OptionValueSources.getDefaultSources( reader ) );
 	}
 
 	@Test
 	public void shouldUsePrimaryByDefault() {
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( reader, globalOptions );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.primary() );
 	}
 
@@ -71,25 +73,22 @@ public class ReadPreferenceTest {
 	public void shouldApplyValueGivenViaProperties() {
 		cfg.put( MongoDBProperties.READ_PREFERENCE, "SECONDARY" );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, OptionsContainer.EMPTY, new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( reader, globalOptions );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondary() );
 	}
 
 	@Test
 	public void shouldApplyValueGivenViaGlobalOptions() {
-		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
+		cfg.put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
+			@Override
+			public void configure(Configurable configurable) {
+				configurable.configureOptionsFor( MongoDB.class ).readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
+			}
+		} );
 
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
-		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
-	}
+		globalOptions = OptionsContextImpl.forGlobal( OptionValueSources.getDefaultSources( reader ) );
 
-	@Test
-	public void shouldPreferValueGivenViaGlobalOptionsOverValueFromProperties() {
-		cfg.put( MongoDBProperties.READ_PREFERENCE, "SECONDARY" );
-
-		configuration.readPreference( ReadPreferenceType.SECONDARY_PREFERRED );
-
-		MongoDBConfiguration config = new MongoDBConfiguration( cfg, optionsContext.getGlobalOptions(), new ClassLoaderServiceImpl() );
+		MongoDBConfiguration config = new MongoDBConfiguration( reader, globalOptions );
 		assertEquals( config.buildOptions().getReadPreference(), ReadPreference.secondaryPreferred() );
 	}
 }

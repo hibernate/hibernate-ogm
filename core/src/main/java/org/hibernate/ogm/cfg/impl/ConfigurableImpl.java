@@ -23,8 +23,8 @@ package org.hibernate.ogm.cfg.impl;
 import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -36,10 +36,10 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class ConfigurableImpl implements Configurable {
 
 	private static final Log log = LoggerFactory.make();
-	private final WritableOptionsServiceContext context;
+	private final AppendableConfigurationContext context;
 
 	public ConfigurableImpl() {
-		context = new WritableOptionsServiceContext();
+		context = new AppendableConfigurationContext();
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class ConfigurableImpl implements Configurable {
 		return configuration.getConfigurationBuilder( new ConfigurationContext( context ) );
 	}
 
-	public WritableOptionsServiceContext getContext() {
+	public AppendableConfigurationContext getContext() {
 		return context;
 	}
 

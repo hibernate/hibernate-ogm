@@ -25,8 +25,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import org.hibernate.ogm.datastore.document.options.AssociationStorage;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
-import org.hibernate.ogm.options.navigation.impl.WritableOptionsServiceContext;
-import org.hibernate.ogm.options.spi.OptionsContainer;
+import org.hibernate.ogm.options.container.impl.OptionsContainer;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,22 +37,22 @@ import org.junit.Test;
  */
 public class AssociationStorageAnnotationTest {
 
-	private WritableOptionsServiceContext optionsContext;
+	private AnnotationOptionValueSource source;
 
 	@Before
 	public void setupContexts() {
-		optionsContext = new WritableOptionsServiceContext();
+		source = new AnnotationOptionValueSource();
 	}
 
 	@Test
 	public void testAssociationStorageMappingOptionOnField() throws Exception {
-		OptionsContainer fieldOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnField.class, "field" );
+		OptionsContainer fieldOptions = source.getPropertyOptions( EntityAnnotatedOnField.class, "field" );
 		assertThat( fieldOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.IN_ENTITY );
 	}
 
 	@Test
 	public void testAssociationStorageMappingOptionOnMethod() throws Exception {
-		OptionsContainer methodOptions = optionsContext.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" );
+		OptionsContainer methodOptions = source.getPropertyOptions( EntityAnnotatedOnMethod.class, "method" );
 		assertThat( methodOptions.getUnique( AssociationStorageOption.class ) ).isEqualTo( AssociationStorageType.ASSOCIATION_DOCUMENT );
 	}
 

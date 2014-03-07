@@ -21,6 +21,7 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.io.Serializable;
+import java.sql.Connection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +83,13 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	 */
 	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
 
+	private static ThreadLocal<SessionStore> sessionStore = new ThreadLocal<SessionStore>() {
+		@Override
+		protected SessionStore initialValue() {
+			return new SessionStore();
+		};
+	};
+
 	private final EventSource delegate;
 	private final OgmSessionFactory factory;
 	private QueryParserService queryParserService;
@@ -90,6 +98,13 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 		super( delegate, delegate );
 		this.delegate = delegate;
 		this.factory = factory;
+
+		// remove dangling store in case close() hasn't been called;
+		sessionStore.remove();
+	}
+
+	public static SessionStore getSessionStore() {
+		return sessionStore.get();
 	}
 
 	//Overridden methods
@@ -101,6 +116,13 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	@Override
 	public OgmSessionFactory getSessionFactory() {
 		return factory;
+	}
+
+	@Override
+	public Connection close() throws HibernateException {
+		Connection connection = super.close();
+		sessionStore.remove();
+		return connection;
 	}
 
 	@Override
