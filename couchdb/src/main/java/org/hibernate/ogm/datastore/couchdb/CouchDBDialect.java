@@ -216,6 +216,7 @@ public class CouchDBDialect implements GridDialect {
 
 	private boolean isStoredInEntityStructure(AssociationKind associationKind, AssociationContext associationContext) {
 		AssociationStorageType associationStorage = associationContext
+				.getAssociationTypeContext()
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 

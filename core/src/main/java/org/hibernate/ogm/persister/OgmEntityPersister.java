@@ -59,8 +59,10 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
@@ -1243,13 +1245,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			// this information actually is constant for a persister; we can't do it in doPostInitiate() though as the
 			// required collection persisters are not yet completely set up at that time; Should this be cached at the
 			// SF level after being calculated once?
-			List<AssociationKeyMetadata> embeddedAssociations = Collections.unmodifiableList( getEmbeddedAssocations( sessionStore ) );
-
-			tupleContext = new TupleContext(
+			TupleTypeContext tupleTypeContext = new TupleTypeContext(
 					columnNames,
 					optionsService.context().getEntityOptions( getMappedClass() ),
-					sessionStore.getSessionContext(),
-					embeddedAssociations
+					Collections.unmodifiableList( getEmbeddedAssocations( sessionStore ) )
+			);
+
+			tupleContext = new TupleContext(
+					tupleTypeContext,
+					sessionStore.getSessionContext()
 			);
 
 			sessionStore.getTupleContextCache().put( this, tupleContext );
@@ -1263,7 +1267,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		for ( Entry<String, OgmCollectionPersister> association : toManyAssociations.entrySet() ) {
 			AssociationContext associationContext = new AssociationContext(
-					optionsService.context().getPropertyOptions( getMappedClass(), association.getKey() ),
+					new AssociationTypeContext( optionsService.context().getPropertyOptions( getMappedClass(), association.getKey() ) ),
 					sessionStore.getSessionContext()
 			);
 

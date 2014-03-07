@@ -27,6 +27,7 @@ import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
@@ -134,10 +135,12 @@ public class OperationsQueueTest {
 
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
-				Collections.<String>emptyList(),
-				OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class ),
-				new SessionContext(),
-				Collections.<AssociationKeyMetadata>emptyList()
+				new TupleTypeContext(
+						Collections.<String>emptyList(),
+						OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class ),
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 	}
 }

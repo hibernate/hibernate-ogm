@@ -26,6 +26,7 @@ import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -299,7 +300,7 @@ public class AssociationPersister {
 					.context();
 
 			associationContext = new AssociationContext(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ),
+					new AssociationTypeContext( serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ) ),
 					OgmSession.getSessionStore().getSessionContext()
 			);
 		}

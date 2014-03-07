@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -32,12 +31,12 @@ import org.hibernate.ogm.options.spi.OptionsContext;
  */
 public class AssociationContext implements GridDialectOperationContext {
 
-	private final OptionsContext optionsContext;
+	AssociationTypeContext associationTypeContext;
 	private OperationsQueue operationsQueue;
 	private final SessionContext sessionContext;
 
-	public AssociationContext(OptionsContext optionsContext, SessionContext sessionContext) {
-		this.optionsContext = optionsContext;
+	public AssociationContext(AssociationTypeContext associationTypeContext, SessionContext sessionContext) {
+		this.associationTypeContext = associationTypeContext;
 		this.sessionContext = sessionContext;
 	}
 
@@ -49,18 +48,12 @@ public class AssociationContext implements GridDialectOperationContext {
 		this.operationsQueue = operationsQueue;
 	}
 
-	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
+	public AssociationTypeContext getAssociationTypeContext() {
+		return associationTypeContext;
 	}
 
 	@Override
 	public SessionContext getSessionContext() {
 		return sessionContext;
-	}
-
-	@Override
-	public String toString() {
-		return "AssociationContext [optionsContext=" + optionsContext + "]";
 	}
 }

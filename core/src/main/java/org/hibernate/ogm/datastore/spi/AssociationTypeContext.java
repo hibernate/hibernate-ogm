@@ -20,14 +20,23 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
- * Defines operations common to all context objects passed to {@link GridDialect} operations.
+ * A context containing static information about a given tuple association, i.e. information which is constant between
+ * dialect operations for the tuple with one and the same key.
  *
  * @author Gunnar Morling
  */
-public interface GridDialectOperationContext {
+public class AssociationTypeContext {
 
-	SessionContext getSessionContext();
+	private final OptionsContext optionsContext;
+
+	public AssociationTypeContext(OptionsContext optionsContext) {
+		this.optionsContext = optionsContext;
+	}
+
+	public OptionsContext getOptionsContext() {
+		return optionsContext;
+	}
 }

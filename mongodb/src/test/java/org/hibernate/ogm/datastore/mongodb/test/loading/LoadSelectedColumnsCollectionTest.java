@@ -44,10 +44,12 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
@@ -149,10 +151,12 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 
 		AssociationContext associationContext = new AssociationContext(
-				OptionsContextImpl.forProperty(
-						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
-						Project.class,
-						"modules"
+				new AssociationTypeContext(
+						OptionsContextImpl.forProperty(
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
+								Project.class,
+								"modules"
+						)
 				),
 				new SessionContext()
 		);
@@ -174,10 +178,12 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new Object[] { id }
 		);
 		TupleContext tupleContext = new TupleContext(
-				selectedColumns,
-				EmptyOptionsContext.INSTANCE,
-				new SessionContext(),
-				Collections.<AssociationKeyMetadata>emptyList()
+				new TupleTypeContext(
+						selectedColumns,
+						EmptyOptionsContext.INSTANCE,
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 
 		return getService( GridDialect.class ).getTuple( key, tupleContext );

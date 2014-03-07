@@ -38,15 +38,17 @@ import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.datastore.spi.AssociationTypeContext;
+import org.hibernate.ogm.datastore.spi.SessionContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.TupleTypeContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.hibernatecore.impl.SessionStore;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.junit.After;
 import org.junit.Before;
@@ -191,17 +193,19 @@ public class CouchDBDialectTest {
 
 	private AssociationContext emptyAssociationContext() {
 		return new AssociationContext(
-				EmptyOptionsContext.INSTANCE,
-				new SessionStore()
+				new AssociationTypeContext( EmptyOptionsContext.INSTANCE ),
+				new SessionContext()
 		);
 	}
 
 	private TupleContext emptyTupleContext() {
 		return new TupleContext(
-				Collections.<String>emptyList(),
-				EmptyOptionsContext.INSTANCE,
-				new SessionStore(),
-				Collections.<AssociationKeyMetadata>emptyList()
+				new TupleTypeContext(
+						Collections.<String>emptyList(),
+						EmptyOptionsContext.INSTANCE,
+						Collections.<AssociationKeyMetadata>emptyList()
+				),
+				new SessionContext()
 		);
 	}
 }

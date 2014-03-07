@@ -61,7 +61,6 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
-import org.hibernate.ogm.datastore.spi.GridDialectOperationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
@@ -195,7 +194,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private BasicDBObject getProjection(TupleContext tupleContext) {
-		return getProjection( tupleContext.getSelectableColumns() );
+		return getProjection( tupleContext.getTupleTypeContext().getSelectableColumns() );
 	}
 
 	/**
@@ -655,10 +654,12 @@ public class MongoDBDialect implements BatchableGridDialect {
 	 */
 	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKind associationKind, AssociationContext associationContext) {
 		AssociationStorageType associationStorage = associationContext
+				.getAssociationTypeContext()
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
 		AssociationDocumentType associationDocumentType = associationContext
+				.getAssociationTypeContext()
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
@@ -774,12 +775,20 @@ public class MongoDBDialect implements BatchableGridDialect {
 		inserts.clear();
 	}
 
-	private WriteConcern getWriteConcern(GridDialectOperationContext operationContext) {
-		return operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
+	private WriteConcern getWriteConcern(TupleContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
-	private ReadPreference getReadPreference(GridDialectOperationContext operationContext) {
-		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+	private WriteConcern getWriteConcern(AssociationContext operationContext) {
+		return operationContext.getAssociationTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
+	}
+
+	private ReadPreference getReadPreference(TupleContext operationContext) {
+		return operationContext.getTupleTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private ReadPreference getReadPreference(AssociationContext operationContext) {
+		return operationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {

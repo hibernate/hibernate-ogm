@@ -20,12 +20,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import java.util.List;
-
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.grid.AssociationKeyMetadata;
-import org.hibernate.ogm.options.spi.OptionsContext;
-import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -35,49 +30,29 @@ import org.hibernate.ogm.util.impl.StringHelper;
  */
 public class TupleContext implements GridDialectOperationContext {
 
-	private final List<String> selectableColumns;
-	private final OptionsContext optionsContext;
+	private final TupleTypeContext tupleTypeContext;
 	private final SessionContext sessionContext;
-	private final List<AssociationKeyMetadata> embeddedAssociations;
-
 	private final OperationsQueue operationsQueue;
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, SessionContext sessionContext, List<AssociationKeyMetadata> embeddedAssociations) {
-		this.selectableColumns = selectableColumns;
-		this.optionsContext = optionsContext;
+	public TupleContext(TupleTypeContext tupleTypeContext, SessionContext sessionContext) {
+		this.tupleTypeContext = tupleTypeContext;
 		this.sessionContext = sessionContext;
-		this.embeddedAssociations = embeddedAssociations;
 		this.operationsQueue = null;
 	}
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, SessionContext sessionContext, List<AssociationKeyMetadata> embeddedAssociations, OperationsQueue operationsQueue) {
-		this.selectableColumns = selectableColumns;
-		this.optionsContext = optionsContext;
+	public TupleContext(TupleTypeContext tupleTypeContext, SessionContext sessionContext, OperationsQueue operationsQueue) {
+		this.tupleTypeContext = tupleTypeContext;
 		this.sessionContext = sessionContext;
-		this.embeddedAssociations = embeddedAssociations;
 		this.operationsQueue = operationsQueue;
 	}
 
-	/**
-	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
-	 * the complete document/record.
-	 */
-	public List<String> getSelectableColumns() {
-		return selectableColumns;
-	}
-
-	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
+	public TupleTypeContext getTupleTypeContext() {
+		return tupleTypeContext;
 	}
 
 	@Override
 	public SessionContext getSessionContext() {
 		return sessionContext;
-	}
-
-	public List<AssociationKeyMetadata> getEmbeddedAssociations() {
-		return embeddedAssociations;
 	}
 
 	/**
@@ -89,15 +64,5 @@ public class TupleContext implements GridDialectOperationContext {
 	 */
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder( "Tuple Context {" );
-
-		builder.append( StringHelper.join( selectableColumns, ", " ) );
-		builder.append( "}" );
-
-		return builder.toString();
 	}
 }
