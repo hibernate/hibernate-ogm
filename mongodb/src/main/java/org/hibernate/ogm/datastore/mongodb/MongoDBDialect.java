@@ -73,6 +73,8 @@ import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -373,7 +375,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key.getAssociationKind(), associationContext );
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
@@ -407,7 +409,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key.getAssociationKind(), associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
@@ -477,7 +479,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
 		String associationField;
 
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key.getAssociationKind(), associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
@@ -521,7 +523,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key.getAssociationKind(), associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
@@ -582,8 +584,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		return getAssociationStorageStrategy( associationKey, associationContext ) == AssociationStorageStrategy.IN_ENTITY;
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext) {
+		return getAssociationStorageStrategy( associationKeyMetadata.getAssociationKind(), associationContext ) == AssociationStorageStrategy.IN_ENTITY;
 	}
 
 	@Override
@@ -651,7 +653,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	 * given via the option mechanism, that one will be taken, otherwise the default value as given via the
 	 * corresponding configuration property is applied.
 	 */
-	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKey key, AssociationContext associationContext) {
+	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKind associationKind, AssociationContext associationContext) {
 		AssociationStorageType associationStorage = associationContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
@@ -660,7 +662,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		return AssociationStorageStrategy.getInstance( key.getAssociationKind(), associationStorage, associationDocumentType );
+		return AssociationStorageStrategy.getInstance( associationKind, associationStorage, associationDocumentType );
 	}
 
 	/**

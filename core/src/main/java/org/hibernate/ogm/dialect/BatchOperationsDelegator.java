@@ -36,6 +36,7 @@ import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -105,6 +106,8 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 		TupleContext contextWithQueue = new TupleContext(
 				tupleContext.getSelectableColumns(),
 				tupleContext.getOptionsContext(),
+				tupleContext.getSessionStore(),
+				tupleContext.getEmbeddedAssociations(),
 				getOperationQueue()
 		);
 
@@ -193,7 +196,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		return dialect.isStoredInEntityStructure( associationKey, associationContext );
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext) {
+		return dialect.isStoredInEntityStructure( associationKeyMetadata, associationContext );
 	}
 }

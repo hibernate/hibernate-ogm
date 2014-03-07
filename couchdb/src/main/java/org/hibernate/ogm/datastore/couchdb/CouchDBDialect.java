@@ -41,8 +41,6 @@ import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBBlobType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBByteType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBLongType;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
-import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
-import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
@@ -52,6 +50,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -74,8 +73,6 @@ import org.hibernate.type.Type;
  * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {
-
-	private static final Log log = LoggerFactory.getLogger();
 
 	private final CouchDBDatastoreProvider provider;
 
@@ -128,7 +125,7 @@ public class CouchDBDialect implements GridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getAssociationKind(), associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getCollectionRole() ) ) {
 				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
@@ -148,7 +145,7 @@ public class CouchDBDialect implements GridDialect {
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getAssociationKind(), associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity == null ) {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
@@ -195,7 +192,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getAssociationKind(), associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getCollectionRole() );
@@ -213,12 +210,16 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext) {
+		return isStoredInEntityStructure( associationKeyMetadata.getAssociationKind(), associationContext );
+	}
+
+	private boolean isStoredInEntityStructure(AssociationKind associationKind, AssociationContext associationContext) {
 		AssociationStorageType associationStorage = associationContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		return associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
+		return associationKind == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 

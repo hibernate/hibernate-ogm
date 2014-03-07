@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -95,14 +96,14 @@ public interface GridDialect extends Service {
 	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
 
 	/**
-	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may
-	 * support storing associations within entity documents and would have to return {@code true} if this is the case
-	 * for a given association.
+	 * Whether the specified association is stored within an entity structure or not. E.g. dialects for document stores
+	 * may support storing associations within entity documents and would have to return {@code true} if this is the
+	 * case for a given association.
 	 *
-	 * @param associationKey identifies the association of interest
+	 * @param associationKeyMetadata identifies the association of interest
 	 * @return {@code true} if the specified association is stored within an entity structure, {@code false} otherwise.
 	 */
-	boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext);
+	boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationContext associationContext);
 
 	/**
 	 * Update value with the guaranteed next value with the defined increment
