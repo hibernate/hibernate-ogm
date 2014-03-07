@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.AssociationKeyMetadataBuilder;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
@@ -185,15 +186,18 @@ class EntityDehydrator {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
+		Type propertyType = persister.getPropertyTypes()[propertyIndex];
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				persister.getTableName( tableIndex ),
-				propertyColumnNames,
-				rowKeyColumnNames
-		);
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadataBuilder()
+				.setTable( persister.getTableName( tableIndex ) )
+				.setColumnNames( propertyColumnNames )
+				.setRowKeyColumnNames( rowKeyColumnNames )
+				.setSessionFactory( session.getFactory() )
+				.setPropertyType( propertyType )
+				.build();
 
 		AssociationPersister associationPersister = new AssociationPersister(
-					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
+					propertyType.getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
@@ -201,7 +205,7 @@ class EntityDehydrator {
 				.keyColumnValues( newColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.propertyType( persister.getPropertyTypes()[propertyIndex] );
+				.propertyType( propertyType );
 		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -242,15 +246,18 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
+		Type propertyType = persister.getPropertyTypes()[propertyIndex];
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				persister.getTableName( tableIndex ),
-				propertyColumnNames,
-				rowKeyColumnNames
-		);
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadataBuilder()
+				.setTable( persister.getTableName( tableIndex ) )
+				.setColumnNames( propertyColumnNames )
+				.setRowKeyColumnNames( rowKeyColumnNames )
+				.setSessionFactory( session.getFactory() )
+				.setPropertyType( propertyType )
+				.build();
 
 		AssociationPersister associationPersister = new AssociationPersister(
-					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
+					propertyType.getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
@@ -258,7 +265,7 @@ class EntityDehydrator {
 				.keyColumnValues( oldColumnValue )
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.propertyType( persister.getPropertyTypes()[propertyIndex] );
+				.propertyType( propertyType );
 		//add fk column value in TupleKey
 		Tuple tupleKey = new Tuple();
 		for (int index = 0 ; index < propertyColumnNames.length ; index++) {

@@ -76,11 +76,11 @@ public class AssociationKeyExternalizer implements AdvancedExternalizer<Associat
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames, null );
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, columnNames, null, null, null, false );
 
 		// the engine never accesses deserialized key instances so it's ok to leave the additional attributes
 		// null; we should still consider extract these attributes to avoid potential confusion
-		return new AssociationKey( associationKeyMetadata, values, null, null, null );
+		return new AssociationKey( associationKeyMetadata, values, null );
 	}
 
 	@Override

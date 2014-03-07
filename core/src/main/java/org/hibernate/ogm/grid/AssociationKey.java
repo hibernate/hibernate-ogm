@@ -40,19 +40,15 @@ public final class AssociationKey implements Key {
 	private final int hashCode;
 
 	//role and entity key are not part of the object identity
-	private final String collectionRole;
 	private final EntityKey entityKey;
-	private final AssociationKind associationKind;
 
-	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind) {
+	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, EntityKey entityKey) {
 		this.metadata = metadata;
 		if ( metadata.getColumnNames().length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
 		}
 		this.columnValues = columnValues;
-		this.collectionRole = collectionRole;
 		this.entityKey = entityKey;
-		this.associationKind = associationKind;
 
 		this.hashCode = metadata.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
@@ -76,7 +72,7 @@ public final class AssociationKey implements Key {
 	 * Returns the association role.
 	 */
 	public String getCollectionRole() {
-		return collectionRole;
+		return metadata.getCollectionRole();
 	}
 
 	/**
@@ -90,7 +86,7 @@ public final class AssociationKey implements Key {
 	 * Returns the type of association
 	 */
 	public AssociationKind getAssociationKind() {
-		return associationKind;
+		return metadata.getAssociationKind();
 	}
 
 	public String[] getRowKeyColumnNames() {

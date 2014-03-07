@@ -172,10 +172,10 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames
+				tableName, columnNames, rowKeyColumnNames, AssociationKind.ASSOCIATION, collectionRole, false
 		);
 
-		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
+		return new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey );
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {

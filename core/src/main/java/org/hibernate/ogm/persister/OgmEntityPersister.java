@@ -21,10 +21,11 @@
 package org.hibernate.ogm.persister;
 
 import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.impl.AssociationKeyMetadataBuilder;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.GridType;
@@ -115,7 +117,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	//service references
 	private final GridDialect gridDialect;
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
+	private volatile Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
 
 	private final OptionsService optionsService;
 
@@ -230,9 +232,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
-		//load unique key association key metadata
-		associationKeyMetadataPerPropertyName = new HashMap<String,AssociationKeyMetadata>();
-		initAssociationKeyMetadata();
 		initCustomSQLStrings();
 	}
 
@@ -243,19 +242,27 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		customSQLDelete = new String[TABLE_SPAN];
 	}
 
-	private void initAssociationKeyMetadata() {
+	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata(SessionFactoryImplementor factory) {
+		Map<String,AssociationKeyMetadata> toOneAssociations = newHashMap( 5 );
+
 		for (int index = 0 ; index < getPropertySpan() ; index++) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
 				String[] propertyColumnNames = getPropertyColumnNames( index );
-				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-						getTableName(),
-						propertyColumnNames,
-						buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames )
-				);
-				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
+
+				AssociationKeyMetadata metadata = new AssociationKeyMetadataBuilder()
+						.setTable( getTableName() )
+						.setColumnNames( propertyColumnNames )
+						.setRowKeyColumnNames( buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames ) )
+						.setSessionFactory( factory )
+						.setPropertyType( uniqueKeyType )
+						.build();
+
+				toOneAssociations.put( getPropertyNames()[index], metadata );
 			}
 		}
+
+		return toOneAssociations;
 	}
 
 	@Override
@@ -265,6 +272,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected void doPostInstantiate() {
+		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata( getFactory() ) );
 	}
 
 	public GridType getGridIdentifierType() {
