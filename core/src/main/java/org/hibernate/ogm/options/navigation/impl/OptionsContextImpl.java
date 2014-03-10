@@ -71,7 +71,7 @@ public class OptionsContextImpl implements OptionsContext {
 	}
 
 	@Override
-	public <I, V> V get(Class<? extends Option<I, V>> optionType, I identifier) {
+	public <I, V, O extends Option<I, V>> V get(Class<O> optionType, I identifier) {
 		OptionsContainer optionsContainer = optionCache.get( optionType );
 
 		if ( optionsContainer == null ) {
@@ -82,7 +82,7 @@ public class OptionsContextImpl implements OptionsContext {
 	}
 
 	@Override
-	public <V> V getUnique(Class<? extends UniqueOption<V>> optionType) {
+	public <V, O extends UniqueOption<V>> V getUnique(Class<O> optionType) {
 		OptionsContainer optionsContainer = optionCache.get( optionType );
 
 		if ( optionsContainer == null ) {
@@ -93,7 +93,7 @@ public class OptionsContextImpl implements OptionsContext {
 	}
 
 	@Override
-	public <I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType) {
+	public <I, V, O extends Option<I, V>> Map<I, V> getAll(Class<O> optionType) {
 		OptionsContainer optionsContainer = optionCache.get( optionType );
 
 		if ( optionsContainer == null ) {
@@ -103,7 +103,7 @@ public class OptionsContextImpl implements OptionsContext {
 		return optionsContainer.getAll( optionType );
 	}
 
-	private <I, V, T extends Option<I, V>> OptionsContainer getAndCacheOptionsContainer(Class<T> optionType) {
+	private <I, V, O extends Option<I, V>> OptionsContainer getAndCacheOptionsContainer(Class<O> optionType) {
 		OptionsContainer container = getMostSpecificContainer( optionType );
 
 		OptionsContainer cachedContainer = optionCache.putIfAbsent( optionType, container );
@@ -122,7 +122,7 @@ public class OptionsContextImpl implements OptionsContext {
 	 * @return the container which effectively contributes the given option's value; May be an empty container in case
 	 * no value at all is configured for the given option, but never {@code null}
 	 */
-	private <I, V, T extends Option<I, V>> OptionsContainer getMostSpecificContainer(Class<T> optionType) {
+	private <I, V, O extends Option<I, V>> OptionsContainer getMostSpecificContainer(Class<O> optionType) {
 		OptionsContainer container;
 
 		if ( propertyName != null ) {

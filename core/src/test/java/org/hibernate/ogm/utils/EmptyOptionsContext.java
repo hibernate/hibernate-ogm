@@ -40,17 +40,17 @@ public class EmptyOptionsContext implements OptionsContext {
 	}
 
 	@Override
-	public <I, V> V get(Class<? extends Option<I, V>> optionType, I identifier) {
+	public <I, V, O extends Option<I, V>> V get(Class<O> optionType, I identifier) {
 		return null;
 	}
 
 	@Override
-	public <V> V getUnique(Class<? extends UniqueOption<V>> optionType) {
+	public <V, O extends UniqueOption<V>> V getUnique(Class<O> optionType) {
 		return null;
 	}
 
 	@Override
-	public <I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType) {
+	public <I, V, O extends Option<I, V>> Map<I, V> getAll(Class<O> optionType) {
 		return Collections.emptyMap();
 	}
 }
