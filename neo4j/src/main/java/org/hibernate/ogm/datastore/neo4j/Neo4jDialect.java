@@ -282,17 +282,21 @@ public class Neo4jDialect implements GridDialect {
 	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		String sql = customQuery.getSQL();
 		ExecutionResult result = neo4jCRUD.executeQuery( sql );
-		return new Neo4jResultsCursor( result, metadatas[0] );
+		if ( metadatas.length == 1 ) {
+			return new NodesTupleIterator( result );
+		}
+		return new MapsTupleIterator( result );
 	}
 
-	private static class Neo4jResultsCursor implements TupleIterator {
+	/**
+	 * Iterates over the results of a native query when each result is not mapped by an entity
+	 */
+	private static class MapsTupleIterator implements TupleIterator {
 
-		private final EntityKeyMetadata metadata;
 		private final ResourceIterator<Map<String, Object>> iterator;
 
-		public Neo4jResultsCursor(ExecutionResult result, EntityKeyMetadata metadata) {
+		public MapsTupleIterator(ExecutionResult result) {
 			this.iterator = result.iterator();
-			this.metadata = metadata;
 		}
 
 		@Override
@@ -302,10 +306,10 @@ public class Neo4jDialect implements GridDialect {
 
 		@Override
 		public Tuple next() {
-			Map<String, Object> next = iterator.next();
-			if ( metadata != null ) {
-				return createTuple( (Node) next.values().iterator().next() );
-			}
+			return convert( iterator.next() );
+		}
+
+		protected Tuple convert(Map<String, Object> next) {
 			return new Tuple( new MapTupleSnapshot( next ) );
 		}
 
@@ -319,4 +323,20 @@ public class Neo4jDialect implements GridDialect {
 			iterator.close();
 		}
 	}
+
+	/**
+	 * Iterates over the result of a native query when each result is a neo4j node. This is the case when the result of
+	 * the native query is mapped by an entity type.
+	 */
+	private static class NodesTupleIterator extends MapsTupleIterator {
+
+		public NodesTupleIterator(ExecutionResult result) {
+			super( result );
+		}
+
+		protected Tuple convert(Map<String, Object> next) {
+			return createTuple( (Node) next.values().iterator().next() );
+		}
+	}
+
 }

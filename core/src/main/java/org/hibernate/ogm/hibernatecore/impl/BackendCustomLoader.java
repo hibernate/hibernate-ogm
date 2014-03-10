@@ -67,18 +67,42 @@ public class BackendCustomLoader extends CustomLoader {
 	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
 		TupleIterator tuples = executeQuery( session, service( session, GridDialect.class ), resultTypes );
 		try {
-			List<Object> results = new ArrayList<Object>();
-			while ( tuples.hasNext() ) {
-				Tuple tuple = tuples.next();
-				for ( Type type : resultTypes ) {
-					OgmLoader loader = createLoader( session, type.getReturnedClass() );
-					results.add( entity( session, tuple, loader ) );
-				}
+			if ( resultTypes.length == 0 ) {
+				return listOfArrays( tuples );
 			}
-			return results;
-		} finally {
+			else {
+				return listOfEntities( session, resultTypes, tuples );
+			}
+		}
+		finally {
 			close( tuples );
 		}
+	}
+
+	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, TupleIterator tuples) {
+		List<Object> results = new ArrayList<Object>();
+		while ( tuples.hasNext() ) {
+			Tuple tuple = tuples.next();
+			for ( Type type : resultTypes ) {
+				OgmLoader loader = createLoader( session, type.getReturnedClass() );
+				results.add( entity( session, tuple, loader ) );
+			}
+		}
+		return results;
+	}
+
+	private List<Object> listOfArrays(TupleIterator tuples) {
+		List<Object> results = new ArrayList<Object>();
+		while ( tuples.hasNext() ) {
+			Tuple tuple = tuples.next();
+			Object[] entry = new Object[tuple.getColumnNames().size()];
+			int i = 0;
+			for ( String column : tuple.getColumnNames() ) {
+				entry[i++] = tuple.get( column );
+			}
+			results.add( entry );
+		}
+		return results;
 	}
 
 	private void close(TupleIterator tuples) {
