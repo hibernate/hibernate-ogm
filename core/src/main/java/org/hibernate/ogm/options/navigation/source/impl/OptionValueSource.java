@@ -35,7 +35,6 @@ public interface OptionValueSource {
 	 *
 	 * @return an option container with the global-level options; may be empty but never {@code null}
 	 */
-
 	OptionsContainer getGlobalOptions();
 
 	/**
