@@ -75,6 +75,10 @@ public class OptionsContainerBuilder {
 	}
 
 	public OptionsContainer build() {
+		if ( optionValues.isEmpty() ) {
+			return OptionsContainer.EMPTY;
+		}
+
 		Map<Class<? extends Option<?, ?>>, ValueContainer<?, ?>> values = newHashMap( optionValues.size() );
 
 		for ( Entry<Class<? extends Option<?, ?>>, ValueContainerBuilder<?, ?>> option : optionValues.entrySet() ) {
@@ -86,7 +90,7 @@ public class OptionsContainerBuilder {
 
 	@Override
 	public String toString() {
-		return "OptionsContainer [optionValues=" + optionValues + "]";
+		return "OptionsContainerBuilder [optionValues=" + optionValues + "]";
 	}
 
 	@SuppressWarnings("unchecked")
