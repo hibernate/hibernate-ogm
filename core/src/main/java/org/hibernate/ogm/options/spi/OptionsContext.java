@@ -65,7 +65,7 @@ public interface OptionsContext {
 	 * @param identifier the identifier of the option to return the value of
 	 * @return the value of the specified option or {@code null} if no value is present
 	 */
-	<I, V> V get(Class<? extends Option<I, V>> optionType, I identifier);
+	<I, V, O extends Option<I, V>> V get(Class<O> optionType, I identifier);
 
 	/**
 	 * Returns the value of the unique option of the given type, if present.
@@ -73,7 +73,7 @@ public interface OptionsContext {
 	 * @param optionType the type of option to return
 	 * @return the unique option with the given type or {@code null} if this option is not present
 	 */
-	<V> V getUnique(Class<? extends UniqueOption<V>> optionType);
+	<V, O extends UniqueOption<V>> V getUnique(Class<O> optionType);
 
 	/**
 	 * Returns all values of the specified option type, keyed by identifier. Note that unique options should preferably
@@ -82,5 +82,5 @@ public interface OptionsContext {
 	 * @param optionType the type of option to return
 	 * @return a map with all values of the specified option, keyed by identifier. May be empty but never {@code null}
 	 */
-	<I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType);
+	<I, V, O extends Option<I, V>> Map<I, V> getAll(Class<O> optionType);
 }
