@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Iterator;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -188,7 +186,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		return dialect.executeBackendQuery( customQuery, metadatas );
 	}
 

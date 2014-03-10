@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.hibernate.LockMode;
@@ -39,6 +38,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -316,7 +316,7 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not suported for Neo4j" );
 	}
 
