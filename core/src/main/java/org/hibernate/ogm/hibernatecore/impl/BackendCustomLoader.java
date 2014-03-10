@@ -22,6 +22,7 @@ import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
@@ -62,16 +63,21 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		Iterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
-		if ( isEntityQuery() ) {
-			return listOfEntities( session, resultTypes, tuples );
+		TupleIterator tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
+		try {
+			if ( isEntityQuery() ) {
+				return listOfEntities( session, resultTypes, tuples );
+			}
+			else {
+				return listOfArrays( tuples );
+			}
 		}
-		else {
-			return listOfArrays( tuples );
+		finally {
+			tuples.close();
 		}
 	}
 
-	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, Iterator<Tuple> tuples) {
+	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, TupleIterator tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -97,7 +103,7 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private Iterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
+	private TupleIterator executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
 		Loadable[] entityPersisters = getEntityPersisters();
 		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
 		for ( int i = 0; i < metadatas.length; i++ ) {

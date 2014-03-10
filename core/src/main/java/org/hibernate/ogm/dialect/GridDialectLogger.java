@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Iterator;
 import java.util.Map;
 
 import org.hibernate.LockMode;
@@ -156,7 +155,7 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery,  QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		log.tracef( "Executing native backend query: %1$s", customQuery.getSQL() );
 		return gridDialect.executeBackendQuery( customQuery, queryParameters, metadatas );
 	}

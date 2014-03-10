@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Iterator;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
@@ -126,7 +124,7 @@ public interface GridDialect extends Service {
 	 * @param metadatas the metadata information of the results of the query
 	 * @return an {@link Iterator} throught the result of the query
 	 */
-	Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
+	TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.
