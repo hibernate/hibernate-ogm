@@ -20,9 +20,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
@@ -65,7 +63,9 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	@Override
 	public boolean containsKey(RowKey rowKey) {
 		for ( Relationship relationship : relationships() ) {
-			return matches( rowKey, relationship );
+			if ( matches( rowKey, relationship ) ) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -113,14 +113,15 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private RowKey convert(PropertyContainer container) {
 		String[] columnNames = associationKey.getRowKeyColumnNames();
-		List<String> columns = new ArrayList<String>();
-		List<Object> values = new ArrayList<Object>();
-		for ( String column : columnNames ) {
-			columns.add( column );
-			values.add( container.hasProperty( column ) ? container.getProperty( column ) : null );
-		}
-		return new RowKey( associationKey.getTable(), columns.toArray( new String[columns.size()] ),
-				values.toArray( new Object[values.size()] ) );
-	}
+		Object[] values = new Object[columnNames.length];
 
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			String columnName = columnNames[i];
+			if ( container.hasProperty( columnName ) ) {
+				values[i] = container.getProperty( columnName );
+			}
+		}
+
+		return new RowKey( associationKey.getTable(), columnNames, values );
+	}
 }
