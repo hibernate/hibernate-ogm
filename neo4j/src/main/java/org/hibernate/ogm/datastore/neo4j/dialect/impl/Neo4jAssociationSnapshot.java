@@ -72,12 +72,21 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private boolean matches(RowKey key, PropertyContainer container) {
 		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			String column = key.getColumnNames()[i];
-			if ( !container.hasProperty( column ) || !key.getColumnValues()[i].equals( container.getProperty( column ) ) ) {
+			if ( !columnValueMatches( key.getColumnNames()[i], key.getColumnValues()[i], container ) ) {
 				return false;
 			}
 		}
+
 		return true;
+	}
+
+	private boolean columnValueMatches(String columnName, Object columnValue, PropertyContainer container) {
+		if ( container.hasProperty( columnName ) ) {
+			return container.getProperty( columnName ).equals( columnValue );
+		}
+		else {
+			return columnValue == null;
+		}
 	}
 
 	@Override
@@ -108,7 +117,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 		List<Object> values = new ArrayList<Object>();
 		for ( String column : columnNames ) {
 			columns.add( column );
-			values.add( container.getProperty( column ) );
+			values.add( container.hasProperty( column ) ? container.getProperty( column ) : null );
 		}
 		return new RowKey( associationKey.getTable(), columns.toArray( new String[columns.size()] ),
 				values.toArray( new Object[values.size()] ) );
