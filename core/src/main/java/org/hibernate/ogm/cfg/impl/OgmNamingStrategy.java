@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2010 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2010-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -33,7 +33,14 @@ import org.hibernate.ogm.util.impl.StringHelper;
  * @author Emmanuel Bernard
  */
 public class OgmNamingStrategy extends EJB3NamingStrategy {
+
 	public static final NamingStrategy INSTANCE = new OgmNamingStrategy();
+
+	/**
+	 * A pattern common to all property names used in element collections.
+	 */
+	private static final String ELEMENT_COLLECTION_NAME_PATTERN = "collection&&element";
+
 
 	private String addPropertySeparator(String name) {
 		//the . is already present, no need to replace it
@@ -42,6 +49,11 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 
 	@Override
 	public String propertyToColumnName(String propertyName) {
+		// for element collections just use the simple name
+		if ( propertyName.contains( ELEMENT_COLLECTION_NAME_PATTERN ) ) {
+			propertyName = propertyName.substring( propertyName.lastIndexOf( "." ) + 1 );
+		}
+
 		return addPropertySeparator( propertyName );
 	}
 
@@ -61,6 +73,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 	}
 
 
+	@Override
 	public String foreignKeyColumnName(
 			String propertyName, String propertyEntityName, String propertyTableName, String referencedColumnName
 	) {
