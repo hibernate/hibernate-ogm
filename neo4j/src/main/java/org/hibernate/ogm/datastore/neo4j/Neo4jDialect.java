@@ -275,7 +275,10 @@ public class Neo4jDialect implements GridDialect {
 	private Relationship createRelationship(Node startNode, AssociationKey associationKey, RowKey rowKey) {
 		Relationship relationship = startNode.createRelationshipTo( provider.createNode(), relationshipType( associationKey ) );
 		for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
-			relationship.setProperty( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+			Object value = rowKey.getColumnValues()[i];
+			if ( value != null ) {
+				relationship.setProperty( rowKey.getColumnNames()[i], value );
+			}
 		}
 		indexer.index( relationship );
 		return relationship;
