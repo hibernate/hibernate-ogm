@@ -206,7 +206,7 @@ emf.close();
 
 private static final String JBOSS_TM_CLASS_NAME = "com.arjuna.ats.jta.TransactionManager";
 
-public static TransactionManager getTransactionManager() throws Exception
+public static TransactionManager getTransactionManager() throws Exception {
     Class<?> tmClass = Main.class.getClassLoader().loadClass(JBOSS_TM_CLASS_NAME);
     return (TransactionManager) tmClass.getMethod("transactionManager").invoke(null);
 }
