@@ -31,7 +31,7 @@
 
     <files>
         <file>
-            <source>${module.xml.basedir}/ogm/core/module.xml</source>
+            <source>${hibernate.ogm.module.xml}</source>
             <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
         </file>
