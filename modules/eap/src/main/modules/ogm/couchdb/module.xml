@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ Copyright (c) 2014, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~ indicated by the @author tags or express copyright attribution
+  ~ statements applied by the authors.  All third-party contributions are
+  ~ distributed under license by Red Hat, Inc.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use, modify,
+  ~ copy, or redistribute it subject to the terms and conditions of the GNU
+  ~ Lesser General Public License, as published by the Free Software Foundation.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+  ~ for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this distribution; if not, write to:
+  ~ Free Software Foundation, Inc.
+  ~ 51 Franklin Street, Fifth Floor
+  ~ Boston, MA  02110-1301  USA
+  -->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.couchdb" slot="${hibernate.ogm.couchdb.module.slot}">
+    <resources>
+        <resource-root path="hibernate-ogm-couchdb-${project.version}.jar" />
+        <resource-root path="activation-1.1.jar" />
+        <resource-root path="commons-codec-1.6.jar" />
+        <resource-root path="commons-io-2.1.jar" />
+        <resource-root path="commons-logging-1.1.1.jar" />
+        <resource-root path="httpclient-4.2.1.jar" />
+        <resource-root path="httpcore-4.2.1.jar" />
+        <resource-root path="jackson-core-asl-1.9.13.jar" />
+        <resource-root path="jackson-jaxrs-1.9.13.jar" />
+        <resource-root path="jackson-mapper-asl-1.9.13.jar" />
+        <resource-root path="jackson-xc-1.9.13.jar" />
+        <resource-root path="jcip-annotations-1.0.jar" />
+        <resource-root path="resteasy-client-3.0.6.Final.jar" />
+        <resource-root path="resteasy-jackson-provider-3.0.6.Final.jar" />
+        <resource-root path="resteasy-jaxrs-3.0.6.Final.jar" />
+        <resource-root path="scannotation-1.0.3.jar" />
+    </resources>
+
+    <dependencies>
+        <module name="org.hibernate" export="true" services="import" slot="ogm" />
+        <module name="javax.xml.bind.api" />
+        <module name="javax.persistence.api" />
+        <module name="javax.ws.rs.api" />
+        <module name="org.jboss.logging" />
+        <module name="org.apache.log4j" />
+    </dependencies>
+</module>
