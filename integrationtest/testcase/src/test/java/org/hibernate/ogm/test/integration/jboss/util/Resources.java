@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.wildfly.util;
+package org.hibernate.ogm.test.integration.jboss.util;
 
 import javax.enterprise.inject.Produces;
 import javax.persistence.EntityManager;

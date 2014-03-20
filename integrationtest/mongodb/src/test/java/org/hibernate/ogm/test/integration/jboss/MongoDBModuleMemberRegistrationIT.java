@@ -18,13 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.wildfly;
+package org.hibernate.ogm.test.integration.jboss;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.hibernate.ogm.test.integration.wildfly.model.Member;
-import org.hibernate.ogm.test.integration.wildfly.util.ModuleMemberRegistrationDeployment;
+import org.hibernate.ogm.test.integration.jboss.model.Member;
+import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;

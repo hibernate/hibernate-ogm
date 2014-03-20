@@ -18,7 +18,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.integration.wildfly.controller;
+package org.hibernate.ogm.test.integration.jboss.controller;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateful;
@@ -28,7 +28,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.test.integration.wildfly.model.Member;
+import org.hibernate.ogm.test.integration.jboss.model.Member;
 
 @Stateful
 @Model

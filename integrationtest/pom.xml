@@ -202,8 +202,7 @@
             <properties>
                 <version.arquillian>1.0.0.Final</version.arquillian>
                 <version.jbossas>7.2.0.Final</version.jbossas>
-                <jboss.home>/home/ddalto/Tools/jbossas/jboss-eap-6.2</jboss.home>
-<!--                 <jboss.home>${env.EAP_HOME}</jboss.home> -->
+                <jboss.home>${env.EAP_HOME}</jboss.home>
             </properties>
             <dependencies>
                 <dependency>
