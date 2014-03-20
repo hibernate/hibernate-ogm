@@ -895,6 +895,12 @@
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <version>2.4</version>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
+                        </descriptors>
+                        <finalName>${assembly.name}</finalName>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>make-assembly</id>
@@ -902,12 +908,6 @@
                             <goals>
                                 <goal>single</goal>
                             </goals>
-                            <configuration>
-                                <descriptors>
-                                    <descriptor>${basedir}/src/main/assembly/dist.xml</descriptor>
-                                </descriptors>
-                                <finalName>${assembly.name}</finalName>
-                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
