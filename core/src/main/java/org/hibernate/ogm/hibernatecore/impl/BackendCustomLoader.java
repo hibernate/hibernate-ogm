@@ -20,7 +20,6 @@
  */
 package org.hibernate.ogm.hibernatecore.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,8 +39,6 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.persister.OgmEntityPersister;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -53,8 +50,6 @@ import org.hibernate.type.Type;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class BackendCustomLoader extends CustomLoader {
-
-	private static final Log log = LoggerFactory.make();
 
 	private final CustomQuery customQuery;
 
@@ -75,7 +70,7 @@ public class BackendCustomLoader extends CustomLoader {
 			}
 		}
 		finally {
-			close( tuples );
+			tuples.close();
 		}
 	}
 
@@ -103,15 +98,6 @@ public class BackendCustomLoader extends CustomLoader {
 			results.add( entry );
 		}
 		return results;
-	}
-
-	private void close(TupleIterator tuples) {
-		try {
-			tuples.close();
-		}
-		catch (IOException e) {
-			throw log.errorClosingNativeQueryResults( e );
-		}
 	}
 
 	private TupleIterator executeQuery(SessionImplementor session, GridDialect dialect, Type[] resultTypes) {

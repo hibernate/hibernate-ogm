@@ -29,4 +29,8 @@ import org.hibernate.ogm.datastore.spi.Tuple;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public interface TupleIterator extends Iterator<Tuple>, Closeable {
+
+	@Override
+	void close();
+
 }
