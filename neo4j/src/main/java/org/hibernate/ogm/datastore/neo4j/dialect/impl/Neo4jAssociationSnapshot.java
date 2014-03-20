@@ -20,7 +20,8 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
@@ -39,42 +40,24 @@ import org.neo4j.graphdb.Relationship;
  */
 public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
-	private final Node ownerNode;
-	private final AssociationKey associationKey;
+	private final Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
 	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey) {
-		this.ownerNode = ownerNode;
-		this.associationKey = associationKey;
+		for ( Relationship relationship : relationships( ownerNode, associationKey ) ) {
+			RowKey rowKey = convert( associationKey, relationship );
+			Tuple tuple = new Tuple( new Neo4jTupleSnapshot( relationship ) );
+			tuples.put( rowKey, tuple );
+		}
 	}
 
 	@Override
 	public Tuple get(RowKey rowKey) {
-		for ( Relationship relationship : relationships() ) {
-			if ( matches( rowKey, relationship ) ) {
-				return new Tuple( new Neo4jTupleSnapshot( relationship ) );
-			}
-		}
-		return null;
+		return tuples.get( rowKey );
 	}
 
 	@Override
 	public boolean containsKey(RowKey rowKey) {
-		for ( Relationship relationship : relationships() ) {
-			if ( matches( rowKey, relationship ) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private boolean matches(RowKey key, PropertyContainer container) {
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			if ( !columnValueMatches( key.getColumnNames()[i], key.getColumnValues()[i], container ) ) {
-				return false;
-			}
-		}
-
-		return true;
+		return tuples.containsKey( rowKey );
 	}
 
 	private boolean columnValueMatches(String columnName, Object columnValue, PropertyContainer container) {
@@ -88,27 +71,19 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	@Override
 	public int size() {
-		int count = 0;
-		for ( Relationship relationship : relationships() ) {
-			count++;
-		}
-		return count;
-	}
-
-	private Iterable<Relationship> relationships() {
-		return ownerNode.getRelationships( Direction.OUTGOING, CypherCRUD.relationshipType( associationKey ) );
+		return tuples.size();
 	}
 
 	@Override
 	public Set<RowKey> getRowKeys() {
-		Set<RowKey> rowKeys = new HashSet<RowKey>();
-		for ( Relationship relationship : relationships() ) {
-			rowKeys.add( convert( relationship ) );
-		}
-		return rowKeys;
+		return tuples.keySet();
 	}
 
-	private RowKey convert(PropertyContainer container) {
+	private Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey) {
+		return ownerNode.getRelationships( Direction.OUTGOING, CypherCRUD.relationshipType( associationKey ) );
+	}
+
+	private RowKey convert(AssociationKey associationKey, PropertyContainer container) {
 		String[] columnNames = associationKey.getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
 
