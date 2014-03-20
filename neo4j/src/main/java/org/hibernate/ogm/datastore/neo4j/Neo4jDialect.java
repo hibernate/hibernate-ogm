@@ -22,7 +22,6 @@ package org.hibernate.ogm.datastore.neo4j;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -319,7 +318,7 @@ public class Neo4jDialect implements GridDialect {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			iterator.close();
 		}
 	}
