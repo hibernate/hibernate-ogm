@@ -186,7 +186,8 @@ class EntityDehydrator {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( persister.getTableName( tableIndex ), propertyColumnNames );
+		String tableName = persister.getTableName( tableIndex );
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( tableName, propertyColumnNames );
 		associationKeyMetadata.setRowKeyColumnNames( rowKeyColumnNames );
 
 		AssociationPersister associationPersister = new AssociationPersister(
@@ -202,6 +203,7 @@ class EntityDehydrator {
 		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		associationKeyMetadata.setIdentifierColumnNames( identifierColumnNames );
 		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
 		//add the fk column
 		gridPropertyTypes[propertyIndex].nullSafeSet(
