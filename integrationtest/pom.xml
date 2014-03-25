@@ -254,6 +254,64 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <!--
+                This profile won't download EAP and it will use the one defined in the variable eap.home.
+
+                Example from hibernate-ogm/integrationtest:
+
+                mvn install -Deap.home=/home/user/jbossas/jboss-eap-6.2
+            -->
+            <id>eap-custom</id>
+            <activation>
+                <property>
+                    <name>eap.home</name>
+                </property>
+            </activation>
+            <properties>
+                    <version.arquillian>1.0.3.Final</version.arquillian>
+                    <version.arquillian.jbossas>7.2.0.Final</version.arquillian.jbossas>
+                    <version.jbossas>7.2.0.Final</version.jbossas>
+                    <jboss.home>${eap.home}</jboss.home>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                    <version>${version.arquillian.jbossas}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>${project.groupId}</groupId>
+                                            <artifactId>hibernate-ogm-modules-eap</artifactId>
+                                            <version>${project.version}</version>
+                                            <classifier>eap-6-dist</classifier>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
