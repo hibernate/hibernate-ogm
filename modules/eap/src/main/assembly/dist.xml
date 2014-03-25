@@ -22,7 +22,7 @@
   ~ Boston, MA  02110-1301  USA
   -->
 <assembly>
-    <id>eap-6.2-dist</id>   
+    <id>eap-6-dist</id>
     <formats>
         <format>zip</format>
     </formats>

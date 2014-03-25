@@ -241,7 +241,7 @@
                                             <groupId>${project.groupId}</groupId>
                                             <artifactId>hibernate-ogm-modules-eap</artifactId>
                                             <version>${project.version}</version>
-                                            <classifier>eap-6.2-dist</classifier>
+                                            <classifier>eap-6-dist</classifier>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
