@@ -46,6 +46,11 @@
             <filtered>true</filtered>
         </file>
         <file>
+            <source>${module.xml.basedir}/javassist/module.xml</source>
+            <outputDirectory>/system/layers/base/org/javassist/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
             <source>${hibernate.ogm.module.xml}</source>
             <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
             <filtered>true</filtered>
@@ -89,6 +94,15 @@
             <unpack>false</unpack>
             <includes>
                 <include>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>/system/layers/base/org/javassist/main</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.javassist:javassist</include>
             </includes>
         </dependencySet>
         <dependencySet>
