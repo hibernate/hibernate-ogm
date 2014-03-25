@@ -35,11 +35,5 @@
         <module name="javax.transaction.api" />
         <module name="javax.validation.api" />
         <module name="org.slf4j" />
-        <module name="org.dom4j" />
-        <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
-        <module name="org.jboss.logging" />
-
-        <!-- Allow Hibernate ORM to load com.arjuna.ats.jta.TransactionManager -->
-        <module name="org.jboss.jts" export="true" />
     </dependencies>
 </module>
