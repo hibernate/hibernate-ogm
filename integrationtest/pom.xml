@@ -193,22 +193,26 @@
             </build>
         </profile>
         <profile>
+            <!--
+                This profile will download EAP 6.1.Alpha1 from the Red Hat repository but it requires
+                the Red Hat repository defined in the maven settings.
+
+                Example from hibernate-ogm/integrationtest folder: 
+
+                mvn install -Peap -s ../settings-example.xml
+            -->
             <id>eap</id>
-            <activation>
-                <property>
-                    <name>env.EAP_HOME</name>
-                </property>
-            </activation>
             <properties>
-                <version.arquillian>1.0.0.Final</version.arquillian>
-                <version.jbossas>7.2.0.Final</version.jbossas>
-                <jboss.home>${env.EAP_HOME}</jboss.home>
+                    <version.arquillian>1.0.3.Final</version.arquillian>
+                    <version.arquillian.jbossas>7.2.0.Final</version.arquillian.jbossas>
+                    <version.jbossas>7.2.0.Alpha1-redhat-4</version.jbossas>
+                    <jboss.home>${project.build.directory}/jboss-eap-6.1</jboss.home>
             </properties>
             <dependencies>
                 <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-arquillian-container-managed</artifactId>
-                    <version>${version.jbossas}</version>
+                    <version>${version.arquillian.jbossas}</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -225,6 +229,14 @@
                                 </goals>
                                 <configuration>
                                     <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.as</groupId>
+                                            <artifactId>jboss-as-dist</artifactId>
+                                            <version>${version.jbossas}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
                                         <artifactItem>
                                             <groupId>${project.groupId}</groupId>
                                             <artifactId>hibernate-ogm-modules-eap</artifactId>
