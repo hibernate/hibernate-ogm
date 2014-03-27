@@ -37,6 +37,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBResultTupleIterable;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.loader.OgmLoader;
@@ -70,7 +71,7 @@ public class MongoDBQueryImpl extends AbstractQueryImpl {
 	@Override
 	public Iterator<?> iterate() throws HibernateException {
 		MongoDBResultTupleIterable resultsCursor = getResultsCursor();
-		return new ObjectLoadingIterator( resultsCursor );
+		return new ObjectLoadingIterator( resultsCursor.iterator() );
 	}
 
 	@Override
@@ -134,12 +135,12 @@ public class MongoDBQueryImpl extends AbstractQueryImpl {
 		return new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 	}
 
-	private class ObjectLoadingIterator implements Iterator<Object> {
+	public class ObjectLoadingIterator implements Iterator<Object> {
 
 		private final Iterator<Tuple> resultIterator;
 
-		private ObjectLoadingIterator(MongoDBResultTupleIterable resultsCursor) {
-			resultIterator = resultsCursor.iterator();
+		private ObjectLoadingIterator(TupleIterator resultsCursor) {
+			resultIterator = resultsCursor;
 		}
 
 		@Override
