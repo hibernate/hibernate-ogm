@@ -28,5 +28,5 @@ import org.neo4j.graphdb.Label;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public enum NodeLabel implements Label {
-	ENTITY;
+	ENTITY, ROWKEY;
 }

@@ -21,8 +21,12 @@
 package org.hibernate.ogm.datastore.neo4j;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ROWKEY;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.LockMode;
@@ -53,9 +57,11 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -88,7 +94,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext context) {
-		Node entityNode = neo4jCRUD.findNode( key );
+		Node entityNode = neo4jCRUD.findNode( key, ENTITY );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -101,12 +107,12 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple();
+		return createTuple( neo4jCRUD.createNodeUnlessExists( key, ENTITY ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
-		Node node = neo4jCRUD.createNodeUnlessExists( key );
+		Node node = (Node) ( (Neo4jTupleSnapshot) tuple.getSnapshot() ).getPropertyContainer();
 		applyTupleOperations( node, tuple.getOperations() );
 	}
 
@@ -117,12 +123,104 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple();
+		PropertyContainer property = createPropertyContainer( associationKey, rowKey );
+		return new Tuple( new Neo4jTupleSnapshot( property ) );
+	}
+
+	private PropertyContainer createPropertyContainer(AssociationKey associationKey, RowKey rowKey) {
+		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
+		if ( rowKeyNode == null ) {
+			Node endNode = neo4jCRUD.findNode( endNodeKey( associationKey, rowKey ), ENTITY );
+			if ( endNode == null ) {
+				// No association of this type has been created yet
+				return createRelationshipToRowKey( associationKey, rowKey );
+			}
+			else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
+				// Unidirectionl ManyToOne: the node contains the field with the association
+				return endNode;
+			}
+			else {
+				// Bidirectional ManyToOne
+				return createRelationshipWithEntity( associationKey, rowKey, endNode );
+			}
+		}
+		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
+			// RowKey is an entity
+			return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+		}
+		else {
+			// Inverse relationship exists
+			return updateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+		}
+	}
+
+	private EntityKey endNodeKey(AssociationKey associationKey, RowKey rowKey) {
+		List<String> keyColumnNames = new ArrayList<String>();
+		List<Object> keyColumnValues = new ArrayList<Object>();
+		String[] columnNames = rowKey.getColumnNames();
+		int i = 0;
+		for ( String columnName : columnNames ) {
+			boolean entityColumn = true;
+			for ( String associationColumnName : associationKey.getColumnNames() ) {
+				if ( associationColumnName.equals( columnName ) ) {
+					entityColumn = false;
+					break;
+				}
+			}
+			if ( entityColumn ) {
+				keyColumnNames.add( columnName );
+				keyColumnValues.add( rowKey.getColumnValues()[i] );
+			}
+			i++;
+		}
+		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), keyColumnNames.toArray( new String[keyColumnNames.size()] ) ),
+				keyColumnValues.toArray( new Object[keyColumnValues.size()] ) );
+	}
+
+	private Relationship updateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node rowKeyNode) {
+		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
+		Relationship inverseRelationship = updateInverseRelationship( rowKey, rowKeyNode, ownerNode );
+
+		RelationshipType associationType = relationshipType( associationKey );
+		Relationship relationship = null;
+		if ( !associationKey.getCollectionRole().equals( associationKey.getTable() ) ) {
+			relationship = ownerNode.createRelationshipTo( inverseRelationship.getStartNode(), associationType );
+			applyColumnValues( rowKey, relationship );
+		}
+		return relationship;
+	}
+
+	private Relationship updateInverseRelationship(RowKey rowKey, Node rowKeyNode, Node ownerNode) {
+		Relationship inverseRelationship = rowKeyNode.getRelationships( Direction.INCOMING ).iterator().next();
+		Relationship newInverseRelationship = inverseRelationship.getStartNode().createRelationshipTo( ownerNode, inverseRelationship.getType() );
+		applyColumnValues( rowKey, newInverseRelationship );
+		inverseRelationship.delete();
+		inverseRelationship.getEndNode().delete();
+		return newInverseRelationship;
+	}
+
+	private PropertyContainer createRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node node) {
+		EntityKey ownerEntityKey = associationKey.getEntityKey();
+		Node ownerNode = neo4jCRUD.findNode( ownerEntityKey, ENTITY );
+		Relationship relationship = ownerNode.createRelationshipTo( node, relationshipType( associationKey ) );
+		applyColumnValues( rowKey, relationship );
+		return relationship;
+	}
+
+	private PropertyContainer createRelationshipToRowKey(AssociationKey associationKey, RowKey rowKey) {
+		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, ROWKEY );
+		return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+	}
+
+	private void applyColumnValues(RowKey rowKey, PropertyContainer relationship) {
+		for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
+			relationship.setProperty( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+		}
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		Node entityNode = neo4jCRUD.findNode( associationKey.getEntityKey() );
+		Node entityNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -182,53 +280,12 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
-		RowKey rowKey = action.getKey();
-		Relationship relationship = neo4jCRUD.findRelationship( associationKey, rowKey );
-		if ( relationship == null ) {
-			relationship = createRelationship( associationKey, rowKey );
-		}
+		Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey() );
 		applyTupleOperations( relationship, action.getValue().getOperations() );
 	}
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
 		neo4jCRUD.remove( associationKey, action.getKey() );
-	}
-
-	private Relationship createRelationship(AssociationKey associationKey, RowKey rowKey) {
-		Relationship relationship;
-		ResourceIterator<Relationship> relationshipIterator = neo4jCRUD.findRelationship( rowKey );
-		if ( relationshipIterator.hasNext() ) {
-			// The inverse association exists
-			Relationship inverseRelationship = relationshipIterator.next();
-			Node node = neo4jCRUD.findNode( associationKey.getEntityKey() );
-			inverseRelationship = replaceEndNode( inverseRelationship, node );
-			relationship = node.createRelationshipTo( inverseRelationship.getStartNode(), relationshipType( associationKey ) );
-		}
-		else {
-			// No association of this type has been created yet
-			relationship = neo4jCRUD.createRelationshipUnlessExists( associationKey, rowKey );
-		}
-		relationshipIterator.close();
-		return relationship;
-	}
-
-	private Relationship replaceEndNode(Relationship relationship, Node newNode) {
-		// It's not possible to replace a node in an existing relationship therefore we need to create a new
-		// relationship and
-		// delete the old one
-		Node endNode = relationship.getEndNode();
-		Node startNode = relationship.getStartNode();
-		Relationship newRelationship = startNode.createRelationshipTo( newNode, relationship.getType() );
-		copyProperties( relationship, newRelationship );
-		relationship.delete();
-		endNode.delete();
-		return newRelationship;
-	}
-
-	private void copyProperties(PropertyContainer from, PropertyContainer to) {
-		for ( String key : from.getPropertyKeys() ) {
-			to.setProperty( key, from.getProperty( key ) );
-		}
 	}
 
 	private void applyTupleOperations(PropertyContainer node, Set<TupleOperation> operations) {
@@ -260,6 +317,7 @@ public class Neo4jDialect implements GridDialect {
 	private void putTupleOperation(PropertyContainer node, TupleOperation operation) {
 		node.setProperty( operation.getColumn(), operation.getValue() );
 	}
+
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {

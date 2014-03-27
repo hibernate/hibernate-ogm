@@ -60,15 +60,6 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 		return tuples.containsKey( rowKey );
 	}
 
-	private boolean columnValueMatches(String columnName, Object columnValue, PropertyContainer container) {
-		if ( container.hasProperty( columnName ) ) {
-			return container.getProperty( columnName ).equals( columnValue );
-		}
-		else {
-			return columnValue == null;
-		}
-	}
-
 	@Override
 	public int size() {
 		return tuples.size();
