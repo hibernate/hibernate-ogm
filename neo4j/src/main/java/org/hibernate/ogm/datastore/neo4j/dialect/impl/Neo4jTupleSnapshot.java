@@ -50,4 +50,8 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 		return names;
 	}
 
+	public PropertyContainer getPropertyContainer() {
+		return propertyContainer;
+	}
+
 }

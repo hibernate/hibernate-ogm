@@ -20,11 +20,14 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -52,7 +55,6 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class CypherCRUD {
 
-	public static final String TABLE = "_ogm_association_table";
 	private final ExecutionEngine engine;
 
 	public CypherCRUD(GraphDatabaseService graphDb) {
@@ -74,7 +76,7 @@ public class CypherCRUD {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH" );
-		appendNodePattern( entityKey, parameters, query );
+		appendNodePattern( entityKey, parameters, query, ENTITY );
 		query.append( " - " );
 		query.append( relationshipCypher( associationKey, rowKey, parameters, entityKey.getColumnNames().length ) );
 		query.append( " -> () RETURN r" );
@@ -88,57 +90,8 @@ public class CypherCRUD {
 		return relationship;
 	}
 
-	/**
-	 * Query example:
-	 * <pre>
-	 * MATCH (n) - [r:owners {`owner_id`: {0}} }] - ()
-	 * RETURN DISTINCT(r)
-	 * </pre>
-	 *
-	 * Because the dialect is using two relationships to map a bidirectional association this query might have multiple
-	 * results.
-	 *
-	 * @param rowKey the key identifying the a relationship
-	 * @return the relationships that maps the association
-	 */
-	public ResourceIterator<Relationship> findRelationship(RowKey rowKey) {
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		StringBuilder query = new StringBuilder( "MATCH (n) - " );
-		query.append( relationshipCypher( null, rowKey, parameters, 0 ) );
-		query.append( " - () RETURN DISTINCT(r)" );
-		ExecutionResult result = engine.execute( query.toString(), parameters );
-		ResourceIterator<Relationship> column = result.columnAs( "r" );
-		return column;
-	}
-
-	/**
-	 * Find a relationship or create it if it doesn't exist. Query example:
-	 *
-	 * <pre>
-	 * MATCH (n:ENTITY:Table {`id`: {0} })
-	 * MERGE (n) - [r:owners {`owner_id`: {1} }] -> ()
-	 * RETURN r</pre>
-	 *
-	 * @param associationKey identify the type of the relationship
-	 * @param rowKey identify the relationship
-	 * @return the corresponding relationship
-	 */
-	public Relationship createRelationshipUnlessExists(AssociationKey associationKey, RowKey rowKey) {
-		EntityKey entityKey = associationKey.getEntityKey();
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		StringBuilder query = new StringBuilder( "MATCH " );
-		appendNodePattern( entityKey, parameters, query );
-		query.append( " MERGE (n) - " );
-		query.append( relationshipCypher( associationKey, rowKey, parameters, associationKey.getColumnNames().length ) );
-		query.append( " -> () RETURN r" );
-		ExecutionResult result = engine.execute( query.toString(), parameters );
-		ResourceIterator<Relationship> column = result.columnAs( "r" );
-		Relationship relationship = null;
-		if ( column.hasNext() ) {
-			relationship = column.next();
-		}
-		column.close();
-		return relationship;
+	public Node findNode(Key key) {
+		return findNode( key, null );
 	}
 
 	/**
@@ -146,13 +99,13 @@ public class CypherCRUD {
 	 * <pre>
 	 * MATCH (n:ENTITY:Table {`id`: {0} })</p>
 	 *
-	 * @param entityKey representing the node
+	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null
 	 */
-	public Node findNode(EntityKey entityKey) {
+	public Node findNode(Key key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH" );
-		appendNodePattern( entityKey, parameters, query );
+		appendNodePattern( key, parameters, query, label );
 		query.append( " RETURN n" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -177,7 +130,7 @@ public class CypherCRUD {
 	public void remove(EntityKey entityKey) {
 		Map<String, Object> parameters = parameters( entityKey );
 		StringBuilder query = new StringBuilder( "MATCH" );
-		appendNodePattern( entityKey, parameters, query );
+		appendNodePattern( entityKey, parameters, query, NodeLabel.ENTITY );
 		query.append( " OPTIONAL MATCH (n) - [r] - () DELETE r,n" );
 		engine.execute( query.toString(), parameters );
 	}
@@ -202,13 +155,13 @@ public class CypherCRUD {
 	 * MERGE (n:ENTITY:Table {`id`: {0} })
 	 * RETURN n</pre>
 	 *
-	 * @param entityKey identify the type of the relationship
+	 * @param key identify the type of the relationship
 	 * @return the resulting node
 	 */
-	public Node createNodeUnlessExists(EntityKey entityKey) {
+	public Node createNodeUnlessExists(Key key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MERGE" );
-		appendNodePattern( entityKey, parameters, query );
+		appendNodePattern( key, parameters, query, label );
 		query.append( " RETURN n" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -230,21 +183,24 @@ public class CypherCRUD {
 	 * @param entityKey identifies the node
 	 * @param parameters is populated with the place-holders and the value to use when the query is executed
 	 * @param query where the resulting pattern will be appended
+	 * @param isEntity
 	 */
-	private void appendNodePattern(EntityKey entityKey, Map<String, Object> parameters, StringBuilder query) {
+	private void appendNodePattern(Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel label) {
 		query.append( "(n:" );
-		query.append( NodeLabel.ENTITY.name() );
-		query.append( ":" );
-		query.append( entityKey.getTable() );
+		query.append( key.getTable() );
+		if ( label != null ) {
+			query.append( ":" );
+			query.append( label.name() );
+		}
 		query.append( " {" );
-		int columnsLength = entityKey.getColumnNames().length;
+		int columnsLength = key.getColumnNames().length;
 		for ( int i = 0; i < columnsLength; i++ ) {
 			query.append( "`" );
-			query.append( entityKey.getColumnNames()[i] );
+			query.append( key.getColumnNames()[i] );
 			query.append( "`: {" );
 			query.append( i );
 			query.append( "}" );
-			parameters.put( String.valueOf( i ), entityKey.getColumnValues()[i] );
+			parameters.put( String.valueOf( i ), key.getColumnValues()[i] );
 			if ( i < columnsLength - 1 ) {
 				query.append( "," );
 			}
@@ -311,13 +267,7 @@ public class CypherCRUD {
 	private void appendRelationshipProperties(Map<String, Object> parameters, int counter, String[] columnNames, Object[] columnValues, String table,
 			StringBuilder relationshipBuilder) {
 		relationshipBuilder.append( " { " );
-		relationshipBuilder.append( TABLE );
-		relationshipBuilder.append( ": {" );
-		relationshipBuilder.append( counter );
-		relationshipBuilder.append( "}" );
-		parameters.put( String.valueOf( counter++ ), table );
 		for ( int i = 0; i < columnNames.length; i++ ) {
-			relationshipBuilder.append( "," );
 			relationshipBuilder.append( "`" );
 			relationshipBuilder.append( columnNames[i] );
 			relationshipBuilder.append( "`" );
@@ -325,6 +275,9 @@ public class CypherCRUD {
 			relationshipBuilder.append( counter );
 			relationshipBuilder.append( "}" );
 			parameters.put( String.valueOf( counter++ ), columnValues[i] );
+			if ( i < columnNames.length - 1 ) {
+				relationshipBuilder.append( "," );
+			}
 		}
 		relationshipBuilder.append( "}]" );
 	}
