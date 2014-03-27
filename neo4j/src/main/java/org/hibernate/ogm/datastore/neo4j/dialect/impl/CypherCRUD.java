@@ -268,15 +268,17 @@ public class CypherCRUD {
 			StringBuilder relationshipBuilder) {
 		relationshipBuilder.append( " { " );
 		for ( int i = 0; i < columnNames.length; i++ ) {
-			relationshipBuilder.append( "`" );
-			relationshipBuilder.append( columnNames[i] );
-			relationshipBuilder.append( "`" );
-			relationshipBuilder.append( " : {" );
-			relationshipBuilder.append( counter );
-			relationshipBuilder.append( "}" );
-			parameters.put( String.valueOf( counter++ ), columnValues[i] );
-			if ( i < columnNames.length - 1 ) {
-				relationshipBuilder.append( "," );
+			if ( columnValues[i] != null ) {
+				relationshipBuilder.append( "`" );
+				relationshipBuilder.append( columnNames[i] );
+				relationshipBuilder.append( "`" );
+				relationshipBuilder.append( " : {" );
+				relationshipBuilder.append( counter );
+				relationshipBuilder.append( "}" );
+				parameters.put( String.valueOf( counter++ ), columnValues[i] );
+				if ( i < columnNames.length - 1 ) {
+					relationshipBuilder.append( "," );
+				}
 			}
 		}
 		relationshipBuilder.append( "}]" );
