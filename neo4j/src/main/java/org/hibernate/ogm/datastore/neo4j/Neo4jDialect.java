@@ -24,7 +24,6 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relation
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ROWKEY;
 
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -33,12 +32,13 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -346,57 +346,6 @@ public class Neo4jDialect implements GridDialect {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
-	}
-
-	/**
-	 * Iterates over the results of a native query when each result is not mapped by an entity
-	 */
-	private static class MapsTupleIterator implements TupleIterator {
-
-		private final ResourceIterator<Map<String, Object>> iterator;
-
-		public MapsTupleIterator(ExecutionResult result) {
-			this.iterator = result.iterator();
-		}
-
-		@Override
-		public boolean hasNext() {
-			return iterator.hasNext();
-		}
-
-		@Override
-		public Tuple next() {
-			return convert( iterator.next() );
-		}
-
-		protected Tuple convert(Map<String, Object> next) {
-			return new Tuple( new MapTupleSnapshot( next ) );
-		}
-
-		@Override
-		public void remove() {
-			iterator.remove();
-		}
-
-		@Override
-		public void close() {
-			iterator.close();
-		}
-	}
-
-	/**
-	 * Iterates over the result of a native query when each result is a neo4j node. This is the case when the result of
-	 * the native query is mapped by an entity type.
-	 */
-	private static class NodesTupleIterator extends MapsTupleIterator {
-
-		public NodesTupleIterator(ExecutionResult result) {
-			super( result );
-		}
-
-		protected Tuple convert(Map<String, Object> next) {
-			return createTuple( (Node) next.values().iterator().next() );
-		}
 	}
 
 }
