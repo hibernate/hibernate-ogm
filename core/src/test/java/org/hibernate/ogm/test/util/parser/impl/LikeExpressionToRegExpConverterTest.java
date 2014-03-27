@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb.test.util;
+package org.hibernate.ogm.test.util.parser.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.datastore.mongodb.util.impl.LikeExpressionToRegExpConverter;
+import org.hibernate.ogm.util.parser.impl.LikeExpressionToRegExpConverter;
 import org.junit.Test;
 
 /**
