@@ -214,7 +214,10 @@ public class Neo4jDialect implements GridDialect {
 
 	private void applyColumnValues(RowKey rowKey, PropertyContainer relationship) {
 		for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
-			relationship.setProperty( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+			// Neo4j does not support null values but in the embedded case it might happen to have some nulls
+			if ( rowKey.getColumnValues()[i] != null ) {
+				relationship.setProperty( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+			}
 		}
 	}
 
