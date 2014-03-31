@@ -24,10 +24,10 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.parser.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -56,7 +56,7 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 
 	@Override
 	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
+		return Neo4jBasedQueryParserService.class;
 	}
 
 	@Override
