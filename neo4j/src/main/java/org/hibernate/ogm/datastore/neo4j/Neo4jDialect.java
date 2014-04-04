@@ -61,7 +61,7 @@ import org.neo4j.graphdb.ResourceIterator;
  * {@link RowKey}. The type of the relationship is the value returned by {@link AssociationKey#getCollectionRole()}. An
  * additional property containing the value in {@link AssociationKey#getTable()} is added to the relationship.
  * <p>
- * If the value of a property is set to null the propety will be removed (Neo4j does not allow to store null values).
+ * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -73,7 +73,7 @@ public class Neo4jDialect implements GridDialect {
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
 		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
-		this.neo4jSequenceGenerator = new Neo4jSequenceGenerator( provider.getDataBase() );
+		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
 	}
 
 	@Override
