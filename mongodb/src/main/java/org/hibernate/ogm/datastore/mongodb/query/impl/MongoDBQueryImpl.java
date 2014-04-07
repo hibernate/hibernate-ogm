@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -60,7 +60,7 @@ public class MongoDBQueryImpl extends AbstractQueryImpl {
 	private final DBObject projections;
 
 	public MongoDBQueryImpl(Class<?> entityType, DBObject query, DBObject projections, OgmSession session) {
-		super( query.toString(), null, session, new ParameterMetadata( null, null ) );
+		super( query.toString(), null, session.getDelegate(), new ParameterMetadata( null, null ) );
 		this.query = query;
 		this.entityType = entityType;
 		this.projections = projections;
