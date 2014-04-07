@@ -77,7 +77,7 @@ public abstract class ModuleMemberRegistrationScenario {
 		newMember.getAddresses().add( new Address( "Mulholland Drive", "Los Angeles" ) );
 		memberRegistration.register();
 
-		Member found = memberRegistration.findWithyQuery( newMember.getId() );
+		Member found = memberRegistration.findWithQuery( newMember.getId() );
 
 		assertNotNull( "Expected at least one result using HQL", found );
 		assertEquals( "HQL hasn't found a new member", newMember.getName(), found.getName() );

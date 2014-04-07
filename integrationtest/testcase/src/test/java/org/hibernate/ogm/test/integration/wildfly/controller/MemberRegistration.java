@@ -58,8 +58,8 @@ public class MemberRegistration {
 		return (Member) em.createNativeQuery( nativeQuery, Member.class).getSingleResult();
 	}
 
-	public Member findWithyQuery(Long id) {
-		return (Member) em.createQuery( "FROM Member WHERE id = :id", Member.class)
+	public Member findWithQuery(Long id) {
+		return em.createQuery( "FROM Member WHERE id = :id", Member.class)
 				.setParameter( "id", id )
 				.getSingleResult();
 	}
