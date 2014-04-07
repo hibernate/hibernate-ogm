@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNull;
 import javax.inject.Inject;
 
 import org.hibernate.ogm.test.integration.wildfly.controller.MemberRegistration;
+import org.hibernate.ogm.test.integration.wildfly.model.Address;
 import org.hibernate.ogm.test.integration.wildfly.model.Member;
 import org.junit.Test;
 
@@ -54,24 +55,38 @@ public abstract class ModuleMemberRegistrationScenario {
 	public void shouldFindPersistedMemberById() throws Exception {
 		Member newMember = memberRegistration.getNewMember();
 		newMember.setName( "Peter O'Tall" );
+		newMember.getAddresses().add( new Address( "Mulholland Drive", "Los Angeles" ) );
 		memberRegistration.register();
 
 		Member found = memberRegistration.find( newMember.getId() );
 
 		assertNotNull( "Expected at least one result after the indexing", found );
 		assertEquals( "Search hasn't found a new member", newMember.getName(), found.getName() );
+		assertEquals( "Member should have one address", 1, found.getAddresses().size() );
+		assertEquals(
+				"Member should have address with correct street",
+				"Mulholland Drive",
+				found.getAddresses().iterator().next().getStreet()
+		);
 	}
 
 	@Test
 	public void shouldFindPersistedMemberByIdWithQuery() throws Exception {
 		Member newMember = memberRegistration.getNewMember();
 		newMember.setName( "Peter O'Tall" );
+		newMember.getAddresses().add( new Address( "Mulholland Drive", "Los Angeles" ) );
 		memberRegistration.register();
 
 		Member found = memberRegistration.findWithyQuery( newMember.getId() );
 
 		assertNotNull( "Expected at least one result using HQL", found );
 		assertEquals( "HQL hasn't found a new member", newMember.getName(), found.getName() );
+		assertEquals( "Member should have one address", 1, found.getAddresses().size() );
+		assertEquals(
+				"Member should have address with correct street",
+				"Mulholland Drive",
+				found.getAddresses().iterator().next().getStreet()
+		);
 	}
 
 	@Test

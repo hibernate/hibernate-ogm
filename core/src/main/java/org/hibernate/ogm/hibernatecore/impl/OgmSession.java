@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2011 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2011-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -289,7 +289,7 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 		}
 
 		CustomLoader loader = new BackendCustomLoader( customQuery, getFactory() );
-		return loader.list( this, queryParameters );
+		return loader.list( getDelegate(), queryParameters );
 	}
 
 	@Override
@@ -361,5 +361,12 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	@Override
 	public void removeOrphanBeforeUpdates(String entityName, Object child) {
 		delegate.removeOrphanBeforeUpdates( entityName, child );
+	}
+
+	/**
+	 * Returns the underlying ORM session to which most work is delegated.
+	 */
+	public EventSource getDelegate() {
+		return delegate;
 	}
 }

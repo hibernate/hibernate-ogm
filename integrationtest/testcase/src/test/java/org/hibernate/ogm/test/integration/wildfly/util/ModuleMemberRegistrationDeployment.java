@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2012 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -22,6 +22,7 @@ package org.hibernate.ogm.test.integration.wildfly.util;
 
 import org.hibernate.ogm.test.integration.wildfly.ModuleMemberRegistrationScenario;
 import org.hibernate.ogm.test.integration.wildfly.controller.MemberRegistration;
+import org.hibernate.ogm.test.integration.wildfly.model.Address;
 import org.hibernate.ogm.test.integration.wildfly.model.Member;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.Asset;
@@ -44,7 +45,7 @@ public class ModuleMemberRegistrationDeployment {
 		public Builder(Class<?> clazz) {
 			archive = ShrinkWrap
 					.create( WebArchive.class, clazz.getSimpleName() + ".war" )
-					.addClasses( clazz, Member.class, MemberRegistration.class, Resources.class, ModuleMemberRegistrationScenario.class )
+					.addClasses( clazz, Member.class, Address.class, MemberRegistration.class, Resources.class, ModuleMemberRegistrationScenario.class )
 					.addAsWebInfResource( EmptyAsset.INSTANCE, "beans.xml" );
 		}
 
