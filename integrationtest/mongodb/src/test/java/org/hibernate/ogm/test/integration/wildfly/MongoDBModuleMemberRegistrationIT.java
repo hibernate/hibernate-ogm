@@ -55,6 +55,8 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 	private static PersistenceDescriptor persistenceXml() {
 		String host = System.getenv( "MONGODB_HOSTNAME" );
 		String port = System.getenv( "MONGODB_PORT" );
+		String username = System.getenv( "MONGODB_USERNAME" );
+		String password = System.getenv( "MONGODB_PASSWORD" );
 
 		Properties<PersistenceUnit<PersistenceDescriptor>> propertiesContext = Descriptors.create( PersistenceDescriptor.class )
 				.version( "2.0" )
@@ -68,6 +70,12 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		}
 		if ( isNotNull( port ) ) {
 			propertiesContext.createProperty().name( "hibernate.ogm.datastore.port" ).value( port );
+		}
+		if ( isNotNull( username ) ) {
+			propertiesContext.createProperty().name( "hibernate.ogm.datastore.username" ).value( username );
+		}
+		if ( isNotNull( password ) ) {
+			propertiesContext.createProperty().name( "hibernate.ogm.datastore.password" ).value( password );
 		}
 		return propertiesContext
 					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "mongodb" ).up()
