@@ -72,10 +72,12 @@ To work with a separately installed MongoDB instance instead, specify the `useEx
 
 This assumes MongoDB to be installed on `localhost`, using the default port. If you have MongoDB
 installed on another host or use a different port, you can set the environment variables
-`MONGODB_HOSTNAME` `MONGODB_PORT` and then run the test suite:
+`MONGODB_HOSTNAME` `MONGODB_PORT` `MONGODB_USERNAME` `MONGODB_PASSWORD` and then run the test suite:
 
     export MONGODB_HOSTNAME=mongodb-machine
     export MONGODB_PORT=1234
+    export MONGODB_USERNAME=someUsername
+    export MONGODB_PASSWORD=someP@ssw0rd
     mvn clean install -s settings-example.xml
 
 ### CouchDB
