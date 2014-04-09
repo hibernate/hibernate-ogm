@@ -22,7 +22,7 @@
   ~ Boston, MA  02110-1301  USA
   -->
 <assembly>
-    <id>wildfly-8-dist</id>
+    <id>wildfly8</id>
     <formats>
         <format>zip</format>
     </formats>

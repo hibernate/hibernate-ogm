@@ -30,7 +30,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>hibernate-ogm-modules-eap</artifactId>
+    <artifactId>hibernate-ogm-modules-eap6</artifactId>
     <packaging>pom</packaging>
 
     <name>Hibernate OGM EAP Module</name>
@@ -39,6 +39,7 @@
     <properties>
         <luceneVersion>3.6.2</luceneVersion>
         <lucene.module.slot>main</lucene.module.slot>
+        <assembly.finalName>${project.artifactId}6-${project.version}</assembly.finalName>
     </properties>
 
     <dependencies>
@@ -118,6 +119,9 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
             </plugin>
         </plugins>
     </build>

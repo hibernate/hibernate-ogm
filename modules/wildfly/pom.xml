@@ -30,7 +30,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>hibernate-ogm-modules-wildfly</artifactId>
+    <artifactId>hibernate-ogm-modules-wildfly8</artifactId>
     <packaging>pom</packaging>
 
     <name>Hibernate OGM WildFly Module</name>
@@ -78,6 +78,9 @@
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -177,9 +177,8 @@
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-wildfly</artifactId>
+                                            <artifactId>hibernate-ogm-modules-wildfly8</artifactId>
                                             <version>${project.version}</version>
-                                            <classifier>wildfly-8-dist</classifier>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
@@ -238,9 +237,8 @@
                                         </artifactItem>
                                         <artifactItem>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-eap</artifactId>
+                                            <artifactId>hibernate-ogm-modules-eap6</artifactId>
                                             <version>${project.version}</version>
-                                            <classifier>eap-6-dist</classifier>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
@@ -295,9 +293,8 @@
                                     <artifactItems>
                                         <artifactItem>
                                             <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-eap</artifactId>
+                                            <artifactId>hibernate-ogm-modules-eap6</artifactId>
                                             <version>${project.version}</version>
-                                            <classifier>eap-6-dist</classifier>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
