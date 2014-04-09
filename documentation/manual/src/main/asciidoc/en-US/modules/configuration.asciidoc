@@ -323,10 +323,10 @@ This is useful even if you don't plan to use Infinispan as your primary data sto
 
 === How to package Hibernate OGM applications for WildFly 8.0
 
-Provided you're deploying on WildFly 8.0 or JBoss EAP6,
+Provided you're deploying on WildFly 8.0 or EAP 6,
 there is an additional way to add the OGM dependencies to your application.
 
-In WildFly 8, class loading is based on modules
+In WildFly 8 or EAP 6, class loading is based on modules
 that have to define explicit dependencies on other modules.
 Modules allow to share the same artifacts across multiple applications,
 getting you smaller and quicker deployments.
@@ -334,10 +334,10 @@ getting you smaller and quicker deployments.
 More details about modules are described in
 https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[Class Loading in WildFly 8.0].
 
-You can download the pre-packaged module from:
+You can download the pre-packaged module for WildFly 8 from:
 
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-wildfly-8-dist.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules&v={hibernate-ogm-version}&e=zip&c=wildfly-8-dist[JBoss's Maven repository]
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly8-{hibernate-ogm-version}.zip[Sourceforge]
+* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly8&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
 Unpack the archive into the +modules+ folder of your WildFly 8.0 installation.
 The modules included are:
@@ -346,7 +346,24 @@ The modules included are:
 * _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
 * _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
 * _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
-* _org.hibernate:main_, containing the latest hibernate ORM libraries compatible with OGM.
+
+You can download the pre-packaged module for EAP 6 from:
+
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}.zip[Sourceforge]
+* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
+
+Unpack the archive into the +modules+ folder of your EAP 6 installation.
+The modules included are:
+
+* _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
+* _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
+* _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
+* _javax.persitence.api:main_, this will upgrade the version in EAP to 2.1
+
+[WARNING]
+====
+The existing module for javax.persistence.api is going to be replaced with the version required by OGM.
+====
 
 There are two ways to include the dependencies in your project:
 
