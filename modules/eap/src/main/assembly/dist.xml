@@ -1,0 +1,202 @@
+<!--
+  ~ Hibernate, Relational Persistence for Idiomatic Java
+  ~
+  ~ Copyright (c) 2014, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~ indicated by the @author tags or express copyright attribution
+  ~ statements applied by the authors.  All third-party contributions are
+  ~ distributed under license by Red Hat, Inc.
+  ~
+  ~ This copyrighted material is made available to anyone wishing to use, modify,
+  ~ copy, or redistribute it subject to the terms and conditions of the GNU
+  ~ Lesser General Public License, as published by the Free Software Foundation.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  ~ or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+  ~ for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public License
+  ~ along with this distribution; if not, write to:
+  ~ Free Software Foundation, Inc.
+  ~ 51 Franklin Street, Fifth Floor
+  ~ Boston, MA  02110-1301  USA
+  -->
+<assembly>
+    <id>eap6</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <baseDirectory>/</baseDirectory>
+
+    <files>
+        <file>
+            <source>${module.xml.basedir}/javax/ws.rs.api/module.xml</source>
+            <outputDirectory>/system/layers/base/javax/ws/rs/api/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.basedir}/javax/persistence.api/module.xml</source>
+            <outputDirectory>/system/layers/base/javax/persistence/api/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.basedir}/javax/persistence.api/jbosgi-xservice.properties</source>
+            <outputDirectory>/system/layers/base/javax/persistence/api/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${module.xml.basedir}/javassist/module.xml</source>
+            <outputDirectory>/system/layers/base/org/javassist/main</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${hibernate.ogm.module.xml}</source>
+            <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/ehcache/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/ehcache/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+         <file>
+             <source>${module.xml.basedir}/ogm/neo4j/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
+             <source>${module.xml.basedir}/ogm/couchdb/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+    </files>
+
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>/system/layers/base/javax/ws/rs/api/main</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.jboss.resteasy:jaxrs-api</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>/system/layers/base/javax/persistence/api/main</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>/system/layers/base/org/javassist/main</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.javassist:javassist</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>/org/hibernate/${hibernate.ogm.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-core</include>
+                <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
+                <include>org.hibernate:hibernate-core</include>
+                <include>org.hibernate:hibernate-entitymanager</include>
+                <include>org.hibernate.common:hibernate-commons-annotations</include>
+                <include>org.jboss:jandex</include>
+                <include>org.hibernate:hibernate-search-engine</include>
+                <include>org.hibernate:hibernate-search-orm</include>
+                <include>org.hibernate:hibernate-search-infinispan</include>
+                <include>org.infinispan:infinispan-lucene-directory</include>
+                <include>org.infinispan:infinispan-core</include>
+                <include>org.infinispan:infinispan-commons</include>
+                <include>org.jboss.marshalling:jboss-marshalling</include>
+                <include>org.jboss.marshalling:jboss-marshalling-river</include>
+                <include>org.jgroups:jgroups</include>
+                <include>org.hibernate.hql:hibernate-hql-lucene</include>
+                <include>org.hibernate.hql:hibernate-hql-parser</include>
+                <include>antlr:antlr</include>
+                <include>org.antlr:antlr-runtime</include>
+                <include>org.apache.lucene:lucene-core</include>
+                <include>org.apache.lucene:lucene-facet</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/hibernate/ogm/ehcache/${hibernate.ogm.ehcache.module.slot}
+            </outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.hibernate.ogm:hibernate-ogm-ehcache</include>
+                <include>net.sf.ehcache:ehcache-core</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/mongodb/${hibernate.ogm.mongodb.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-mongodb</include>
+                 <include>org.mongodb:mongo-java-driver</include>
+              </includes>
+       </dependencySet>
+        <dependencySet>
+             <useProjectArtifact>false</useProjectArtifact>
+             <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
+             <useTransitiveFiltering>false</useTransitiveFiltering>
+             <unpack>false</unpack>
+             <includes>
+                 <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
+                 <include>javax.activation:activation</include>
+                 <include>commons-codec:commons-codec</include>
+                 <include>commons-io:commons-io</include>
+                 <include>commons-logging:commons-logging</include>
+                 <include>org.apache.httpcomponents:httpclient</include>
+                 <include>org.apache.httpcomponents:httpcore</include>
+                 <include>org.codehaus.jackson:jackson-core-asl</include>
+                 <include>org.codehaus.jackson:jackson-jaxrs</include>
+                 <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                 <include>org.codehaus.jackson:jackson-xc</include>
+                 <include>net.jcip:jcip-annotations</include>
+                 <include>org.jboss.resteasy:resteasy-client</include>
+                 <include>org.jboss.resteasy:resteasy-jackson-provider</include>
+                 <include>org.jboss.resteasy:resteasy-jaxrs</include>
+                 <include>org.scannotation:scannotation</include>
+             </includes>
+       </dependencySet>
+       <dependencySet>
+              <useProjectArtifact>false</useProjectArtifact>
+              <outputDirectory>org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
+              <useTransitiveFiltering>false</useTransitiveFiltering>
+              <unpack>false</unpack>
+              <includes>
+                  <include>org.hibernate.ogm:hibernate-ogm-neo4j</include>
+                  <include>org.neo4j:neo4j</include>
+                  <include>org.neo4j:neo4j-lucene-index</include>
+                  <include>org.neo4j:neo4j-kernel</include>
+                  <include>org.neo4j:neo4j-udc</include>
+                  <include>org.neo4j:neo4j-graph-algo</include>
+                  <include>org.neo4j:neo4j-graph-matching</include>
+                  <include>org.neo4j:neo4j-jmx</include>
+                  <include>org.apache.lucene:lucene-core</include>
+                  <include>org.scala-lang:scala-library</include>
+                  <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
+              </includes>
+       </dependencySet>
+    </dependencySets>
+</assembly>

@@ -55,6 +55,25 @@ The distribution bundle is built by default as part of the project build. You ca
 
     mvn clean install -DskipDistro -s settings-example.xml
 
+### Integretaion tests
+
+Integration tests can be run from the integrationtest module and the default behaviour is to download the community version of the most
+recent jboss application server, unpack the modules in it and run the tests using arquillian.
+
+There are two additional profile that can be used to run the test on EAP 6, the first one will download EAP 6.1:
+
+   mvn clean install -Peap -s settings.xml
+
+the second one will use an existing installation of EAP 6:
+
+   mvn clean install -Deap.home=/home/user/eap_home -s settings.xml
+
+[WARNING]
+====
+Be careful when using on existing installation since the modules used by the build is going to be extracted into the
+server you want to run the test, changing the original setup.
+====
+
 ### MongoDB
 
 For executing the tests in the _mongodb_ and _integrationtest/mongodb_ modules, the

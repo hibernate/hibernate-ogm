@@ -1,7 +1,7 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~ Copyright (c) 2012, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~ Copyright (c) 2012-2014, Red Hat, Inc. and/or its affiliates or third-party contributors as
   ~ indicated by the @author tags or express copyright attribution
   ~ statements applied by the authors.  All third-party contributions are
   ~ distributed under license by Red Hat, Inc.
@@ -27,81 +27,27 @@
         <groupId>org.hibernate.ogm</groupId>
         <artifactId>hibernate-ogm-parent</artifactId>
         <version>4.1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>hibernate-ogm-modules</artifactId>
     <packaging>pom</packaging>
 
-    <name>Hibernate OGM WildFly Module</name>
-    <description>A module for adding OGM to WildFly</description>
+    <name>Hibernate OGM JBoss Modules</name>
+    <description>Create JBoss Modules for Hibernate OGM</description>
 
     <properties>
         <module.xml.basedir>${basedir}/src/main/modules</module.xml.basedir>
-        <hibernate.hql.module.slot>${hibernateParserVersion}</hibernate.hql.module.slot>
+        <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
-        <assembly.name>${project.artifactId}-${project.version}</assembly.name>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-core</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-infinispan</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-ehcache</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-mongodb</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-neo4j</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>couchdb</id>
-            <!--
-              To activate and use the couchdb profile you need to define the
-              environment property:
-                COUCHDB_HOSTNAME
-            -->
-            <activation>
-                <property>
-                    <name>env.COUCHDB_HOSTNAME</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.hibernate.ogm</groupId>
-                    <artifactId>hibernate-ogm-couchdb</artifactId>
-                    <optional>true</optional>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+    <modules>
+        <module>eap</module>
+        <module>wildfly</module>
+    </modules>
 </project>

@@ -2,7 +2,7 @@
 <!--
   ~ Hibernate, Relational Persistence for Idiomatic Java
   ~
-  ~ Copyright (c) 2013, Red Hat, Inc. and/or its affiliates or third-party contributors as
+  ~ Copyright (c) 2012-2014, Red Hat, Inc. and/or its affiliates or third-party contributors as
   ~ indicated by the @author tags or express copyright attribution
   ~ statements applied by the authors.  All third-party contributions are
   ~ distributed under license by Red Hat, Inc.
@@ -22,23 +22,18 @@
   ~ 51 Franklin Street, Fifth Floor
   ~ Boston, MA  02110-1301  USA
   -->
-<arquillian xmlns="http://jboss.org/schema/arquillian"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.ehcache" slot="${hibernate.ogm.ehcache.module.slot}">
+    <resources>
+        <resource-root path="hibernate-ogm-ehcache-${project.version}.jar" />
+        <resource-root path="ehcache-core-2.6.6.jar" />
+    </resources>
+    <dependencies>
+        <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
 
-    <engine>
-        <property name="deploymentExportPath">target/</property>
-    </engine>
-
-    <container qualifier="jboss" default="true">
-        <protocol type="jmx-as7">
-            <property name="executionType">REMOTE</property>
-        </protocol>
-        <configuration>
-            <property name="jbossHome">${jboss.home}</property>
-            <!-- To debug the Arquillian managed application server: -->
-            <!-- <property name="javaVmArguments">-Xrunjdwp:transport=dt_socket,address=5005,server=y,suspend=y -Xmx512m -XX:MaxPermSize=128m</property> -->
-        </configuration>
-    </container>
-
-</arquillian>
+        <module name="javax.api" />
+        <module name="javax.persistence.api" />
+        <module name="javax.transaction.api" />
+        <module name="javax.validation.api" />
+        <module name="org.slf4j" />
+    </dependencies>
+</module>
