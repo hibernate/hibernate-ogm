@@ -70,9 +70,10 @@ To work with a separately installed MongoDB instance instead, specify the `useEx
 
     mvn clean install -s settings-example.xml -DuseExternalMongoDb
 
-This assumes MongoDB to be installed on `localhost`, using the default port. If you have MongoDB
-installed on another host or use a different port, you can set the environment variables
-`MONGODB_HOSTNAME` `MONGODB_PORT` `MONGODB_USERNAME` `MONGODB_PASSWORD` and then run the test suite:
+This assumes MongoDB to be installed on `localhost`, using the default port and no authentication.
+If you work with different settings, configure the required properties in hibernate.properties (for the tests in _mongodb_)
+and/or the environment variables `MONGODB_HOSTNAME` `MONGODB_PORT` `MONGODB_USERNAME` `MONGODB_PASSWORD` (for the tests in _integrationtest/mongodb_)
+prior to running the tests:
 
     export MONGODB_HOSTNAME=mongodb-machine
     export MONGODB_PORT=1234
