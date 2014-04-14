@@ -28,7 +28,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
 
+import org.apache.lucene.search.Query;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
 
 @Stateful
 @Model
@@ -62,6 +66,14 @@ public class MemberRegistration {
 		return em.createQuery( "FROM Member WHERE id = :id", Member.class)
 				.setParameter( "id", id )
 				.getSingleResult();
+	}
+
+	public Member findWithEmail(String email) {
+		FullTextEntityManager ftem = Search.getFullTextEntityManager( em );
+		QueryBuilder b = ftem.getSearchFactory().buildQueryBuilder().forEntity( Member.class ).get();
+		Query lq = b.keyword().wildcard().onField( "email" ).matching( email ).createQuery();
+		Object uniqueResult = ftem.createFullTextQuery( lq ).getSingleResult();
+		return (Member) uniqueResult;
 	}
 
 	@PostConstruct

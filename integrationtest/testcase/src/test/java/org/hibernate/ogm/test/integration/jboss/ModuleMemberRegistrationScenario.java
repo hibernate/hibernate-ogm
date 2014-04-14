@@ -90,6 +90,26 @@ public abstract class ModuleMemberRegistrationScenario {
 	}
 
 	@Test
+	public void shouldBeAbleToFindMemberByEmail() throws Exception {
+		Member newMember = memberRegistration.getNewMember();
+		newMember.setName( "Sherlock Holmes" );
+		newMember.setEmail( "SherlockHolmes@consultingdetective.co.uk" );
+		newMember.getAddresses().add( new Address( "221B Baker St", "London" ) );
+		memberRegistration.register();
+
+		Member found = memberRegistration.findWithEmail( "she*" );
+
+		assertNotNull( "Expected at least one result using Full text query", found );
+		assertEquals( "HQL hasn't found a new member", newMember.getName(), found.getName() );
+		assertEquals( "Member should have one address", 1, found.getAddresses().size() );
+		assertEquals(
+				"Member should have address with correct street",
+				"221B Baker St",
+				found.getAddresses().iterator().next().getStreet()
+		);
+	}
+
+	@Test
 	public void shouldReturnNullWhenIdDoesNotExist() throws Exception {
 		Member found = memberRegistration.find( -12L );
 
