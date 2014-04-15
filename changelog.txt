@@ -1,6 +1,44 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Beta2 (16-04-2014)
+-------------------------
+
+** Bug
+    * [OGM-251] - Collection of elements get wrong key and value column names
+    * [OGM-346] - Queries selecting entire entity shouldn't return a list of arrays
+    * [OGM-417] - Failure executing native query on MongoDB
+    * [OGM-473] - Don't share mutable state in TupleContext between threads
+    * [OGM-475] - Wrong property used in the configuration of Neo4j tests
+    * [OGM-476] - Wrong javadoc in InfinispanConfiguration
+    * [OGM-483] - Allow to use element collections of embeddable types with neo4j
+    * [OGM-491] - List read fails when JPA "OrderColumn" is used
+    * [OGM-493] - Can not update a JPA collection annotated with @OrderColumn
+    * [OGM-496] - Exception when using MongoDB queries in container-managed transaction
+    * [OGM-497] - OGM doesn't work with secured MongoDB
+
+** Improvement
+    * [OGM-426] - Provide a way for marking a test as not dialect dependent
+    * [OGM-428] - Investigate means of tying global options and corresponding property more closely together
+    * [OGM-429] - Use OptionsContainer.EMPTY placeholder for elements without options
+    * [OGM-468] - Cache the options effectively applying for an entity or property
+    * [OGM-471] - Avoid creation of associations prior to removal
+    * [OGM-482] - Provide module for JBoss EAP
+
+** New Feature
+    * [OGM-342] - Make MongoDB write concern configurable per entity and property
+
+** Task
+    * [OGM-303] - Tests fail on Embedded MongoDB when on Windows
+    * [OGM-420] - Add Read Preference option for MongoDB
+    * [OGM-446] - Change OgmEntityManager package
+    * [OGM-447] - Use WildFly 8.0.0.Final for integration tests and as module baseline
+    * [OGM-448] - Clean up OGM's Wiki section
+    * [OGM-467] - Verify that the testsuite does not leak connections to MongoDB
+    * [OGM-472] - Add tests for JP-QL and native queries to integration tests
+    * [OGM-501] - Upgrade maven release plugin to 2.5
+
+
 4.1.0.Beta1 (19-02-2014)
 -------------------------
 
