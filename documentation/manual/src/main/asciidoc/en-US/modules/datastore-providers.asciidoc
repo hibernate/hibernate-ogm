@@ -78,12 +78,12 @@ with the +hibernate.ogm.datastore.grid_dialect+ option.
 Use the fully qualified class name of the [classname]+GridDialect+ implementation.
 Most users should ignore this setting entirely and live happy.
 
-include::modules/infinispan.asciidoc[]
+include::infinispan.asciidoc[]
 
-include::modules/ehcache.asciidoc[]
+include::ehcache.asciidoc[]
 
-include::modules/mongodb.asciidoc[]
+include::mongodb.asciidoc[]
 
-include::modules/neo4j.asciidoc[]
+include::neo4j.asciidoc[]
 
-include::modules/couchdb.asciidoc[]
+include::couchdb.asciidoc[]
