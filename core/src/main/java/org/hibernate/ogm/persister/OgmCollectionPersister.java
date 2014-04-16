@@ -275,6 +275,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						session
 				);
 
+				// put back entry tuple to actually apply changes to the store
+				associationPersister.getAssociation().put( assocEntryKey, assocEntryTuple );
+
 				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey );
 
 				count++;

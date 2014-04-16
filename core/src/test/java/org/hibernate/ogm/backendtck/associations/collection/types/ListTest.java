@@ -75,8 +75,47 @@ public class ListTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testUpdateToElementOfOrderedListIsApplied() throws Exception {
+		//insert entity with embedded collection
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+		GrandChild luke = new GrandChild();
+		luke.setName( "Luke" );
+		GrandChild leia = new GrandChild();
+		leia.setName( "Leia" );
+		GrandMother grandMother = new GrandMother();
+		grandMother.getGrandChildren().add( luke );
+		grandMother.getGrandChildren().add( leia );
+		session.persist( grandMother );
+		tx.commit();
+
+		session.clear();
+
+		//do an update to one of the elements
+		tx = session.beginTransaction();
+		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
+		grandMother.getGrandChildren().get( 0 ).setName( "Lisa" );
+		tx.commit();
+		session.clear();
+
+		//assert update has been propgated
+		tx = session.beginTransaction();
+		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
+		assertThat( grandMother.getGrandChildren().get( 0 ).getName() )
+				.as( "Lisa should be first" )
+				.isEqualTo( "Lisa" );
+
+		session.delete( grandMother );
+		tx.commit();
+
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Father.class, Child.class };
+		return new Class<?>[] { Father.class, GrandMother.class, Child.class };
 	}
 }
