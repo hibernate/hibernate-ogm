@@ -688,9 +688,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <goals>deploy assembly:assembly</goals>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -916,9 +913,16 @@
                     <artifactId>maven-release-plugin</artifactId>
                     <version>2.5</version>
                     <configuration>
+                        <goals>deploy</goals>
                         <preparationGoals>clean install</preparationGoals>
                         <autoVersionSubmodules>true</autoVersionSubmodules>
                         <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                        <releaseProfiles>distro</releaseProfiles>
+                        <arguments>-DskipTests</arguments>
+                        <pushChanges>false</pushChanges>
+                        <localCheckout>true</localCheckout>
+                        <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
                     </configuration>
                 </plugin>
                 <plugin>
