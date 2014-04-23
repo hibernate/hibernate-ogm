@@ -33,11 +33,12 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 @Entity
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = "email"))
-@Indexed // The lucene query parser requires it
+@Indexed
 public class Member implements Serializable {
 
 	/** Default value included to remove warning. Remove or modify at will. **/
@@ -49,6 +50,7 @@ public class Member implements Serializable {
 
 	private String name;
 
+	@Field
 	private String email;
 
 	@Column(name = "phone_number")
