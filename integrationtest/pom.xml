@@ -128,11 +128,6 @@
             <artifactId>hibernate-search-orm</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <modules>

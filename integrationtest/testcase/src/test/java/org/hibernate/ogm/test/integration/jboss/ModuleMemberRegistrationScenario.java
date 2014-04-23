@@ -100,7 +100,7 @@ public abstract class ModuleMemberRegistrationScenario {
 		Member found = memberRegistration.findWithEmail( "she*" );
 
 		assertNotNull( "Expected at least one result using Full text query", found );
-		assertEquals( "HQL hasn't found a new member", newMember.getName(), found.getName() );
+		assertEquals( "Full text query hasn't found a new member", newMember.getName(), found.getName() );
 		assertEquals( "Member should have one address", 1, found.getAddresses().size() );
 		assertEquals(
 				"Member should have address with correct street",
