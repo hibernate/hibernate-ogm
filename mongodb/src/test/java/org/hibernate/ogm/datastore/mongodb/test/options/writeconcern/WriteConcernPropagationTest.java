@@ -236,7 +236,7 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect updates to the player document using the configured write concern
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 3 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 2 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test
@@ -260,8 +260,8 @@ public class WriteConcernPropagationTest {
 		transaction.commit();
 		session.close();
 
-		// then expect two updates to the association collection
-		verify( mockClient.getCollection( "Associations" ), times( 2) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		// then expect one update to the association collection
+		verify( mockClient.getCollection( "Associations" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test
