@@ -458,22 +458,17 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return rows;
 	}
 
-	private DBObject getAssociationRow(Tuple value, AssociationKey associationKey) {
-		DBObject rowTupleMap = new BasicDBObject();
-		for ( String valueKeyName : value.getColumnNames() ) {
-			boolean add = true;
+	private DBObject getAssociationRow(Tuple row, AssociationKey associationKey) {
+		DBObject rowObject = new BasicDBObject( 3 );
+
+		for ( String column : row.getColumnNames() ) {
 			//exclude columns from the associationKey as they can be guessed via metadata
-			for ( String assocColumn : associationKey.getColumnNames() ) {
-				if ( valueKeyName.equals( assocColumn ) ) {
-					add = false;
-					break;
-				}
-			}
-			if (add) {
-				rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
+			if ( !associationKey.isKeyColumn( column ) ) {
+				rowObject.put( column, row.get( column ) );
 			}
 		}
-		return rowTupleMap;
+
+		return rowObject;
 	}
 
 	@Override

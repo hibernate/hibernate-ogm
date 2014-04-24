@@ -175,7 +175,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	private List<Map<String, Object>> getAssociationRows(Association association, AssociationKey associationKey) {
-		List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
+		List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>( association.getKeys().size() );
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
