@@ -60,7 +60,6 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.GridDialectOperationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -446,28 +445,30 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return new Association( new MongoDBAssociationSnapshot( assoc, key, storageStrategy ) );
 	}
 
-	private DBObject removeAssociationRowKey(MongoDBAssociationSnapshot snapshot, RowKey rowKey, String associationField) {
-		DBObject pull = new BasicDBObject( associationField,  snapshot.getRowKeyDBObject( rowKey ) );
-		return new BasicDBObject( "$pull", pull );
+	/**
+	 * Returns a list of {@link DBObject}s representing the rows of the given association.
+	 */
+	private List<DBObject> getAssociationRows(Association association, AssociationKey key) {
+		List<DBObject> rows = new ArrayList<DBObject>( association.getKeys().size() );
+
+		for ( RowKey rowKey : association.getKeys() ) {
+			rows.add( getAssociationRow( association.get( rowKey ), key ) );
+		}
+
+		return rows;
 	}
 
-	private DBObject putAssociationRowKey(Tuple value, String associationField, AssociationKey associationKey) {
-		DBObject rowTupleMap = new BasicDBObject();
-		for ( String valueKeyName : value.getColumnNames() ) {
-			boolean add = true;
+	private DBObject getAssociationRow(Tuple row, AssociationKey associationKey) {
+		DBObject rowObject = new BasicDBObject( 3 );
+
+		for ( String column : row.getColumnNames() ) {
 			//exclude columns from the associationKey as they can be guessed via metadata
-			for ( String assocColumn : associationKey.getColumnNames() ) {
-				if ( valueKeyName.equals( assocColumn ) ) {
-					add = false;
-					break;
-				}
-			}
-			if (add) {
-				rowTupleMap.put( valueKeyName, value.get( valueKeyName ) );
+			if ( !associationKey.isKeyColumn( column ) ) {
+				rowObject.put( column, row.get( column ) );
 			}
 		}
-		DBObject row = rowTupleMap;
-		return new BasicDBObject( "$push", new BasicDBObject( associationField, row ) );
+
+		return rowObject;
 	}
 
 	@Override
@@ -494,29 +495,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 			associationField = ROWS_FIELDNAME;
 		}
 
-		for ( AssociationOperation action : association.getOperations() ) {
-			RowKey rowKey = action.getKey();
-			Tuple rowValue = action.getValue();
+		List<DBObject> rows = getAssociationRows( association, key );
 
-			DBObject update = null;
+		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, rows ) );
 
-			switch ( action.getType() ) {
-			case CLEAR:
-				update = new BasicDBObject( "$set", new BasicDBObject( associationField, Collections.EMPTY_LIST ) );
-				break;
-			case PUT_NULL:
-			case PUT:
-				update = putAssociationRowKey( rowValue, associationField, key );
-				break;
-			case REMOVE:
-				update = removeAssociationRowKey( assocSnapshot, rowKey, associationField );
-				break;
-			}
-
-			if ( update != null ) {
-				collection.update( query, update, true, false, writeConcern );
-			}
-		}
+		collection.update( query, update, true, false, writeConcern );
 	}
 
 	@Override

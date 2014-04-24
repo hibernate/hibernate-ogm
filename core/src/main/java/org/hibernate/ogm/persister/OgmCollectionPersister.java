@@ -469,13 +469,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					associationPersister.getAssociation().remove( assocEntryKey );
 
 					count++;
-
-					if ( log.isDebugEnabled() ) {
-						log.debug( "done deleting collection rows: " + count + " deleted" );
-					}
 				}
 
 				associationPersister.flushToCache();
+
+				if ( log.isDebugEnabled() ) {
+					log.debug( "done deleting collection rows: " + count + " deleted" );
+				}
 			}
 			else {
 				log.debug( "no rows to delete" );
