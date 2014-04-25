@@ -24,11 +24,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.id.factory.internal.DefaultIdentifierGeneratorFactory;
+import org.hibernate.id.enhanced.SequenceStyleGenerator;
+import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.jpa.spi.IdentifierGeneratorStrategyProvider;
-import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
-import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
-import org.hibernate.ogm.id.impl.OgmTableGenerator;
 
 /**
  * Provides a registry of JPA identifier generator types and
@@ -37,42 +35,27 @@ import org.hibernate.ogm.id.impl.OgmTableGenerator;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
  */
-public class OgmIdentifierGeneratorStrategyProvider extends DefaultIdentifierGeneratorFactory implements IdentifierGeneratorStrategyProvider {
-
-	private final Map<String, Class<?>> strategies;
-
-	public OgmIdentifierGeneratorStrategyProvider() {
-		super();
-		this.strategies = strategies();
-		for ( Map.Entry<String, Class<?>> entry : strategies.entrySet() ) {
-			register( entry.getKey(), entry.getValue() );
-		}
-	}
-
+public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
 	/**
 	 * @return The registry of different JPA identifier generator names
 	 *         and their corresponding generator implementations for grid.
 	 */
 	@Override
 	public Map<String, Class<?>> getStrategies() {
-		return strategies;
+		Map<String, Class<?>> strategies = strategies();
+		return Collections.unmodifiableMap( strategies );
 	}
 
 	private Map<String, Class<?>> strategies() {
 		Map<String, Class<?>> strategies = new HashMap<String, Class<?>>();
-		strategies.put(
-				org.hibernate.id.enhanced.TableGenerator.class.getName(),
-				OgmTableGenerator.class
-		);
-		strategies.put(
-				org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(),
-				OgmSequenceGenerator.class
-		);
-		strategies.put(
-				"identity",
-				OgmIdentityGenerator.class
-		);
-		return Collections.unmodifiableMap( strategies );
+		add( strategies, TableGenerator.class.getName() );
+		add( strategies, SequenceStyleGenerator.class.getName() );
+		add( strategies, "identity" );
+		return strategies;
 	}
 
+	private void add(Map<String, Class<?>> strategies, String strategy) {
+		OgmMutableIdentifierGeneratorFactory factory = new OgmMutableIdentifierGeneratorFactory();
+		strategies.put( strategy, factory.getIdentifierGeneratorClass( strategy ) );
+	}
 }

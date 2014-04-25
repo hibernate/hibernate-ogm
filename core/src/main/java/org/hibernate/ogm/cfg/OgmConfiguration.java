@@ -36,7 +36,7 @@ import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
-import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.type.Type;
 
@@ -49,7 +49,7 @@ import org.hibernate.type.Type;
  */
 public class OgmConfiguration extends Configuration implements Configurable {
 
-	private final MutableIdentifierGeneratorFactory identifierGeneratorFactory = new OgmIdentifierGeneratorStrategyProvider();
+	private final MutableIdentifierGeneratorFactory identifierGeneratorFactory = new OgmMutableIdentifierGeneratorFactory();
 
 	public OgmConfiguration() {
 		super();
