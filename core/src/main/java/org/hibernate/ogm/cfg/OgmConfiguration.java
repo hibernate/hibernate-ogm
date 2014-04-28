@@ -23,16 +23,22 @@ package org.hibernate.ogm.cfg;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
+import org.hibernate.MappingException;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.id.factory.IdentifierGeneratorFactory;
+import org.hibernate.id.factory.spi.MutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.type.Type;
 
 /**
  * An instance of {@link OgmConfiguration} allows the application
@@ -42,6 +48,8 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
  * @author Davide D'Alto
  */
 public class OgmConfiguration extends Configuration implements Configurable {
+
+	private final MutableIdentifierGeneratorFactory identifierGeneratorFactory = new OgmMutableIdentifierGeneratorFactory();
 
 	public OgmConfiguration() {
 		super();
@@ -57,6 +65,34 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+	}
+
+	@Override
+	public Mapping buildMapping() {
+		final Mapping delegate = super.buildMapping();
+		return new Mapping() {
+
+			public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
+				return identifierGeneratorFactory;
+			}
+
+			public Type getIdentifierType(String entityName) throws MappingException {
+				return delegate.getIdentifierType( entityName );
+			}
+
+			public String getIdentifierPropertyName(String entityName) throws MappingException {
+				return delegate.getIdentifierPropertyName( entityName );
+			}
+
+			public Type getReferencedPropertyType(String entityName, String propertyName) throws MappingException {
+				return delegate.getReferencedPropertyType( entityName, propertyName );
+			}
+		};
+	}
+
+	@Override
+	public MutableIdentifierGeneratorFactory getIdentifierGeneratorFactory() {
+		return identifierGeneratorFactory;
 	}
 
 	@Override
