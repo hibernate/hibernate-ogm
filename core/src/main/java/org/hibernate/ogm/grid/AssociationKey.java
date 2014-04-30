@@ -97,10 +97,6 @@ public final class AssociationKey implements Key {
 		return metadata.getRowKeyColumnNames();
 	}
 
-	public String[] getIdentifierColumnNames() {
-		return metadata.getIdentifierColumnNames();
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
