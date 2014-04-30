@@ -20,8 +20,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Iterator;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.id.IntegralDataTypeHolder;
@@ -138,6 +136,6 @@ public interface GridDialect extends Service {
 	 * @param metadatas the metadata information of the results of the query
 	 * @return an {@link Iterator} throught the result of the query
 	 */
-	Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas);
+	TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas);
 
 }

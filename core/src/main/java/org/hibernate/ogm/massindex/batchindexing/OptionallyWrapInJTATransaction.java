@@ -106,7 +106,7 @@ public class OptionallyWrapInJTATransaction implements Consumer {
 				consumeInTransaction( tuple );
 			}
 			else {
-				delegate.run( null, null );
+				delegate.run( null, tuple );
 			}
 		}
 		catch ( Throwable e ) {

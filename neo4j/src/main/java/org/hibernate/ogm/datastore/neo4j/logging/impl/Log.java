@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013-2014 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2012-2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,32 +18,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.neo4j.impl.spi;
+package org.hibernate.ogm.datastore.neo4j.logging.impl;
 
-import java.util.Map;
+import static org.jboss.logging.Logger.Level.DEBUG;
 
-import org.neo4j.graphdb.GraphDatabaseService;
+import org.hibernate.HibernateException;
+import org.jboss.logging.Cause;
+import org.jboss.logging.LogMessage;
+import org.jboss.logging.Message;
+import org.jboss.logging.MessageLogger;
 
 /**
- * Contains methods to create a {@link GraphDatabaseService}.
- *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto
  */
-public interface GraphDatabaseServiceFactory {
+@MessageLogger(projectCode = "OGM")
+public interface Log extends org.hibernate.ogm.util.impl.Log {
 
-	/**
-	 * Called after the creation of the factory can be used to read the configuration.
-	 *
-	 * @param properties
-	 *            configuration properties
-	 */
-	void initialize(Map<?, ?> properties);
+	@Message(id = 1401, value = "Cannot generate sequence")
+	HibernateException cannotGenerateSequence();
 
-	/**
-	 * Creates a {@link GraphDatabaseService}.
-	 *
-	 * @return a new {@link GraphDatabaseService} instance
-	 */
-	GraphDatabaseService create();
-
+	@LogMessage(level = DEBUG)
+	@Message(id = 1402, value = "An error occured while generating athe next value of a sequence")
+	void errorGeneratingSequence(@Cause Exception e);
 }

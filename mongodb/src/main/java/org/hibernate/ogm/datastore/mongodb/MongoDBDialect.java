@@ -24,12 +24,9 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnaps
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +62,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
@@ -593,7 +591,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
 		BasicDBObject mongodbQuery = (BasicDBObject) com.mongodb.util.JSON.parse( customQuery.getSQL() );
 		validate( metadatas );
 		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
@@ -763,7 +761,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
-	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
+	private static class MongoDBResultsCursor implements TupleIterator {
 
 		private final DBCursor cursor;
 		private final EntityKeyMetadata metadata;
@@ -790,7 +788,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			cursor.close();
 		}
 	}

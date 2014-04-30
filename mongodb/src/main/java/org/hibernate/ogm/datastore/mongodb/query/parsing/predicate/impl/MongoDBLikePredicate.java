@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 import org.hibernate.hql.ast.spi.predicate.LikePredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.hibernate.ogm.datastore.mongodb.util.impl.LikeExpressionToRegExpConverter;
+import org.hibernate.ogm.util.parser.impl.LikeExpressionToRegExpConverter;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
