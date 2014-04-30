@@ -35,7 +35,6 @@ public class AssociationKeyMetadata {
 
 	//role and entity key are not part of the object identity
 	private String[] rowKeyColumnNames;
-	private String[] identifierColumnNames;
 
 	public AssociationKeyMetadata(String table, String[] columnNames) {
 		this.table = table;
@@ -60,14 +59,6 @@ public class AssociationKeyMetadata {
 		this.rowKeyColumnNames = rowKeyColumnNames;
 	}
 
-	public String[] getIdentifierColumnNames() {
-		return identifierColumnNames;
-	}
-
-	public void setIdentifierColumnNames(String[] identifierColumnNames) {
-		this.identifierColumnNames = identifierColumnNames;
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
@@ -88,10 +79,6 @@ public class AssociationKeyMetadata {
 			return false;
 		}
 
-		if ( !Arrays.equals( identifierColumnNames, that.identifierColumnNames ) ) {
-			return false;
-		}
-
 		return true;
 	}
 
@@ -109,5 +96,4 @@ public class AssociationKeyMetadata {
 		sb.append( '}' );
 		return sb.toString();
 	}
-
 }
