@@ -310,12 +310,33 @@ under the License.
             </repositories>
         </profile>
 
+        <profile>
+            <id>neo4j-repository</id>
+            <repositories>
+                <repository>
+                    <id>public-neo4j-repository</id>
+                    <name>Neo4j Repository</name>
+                    <url>http://m2.neo4j.org/content/groups/public/</url>
+                    <layout>default</layout>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+
     </profiles>
 
     <!-- jboss.org config start -->
     <activeProfiles>
         <activeProfile>jboss-public-repository</activeProfile>
         <activeProfile>redhat-earlyaccess-repository</activeProfile>
+        <activeProfile>neo4j-repository</activeProfile>
     </activeProfiles>
     <!-- jboss.org config end -->
 
