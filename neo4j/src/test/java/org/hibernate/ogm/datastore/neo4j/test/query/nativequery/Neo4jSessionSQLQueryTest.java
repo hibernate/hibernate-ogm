@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWildePoem.TABLE_NAME;
 
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.hibernate.SQLQuery;
@@ -40,8 +41,8 @@ import org.junit.Test;
  */
 public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
 
 	@Before
 	public void init() {

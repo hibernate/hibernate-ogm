@@ -20,6 +20,8 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedNativeQuery;
@@ -38,13 +40,16 @@ class OscarWildePoem {
 
 	private String author;
 
+	private Date dateOfCreation;
+
 	public OscarWildePoem() {
 	}
 
-	public OscarWildePoem(Long id, String name, String author) {
+	public OscarWildePoem(Long id, String name, String author, Date dateOfCreation) {
 		this.id = id;
 		this.name = name;
 		this.author = author;
+		this.dateOfCreation = dateOfCreation;
 	}
 
 	@Id
@@ -70,6 +75,14 @@ class OscarWildePoem {
 
 	public void setAuthor(String author) {
 		this.author = author;
+	}
+
+	public Date getDateOfCreation() {
+		return dateOfCreation;
+	}
+
+	public void setDateOfCreation(Date dateOfCreation) {
+		this.dateOfCreation = dateOfCreation;
 	}
 
 	@Override

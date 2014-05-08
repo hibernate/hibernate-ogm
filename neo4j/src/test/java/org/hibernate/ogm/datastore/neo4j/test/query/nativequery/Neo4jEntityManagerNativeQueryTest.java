@@ -23,6 +23,7 @@ package org.hibernate.ogm.datastore.neo4j.test.query.nativequery;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWildePoem.TABLE_NAME;
 
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -48,8 +49,8 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 	@Rule
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
 
-	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
 
 	@Before
 	public void init() throws Exception {
@@ -133,6 +134,22 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
 
 		assertAreEquals( portia, poem );
+
+		commit();
+		close( em );
+	}
+
+	@Test
+	public void testSingleResultQueryUsingDateParameter() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { dateOfCreation:{creationDate}, author:'Oscar Wilde' } ) RETURN n";
+		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+		query.setParameter( "creationDate", new GregorianCalendar( 1810, 3, 10 ).getTime() );
+		OscarWildePoem poem = (OscarWildePoem) query.getSingleResult();
+
+		assertAreEquals( athanasia, poem );
 
 		commit();
 		close( em );
