@@ -18,25 +18,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm;
-
-import org.hibernate.Session;
-import org.hibernate.ogm.datastore.spi.SessionOperations;
-import org.hibernate.ogm.datastore.spi.SessionOperationsProvider;
+package org.hibernate.ogm.datastore.spi;
 
 /**
- * Provides functionality specific to Hibernate OGM in addition to the {@link Session} contract.
+ * Sub-types provide session-level functionality specific to a given datastore.
  *
  * @author Gunnar Morling
  */
-public interface OgmSession extends Session {
+public interface SessionOperations {
 
-	/**
-	 * Provides the API entry point for performing operations specific to the given datastore. Not that not all dialects
-	 * provide such operations.
-	 *
-	 * @param datastoreType The identifier type of a NoSQL datastore
-	 * @return an API object with datastore-specific operations
-	 */
-	<P extends SessionOperationsProvider<O>, O extends SessionOperations> O operationsFor(Class<P> datastoreType);
 }

@@ -57,6 +57,8 @@ import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.datastore.spi.SessionOperations;
+import org.hibernate.ogm.datastore.spi.SessionOperationsProvider;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
@@ -80,7 +82,9 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	private final EventSource delegate;
 	private final OgmSessionFactoryImpl factory;
+
 	private QueryParserService queryParserService;
+	private SessionOperations sessionOperations;
 
 	public OgmSessionImpl(OgmSessionFactory factory, EventSource delegate) {
 		super( delegate, delegate );
@@ -380,5 +384,26 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	 */
 	public EventSource getDelegate() {
 		return delegate;
+	}
+
+	@Override
+	public <P extends SessionOperationsProvider<O>, O extends SessionOperations> O operationsFor(Class<P> datastoreType) {
+		if ( sessionOperations == null ) {
+			sessionOperations = newInstance( datastoreType ).getSessionOperations( this );
+		}
+
+		@SuppressWarnings("unchecked")
+		O operations = (O) sessionOperations;
+		return operations;
+	}
+
+	private <P extends SessionOperationsProvider<?>> P newInstance(Class<P> datastoreType) {
+		try {
+			return datastoreType.newInstance();
+
+		}
+		catch (Exception e) {
+			throw log.unableToInstantiateType( datastoreType.getName(), e );
+		}
 	}
 }
