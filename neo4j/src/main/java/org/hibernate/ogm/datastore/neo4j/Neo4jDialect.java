@@ -47,8 +47,11 @@ import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Direction;
@@ -69,15 +72,22 @@ import org.neo4j.graphdb.ResourceIterator;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class Neo4jDialect implements GridDialect {
+public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
 	private final CypherCRUD neo4jCRUD;
 
 	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
 
+	private ServiceRegistryImplementor serviceRegistry;
+
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
 		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	@Override
@@ -379,11 +389,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		Map<String, Object> parameters = new HashMap<String, Object>();
-
-		for(Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
-			parameters.put( parameter.getKey(), parameter.getValue().getValue() );
-		}
+		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 
 		String nativeQuery = customQuery.getSQL();
 		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
@@ -392,6 +398,23 @@ public class Neo4jDialect implements GridDialect {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
+	}
+
+	/**
+	 * Returns a map with the named parameter values from the given parameters object, converted by the {@link GridType}
+	 * corresponding to each parameter type.
+	 */
+	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
+		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
+		Tuple dummy = new Tuple();
+
+		for ( Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
+			GridType gridType = serviceRegistry.getService( TypeTranslator.class ).getType( parameter.getValue().getType() );
+			gridType.nullSafeSet( dummy, parameter.getValue().getValue(), new String[]{ parameter.getKey() }, null );
+			parameterValues.put( parameter.getKey(), dummy.get( parameter.getKey() ) );
+		}
+
+		return parameterValues;
 	}
 
 	@Override
