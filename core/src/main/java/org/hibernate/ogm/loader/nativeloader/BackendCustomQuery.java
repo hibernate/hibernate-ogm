@@ -20,10 +20,7 @@
  */
 package org.hibernate.ogm.loader.nativeloader;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +29,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -48,10 +46,8 @@ public class BackendCustomQuery implements CustomQuery {
 	private static final Log LOG = LoggerFactory.make();
 
 	private final NativeSQLQuerySpecification spec;
-	private final Set<Object> querySpaces = new HashSet<Object>();
-	private final Map<Object, Object> namedParameterBindPoints = new HashMap<Object, Object>();
-	private final List<Object> customQueryReturns = new ArrayList<Object>();
-
+	private final Set<String> querySpaces;
+	private final List<Return> customQueryReturns;
 
 	public BackendCustomQuery(NativeSQLQuerySpecification spec, SessionFactoryImplementor factory) throws HibernateException {
 		LOG.tracev( "Starting processing of NoSQL query [{0}]", spec.getQueryString() );
@@ -60,11 +56,15 @@ public class BackendCustomQuery implements CustomQuery {
 
 		SQLQueryReturnProcessor processor = new SQLQueryReturnProcessor(spec.getQueryReturns(), factory);
 		processor.process();
-		Collection<?> customReturns = processor.generateCustomReturns( false );
-		customQueryReturns.addAll( customReturns );
+		customQueryReturns = Collections.unmodifiableList( processor.generateCustomReturns( false ) );
 
 		if ( spec.getQuerySpaces() != null ) {
-			querySpaces.addAll( spec.getQuerySpaces() );
+			@SuppressWarnings("unchecked")
+			Set<String> spaces = spec.getQuerySpaces();
+			querySpaces = Collections.<String>unmodifiableSet( spaces );
+		}
+		else {
+			querySpaces = Collections.emptySet();
 		}
 	}
 
@@ -74,17 +74,18 @@ public class BackendCustomQuery implements CustomQuery {
 	}
 
 	@Override
-	public Set getQuerySpaces() {
+	public Set<String> getQuerySpaces() {
 		return querySpaces;
 	}
 
 	@Override
-	public Map getNamedParameterBindPoints() {
-		return namedParameterBindPoints;
+	public Map<?, ?> getNamedParameterBindPoints() {
+		// TODO: Should this actually be something more sensible?
+		return Collections.emptyMap();
 	}
 
 	@Override
-	public List getCustomQueryReturns() {
+	public List<Return> getCustomQueryReturns() {
 		return customQueryReturns;
 	}
 

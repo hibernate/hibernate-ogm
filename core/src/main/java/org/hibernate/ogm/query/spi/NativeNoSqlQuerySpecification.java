@@ -26,7 +26,7 @@ import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 
 /**
- * Specification of a native backend query, e.g. based on a {@code DBObject} in the case of MongoDB.
+ * Specification of a native non String-based backend query, e.g. using a {@code DBObject} in the case of MongoDB.
  *
  * @author Gunnar Morling
  */
@@ -34,7 +34,7 @@ public class NativeNoSqlQuerySpecification<Q> extends NativeSQLQuerySpecificatio
 
 	private final Q query;
 
-	public NativeNoSqlQuerySpecification(Q query, NativeSQLQueryReturn[] queryReturns, Collection<?> querySpaces) {
+	public NativeNoSqlQuerySpecification(Q query, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
 		super( query.toString(), queryReturns, querySpaces );
 		this.query = query;
 	}
