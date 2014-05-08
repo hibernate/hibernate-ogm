@@ -32,7 +32,6 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableMapAssociationSnapshot;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
@@ -50,6 +49,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -230,7 +230,7 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public TupleIterator executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for Ehcache" );
 	}
 

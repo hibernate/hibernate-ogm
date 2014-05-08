@@ -31,13 +31,13 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.service.Service;
@@ -51,9 +51,9 @@ import org.hibernate.type.Type;
  */
 public class BackendCustomLoader extends CustomLoader {
 
-	private final CustomQuery customQuery;
+	private final BackendCustomQuery customQuery;
 
-	public BackendCustomLoader(CustomQuery customQuery, SessionFactoryImplementor factory) {
+	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
 		this.customQuery = customQuery;
 	}
