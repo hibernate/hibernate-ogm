@@ -12,7 +12,6 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -26,6 +25,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
@@ -176,7 +176,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery,  QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery,  QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		return dialect.executeBackendQuery( customQuery, queryParameters, metadatas );
 	}
 

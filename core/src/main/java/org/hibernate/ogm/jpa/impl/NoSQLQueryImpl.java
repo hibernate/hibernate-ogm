@@ -135,7 +135,7 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		}
 	}
 
-	private NativeSQLQuerySpecification generateQuerySpecification(Map namedParams) {
+	protected NativeSQLQuerySpecification generateQuerySpecification(Map namedParams) {
 		return new NativeSQLQuerySpecification( expandParameterLists( namedParams ), queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
 				querySpaces );
 	}

@@ -282,7 +282,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
 		}
 
-		CustomLoader loader = new BackendCustomLoader( customQuery, getFactory() );
+		CustomLoader loader = new BackendCustomLoader( (BackendCustomQuery) customQuery, getFactory() );
 		return loader.list( getDelegate(), queryParameters );
 	}
 
@@ -294,7 +294,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public List list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		CustomQuery customQuery = new BackendCustomQuery( spec.getQueryString(), spec.getQueryReturns(), spec.getQuerySpaces(), factory );
+		CustomQuery customQuery = new BackendCustomQuery( spec, factory );
 		// TODO Implement query plan cache?
 		return listCustomQuery( customQuery, queryParameters );
 	}
