@@ -25,11 +25,16 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ROWKEY;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
@@ -40,6 +45,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -53,6 +59,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -339,13 +346,23 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		Map<String, Object> parameters = new HashMap<String, Object>();
+
+		for(Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
+			parameters.put( parameter.getKey(), parameter.getValue().getValue() );
+		}
+
 		String sql = customQuery.getSQL();
-		ExecutionResult result = neo4jCRUD.executeQuery( sql );
+		ExecutionResult result = neo4jCRUD.executeQuery( sql, parameters );
 		if ( metadatas.length == 1 ) {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
 	}
 
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return new Neo4jParameterMetadataBuilder();
+	}
 }

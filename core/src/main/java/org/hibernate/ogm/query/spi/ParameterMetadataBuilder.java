@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,27 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.descriptor;
+package org.hibernate.ogm.query.spi;
 
-import static org.fest.assertions.Assertions.assertThat;
-
-import org.hibernate.ogm.type.StringDateTypeDescriptor;
-import org.junit.Test;
+import org.hibernate.engine.query.spi.ParameterMetadata;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * Implementations return metadata about the parameters contained in given native queries of the corresponding NoSQL
+ * store. Implementations may support named parameters, ordinal parameters or both, based on the capabilities of the
+ * underlying store.
+ *
+ * @author Gunnar Morling
  */
-public class StringDateTypeDescriptorTest {
+public interface ParameterMetadataBuilder {
 
-	@Test
-	public void testDescriptorName() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getName() ).as( StringDateTypeDescriptor.class.getSimpleName() )
-				.isEqualTo( "string_date" );
-	}
-
-	@Test
-	public void testColumnSpanForNull() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( null ) ).as( "Column span for null" )
-				.isEqualTo( 1 );
-	}
+	ParameterMetadata buildParameterMetadata(String noSqlQuery);
 }

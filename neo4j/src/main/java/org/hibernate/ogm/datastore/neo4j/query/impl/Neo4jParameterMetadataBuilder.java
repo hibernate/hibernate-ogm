@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,27 +18,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.descriptor;
+package org.hibernate.ogm.datastore.neo4j.query.impl;
 
-import static org.fest.assertions.Assertions.assertThat;
+import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
+import org.hibernate.ogm.query.RecognizerBasedParameterMetadataBuilder;
+import org.parboiled.Parboiled;
+import org.parboiled.parserunners.RecoveringParseRunner;
 
-import org.hibernate.ogm.type.StringDateTypeDescriptor;
-import org.junit.Test;
+public class Neo4jParameterMetadataBuilder extends RecognizerBasedParameterMetadataBuilder {
 
-/**
- * @author Davide D'Alto <davide@hibernate.org>
- */
-public class StringDateTypeDescriptorTest {
-
-	@Test
-	public void testDescriptorName() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getName() ).as( StringDateTypeDescriptor.class.getSimpleName() )
-				.isEqualTo( "string_date" );
-	}
-
-	@Test
-	public void testColumnSpanForNull() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( null ) ).as( "Column span for null" )
-				.isEqualTo( 1 );
+	@Override
+	public void parseQueryParameters(String nativeQuery, Recognizer journaler) {
+		QueryParser parser = Parboiled.createParser( QueryParser.class, journaler );
+		new RecoveringParseRunner<Recognizer>( parser.Query() ).run( nativeQuery );
 	}
 }

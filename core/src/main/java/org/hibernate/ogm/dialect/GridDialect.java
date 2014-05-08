@@ -22,6 +22,7 @@ package org.hibernate.ogm.dialect;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -33,6 +34,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
@@ -136,6 +138,7 @@ public interface GridDialect extends Service {
 	 * @param metadatas the metadata information of the results of the query
 	 * @return an {@link Iterator} throught the result of the query
 	 */
-	TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas);
+	TupleIterator executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
 
+	ParameterMetadataBuilder getParameterMetadataBuilder();
 }

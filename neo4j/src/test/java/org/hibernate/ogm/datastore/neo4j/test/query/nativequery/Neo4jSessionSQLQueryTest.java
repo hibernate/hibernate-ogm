@@ -25,6 +25,7 @@ import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWild
 
 import java.util.List;
 
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -33,7 +34,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- *  Test the execution of native queries on MongoDB using the {@link Session}
+ *  Test the execution of native queries on Neo4j using the {@link Session}
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -141,6 +142,26 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 			OscarWildePoem uniqueResult = (OscarWildePoem) session.getNamedQuery( "AthanasiaQuery" )
 					.uniqueResult();
 			assertAreEquals( uniqueResult, athanasia );
+			transaction.commit();
+		}
+		finally {
+			session.clear();
+			session.close();
+		}
+	}
+
+	@Test
+	public void testUniqueResultFromNativeQueryWithParameter() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		try {
+			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:{name}, author:'Oscar Wilde' } ) RETURN n";
+			SQLQuery query = session.createSQLQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			query.setParameter( "name", "Portia" );
+
+			OscarWildePoem uniqueResult = (OscarWildePoem) query.uniqueResult();
+			assertAreEquals( uniqueResult, portia );
 			transaction.commit();
 		}
 		finally {

@@ -77,19 +77,14 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 
 	private static final Log log = LoggerFactory.make();
 
-	/**
-	 * Query parameters are not supported
-	 */
-	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
-
 	private final EventSource delegate;
-	private final OgmSessionFactory factory;
+	private final OgmSessionFactoryImpl factory;
 	private QueryParserService queryParserService;
 
 	public OgmSession(OgmSessionFactory factory, EventSource delegate) {
 		super( delegate, delegate );
 		this.delegate = delegate;
-		this.factory = factory;
+		this.factory = (OgmSessionFactoryImpl) factory;
 	}
 
 	//Overridden methods
@@ -165,12 +160,24 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 
 	@Override
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
-		return new NoSQLQuery( queryString, this, NO_PARAMETERS );
+		errorIfClosed();
+
+		return new NoSQLQuery(
+				queryString,
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( queryString )
+		);
 	}
 
 	@Override
 	public SQLQuery createSQLQuery(NamedSQLQueryDefinition namedQueryDefinition) {
-		return new NoSQLQuery( namedQueryDefinition, this, NO_PARAMETERS );
+		errorIfClosed();
+
+		return new NoSQLQuery(
+				namedQueryDefinition.getQuery(),
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( namedQueryDefinition.getQuery() )
+		);
 	}
 
 	@Override
@@ -328,7 +335,11 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	public Query getNamedSQLQuery(String queryName) {
 		errorIfClosed();
 		NamedSQLQueryDefinition nsqlqd = findNamedNativeQuery( queryName );
-		Query query = new NoSQLQuery( nsqlqd, this, NO_PARAMETERS );
+		Query query = new NoSQLQuery(
+				nsqlqd,
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( nsqlqd.getQuery() )
+		);
 		query.setComment( "named native query " + queryName );
 		return query;
 	}

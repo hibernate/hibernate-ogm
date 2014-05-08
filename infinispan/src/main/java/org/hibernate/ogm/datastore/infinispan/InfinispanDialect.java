@@ -33,6 +33,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
@@ -51,6 +52,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -219,7 +222,7 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public TupleIterator executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for Infinispan" );
 	}
 
@@ -237,6 +240,11 @@ public class InfinispanDialect implements GridDialect {
 		MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> queryTask = new MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>>( cache );
 		queryTask.mappedWith( new TupleMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer() );
 		return queryTask.execute();
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return new NoOpParameterMetadataBuilder();
 	}
 
 	static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {

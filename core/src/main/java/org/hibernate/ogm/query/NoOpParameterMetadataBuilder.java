@@ -2,7 +2,7 @@
  * Hibernate, Relational Persistence for Idiomatic Java
  *
  * JBoss, Home of Professional Open Source
- * Copyright 2013 Red Hat Inc. and/or its affiliates and other contributors
+ * Copyright 2014 Red Hat Inc. and/or its affiliates and other contributors
  * as indicated by the @authors tag. All rights reserved.
  * See the copyright.txt in the distribution for a
  * full listing of individual contributors.
@@ -18,27 +18,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.test.descriptor;
+package org.hibernate.ogm.query;
 
-import static org.fest.assertions.Assertions.assertThat;
-
-import org.hibernate.ogm.type.StringDateTypeDescriptor;
-import org.junit.Test;
+import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Gunnar Morling
+ *
  */
-public class StringDateTypeDescriptorTest {
+public class NoOpParameterMetadataBuilder implements ParameterMetadataBuilder {
 
-	@Test
-	public void testDescriptorName() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getName() ).as( StringDateTypeDescriptor.class.getSimpleName() )
-				.isEqualTo( "string_date" );
-	}
+	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
 
-	@Test
-	public void testColumnSpanForNull() throws Exception {
-		assertThat( StringDateTypeDescriptor.INSTANCE.getColumnSpan( null ) ).as( "Column span for null" )
-				.isEqualTo( 1 );
+	@Override
+	public ParameterMetadata buildParameterMetadata(String nativeQuery) {
+		return NO_PARAMETERS;
 	}
 }

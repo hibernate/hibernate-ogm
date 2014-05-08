@@ -60,7 +60,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		TupleIterator tuples = executeQuery( session, service( session, GridDialect.class ), resultTypes );
+		TupleIterator tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
 		try {
 			if ( resultTypes.length == 0 ) {
 				return listOfArrays( tuples );
@@ -100,13 +100,13 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private TupleIterator executeQuery(SessionImplementor session, GridDialect dialect, Type[] resultTypes) {
+	private TupleIterator executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
 		Loadable[] entityPersisters = getEntityPersisters();
 		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
 		for ( int i = 0; i < metadatas.length; i++ ) {
 			metadatas[i] = metadata( session.getFactory(), resultTypes[i] );
 		}
-		return dialect.executeBackendQuery( customQuery, metadatas );
+		return dialect.executeBackendQuery( customQuery, queryParameters, metadatas );
 	}
 
 	private <T extends Service> T service(SessionImplementor session, Class<T> serviceRole) {

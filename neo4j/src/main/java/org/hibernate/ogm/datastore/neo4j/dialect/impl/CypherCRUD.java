@@ -322,7 +322,7 @@ public class CypherCRUD {
 		engine.execute( query.toString(), parameters );
 	}
 
-	public ExecutionResult executeQuery( String query ) {
-		return engine.execute( query );
+	public ExecutionResult executeQuery( String query, Map<String, Object> parameters ) {
+		return engine.execute( query, parameters );
 	}
 }
