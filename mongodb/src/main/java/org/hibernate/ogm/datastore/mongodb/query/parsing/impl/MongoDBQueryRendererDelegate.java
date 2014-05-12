@@ -76,6 +76,10 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	 * @return a {@code DBObject} representing the projections of the query
 	 */
 	private DBObject getProjectionDBObject() {
+		if ( projections.isEmpty() ) {
+			return null;
+		}
+
 		DBObject projectionDBObject = new BasicDBObject();
 
 		for ( String projection : projections ) {

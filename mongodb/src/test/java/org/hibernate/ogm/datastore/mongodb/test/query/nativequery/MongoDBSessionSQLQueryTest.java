@@ -85,11 +85,9 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
 		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
 
-		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( queryObject );
+		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( OscarWildePoem.class, queryObject );
 		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = query
-				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
-				.list();
+		List<OscarWildePoem> result = query.list();
 
 		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
 		assertAreEquals( athanasia, result.get( 0 ) );

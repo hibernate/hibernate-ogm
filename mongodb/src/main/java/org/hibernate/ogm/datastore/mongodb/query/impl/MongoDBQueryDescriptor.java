@@ -18,28 +18,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA  02110-1301, USA.
  */
-package org.hibernate.ogm.datastore.mongodb;
-
-import org.hibernate.ogm.datastore.spi.SessionOperations;
-import org.hibernate.ogm.query.NoSQLQuery;
+package org.hibernate.ogm.datastore.mongodb.query.impl;
 
 import com.mongodb.DBObject;
 
 /**
- * Provides session-level functionality specific to MongoDB.
+ * Describes a query to be executed against MongoDB.
  *
  * @author Gunnar Morling
  */
-public interface MongoDBSessionOperations extends SessionOperations {
+public class MongoDBQueryDescriptor {
+
+	private final String collectionName;
+	private final DBObject query;
+	private final DBObject projection;
+
+	public MongoDBQueryDescriptor(String collectionName, DBObject query, DBObject projection) {
+		this.collectionName = collectionName;
+		this.query = query;
+		this.projection = projection;
+	}
+
+	public MongoDBQueryDescriptor(String collectionName, DBObject query) {
+		this( collectionName, query, null );
+	}
 
 	/**
-	 * Creates a native query from the given {@link DBObject}.
-	 *
-	 * @param entityType type of the entity to whose MongoDB collection the query applies to. Will be registered as
-	 * query return automatically, so there is no need to invoke {@link NoSqlQuery#addEntity(Class)} on the returned
-	 * query.
-	 * @param query a MongoDB query object to create a {@link NoSqlQuery} from.
-	 * @return A native query representing the given query object
+	 * The name of the collection to select from.
 	 */
-	NoSQLQuery createNativeQuery(Class<?> entityType, DBObject query);
+	public String getCollectionName() {
+		return collectionName;
+	}
+
+	/**
+	 * The actual query object.
+	 */
+	public DBObject getQuery() {
+		return query;
+	}
+
+	/**
+	 * The fields to be selected, if this query doesn't return all fields of the entity. Passed to the {@code keys}
+	 * parameter of the MongoDB find API.
+	 */
+	public DBObject getProjection() {
+		return projection;
+	}
 }

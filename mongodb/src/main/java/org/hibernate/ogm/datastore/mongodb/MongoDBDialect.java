@@ -54,6 +54,7 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -598,20 +599,27 @@ public class MongoDBDialect implements BatchableGridDialect {
 	@Override
 	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		DBObject mongodbQuery = null;
+		DBObject projection = null;
+		String collectionName = null;
 
+		// query already given as DBObject (either created by JP-QL parser or given as DBObject originally)
 		if ( customQuery.getSpec() instanceof NativeNoSqlQuerySpecification ) {
 			@SuppressWarnings("unchecked")
-			NativeNoSqlQuerySpecification<DBObject> spec = (NativeNoSqlQuerySpecification<DBObject>) customQuery.getSpec();
-			mongodbQuery = spec.getQuery();
+			NativeNoSqlQuerySpecification<MongoDBQueryDescriptor> spec = (NativeNoSqlQuerySpecification<MongoDBQueryDescriptor>) customQuery.getSpec();
+			mongodbQuery = spec.getQuery().getQuery();
+			projection = spec.getQuery().getProjection();
+			collectionName = spec.getQuery().getCollectionName();
 		}
+		// a string-based native query; need to create the DBObject from that
 		else {
 			mongodbQuery = (BasicDBObject) JSON.parse( customQuery.getSQL() );
+			validate( metadatas );
+			collectionName = metadatas[0].getTable();
 		}
 
-		validate( metadatas );
-		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
-		DBCursor cursor = collection.find( mongodbQuery );
-		return new MongoDBResultsCursor( cursor, metadatas[0] );
+		DBCollection collection = provider.getDatabase().getCollection( collectionName );
+		DBCursor cursor = collection.find( mongodbQuery, projection );
+		return new MongoDBResultsCursor( cursor, metadatas.length == 1 ? metadatas[0] : null );
 	}
 
 	private void validate(EntityKeyMetadata[] metadatas) {

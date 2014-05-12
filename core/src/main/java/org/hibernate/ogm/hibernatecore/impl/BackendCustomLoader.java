@@ -31,6 +31,8 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
+import org.hibernate.loader.custom.Return;
+import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.TupleIterator;
@@ -53,20 +55,37 @@ public class BackendCustomLoader extends CustomLoader {
 
 	private final BackendCustomQuery customQuery;
 
+	/**
+	 * Whether this query is a selection of a complete entity not. Queries mixing scalar values and entire entities in
+	 * one result are not supported atm.
+	 */
+	private final boolean isEntityQuery;
+
 	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
 		this.customQuery = customQuery;
+		isEntityQuery = isEntityQuery( customQuery );
+	}
+
+	private static boolean isEntityQuery(BackendCustomQuery query) {
+		for ( Return queryReturn : query.getCustomQueryReturns() ) {
+			if ( queryReturn instanceof RootReturn ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
-	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
+	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
 		TupleIterator tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
 		try {
-			if ( resultTypes.length == 0 ) {
-				return listOfArrays( tuples );
+			if ( isEntityQuery ) {
+				return listOfEntities( session, resultTypes, tuples );
 			}
 			else {
-				return listOfEntities( session, resultTypes, tuples );
+				return listOfArrays( tuples );
 			}
 		}
 		finally {
