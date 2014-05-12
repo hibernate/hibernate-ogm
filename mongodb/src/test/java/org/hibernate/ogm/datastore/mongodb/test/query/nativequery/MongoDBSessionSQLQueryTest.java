@@ -99,6 +99,30 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNativeObjectQueryWithProjection() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		DBObject projection = new BasicDBObject( "name", 1 );
+
+		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( OscarWildePoem.class, queryObject, projection );
+		@SuppressWarnings("unchecked")
+		List<Object[]> result = query.list();
+
+		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
+		assertThat( result.get( 0 ) ).isEqualTo( new Object[] { 2L, "Athanasia" } );
+		assertThat( result.get( 1 ) ).isEqualTo( new Object[] { 1L, "Portia" } );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
 	public void testListMultipleResultQuery() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();

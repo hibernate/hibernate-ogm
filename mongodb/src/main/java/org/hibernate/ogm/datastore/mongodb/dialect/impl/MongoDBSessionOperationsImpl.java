@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.spi.NativeNoSqlQuery;
+import org.hibernate.ogm.util.impl.Contracts;
 
 import com.mongodb.DBObject;
 
@@ -59,6 +60,29 @@ public class MongoDBSessionOperationsImpl implements MongoDBSessionOperations {
 		// registering the entity as result; That's save as no projection can be given via this API, so the query
 		// only can return the entire entity
 		mongoDbQuery.addEntity( entityType );
+
+		return mongoDbQuery;
+	}
+
+	@Override
+	public NoSQLQuery createNativeQuery(Class<?> entityType, DBObject query, DBObject projection) {
+		Contracts.assertParameterNotNull( entityType, "entityType" );
+		Contracts.assertParameterNotNull( query, "query" );
+		Contracts.assertParameterNotNull( query, "query" );
+
+		OgmEntityPersister persister = (OgmEntityPersister) ( ( (SessionImplementor) session )
+				.getFactory() )
+				.getEntityPersister( entityType.getName() );
+
+		NativeNoSqlQuery<MongoDBQueryDescriptor> mongoDbQuery = new NativeNoSqlQuery<MongoDBQueryDescriptor>(
+				new MongoDBQueryDescriptor( persister.getTableName(), query, projection ),
+				(SessionImplementor) session,
+				new ParameterMetadata( null, null )
+		);
+
+		for ( String field : projection.keySet() ) {
+			mongoDbQuery.addScalar( field );
+		}
 
 		return mongoDbQuery;
 	}

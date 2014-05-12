@@ -42,4 +42,17 @@ public interface MongoDBSessionOperations extends SessionOperations {
 	 * @return A native query representing the given query object
 	 */
 	NoSQLQuery createNativeQuery(Class<?> entityType, DBObject query);
+
+	/**
+	 * Creates a native query from the given {@link DBObject}.
+	 *
+	 * @param entityType type of the entity to whose MongoDB collection the query applies to.
+	 * @param query a MongoDB query object to create a {@link NoSqlQuery} from.
+	 * @param projection The fields to be selected. Passed to the {@code keys} parameter of the MongoDB find API. Note
+	 * that the id field always is returned, regardless whether it has been specified or not. The given fields will
+	 * automatically be added as scalar returns to the query, so there is no need to invoke
+	 * {@link NoSqlQuery#addScalar(String)} on the returned query.
+	 * @return A native query representing the given query object
+	 */
+	NoSQLQuery createNativeQuery(Class<?> entityType, DBObject query, DBObject projection);
 }
