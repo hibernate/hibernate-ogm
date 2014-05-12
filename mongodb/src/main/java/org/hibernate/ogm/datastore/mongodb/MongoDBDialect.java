@@ -605,6 +605,16 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 		DBCursor cursor = collection.find( mongodbQuery, projection );
+
+		// apply firstRow/maxRows if present
+		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
+			cursor.skip( queryParameters.getRowSelection().getFirstRow() );
+		}
+
+		if ( queryParameters.getRowSelection().getMaxRows() != null ) {
+			cursor.limit( queryParameters.getRowSelection().getMaxRows() );
+		}
+
 		return new MongoDBResultsCursor( cursor, metadatas.length == 1 ? metadatas[0] : null );
 	}
 

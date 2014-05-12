@@ -63,8 +63,16 @@ public class OgmQuery extends AbstractQueryImpl {
 	}
 
 	@Override
-	public List list() throws HibernateException {
-		return getExecutingQuery().list();
+	public List<?> list() throws HibernateException {
+		Query executingQuery = getExecutingQuery();
+
+		if ( getFirstResult() != null ) {
+			executingQuery.setFirstResult( getFirstResult() );
+		}
+		if ( getMaxResults() != null ) {
+			executingQuery.setMaxResults( getMaxResults() );
+		}
+		return executingQuery.list();
 	}
 
 	/**
