@@ -20,6 +20,7 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.internal.AbstractQueryImpl;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.service.impl.QueryParserService;
 
@@ -39,7 +40,7 @@ public class OgmQuery extends AbstractQueryImpl {
 	private final QueryParserService queryParserService;
 	private final LockOptions lockOptions = new LockOptions();
 
-	public OgmQuery(String queryString, FlushMode flushMode, OgmSession session,
+	public OgmQuery(String queryString, FlushMode flushMode, OgmSessionImpl session,
 			ParameterMetadata parameterMetadata, QueryParserService queryParserService) {
 		super( queryString, flushMode, session, parameterMetadata );
 		this.session = session;

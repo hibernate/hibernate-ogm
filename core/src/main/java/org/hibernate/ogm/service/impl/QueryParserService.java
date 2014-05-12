@@ -9,9 +9,8 @@ package org.hibernate.ogm.service.impl;
 import java.util.Map;
 
 import org.hibernate.Query;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.service.Service;
-
 
 /**
  * There should be a single QueryParserService implementation registered,

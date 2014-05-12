@@ -24,7 +24,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBResultTupleIterable;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -45,7 +45,7 @@ public class MongoDBQueryImpl extends AbstractQueryImpl {
 	private final Class<?> entityType;
 	private final DBObject projections;
 
-	public MongoDBQueryImpl(Class<?> entityType, DBObject query, DBObject projections, OgmSession session) {
+	public MongoDBQueryImpl(Class<?> entityType, DBObject query, DBObject projections, OgmSessionImpl session) {
 		super( query.toString(), null, session.getDelegate(), new ParameterMetadata( null, null ) );
 		this.query = query;
 		this.entityType = entityType;

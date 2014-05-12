@@ -37,6 +37,7 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.internal.util.StringHelper;
+import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.type.Type;
 
 /**
@@ -50,7 +51,7 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
+public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 
 	private List<NativeSQLQueryReturn> queryReturns;
 	private List<ReturnBuilder> queryReturnBuilders;
@@ -69,7 +70,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 	 * @param session The session to which this NoSQLQuery belongs.
 	 * @param parameterMetadata Metadata about parameters found in the query.
 	 */
-	public NoSQLQuery(NamedSQLQueryDefinition queryDef, SessionImplementor session, ParameterMetadata parameterMetadata) {
+	public NoSQLQueryImpl(NamedSQLQueryDefinition queryDef, SessionImplementor session, ParameterMetadata parameterMetadata) {
 		super( queryDef.getQueryString(), queryDef.getFlushMode(), session, parameterMetadata );
 		this.session = session;
 		if ( queryDef.getResultSetRef() != null ) {
@@ -90,11 +91,11 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		this.callable = queryDef.isCallable();
 	}
 
-	public NoSQLQuery(String sql, SessionImplementor session, ParameterMetadata parameterMetadata) {
+	public NoSQLQueryImpl(String sql, SessionImplementor session, ParameterMetadata parameterMetadata) {
 		this( sql, false, session, parameterMetadata );
 	}
 
-	public NoSQLQuery(String sql, boolean callable, SessionImplementor session, ParameterMetadata parameterMetadata) {
+	public NoSQLQueryImpl(String sql, boolean callable, SessionImplementor session, ParameterMetadata parameterMetadata) {
 		super( sql, null, session, parameterMetadata );
 		this.session = session;
 		this.queryReturns = new ArrayList<NativeSQLQueryReturn>();
@@ -139,6 +140,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 				querySpaces );
 	}
 
+	@Override
 	public ScrollableResults scroll(ScrollMode scrollMode) throws HibernateException {
 		verifyParameters();
 		before();
@@ -157,10 +159,12 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		}
 	}
 
+	@Override
 	public ScrollableResults scroll() throws HibernateException {
 		return scroll( session.getFactory().getDialect().defaultScrollMode() );
 	}
 
+	@Override
 	public Iterator iterate() throws HibernateException {
 		throw new UnsupportedOperationException( "SQL queries do not currently support iteration" );
 	}
@@ -227,10 +231,12 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		throw new UnsupportedOperationException( "not yet implemented for SQL queries" );
 	}
 
+	@Override
 	public Query setLockMode(String alias, LockMode lockMode) {
 		throw new UnsupportedOperationException( "cannot set the lock mode for a native SQL query" );
 	}
 
+	@Override
 	public Query setLockOptions(LockOptions lockOptions) {
 		throw new UnsupportedOperationException( "cannot set lock options for a native SQL query" );
 	}
@@ -241,12 +247,14 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return lockOptions;
 	}
 
+	@Override
 	public SQLQuery addScalar(final String columnAlias, final Type type) {
 		if ( queryReturnBuilders == null ) {
 			queryReturnBuilders = new ArrayList<ReturnBuilder>();
 		}
 		queryReturnBuilders.add( new ReturnBuilder() {
 
+			@Override
 			public NativeSQLQueryReturn buildReturn() {
 				return new NativeSQLQueryScalarReturn( columnAlias, type );
 			}
@@ -254,10 +262,12 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return this;
 	}
 
+	@Override
 	public SQLQuery addScalar(String columnAlias) {
 		return addScalar( columnAlias, null );
 	}
 
+	@Override
 	public RootReturn addRoot(String tableAlias, String entityName) {
 		RootReturnBuilder builder = new RootReturnBuilder( tableAlias, entityName );
 		if ( queryReturnBuilders == null ) {
@@ -267,36 +277,44 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return builder;
 	}
 
+	@Override
 	public RootReturn addRoot(String tableAlias, Class entityType) {
 		return addRoot( tableAlias, entityType.getName() );
 	}
 
+	@Override
 	public SQLQuery addEntity(String entityName) {
 		return addEntity( StringHelper.unqualify( entityName ), entityName );
 	}
 
+	@Override
 	public SQLQuery addEntity(String alias, String entityName) {
 		addRoot( alias, entityName );
 		return this;
 	}
 
+	@Override
 	public SQLQuery addEntity(String alias, String entityName, LockMode lockMode) {
 		addRoot( alias, entityName ).setLockMode( lockMode );
 		return this;
 	}
 
+	@Override
 	public SQLQuery addEntity(Class entityType) {
 		return addEntity( entityType.getName() );
 	}
 
+	@Override
 	public SQLQuery addEntity(String alias, Class entityClass) {
 		return addEntity( alias, entityClass.getName() );
 	}
 
+	@Override
 	public SQLQuery addEntity(String alias, Class entityClass, LockMode lockMode) {
 		return addEntity( alias, entityClass.getName(), lockMode );
 	}
 
+	@Override
 	public FetchReturn addFetch(String tableAlias, String ownerTableAlias, String joinPropertyName) {
 		FetchReturnBuilder builder = new FetchReturnBuilder( tableAlias, ownerTableAlias, joinPropertyName );
 		if ( queryReturnBuilders == null ) {
@@ -306,11 +324,13 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return builder;
 	}
 
+	@Override
 	public SQLQuery addJoin(String tableAlias, String ownerTableAlias, String joinPropertyName) {
 		addFetch( tableAlias, ownerTableAlias, joinPropertyName );
 		return this;
 	}
 
+	@Override
 	public SQLQuery addJoin(String alias, String path) {
 		createFetchJoin( alias, path );
 		return this;
@@ -326,11 +346,13 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return addFetch( tableAlias, ownerTableAlias, joinedPropertyName );
 	}
 
+	@Override
 	public SQLQuery addJoin(String alias, String path, LockMode lockMode) {
 		createFetchJoin( alias, path ).setLockMode( lockMode );
 		return this;
 	}
 
+	@Override
 	public SQLQuery setResultSetMapping(String name) {
 		ResultSetMappingDefinition mapping = session.getFactory().getResultSetMapping( name );
 		if ( mapping == null ) {
@@ -341,6 +363,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return this;
 	}
 
+	@Override
 	public SQLQuery addSynchronizedQuerySpace(String querySpace) {
 		if ( querySpaces == null ) {
 			querySpaces = new ArrayList<String>();
@@ -349,10 +372,12 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return this;
 	}
 
+	@Override
 	public SQLQuery addSynchronizedEntityName(String entityName) {
 		return addQuerySpaces( session.getFactory().getEntityPersister( entityName ).getQuerySpaces() );
 	}
 
+	@Override
 	public SQLQuery addSynchronizedEntityClass(Class entityClass) {
 		return addQuerySpaces( session.getFactory().getEntityPersister( entityClass.getName() ).getQuerySpaces() );
 	}
@@ -367,6 +392,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 		return this;
 	}
 
+	@Override
 	public int executeUpdate() throws HibernateException {
 		Map namedParams = getNamedParams();
 		before();
@@ -390,27 +416,32 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 			this.entityName = entityName;
 		}
 
+		@Override
 		public RootReturn setLockMode(LockMode lockMode) {
 			this.lockMode = lockMode;
 			return this;
 		}
 
+		@Override
 		public RootReturn setDiscriminatorAlias(String alias) {
 			addProperty( "class", alias );
 			return this;
 		}
 
+		@Override
 		public RootReturn addProperty(String propertyName, String columnAlias) {
 			addProperty( propertyName ).addColumnAlias( columnAlias );
 			return this;
 		}
 
+		@Override
 		public ReturnProperty addProperty(final String propertyName) {
 			if ( propertyMappings == null ) {
 				propertyMappings = new HashMap<String, String[]>();
 			}
 			return new ReturnProperty() {
 
+				@Override
 				public ReturnProperty addColumnAlias(String columnAlias) {
 					String[] columnAliases = propertyMappings.get( propertyName );
 					if ( columnAliases == null ) {
@@ -428,6 +459,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 			};
 		}
 
+		@Override
 		public NativeSQLQueryReturn buildReturn() {
 			return new NativeSQLQueryRootReturn( alias, entityName, propertyMappings, lockMode );
 		}
@@ -436,7 +468,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 	private class FetchReturnBuilder implements FetchReturn, ReturnBuilder {
 
 		private final String alias;
-		private String ownerTableAlias;
+		private final String ownerTableAlias;
 		private final String joinedPropertyName;
 		private LockMode lockMode = LockMode.READ;
 		private Map<String, String[]> propertyMappings;
@@ -447,22 +479,26 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 			this.joinedPropertyName = joinedPropertyName;
 		}
 
+		@Override
 		public FetchReturn setLockMode(LockMode lockMode) {
 			this.lockMode = lockMode;
 			return this;
 		}
 
+		@Override
 		public FetchReturn addProperty(String propertyName, String columnAlias) {
 			addProperty( propertyName ).addColumnAlias( columnAlias );
 			return this;
 		}
 
+		@Override
 		public ReturnProperty addProperty(final String propertyName) {
 			if ( propertyMappings == null ) {
 				propertyMappings = new HashMap<String, String[]>();
 			}
 			return new ReturnProperty() {
 
+				@Override
 				public ReturnProperty addColumnAlias(String columnAlias) {
 					String[] columnAliases = propertyMappings.get( propertyName );
 					if ( columnAliases == null ) {
@@ -480,6 +516,7 @@ public class NoSQLQuery extends AbstractQueryImpl implements SQLQuery {
 			};
 		}
 
+		@Override
 		public NativeSQLQueryReturn buildReturn() {
 			return new NativeSQLQueryJoinReturn( alias, ownerTableAlias, joinedPropertyName, propertyMappings, lockMode );
 		}
