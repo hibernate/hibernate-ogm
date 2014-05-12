@@ -21,6 +21,10 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
+import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
+import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
+import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
@@ -407,6 +411,20 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testGetNamedQuery() throws Exception {
 		Helicopter result = (Helicopter) session.getNamedQuery( Helicopter.BY_NAME ).setParameter( "name", "Lama" ).uniqueResult();
 		assertThat( result.getName() ).isEqualTo( "Lama" );
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J },
+			comment = "Should actually work with the Lucene backend; Presumably the tests fails though due to an "
+					+ "unreliable order of returned elements. To be re-enabled once ORDER BY is implemented."
+	)
+	public void testFirstResultAndMaxRows() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null" )
+				.setFirstResult( 2 )
+				.setMaxResults( 3 )
+				.list();
+		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17" );
 	}
 
 	@BeforeClass
