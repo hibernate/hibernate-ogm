@@ -26,10 +26,16 @@ import java.util.List;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
+import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  *  Test the execution of native queries on MongoDB using the {@link Session}
@@ -68,6 +74,30 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		if ( entity != null ) {
 			session.delete( entity );
 		}
+	}
+
+	@Test
+	public void testNativeObjectQuery() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( queryObject );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query
+				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+				.list();
+
+		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
+		assertAreEquals( athanasia, result.get( 0 ) );
+		assertAreEquals( portia, result.get( 1 ) );
+
+		transaction.commit();
+		session.clear();
+		session.close();
 	}
 
 	@Test

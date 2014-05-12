@@ -76,6 +76,7 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
@@ -90,6 +91,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.mongodb.util.JSON;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -595,7 +597,17 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		BasicDBObject mongodbQuery = (BasicDBObject) com.mongodb.util.JSON.parse( customQuery.getSQL() );
+		DBObject mongodbQuery = null;
+
+		if ( customQuery.getSpec() instanceof NativeNoSqlQuerySpecification ) {
+			@SuppressWarnings("unchecked")
+			NativeNoSqlQuerySpecification<DBObject> spec = (NativeNoSqlQuerySpecification<DBObject>) customQuery.getSpec();
+			mongodbQuery = spec.getQuery();
+		}
+		else {
+			mongodbQuery = (BasicDBObject) JSON.parse( customQuery.getSQL() );
+		}
+
 		validate( metadatas );
 		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
 		DBCursor cursor = collection.find( mongodbQuery );
