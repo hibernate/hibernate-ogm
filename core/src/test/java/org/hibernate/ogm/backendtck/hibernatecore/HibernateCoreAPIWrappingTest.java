@@ -30,9 +30,9 @@ import javax.persistence.Persistence;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Rule;
@@ -54,13 +54,13 @@ public class HibernateCoreAPIWrappingTest {
 		assertThat( factory.getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 
 		Session s = factory.openSession();
-		assertThat( s.getClass() ).isEqualTo( OgmSession.class );
+		assertThat( s.getClass() ).isEqualTo( OgmSessionImpl.class );
 		assertThat( s.getSessionFactory().getClass() ).isEqualTo( OgmSessionFactoryImpl.class );
 		s.close();
 
 		EntityManager em = emf.createEntityManager();
-		assertThat( em.unwrap( Session.class ).getClass() ).isEqualTo( OgmSession.class );
-		assertThat( em.getDelegate().getClass() ).isEqualTo( OgmSession.class );
+		assertThat( em.unwrap( Session.class ).getClass() ).isEqualTo( OgmSessionImpl.class );
+		assertThat( em.getDelegate().getClass() ).isEqualTo( OgmSessionImpl.class );
 
 		em.close();
 

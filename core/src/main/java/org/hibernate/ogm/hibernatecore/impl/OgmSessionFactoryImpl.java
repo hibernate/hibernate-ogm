@@ -254,7 +254,7 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 
 	@Override
 	public Session openTemporarySession() throws HibernateException {
-		return new OgmSession( this, (EventSource) delegate.openTemporarySession() );
+		return new OgmSessionImpl( this, (EventSource) delegate.openTemporarySession() );
 	}
 
 	@Override
@@ -320,13 +320,13 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 	@Override
 	public Session openSession() throws HibernateException {
 		final Session session = delegate.openSession();
-		return new OgmSession(this, (EventSource) session);
+		return new OgmSessionImpl(this, (EventSource) session);
 	}
 
 	@Override
 	public Session getCurrentSession() throws HibernateException {
 		final Session session = delegate.getCurrentSession();
-		return new OgmSession(this, (EventSource) session);
+		return new OgmSessionImpl(this, (EventSource) session);
 	}
 
 	@Override

@@ -64,12 +64,12 @@ import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.internal.util.LockModeTypeHelper;
-import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
+import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
 
 /**
  * Delegates most method calls to the underlying EntityManager
@@ -212,7 +212,7 @@ public class OgmEntityManager implements EntityManager {
 		}
 
 		Session session = (Session) getDelegate();
-		return applyProperties( new OgmJpaQuery<Object>( session.createQuery( qlString ), (AbstractEntityManagerImpl) hibernateEm ) );
+		return applyProperties( new OgmJpaQuery<Object>( session.createQuery( qlString ), hibernateEm ) );
 	}
 
 	private Query applyProperties(Query query) {
@@ -254,7 +254,7 @@ public class OgmEntityManager implements EntityManager {
 		resultClassChecking( resultClass, query );
 
 		// finally, build/return the query instance
-		return new OgmJpaQuery<T>( query, (AbstractEntityManagerImpl) hibernateEm );
+		return new OgmJpaQuery<T>( query, hibernateEm );
 	}
 
 	@Override
@@ -290,7 +290,7 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	protected <T> TypedQuery<T> wrapAsJpaQuery(NamedQueryDefinition namedQueryDefinition, org.hibernate.Query hibQuery) {
-		final OgmJpaQuery<T> jpaQuery = new OgmJpaQuery<T>( hibQuery, (AbstractEntityManagerImpl) hibernateEm );
+		final OgmJpaQuery<T> jpaQuery = new OgmJpaQuery<T>( hibQuery, hibernateEm );
 		applySavedSettings( namedQueryDefinition, jpaQuery );
 		return jpaQuery;
 	}
@@ -554,7 +554,7 @@ public class OgmEntityManager implements EntityManager {
 		final SessionFactory sessionFactory = ( (HibernateEntityManagerFactory) hibernateEm.getEntityManagerFactory() )
 				.getSessionFactory();
 		final OgmSessionFactory ogmSessionFactory = new OgmSessionFactoryImpl( (SessionFactoryImplementor) sessionFactory );
-		return new OgmSession( ogmSessionFactory, (EventSource) session );
+		return new OgmSessionImpl( ogmSessionFactory, (EventSource) session );
 	}
 
 	@Override

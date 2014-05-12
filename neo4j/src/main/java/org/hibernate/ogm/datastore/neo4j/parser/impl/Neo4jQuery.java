@@ -30,13 +30,14 @@ import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.AbstractQueryImpl;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.TupleIterator;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
 import org.hibernate.ogm.util.parser.impl.ObjectLoadingIterator;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -51,16 +52,19 @@ public class Neo4jQuery extends AbstractQueryImpl {
 	private final ExecutionResult executeResult;
 
 	public Neo4jQuery(Class<?> entityType, String query, List<String> projections, OgmSession session) {
-		super( query, null, session, new ParameterMetadata( null, null ) );
-		Neo4jDatastoreProvider provider = neo4jProvider( session );
+		super( query, null, (SessionImplementor) session, new ParameterMetadata( null, null ) );
+		Neo4jDatastoreProvider provider = neo4jProvider( (SessionImplementor) session );
 		ExecutionEngine engine = new ExecutionEngine( provider.getDataBase() );
 		this.entityType = entityType;
 		this.projections = projections;
 		this.executeResult = engine.execute( getQueryString() );
 	}
 
-	private Neo4jDatastoreProvider neo4jProvider(OgmSession session) {
-		return (Neo4jDatastoreProvider) session.getSessionFactory().getServiceRegistry().getService( DatastoreProvider.class );
+	private static Neo4jDatastoreProvider neo4jProvider(SessionImplementor session) {
+		return (Neo4jDatastoreProvider) session
+				.getFactory()
+				.getServiceRegistry()
+				.getService( DatastoreProvider.class );
 	}
 
 	@Override
