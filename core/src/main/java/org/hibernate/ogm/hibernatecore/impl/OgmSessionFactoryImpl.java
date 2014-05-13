@@ -68,6 +68,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.query.impl.NoSqlQueryParameterMetadataCache;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.proxy.EntityNotFoundDelegate;
@@ -84,9 +85,11 @@ import org.hibernate.type.TypeResolver;
 public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSessionFactory {
 
 	private final SessionFactoryImplementor delegate;
+	private final NoSqlQueryParameterMetadataCache parameterMetadataCache;
 
 	public OgmSessionFactoryImpl(SessionFactoryImplementor delegate) {
 		this.delegate = delegate;
+		this.parameterMetadataCache = new NoSqlQueryParameterMetadataCache( this );
 	}
 
 	@Override
@@ -137,6 +140,10 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 	@Override
 	public QueryPlanCache getQueryPlanCache() {
 		return delegate.getQueryPlanCache();
+	}
+
+	public NoSqlQueryParameterMetadataCache getNativeQueryParameterMetadataCache() {
+		return parameterMetadataCache;
 	}
 
 	@Override
@@ -247,7 +254,7 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 
 	@Override
 	public Session openTemporarySession() throws HibernateException {
-		return new OgmSession( this, (EventSource) delegate.openTemporarySession() );
+		return new OgmSessionImpl( this, (EventSource) delegate.openTemporarySession() );
 	}
 
 	@Override
@@ -313,13 +320,13 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 	@Override
 	public Session openSession() throws HibernateException {
 		final Session session = delegate.openSession();
-		return new OgmSession(this, (EventSource) session);
+		return new OgmSessionImpl(this, (EventSource) session);
 	}
 
 	@Override
 	public Session getCurrentSession() throws HibernateException {
 		final Session session = delegate.getCurrentSession();
-		return new OgmSession(this, (EventSource) session);
+		return new OgmSessionImpl(this, (EventSource) session);
 	}
 
 	@Override

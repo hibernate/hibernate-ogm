@@ -114,4 +114,8 @@ public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Conf
 	public Serializable generate(final SessionImplementor session, Object object) throws HibernateException {
 		return tableGenerator.generate( session, object );
 	}
+
+	public String getSegmentValue() {
+		return tableGenerator.getSegmentValue();
+	}
 }

@@ -54,10 +54,13 @@ import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.datastore.spi.SessionOperations;
+import org.hibernate.ogm.datastore.spi.SessionOperationsProvider;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.jpa.impl.NoSQLQuery;
+import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -73,23 +76,20 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernate.Session, EventSource {
+public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSession, EventSource {
 
 	private static final Log log = LoggerFactory.make();
 
-	/**
-	 * Query parameters are not supported
-	 */
-	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
-
 	private final EventSource delegate;
-	private final OgmSessionFactory factory;
-	private QueryParserService queryParserService;
+	private final OgmSessionFactoryImpl factory;
 
-	public OgmSession(OgmSessionFactory factory, EventSource delegate) {
+	private QueryParserService queryParserService;
+	private SessionOperations sessionOperations;
+
+	public OgmSessionImpl(OgmSessionFactory factory, EventSource delegate) {
 		super( delegate, delegate );
 		this.delegate = delegate;
-		this.factory = factory;
+		this.factory = (OgmSessionFactoryImpl) factory;
 	}
 
 	//Overridden methods
@@ -165,12 +165,24 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 
 	@Override
 	public SQLQuery createSQLQuery(String queryString) throws HibernateException {
-		return new NoSQLQuery( queryString, this, NO_PARAMETERS );
+		errorIfClosed();
+
+		return new NoSQLQueryImpl(
+				queryString,
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( queryString )
+		);
 	}
 
 	@Override
 	public SQLQuery createSQLQuery(NamedSQLQueryDefinition namedQueryDefinition) {
-		return new NoSQLQuery( namedQueryDefinition, this, NO_PARAMETERS );
+		errorIfClosed();
+
+		return new NoSQLQueryImpl(
+				namedQueryDefinition.getQuery(),
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( namedQueryDefinition.getQuery() )
+		);
 	}
 
 	@Override
@@ -288,7 +300,7 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
 		}
 
-		CustomLoader loader = new BackendCustomLoader( customQuery, getFactory() );
+		CustomLoader loader = new BackendCustomLoader( (BackendCustomQuery) customQuery, getFactory() );
 		return loader.list( getDelegate(), queryParameters );
 	}
 
@@ -300,7 +312,7 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 
 	@Override
 	public List list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		CustomQuery customQuery = new BackendCustomQuery( spec.getQueryString(), spec.getQueryReturns(), spec.getQuerySpaces(), factory );
+		CustomQuery customQuery = new BackendCustomQuery( spec, factory );
 		// TODO Implement query plan cache?
 		return listCustomQuery( customQuery, queryParameters );
 	}
@@ -328,7 +340,11 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	public Query getNamedSQLQuery(String queryName) {
 		errorIfClosed();
 		NamedSQLQueryDefinition nsqlqd = findNamedNativeQuery( queryName );
-		Query query = new NoSQLQuery( nsqlqd, this, NO_PARAMETERS );
+		Query query = new NoSQLQueryImpl(
+				nsqlqd,
+				this,
+				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( nsqlqd.getQuery() )
+		);
 		query.setComment( "named native query " + queryName );
 		return query;
 	}
@@ -368,5 +384,26 @@ public class OgmSession extends SessionDelegatorBaseImpl implements org.hibernat
 	 */
 	public EventSource getDelegate() {
 		return delegate;
+	}
+
+	@Override
+	public <P extends SessionOperationsProvider<O>, O extends SessionOperations> O operationsFor(Class<P> datastoreType) {
+		if ( sessionOperations == null ) {
+			sessionOperations = newInstance( datastoreType ).getSessionOperations( this );
+		}
+
+		@SuppressWarnings("unchecked")
+		O operations = (O) sessionOperations;
+		return operations;
+	}
+
+	private <P extends SessionOperationsProvider<?>> P newInstance(Class<P> datastoreType) {
+		try {
+			return datastoreType.newInstance();
+
+		}
+		catch (Exception e) {
+			throw log.unableToInstantiateType( datastoreType.getName(), e );
+		}
 	}
 }

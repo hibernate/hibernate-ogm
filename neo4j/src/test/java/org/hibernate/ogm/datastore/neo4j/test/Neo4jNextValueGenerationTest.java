@@ -47,6 +47,10 @@ import org.junit.Test;
  */
 public class Neo4jNextValueGenerationTest {
 
+	private static final String HIBERNATE_SEQUENCES = "hibernate_sequences";
+	private static final String THREAD_SAFETY_SEQUENCE = "ThreadSafetySequence";
+	private static final String INITIAL_VALUE_SEQUENCE = "InitialValueSequence";
+
 	private static final int LOOPS = 2;
 	private static final int THREADS = 10;
 
@@ -69,6 +73,10 @@ public class Neo4jNextValueGenerationTest {
 
 		provider.configure( configurationValues );
 		provider.start();
+		provider.getSchemaBuilder()
+			.addSequence( HIBERNATE_SEQUENCES, INITIAL_VALUE_SEQUENCE )
+			.addSequence( HIBERNATE_SEQUENCES, THREAD_SAFETY_SEQUENCE )
+			.update();
 		dialect = new Neo4jDialect( provider );
 	}
 
@@ -81,7 +89,7 @@ public class Neo4jNextValueGenerationTest {
 	@Test
 	public void testFirstValueIsInitialValue() {
 		final int initialValue = 5;
-		final RowKey sequenceNode = new RowKey( "initialSequence", new String[0], new Object[0] );
+		final RowKey sequenceNode = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { INITIAL_VALUE_SEQUENCE } );
 		final IdentifierGeneratorHelper.BigIntegerHolder sequenceValue = new IdentifierGeneratorHelper.BigIntegerHolder();
 		dialect.nextValue( sequenceNode, sequenceValue, 1, initialValue );
 		assertThat( sequenceValue.makeValue().intValue(), equalTo( initialValue ) );
@@ -89,7 +97,7 @@ public class Neo4jNextValueGenerationTest {
 
 	@Test
 	public void testThreadSafty() throws InterruptedException {
-		final RowKey test = new RowKey( "test", new String[0], new Object[0] );
+		final RowKey test = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { THREAD_SAFETY_SEQUENCE } );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
 			threads[i] = new Thread( new Runnable() {

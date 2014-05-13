@@ -30,7 +30,7 @@ import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.lucene.LuceneProcessingChain;
 import org.hibernate.hql.lucene.LuceneQueryParsingResult;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.FullTextQuery;

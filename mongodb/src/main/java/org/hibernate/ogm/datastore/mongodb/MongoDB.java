@@ -20,11 +20,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBSessionOperationsImpl;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBEntityContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBGlobalContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
+import org.hibernate.ogm.datastore.spi.SessionOperationsProvider;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
 /**
@@ -32,10 +35,15 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  *
  * @author Gunnar Morling
  */
-public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext> {
+public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext>, SessionOperationsProvider<MongoDBSessionOperations> {
 
 	@Override
 	public MongoDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
 		return context.createGlobalContext( MongoDBGlobalContextImpl.class, MongoDBEntityContextImpl.class, MongoDBPropertyContextImpl.class );
+	}
+
+	@Override
+	public MongoDBSessionOperations getSessionOperations(OgmSession session) {
+		return new MongoDBSessionOperationsImpl( session );
 	}
 }

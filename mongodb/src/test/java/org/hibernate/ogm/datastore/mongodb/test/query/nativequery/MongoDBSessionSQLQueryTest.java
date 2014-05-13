@@ -24,12 +24,19 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
 
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
+import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 
 /**
  *  Test the execution of native queries on MongoDB using the {@link Session}
@@ -40,6 +47,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde" );
 
 	@Before
 	public void init() {
@@ -47,6 +55,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		Transaction transaction = session.beginTransaction();
 		session.persist( portia );
 		session.persist( athanasia );
+		session.persist( imperatrix );
 		transaction.commit();
 		session.clear();
 		session.close();
@@ -58,6 +67,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		Transaction tx = session.beginTransaction();
 		delete( session, portia );
 		delete( session, athanasia );
+		delete( session, imperatrix );
 		tx.commit();
 		session.clear();
 		session.close();
@@ -71,6 +81,95 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNativeObjectQuery() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( OscarWildePoem.class, queryObject );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testNativeObjectQueryWithProjection() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		DBObject projection = new BasicDBObject( "name", 1 );
+
+		NoSQLQuery query = session.operationsFor( MongoDB.class ).createNativeQuery( OscarWildePoem.class, queryObject, projection );
+		@SuppressWarnings("unchecked")
+		List<Object[]> result = query.list();
+
+		assertThat( result ).as( "Unexpected number of results" ).hasSize( 3 );
+		assertThat( result.get( 0 ) ).isEqualTo( new Object[] { 2L, "Athanasia" } );
+		assertThat( result.get( 1 ) ).isEqualTo( new Object[] { 3L, "Ave Imperatrix" } );
+		assertThat( result.get( 2 ) ).isEqualTo( new Object[] { 1L, "Portia" } );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testNativeObjectQueryWithFirstResult() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		Query query = session.operationsFor( MongoDB.class )
+				.createNativeQuery( OscarWildePoem.class, queryObject )
+				.setFirstResult( 1 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testNativeObjectQueryWithMaxRows() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		DBObject queryObject = new BasicDBObject();
+		queryObject.put( "$query", new BasicDBObject( "author", "Oscar Wilde" ) );
+		queryObject.put( "$orderby", new BasicDBObject( "name", 1 ) );
+
+		Query query = session.operationsFor( MongoDB.class )
+				.createNativeQuery( OscarWildePoem.class, queryObject )
+				.setMaxResults( 2 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
 	public void testListMultipleResultQuery() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -81,9 +180,27 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.list();
 
-		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
-		assertAreEquals( athanasia, result.get( 0 ) );
-		assertAreEquals( portia, result.get( 1 ) );
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testListMultipleResultQueryWithFirstResultAndMaxRows() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+				.setFirstResult( 1 )
+				.setMaxResults( 1 )
+				.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 3L );
 
 		transaction.commit();
 		session.clear();

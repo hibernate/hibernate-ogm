@@ -70,6 +70,10 @@ public class MassIndexingMongoDBTupleSnapshot implements TupleSnapshot {
 	}
 
 	public boolean columnInIdField(String column) {
+		if ( entityKeyMetadata == null ) {
+			return false;
+		}
+
 		for ( String idColumn : entityKeyMetadata.getColumnNames() ) {
 			if ( idColumn.equals( column ) ) {
 				return true;

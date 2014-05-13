@@ -28,6 +28,7 @@ import org.hibernate.SessionBuilder;
 import org.hibernate.SessionEventListener;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 
 /**
@@ -87,7 +88,7 @@ public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 
 	@Override
 	public OgmSession openSession() {
-		return new OgmSession( factory, (EventSource) builder.openSession() );
+		return new OgmSessionImpl( factory, (EventSource) builder.openSession() );
 	}
 
 	@Override

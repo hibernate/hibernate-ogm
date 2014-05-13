@@ -48,7 +48,7 @@ public class OgmSessionBuilderDelegator implements SessionBuilderImplementor {
 	@Override
 	public Session openSession() {
 		Session session = builder.openSession();
-		return new OgmSession( factory, (EventSource) session );
+		return new OgmSessionImpl( factory, (EventSource) session );
 	}
 
 	@Override

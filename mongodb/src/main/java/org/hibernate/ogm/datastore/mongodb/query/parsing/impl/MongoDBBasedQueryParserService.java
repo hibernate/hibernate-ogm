@@ -25,13 +25,18 @@ import java.util.Map;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryImpl;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.query.NoSQLQuery;
+import org.hibernate.ogm.query.spi.NativeNoSqlQuery;
 import org.hibernate.ogm.service.impl.BaseQueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
@@ -55,7 +60,31 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 		log.createdQuery( queryString, result );
 
-		return new MongoDBQueryImpl( result.getEntityType(), result.getQuery(), result.getProjection(), session );
+		SessionImplementor sessionImplementor = (SessionImplementor) session;
+
+		String tableName = ( (OgmEntityPersister) ( sessionImplementor
+				.getFactory() )
+				.getEntityPersister( result.getEntityType().getName() ) )
+				.getTableName();
+
+		NoSQLQuery query = new NativeNoSqlQuery<MongoDBQueryDescriptor>(
+				new MongoDBQueryDescriptor( tableName, result.getQuery(), result.getProjection() ),
+				sessionImplementor,
+				new ParameterMetadata( null, null )
+		);
+
+		// Register the result types of the query; Currently either a number of scalar values or an entity return
+		// are supported only; JP-QL would actually a combination of both, though (see OGM-514)
+		if ( result.getProjection() != null ) {
+			for ( String field : result.getProjection().keySet() ) {
+				query.addScalar( field );
+			}
+		}
+		else {
+			query.addEntity( result.getEntityType() );
+		}
+
+		return query;
 	}
 
 	private MongoDBProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters) {
