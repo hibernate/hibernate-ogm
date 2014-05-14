@@ -30,6 +30,8 @@ import org.neo4j.graphdb.ResourceIterator;
 
 /**
  * Iterates over the results of a native query when each result is not mapped by an entity
+ *
+ * @author Davide D'Alto
  */
 public class MapsTupleIterator implements TupleIterator {
 

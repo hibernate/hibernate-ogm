@@ -39,11 +39,11 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
  * Integrates with the ORM engine by contributing a {@link SessionFactoryObserver} which checks the mapped entities for
- * CouchDB-specific requirements.
+ * Neo4j-specific requirements.
  * <p>
  * Note: This could be implemented using the {@code StartStoppable} contract once OGM-445 has been addressed
  *
- * @author Gunnar Morling
+ * @author Davide D'Alto
  */
 public class Neo4jIntegrator implements Integrator {
 

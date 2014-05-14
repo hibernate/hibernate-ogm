@@ -50,6 +50,8 @@ import org.neo4j.graphdb.ResourceIterator;
  * A node is created using an {@link EntityKey}. A node is labeled with {@link NodeLabel#ENTITY} and with the value
  * returned by {@link EntityKey#getTable()}. The properties names and values of the node are the corresponding values of
  * {@link EntityKey#getColumnNames()} and {@link EntityKey#getColumnValues()}
+ * <p>
+ * This class should be thread-safe since it's used by the dialect as a reference.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */

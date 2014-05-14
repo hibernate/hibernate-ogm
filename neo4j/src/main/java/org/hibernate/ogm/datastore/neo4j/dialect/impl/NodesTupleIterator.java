@@ -29,6 +29,8 @@ import org.neo4j.graphdb.Node;
 /**
  * Iterates over the result of a native query when each result is a neo4j node.
  * This is the case when the result of native query is mapped by an entity type.
+ *
+ * @author Davide D'Alto
  */
 public class NodesTupleIterator extends MapsTupleIterator {
 
