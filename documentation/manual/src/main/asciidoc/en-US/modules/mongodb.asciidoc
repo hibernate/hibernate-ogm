@@ -465,6 +465,7 @@ We recommend that you still use transaction demarcations with Hibernate OGM
 to trigger the flush operation transparently (on commit).
 But do not consider rollback as a possibility, this won't work.
 
+[[ogm-mongodb-queries]]
 ==== Queries
 
 You can express queries in a few different ways:
@@ -482,6 +483,7 @@ when using the JP-QL query support. This includes:
 * +IS NULL+ and +IS NOT NULL+
 * the boolean operators +AND+, +OR+, +NOT+
 * +LIKE+, +IN+ and +BETWEEN+
+* +ORDER BY+
 
 Queries using these constructs will be transformed into equivalent native MongoDB queries.
 

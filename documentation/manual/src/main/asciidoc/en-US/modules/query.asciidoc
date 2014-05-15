@@ -17,8 +17,11 @@ as it will greatly help you choosing a query approach.
 === Using JP-QL
 
 For Hibernate OGM we developed a brand new JP-QL parser
-which is already able to convert simple queries
-using Hibernate Search under the precondition that:
+which is already able to convert simple queries using Hibernate Search
+(as described in <<ogm-mongodb-queries>>, for MongoDB queries are transformed into
+native MongoDB queries instead).
+
+Note that the following preconditions must be met:
 
 * no join, aggregation, or other relational operations are implied
 * the target entities and properties are indexed by Hibernate Search
@@ -29,10 +32,10 @@ You can make use of the following JP-QL constructs:
 * +IS NULL+ and +IS NOT NULL+
 * the boolean operators +AND+, +OR+, +NOT+
 * +LIKE+, +IN+ and +BETWEEN+
+* +ORDER BY+
 
-We do realize that this leaves many cases uncovered.
-So while it might be interesting to try it out,
-for real usage we suggest for now to use either Hibernate Search full-text queries
+If this is not sufficient for you use case,
+you may instead either work with Hibernate Search full-text queries
 or the native query technology of the NoSQL storage you are using.
 
 To provide an example of what kind of queries would work:
