@@ -77,14 +77,14 @@ public class BackendCustomLoader extends CustomLoader {
 		}
 	}
 
+	// At the moment we only support the case where one entity type is returned
 	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, TupleIterator tuples) {
 		List<Object> results = new ArrayList<Object>();
+		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
-			for ( Type type : resultTypes ) {
-				OgmLoader loader = createLoader( session, type.getReturnedClass() );
-				results.add( entity( session, tuple, loader ) );
-			}
+			OgmLoader loader = createLoader( session, returnedClass );
+			results.add( entity( session, tuple, loader ) );
 		}
 		return results;
 	}
