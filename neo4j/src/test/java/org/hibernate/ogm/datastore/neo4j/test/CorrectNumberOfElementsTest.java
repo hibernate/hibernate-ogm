@@ -29,6 +29,8 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.AccountOwner;
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.BankAccount;
+import org.hibernate.ogm.backendtck.associations.collection.types.Child;
+import org.hibernate.ogm.backendtck.associations.collection.types.Father;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Cloud;
 import org.hibernate.ogm.backendtck.associations.collection.unidirectional.SnowFlake;
 import org.hibernate.ogm.backendtck.associations.manytoone.Beer;
@@ -162,6 +164,44 @@ public class CorrectNumberOfElementsTest extends JpaTestCase {
 		assertRelationships( 2 );
 	}
 
+	@Test
+	public void testUnidirectionalCollectionWithIndex() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+
+		Child child1 = new Child();
+		child1.setName( "Emmanuel" );
+		em.persist( child1 );
+
+		Child child2 = new Child();
+		child2.setName( "Christophe" );
+		em.persist( child2 );
+
+		Father father = new Father();
+		father.getOrderedChildren().add( child1 );
+		father.getOrderedChildren().add( child2 );
+
+		em.persist( father );
+
+		Child child3 = new Child();
+		child3.setName( "Caroline" );
+		em.persist( child3 );
+
+		Child child4 = new Child();
+		child4.setName( "Thomas" );
+		em.persist( child4 );
+
+		Father father2 = new Father();
+		father2.getOrderedChildren().add( child3 );
+		father2.getOrderedChildren().add( child4 );
+
+		em.persist( father2 );
+		commitOrRollback( true );
+
+		assertNumberOfNodes( 3*2 );
+		assertRelationships( 2*2 );
+	}
+
 	private void assertRelationships(int rel) throws Exception {
 		assertThat( numberOfRelationships() ).as( "Unexpected number of relationships" ).isEqualTo( rel );
 	}
@@ -289,8 +329,11 @@ public class CorrectNumberOfElementsTest extends JpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { AccountOwner.class, BankAccount.class, DistributedRevisionControl.class, JUG.class, Member.class, SalesForce.class,
+		return new Class<?>[] {
+				AccountOwner.class, BankAccount.class, DistributedRevisionControl.class, JUG.class, Member.class, SalesForce.class,
 				SalesGuy.class, Beer.class, Brewery.class, News.class, NewsID.class, Label.class, SnowFlake.class, Cloud.class, Account.class,
-				MultiAddressAccount.class };
+				MultiAddressAccount.class,
+				Father.class, Child.class
+		};
 	}
 }
