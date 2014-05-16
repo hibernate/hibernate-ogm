@@ -92,6 +92,14 @@ public class CypherCRUD {
 		return relationship;
 	}
 
+	/**
+	 * Find the node representing the {@link Key}.
+	 * <pre>
+	 * MATCH (n:Table {`id`: {0} })</p>
+	 *
+	 * @param key representing the node
+	 * @return the corresponding {@link Node} or null
+	 */
 	public Node findNode(Key key) {
 		return findNode( key, null );
 	}
