@@ -20,18 +20,32 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
-import java.util.Iterator;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ROWKEY;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jIndexManager;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
-import org.hibernate.ogm.datastore.neo4j.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -39,44 +53,55 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.ResourceIterator;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
  * <p>
  * A {@link Tuple} is saved as a {@link Node} where the columns are converted into properties of the node.<br>
  * An {@link Association} is converted into a {@link Relationship} identified by the {@link AssociationKey} and the
- * {@link RowKey}.
+ * {@link RowKey}. The type of the relationship is the value returned by {@link AssociationKey#getCollectionRole()}. An
+ * additional property containing the value in {@link AssociationKey#getTable()} is added to the relationship.
+ * <p>
+ * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class Neo4jDialect implements GridDialect {
+public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
-	/**
-	 * Contains the name of the property with the table name.
-	 */
-	public static final String TABLE_PROPERTY = "_table";
+	private final CypherCRUD neo4jCRUD;
 
-	private final Neo4jDatastoreProvider provider;
+	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
 
-	private final Neo4jIndexManager indexer;
+	private ServiceRegistryImplementor serviceRegistry;
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
-		this.provider = provider;
-		this.indexer = new Neo4jIndexManager( provider );
+		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
+		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	@Override
@@ -86,49 +111,140 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext context) {
-		Node entityNode = findNode( key );
+		Node entityNode = neo4jCRUD.findNode( key, ENTITY );
 		if ( entityNode == null ) {
 			return null;
 		}
 		return createTuple( entityNode );
 	}
 
-	private Tuple createTuple(Node entityNode) {
+	private static Tuple createTuple(Node entityNode) {
 		return new Tuple( new Neo4jTupleSnapshot( entityNode ) );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return new Tuple();
+		return createTuple( neo4jCRUD.createNodeUnlessExists( key, ENTITY ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
-		Node node = createNodeUnlessExists( key );
+		Node node = (Node) ( (Neo4jTupleSnapshot) tuple.getSnapshot() ).getPropertyContainer();
 		applyTupleOperations( node, tuple.getOperations() );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		Node entityNode = findNode( key );
-		if ( entityNode != null ) {
-			removeRelationships( entityNode );
-			removeNode( entityNode );
-		}
+		neo4jCRUD.remove( key );
 	}
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple();
+		PropertyContainer property = createPropertyContainer( associationKey, rowKey );
+		return new Tuple( new Neo4jTupleSnapshot( property ) );
+	}
+
+	private PropertyContainer createPropertyContainer(AssociationKey associationKey, RowKey rowKey) {
+		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
+		if ( rowKeyNode == null ) {
+			Node endNode = neo4jCRUD.findNode( endNodeKey( associationKey, rowKey ), ENTITY );
+			if ( endNode == null ) {
+				// No association of this type has been created yet
+				return createRelationshipToRowKey( associationKey, rowKey );
+			}
+			else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
+				// Unidirectionl ManyToOne: the node contains the field with the association
+				return endNode;
+			}
+			else {
+				// Bidirectional ManyToOne
+				return createRelationshipWithEntity( associationKey, rowKey, endNode );
+			}
+		}
+		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
+			// RowKey is an entity
+			return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+		}
+		else {
+			// Inverse relationship exists
+			return updateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+		}
+	}
+
+	private EntityKey endNodeKey(AssociationKey associationKey, RowKey rowKey) {
+		List<String> keyColumnNames = new ArrayList<String>();
+		List<Object> keyColumnValues = new ArrayList<Object>();
+		String[] columnNames = rowKey.getColumnNames();
+		int i = 0;
+		for ( String columnName : columnNames ) {
+			boolean entityColumn = true;
+			for ( String associationColumnName : associationKey.getColumnNames() ) {
+				if ( associationColumnName.equals( columnName ) ) {
+					entityColumn = false;
+					break;
+				}
+			}
+			if ( entityColumn ) {
+				keyColumnNames.add( columnName );
+				keyColumnValues.add( rowKey.getColumnValues()[i] );
+			}
+			i++;
+		}
+		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), keyColumnNames.toArray( new String[keyColumnNames.size()] ) ),
+				keyColumnValues.toArray( new Object[keyColumnValues.size()] ) );
+	}
+
+	private Relationship updateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node rowKeyNode) {
+		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
+		Relationship inverseRelationship = updateInverseRelationship( rowKey, rowKeyNode, ownerNode );
+
+		RelationshipType associationType = relationshipType( associationKey );
+		Relationship relationship = null;
+		if ( !associationKey.getCollectionRole().equals( associationKey.getTable() ) ) {
+			relationship = ownerNode.createRelationshipTo( inverseRelationship.getStartNode(), associationType );
+			applyColumnValues( rowKey, relationship );
+		}
+		return relationship;
+	}
+
+	private Relationship updateInverseRelationship(RowKey rowKey, Node rowKeyNode, Node ownerNode) {
+		Relationship inverseRelationship = rowKeyNode.getRelationships( Direction.INCOMING ).iterator().next();
+		Relationship newInverseRelationship = inverseRelationship.getStartNode().createRelationshipTo( ownerNode, inverseRelationship.getType() );
+		applyColumnValues( rowKey, newInverseRelationship );
+		inverseRelationship.delete();
+		inverseRelationship.getEndNode().delete();
+		return newInverseRelationship;
+	}
+
+	private PropertyContainer createRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node node) {
+		EntityKey ownerEntityKey = associationKey.getEntityKey();
+		Node ownerNode = neo4jCRUD.findNode( ownerEntityKey, ENTITY );
+		Relationship relationship = ownerNode.createRelationshipTo( node, relationshipType( associationKey ) );
+		applyColumnValues( rowKey, relationship );
+		return relationship;
+	}
+
+	private PropertyContainer createRelationshipToRowKey(AssociationKey associationKey, RowKey rowKey) {
+		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, ROWKEY );
+		return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+	}
+
+	private void applyColumnValues(RowKey rowKey, PropertyContainer relationship) {
+		for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
+			// Neo4j does not support null values but in the embedded case it might happen to have some nulls
+			if ( rowKey.getColumnValues()[i] != null ) {
+				relationship.setProperty( rowKey.getColumnNames()[i], rowKey.getColumnValues()[i] );
+			}
+		}
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		Node entityNode = findNode( associationKey.getEntityKey() );
+		Node entityNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
 		if ( entityNode == null ) {
 			return null;
 		}
-		return new Association( new Neo4jAssociationSnapshot( entityNode, relationshipType( associationKey ), associationKey ) );
+		return new Association( new Neo4jAssociationSnapshot( entityNode, associationKey ) );
 	}
 
 	@Override
@@ -150,7 +266,7 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		int nextValue = provider.nextValue( key, increment, initialValue );
+		int nextValue = neo4jSequenceGenerator.nextValue( key, increment, initialValue );
 		value.initialize( nextValue );
 	}
 
@@ -162,11 +278,7 @@ public class Neo4jDialect implements GridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( key != null ) {
-			Node node = findNode( key.getEntityKey() );
-			Iterable<Relationship> relationships = node.getRelationships( Direction.OUTGOING, relationshipType( key ) );
-			for ( Relationship rel : relationships ) {
-				removeRelationship( rel );
-			}
+			neo4jCRUD.remove( key );
 		}
 	}
 
@@ -188,43 +300,21 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
-		RowKey rowKey = action.getKey();
-		Relationship relationship = createRelationshipUnlessExists( findNode( associationKey.getEntityKey() ), associationKey, rowKey );
-		applyTupleOperations( relationship.getEndNode(), action.getValue().getOperations() );
-	}
-
-	private Relationship createRelationshipUnlessExists(Node startNode, AssociationKey associationKey, RowKey rowKey) {
-		Relationship relationship = indexer.findRelationship( relationshipType( associationKey ), rowKey );
-		if ( relationship == null ) {
-			return createRelationship( startNode, associationKey, rowKey );
-		}
-		return relationship;
-	}
-
-	private Node findNode(EntityKey entityKey) {
-		return indexer.findNode( entityKey );
+		Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey() );
+		applyTupleOperations( relationship, action.getValue().getOperations() );
 	}
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
-		RowKey rowKey = action.getKey();
-		Relationship relationship = indexer.findRelationship( relationshipType( associationKey ), rowKey );
-		removeRelationship( relationship );
+		neo4jCRUD.remove( associationKey, action.getKey() );
 	}
 
-	private void removeRelationship(Relationship relationship) {
-		if ( relationship != null ) {
-			indexer.remove( relationship );
-			relationship.delete();
-		}
-	}
-
-	private void applyTupleOperations(Node node, Set<TupleOperation> operations) {
+	private void applyTupleOperations(PropertyContainer node, Set<TupleOperation> operations) {
 		for ( TupleOperation operation : operations ) {
 			applyOperation( node, operation );
 		}
 	}
 
-	private void applyOperation(Node node, TupleOperation operation) {
+	private void applyOperation(PropertyContainer node, TupleOperation operation) {
 		switch ( operation.getType() ) {
 		case PUT:
 			putTupleOperation( node, operation );
@@ -238,74 +328,24 @@ public class Neo4jDialect implements GridDialect {
 		}
 	}
 
-	private void removeTupleOperation(Node node, TupleOperation operation) {
+	private void removeTupleOperation(PropertyContainer node, TupleOperation operation) {
 		if ( node.hasProperty( operation.getColumn() ) ) {
 			node.removeProperty( operation.getColumn() );
 		}
 	}
 
-	private void putTupleOperation(Node node, TupleOperation operation) {
+	private void putTupleOperation(PropertyContainer node, TupleOperation operation) {
 		node.setProperty( operation.getColumn(), operation.getValue() );
-	}
-
-	private Node createNodeUnlessExists(EntityKey key) {
-		Node node = findNode( key );
-		if ( node == null ) {
-			node = createNode( key );
-		}
-		return node;
-	}
-
-	private Node createNode(EntityKey key) {
-		Node node = provider.createNode();
-		node.setProperty( TABLE_PROPERTY, key.getTable() );
-		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
-			node.setProperty( key.getColumnNames()[i], key.getColumnValues()[i] );
-		}
-		indexer.index( node, key );
-		return node;
-	}
-
-	private void removeNode(Node entityNode) {
-		removeRelationships( entityNode );
-		indexer.remove( entityNode );
-		entityNode.delete();
-	}
-
-	private Relationship createRelationship(Node startNode, AssociationKey associationKey, RowKey rowKey) {
-		Relationship relationship = startNode.createRelationshipTo( provider.createNode(), relationshipType( associationKey ) );
-		for ( int i = 0; i < rowKey.getColumnNames().length; i++ ) {
-			Object value = rowKey.getColumnValues()[i];
-			if ( value != null ) {
-				relationship.setProperty( rowKey.getColumnNames()[i], value );
-			}
-		}
-		indexer.index( relationship );
-		return relationship;
-	}
-
-	private RelationshipType relationshipType(AssociationKey associationKey) {
-		StringBuilder builder = new StringBuilder( associationKey.getEntityKey().getTable() );
-		builder.append( ":" );
-		builder.append( associationKey.getCollectionRole() );
-		return DynamicRelationshipType.withName( builder.toString() );
-	}
-
-	private void removeRelationships(Node node) {
-		if ( node != null ) {
-			for ( Relationship rel : node.getRelationships() ) {
-				removeRelationship( rel );
-			}
-		}
 	}
 
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			IndexHits<Node> queryNodes = indexer.findNodes( entityKeyMetadata.getTable() );
+			ResourceIterator<Node> queryNodes = neo4jCRUD.findNodes( entityKeyMetadata.getTable() );
 			try {
-				for ( Node node : queryNodes ) {
-					Tuple tuple = createTuple( node );
+				while ( queryNodes.hasNext() ) {
+					Node next = queryNodes.next();
+					Tuple tuple = createTuple( next );
 					consumer.consume( tuple );
 				}
 			}
@@ -316,8 +356,37 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		throw new UnsupportedOperationException( "Native queries not suported for Neo4j" );
+	public TupleIterator executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
+
+		String sql = customQuery.getSQL();
+		ExecutionResult result = neo4jCRUD.executeQuery( sql, parameters );
+		if ( metadatas.length == 1 ) {
+			return new NodesTupleIterator( result );
+		}
+		return new MapsTupleIterator( result );
 	}
 
+	/**
+	 * Returns a map with the named parameter values from the given parameters object, converted by the {@link GridType}
+	 * corresponding to each parameter type.
+	 */
+	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
+		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
+		Tuple dummy = new Tuple();
+		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+
+		for ( Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
+			GridType gridType = typeTranslator.getType( parameter.getValue().getType() );
+			gridType.nullSafeSet( dummy, parameter.getValue().getValue(), new String[]{ parameter.getKey() }, null );
+			parameterValues.put( parameter.getKey(), dummy.get( parameter.getKey() ) );
+		}
+
+		return parameterValues;
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return new Neo4jParameterMetadataBuilder();
+	}
 }

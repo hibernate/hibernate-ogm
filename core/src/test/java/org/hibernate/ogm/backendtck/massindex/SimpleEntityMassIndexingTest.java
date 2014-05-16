@@ -21,36 +21,35 @@
 package org.hibernate.ogm.backendtck.massindex;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
+import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
 import java.io.File;
 import java.util.List;
 
+import org.apache.lucene.search.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.hsearch.Insurance;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
-import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.IndexDirectoryManager;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
+import org.hibernate.search.query.dsl.QueryBuilder;
 import org.hibernate.search.util.impl.FileHelper;
-import org.junit.After;
-import org.junit.Rule;
+import org.junit.AfterClass;
 import org.junit.Test;
-import org.junit.rules.TestName;
 
 /**
  * @author Davide D'Alto <davide@hibernate.org>
  */
-@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Uses embedded key which is currently not supported by the MongoDB query parser")
 public class SimpleEntityMassIndexingTest extends OgmTestCase {
 
-	@Rule
-	public TestName name = new TestName();
+	private static final File indexDir = getBaseIndexDir();
 
 	@Test
 	public void testSimpleEntityMassIndexing() throws Exception {
@@ -69,10 +68,12 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 			startAndWaitMassIndexing( Insurance.class );
 		}
 		{
-			Session session = openSession();
+			FullTextSession session = Search.getFullTextSession( openSession() );
+			QueryBuilder queryBuilder = session.getSearchFactory().buildQueryBuilder().forEntity( Insurance.class ).get();
+			Query luceneQuery = queryBuilder.keyword().wildcard().onField( "name" ).matching( "ins*" ).createQuery();
 			Transaction transaction = session.beginTransaction();
 			@SuppressWarnings("unchecked")
-			List<Insurance> list = session.createQuery( "FROM Insurance " ).list();
+			List<Insurance> list = session.createFullTextQuery( luceneQuery ).list();
 			assertThat( list ).hasSize( 1 );
 			assertThat( list.get( 0 ).getName() ).isEqualTo( "Insurance Corporation" );
 			transaction.commit();
@@ -82,6 +83,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Uses embedded key which is currently not supported by the db query parsers")
 	public void testEntityWithCompositeIdMassIndexing() throws Exception {
 		{
 			Session session = openSession();
@@ -97,10 +99,13 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 			startAndWaitMassIndexing( IndexedNews.class );
 		}
 		{
-			Session session = openSession();
+			// Assert index creation
+			FullTextSession session = Search.getFullTextSession( openSession() );
+			QueryBuilder queryBuilder = session.getSearchFactory().buildQueryBuilder().forEntity( IndexedNews.class ).get();
+			Query luceneQuery = queryBuilder.keyword().wildcard().onField( "newsId" ).ignoreFieldBridge().matching( "tit*" ).createQuery();
 			Transaction transaction = session.beginTransaction();
 			@SuppressWarnings("unchecked")
-			List<IndexedNews> list = session.createQuery( "FROM IndexedNews " ).list();
+			List<IndexedNews> list = session.createFullTextQuery( luceneQuery ).list();
 			assertThat( list ).hasSize( 1 );
 			assertThat( list.get( 0 ).getContent() ).isEqualTo( "content" );
 			assertThat( list.get( 0 ).getNewsId().getTitle() ).isEqualTo( "title" );
@@ -111,23 +116,26 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		}
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		FileHelper.delete( getBaseIndexDir() );
+	@AfterClass
+	public static void deleteIndexDir() throws Exception {
+		FileHelper.delete( indexDir );
 	};
 
 	private void startAndWaitMassIndexing(Class<?> entityType) throws InterruptedException {
 		FullTextSession session = Search.getFullTextSession( openSession() );
 		session.createIndexer( entityType ).purgeAllOnStart( true ).startAndWait();
+		int numDocs = session.getSearchFactory().getIndexReaderAccessor().open( entityType ).numDocs();
+		session.close();
+		assertThat( numDocs ).isGreaterThan( 0 );
 	}
 
 	private void purgeAll(Class<?> entityType) {
 		FullTextSession session = Search.getFullTextSession( openSession() );
 		session.purgeAll( entityType );
 		session.flushToIndexes();
-		@SuppressWarnings("unchecked")
-		List<Insurance> list = session.createQuery( "FROM " + entityType.getSimpleName() ).list();
-		assertThat( list ).hasSize( 0 );
+		int numDocs = session.getSearchFactory().getIndexReaderAccessor().open( entityType ).numDocs();
+		session.close();
+		assertThat( numDocs ).isEqualTo( 0 );
 	}
 
 	@Override
@@ -135,11 +143,11 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 		return new Class<?>[] { Insurance.class, IndexedNews.class, IndexedLabel.class };
 	}
 
-	protected File getBaseIndexDir() {
+	protected static File getBaseIndexDir() {
 		// Make sure no directory is ever reused across the testsuite as Windows might not be able
 		// to delete the files after usage. See also
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154
-		String shortTestName = this.getClass().getSimpleName() + "." + name.getMethodName();
+		String shortTestName = SimpleEntityMassIndexingTest.class.getSimpleName() + "." + System.currentTimeMillis();
 
 		// the constructor File(File, String) is broken too, see :
 		// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=5066567
@@ -151,7 +159,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	@Override
 	protected void configure(org.hibernate.cfg.Configuration cfg) {
 		super.configure( cfg );
-		cfg.setProperty( "hibernate.search.default.indexBase", getBaseIndexDir().getAbsolutePath() );
+		cfg.setProperty( "hibernate.search.default.indexBase", indexDir.getAbsolutePath() );
 		cfg.setProperty( "hibernate.search.default.directory_provider", "filesystem" );
 		// Infinispan requires to be set to distribution mode for this test to pass
 		cfg.setProperty( "hibernate.ogm.infinispan.configuration_resourcename", "infinispan-dist.xml" );
