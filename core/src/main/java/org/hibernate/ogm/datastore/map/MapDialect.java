@@ -180,6 +180,6 @@ public class MapDialect implements GridDialect {
 
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return new NoOpParameterMetadataBuilder();
+		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 }

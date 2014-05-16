@@ -135,7 +135,7 @@ public class SampleDatastoreProvider implements DatastoreProvider {
 
 		@Override
 		public ParameterMetadataBuilder getParameterMetadataBuilder() {
-			return new NoOpParameterMetadataBuilder();
+			return NoOpParameterMetadataBuilder.INSTANCE;
 		}
 	}
 }

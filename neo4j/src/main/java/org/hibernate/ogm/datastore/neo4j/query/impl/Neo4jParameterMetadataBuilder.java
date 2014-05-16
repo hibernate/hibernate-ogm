@@ -22,9 +22,16 @@ package org.hibernate.ogm.datastore.neo4j.query.impl;
 
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
 import org.hibernate.ogm.query.RecognizerBasedParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
 
+/**
+ * {@link ParameterMetadataBuilder} for native Neo4j queries. The implementation is based on a <a
+ * href="http://parboiled.org">parboiled</a> grammar.
+ *
+ * @author Gunnar Morling
+ */
 public class Neo4jParameterMetadataBuilder extends RecognizerBasedParameterMetadataBuilder {
 
 	@Override

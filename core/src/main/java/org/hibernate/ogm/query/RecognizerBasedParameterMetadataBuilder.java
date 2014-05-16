@@ -31,8 +31,9 @@ import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
 /**
- * @author Gunnar Morling
+ * Base class for {@link ParameterMetadataBuilder}s based on ORM's {@link ParamLocationRecognizer} SPI.
  *
+ * @author Gunnar Morling
  */
 public abstract class RecognizerBasedParameterMetadataBuilder implements ParameterMetadataBuilder {
 
@@ -66,5 +67,11 @@ public abstract class RecognizerBasedParameterMetadataBuilder implements Paramet
 		return new ParameterMetadata( ordinalDescriptors, namedParamDescriptorMap );
 	}
 
+	/**
+	 * Parses the given native NoSQL query string, collecting the contained named parameters in the course of doing so.
+	 *
+	 * @param noSqlQuery the query to parse
+	 * @param recognizer collects any named parameters contained in the given query
+	 */
 	protected abstract void parseQueryParameters(String noSqlQuery, Recognizer recognizer);
 }

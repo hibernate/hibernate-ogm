@@ -31,5 +31,11 @@ import org.hibernate.engine.query.spi.ParameterMetadata;
  */
 public interface ParameterMetadataBuilder {
 
+	/**
+	 * Returns a descriptor of the parameters contained in the given NoSql query.
+	 *
+	 * @param noSqlQuery the query to analyze
+	 * @return a descriptor of the parameters contained in the given NoSql query
+	 */
 	ParameterMetadata buildParameterMetadata(String noSqlQuery);
 }
