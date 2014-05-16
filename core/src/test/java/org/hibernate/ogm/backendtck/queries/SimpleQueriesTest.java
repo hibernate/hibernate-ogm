@@ -69,14 +69,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 				"from Hypothesis" ) );
 		assertQuery( session, 8, session.createQuery(
 				"from org.hibernate.ogm.backendtck.queries.Hypothesis" ) );
-		assertQuery( session, 3, session.createQuery(
+		assertQuery( session, 4, session.createQuery(
 				"from Helicopter" ) );
 	}
 
 	@Test
 	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 11, session.createQuery(
+		assertQuery( session, 12, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -404,6 +404,59 @@ public class SimpleQueriesTest extends OgmTestCase {
 		assertThat( result ).onProperty( "id" ).containsOnly( "15", "16", "17" );
 	}
 
+	@Test
+	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
+	public void testOrderedQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h order by h.description" ).list();
+		assertThat( result ).onProperty( "description" ).containsExactly(
+				null,
+				"Hilbert's proof of connection to 2 dimensions can be induced to reason on N dimensions",
+				"Is the truth out there?",
+				"Peano's curve and then Hilbert's space filling curve proof the connection from mono-dimensional to bi-dimensional space",
+				"The truth out there.",
+				"There are more than two dimensions over the shadows we see out of the cave",
+				"There are more than two fools in our team.",
+				"stuff works"
+		);
+	}
+
+	@Test
+	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
+	public void testOrderedDescQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h order by h.description desc" ).list();
+		assertThat( result ).onProperty( "description" ).containsExactly(
+				"stuff works",
+				"There are more than two fools in our team.",
+				"There are more than two dimensions over the shadows we see out of the cave",
+				"The truth out there.",
+				"Peano's curve and then Hilbert's space filling curve proof the connection from mono-dimensional to bi-dimensional space",
+				"Is the truth out there?",
+				"Hilbert's proof of connection to 2 dimensions can be induced to reason on N dimensions",
+				null
+		);
+	}
+
+	@Test
+	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
+	public void testOrderedDescByNumericFieldWithCustomColumnNameQuery() throws Exception {
+		List<?> result = session.createQuery( "from Hypothesis h order by h.position desc" ).list();
+		assertThat( result ).onProperty( "position" ).containsExactly(
+				7, 6, 5, 4, 4, 3, 2, 1
+		);
+	}
+
+	@Test
+	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
+	public void testOrderedDescAndAscQuery() throws Exception {
+		List<?> result = session.createQuery( "from Helicopter h order by h.make desc, h.name" ).list();
+		assertThat( result ).onProperty( "make" ).containsExactly(
+				"Lama", "Lama", "Crusoe", null
+		);
+		assertThat( result ).onProperty( "name" ).containsExactly(
+				"Lama", "No creative clue", "No creative clue", null
+		);
+	}
+
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		final Session session = sessions.openSession();
@@ -496,12 +549,19 @@ public class SimpleQueriesTest extends OgmTestCase {
 		session.persist( noDescription );
 
 		Helicopter helicopter = new Helicopter();
+		helicopter.setMake( "Lama" );
 		helicopter.setName( "No creative clue" );
 		session.persist( helicopter );
 
 		Helicopter anotherHelicopter = new Helicopter();
+		anotherHelicopter.setMake( "Lama" );
 		anotherHelicopter.setName( "Lama" );
 		session.persist( anotherHelicopter );
+
+		Helicopter yetAnotherHelicopter = new Helicopter();
+		yetAnotherHelicopter.setMake( "Crusoe" );
+		yetAnotherHelicopter.setName( "No creative clue" );
+		session.persist( yetAnotherHelicopter );
 
 		Helicopter helicopterWithoutName = new Helicopter();
 		session.persist( helicopterWithoutName );

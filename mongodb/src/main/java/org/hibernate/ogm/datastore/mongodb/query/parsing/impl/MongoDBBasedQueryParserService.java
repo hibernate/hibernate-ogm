@@ -58,7 +58,10 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 				.getTableName();
 
 		NoSQLQuery query = new DBObjectQuery(
-				tableName, result.getQuery(), result.getProjection(),
+				tableName,
+				result.getQuery(),
+				result.getProjection(),
+				result.getOrderBy(),
 				sessionImplementor,
 				new ParameterMetadata( null, null )
 		);
@@ -98,13 +101,15 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		private final String collectionName;
 		private final DBObject query;
 		private final DBObject projection;
+		private final DBObject orderBy;
 
-		public DBObjectQuery(String collectionName, DBObject query, DBObject projection, SessionImplementor session, ParameterMetadata parameterMetadata) {
+		public DBObjectQuery(String collectionName, DBObject query, DBObject projection, DBObject orderBy, SessionImplementor session, ParameterMetadata parameterMetadata) {
 			super( query.toString(), session, parameterMetadata );
 
 			this.collectionName = collectionName;
 			this.query = query;
 			this.projection = projection;
+			this.orderBy = orderBy;
 		}
 
 		@Override
@@ -113,6 +118,7 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 					collectionName,
 					query,
 					projection,
+					orderBy,
 					getQueryReturns().toArray( new NativeSQLQueryReturn[getQueryReturns().size()] ),
 					getSynchronizedQuerySpaces()
 			);

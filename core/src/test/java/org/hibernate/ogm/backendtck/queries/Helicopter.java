@@ -28,6 +28,7 @@ public class Helicopter {
 
 	private String uuid;
 	private String name;
+	private String make;
 
 	@Id
 	@GeneratedValue(generator = "uuid")
@@ -47,5 +48,13 @@ public class Helicopter {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getMake() {
+		return make;
+	}
+
+	public void setMake(String make) {
+		this.make = make;
 	}
 }

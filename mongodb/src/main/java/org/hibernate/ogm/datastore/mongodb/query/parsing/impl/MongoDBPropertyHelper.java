@@ -50,8 +50,17 @@ public class MongoDBPropertyHelper implements PropertyHelper {
 	}
 
 	public String getColumnName(String entityType, String propertyName) {
-		OgmEntityPersister persister = getPersister( entityType );
+		return getColumnName( getPersister( entityType ), propertyName );
+	}
 
+	public String getColumnName(Class<?> entityType, String propertyName) {
+		return getColumnName(
+				(OgmEntityPersister) sessionFactory.getEntityPersister( entityType.getName() ),
+				propertyName
+		);
+	}
+
+	public String getColumnName(OgmEntityPersister persister, String propertyName) {
 		String columnName = propertyName;
 
 		if ( columnName.equals( persister.getIdentifierPropertyName() ) ) {

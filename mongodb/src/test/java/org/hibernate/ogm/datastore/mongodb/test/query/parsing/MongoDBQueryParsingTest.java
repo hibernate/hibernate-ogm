@@ -11,7 +11,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBProcessingChain;
@@ -183,7 +182,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	@Test
 	public void shouldCreateLikeQuery() {
 		assertMongoDbQuery(
-				"select e from IndexedEntity e where e.title like 'Ali_e%')",
+				"select e from IndexedEntity e where e.title like 'Ali_e%'",
 				"{ \"title\" : " +
 					"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
 					"\"$options\" : \"s\"" +
@@ -194,7 +193,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 	@Test
 	public void shouldCreateNotLikeQuery() {
 		assertMongoDbQuery(
-				"select e from IndexedEntity e where e.title not like 'Ali_e%')",
+				"select e from IndexedEntity e where e.title not like 'Ali_e%'",
 				"{ \"title\" : " +
 					"{ \"$not\" : " +
 						"{ \"$regex\" : \"^\\\\QAli\\\\E.\\\\Qe\\\\E.*$\" , " +
@@ -257,7 +256,7 @@ public class MongoDBQueryParsingTest extends OgmTestCase {
 		entityNames.put( "IndexedEntity", IndexedEntity.class );
 		EntityNamesResolver nameResolver = new MapBasedEntityNamesResolver( entityNames );
 
-		return new MongoDBProcessingChain( (SessionFactoryImplementor) sessions, nameResolver, namedParameters );
+		return new MongoDBProcessingChain( sessions, nameResolver, namedParameters );
 	}
 
 	@Override

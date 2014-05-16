@@ -588,6 +588,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		DBObject mongodbQuery = null;
 		DBObject projection = null;
 		String collectionName = null;
+		DBObject orderBy = null;
 
 		// query already given as DBObject (created by JP-QL parser)
 		if ( customQuery.getSpec() instanceof DBObjectQuerySpecification ) {
@@ -595,6 +596,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			mongodbQuery = spec.getQuery();
 			projection = spec.getProjection();
 			collectionName = spec.getCollectionName();
+			orderBy = spec.getOrderBy();
 		}
 		// a string-based native query; need to create the DBObject from that
 		else {
@@ -605,6 +607,10 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 		DBCursor cursor = collection.find( mongodbQuery, projection );
+
+		if ( orderBy != null ) {
+			cursor.sort( orderBy );
+		}
 
 		// apply firstRow/maxRows if present
 		if ( queryParameters.getRowSelection().getFirstRow() != null ) {

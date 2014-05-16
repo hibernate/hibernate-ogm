@@ -37,13 +37,15 @@ public class DBObjectQuerySpecification extends NativeSQLQuerySpecification {
 	private final String collectionName;
 	private final DBObject query;
 	private final DBObject projection;
+	private final DBObject orderBy;
 
-	public DBObjectQuerySpecification(String collectionName, DBObject query, DBObject projection, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
+	public DBObjectQuerySpecification(String collectionName, DBObject query, DBObject projection, DBObject orderBy, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
 		super( query.toString(), queryReturns, querySpaces );
 
 		this.collectionName = collectionName;
 		this.query = query;
 		this.projection = projection;
+		this.orderBy = orderBy;
 	}
 
 	/**
@@ -66,5 +68,9 @@ public class DBObjectQuerySpecification extends NativeSQLQuerySpecification {
 	 */
 	public DBObject getProjection() {
 		return projection;
+	}
+
+	public DBObject getOrderBy() {
+		return orderBy;
 	}
 }
