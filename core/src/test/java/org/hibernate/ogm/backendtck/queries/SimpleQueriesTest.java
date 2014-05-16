@@ -7,11 +7,6 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hibernate.ogm.utils.GridDialectType.COUCHDB;
-import static org.hibernate.ogm.utils.GridDialectType.EHCACHE;
-import static org.hibernate.ogm.utils.GridDialectType.HASHMAP;
-import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
-import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -391,13 +386,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(
-			value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J },
-			comment = "Should actually work with the Lucene backend; Presumably the tests fails though due to an "
-					+ "unreliable order of returned elements. To be re-enabled once ORDER BY is implemented."
-	)
 	public void testFirstResultAndMaxRows() throws Exception {
-		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null" )
+		List<?> result = session.createQuery( "from Hypothesis h where h.description IS NOT null ORDER BY id" )
 				.setFirstResult( 2 )
 				.setMaxResults( 3 )
 				.list();
@@ -405,7 +395,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
 	public void testOrderedQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h order by h.description" ).list();
 		assertThat( result ).onProperty( "description" ).containsExactly(
@@ -421,7 +410,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
 	public void testOrderedDescQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h order by h.description desc" ).list();
 		assertThat( result ).onProperty( "description" ).containsExactly(
@@ -437,7 +425,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
 	public void testOrderedDescByNumericFieldWithCustomColumnNameQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h order by h.position desc" ).list();
 		assertThat( result ).onProperty( "position" ).containsExactly(
@@ -446,7 +433,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { EHCACHE, HASHMAP, INFINISPAN, COUCHDB, NEO4J }, comment = "Not implemented yet")
 	public void testOrderedDescAndAscQuery() throws Exception {
 		List<?> result = session.createQuery( "from Helicopter h order by h.make desc, h.name" ).list();
 		assertThat( result ).onProperty( "make" ).containsExactly(

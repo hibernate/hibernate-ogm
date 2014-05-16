@@ -59,6 +59,8 @@ public class LuceneBasedQueryParserService extends BaseQueryParserService {
 			fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
 		}
 
+		fullTextQuery.setSort( parsingResult.getSort() );
+
 		// Following options are mandatory to load matching entities without using a query
 		// (chicken and egg problem)
 		fullTextQuery.initializeObjectsWith( ObjectLookupMethod.SKIP, DatabaseRetrievalMethod.FIND_BY_ID );

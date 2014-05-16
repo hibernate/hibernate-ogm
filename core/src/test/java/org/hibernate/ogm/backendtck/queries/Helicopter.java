@@ -15,6 +15,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 /**
  * @author Emmanuel Bernard
@@ -50,6 +51,7 @@ public class Helicopter {
 		this.name = name;
 	}
 
+	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
 	public String getMake() {
 		return make;
 	}
