@@ -8,12 +8,13 @@ package org.hibernate.ogm.datastore.neo4j;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ROWKEY;
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.TEMP_NODE;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.AssertionFailure;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
@@ -58,8 +59,7 @@ import org.neo4j.graphdb.ResourceIterator;
  * <p>
  * A {@link Tuple} is saved as a {@link Node} where the columns are converted into properties of the node.<br>
  * An {@link Association} is converted into a {@link Relationship} identified by the {@link AssociationKey} and the
- * {@link RowKey}. The type of the relationship is the value returned by {@link AssociationKey#getCollectionRole()}. An
- * additional property containing the value in {@link AssociationKey#getTable()} is added to the relationship.
+ * {@link RowKey}. The type of the relationship is the value returned by {@link AssociationKey#getCollectionRole()}.
  * <p>
  * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
  *
@@ -112,37 +112,62 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		PropertyContainer property = createPropertyContainer( associationKey, rowKey );
+		PropertyContainer property = createRelationioshipToEntityOrToTempNode( associationKey, rowKey );
 		return new Tuple( new Neo4jTupleSnapshot( property ) );
 	}
 
-	private PropertyContainer createPropertyContainer(AssociationKey associationKey, RowKey rowKey) {
+	/**
+	 * When dealing with bidirectional associations, OGM calls this method twice, the first time with the information
+	 * related to the owner of the association and the {@link RowKey}, the second time using the same {@link RowKey} but
+	 * with the {@link AssociationKey} referring to the other side of the association. What happen in this method is
+	 * that the first time I'm going to save the {@link RowKey} information in a temporary node and the second time I'm
+	 * going to delete the node and connect the two entity with two relationships.
+	 * <p>
+	 * This approach works at the moment because everything is inside a transaction.
+	 */
+	private PropertyContainer createRelationioshipToEntityOrToTempNode(AssociationKey associationKey, RowKey rowKey) {
 		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
 		if ( rowKeyNode == null ) {
-			Node endNode = neo4jCRUD.findNode( endNodeKey( associationKey, rowKey ), ENTITY );
+			EntityKey endNodeKey = endNodeKey( associationKey, rowKey );
+			Node endNode = neo4jCRUD.findNode( endNodeKey, ENTITY );
 			if ( endNode == null ) {
-				// No association of this type has been created yet
-				return createRelationshipToRowKey( associationKey, rowKey );
+				// We cannot find the entity on the other side of the relationship, we store the information related to
+				// the RowKey in a temporary node and we create a relationship to it
+				return createRelationshipToTempNode( associationKey, rowKey );
 			}
 			else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
-				// Unidirectionl ManyToOne: the node contains the field with the association
+				// Unidirectional ManyToOne: the node contains the field with the association
+				// I'm not creating a relationship at the moment for this case
 				return endNode;
 			}
 			else {
-				// Bidirectional ManyToOne
+				// Bidirectional ManyToOne: the node contains the field with the association.
+				// I'll create the relationship between the owner and the end node
 				return createRelationshipWithEntity( associationKey, rowKey, endNode );
 			}
 		}
 		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
-			// RowKey is an entity
+			// The Rowkey represents an entity and we are going to create the relationship with it
 			return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 		}
+		else if ( rowKeyNode.hasLabel( TEMP_NODE ) ) {
+			// We have found a temporary node related to this association, we are going to delete it and connect the
+			// entity pointing to the temporary node and the owner of this association.
+			return deleteTempNodeAndUpdateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+		}
 		else {
-			// Inverse relationship exists
-			return updateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+			throw new AssertionFailure( "Unrecognized RowKeyode: " + rowKeyNode );
 		}
 	}
 
+	/**
+	 * This method returns the {@link EntityKey} that represents the entity on the other side of the relationship.
+	 * <p>
+	 * At the moment the {@link AssociationKey} contains the owner of the association but it is missing the information
+	 * related to the entity on the other side of the association. What we do to obtain it is remove from {@link RowKey}
+	 * the columns in the {@link AssociationKey}, the remaining one should represents the identifier at the end fo the
+	 * association.
+	 */
 	private EntityKey endNodeKey(AssociationKey associationKey, RowKey rowKey) {
 		List<String> keyColumnNames = new ArrayList<String>();
 		List<Object> keyColumnValues = new ArrayList<Object>();
@@ -166,7 +191,7 @@ public class Neo4jDialect implements GridDialect {
 				keyColumnValues.toArray( new Object[keyColumnValues.size()] ) );
 	}
 
-	private Relationship updateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node rowKeyNode) {
+	private Relationship deleteTempNodeAndUpdateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node rowKeyNode) {
 		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
 		Relationship inverseRelationship = updateInverseRelationship( rowKey, rowKeyNode, ownerNode );
 
@@ -196,8 +221,8 @@ public class Neo4jDialect implements GridDialect {
 		return relationship;
 	}
 
-	private PropertyContainer createRelationshipToRowKey(AssociationKey associationKey, RowKey rowKey) {
-		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, ROWKEY );
+	private PropertyContainer createRelationshipToTempNode(AssociationKey associationKey, RowKey rowKey) {
+		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, TEMP_NODE );
 		return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 	}
 
