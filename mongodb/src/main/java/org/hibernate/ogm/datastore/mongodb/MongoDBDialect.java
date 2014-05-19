@@ -25,6 +25,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -62,6 +63,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
@@ -579,7 +582,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		BasicDBObject mongodbQuery = (BasicDBObject) com.mongodb.util.JSON.parse( customQuery.getSQL() );
 		validate( metadatas );
 		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
@@ -707,6 +710,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 			// Object already exists in the db or has invalid fields:
 			updateTuple( tuple, entityKey, tupleOperation.getTupleContext() );
 		}
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return new NoOpParameterMetadataBuilder();
 	}
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {

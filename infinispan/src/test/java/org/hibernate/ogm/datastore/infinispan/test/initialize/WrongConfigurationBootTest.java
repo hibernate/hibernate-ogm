@@ -33,11 +33,16 @@ public class WrongConfigurationBootTest {
 	}
 
 	@Test
-	public void testIllegalInfinispanConfigurationReported() {
+	public void testIllegalInfinispanConfigurationReported() throws Throwable {
 		thrown.expect( HibernateException.class );
 		thrown.expectMessage( "Invalid URL given for configuration property '" + InfinispanProperties.CONFIGURATION_RESOURCE_NAME + "': does-not-exist-configuration-file.xml; The specified resource could not be found." );
 
-		tryBoot( "does-not-exist-configuration-file.xml" );
+		try {
+			tryBoot( "does-not-exist-configuration-file.xml" );
+		}
+		catch (Exception e) {
+			throw e.getCause();
+		}
 	}
 
 	/**
