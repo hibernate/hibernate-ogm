@@ -35,12 +35,12 @@ public class Neo4jIntegrator implements Integrator {
 
 	@Override
 	public void integrate(Configuration configuration, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		sessionFactory.addObserver( new SchemaCreation() );
+		addNeo4jObserverIfRequired( sessionFactory );
 	}
 
 	@Override
 	public void integrate(MetadataImplementor metadata, SessionFactoryImplementor sessionFactory, SessionFactoryServiceRegistry serviceRegistry) {
-		sessionFactory.addObserver( new SchemaCreation() );
+		addNeo4jObserverIfRequired( sessionFactory );
 	}
 
 	@Override
@@ -48,16 +48,30 @@ public class Neo4jIntegrator implements Integrator {
 		// nothing to do
 	}
 
+	private void addNeo4jObserverIfRequired(SessionFactoryImplementor sessionFactory) {
+		if ( currentDialectIsNeo4j( sessionFactory ) ) {
+			sessionFactory.addObserver( new SchemaCreation() );
+		}
+	}
+
+	private boolean currentDialectIsNeo4j(SessionFactoryImplementor sessionFactoryImplementor) {
+		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
+
+		return registry.getService( ConfigurationService.class ).isOgmOn()
+				&& ( registry.getService( DatastoreProvider.class ) instanceof Neo4jDatastoreProvider );
+	}
+
+	/**
+	 * Adds the required constraints to the schema db
+	 *
+	 * @author Davide D'Alto
+	 *
+	 */
 	private static class SchemaCreation implements SessionFactoryObserver {
 
 		@Override
 		public void sessionFactoryCreated(SessionFactory factory) {
 			SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) factory;
-
-			if ( !currentDialectIsNeo4j( sessionFactoryImplementor ) ) {
-				return;
-			}
-
 			ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 			Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 			SchemaBuilder schemaBuilder = provider.getSchemaBuilder();
@@ -72,13 +86,6 @@ public class Neo4jIntegrator implements Integrator {
 				}
 			}
 			schemaBuilder.update();
-		}
-
-		private boolean currentDialectIsNeo4j(SessionFactoryImplementor sessionFactoryImplementor) {
-			ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
-
-			return registry.getService( ConfigurationService.class ).isOgmOn()
-					&& ( registry.getService( DatastoreProvider.class ) instanceof Neo4jDatastoreProvider );
 		}
 
 		@Override
