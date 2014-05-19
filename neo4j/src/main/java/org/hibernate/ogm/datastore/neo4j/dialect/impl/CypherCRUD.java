@@ -182,8 +182,9 @@ public class CypherCRUD {
 	 * @param isEntity
 	 */
 	private void appendNodePattern(Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel label) {
-		query.append( "(n:" );
+		query.append( "(n:`" );
 		query.append( key.getTable() );
+		query.append( "`" );
 		if ( label != null ) {
 			query.append( ":" );
 			query.append( label.name() );
