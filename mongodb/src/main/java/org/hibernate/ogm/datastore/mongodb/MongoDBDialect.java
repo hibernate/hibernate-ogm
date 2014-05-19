@@ -714,7 +714,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return new NoOpParameterMetadataBuilder();
+		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {

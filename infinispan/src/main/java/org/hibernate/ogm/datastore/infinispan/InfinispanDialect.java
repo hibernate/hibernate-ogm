@@ -229,7 +229,7 @@ public class InfinispanDialect implements GridDialect {
 
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return new NoOpParameterMetadataBuilder();
+		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
 	static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {

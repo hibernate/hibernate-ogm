@@ -24,12 +24,18 @@ import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
 /**
- * @author Gunnar Morling
+ * Default implementation of {@link ParameterMetadataBuilder} which returns no parameter at all.
  *
+ * @author Gunnar Morling
  */
 public class NoOpParameterMetadataBuilder implements ParameterMetadataBuilder {
 
+	public static final NoOpParameterMetadataBuilder INSTANCE = new NoOpParameterMetadataBuilder();
+
 	private static final ParameterMetadata NO_PARAMETERS = new ParameterMetadata( null, null );
+
+	private NoOpParameterMetadataBuilder() {
+	}
 
 	@Override
 	public ParameterMetadata buildParameterMetadata(String nativeQuery) {
