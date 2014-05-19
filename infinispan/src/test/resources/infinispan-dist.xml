@@ -5,8 +5,8 @@
  ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
  ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
   -->
-  
-<!-- 
+
+<!--
     This is the testing configuration, running in LOCAL clustering mode to speedup tests.
     Not all tests use this, so that at least one still validates the configuration
     validity which would be shipped with a release (like JPAStandaloneTest).
@@ -23,7 +23,7 @@
         <transport
             clusterName="HibernateOGM-Infinispan-cluster"
             >
-            <!-- Note that the JGroups transport uses sensible defaults if no configuration 
+            <!-- Note that the JGroups transport uses sensible defaults if no configuration
                 property is defined. See the JGroupsTransport javadocs for more flags -->
         </transport>
     </global>

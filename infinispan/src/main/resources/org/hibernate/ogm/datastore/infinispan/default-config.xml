@@ -16,8 +16,8 @@
 
     <global>
 
-        <!-- Duplicate domains are allowed so that multiple deployments with default configuration 
-            of Hibernate OGM applications work - a better solution would be to use JNDI to share 
+        <!-- Duplicate domains are allowed so that multiple deployments with default configuration
+            of Hibernate OGM applications work - a better solution would be to use JNDI to share
             the CacheManager across applications, or use a custom configuration.
             Only enable if needed - it has a performance impact. -->
         <globalJmxStatistics
@@ -25,8 +25,8 @@
             cacheManagerName="HibernateOGM"
             allowDuplicateDomains="true" />
 
-        <!-- If the transport is omitted, there is no way to create distributed or clustered 
-            caches. There is no added cost to defining a transport but not creating a cache that uses one, 
+        <!-- If the transport is omitted, there is no way to create distributed or clustered
+            caches. There is no added cost to defining a transport but not creating a cache that uses one,
             since the transport is created and initialized lazily. -->
         <transport
             clusterName="HibernateOGM-Infinispan-cluster"
@@ -38,7 +38,7 @@
             </properties>
         </transport>
 
-        <!-- Used to register JVM shutdown hooks. hookBehavior: DEFAULT, REGISTER, DONT_REGISTER. 
+        <!-- Used to register JVM shutdown hooks. hookBehavior: DEFAULT, REGISTER, DONT_REGISTER.
             Hibernate OGM takes care to stop the CacheManager so registering is not needed -->
         <shutdown
             hookBehavior="DONT_REGISTER" />
@@ -51,12 +51,12 @@
 
     <default>
 
-        <!-- This element specifies that the cache is clustered. modes supported: distribution 
+        <!-- This element specifies that the cache is clustered. modes supported: distribution
             (d), replication (r) or invalidation (i). Don't use invalidation as OGM storage! -->
         <clustering
             mode="distribution">
 
-            <!-- Force loading all data at startup: to be enabled when using replication 
+            <!-- Force loading all data at startup: to be enabled when using replication
             <stateRetrieval
                 timeout="20000"
                 fetchInMemoryState="true"
