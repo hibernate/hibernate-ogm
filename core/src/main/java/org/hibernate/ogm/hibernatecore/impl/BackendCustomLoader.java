@@ -41,20 +41,17 @@ public class BackendCustomLoader extends CustomLoader {
 
 	private final BackendCustomQuery customQuery;
 
+	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
+		super( customQuery, factory );
+		this.customQuery = customQuery;
+	}
+
 	/**
 	 * Whether this query is a selection of a complete entity not. Queries mixing scalar values and entire entities in
 	 * one result are not supported atm.
 	 */
-	private final boolean isEntityQuery;
-
-	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
-		super( customQuery, factory );
-		this.customQuery = customQuery;
-		isEntityQuery = isEntityQuery( customQuery );
-	}
-
-	private static boolean isEntityQuery(BackendCustomQuery query) {
-		for ( Return queryReturn : query.getCustomQueryReturns() ) {
+	private boolean isEntityQuery() {
+		for ( Return queryReturn : customQuery.getCustomQueryReturns() ) {
 			if ( queryReturn instanceof RootReturn ) {
 				return true;
 			}
@@ -66,7 +63,7 @@ public class BackendCustomLoader extends CustomLoader {
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
 		Iterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
-		if ( isEntityQuery ) {
+		if ( isEntityQuery() ) {
 			return listOfEntities( session, resultTypes, tuples );
 		}
 		else {

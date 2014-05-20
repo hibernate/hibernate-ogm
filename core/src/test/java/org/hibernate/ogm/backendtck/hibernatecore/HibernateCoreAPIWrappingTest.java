@@ -16,6 +16,7 @@ import javax.persistence.Persistence;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryObjectFactory;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
@@ -45,7 +46,7 @@ public class HibernateCoreAPIWrappingTest {
 		s.close();
 
 		EntityManager em = emf.createEntityManager();
-		assertThat( em.unwrap( Session.class ).getClass() ).isEqualTo( OgmSessionImpl.class );
+		assertThat( em.unwrap( Session.class ) instanceof OgmSession );
 		assertThat( em.getDelegate().getClass() ).isEqualTo( OgmSessionImpl.class );
 
 		em.close();
