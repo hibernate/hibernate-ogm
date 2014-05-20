@@ -18,6 +18,8 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
+import org.hibernate.loader.custom.Return;
+import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -39,14 +41,40 @@ public class BackendCustomLoader extends CustomLoader {
 
 	private final BackendCustomQuery customQuery;
 
+	/**
+	 * Whether this query is a selection of a complete entity not. Queries mixing scalar values and entire entities in
+	 * one result are not supported atm.
+	 */
+	private final boolean isEntityQuery;
+
 	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
 		this.customQuery = customQuery;
+		isEntityQuery = isEntityQuery( customQuery );
+	}
+
+	private static boolean isEntityQuery(BackendCustomQuery query) {
+		for ( Return queryReturn : query.getCustomQueryReturns() ) {
+			if ( queryReturn instanceof RootReturn ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override
-	protected List list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
+	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
 		Iterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
+		if ( isEntityQuery ) {
+			return listOfEntities( session, resultTypes, tuples );
+		}
+		else {
+			return listOfArrays( tuples );
+		}
+	}
+
+	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, Iterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -58,7 +86,21 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private Iterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters, Type[] resultTypes) {
+	private List<Object> listOfArrays(Iterator<Tuple> tuples) {
+		List<Object> results = new ArrayList<Object>();
+		while ( tuples.hasNext() ) {
+			Tuple tuple = tuples.next();
+			Object[] entry = new Object[tuple.getColumnNames().size()];
+			int i = 0;
+			for ( String column : tuple.getColumnNames() ) {
+				entry[i++] = tuple.get( column );
+			}
+			results.add( entry );
+		}
+		return results;
+	}
+
+	private Iterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
 		Loadable[] entityPersisters = getEntityPersisters();
 		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
 		for ( int i = 0; i < metadatas.length; i++ ) {
