@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import java.util.HashMap;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
+
+import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.ogm.dialect.GridDialect;
@@ -67,30 +69,32 @@ public class TypeTranslatorImpl implements TypeTranslator {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final Map<JavaTypeDescriptor, GridType> typeConverter;
+	private final Map<JavaTypeDescriptor<?>, GridType> typeConverter;
 	private final GridDialect dialect;
 
 	public TypeTranslatorImpl(GridDialect dialect) {
 		this.dialect = dialect;
 
-		typeConverter = new HashMap<JavaTypeDescriptor, GridType>();
-		typeConverter.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
-		typeConverter.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
-		typeConverter.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
-		typeConverter.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
-		typeConverter.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
-		typeConverter.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
-		typeConverter.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
-		typeConverter.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
-		typeConverter.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
-		typeConverter.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
-		typeConverter.put( JdbcDateTypeDescriptor.INSTANCE, DateType.INSTANCE );
-		typeConverter.put( JdbcTimestampTypeDescriptor.INSTANCE, TimestampType.INSTANCE );
-		typeConverter.put( JdbcTimeTypeDescriptor.INSTANCE, TimeType.INSTANCE );
-		typeConverter.put( CalendarDateTypeDescriptor.INSTANCE, CalendarDateType.INSTANCE );
-		typeConverter.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
-		typeConverter.put( PrimitiveByteArrayTypeDescriptor.INSTANCE, PrimitiveByteArrayType.INSTANCE );
-		typeConverter.put( UUIDTypeDescriptor.INSTANCE, UUIDType.INSTANCE );
+		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 17 );
+		tmpMap.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
+		tmpMap.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
+		tmpMap.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
+		tmpMap.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
+		tmpMap.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
+		tmpMap.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
+		tmpMap.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
+		tmpMap.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
+		tmpMap.put( BooleanTypeDescriptor.INSTANCE, BooleanType.INSTANCE );
+		tmpMap.put( ByteTypeDescriptor.INSTANCE, ByteType.INSTANCE );
+		tmpMap.put( JdbcDateTypeDescriptor.INSTANCE, DateType.INSTANCE );
+		tmpMap.put( JdbcTimestampTypeDescriptor.INSTANCE, TimestampType.INSTANCE );
+		tmpMap.put( JdbcTimeTypeDescriptor.INSTANCE, TimeType.INSTANCE );
+		tmpMap.put( CalendarDateTypeDescriptor.INSTANCE, CalendarDateType.INSTANCE );
+		tmpMap.put( CalendarTypeDescriptor.INSTANCE, CalendarType.INSTANCE );
+		tmpMap.put( PrimitiveByteArrayTypeDescriptor.INSTANCE, PrimitiveByteArrayType.INSTANCE );
+		tmpMap.put( UUIDTypeDescriptor.INSTANCE, UUIDType.INSTANCE );
+
+		typeConverter = Collections.unmodifiableMap( tmpMap );
 	}
 
 	@Override public GridType getType(Type type) {
@@ -105,7 +109,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 			return dialectType;
 		}
 		else if ( type instanceof AbstractStandardBasicType ) {
-			AbstractStandardBasicType exposedType = (AbstractStandardBasicType) type;
+			AbstractStandardBasicType<?> exposedType = (AbstractStandardBasicType<?>) type;
 			final GridType gridType = typeConverter.get( exposedType.getJavaTypeDescriptor() );
 			if (gridType == null) {
 				throw log.unableToFindGridType( exposedType.getJavaTypeDescriptor().getJavaTypeClass().getName() );
