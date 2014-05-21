@@ -21,7 +21,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
  * Resembles {@link QueryPlanCache} which atm. can not directly be re-used as it doesn't allow to customize the
  * parameter parser.
  * <p>
- * TODO: To be removed once HHH-9190 and OGM-714 have been resolved.
+ * TODO: To be removed once HHH-9190 and OGM-414 have been resolved.
  *
  * @author Gunnar Morling
  */

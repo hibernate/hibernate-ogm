@@ -47,8 +47,8 @@ public class BackendCustomLoader extends CustomLoader {
 	}
 
 	/**
-	 * Whether this query is a selection of a complete entity not. Queries mixing scalar values and entire entities in
-	 * one result are not supported atm.
+	 * Whether this query is a selection of a complete entity or not. Queries mixing scalar values and entire entities
+	 * in one result are not supported atm.
 	 */
 	private boolean isEntityQuery() {
 		for ( Return queryReturn : customQuery.getCustomQueryReturns() ) {
