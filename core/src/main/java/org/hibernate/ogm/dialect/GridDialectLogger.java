@@ -11,17 +11,20 @@ import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
@@ -33,12 +36,13 @@ import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
 /**
- * A wrapper dialect that logs the calls performed on the real dialect.
+ * A wrapper dialect that logs any performance-relevant calls performed on the real dialect.
  * It is only used when this class's logger level is set to Trace
  *
  * @author Sebastien Lorber (<i>lorber.sebastien@gmail.com</i>)
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @see org.hibernate.ogm.dialect.impl.GridDialectFactoryImpl#buildGridDialect(java.util.Map, org.hibernate.service.ServiceRegistry)
+ *
+ * @see GridDialectInitiator
  */
 public class GridDialectLogger implements GridDialect, Configurable, ServiceRegistryAwareService {
 
@@ -152,9 +156,14 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery,  QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		log.tracef( "Executing native backend query: %1$s", customQuery.getSQL() );
-		return gridDialect.executeBackendQuery( customQuery, metadatas );
+		return gridDialect.executeBackendQuery( customQuery, queryParameters, metadatas );
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return gridDialect.getParameterMetadataBuilder();
 	}
 
 	@Override

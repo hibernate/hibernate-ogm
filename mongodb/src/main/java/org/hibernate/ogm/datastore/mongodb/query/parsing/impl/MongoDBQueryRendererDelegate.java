@@ -24,6 +24,7 @@ import com.mongodb.DBObject;
 public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
 
 	private final MongoDBPropertyHelper propertyHelper;
+	private DBObject orderBy;
 
 	public MongoDBQueryRendererDelegate(EntityNamesResolver entityNames, MongoDBPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
 		super(
@@ -36,7 +37,7 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 
 	@Override
 	public MongoDBQueryParsingResult getResult() {
-		return new MongoDBQueryParsingResult( targetType, builder.build(), getProjectionDBObject() );
+		return new MongoDBQueryParsingResult( targetType, builder.build(), getProjectionDBObject(), orderBy );
 	}
 
 	@Override
@@ -62,6 +63,10 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 	 * @return a {@code DBObject} representing the projections of the query
 	 */
 	private DBObject getProjectionDBObject() {
+		if ( projections.isEmpty() ) {
+			return null;
+		}
+
 		DBObject projectionDBObject = new BasicDBObject();
 
 		for ( String projection : projections ) {
@@ -69,5 +74,18 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 		}
 
 		return projectionDBObject;
+	}
+
+	@Override
+	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {
+		if ( orderBy == null ) {
+			orderBy = new BasicDBObject();
+		}
+
+		String columnName = propertyHelper.getColumnName( targetType, propertyPath.asStringPathWithoutAlias() );
+
+		// BasicDBObject is essentially a LinkedHashMap, so in case of several sort keys they'll be evaluated in the
+		// order they're inserted here, which is the order within the original statement
+		orderBy.put( columnName, isAscending ? 1 : -1 );
 	}
 }

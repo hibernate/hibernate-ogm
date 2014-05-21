@@ -45,7 +45,7 @@ public class Hypothesis {
 		this.id = id;
 	}
 
-	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = Field.DEFAULT_NULL_TOKEN)
+	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
 	public String getDescription() {
 		return description;
 	}

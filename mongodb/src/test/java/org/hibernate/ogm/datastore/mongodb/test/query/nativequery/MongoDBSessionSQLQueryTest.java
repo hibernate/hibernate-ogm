@@ -10,8 +10,10 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
 
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -26,6 +28,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem imperatrix = new OscarWildePoem( 3L, "Ave Imperatrix", "Oscar Wilde" );
 
 	@Before
 	public void init() {
@@ -33,6 +36,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		Transaction transaction = session.beginTransaction();
 		session.persist( portia );
 		session.persist( athanasia );
+		session.persist( imperatrix );
 		transaction.commit();
 		session.clear();
 		session.close();
@@ -44,6 +48,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 		Transaction tx = session.beginTransaction();
 		delete( session, portia );
 		delete( session, athanasia );
+		delete( session, imperatrix );
 		tx.commit();
 		session.clear();
 		session.close();
@@ -57,6 +62,42 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testNativeQueryWithFirstResult() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
+				.addEntity( OscarWildePoem.class )
+				.setFirstResult( 1 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testNativeQueryWithMaxRows() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
+				.addEntity( OscarWildePoem.class )
+				.setMaxResults( 2 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
 	public void testListMultipleResultQuery() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -67,9 +108,27 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.list();
 
-		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
-		assertAreEquals( athanasia, result.get( 0 ) );
-		assertAreEquals( portia, result.get( 1 ) );
+		assertThat( result ).onProperty( "id" ).containsExactly( 2L, 3L, 1L );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testListMultipleResultQueryWithFirstResultAndMaxRows() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+				.setFirstResult( 1 )
+				.setMaxResults( 1 )
+				.list();
+
+		assertThat( result ).onProperty( "id" ).containsExactly( 3L );
 
 		transaction.commit();
 		session.clear();

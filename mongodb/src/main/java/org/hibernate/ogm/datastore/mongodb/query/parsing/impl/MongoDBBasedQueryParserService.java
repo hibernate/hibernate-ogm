@@ -11,15 +11,24 @@ import java.util.Map;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.engine.query.spi.ParameterMetadata;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
+import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryImpl;
-import org.hibernate.ogm.hibernatecore.impl.OgmSession;
+import org.hibernate.ogm.datastore.mongodb.query.impl.DBObjectQuerySpecification;
+import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
+import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.service.impl.BaseQueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
+
+import com.mongodb.DBObject;
 
 /**
  * {@link org.hibernate.ogm.service.impl.QueryParserService} implementation which creates MongoDB queries in form of
@@ -41,7 +50,34 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 		log.createdQuery( queryString, result );
 
-		return new MongoDBQueryImpl( result.getEntityType(), result.getQuery(), result.getProjection(), session );
+		SessionImplementor sessionImplementor = (SessionImplementor) session;
+
+		String tableName = ( (OgmEntityPersister) ( sessionImplementor
+				.getFactory() )
+				.getEntityPersister( result.getEntityType().getName() ) )
+				.getTableName();
+
+		NoSQLQuery query = new DBObjectQuery(
+				tableName,
+				result.getQuery(),
+				result.getProjection(),
+				result.getOrderBy(),
+				sessionImplementor,
+				new ParameterMetadata( null, null )
+		);
+
+		// Register the result types of the query; Currently either a number of scalar values or an entity return
+		// are supported only; JP-QL would actually a combination of both, though (see OGM-514)
+		if ( result.getProjection() != null ) {
+			for ( String field : result.getProjection().keySet() ) {
+				query.addScalar( field );
+			}
+		}
+		else {
+			query.addEntity( result.getEntityType() );
+		}
+
+		return query;
 	}
 
 	private MongoDBProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters) {
@@ -58,5 +94,34 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 			entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
 		}
 		return entityNamesResolver;
+	}
+
+	private static class DBObjectQuery extends NoSQLQueryImpl {
+
+		private final String collectionName;
+		private final DBObject query;
+		private final DBObject projection;
+		private final DBObject orderBy;
+
+		public DBObjectQuery(String collectionName, DBObject query, DBObject projection, DBObject orderBy, SessionImplementor session, ParameterMetadata parameterMetadata) {
+			super( query.toString(), session, parameterMetadata );
+
+			this.collectionName = collectionName;
+			this.query = query;
+			this.projection = projection;
+			this.orderBy = orderBy;
+		}
+
+		@Override
+		protected NativeSQLQuerySpecification generateQuerySpecification(Map namedParams) {
+			return new DBObjectQuerySpecification(
+					collectionName,
+					query,
+					projection,
+					orderBy,
+					getQueryReturns().toArray( new NativeSQLQueryReturn[getQueryReturns().size()] ),
+					getSynchronizedQuerySpaces()
+			);
+		}
 	}
 }

@@ -15,6 +15,7 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 
 /**
  * @author Emmanuel Bernard
@@ -28,6 +29,7 @@ public class Helicopter {
 
 	private String uuid;
 	private String name;
+	private String make;
 
 	@Id
 	@GeneratedValue(generator = "uuid")
@@ -47,5 +49,14 @@ public class Helicopter {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
+	public String getMake() {
+		return make;
+	}
+
+	public void setMake(String make) {
+		this.make = make;
 	}
 }

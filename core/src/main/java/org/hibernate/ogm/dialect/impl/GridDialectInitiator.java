@@ -26,6 +26,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
@@ -55,7 +56,7 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 		return propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.instantiate()
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
-				.withInstantiator( new GridDialectInstantiator( datastore, registry.getService( EventListenerRegistry.class ) ) )
+				.withInstantiator( new GridDialectInstantiator( datastore, registry ) )
 				.getValue();
 	}
 
@@ -67,11 +68,13 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 	private static class GridDialectInstantiator implements Instantiator<GridDialect> {
 
 		private final DatastoreProvider datastore;
+		private final ServiceRegistryImplementor registry;
 		private final EventListenerRegistry eventListenerRegistry;
 
-		public GridDialectInstantiator(DatastoreProvider datastore, EventListenerRegistry eventListenerRegistry) {
+		public GridDialectInstantiator(DatastoreProvider datastore, ServiceRegistryImplementor registry) {
 			this.datastore = datastore;
-			this.eventListenerRegistry = eventListenerRegistry;
+			this.registry = registry;
+			this.eventListenerRegistry = registry.getService( EventListenerRegistry.class );
 		}
 
 		@Override
@@ -92,6 +95,10 @@ public class GridDialectInitiator implements SessionFactoryServiceInitiator<Grid
 					log.gridDialectHasNoProperConstructor( clazz );
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+
+				if ( gridDialect instanceof ServiceRegistryAwareService ) {
+					( (ServiceRegistryAwareService) gridDialect ).injectServices( registry );
+				}
 
 				if ( gridDialect instanceof BatchableGridDialect ) {
 					BatchOperationsDelegator delegator = new BatchOperationsDelegator( (BatchableGridDialect) gridDialect );

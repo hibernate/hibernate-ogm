@@ -15,8 +15,8 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -32,7 +32,10 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -157,7 +160,12 @@ public class MapDialect implements GridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
+	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for Map" );
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 }

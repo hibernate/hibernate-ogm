@@ -25,8 +25,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
@@ -43,6 +43,7 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
+import org.hibernate.ogm.datastore.mongodb.query.impl.DBObjectQuerySpecification;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -61,7 +62,10 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.persister.entity.Lockable;
@@ -75,6 +79,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
+import com.mongodb.util.JSON;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -579,12 +584,44 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(CustomQuery customQuery, EntityKeyMetadata[] metadatas) {
-		BasicDBObject mongodbQuery = (BasicDBObject) com.mongodb.util.JSON.parse( customQuery.getSQL() );
-		validate( metadatas );
-		DBCollection collection = provider.getDatabase().getCollection( metadatas[0].getTable() );
-		DBCursor cursor = collection.find( mongodbQuery );
-		return new MongoDBResultsCursor( cursor, metadatas[0] );
+	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		DBObject mongodbQuery = null;
+		DBObject projection = null;
+		String collectionName = null;
+		DBObject orderBy = null;
+
+		// query already given as DBObject (created by JP-QL parser)
+		if ( customQuery.getSpec() instanceof DBObjectQuerySpecification ) {
+			DBObjectQuerySpecification spec = (DBObjectQuerySpecification) customQuery.getSpec();
+			mongodbQuery = spec.getQuery();
+			projection = spec.getProjection();
+			collectionName = spec.getCollectionName();
+			orderBy = spec.getOrderBy();
+		}
+		// a string-based native query; need to create the DBObject from that
+		else {
+			mongodbQuery = (BasicDBObject) JSON.parse( customQuery.getSQL() );
+			validate( metadatas );
+			collectionName = metadatas[0].getTable();
+		}
+
+		DBCollection collection = provider.getDatabase().getCollection( collectionName );
+		DBCursor cursor = collection.find( mongodbQuery, projection );
+
+		if ( orderBy != null ) {
+			cursor.sort( orderBy );
+		}
+
+		// apply firstRow/maxRows if present
+		if ( queryParameters.getRowSelection().getFirstRow() != null ) {
+			cursor.skip( queryParameters.getRowSelection().getFirstRow() );
+		}
+
+		if ( queryParameters.getRowSelection().getMaxRows() != null ) {
+			cursor.limit( queryParameters.getRowSelection().getMaxRows() );
+		}
+
+		return new MongoDBResultsCursor( cursor, metadatas.length == 1 ? metadatas[0] : null );
 	}
 
 	private void validate(EntityKeyMetadata[] metadatas) {
@@ -707,6 +744,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 			// Object already exists in the db or has invalid fields:
 			updateTuple( tuple, entityKey, tupleOperation.getTupleContext() );
 		}
+	}
+
+	@Override
+	public ParameterMetadataBuilder getParameterMetadataBuilder() {
+		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
