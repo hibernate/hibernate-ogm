@@ -179,4 +179,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 58, value = "Parameter '%s' must not be null")
 	IllegalArgumentException parameterMustNotBeNull(String parameterName);
+
+	@Message(id = 59, value = "Unable to find a GridType for %s")
+	HibernateException unableToFindGridType(String typeName);
 }
