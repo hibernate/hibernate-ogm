@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import org.hibernate.HibernateException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.BigDecimalType;
 import org.hibernate.ogm.type.BigIntegerType;
@@ -31,6 +33,8 @@ import org.hibernate.ogm.type.TimestampType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.type.UUIDType;
 import org.hibernate.ogm.type.UrlType;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.CustomType;
 import org.hibernate.type.EnumType;
@@ -55,14 +59,14 @@ import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.usertype.UserType;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * @author Emmanuel Bernard
  * @author Nicolas Helleringer
  */
 public class TypeTranslatorImpl implements TypeTranslator {
+
+	private static final Log log = LoggerFactory.make();
+
 	private final Map<JavaTypeDescriptor, GridType> typeConverter;
 	private final GridDialect dialect;
 
@@ -104,7 +108,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 			AbstractStandardBasicType exposedType = (AbstractStandardBasicType) type;
 			final GridType gridType = typeConverter.get( exposedType.getJavaTypeDescriptor() );
 			if (gridType == null) {
-				throw new HibernateException( "Unable to find a GridType for " + exposedType.getClass().getName() );
+				throw log.unableToFindGridType( exposedType.getJavaTypeDescriptor().getJavaTypeClass().getName() );
 			}
 			return gridType;
 		}
@@ -135,6 +139,6 @@ public class TypeTranslatorImpl implements TypeTranslator {
 		else if ( type instanceof org.hibernate.type.CollectionType ) {
 			return new CollectionType( (org.hibernate.type.CollectionType) type );
 		}
-		throw new HibernateException( "Unable to find a GridType for " + type.getClass().getName() );
+		throw log.unableToFindGridType( type.getClass().getName() );
 	}
 }
