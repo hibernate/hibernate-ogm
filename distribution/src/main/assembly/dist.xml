@@ -188,6 +188,7 @@
                             <include>org.neo4j:neo4j-lucene-index</include>
                             <include>org.neo4j:neo4j-udc</include>
                             <include>org.scala-lang:scala-library</include>
+                            <include>org.parboiled:parboiled-java</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>
