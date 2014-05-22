@@ -407,9 +407,10 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
 		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
 		Tuple dummy = new Tuple();
+		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
 
 		for ( Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
-			GridType gridType = serviceRegistry.getService( TypeTranslator.class ).getType( parameter.getValue().getType() );
+			GridType gridType = typeTranslator.getType( parameter.getValue().getType() );
 			gridType.nullSafeSet( dummy, parameter.getValue().getValue(), new String[]{ parameter.getKey() }, null );
 			parameterValues.put( parameter.getKey(), dummy.get( parameter.getKey() ) );
 		}
