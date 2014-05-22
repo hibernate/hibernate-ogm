@@ -27,17 +27,15 @@ import org.neo4j.graphdb.ResourceIterator;
 /**
  * Provides a way to create, remove and look for nodes and relationships using the cypher query language.
  * <p>
- * A relationship is created using an {@link AssociationKey} and a {@link RowKey}. The type of new relationship is the
- * value returned by {@link AssociationKey#getCollectionRole()}. The names and values of the properties of the
- * relationship are the corresponding {@link RowKey#getColumnNames()} and {@link RowKey#getColumnValues()}. An additional
- * property {@link #TABLE} is added containing the name of the table that would contain this values in a relational
- * database.
- * <p>
  * A node is created using an {@link EntityKey}. A node is labeled with {@link NodeLabel#ENTITY} and with the value
  * returned by {@link EntityKey#getTable()}. The properties names and values of the node are the corresponding values of
  * {@link EntityKey#getColumnNames()} and {@link EntityKey#getColumnValues()}
  * <p>
- * This class should be thread-safe since it's used by the dialect as a reference.
+ * A relationship is created using an {@link AssociationKey} and a {@link RowKey}. The type of a new relationship is the
+ * value returned by {@link AssociationKey#getCollectionRole()}. The names and values of the properties of the
+ * relationship are the corresponding {@link RowKey#getColumnNames()} and {@link RowKey#getColumnValues()}.
+ * <p>
+ * This class must be thread-safe since it's used by the dialect as a reference.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
@@ -62,7 +60,7 @@ public class CypherCRUD {
 	 */
 	public Relationship findRelationship(AssociationKey associationKey, RowKey rowKey) {
 		EntityKey entityKey = associationKey.getEntityKey();
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<String, Object>( entityKey.getColumnNames().length + rowKey.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( entityKey, parameters, query, ENTITY );
 		query.append( " - " );
@@ -99,7 +97,7 @@ public class CypherCRUD {
 	 * @return the corresponding {@link Node} or null
 	 */
 	public Node findNode(Key key, NodeLabel label) {
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( key, parameters, query, label );
 		query.append( " RETURN n" );
@@ -124,7 +122,7 @@ public class CypherCRUD {
 	 * @param entityKey of the entity to remove
 	 */
 	public void remove(EntityKey entityKey) {
-		Map<String, Object> parameters = parameters( entityKey );
+		Map<String, Object> parameters = new HashMap<String, Object>( entityKey.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( entityKey, parameters, query, NodeLabel.ENTITY );
 		query.append( " OPTIONAL MATCH (n) - [r] - () DELETE r,n" );
@@ -139,7 +137,7 @@ public class CypherCRUD {
 	 * @return the {@link ResourceIterator} with the results
 	 */
 	public ResourceIterator<Node> findNodes(String tableName) {
-		String query = "MATCH (n:" + tableName + ") RETURN n";
+		String query = "MATCH (n:`" + tableName + "`) RETURN n";
 		ExecutionResult result = engine.execute( query.toString() );
 		return result.columnAs( "n" );
 	}
@@ -155,7 +153,7 @@ public class CypherCRUD {
 	 * @return the resulting node
 	 */
 	public Node createNodeUnlessExists(Key key, NodeLabel label) {
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MERGE" );
 		appendNodePattern( key, parameters, query, label );
 		query.append( " RETURN n" );
@@ -203,14 +201,6 @@ public class CypherCRUD {
 			}
 		}
 		query.append( "})" );
-	}
-
-	private Map<String, Object> parameters(EntityKey key) {
-		Map<String, Object> parameters = new HashMap<String, Object>();
-		for ( int j = 0; j < key.getColumnNames().length; j++ ) {
-			parameters.put( key.getColumnNames()[j], key.getColumnValues()[j] );
-		}
-		return parameters;
 	}
 
 	/**

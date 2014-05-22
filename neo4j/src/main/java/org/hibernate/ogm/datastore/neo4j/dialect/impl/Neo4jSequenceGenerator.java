@@ -74,8 +74,11 @@ public class Neo4jSequenceGenerator {
 
 	private final GraphDatabaseService neo4jDb;
 
+	private final ExecutionEngine engine;
+
 	public Neo4jSequenceGenerator(GraphDatabaseService neo4jDb) {
 		this.neo4jDb = neo4jDb;
+		this.engine = new ExecutionEngine( neo4jDb );
 	}
 
 	/**
@@ -137,11 +140,11 @@ public class Neo4jSequenceGenerator {
 				// It might happen that two threads want to create a new sequence node for the first time.
 				// In this case the two nodes will have the same sequence name, violating the unique constraint defined
 				// at startup.
-				log.errorGeneratingSequence( e );
+				log.errorGeneratingSequence( sequenceName( rowKey ), e );
 			}
 		}
 		// This should never happen
-		throw log.cannotGenerateSequence();
+		throw log.cannotGenerateSequence( sequenceName( rowKey ) );
 	}
 
 	private int sequence(RowKey rowKey, int increment, final int initialValue) {
@@ -169,10 +172,9 @@ public class Neo4jSequenceGenerator {
 	 */
 	private Node getOrCreateSequence(RowKey rowKey, final int initialValue) {
 		String updateSequenceQuery = getQuery( rowKey );
-		Map<String, Object> parameters = new HashMap<String, Object>();
+		Map<String, Object> parameters = new HashMap<String, Object>( 2 );
 		parameters.put( "initialValue", initialValue );
 		parameters.put( "sequenceName", sequenceName( rowKey ) );
-		ExecutionEngine engine = new ExecutionEngine( neo4jDb );
 		ExecutionResult result = engine.execute( updateSequenceQuery, parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
 		Node node = null;

@@ -20,10 +20,10 @@ import org.jboss.logging.MessageLogger;
 @MessageLogger(projectCode = "OGM")
 public interface Log extends org.hibernate.ogm.util.impl.Log {
 
-	@Message(id = 1401, value = "Cannot generate sequence")
-	HibernateException cannotGenerateSequence();
+	@Message(id = 1401, value = "Cannot generate sequence %s")
+	HibernateException cannotGenerateSequence(String sequenceName);
 
 	@LogMessage(level = DEBUG)
-	@Message(id = 1402, value = "An error occured while generating athe next value of a sequence")
-	void errorGeneratingSequence(@Cause Exception e);
+	@Message(id = 1402, value = "An error occured while generating the sequence %s")
+	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
 }

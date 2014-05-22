@@ -12,7 +12,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.fest.util.Files;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
@@ -59,9 +61,9 @@ public class Neo4jNextValueGenerationTest {
 
 		provider.configure( configurationValues );
 		provider.start();
-		provider.getSchemaBuilder()
-			.addSequence( HIBERNATE_SEQUENCES )
-			.update();
+		Set<String> sequence = new HashSet<String>( 1 );
+		sequence.add( HIBERNATE_SEQUENCES );
+		provider.getSequenceGenerator().createUniqueConstraint( sequence );
 		dialect = new Neo4jDialect( provider );
 	}
 

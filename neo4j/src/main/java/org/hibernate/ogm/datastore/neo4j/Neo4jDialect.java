@@ -112,42 +112,38 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		PropertyContainer property = createRelationioshipToEntityOrToTempNode( associationKey, rowKey );
+		PropertyContainer property = createRelationshipToEntityOrToTempNode( associationKey, rowKey );
 		return new Tuple( new Neo4jTupleSnapshot( property ) );
 	}
 
 	/**
-	 * When dealing with bidirectional associations, OGM calls this method twice, the first time with the information
-	 * related to the owner of the association and the {@link RowKey}, the second time using the same {@link RowKey} but
-	 * with the {@link AssociationKey} referring to the other side of the association. What happen in this method is
-	 * that the first time I'm going to save the {@link RowKey} information in a temporary node and the second time I'm
-	 * going to delete the node and connect the two entity with two relationships.
+	 * When dealing with some scenarios like, for example, a bidirectional association, OGM calls this method twice:
 	 * <p>
-	 * This approach works at the moment because everything is inside a transaction.
+	 * the first time with the information related to the owner of the association and the {@link RowKey},
+	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
+	 * <p>
+	 * What happen in this method is that the first time I'm going to save the {@link RowKey} information in a temporary
+	 * node and the second time I'm going to delete the node and connect the two entities with two relationships.
+	 * <p>
+	 * This approach works at the moment because:
+	 * <ol>
+	 * <li>everything is inside a transaction
+	 * <li>a given session is not concurrent and execute operation sequentially
+	 * <li>the method is called a second time **right after** the first time
+	 * </ol>
+	 * So the same RowKey cannot be created for two different associations at the same time from within the same
+	 * transaction.
 	 */
-	private PropertyContainer createRelationioshipToEntityOrToTempNode(AssociationKey associationKey, RowKey rowKey) {
+	private PropertyContainer createRelationshipToEntityOrToTempNode(AssociationKey associationKey, RowKey rowKey) {
 		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
+		// Check if there is an entity or a temporary node representing the RowKey
 		if ( rowKeyNode == null ) {
-			EntityKey endNodeKey = endNodeKey( associationKey, rowKey );
-			Node endNode = neo4jCRUD.findNode( endNodeKey, ENTITY );
-			if ( endNode == null ) {
-				// We cannot find the entity on the other side of the relationship, we store the information related to
-				// the RowKey in a temporary node and we create a relationship to it
-				return createRelationshipToTempNode( associationKey, rowKey );
-			}
-			else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
-				// Unidirectional ManyToOne: the node contains the field with the association
-				// I'm not creating a relationship at the moment for this case
-				return endNode;
-			}
-			else {
-				// Bidirectional ManyToOne: the node contains the field with the association.
-				// I'll create the relationship between the owner and the end node
-				return createRelationshipWithEntity( associationKey, rowKey, endNode );
-			}
+			// We look for the entity at the end of the association, if we cannot find it
+			// we save the RowKey in a temporary node.
+			return findEntityOrCreateTempNode( associationKey, rowKey );
 		}
 		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
-			// The Rowkey represents an entity and we are going to create the relationship with it
+			// The RowKey represents an entity and we are going to create the relationship to it
 			return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 		}
 		else if ( rowKeyNode.hasLabel( TEMP_NODE ) ) {
@@ -156,7 +152,27 @@ public class Neo4jDialect implements GridDialect {
 			return deleteTempNodeAndUpdateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 		}
 		else {
-			throw new AssertionFailure( "Unrecognized RowKeyode: " + rowKeyNode );
+			throw new AssertionFailure( "Unrecognized row key node: " + rowKeyNode );
+		}
+	}
+
+	private PropertyContainer findEntityOrCreateTempNode(AssociationKey associationKey, RowKey rowKey) {
+		EntityKey endNodeKey = endNodeKey( associationKey, rowKey );
+		Node endNode = neo4jCRUD.findNode( endNodeKey, ENTITY );
+		if ( endNode == null ) {
+			// We cannot find the entity on the other side of the relationship, we store the information related to
+			// the RowKey in a temporary node and we create a relationship to it
+			return createRelationshipToTempNode( associationKey, rowKey );
+		}
+		else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
+			// Unidirectional ManyToOne: the node contains the field with the association
+			// I'm not creating a relationship at the moment for this case
+			return endNode;
+		}
+		else {
+			// Bidirectional ManyToOne: the node contains the field with the association.
+			// I'll create the relationship between the owner and the end node
+			return createRelationshipWithEntity( associationKey, rowKey, endNode );
 		}
 	}
 
@@ -164,9 +180,14 @@ public class Neo4jDialect implements GridDialect {
 	 * This method returns the {@link EntityKey} that represents the entity on the other side of the relationship.
 	 * <p>
 	 * At the moment the {@link AssociationKey} contains the owner of the association but it is missing the information
-	 * related to the entity on the other side of the association. What we do to obtain it is remove from {@link RowKey}
-	 * the columns in the {@link AssociationKey}, the remaining one should represents the identifier at the end fo the
-	 * association.
+	 * related to the entity on the other side of the association. To obtain it, we remove from {@link RowKey} the
+	 * columns in AssociationKey, the remaining ones should represent the identifier at the end of the association.
+	 * <p>
+	 * For List, Map and persistent collections with identifiers, the remaining columns are not the other side
+	 * identifier but rather then index, key or surrogate identifier. This node does not exist and will always return
+	 * null.
+	 * <p>
+	 * TODO: use metadata to avoid this unnecessary lookup in that case.
 	 */
 	private EntityKey endNodeKey(AssociationKey associationKey, RowKey rowKey) {
 		List<String> keyColumnNames = new ArrayList<String>();

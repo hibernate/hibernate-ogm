@@ -6,9 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
@@ -76,25 +74,8 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 		return neo4jDb;
 	}
 
-	public SchemaBuilder getSchemaBuilder() {
-		return new SchemaBuilder();
-	}
-
 	public Neo4jSequenceGenerator getSequenceGenerator() {
 		return this.sequenceGenerator;
 	}
 
-	public class SchemaBuilder {
-
-		private final Set<String> sequenceGeneratorKeys = new HashSet<String>();
-
-		public SchemaBuilder addSequence(String sequenceGeneratorKey) {
-				sequenceGeneratorKeys.add( sequenceGeneratorKey );
-				return this;
-		}
-
-		public void update() {
-			sequenceGenerator.createUniqueConstraint( sequenceGeneratorKeys );
-		}
-	}
 }
