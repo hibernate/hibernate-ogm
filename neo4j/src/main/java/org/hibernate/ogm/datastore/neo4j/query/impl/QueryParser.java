@@ -9,12 +9,17 @@ package org.hibernate.ogm.datastore.neo4j.query.impl;
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
 import org.parboiled.BaseParser;
 import org.parboiled.Rule;
-import org.parboiled.annotations.BuildParseTree;
 import org.parboiled.annotations.SkipNode;
 import org.parboiled.annotations.SuppressSubnodes;
 import org.parboiled.support.StringVar;
 
-@BuildParseTree
+/**
+ * Simple parser for Neo4j queries which recognizes named parameters.
+ *
+ * @author Gunnar Morling
+ */
+// Use @BuildParseTree together with ParseTreeUtils#printNodeTree() for debugging purposes
+//@BuildParseTree
 public class QueryParser extends BaseParser<Recognizer> {
 
 	final Recognizer journaler;
@@ -36,7 +41,7 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	@SkipNode
 	public Rule QueryPart() {
-		return FirstOf( Quoted(), NamedParameter(), Other() );
+		return FirstOf( Quoted(), Escaped(), NamedParameter(), Other() );
 	}
 
 	@SuppressSubnodes
@@ -45,10 +50,10 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 		return Sequence(
 			ParameterBeginDelimiter(),
-			WhiteSpace(),
+			ZeroOrMore( WhiteSpace() ),
 			OneOrMore( Alphanumeric() ),
 			name.set( match() ),
-			WhiteSpace(),
+			ZeroOrMore( WhiteSpace() ),
 			ParameterEndDelimiter(),
 			adapter.addNamedParameter( name.get(), currentIndex() )
 		);
@@ -69,8 +74,22 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	@SuppressSubnodes
+	public Rule Escaped() {
+		return Sequence(
+			EscapeDelimiter(),
+			ZeroOrMore(
+				FirstOf(
+					EscapedEscapeDelimiter(),
+					Sequence( TestNot( EscapeDelimiter() ), ANY )
+				)
+			),
+			EscapeDelimiter()
+		);
+	}
+
+	@SuppressSubnodes
 	public Rule Other() {
-		return OneOrMore( TestNot( NamedParameter() ), TestNot( Quoted() ), ANY );
+		return OneOrMore( TestNot( NamedParameter() ), TestNot( Quoted() ), TestNot( Escaped() ), ANY );
 	}
 
 	public Rule QuoteDelimiter() {
@@ -79,6 +98,14 @@ public class QueryParser extends BaseParser<Recognizer> {
 
 	public Rule EscapedQuoteDelimiter() {
 		return Sequence( Ch( '\\' ), Ch( '\'' ) );
+	}
+
+	public Rule EscapeDelimiter() {
+		return Ch( '`' );
+	}
+
+	public Rule EscapedEscapeDelimiter() {
+		return Sequence( Ch( '\\' ), Ch( '`' ) );
 	}
 
 	public Rule ParameterBeginDelimiter() {
@@ -102,9 +129,15 @@ public class QueryParser extends BaseParser<Recognizer> {
 	}
 
 	Rule WhiteSpace() {
-		return ZeroOrMore( AnyOf( " \t\f" ) );
+		return OneOrMore( AnyOf( " \t\f" ) );
 	}
 
+	/**
+	 * Wraps a {@link Recognizer} so it can be invoked by the parser (which requires the methods to return a
+	 * {@code boolean}).
+	 *
+	 * @author Gunnar Morling
+	 */
 	private static class RecognizerAdapter {
 
 		private final Recognizer recognizer;
