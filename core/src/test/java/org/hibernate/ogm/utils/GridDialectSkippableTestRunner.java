@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.utils;
 
-import java.lang.annotation.Annotation;
-
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -27,33 +25,51 @@ public class GridDialectSkippableTestRunner extends BlockJUnit4ClassRunner {
 
 	@Override
 	protected void runChild(final FrameworkMethod method, RunNotifier notifier) {
-		SkipByGridDialect skipByGridDialect = getSkipByGridDialect( method );
+		if ( isTestMethodSkipped( method ) ) {
+			notifier.fireTestIgnored( describeChild( method ) );
+		}
+		else {
+			super.runChild( method, notifier );
+		}
+	}
 
+	protected boolean isTestClassSkipped() {
+		SkipByGridDialect skipByGridDialect = getTestClass().getJavaClass().getAnnotation( SkipByGridDialect.class );
+		return isSkipped( skipByGridDialect );
+	}
+
+	/**
+	 * Whether the given method is to be skipped or not, by means of the {@link SkipByGridDialect} either given on the
+	 * method itself or on the class of the test.
+	 */
+	protected boolean isTestMethodSkipped(final FrameworkMethod method) {
+		SkipByGridDialect skipByGridDialect = method.getAnnotation( SkipByGridDialect.class );
+		if ( skipByGridDialect != null ) {
+			return isSkipped( skipByGridDialect );
+		}
+
+		return isTestClassSkipped();
+	}
+
+	protected boolean areAllTestMethodsSkipped() {
+		for ( FrameworkMethod method : getChildren() ) {
+			if ( !isTestMethodSkipped( method ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private boolean isSkipped(SkipByGridDialect skipByGridDialect) {
 		if ( skipByGridDialect != null ) {
 			for ( GridDialectType gridDialectType : skipByGridDialect.value() ) {
 				if ( gridDialectType.equals( TestHelper.getCurrentDialectType() ) ) {
-					notifier.fireTestIgnored( describeChild( method ) );
-					return;
+					return true;
 				}
 			}
 		}
 
-		super.runChild( method, notifier );
-	}
-
-	private SkipByGridDialect getSkipByGridDialect(final FrameworkMethod method) {
-		//try method first
-		SkipByGridDialect skipByGridDialect = method.getAnnotation( SkipByGridDialect.class );
-
-		//then type
-		if ( skipByGridDialect == null ) {
-			for ( Annotation annotation : getTestClass().getAnnotations() ) {
-				if ( annotation.annotationType() == SkipByGridDialect.class ) {
-					skipByGridDialect = (SkipByGridDialect) annotation;
-				}
-			}
-		}
-
-		return skipByGridDialect;
+		return false;
 	}
 }

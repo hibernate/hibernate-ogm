@@ -112,25 +112,27 @@ public class OgmTestRunner extends GridDialectSkippableTestRunner {
 
 	@Override
 	public void run(RunNotifier notifier) {
-		testScopedSessionFactory = buildSessionFactory();
-
-		//inject shared SF into static fields, if any
-		injectSessionFactory( null, testScopedFactoryFields, testScopedSessionFactory );
+		if ( isTestScopedSessionFactoryRequired() ) {
+			testScopedSessionFactory = buildSessionFactory();
+			injectSessionFactory( null, testScopedFactoryFields, testScopedSessionFactory );
+		}
 
 		try {
 			super.run( notifier );
 		}
 		finally {
-			cleanUpPendingTransactionIfRequired();
-			TestHelper.dropSchemaAndDatabase( testScopedSessionFactory );
-			testScopedSessionFactory.close();
+			if ( testScopedSessionFactory != null ) {
+				cleanUpPendingTransactionIfRequired();
+				TestHelper.dropSchemaAndDatabase( testScopedSessionFactory );
+				testScopedSessionFactory.close();
+			}
 		}
 	}
 
 	@Override
 	protected void runChild(FrameworkMethod method, RunNotifier notifier) {
 		// create test method scoped SF if required; it will be injected in createTest()
-		if ( !testMethodScopedFactoryFields.isEmpty() ) {
+		if ( isTestMethodScopedSessionFactoryRequired( method ) ) {
 			testMethodScopedSessionFactory = buildSessionFactory();
 		}
 
@@ -142,6 +144,14 @@ public class OgmTestRunner extends GridDialectSkippableTestRunner {
 				testMethodScopedSessionFactory.close();
 			}
 		}
+	}
+
+	private boolean isTestScopedSessionFactoryRequired() {
+		return !isTestClassSkipped() && !areAllTestMethodsSkipped();
+	}
+
+	private boolean isTestMethodScopedSessionFactoryRequired(FrameworkMethod method) {
+		return !testMethodScopedFactoryFields.isEmpty() && !super.isTestMethodSkipped( method );
 	}
 
 	private void cleanUpPendingTransactionIfRequired() {
