@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.test.batch;
 
-import java.util.Iterator;
-
 import org.fest.assertions.Assertions;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
@@ -34,6 +32,7 @@ import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -176,7 +175,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 			return null;
 		}
 

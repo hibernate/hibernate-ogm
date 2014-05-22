@@ -6,8 +6,7 @@
  */
 package org.hibernate.ogm.datastore.map;
 
-import java.util.HashMap;
-import java.util.Iterator;
+	import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.LockMode;
@@ -37,6 +36,7 @@ import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
@@ -160,7 +160,7 @@ public class MapDialect implements GridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		throw new UnsupportedOperationException( "Native queries not supported for Map" );
 	}
 

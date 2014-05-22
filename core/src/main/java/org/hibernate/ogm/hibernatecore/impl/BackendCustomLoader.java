@@ -27,6 +27,7 @@ import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -62,23 +63,28 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		Iterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
-		if ( isEntityQuery() ) {
-			return listOfEntities( session, resultTypes, tuples );
+		ClosableIterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
+		try {
+			if ( isEntityQuery() ) {
+				return listOfEntities( session, resultTypes, tuples );
+			}
+			else {
+				return listOfArrays( tuples );
+			}
 		}
-		else {
-			return listOfArrays( tuples );
+		finally {
+			tuples.close();
 		}
 	}
 
-	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, Iterator<Tuple> tuples) {
+	// At the moment we only support the case where one entity type is returned
+	private List<Object> listOfEntities(SessionImplementor session, Type[] resultTypes, ClosableIterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
+		Class<?> returnedClass = resultTypes[0].getReturnedClass();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
-			for ( Type type : resultTypes ) {
-				OgmLoader loader = createLoader( session, type.getReturnedClass() );
-				results.add( entity( session, tuple, loader ) );
-			}
+			OgmLoader loader = createLoader( session, returnedClass );
+			results.add( entity( session, tuple, loader ) );
 		}
 		return results;
 	}
@@ -97,7 +103,7 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private Iterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
+	private ClosableIterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
 		Loadable[] entityPersisters = getEntityPersisters();
 		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
 		for ( int i = 0; i < metadatas.length; i++ ) {

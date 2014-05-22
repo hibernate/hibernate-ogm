@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
 /**
@@ -24,6 +25,7 @@ public class IndexedLabel {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
+	@Field
 	private String name;
 
 	public IndexedLabel() {

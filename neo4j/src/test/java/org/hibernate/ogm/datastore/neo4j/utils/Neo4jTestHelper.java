@@ -9,10 +9,8 @@ package org.hibernate.ogm.datastore.neo4j.utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.fest.util.Files;
 import org.hibernate.SessionFactory;
@@ -22,14 +20,15 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -41,28 +40,26 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		String allEntitiesQuery = Neo4jDialect.TABLE_PROPERTY + ":*";
-		ResourceIterator<Node> iterator = getProvider( sessionFactory ).getNodesIndex().query( allEntitiesQuery ).iterator();
-		int count = 0;
-		while ( iterator.hasNext() ) {
-			iterator.next();
-			count++;
+		String query = "MATCH (n:" + NodeLabel.ENTITY.name() + ") RETURN COUNT(n)";
+		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
+		ExecutionResult result = engine.execute( query.toString() );
+		ResourceIterator<Map<String, Object>> iterator = result.iterator();
+		if ( iterator.hasNext() ) {
+			Map<String, Object> next = iterator.next();
+			return ( (Long) next.get( "COUNT(n)" ) ).longValue();
 		}
-		iterator.close();
-		return count;
+		return 0;
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		ResourceIterator<Relationship> relationships = getProvider( sessionFactory ).getRelationshipsIndex().query( "*:*" ).iterator();
-		Set<String> associations = new HashSet<String>();
-		while ( relationships.hasNext() ) {
-			Relationship relationship = relationships.next();
-			if ( !associations.contains( relationship.getType().name() ) ) {
-				associations.add( relationship.getType().name() );
-			}
-		}
-		return associations.size();
+		String query = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r))";
+		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
+		ExecutionResult result = engine.execute( query.toString() );
+		ResourceIterator<Long> columnAs = result.columnAs( "COUNT(DISTINCT type(r))" );
+		Long next = columnAs.next();
+		columnAs.close();
+		return next.longValue();
 	}
 
 	@Override

@@ -10,12 +10,9 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnaps
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,6 +65,7 @@ import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -584,7 +582,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		DBObject mongodbQuery = null;
 		DBObject projection = null;
 		String collectionName = null;
@@ -791,7 +789,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
-	private static class MongoDBResultsCursor implements Iterator<Tuple>, Closeable {
+	private static class MongoDBResultsCursor implements ClosableIterator<Tuple> {
 
 		private final DBCursor cursor;
 		private final EntityKeyMetadata metadata;
@@ -818,7 +816,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 
 		@Override
-		public void close() throws IOException {
+		public void close() {
 			cursor.close();
 		}
 	}

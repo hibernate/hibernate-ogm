@@ -17,7 +17,7 @@ public class InternalProperties {
 	 * Qualified class name for the creation of a new {@link org.neo4j.graphdb.GraphDatabaseService}.
 	 * <p>
 	 * The class must implement the interface
-	 * {@link org.hibernate.ogm.datastore.neo4j.impl.spi.GraphDatabaseServiceFactory}.
+	 * {@link org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory}.
 	 */
 	public static final String NEO4J_GRAPHDB_FACTORYCLASS = "hibernate.ogm.neo4j.graphdb_factoryclass";
 

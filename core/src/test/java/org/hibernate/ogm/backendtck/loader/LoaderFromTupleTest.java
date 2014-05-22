@@ -45,6 +45,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 
 		session.clear();
 
+		transaction = session.beginTransaction();
 		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
 		Map<String, Object> entityTuple = extractEntityTuple( sessions, key );
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
@@ -59,7 +60,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		List<Object> entities = loader.loadEntities( (SessionImplementor) session, LockOptions.NONE, ogmLoadingContext );
 		assertThat( entities.size() ).isEqualTo( 1 );
 		assertThat( ( (Feeling) entities.get( 0 ) ).getName() ).isEqualTo( "Moody" );
-
+		transaction.commit();
 		session.close();
 	}
 

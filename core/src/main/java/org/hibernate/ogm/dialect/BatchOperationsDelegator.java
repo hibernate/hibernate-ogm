@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.dialect;
 
-import java.util.Iterator;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
@@ -29,6 +27,7 @@ import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
@@ -176,7 +175,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		return dialect.executeBackendQuery( customQuery, queryParameters, metadatas );
 	}
 

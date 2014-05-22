@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.test.options.mapping.model;
 
-import java.util.Iterator;
-
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
@@ -28,6 +26,7 @@ import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
@@ -116,7 +115,7 @@ public class SampleDatastoreProvider implements DatastoreProvider {
 		}
 
 		@Override
-		public Iterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 			return null;
 		}
 
