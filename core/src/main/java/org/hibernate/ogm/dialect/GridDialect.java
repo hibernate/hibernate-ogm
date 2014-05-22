@@ -122,10 +122,11 @@ public interface GridDialect extends Service {
 	 * Returns the result of a native query executed on the backend.
 	 *
 	 * @param customQuery the query to execute on the backend
+	 * @param queryParameters parameters passed for this query
 	 * @param metadatas the metadata information of the results of the query
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	<T extends ClosableIterator<? extends Tuple>> T executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
+	ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.

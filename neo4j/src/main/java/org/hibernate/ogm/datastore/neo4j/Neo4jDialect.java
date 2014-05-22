@@ -11,13 +11,17 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.TEMP_NODE;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
@@ -27,6 +31,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -40,11 +45,13 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
+import org.hibernate.service.spi.ServiceRegistryAwareService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Direction;
@@ -65,15 +72,22 @@ import org.neo4j.graphdb.ResourceIterator;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class Neo4jDialect implements GridDialect {
+public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
 	private final CypherCRUD neo4jCRUD;
 
 	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
 
+	private ServiceRegistryImplementor serviceRegistry;
+
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
 		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
+	}
+
+	@Override
+	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+		this.serviceRegistry = serviceRegistry;
 	}
 
 	@Override
@@ -375,15 +389,37 @@ public class Neo4jDialect implements GridDialect {
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		ExecutionResult result = neo4jCRUD.executeQuery( customQuery.getSQL() );
+		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
+
+		String nativeQuery = customQuery.getSQL();
+		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
+
 		if ( metadatas.length == 1 ) {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
 	}
 
+	/**
+	 * Returns a map with the named parameter values from the given parameters object, converted by the {@link GridType}
+	 * corresponding to each parameter type.
+	 */
+	private Map<String, Object> getNamedParameterValuesConvertedByGridType(QueryParameters queryParameters) {
+		Map<String, Object> parameterValues = new HashMap<String, Object>( queryParameters.getNamedParameters().size() );
+		Tuple dummy = new Tuple();
+		TypeTranslator typeTranslator = serviceRegistry.getService( TypeTranslator.class );
+
+		for ( Entry<String, TypedValue> parameter : queryParameters.getNamedParameters().entrySet() ) {
+			GridType gridType = typeTranslator.getType( parameter.getValue().getType() );
+			gridType.nullSafeSet( dummy, parameter.getValue().getValue(), new String[]{ parameter.getKey() }, null );
+			parameterValues.put( parameter.getKey(), dummy.get( parameter.getKey() ) );
+		}
+
+		return parameterValues;
+	}
+
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return NoOpParameterMetadataBuilder.INSTANCE;
+		return new Neo4jParameterMetadataBuilder();
 	}
 }
