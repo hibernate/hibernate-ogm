@@ -174,10 +174,10 @@ public class CypherCRUD {
 	 *
 	 * <pre>(n:ENTITY:Table {`id`: {0} })</pre>
 	 *
-	 * @param entityKey identifies the node
+	 * @param key identifies the node
 	 * @param parameters is populated with the place-holders and the value to use when the query is executed
 	 * @param query where the resulting pattern will be appended
-	 * @param isEntity
+	 * @param label a label to be attached
 	 */
 	private void appendNodePattern(Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel label) {
 		query.append( "(n:`" );

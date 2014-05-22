@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -70,7 +72,7 @@ public class Neo4jSequenceGenerator {
 	 */
 	private static final int MAX_GENERATION_ATTEMPT = 5;
 
-	private final Map<RowKey, String> queryCache = new HashMap<RowKey, String>();
+	private final ConcurrentMap<RowKey, String> queryCache = new ConcurrentHashMap<RowKey, String>();
 
 	private final GraphDatabaseService neo4jDb;
 
@@ -197,7 +199,11 @@ public class Neo4jSequenceGenerator {
 			String sequenceName = sequenceName( rowKey );
 			query = "MERGE (n:" + rowKey.getTable() + ":`" + sequenceName + "`) ON CREATE SET n.`" + sequenceName + "` = {initialValue}, n." + SEQUENCE_NAME_PROPERTY
 					+ " = {sequenceName} RETURN n";
-			queryCache.put( rowKey, query );
+
+			String cached = queryCache.putIfAbsent( rowKey, query );
+			if ( cached != null ) {
+				query = cached;
+			}
 		}
 		return query;
 	}
