@@ -34,7 +34,6 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -44,6 +43,7 @@ import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -166,7 +166,7 @@ public class Neo4jDialect implements GridDialect {
 		}
 		else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
 			// Unidirectional ManyToOne: the node contains the field with the association
-			// I'm not creating a relationship at the moment for this case
+			// TODO: there should be a relationship in this case
 			return endNode;
 		}
 		else {
@@ -374,7 +374,7 @@ public class Neo4jDialect implements GridDialect {
 	}
 
 	@Override
-	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		ExecutionResult result = neo4jCRUD.executeQuery( customQuery.getSQL() );
 		if ( metadatas.length == 1 ) {
 			return new NodesTupleIterator( result );

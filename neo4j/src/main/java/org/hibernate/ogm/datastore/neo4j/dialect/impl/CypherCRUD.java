@@ -132,7 +132,7 @@ public class CypherCRUD {
 	/**
 	 * Query example:
 	 * <pre>
-	 * MATCH (n:tableName) RETURN n</pre>
+	 * MATCH (n:`tableName`) RETURN n</pre>
 	 *
 	 * @return the {@link ResourceIterator} with the results
 	 */

@@ -49,7 +49,6 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
-import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.dialect.batch.Operation;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
@@ -66,6 +65,7 @@ import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -582,7 +582,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 		DBObject mongodbQuery = null;
 		DBObject projection = null;
 		String collectionName = null;
@@ -789,7 +789,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
-	private static class MongoDBResultsCursor implements TupleIterator {
+	private static class MongoDBResultsCursor implements ClosableIterator<Tuple> {
 
 		private final DBCursor cursor;
 		private final EntityKeyMetadata metadata;

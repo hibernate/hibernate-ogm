@@ -83,7 +83,6 @@ public class Neo4jIntegrator implements Integrator {
 			Set<String> sequences = new HashSet<String>();
 			Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
 			for ( Map.Entry<String, EntityPersister> entry : entityPersisters.entrySet() ) {
-				String key = entry.getKey();
 				EntityPersister persister = entry.getValue();
 				IdentifierGenerator identifierGenerator = persister.getIdentifierGenerator();
 				if ( identifierGenerator instanceof OgmSequenceGenerator ) {

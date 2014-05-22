@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.TupleIterator;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 
@@ -19,7 +19,7 @@ import org.neo4j.graphdb.ResourceIterator;
  *
  * @author Davide D'Alto
  */
-public class MapsTupleIterator implements TupleIterator {
+public class MapsTupleIterator implements ClosableIterator<Tuple> {
 
 	private final ResourceIterator<Map<String, Object>> iterator;
 

@@ -22,7 +22,6 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.TupleIterator;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
@@ -33,6 +32,7 @@ import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
@@ -175,7 +175,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
 			return null;
 		}
 

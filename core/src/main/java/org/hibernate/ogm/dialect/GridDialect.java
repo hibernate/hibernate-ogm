@@ -22,6 +22,7 @@ import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;
@@ -122,9 +123,9 @@ public interface GridDialect extends Service {
 	 *
 	 * @param customQuery the query to execute on the backend
 	 * @param metadatas the metadata information of the results of the query
-	 * @return an {@link Iterator} throught the result of the query
+	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	TupleIterator executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
+	<T extends ClosableIterator<? extends Tuple>> T executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.
