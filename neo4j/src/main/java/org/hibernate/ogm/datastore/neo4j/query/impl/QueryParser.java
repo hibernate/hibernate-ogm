@@ -128,7 +128,7 @@ public class QueryParser extends BaseParser<Recognizer> {
 		return CharRange( '0', '9' );
 	}
 
-	Rule WhiteSpace() {
+	public Rule WhiteSpace() {
 		return OneOrMore( AnyOf( " \t\f" ) );
 	}
 
