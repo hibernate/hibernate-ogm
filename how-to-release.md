@@ -70,19 +70,11 @@ Verify:
    - close and release the repository. See [more details about using the staging repository](https://community.jboss.org/wiki/MavenDeployingARelease)
    - if there is a problem, drop the staging repo, fix the problem and re-deploy
 
-7. If it's a final release, create maintenance branches for the previous version.
-
-   ```
-       mvn versions:set -DnewVersion=A.B.C-SNAPSHOT
-   ```
-
-   git add, commit, push upstream the new branch.
-
 ### Publish
 
 1. Upload the distribution packages to SourceForge (they should be under target/checkout/target). You need to be member of the Hibernate project team of Sourceforge to do that. [See Sourceforge instructions](https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/)
-   - Copy the _changelog.txt__ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
-   - Copy the _readme.txt__ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
+   - Copy the _changelog.txt_ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
+   - Copy the _readme.txt_ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
    - Copy the _.zip distribution_ (in target/checkout/distribution/target)
    - Copy the _.tar.gz distribution_ (in target/checkout/distribution/target)
    - Copy the .zip containing the _JBoss Modules_. There are two .zip files:
@@ -112,14 +104,18 @@ Verify:
   - http://community.jboss.org/en/hibernate/ogm
 
 2. Blog about the release on _in.relation.to_, make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
-   This way the blog will be featured on http://www.hibernate.org/subprojects/ogm) and on the JBoss blog federation.
+   This way the blog will be featured on http://www.hibernate.org/ogm) and on the JBoss blog federation.
 
-3. Update _hibernate.org_ by adding a new release file to **_data/projects/ogm/releases** and deploying to production (you might want to delete an older release file, if you don't want it displayed anymore)
+3. Update _hibernate.org_ by adding a new release file to **_data/projects/ogm/releases**.
+   Remember to add a one line summary using the property _summary_.
+   If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
+   When ready, deploy everything on production.
 
    Check:
-   - http://www.hibernate.org/subprojects/ogm/download
-   - http://www.hibernate.org/subprojects/ogm/docs
+   - http://www.hibernate.org/ogm/download
+   - http://www.hibernate.org/ogm/documentation
  
 4. Send email to __hibernate-dev__ and __hibernate-announce__
+   A quick sum up paragraph in the email is necessary before pointing to the blog entry.
 
 5. __Twitter__
