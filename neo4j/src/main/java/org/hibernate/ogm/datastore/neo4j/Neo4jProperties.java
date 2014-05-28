@@ -28,23 +28,6 @@ public final class Neo4jProperties implements OgmProperties {
 	public static final String CONFIGURATION_RESOURCE_NAME = "hibernate.ogm.neo4j.configuration_resource_name";
 
 	/**
-	 * Name of the neo4j index containing the stored entities. Default to {@link #DEFAULT_NEO4J_ENTITY_INDEX_NAME}
-	 */
-	public static final String ENTITY_INDEX_NAME = "hibernate.ogm.neo4j.index.entity";
-
-	/**
-	 * Name of the Neo4j index containing the stored associations. Default to
-	 * {@link #DEFAULT_NEO4J_ASSOCIATION_INDEX_NAME}
-	 */
-	public static final String ASSOCIATION_INDEX_NAME = "hibernate.ogm.neo4j.index.association";
-
-	/**
-	 * Name of the index that stores the next available value for a sequence. Default to
-	 * {@link #DEFAULT_NEO4J_SEQUENCE_INDEX_NAME}
-	 */
-	public static final String SEQUENCE_INDEX_NAME = "hibernate.ogm.neo4j.index.sequence";
-
-	/**
 	 * The maximum number of cached queries used to get a sequence.
 	 * <p>
 	 * Default is 128.
