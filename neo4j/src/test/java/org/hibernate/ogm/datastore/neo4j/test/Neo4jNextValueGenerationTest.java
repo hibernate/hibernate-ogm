@@ -19,13 +19,21 @@ import java.util.Set;
 import org.fest.util.Files;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.cfg.DefaultNamingStrategy;
+import org.hibernate.cfg.NamingStrategy;
+import org.hibernate.cfg.ObjectNameNormalizer;
+import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.IdentifierGeneratorHelper;
+import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
+import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
+import org.hibernate.type.LongType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,6 +46,9 @@ public class Neo4jNextValueGenerationTest {
 	private static final String HIBERNATE_SEQUENCES = "hibernate_sequences";
 	private static final String THREAD_SAFETY_SEQUENCE = "ThreadSafetySequence";
 	private static final String INITIAL_VALUE_SEQUENCE = "InitialValueSequence";
+
+	private static final int INITIAL_VALUE_FIRST_VALUE_TEST = 5;
+	private static final int INITIAL_VALUE_THREAD_SAFETY_TEST = 0;
 
 	private static final int LOOPS = 2;
 	private static final int THREADS = 10;
@@ -59,12 +70,38 @@ public class Neo4jNextValueGenerationTest {
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
 		provider.injectServices( serviceRegistry );
 
+		Set<IdentifierGenerator> sequences = new HashSet<IdentifierGenerator>();
+		sequences.add( identifierGenerator( INITIAL_VALUE_SEQUENCE, INITIAL_VALUE_FIRST_VALUE_TEST ) );
+		sequences.add( identifierGenerator( THREAD_SAFETY_SEQUENCE, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
+
 		provider.configure( configurationValues );
 		provider.start();
-		Set<String> sequence = new HashSet<String>( 1 );
-		sequence.add( HIBERNATE_SEQUENCES );
-		provider.getSequenceGenerator().createUniqueConstraint( sequence );
+		provider.getSequenceGenerator().createSequences( sequences );
 		dialect = new Neo4jDialect( provider );
+	}
+
+	private IdentifierGenerator identifierGenerator(String sequenceName, int initialValue) {
+		Properties newParams = new Properties();
+		newParams.setProperty( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
+		newParams.setProperty( OgmTableGenerator.TABLE_PARAM, HIBERNATE_SEQUENCES );
+		newParams.setProperty( OgmTableGenerator.INITIAL_PARAM, String.valueOf( initialValue ) );
+		newParams.put( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, new DefaultObjectNameNormalizer() );
+		OgmTableGenerator tableGenerator = new OgmTableGenerator();
+		tableGenerator.configure( LongType.INSTANCE, newParams, new NoopDialect() );
+		return tableGenerator;
+	}
+
+	private static class DefaultObjectNameNormalizer extends ObjectNameNormalizer {
+
+		@Override
+		protected boolean isUseQuotedIdentifiersGlobally() {
+			return false;
+		}
+
+		@Override
+		protected NamingStrategy getNamingStrategy() {
+			return new DefaultNamingStrategy();
+		}
 	}
 
 	@After
@@ -75,15 +112,14 @@ public class Neo4jNextValueGenerationTest {
 
 	@Test
 	public void testFirstValueIsInitialValue() {
-		final int initialValue = 5;
 		final RowKey sequenceNode = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { INITIAL_VALUE_SEQUENCE } );
 		final IdentifierGeneratorHelper.BigIntegerHolder sequenceValue = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( sequenceNode, sequenceValue, 1, initialValue );
-		assertThat( sequenceValue.makeValue().intValue(), equalTo( initialValue ) );
+		dialect.nextValue( sequenceNode, sequenceValue, 1, INITIAL_VALUE_FIRST_VALUE_TEST );
+		assertThat( sequenceValue.makeValue().intValue(), equalTo( INITIAL_VALUE_FIRST_VALUE_TEST ) );
 	}
 
 	@Test
-	public void testThreadSafty() throws InterruptedException {
+	public void testThreadSafety() throws InterruptedException {
 		final RowKey test = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { THREAD_SAFETY_SEQUENCE } );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
@@ -92,7 +128,7 @@ public class Neo4jNextValueGenerationTest {
 				public void run() {
 					final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
 					for ( int i = 0; i < LOOPS; i++ ) {
-						dialect.nextValue( test, value, 1, 0 );
+						dialect.nextValue( test, value, 1, INITIAL_VALUE_THREAD_SAFETY_TEST );
 					}
 				}
 			} );

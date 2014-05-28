@@ -35,7 +35,7 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 		assertNumberOfNodes( 2 );
 		assertRelationships( 0 );
 		assertExpectedMapping( "(:DistributedRevisionControl:ENTITY {id: " + git.getId() + ", name: '" + git.getName() + "' })" );
-		assertExpectedMapping( "(:DistributedRevisionControl:hibernate_sequences { DistributedRevisionControl: 2 })" );
+		assertExpectedMapping( "(:hibernate_sequences:SEQUENCE { sequence_name: 'DistributedRevisionControl', current_value: 2 })" );
 	}
 
 	@Override

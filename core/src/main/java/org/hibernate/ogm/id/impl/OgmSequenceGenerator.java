@@ -101,4 +101,8 @@ public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Conf
 	public String getSegmentValue() {
 		return tableGenerator.getSegmentValue();
 	}
+
+	public int getInitialValue() {
+		return tableGenerator.getInitialValue();
+	}
 }

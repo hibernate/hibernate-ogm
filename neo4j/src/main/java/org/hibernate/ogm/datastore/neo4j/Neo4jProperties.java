@@ -44,6 +44,13 @@ public final class Neo4jProperties implements OgmProperties {
 	 */
 	public static final String SEQUENCE_INDEX_NAME = "hibernate.ogm.neo4j.index.sequence";
 
+	/**
+	 * The maximum number of cached queries used to get a sequence.
+	 * <p>
+	 * Default is 128.
+	 */
+	public static final String SEQUENCE_QUERY_CACHE_MAX_SIZE = "hibernate.ogm.neo4j.sequence_query_cache_max_size";
+
 	private Neo4jProperties() {
 	}
 }

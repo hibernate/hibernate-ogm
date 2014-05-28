@@ -6,15 +6,18 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static java.util.Collections.singletonMap;
+
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
-import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
+import org.hibernate.id.IdentifierGenerator;
+import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
+import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;
@@ -40,64 +43,59 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * <ul>
  * <li>{@code RowKey#getTable()}
  * <li>The sequence name (contained in the column value of the {@code RowKey})
+ * <li> the label {@link NodeLabel#SEQUENCE}
  * </ul>
  * <p>
- * The sequence name is also used has property name for the current value of the sequence. The reason to have the
- * sequence name as label is that currently Cypher does not support a query in the format MERGE ... WHERE ... ON
- * CREATE... Using the sequence name as label we can avoid the where clause and create a new sequence if it does not
- * exist.
- * <p>
- * Adding an attribute containing the name of the sequence we can avoid the creation of two nodes representing the same
- * sequence by adding a unique constraint on it.
+ * Sequences are created at startup.
  * <p>
  * Using cypher, an example of a sequence node looks like this:
  *
  * <pre>
- * (:hibernate_sequences {sequence_name: 'ExampleSequence', ExampleSequence: 3})
+ * (:hibernate_sequences:SEQUENCE { sequence_name = 'ExampleSequence', current_value : 3 })
  * </pre>
  * <p>
- * A lock is acquired on the node every time the sequence needs to be updated.
+ * A write lock is acquired on the node every time the sequence needs to be updated.
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class Neo4jSequenceGenerator {
 
-	public static final String SEQUENCE_NAME_PROPERTY = "sequence_name";
+	private static final String SEQUENCE_NAME_PROPERTY = "sequence_name";
+	private static final String CURRENT_VALUE_PROPERTY = "current_value";
 
-	private static final Log log = LoggerFactory.getLogger();
+	private static final String INITIAL_VALUE_QUERY_PARAM = "initialValue";
+	private static final String SEQUENCE_NAME_QUERY_PARAM = "sequenceName";
 
-	/**
-	 * Defines the amount of time the generation of the sequence should be attempted. A value of 1 should be enough
-	 * because errors are expected only when two thread try to create the same node.
-	 */
-	private static final int MAX_GENERATION_ATTEMPT = 5;
-
-	private final ConcurrentMap<RowKey, String> queryCache = new ConcurrentHashMap<RowKey, String>();
+	private final BoundedConcurrentHashMap<String, String> queryCache;
 
 	private final GraphDatabaseService neo4jDb;
 
 	private final ExecutionEngine engine;
 
-	public Neo4jSequenceGenerator(GraphDatabaseService neo4jDb) {
+	public Neo4jSequenceGenerator(GraphDatabaseService neo4jDb, int sequenceCacheMaxSize) {
 		this.neo4jDb = neo4jDb;
 		this.engine = new ExecutionEngine( neo4jDb );
+		this.queryCache = new BoundedConcurrentHashMap<String, String>( sequenceCacheMaxSize, 20, BoundedConcurrentHashMap.Eviction.LIRS );
 	}
 
 	/**
-	 * The unique constraint is created on the property "sequence_name" only if it does not exists already. It is required
-	 * to avoid the creation of multiple nodes representing the same sequence.
+	 * Create the sequence nodes setting the initial value if the node does not exists already.
+	 * <p>
+	 * All nodes are created inside the same transaction
 	 *
-	 * @param neo4jDb the db where the schema will be updated
+	 * @param identifierGenerators the generators representing the sequences
 	 */
-	public void createUniqueConstraint(Set<String> generatorsKey) {
+	public void createSequences(Set<IdentifierGenerator> identifierGenerators) {
+		addUniqueConstraints( identifierGenerators );
+		addSequences( identifierGenerators );
+	}
+
+	private void addUniqueConstraints(Set<IdentifierGenerator> identifierGenerators) {
 		Transaction tx = null;
 		try {
 			tx = neo4jDb.beginTx();
-			for ( String generatorKey : generatorsKey ) {
-				Label label = DynamicLabel.label( generatorKey );
-				if ( isMissingUniqueConstraint( neo4jDb, label, SEQUENCE_NAME_PROPERTY ) ) {
-					neo4jDb.schema().constraintFor( label ).assertPropertyIsUnique( SEQUENCE_NAME_PROPERTY ).create();
-				}
+			for ( IdentifierGenerator identifierGenerator : identifierGenerators ) {
+				addUniqueConstraint( identifierGenerator );
 			}
 			tx.success();
 		}
@@ -106,26 +104,86 @@ public class Neo4jSequenceGenerator {
 		}
 	}
 
-	private boolean isMissingUniqueConstraint(GraphDatabaseService neo4jDb, Label sequenceLabel, String segmentName) {
-		Iterable<ConstraintDefinition> constraints = neo4jDb.schema().getConstraints( sequenceLabel );
-		for ( ConstraintDefinition constraint : constraints ) {
+	private void addUniqueConstraint(IdentifierGenerator identifierGenerator) {
+		if ( identifierGenerator instanceof OgmSequenceGenerator ) {
+			OgmSequenceGenerator sequenceGenerator = (OgmSequenceGenerator) identifierGenerator;
+			addUniqueConstraint( sequenceGenerator.generatorKey() );
+		}
+		else if ( identifierGenerator instanceof OgmTableGenerator ) {
+			OgmTableGenerator sequenceGenerator = (OgmTableGenerator) identifierGenerator;
+			addUniqueConstraint( sequenceGenerator.generatorKey() );
+		}
+	}
+
+	private void addUniqueConstraint(Object generatorKey) {
+		Label generatorKeyLabel = generatorKeyLabel( generatorKey );
+		if ( isMissingUniqueConstraint( generatorKeyLabel ) ) {
+			neo4jDb.schema().constraintFor( generatorKeyLabel ).assertPropertyIsUnique( SEQUENCE_NAME_PROPERTY ).create();
+		}
+	}
+
+	private boolean isMissingUniqueConstraint(Label generatorKeyLabel) {
+		Iterator<ConstraintDefinition> iterator = neo4jDb.schema().getConstraints( generatorKeyLabel ).iterator();
+		while ( iterator.hasNext() ) {
+			ConstraintDefinition constraint = iterator.next();
 			if ( constraint.isConstraintType( ConstraintType.UNIQUENESS ) ) {
-				for ( String property : constraint.getPropertyKeys() ) {
-					if ( segmentName.equals( property ) ) {
-						return false;
-					}
-				}
+				return false;
 			}
 		}
 		return true;
 	}
 
+	private void addSequences(Set<IdentifierGenerator> identifierGenerators) {
+		Transaction tx = null;
+		try {
+			tx = neo4jDb.beginTx();
+			for ( IdentifierGenerator generator : identifierGenerators ) {
+				addSequence( generator );
+			}
+			tx.success();
+		}
+		finally {
+			tx.close();
+		}
+	}
+
+	private void addSequence(IdentifierGenerator identifierGenerator) {
+		if ( identifierGenerator instanceof OgmSequenceGenerator ) {
+			OgmSequenceGenerator sequenceGenerator = (OgmSequenceGenerator) identifierGenerator;
+			addSequence( sequenceGenerator.generatorKey(), sequenceGenerator.getSegmentValue(), sequenceGenerator.getInitialValue() );
+		}
+		else if ( identifierGenerator instanceof OgmTableGenerator ) {
+			OgmTableGenerator sequenceGenerator = (OgmTableGenerator) identifierGenerator;
+			addSequence( sequenceGenerator.generatorKey(), sequenceGenerator.getSegmentValue(), sequenceGenerator.getInitialValue() );
+		}
+	}
+
+	/**
+	 * Ex.:
+	 * <pre>
+	 * MERGE (n:hibernate_sequences:SEQUENCE {sequence_name: {sequenceName}}) ON CREATE SET n.current_value = {initialValue} RETURN n
+	 * </pre>
+	 */
+	private void addSequence(Object generatorKey, String sequenceName, int initialValue) {
+		Label generatorKeyLabel = generatorKeyLabel( generatorKey );
+		String query = "MERGE (n" + labels( generatorKeyLabel.name(), NodeLabel.SEQUENCE.name() ) + " { " + SEQUENCE_NAME_PROPERTY + ": {"
+				+ SEQUENCE_NAME_QUERY_PARAM + "}} ) ON CREATE SET n." + CURRENT_VALUE_PROPERTY + " = {" + INITIAL_VALUE_QUERY_PARAM + "} RETURN n";
+		engine.execute( query, params( sequenceName, initialValue ) );
+	}
+
+	private Label generatorKeyLabel(Object generatorKey) {
+		return DynamicLabel.label( generatorKey.toString() );
+	}
+
+	private Map<String, Object> params(String sequenceName, int initialValue) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( INITIAL_VALUE_QUERY_PARAM, initialValue );
+		params.put( SEQUENCE_NAME_QUERY_PARAM, sequenceName );
+		return params;
+	}
+
 	/**
 	 * Generate the next value in a sequence for a given {@link RowKey}.
-	 * <p>
-	 * Unique constraints violation might occurs during the creation of the sequences.
-	 * In this case the method will try again as many times as defined in the
-	 * {@link #MAX_GENERATION_ATTEMPT} constant.
 	 *
 	 * @param rowKey identifies the sequence
 	 * @param increment the difference between to consecutive values in the sequence
@@ -133,27 +191,14 @@ public class Neo4jSequenceGenerator {
 	 * @return the next value in a sequence
 	 */
 	public int nextValue(RowKey rowKey, int increment, final int initialValue) {
-		int number = 0;
-		while ( number++ < MAX_GENERATION_ATTEMPT ) {
-			try {
-				return sequence( rowKey, increment, initialValue );
-			}
-			catch (Exception e) {
-				// It might happen that two threads want to create a new sequence node for the first time.
-				// In this case the two nodes will have the same sequence name, violating the unique constraint defined
-				// at startup.
-				log.errorGeneratingSequence( sequenceName( rowKey ), e );
-			}
-		}
-		// This should never happen
-		throw log.cannotGenerateSequence( sequenceName( rowKey ) );
+		return sequence( rowKey, increment, initialValue );
 	}
 
 	private int sequence(RowKey rowKey, int increment, final int initialValue) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
-			Node sequence = getOrCreateSequence( rowKey, initialValue );
+			Node sequence = getSequence( rowKey );
 			lock = tx.acquireWriteLock( sequence );
 			int nextValue = updateSequenceValue( sequenceName( rowKey ), sequence, increment );
 			tx.success();
@@ -166,18 +211,14 @@ public class Neo4jSequenceGenerator {
 	}
 
 	/**
-	 * Create a new node for the given {@link RowKey} or update the existing one.
+	 * Given a {@link RowKey}, get the corresponding sequence node.
 	 *
 	 * @param key the {@link RowKey} identifying the sequence
-	 * @param initialValue the initial value of the sequence
 	 * @return the node representing the sequence
 	 */
-	private Node getOrCreateSequence(RowKey rowKey, final int initialValue) {
+	private Node getSequence(RowKey rowKey) {
 		String updateSequenceQuery = getQuery( rowKey );
-		Map<String, Object> parameters = new HashMap<String, Object>( 2 );
-		parameters.put( "initialValue", initialValue );
-		parameters.put( "sequenceName", sequenceName( rowKey ) );
-		ExecutionResult result = engine.execute( updateSequenceQuery, parameters );
+		ExecutionResult result = engine.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( rowKey ) ) );
 		ResourceIterator<Node> column = result.columnAs( "n" );
 		Node node = null;
 		if ( column.hasNext() ) {
@@ -188,19 +229,17 @@ public class Neo4jSequenceGenerator {
 	}
 
 	/**
-	 * Ex:
+	 * Ex.:
 	 * <pre>
-	 * MERGE (n:hibernate_sequences:DistributedRevisionControl) ON CREATE SET n.value = {initialValue} RETURN n
+	 * MATCH (n:hibernate_sequences:SEQUENCE) WHERE n.sequence_name = {sequenceName} RETURN n
 	 * </pre>
 	 */
 	private String getQuery(RowKey rowKey) {
-		String query = queryCache.get( rowKey );
+		String query = queryCache.get( rowKey.getTable() );
 		if ( query == null ) {
-			String sequenceName = sequenceName( rowKey );
-			query = "MERGE (n:" + rowKey.getTable() + ":`" + sequenceName + "`) ON CREATE SET n.`" + sequenceName + "` = {initialValue}, n." + SEQUENCE_NAME_PROPERTY
-					+ " = {sequenceName} RETURN n";
-
-			String cached = queryCache.putIfAbsent( rowKey, query );
+			query = "MATCH (n" + labels( rowKey.getTable(), NodeLabel.SEQUENCE.name() ) + ") WHERE n." + SEQUENCE_NAME_PROPERTY + " = {"
+					+ SEQUENCE_NAME_QUERY_PARAM + "} RETURN n";
+			String cached = queryCache.putIfAbsent( rowKey.getTable(), query );
 			if ( cached != null ) {
 				query = cached;
 			}
@@ -208,14 +247,24 @@ public class Neo4jSequenceGenerator {
 		return query;
 	}
 
+	private String labels(String... labels) {
+		StringBuilder builder = new StringBuilder();
+		for ( String label : labels ) {
+			builder.append( ":`" );
+			builder.append( label );
+			builder.append( "`" );
+		}
+		return builder.toString();
+	}
+
 	private String sequenceName(RowKey key) {
 		return (String) key.getColumnValues()[0];
 	}
 
 	private int updateSequenceValue(String sequenceName, Node sequence, int increment) {
-		int currentValue = (Integer) sequence.getProperty( sequenceName );
+		int currentValue = (Integer) sequence.getProperty( CURRENT_VALUE_PROPERTY );
 		int updatedValue = currentValue + increment;
-		sequence.setProperty( sequenceName, updatedValue );
+		sequence.setProperty( CURRENT_VALUE_PROPERTY, updatedValue );
 		return currentValue;
 	}
 

@@ -20,5 +20,10 @@ public enum NodeLabel implements Label {
 	/**
 	 * Represents an embedded (dependent) entity.
 	 */
-	EMBEDDED;
+	EMBEDDED,
+
+	/**
+	 * A node representing a sequence.
+	 */
+	SEQUENCE;
 }

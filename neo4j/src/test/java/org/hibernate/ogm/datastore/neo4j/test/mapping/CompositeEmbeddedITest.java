@@ -14,6 +14,7 @@ import javax.persistence.EntityManager;
 import org.hibernate.ogm.backendtck.id.Label;
 import org.hibernate.ogm.backendtck.id.News;
 import org.hibernate.ogm.backendtck.id.NewsID;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +53,7 @@ public class CompositeEmbeddedITest extends Neo4jJpaTestCase {
 		String newsNode = "(:News:ENTITY {`newsId.author`: '" + newsOGM.getNewsId().getAuthor() + "', `newsId.title`: '" + newsOGM.getNewsId().getTitle() + "', content: '" + newsOGM.getContent() + "'})";
 		String labelNode0 = "(:Label:ENTITY {id: " + newsOgmLabels.get( 0 ).getId() + ", name: '" + newsOgmLabels.get( 0 ).getName() + "' })";
 		String labelNode1 = "(:Label:ENTITY {id: " + newsOgmLabels.get( 1 ).getId() + ", name: '" + newsOgmLabels.get( 1 ).getName() + "' })";
-		String sequenceNode = "(sequence:Label:hibernate_sequences { Label: 3 })";
+		String sequenceNode = "(:hibernate_sequences:" + NodeLabel.SEQUENCE + " { sequence_name: 'Label', current_value: 3 })";
 
 		assertExpectedMapping( sequenceNode );
 		assertExpectedMapping( newsNode + " - [:labels] - " + labelNode0 );

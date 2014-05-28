@@ -18,7 +18,6 @@ import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.service.impl.ConfigurationService;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -51,7 +50,7 @@ public class Neo4jIntegrator implements Integrator {
 
 	private void addNeo4jObserverIfRequired(SessionFactoryImplementor sessionFactory) {
 		if ( currentDialectIsNeo4j( sessionFactory ) ) {
-			sessionFactory.addObserver( new SchemaCreator() );
+			sessionFactory.addObserver( new SequenceCreator() );
 		}
 	}
 
@@ -63,34 +62,29 @@ public class Neo4jIntegrator implements Integrator {
 	}
 
 	/**
-	 * Adds the required constraints to the schema db
+	 * Create the sequences
 	 *
 	 * @author Davide D'Alto
-	 *
 	 */
-	private static class SchemaCreator implements SessionFactoryObserver {
+	private static class SequenceCreator implements SessionFactoryObserver {
 
 		@Override
 		public void sessionFactoryCreated(SessionFactory factory) {
 			SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) factory;
 			ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 			Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
-			Set<String> sequences = sequenceGeneratorKeys( sessionFactoryImplementor, provider );
-			provider.getSequenceGenerator().createUniqueConstraint( sequences );
+			Set<IdentifierGenerator> sequences = sequences( sessionFactoryImplementor, provider );
+			provider.getSequenceGenerator().createSequences( sequences );
 		}
 
-		private Set<String> sequenceGeneratorKeys(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
-			Set<String> sequences = new HashSet<String>();
+		private Set<IdentifierGenerator> sequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
+			Set<IdentifierGenerator> generators = new HashSet<IdentifierGenerator>();
 			Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
 			for ( Map.Entry<String, EntityPersister> entry : entityPersisters.entrySet() ) {
 				EntityPersister persister = entry.getValue();
-				IdentifierGenerator identifierGenerator = persister.getIdentifierGenerator();
-				if ( identifierGenerator instanceof OgmSequenceGenerator ) {
-					OgmSequenceGenerator sequenceGenerator = (OgmSequenceGenerator) identifierGenerator;
-					sequences.add( sequenceGenerator.generatorKey().toString() );
-				}
+				generators.add( persister.getIdentifierGenerator() );
 			}
-			return sequences;
+			return generators;
 		}
 
 		@Override

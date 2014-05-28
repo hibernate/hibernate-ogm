@@ -10,12 +10,14 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
+import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -30,6 +32,8 @@ import org.neo4j.graphdb.GraphDatabaseService;
  */
 public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
+	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
+
 	private GraphDatabaseService neo4jDb;
 
 	private GraphDatabaseServiceFactory graphDbFactory;
@@ -37,6 +41,8 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 	private ServiceRegistryImplementor registry;
 
 	private Neo4jSequenceGenerator sequenceGenerator;
+
+	private Integer sequenceCacheMaxSize;
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
@@ -51,6 +57,10 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 	@Override
 	public void configure(Map cfg) {
 		graphDbFactory = new Neo4jGraphDatabaseServiceFactoryProvider().load( cfg, registry.getService( ClassLoaderService.class ) );
+		sequenceCacheMaxSize = new ConfigurationPropertyReader( cfg )
+			.property( Neo4jProperties.SEQUENCE_QUERY_CACHE_MAX_SIZE, int.class )
+			.withDefault( DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE )
+			.getValue();
 	}
 
 	@Override
@@ -61,8 +71,9 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 	@Override
 	public void start() {
 		this.neo4jDb = graphDbFactory.create();
-		this.sequenceGenerator = new Neo4jSequenceGenerator( neo4jDb );
+		this.sequenceGenerator = new Neo4jSequenceGenerator( neo4jDb, sequenceCacheMaxSize );
 		this.graphDbFactory = null;
+		this.sequenceCacheMaxSize = null;
 	}
 
 	@Override
