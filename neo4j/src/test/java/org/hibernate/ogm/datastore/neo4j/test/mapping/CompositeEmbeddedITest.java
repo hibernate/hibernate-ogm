@@ -56,8 +56,8 @@ public class CompositeEmbeddedITest extends Neo4jJpaTestCase {
 		String sequenceNode = "(:hibernate_sequences:" + NodeLabel.SEQUENCE + " { sequence_name: 'Label', current_value: 3 })";
 
 		assertExpectedMapping( sequenceNode );
-		assertExpectedMapping( newsNode + " - [:labels] - " + labelNode0 );
-		assertExpectedMapping( newsNode + " - [:labels] - " + labelNode1 );
+		assertExpectedMapping( newsNode + " - [:Label] - " + labelNode0 );
+		assertExpectedMapping( newsNode + " - [:Label] - " + labelNode1 );
 	}
 
 	@Override

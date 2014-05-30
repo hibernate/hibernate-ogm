@@ -74,8 +74,8 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 				+ ", postal_code: '" + anotherAddress.getZipCode() + "'"
 				+ " })";
 
-		assertExpectedMapping( accountNode + " - [:addresses] -> " + addressNode );
-		assertExpectedMapping( accountNode + " - [:addresses] -> " + anotherAddressNode );
+		assertExpectedMapping( accountNode + " - [:MultiAddressAccount_addresses] - " + addressNode );
+		assertExpectedMapping( accountNode + " - [:MultiAddressAccount_addresses] - " + anotherAddressNode );
 	}
 
 	@Test
