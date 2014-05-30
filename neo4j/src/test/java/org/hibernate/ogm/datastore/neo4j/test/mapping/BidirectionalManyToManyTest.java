@@ -48,19 +48,14 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 	@Test
 	public void testMapping() throws Exception {
 		assertNumberOfNodes( 3 );
-		assertRelationships( 4 );
+		assertRelationships( 2 );
 
 		String ownerNode = "(owner:AccountOwner:ENTITY {id: '" + owner.getId() + "', SSN: '" + owner.getSSN() + "' })";
 		String barcklaysNode = "(barclays:BankAccount:ENTITY {id: '" + barclays.getId() + "', accountNumber: '" + barclays.getAccountNumber() + "' })";
 		String sogeNode = "(soge:BankAccount:ENTITY {id: '" + soge.getId() + "', accountNumber: '" + soge.getAccountNumber() + "' })";
 
-		// Bidirectional relationship with Barcklays
-		assertExpectedMapping( ownerNode + "- [:bankAccounts] -> " + barcklaysNode );
-		assertExpectedMapping( barcklaysNode + " - [:owners] -> " + ownerNode );
-
-		// Bidirectional relationship with Sorge
-		assertExpectedMapping( ownerNode + " - [:bankAccounts] -> " + sogeNode );
-		assertExpectedMapping( sogeNode + " - [:owners] -> " + ownerNode );
+		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + barcklaysNode );
+		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + sogeNode );
 	}
 
 	@Override

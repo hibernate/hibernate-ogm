@@ -69,8 +69,8 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 				+ ", salesForce_id: '" + salesForce.getId() + "'"
 				+ " })";
 
-		assertExpectedMapping( forceNode + " - [:salesGuys] -> " + ericNode );
-		assertExpectedMapping( forceNode + " - [:salesGuys] -> " + simonNode );
+		assertExpectedMapping( forceNode + " - [:SalesGuy] - " + ericNode );
+		assertExpectedMapping( forceNode + " - [:SalesGuy] - " + simonNode );
 	}
 
 	@Override

@@ -70,15 +70,15 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 		String child1Node = "(:Child:ENTITY {id: '" + child11.getId() + "', name: '" + child11.getName() + "' })";
 		String child2Node = "(:Child:ENTITY {id: '" + child12.getId() + "', name: '" + child12.getName() + "' })";
 
-		assertExpectedMapping( father1Node + " - [:orderedChildren {birthorder: 0}] -> " + child1Node );
-		assertExpectedMapping( father1Node + " - [:orderedChildren {birthorder: 1}] -> " + child2Node );
+		assertExpectedMapping( father1Node + " - [:Father_child {birthorder: 0}] - " + child1Node );
+		assertExpectedMapping( father1Node + " - [:Father_child {birthorder: 1}] - " + child2Node );
 
 		String father2Node = "(:Father:ENTITY {id: '" + father2.getId() + "' })";
 		String child3Node = "(:Child:ENTITY {id: '" + child21.getId() + "', name: '" + child21.getName() + "' })";
 		String child4Node = "(:Child:ENTITY {id: '" + child22.getId() + "', name: '" + child22.getName() + "' })";
 
-		assertExpectedMapping( father2Node + " - [:orderedChildren {birthorder: 0}] -> " + child3Node );
-		assertExpectedMapping( father2Node + " - [:orderedChildren {birthorder: 1}] -> " + child4Node );
+		assertExpectedMapping( father2Node + " - [:Father_child {birthorder: 0}] - " + child3Node );
+		assertExpectedMapping( father2Node + " - [:Father_child {birthorder: 1}] - " + child4Node );
 	}
 
 	@Override
