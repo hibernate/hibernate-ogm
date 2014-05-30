@@ -13,7 +13,9 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
@@ -35,8 +37,7 @@ public class ManyToManyTest extends OgmTestCase {
 		tx.commit();
 
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 2 );
-
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		// read from inverse side
@@ -64,7 +65,7 @@ public class ManyToManyTest extends OgmTestCase {
 		tx.commit();
 
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 2 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 2 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
 		session.clear();
 
 		// delete data
@@ -84,6 +85,16 @@ public class ManyToManyTest extends OgmTestCase {
 
 		session.close();
 		checkCleanCache();
+	}
+
+	private int expectedAssociationNumber() {
+		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
+			// In Neo4j relationships are bidirectional
+			return 1;
+		}
+		else {
+			return 2;
+		}
 	}
 
 	@Override
