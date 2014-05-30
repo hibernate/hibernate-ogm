@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.TEMP_NODE
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +61,6 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -170,7 +170,7 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 		else if ( rowKeyNode.hasLabel( TEMP_NODE ) ) {
 			// We have found a temporary node related to this association, we are going to delete it and connect the
 			// entity pointing to the temporary node and the owner of this association.
-			return deleteTempNodeAndUpdateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
+			return deleteTempNodeAndCreateRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 		}
 		else {
 			throw new AssertionFailure( "Unrecognized row key node: " + rowKeyNode );
@@ -233,31 +233,19 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 				keyColumnValues.toArray( new Object[keyColumnValues.size()] ) );
 	}
 
-	private Relationship deleteTempNodeAndUpdateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node rowKeyNode) {
+	private Relationship deleteTempNodeAndCreateRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node tempNode) {
 		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
-		Relationship inverseRelationship = updateInverseRelationship( rowKey, rowKeyNode, ownerNode );
-
-		RelationshipType associationType = relationshipType( associationKey );
-		Relationship relationship = null;
-		if ( !associationKey.getCollectionRole().equals( associationKey.getTable() ) ) {
-			relationship = ownerNode.createRelationshipTo( inverseRelationship.getStartNode(), associationType );
-			applyColumnValues( rowKey, relationship );
-		}
+		Iterator<Relationship> iterator = tempNode.getRelationships( Direction.INCOMING ).iterator();
+		Relationship tempRelationship = iterator.next();
+		Relationship relationship = ownerNode.createRelationshipTo( tempRelationship.getStartNode(), relationshipType( associationKey ) );
+		applyColumnValues( rowKey, relationship );
+		tempRelationship.delete();
+		tempNode.delete();
 		return relationship;
 	}
 
-	private Relationship updateInverseRelationship(RowKey rowKey, Node rowKeyNode, Node ownerNode) {
-		Relationship inverseRelationship = rowKeyNode.getRelationships( Direction.INCOMING ).iterator().next();
-		Relationship newInverseRelationship = inverseRelationship.getStartNode().createRelationshipTo( ownerNode, inverseRelationship.getType() );
-		applyColumnValues( rowKey, newInverseRelationship );
-		inverseRelationship.delete();
-		inverseRelationship.getEndNode().delete();
-		return newInverseRelationship;
-	}
-
 	private PropertyContainer createRelationshipWithEntity(AssociationKey associationKey, RowKey rowKey, Node node) {
-		EntityKey ownerEntityKey = associationKey.getEntityKey();
-		Node ownerNode = neo4jCRUD.findNode( ownerEntityKey, ENTITY );
+		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
 		Relationship relationship = ownerNode.createRelationshipTo( node, relationshipType( associationKey ) );
 		applyColumnValues( rowKey, relationship );
 		return relationship;
@@ -340,16 +328,18 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
 	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
 		Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey() );
-		applyTupleOperations( relationship, action.getValue().getOperations() );
+		if ( relationship != null ) {
+			applyTupleOperations( relationship, action.getValue().getOperations() );
+		}
 	}
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
 		neo4jCRUD.remove( associationKey, action.getKey() );
 	}
 
-	private void applyTupleOperations(PropertyContainer node, Set<TupleOperation> operations) {
+	private void applyTupleOperations(PropertyContainer propertyContainer, Set<TupleOperation> operations) {
 		for ( TupleOperation operation : operations ) {
-			applyOperation( node, operation );
+			applyOperation( propertyContainer, operation );
 		}
 	}
 

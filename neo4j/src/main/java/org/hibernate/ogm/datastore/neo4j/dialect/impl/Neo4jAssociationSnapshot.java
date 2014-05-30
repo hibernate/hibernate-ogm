@@ -57,7 +57,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	private Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey) {
-		return ownerNode.getRelationships( Direction.OUTGOING, CypherCRUD.relationshipType( associationKey ) );
+		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( associationKey ) );
 	}
 
 	private RowKey convert(AssociationKey associationKey, PropertyContainer container) {

@@ -52,7 +52,7 @@ public class CypherCRUD {
 	 * Query example:
 	 *
 	 * <pre>
-	 * MATCH (n) - [r:owners {`owner_id`: {0}} }] -> ()
+	 * MATCH (n) - [r:owners {`owner_id`: {0}} }] - ()
 	 * RETURN r</pre>
 	 *
 	 * @param associationKey identify the type of the relationship
@@ -66,7 +66,7 @@ public class CypherCRUD {
 		appendNodePattern( entityKey, parameters, query, ENTITY );
 		query.append( " - " );
 		query.append( relationshipCypher( associationKey, rowKey, parameters, entityKey.getColumnNames().length ) );
-		query.append( " -> () RETURN r" );
+		query.append( " - () RETURN r" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Relationship> column = result.columnAs( "r" );
 		Relationship relationship = null;
@@ -279,7 +279,7 @@ public class CypherCRUD {
 	 * @return the corresponding {@link RelationshipType}
 	 */
 	public static RelationshipType relationshipType(AssociationKey associationKey) {
-		return DynamicRelationshipType.withName( associationKey.getCollectionRole() );
+		return DynamicRelationshipType.withName( associationKey.getTable() );
 	}
 
 	/**
