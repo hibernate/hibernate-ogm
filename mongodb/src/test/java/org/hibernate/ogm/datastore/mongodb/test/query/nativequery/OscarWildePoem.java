@@ -6,14 +6,20 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
+import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.NamedNativeQuery;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = OscarWildePoem.TABLE_NAME)
 @NamedNativeQuery(name = "AthanasiaQuery", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultClass = OscarWildePoem.class )
+@SqlResultSetMapping(
+	name = "nameMapping",
+	columns = { @ColumnResult(name = "name") }
+)
 public class OscarWildePoem {
 
 	public static final String TABLE_NAME = "WILDE_POEM";

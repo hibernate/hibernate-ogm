@@ -22,13 +22,11 @@ import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.util.ClosableIterator;
-import org.hibernate.persister.entity.Loadable;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
@@ -63,7 +61,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = executeQuery( session, service( session, GridDialect.class ), queryParameters, resultTypes );
+		ClosableIterator<Tuple> tuples = service( session, GridDialect.class ).executeBackendQuery( customQuery, queryParameters );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -103,15 +101,6 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private ClosableIterator<Tuple> executeQuery(SessionImplementor session, GridDialect dialect, QueryParameters queryParameters , Type[] resultTypes) {
-		Loadable[] entityPersisters = getEntityPersisters();
-		EntityKeyMetadata[] metadatas = new EntityKeyMetadata[entityPersisters.length];
-		for ( int i = 0; i < metadatas.length; i++ ) {
-			metadatas[i] = metadata( session.getFactory(), resultTypes[i] );
-		}
-		return dialect.executeBackendQuery( customQuery, queryParameters, metadatas );
-	}
-
 	private <T extends Service> T service(SessionImplementor session, Class<T> serviceRole) {
 		return serviceRegistry( session ).getService( serviceRole );
 	}
@@ -132,10 +121,5 @@ public class BackendCustomLoader extends CustomLoader {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
 		return loader;
-	}
-
-	private EntityKeyMetadata metadata(SessionFactoryImplementor sessionFactory, Type resultType) {
-		OgmEntityPersister persister = (OgmEntityPersister) ( sessionFactory ).getEntityPersister( resultType.getName() );
-		return new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 	}
 }

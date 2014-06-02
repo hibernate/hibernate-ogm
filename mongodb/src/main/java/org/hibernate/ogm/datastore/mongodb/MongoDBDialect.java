@@ -587,7 +587,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
 		MongoDBQueryDescriptor query = null;
 
 		// query already given in DBObject-representation (created by JP-QL parser)
@@ -596,8 +596,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 		// a string-based native query; need to create the DBObject from that
 		else {
-			validate( metadatas );
-
 			// TODO OGM-414 This should actually be cached in the native query plan
 			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
 			ParsingResult<MongoDBQueryDescriptorBuilder> parseResult =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( customQuery.getQueryString() );
@@ -608,7 +606,8 @@ public class MongoDBDialect implements BatchableGridDialect {
 			query = parseResult.resultValue.build();
 		}
 
-		String collectionName = query.getCollectionName() != null ? query.getCollectionName() : metadatas[0].getTable();
+		EntityKeyMetadata entityKeyMetadata = customQuery.getSingleEntityKeyMetadataOrNull();
+		String collectionName = getCollectionName( customQuery, query, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 
@@ -625,12 +624,30 @@ public class MongoDBDialect implements BatchableGridDialect {
 			cursor.limit( queryParameters.getRowSelection().getMaxRows() );
 		}
 
-		return new MongoDBResultsCursor( cursor, metadatas.length == 1 ? metadatas[0] : null );
+		return new MongoDBResultsCursor( cursor, entityKeyMetadata );
 	}
 
-	private void validate(EntityKeyMetadata[] metadatas) {
-		if ( metadatas.length != 1 ) {
-			throw log.requireMetadatas();
+	/**
+	 * Returns the name of the MongoDB collection to execute the given query against. Will either be retrieved
+	 * <ul>
+	 * <li>from the given query descriptor (in case the query has been translated from JP-QL or it is a native query
+	 * using the extended syntax {@code db.<COLLECTION>.<OPERATION>(...)}</li>
+	 * <li>or from the single mapped entity type if it is a native query using the criteria-only syntax
+	 *
+	 * @param customQuery the original query to execute
+	 * @param queryDescriptor descriptor for the query
+	 * @param entityKeyMetadata meta-data in case this is a query with exactly one entity return
+	 * @return the name of the MongoDB collection to execute the given query against
+	 */
+	private String getCollectionName(BackendCustomQuery customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
+		if ( queryDescriptor.getCollectionName() != null ) {
+			return queryDescriptor.getCollectionName();
+		}
+		else if ( entityKeyMetadata != null ) {
+			return entityKeyMetadata.getTable();
+		}
+		else {
+			throw log.unableToDetermineCollectionName( customQuery.getQueryString() );
 		}
 	}
 

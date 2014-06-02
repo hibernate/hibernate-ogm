@@ -60,7 +60,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Test
-	public void testIteratorSingleResultQuery() throws Exception {
+	public void testSingleResultQuery() throws Exception {
 		begin();
 		EntityManager em = createEntityManager();
 
@@ -72,6 +72,25 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		commit();
 		close( em );
 	}
+
+	@Test
+	public void testSingleResultQueryWithProjection() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		String nativeQuery = "db.WILDE_POEM.find( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1 }"
+				+ " )";
+		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "nameMapping" )
+				.getSingleResult();
+
+		assertThat( result ).containsOnly( 1L, "Portia" );
+
+		commit();
+		close( em );
+	}
+
 
 	@Test
 	public void testIteratorSingleResultFromNamedNativeQuery() throws Exception {

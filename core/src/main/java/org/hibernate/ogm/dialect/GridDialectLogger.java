@@ -156,9 +156,9 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		log.tracef( "Executing native backend query: %1$s", customQuery.getSQL() );
-		return gridDialect.executeBackendQuery( customQuery, queryParameters, metadatas );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
+		log.tracef( "Executing native backend query: %1$s", customQuery.getQueryString() );
+		return gridDialect.executeBackendQuery( customQuery, queryParameters );
 	}
 
 	@Override

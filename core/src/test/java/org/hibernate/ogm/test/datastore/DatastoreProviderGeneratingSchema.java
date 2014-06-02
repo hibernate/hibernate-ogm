@@ -153,7 +153,7 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
 			return null;
 		}
 

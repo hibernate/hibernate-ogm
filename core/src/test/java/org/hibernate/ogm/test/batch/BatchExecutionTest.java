@@ -175,7 +175,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
 			return null;
 		}
 

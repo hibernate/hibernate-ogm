@@ -385,13 +385,13 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 
-		String nativeQuery = customQuery.getSQL();
+		String nativeQuery = customQuery.getQueryString();
 		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
 
-		if ( metadatas.length == 1 ) {
+		if ( customQuery.getSingleEntityKeyMetadataOrNull() != null ) {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );

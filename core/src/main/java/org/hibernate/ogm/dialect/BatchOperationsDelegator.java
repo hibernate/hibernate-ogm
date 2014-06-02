@@ -175,8 +175,8 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		return dialect.executeBackendQuery( customQuery, queryParameters, metadatas );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
+		return dialect.executeBackendQuery( customQuery, queryParameters );
 	}
 
 	@Override
