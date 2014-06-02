@@ -16,7 +16,8 @@ import com.mongodb.DBObject;
 public class MongoDBQueryDescriptor {
 
 	public enum Operation {
-		FIND;
+		FIND,
+		COUNT;
 	}
 
 	private final String collectionName;

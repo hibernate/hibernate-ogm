@@ -129,4 +129,34 @@ public class NativeQueryParserTest {
 		assertThat( queryDescriptor.getProjection() ).isNull();
 		assertThat( queryDescriptor.getOrderBy() ).isNull();
 	}
+
+	@Test
+	public void shouldParseCountQuery() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count()");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isNull();
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
+
+	@Test
+	public void shouldParseCountQueryWithCriteria() {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> run =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( "db.Order.count( { 'foo' : true } )");
+
+		MongoDBQueryDescriptor queryDescriptor = run.resultValue.build();
+
+		assertThat( queryDescriptor.getCollectionName() ).isEqualTo( "Order" );
+		assertThat( queryDescriptor.getOperation() ).isEqualTo( Operation.COUNT );
+		assertThat( queryDescriptor.getCriteria() ).isEqualTo( JSON.parse( "{ 'foo' : true }" ) );
+		assertThat( queryDescriptor.getProjection() ).isNull();
+		assertThat( queryDescriptor.getOrderBy() ).isNull();
+	}
 }

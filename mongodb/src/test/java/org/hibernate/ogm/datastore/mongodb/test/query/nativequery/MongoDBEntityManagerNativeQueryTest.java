@@ -82,8 +82,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
 				+ "{ 'name' : 1 }"
 				+ " )";
-		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "nameMapping" )
-				.getSingleResult();
+		Object[] result = (Object[]) em.createNativeQuery( nativeQuery ).getSingleResult();
 
 		assertThat( result ).containsOnly( 1L, "Portia" );
 
@@ -91,6 +90,17 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		close( em );
 	}
 
+	@Test
+	public void testCountQuery() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		Object[] result = (Object[]) em.createNamedQuery( "CountPoems" ).getSingleResult();
+		assertThat( result ).containsOnly( 2L );
+
+		commit();
+		close( em );
+	}
 
 	@Test
 	public void testIteratorSingleResultFromNamedNativeQuery() throws Exception {

@@ -75,9 +75,10 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 	}
 
 	public Rule Operation() {
-//		return FirstOf(
-				return Sequence( Find(), builder.setOperation( Operation.FIND ) );
-//		);
+		return FirstOf(
+				Sequence( Find(), builder.setOperation( Operation.FIND ) ),
+				Sequence( Count(), builder.setOperation( Operation.COUNT ) )
+		);
 	}
 
 	public Rule Find() {
@@ -86,6 +87,15 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 				"( ",
 				Json(), builder.setCriteria( match() ),
 				Optional( Sequence( ", ", Json(), builder.setProjection( match() ) ) ),
+				") "
+		);
+	}
+
+	public Rule Count() {
+		return Sequence(
+				"count ",
+				"( ",
+				Optional( Sequence( Json(), builder.setCriteria( match() ) ) ),
 				") "
 		);
 	}

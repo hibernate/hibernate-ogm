@@ -9,9 +9,12 @@ package org.hibernate.ogm.util.impl;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.hibernate.ogm.util.ClosableIterator;
 
 /**
  * Provides commonly used functionality around collections.
@@ -66,5 +69,38 @@ public class CollectionHelper {
 
 	public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap(Map<? extends K, ? extends V> other) {
 		return new ConcurrentHashMap<K, V>( other );
+	}
+
+	public static <T> ClosableIterator<T> newClosableIterator(Iterable<T> iterable) {
+		return new ClosableIteratorWrapper<T>( iterable.iterator() );
+	}
+
+	private static class ClosableIteratorWrapper<T> implements ClosableIterator<T> {
+
+		private final Iterator<T> iterator;
+
+		private ClosableIteratorWrapper(Iterator<T> iterator) {
+			this.iterator = iterator;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return iterator.hasNext();
+		}
+
+		@Override
+		public T next() {
+			return iterator.next();
+		}
+
+		@Override
+		public void remove() {
+			iterator.remove();
+		}
+
+		@Override
+		public void close() {
+			//Nothing to do
+		}
 	}
 }

@@ -26,6 +26,7 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MassIndexingMongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
@@ -68,6 +69,7 @@ import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
 import org.hibernate.ogm.util.ClosableIterator;
+import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -609,6 +611,19 @@ public class MongoDBDialect implements BatchableGridDialect {
 		EntityKeyMetadata entityKeyMetadata = customQuery.getSingleEntityKeyMetadataOrNull();
 		String collectionName = getCollectionName( customQuery, query, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
+
+		switch( query.getOperation() ) {
+			case FIND:
+				return doFind( query, queryParameters, collection, entityKeyMetadata );
+			case COUNT:
+				return doCount( query, collection );
+			default:
+				throw new IllegalArgumentException( "Unexpected query operation: " + query );
+		}
+	}
+
+	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
+			EntityKeyMetadata entityKeyMetadata) {
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 
 		if ( query.getOrderBy() != null ) {
@@ -625,6 +640,12 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 
 		return new MongoDBResultsCursor( cursor, entityKeyMetadata );
+	}
+
+	private ClosableIterator<Tuple> doCount(MongoDBQueryDescriptor query, DBCollection collection) {
+		long count = collection.count( query.getCriteria() );
+		MapTupleSnapshot snapshot = new MapTupleSnapshot( Collections.<String, Object>singletonMap( "n", count ) );
+		return CollectionHelper.newClosableIterator( Collections.singletonList( new Tuple( snapshot ) ) );
 	}
 
 	/**
