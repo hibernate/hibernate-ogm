@@ -6,11 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.impl;
 
-import java.util.Collection;
-
-import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
-import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
-
 import com.mongodb.DBObject;
 
 /**
@@ -18,18 +13,20 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
-public class DBObjectQuerySpecification extends NativeSQLQuerySpecification {
+public class MongoDBQueryDescriptor {
 
 	private final String collectionName;
-	private final DBObject query;
+	private final DBObject criteria;
 	private final DBObject projection;
 	private final DBObject orderBy;
 
-	public DBObjectQuerySpecification(String collectionName, DBObject query, DBObject projection, DBObject orderBy, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
-		super( query.toString(), queryReturns, querySpaces );
+	public MongoDBQueryDescriptor(String collectionName, DBObject criteria) {
+		this( collectionName, criteria, null, null );
+	}
 
+	public MongoDBQueryDescriptor(String collectionName, DBObject criteria, DBObject projection, DBObject orderBy) {
 		this.collectionName = collectionName;
-		this.query = query;
+		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
 	}
@@ -42,10 +39,10 @@ public class DBObjectQuerySpecification extends NativeSQLQuerySpecification {
 	}
 
 	/**
-	 * The actual query object.
+	 * Criteria describing the records to apply this query to.
 	 */
-	public DBObject getQuery() {
-		return query;
+	public DBObject getCriteria() {
+		return criteria;
 	}
 
 	/**
@@ -58,5 +55,10 @@ public class DBObjectQuerySpecification extends NativeSQLQuerySpecification {
 
 	public DBObject getOrderBy() {
 		return orderBy;
+	}
+
+	@Override
+	public String toString() {
+		return "MongoDBQueryDescriptor [collectionName=" + collectionName + ", where=" + criteria + ", projection=" + projection + ", orderBy=" + orderBy + "]";
 	}
 }

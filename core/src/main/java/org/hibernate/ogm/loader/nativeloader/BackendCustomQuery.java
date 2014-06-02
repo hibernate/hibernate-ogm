@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
+import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -31,14 +31,17 @@ public class BackendCustomQuery implements CustomQuery {
 
 	private static final Log LOG = LoggerFactory.make();
 
-	private final NativeSQLQuerySpecification spec;
+	private final String queryString;
+	private final Object queryObject;
 	private final Set<String> querySpaces;
 	private final List<Return> customQueryReturns;
 
-	public BackendCustomQuery(NativeSQLQuerySpecification spec, SessionFactoryImplementor factory) throws HibernateException {
+
+	public BackendCustomQuery(NativeNoSqlQuerySpecification spec, SessionFactoryImplementor factory) throws HibernateException {
 		LOG.tracev( "Starting processing of NoSQL query [{0}]", spec.getQueryString() );
 
-		this.spec = spec;
+		this.queryString = spec.getQueryString();
+		this.queryObject = spec.getQueryObject();
 
 		SQLQueryReturnProcessor processor = new SQLQueryReturnProcessor(spec.getQueryReturns(), factory);
 		processor.process();
@@ -54,9 +57,26 @@ public class BackendCustomQuery implements CustomQuery {
 		}
 	}
 
+	/**
+	 * @deprecated Use {@link #getQueryString()} instead.
+	 */
 	@Override
+	@Deprecated
 	public String getSQL() {
-		return spec.getQueryString();
+		return getQueryString();
+	}
+
+	public String getQueryString() {
+		return queryString;
+	}
+
+	/**
+	 * Returns an object-based representation of this query, if present.
+	 *
+	 * @return an object-based representation of this query, or {@code null} if this is a string-based query.
+	 */
+	public Object getQueryObject() {
+		return queryObject;
 	}
 
 	@Override
@@ -73,16 +93,5 @@ public class BackendCustomQuery implements CustomQuery {
 	@Override
 	public List<Return> getCustomQueryReturns() {
 		return customQueryReturns;
-	}
-
-	/**
-	 * Returns the specification of this query. By default, queries are string-based, but specific dialects may work
-	 * with custom sub-types of {@link NativeSQLQuerySpecification}, allowing to pass queries in a native object-based
-	 * representation.
-	 *
-	 * @return the specification of this query
-	 */
-	public NativeSQLQuerySpecification getSpec() {
-		return spec;
 	}
 }

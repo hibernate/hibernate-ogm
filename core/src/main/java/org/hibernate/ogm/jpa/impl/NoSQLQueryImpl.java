@@ -31,13 +31,13 @@ import org.hibernate.engine.query.spi.sql.NativeSQLQueryJoinReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryScalarReturn;
-import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.ogm.query.NoSQLQuery;
+import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.type.Type;
 
 /**
@@ -62,6 +62,7 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	private final boolean callable;
 	private final LockOptions lockOptions = new LockOptions();
 	private final SessionImplementor session;
+	private Object queryObject;
 
 	/**
 	 * Constructs a NoSQLQuery given a sql query defined in the mappings.
@@ -95,6 +96,11 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		this( sql, false, session, parameterMetadata );
 	}
 
+	public NoSQLQueryImpl(Object queryObject, SessionImplementor session, ParameterMetadata parameterMetadata) {
+		this( queryObject.toString(), false, session, parameterMetadata );
+		this.queryObject = queryObject;
+	}
+
 	public NoSQLQueryImpl(String sql, boolean callable, SessionImplementor session, ParameterMetadata parameterMetadata) {
 		super( sql, null, session, parameterMetadata );
 		this.session = session;
@@ -120,12 +126,12 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	}
 
 	@Override
-	public List list() throws HibernateException {
+	public List<?> list() throws HibernateException {
 		verifyParameters();
 		before();
 
-		Map namedParams = getNamedParams();
-		NativeSQLQuerySpecification spec = generateQuerySpecification( namedParams );
+		Map<?, ?> namedParams = getNamedParams();
+		NativeNoSqlQuerySpecification spec = generateQuerySpecification( namedParams );
 
 		try {
 			return session.list( spec, getQueryParameters( namedParams ) );
@@ -135,9 +141,21 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		}
 	}
 
-	protected NativeSQLQuerySpecification generateQuerySpecification(Map namedParams) {
-		return new NativeSQLQuerySpecification( expandParameterLists( namedParams ), queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
-				querySpaces );
+	protected NativeNoSqlQuerySpecification generateQuerySpecification(Map namedParams) {
+		if ( queryObject != null ) {
+			return new NativeNoSqlQuerySpecification(
+					queryObject,
+					queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
+					querySpaces
+			);
+		}
+		else {
+			return new NativeNoSqlQuerySpecification(
+					expandParameterLists( namedParams ),
+					queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
+					querySpaces
+			);
+		}
 	}
 
 	@Override
@@ -145,8 +163,8 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		verifyParameters();
 		before();
 
-		Map namedParams = getNamedParams();
-		NativeSQLQuerySpecification spec = generateQuerySpecification( namedParams );
+		Map<?, ?> namedParams = getNamedParams();
+		NativeNoSqlQuerySpecification spec = generateQuerySpecification( namedParams );
 
 		QueryParameters qp = getQueryParameters( namedParams );
 		qp.setScrollMode( scrollMode );
@@ -165,7 +183,7 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	}
 
 	@Override
-	public Iterator iterate() throws HibernateException {
+	public Iterator<?> iterate() throws HibernateException {
 		throw new UnsupportedOperationException( "SQL queries do not currently support iteration" );
 	}
 
@@ -394,7 +412,7 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 
 	@Override
 	public int executeUpdate() throws HibernateException {
-		Map namedParams = getNamedParams();
+		Map<?, ?> namedParams = getNamedParams();
 		before();
 		try {
 			return session.executeNativeUpdate( generateQuerySpecification( namedParams ), getQueryParameters( namedParams ) );
@@ -402,6 +420,10 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		finally {
 			after();
 		}
+	}
+
+	public Object getQueryObject() {
+		return queryObject;
 	}
 
 	private class RootReturnBuilder implements RootReturn, ReturnBuilder {

@@ -40,7 +40,7 @@ import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
-import org.hibernate.ogm.datastore.mongodb.query.impl.DBObjectQuerySpecification;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -583,31 +583,26 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters, EntityKeyMetadata[] metadatas) {
-		DBObject mongodbQuery = null;
-		DBObject projection = null;
-		String collectionName = null;
-		DBObject orderBy = null;
+		MongoDBQueryDescriptor query = null;
 
-		// query already given as DBObject (created by JP-QL parser)
-		if ( customQuery.getSpec() instanceof DBObjectQuerySpecification ) {
-			DBObjectQuerySpecification spec = (DBObjectQuerySpecification) customQuery.getSpec();
-			mongodbQuery = spec.getQuery();
-			projection = spec.getProjection();
-			collectionName = spec.getCollectionName();
-			orderBy = spec.getOrderBy();
+		// query already given in DBObject-representation (created by JP-QL parser)
+		if ( customQuery.getQueryObject() != null ) {
+			query = (MongoDBQueryDescriptor) customQuery.getQueryObject();
 		}
 		// a string-based native query; need to create the DBObject from that
 		else {
-			mongodbQuery = (BasicDBObject) JSON.parse( customQuery.getSQL() );
 			validate( metadatas );
-			collectionName = metadatas[0].getTable();
+			query = new MongoDBQueryDescriptor(
+					metadatas[0].getTable(),
+					(BasicDBObject) JSON.parse( customQuery.getQueryString() )
+			);
 		}
 
-		DBCollection collection = provider.getDatabase().getCollection( collectionName );
-		DBCursor cursor = collection.find( mongodbQuery, projection );
+		DBCollection collection = provider.getDatabase().getCollection( query.getCollectionName() );
+		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 
-		if ( orderBy != null ) {
-			cursor.sort( orderBy );
+		if ( query.getOrderBy() != null ) {
+			cursor.sort( query.getOrderBy() );
 		}
 
 		// apply firstRow/maxRows if present

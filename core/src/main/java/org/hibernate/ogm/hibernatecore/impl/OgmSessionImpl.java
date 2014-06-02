@@ -48,6 +48,7 @@ import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.NoSQLQuery;
+import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -275,7 +276,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public List listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
+	public List<?> listCustomQuery(CustomQuery customQuery, QueryParameters queryParameters) throws HibernateException {
 		errorIfClosed();
 
 		if ( log.isTraceEnabled() ) {
@@ -293,9 +294,12 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public List list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		CustomQuery customQuery = new BackendCustomQuery( spec, factory );
-		// TODO Implement query plan cache?
+	public List<?> list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
+		// TODO OGM-414 Implement query plan cache
+
+		NativeNoSqlQuerySpecification noSqlQuerySpec = (NativeNoSqlQuerySpecification) spec;
+		CustomQuery customQuery = new BackendCustomQuery( noSqlQuerySpec, factory );
+
 		return listCustomQuery( customQuery, queryParameters );
 	}
 
