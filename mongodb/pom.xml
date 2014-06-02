@@ -39,6 +39,7 @@
         </plugins>
     </build>
     <dependencies>
+        <!-- Compile -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-core</artifactId>
@@ -59,6 +60,12 @@
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.parboiled</groupId>
+            <artifactId>parboiled-java</artifactId>
+        </dependency>
+
+        <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -96,6 +103,7 @@
             <artifactId>fest-assert</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Required by PackagingRule -->
         <dependency>
             <groupId>org.jboss.shrinkwrap</groupId>
             <artifactId>shrinkwrap-impl-base</artifactId>

@@ -41,6 +41,8 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStora
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
+import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -69,6 +71,10 @@ import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -77,7 +83,6 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
-import com.mongodb.util.JSON;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -592,13 +597,19 @@ public class MongoDBDialect implements BatchableGridDialect {
 		// a string-based native query; need to create the DBObject from that
 		else {
 			validate( metadatas );
-			query = new MongoDBQueryDescriptor(
-					metadatas[0].getTable(),
-					(BasicDBObject) JSON.parse( customQuery.getQueryString() )
-			);
+
+			// TODO OGM-414 This should actually be cached in the native query plan
+			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+			ParsingResult<MongoDBQueryDescriptorBuilder> parseResult =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( customQuery.getQueryString() );
+			if (parseResult.hasErrors() ) {
+				throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
+			}
+
+			query = parseResult.resultValue.build();
 		}
 
-		DBCollection collection = provider.getDatabase().getCollection( query.getCollectionName() );
+		String collectionName = query.getCollectionName() != null ? query.getCollectionName() : metadatas[0].getTable();
+		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
 
 		if ( query.getOrderBy() != null ) {

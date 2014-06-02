@@ -128,6 +128,21 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		close( em );
 	}
 
+	@Test
+	public void testSingleResultQueryUsingExtendedSyntax() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+		String nativeQuery = "db.WILDE_POEM.find({ '$query' : { 'name' : 'Athanasia' }, '$orderby' : { 'name' : 1 } })";
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> results = em.createNativeQuery( nativeQuery, OscarWildePoem.class ).getResultList();
+
+		assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+		assertAreEquals( athanasia, results.get( 0 ) );
+
+		commit();
+		close( em );
+	}
+
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );

@@ -15,17 +15,23 @@ import com.mongodb.DBObject;
  */
 public class MongoDBQueryDescriptor {
 
+	public enum Operation {
+		FIND;
+	}
+
 	private final String collectionName;
+	private final Operation operation;
 	private final DBObject criteria;
 	private final DBObject projection;
 	private final DBObject orderBy;
 
 	public MongoDBQueryDescriptor(String collectionName, DBObject criteria) {
-		this( collectionName, criteria, null, null );
+		this( collectionName, Operation.FIND, criteria, null, null );
 	}
 
-	public MongoDBQueryDescriptor(String collectionName, DBObject criteria, DBObject projection, DBObject orderBy) {
+	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy) {
 		this.collectionName = collectionName;
+		this.operation = operation;
 		this.criteria = criteria;
 		this.projection = projection;
 		this.orderBy = orderBy;
@@ -36,6 +42,10 @@ public class MongoDBQueryDescriptor {
 	 */
 	public String getCollectionName() {
 		return collectionName;
+	}
+
+	public Operation getOperation() {
+		return operation;
 	}
 
 	/**

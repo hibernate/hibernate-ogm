@@ -20,6 +20,7 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
 import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.query.NoSQLQuery;
@@ -56,6 +57,7 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		NoSQLQuery query = new NoSQLQueryImpl(
 				new MongoDBQueryDescriptor(
 						tableName,
+						Operation.FIND, //so far only SELECT is supported
 						result.getQuery(),
 						result.getProjection(),
 						result.getOrderBy()
