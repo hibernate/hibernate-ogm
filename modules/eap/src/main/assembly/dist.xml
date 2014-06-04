@@ -53,6 +53,11 @@
              <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
              <filtered>true</filtered>
         </file>
+        <file>
+            <source>${module.xml.basedir}/org/parboiled/module.xml</source>
+            <outputDirectory>/org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <filtered>true</filtered>
+        </file>
     </files>
 
     <dependencySets>
@@ -152,6 +157,20 @@
                   <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
                   <include>org.parboiled:parboiled-java</include>
               </includes>
+       </dependencySet>
+       <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/parboiled/${org.parboiled.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.parboiled:parboiled-java</include>
+                <include>org.parboiled:parboiled-core</include>
+                <include>org.ow2.asm:asm</include>
+                <include>org.ow2.asm:asm-tree</include>
+                <include>org.ow2.asm:asm-analysis</include>
+                <include>org.ow2.asm:asm-util</include>
+            </includes>
        </dependencySet>
     </dependencySets>
     <fileSets>

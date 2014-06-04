@@ -133,6 +133,8 @@
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.6.Final</resteasyVersion>
         <jacksonVersion>2.2.1</jacksonVersion>
+        <parboiledVersion>1.1.6</parboiledVersion>
+        <asmVersion>4.1</asmVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- 
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
@@ -410,7 +412,7 @@
             <dependency>
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
-                <version>1.1.6</version>
+                <version>${parboiledVersion}</version>
             </dependency>
 
             <dependency>
