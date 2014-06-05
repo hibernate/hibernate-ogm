@@ -321,63 +321,47 @@ This is useful even if you don't plan to use Infinispan as your primary data sto
 
 [[ogm-configuration-jbossmodule]]
 
-=== How to package Hibernate OGM applications for WildFly 8.0
+=== How to package Hibernate OGM applications for WildFly 8 and JBoss EAP 6
 
-Provided you're deploying on WildFly 8.0 or EAP 6,
+Provided you're deploying on WildFly 8 or JBoss EAP 6,
 there is an additional way to add the OGM dependencies to your application.
 
-In WildFly 8 or EAP 6, class loading is based on modules
+In WildFly 8 and JBoss EAP 6, class loading is based on modules
 that have to define explicit dependencies on other modules.
 Modules allow to share the same artifacts across multiple applications,
 getting you smaller and quicker deployments.
 
 More details about modules are described in
-https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[Class Loading in WildFly 8.0].
+https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[Class Loading in WildFly].
 
-You can download the pre-packaged module for WildFly 8 from:
+==== Packaging Hibernate OGM applications for WildFly 8
+
+You can download the pre-packaged module ZIP from:
 
 * https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly8-{hibernate-ogm-version}.zip[Sourceforge]
 * https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly8&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
-Unpack the archive into the +modules+ folder of your WildFly 8.0 installation.
+Unpack the archive into the +modules+ folder of your WildFly 8 installation.
 The modules included are:
 
-* _org.hibernate.hql:1.0.0.Alpha6_, containing the query parser
-* _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
-* _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
-* _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
-
-You can download the pre-packaged module for EAP 6 from:
-
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
-
-Unpack the archive into the +modules+ folder of your EAP 6 installation.
-The modules included are:
-
-* _org.hibernate:ogm_, containing the core OGM library and the infinispan datastore provider.
-* _org.hibernate.ogm.ehcache:main_, containing the ehcache datastore provider.
-* _org.hibernate.ogm.mongodb:main_, containing the mongodb datastore provider.
-* _javax.persistence.api:main_, this will upgrade the version in EAP to 2.1
-
-[WARNING]
-====
-The existing module for javax.persistence.api is going to be replaced with the version required by OGM.
-====
+* _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
+* _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore provider besides Infinispan, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
+You only need to add those modules which you actually intend to use.
+* Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
 
 There are two ways to include the dependencies in your project:
 
 Using the manifest::
-Add this entry to the MANIFEST.MF in your archive:
+Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source]
 ----
-Dependencies: org.hibernate:ogm services
+Dependencies: org.hibernate:ogm services, org.hibernate.ogm.<%DATASTORE%>:main services
 ----
 
 Using jboss-deployment-structure.xml::
-This is a proprietary WildFly descriptor.
-Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with content:
+This is a JBoss-specific descriptor.
+Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
 
 [source, XML]
 ----
@@ -385,10 +369,60 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with content:
     <deployment>
         <dependencies>
             <module name="org.hibernate" slot="ogm" services="export" />
+            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="main" services="export" />
         </dependencies>
     </deployment>
 </jboss-deployment-structure>
 ----
 
 More information about the descriptor can be found in the
-https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly 8.0 documentation].
+https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly documentation].
+
+
+==== Packaging Hibernate OGM applications for JBoss EAP 6
+
+You can download the pre-packaged module ZIP from:
+
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}.zip[Sourceforge]
+* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
+
+Unpack the archive into the +modules+ folder of your JBoss EAP 6 installation.
+The modules included are:
+
+* _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
+* _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore provider besides Infinispan, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
+You only need to add those modules which you actually intend to use.
+* _javax.persistence.api:main_, this will upgrade the JPA API version in JBoss EAP to 2.1
+* _javax.ws.rs.api:main_, this will upgrade the JAX-RS API version in JBoss EAP to 2
+* Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
+
+[WARNING]
+====
+The existing modules for _javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_ are going to be replaced with the version required by OGM. Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
+====
+
+There are two ways to include the dependencies in your project:
+
+Using the manifest::
+Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
+
+[source]
+----
+Dependencies: org.hibernate:ogm, org.hibernate.ogm.<%DATASTORE%>:main services
+----
+
+Using jboss-deployment-structure.xml::
+This is a JBoss-specific descriptor.
+Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
+
+[source, XML]
+----
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+            <module name="org.hibernate" slot="ogm" />
+            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="main" services="export" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
+----
