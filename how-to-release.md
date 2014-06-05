@@ -79,7 +79,7 @@ Verify:
      - for **EAP 6**: in _target/checkout/modules/eap6/target_
      - for **WildFly 8**: in _target/checkout/modules/wildfly/target_
 
-2. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
+1. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
 
    ```
        rsync -rzh --progress --delete \
@@ -93,18 +93,17 @@ Verify:
        scp -r reference hibernate@filemgmt.jboss.org:docs_htdocs/hibernate/ogm/[version-family]
    ```
 
-3. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
+1. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
    You can't create symlinks on the server so you either create it locally then rsync it up, or make a copy of the documentation in that URL.
+
+1. Update the [community pages](http://community.jboss.org/en/hibernate/ogm). In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
 
 ### Announce
 
-1. Update the community pages. Check:
-  - http://community.jboss.org/en/hibernate/ogm
-
-2. Blog about the release on [in.relation.to](http://in.relation.to/), make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
+1. Blog about the release on [in.relation.to](http://in.relation.to/), make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
    This way the blog will be featured on the [web-site](http://www.hibernate.org/ogm) and on the JBoss blog federation.
 
-3. Update [hibernate.org](http://hibernate.org/) by adding a new release file to _data/projects/ogm/releases_.
+1. Update [hibernate.org](http://hibernate.org/) by adding a new release file to _data/projects/ogm/releases_.
    Remember to add a one line summary using the property _summary_.
    If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
    When ready, deploy everything on production.
@@ -113,7 +112,7 @@ Verify:
    - http://www.hibernate.org/ogm/download
    - http://www.hibernate.org/ogm/documentation
  
-4. Send email to _hibernate-dev_ and _hibernate-announce_.
+1. Send email to _hibernate-dev_ and _hibernate-announce_.
    A quick sum up paragraph in the email is necessary before pointing to the blog entry.
 
-5. Twitter
+1. Twitter
