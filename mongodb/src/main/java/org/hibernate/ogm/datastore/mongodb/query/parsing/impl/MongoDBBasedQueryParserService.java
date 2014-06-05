@@ -21,9 +21,9 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
-import org.hibernate.ogm.jpa.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.query.NoSQLQuery;
+import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.service.impl.BaseQueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
