@@ -46,6 +46,11 @@ public class ModuleMemberRegistrationDeployment {
 			return this;
 		}
 
+		public Builder addAsWebInfResource(String resourceName) {
+			archive.addAsWebInfResource( resourceName );
+			return this;
+		}
+
 		public WebArchive createDeployment() {
 			return archive;
 		}
