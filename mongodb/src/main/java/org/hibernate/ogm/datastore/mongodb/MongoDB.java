@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBEntityContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.impl.MongoDBGlobalContextImpl;
@@ -19,6 +20,13 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  * @author Gunnar Morling
  */
 public class MongoDB implements DatastoreConfiguration<MongoDBGlobalContext> {
+
+	/**
+	 * Short name of this data store provider.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String DATASTORE_PROVIDER_NAME = "MONGODB";
 
 	@Override
 	public MongoDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {

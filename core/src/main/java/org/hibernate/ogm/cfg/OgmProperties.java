@@ -38,7 +38,9 @@ public interface OgmProperties {
 	 * <li>a {@code DatastoreProvider} instance</li>
 	 * <li>a {@code DatastoreProvider} class</li>
 	 * <li>a string representing the {@code DatastoreProvider} class</li>
-	 * <li>a string representing one of the datastore provider shortcuts</li>
+	 * <li>a string representing one of the datastore provider shortcuts (case-insensitive; a constant with the name to
+	 * be used can be found on the public identifier type of your chosen grid dialect, e.g.
+	 * {@code MongoDB#DATASTORE_PROVIDER_NAME})</li>
 	 * </ul>
 	 * If the property is not set, Infinispan is used by default.
 	 */

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
@@ -17,6 +18,13 @@ import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
  * @author Gunnar Morling
  */
 public class Neo4j implements DatastoreConfiguration<GlobalContext<?, ?>> {
+
+	/**
+	 * Short name of this data store provider.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String DATASTORE_PROVIDER_NAME = "NEO4J_EMBEDDED";
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {

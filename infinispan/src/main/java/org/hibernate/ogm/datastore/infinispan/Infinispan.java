@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.infinispan;
 
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
@@ -17,6 +18,13 @@ import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
  * @author Gunnar Morling
  */
 public class Infinispan implements DatastoreConfiguration<GlobalContext<?, ?>> {
+
+	/**
+	 * Short name of this data store provider.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String DATASTORE_PROVIDER_NAME = "INFINISPAN";
 
 	@Override
 	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
