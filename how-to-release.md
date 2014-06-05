@@ -1,4 +1,4 @@
-# Release Hiberante OGM
+# Releasing Hibernate OGM
 
 ## Requirements
 
@@ -6,7 +6,7 @@ Make sure you have:
 
 1. **JDK 7** for the build (the created artifacts are compatible with Java 6)
 
-2. **Maven** configured to use the JBoss repositories, with permissions to upload. Make sure your settings.xml is configured accordingly or use the option -s settings-example.xml when running the commands.
+2. **Maven** configured to use the JBoss repositories, with permissions to upload. Make sure your _settings.xml_ is configured accordingly or use the option _-s settings-example.xml_ when running the commands.
 
 3. all the permissions required to upload the packages on:
 
@@ -29,12 +29,12 @@ Verify:
 3. tests and artifacts:
 
    ```
-       mvn clean install -Pdist -s settings-example.xml 
+       mvn clean install -s settings-example.xml
    ```
 
-4. the distribution package as built by Maven (distribution/target/hibernate-ogm-[version]-dist).
+4. the distribution package as built by Maven (_distribution/target/hibernate-ogm-[version]-dist_).
 
-   They should contain the appropriate dependencies, without duplicates. The creation of these directories is driven by the assembly plugin (distribution/src/main/assembly/dist.xml) which is very specific and might break with the inclusion of new dependencies.
+   They should contain the appropriate dependencies, without duplicates. The creation of these directories is driven by the assembly plugin (see _distribution/src/main/assembly/dist.xml_) which is very specific and might break with the inclusion of new dependencies.
 
    Especially check the jar files in the subdirectories:
    - optional
@@ -54,9 +54,7 @@ Verify:
 
 4. Commit any outstanding changes
 
-5. Tag and build the release using the [maven release plugin](http://maven.apache.org/plugins/maven-release-plugin)
-
-   During release:prepare you will have to specify the tag name and release version
+5. Tag and build the release using the [maven release plugin](http://maven.apache.org/plugins/maven-release-plugin); During _release:prepare_ you will have to specify the tag name and release version:
 
    ```
        mvn release:prepare -s settings-example.xml
@@ -72,16 +70,16 @@ Verify:
 
 ### Publish
 
-1. Upload the distribution packages to SourceForge (they should be under target/checkout/target). You need to be member of the Hibernate project team of Sourceforge to do that. [See Sourceforge instructions](https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/)
-   - Copy the _changelog.txt_ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
-   - Copy the _readme.txt_ (in target/checkout/distribution/target/hibernate-ogm-[version]-dist)
-   - Copy the _.zip distribution_ (in target/checkout/distribution/target)
-   - Copy the _.tar.gz distribution_ (in target/checkout/distribution/target)
-   - Copy the .zip containing the _JBoss Modules_. There are two .zip files:
-     - for **EAP 6**: in target/checkout/modules/eap6/target 
-     - for **WildFly 8**: in target/checkout/modules/wildfly/target 
+1. Upload the distribution packages to SourceForge (they should be under _target/checkout/target_). You need to be member of the Hibernate project team of Sourceforge to do that (Also see the [Sourceforge instructions](https://sourceforge.net/p/forge/documentation/Release%20Files%20for%20Download/)):
+   - Copy the _changelog.txt_ (in _target/checkout/distribution/target/hibernate-ogm-[version]-dist_)
+   - Copy the _readme.txt_ (in _target/checkout/distribution/target/hibernate-ogm-[version]-dist_)
+   - Copy the _.zip distribution_ (in _target/checkout/distribution/target_)
+   - Copy the _.tar.gz distribution_ (in _target/checkout/distribution/target_)
+   - Copy the _.zip containing the JBoss Modules_. There are two .zip files:
+     - for **EAP 6**: in _target/checkout/modules/eap6/target_
+     - for **WildFly 8**: in _target/checkout/modules/wildfly/target_
 
-2. Upload the documentation to docs.jboss.org. You should be able to use rsync to get the documentation via (provided you are in the docs directory of the unpacked distribution):
+2. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
 
    ```
        rsync -rzh --progress --delete \
@@ -95,18 +93,18 @@ Verify:
        scp -r reference hibernate@filemgmt.jboss.org:docs_htdocs/hibernate/ogm/[version-family]
    ```
 
-3. If it is a final release you have to add the symbolic link /docs_htdocs/hibernate/stable/ogm
+3. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
    You can't create symlinks on the server so you either create it locally then rsync it up, or make a copy of the documentation in that URL.
 
 ### Announce
 
-1. Update the community pages. Check:     
+1. Update the community pages. Check:
   - http://community.jboss.org/en/hibernate/ogm
 
-2. Blog about the release on _in.relation.to_, make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
-   This way the blog will be featured on http://www.hibernate.org/ogm) and on the JBoss blog federation.
+2. Blog about the release on [in.relation.to](http://in.relation.to/), make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
+   This way the blog will be featured on the [web-site](http://www.hibernate.org/ogm) and on the JBoss blog federation.
 
-3. Update _hibernate.org_ by adding a new release file to **_data/projects/ogm/releases**.
+3. Update [hibernate.org](http://hibernate.org/) by adding a new release file to _data/projects/ogm/releases_.
    Remember to add a one line summary using the property _summary_.
    If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
    When ready, deploy everything on production.
@@ -115,7 +113,7 @@ Verify:
    - http://www.hibernate.org/ogm/download
    - http://www.hibernate.org/ogm/documentation
  
-4. Send email to __hibernate-dev__ and __hibernate-announce__
+4. Send email to _hibernate-dev_ and _hibernate-announce_.
    A quick sum up paragraph in the email is necessary before pointing to the blog entry.
 
-5. __Twitter__
+5. Twitter
