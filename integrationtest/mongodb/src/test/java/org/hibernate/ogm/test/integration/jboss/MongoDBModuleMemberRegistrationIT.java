@@ -9,6 +9,8 @@ package org.hibernate.ogm.test.integration.jboss;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
 import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -52,20 +54,20 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties();
 		if ( isNotNull( host ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.datastore.host" ).value( host );
+			propertiesContext.createProperty().name( OgmProperties.HOST ).value( host );
 		}
 		if ( isNotNull( port ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.datastore.port" ).value( port );
+			propertiesContext.createProperty().name( OgmProperties.PORT ).value( port );
 		}
 		if ( isNotNull( username ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.datastore.username" ).value( username );
+			propertiesContext.createProperty().name( OgmProperties.USERNAME ).value( username );
 		}
 		if ( isNotNull( password ) ) {
-			propertiesContext.createProperty().name( "hibernate.ogm.datastore.password" ).value( password );
+			propertiesContext.createProperty().name( OgmProperties.PASSWORD ).value( password );
 		}
 		return propertiesContext
-					.createProperty().name( "hibernate.ogm.datastore.provider" ).value( "mongodb" ).up()
-					.createProperty().name( "hibernate.ogm.datastore.database" ).value( "ogm_test_database" ).up()
+					.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( MongoDB.DATASTORE_PROVIDER_NAME ).up()
+					.createProperty().name( OgmProperties.DATABASE ).value( "ogm_test_database" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
 	}

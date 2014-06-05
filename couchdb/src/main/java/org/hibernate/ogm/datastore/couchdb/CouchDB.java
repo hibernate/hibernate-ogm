@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb;
 
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBGlobalContext;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBEntityContextImpl;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBGlobalContextImpl;
@@ -20,6 +21,13 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  * @author Andrea Boriero <dreborier@gmail.com/>
  */
 public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
+
+	/**
+	 * Short name of this data store provider.
+	 *
+	 * @see OgmProperties#DATASTORE_PROVIDER
+	 */
+	public static final String DATASTORE_PROVIDER_NAME = "COUCHDB";
 
 	@Override
 	public CouchDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {
