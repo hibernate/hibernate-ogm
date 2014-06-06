@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
@@ -282,30 +283,56 @@ public class CypherCRUD {
 	}
 
 	/**
-	 * Query example:
+	 * Removes the relationship(s) representing the given association. If the association refers to an embedded entity
+	 * (collection), the referenced entity/ies are removed as well. Query example:
+	 *
 	 * <pre>
 	 * MATCH (n) - [r:collectionRole { 'associationKey_column_name': {0}}] - ()
-	 * DELETE r</pre>
+	 * DELETE r
+	 *
+	 * MATCH (n) - [r:collectionRole { 'associationKey_column_name': {0}}] - (x:EMBEDDED)
+	 * DELETE r, x
+	 * </pre>
 	 */
 	public void remove(AssociationKey associationKey) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH (n) - " );
 		query.append( relationshipCypher( associationKey, parameters, 0 ) );
-		query.append( " - () DELETE r" );
+
+		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
+			query.append( " - (x:EMBEDDED) DELETE r, x" );
+		}
+		else {
+			query.append( " - () DELETE r" );
+		}
+
 		engine.execute( query.toString(), parameters );
 	}
 
 	/**
-	 * Query example:
-	 * <pre>MATCH (n) - [r:collectionRole { 'rowkey_column_name': {0}}] - ()
+	 * Removes the relationship representing the given association row. If the association row refers to an embedded
+	 * entity, the referenced entity is removed as well. Query example:
+	 *
+	 * <pre>
+	 * MATCH (n) - [r:collectionRole { 'rowkey_column_name': {0}}] - ()
 	 * DELETE r
+	 *
+	 * MATCH (n) - [r:collectionRole { 'associationKey_column_name': {0}}] - (x:EMBEDDED)
+	 * DELETE r, x
 	 * </pre>
 	 */
 	public void remove(AssociationKey associationKey, RowKey rowKey) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH (n) - " );
 		query.append( relationshipCypher( associationKey, rowKey, parameters, 0 ) );
-		query.append( " - () DELETE r" );
+
+		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
+			query.append( " - (x:EMBEDDED) DELETE r, x" );
+		}
+		else {
+			query.append( " - () DELETE r" );
+		}
+
 		engine.execute( query.toString(), parameters );
 	}
 

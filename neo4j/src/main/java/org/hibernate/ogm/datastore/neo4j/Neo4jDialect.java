@@ -29,6 +29,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
@@ -40,6 +41,7 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -152,9 +154,14 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
 		// Check if there is an entity or a temporary node representing the RowKey
 		if ( rowKeyNode == null ) {
-			// We look for the entity at the end of the association, if we cannot find it
-			// we save the RowKey in a temporary node.
-			return findEntityOrCreateTempNode( associationKey, rowKey );
+			if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
+				return createNodeAndAddRelationship( associationKey, rowKey, NodeLabel.EMBEDDED );
+			}
+			else {
+				// We look for the entity at the end of the association, if we cannot find it
+				// we save the RowKey in a temporary node.
+				return findEntityOrCreateTempNode( associationKey, rowKey );
+			}
 		}
 		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
 			// The RowKey represents an entity and we are going to create the relationship to it
@@ -176,7 +183,7 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 		if ( endNode == null ) {
 			// We cannot find the entity on the other side of the relationship, we store the information related to
 			// the RowKey in a temporary node and we create a relationship to it
-			return createRelationshipToTempNode( associationKey, rowKey );
+			return createNodeAndAddRelationship( associationKey, rowKey, TEMP_NODE );
 		}
 		else if ( associationKey.getCollectionRole().equals( rowKey.getTable() ) ) {
 			// Unidirectional ManyToOne: the node contains the field with the association
@@ -256,8 +263,8 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 		return relationship;
 	}
 
-	private PropertyContainer createRelationshipToTempNode(AssociationKey associationKey, RowKey rowKey) {
-		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, TEMP_NODE );
+	private PropertyContainer createNodeAndAddRelationship(AssociationKey associationKey, RowKey rowKey, NodeLabel label) {
+		Node rowKeyNode = neo4jCRUD.createNodeUnlessExists( rowKey, label );
 		return createRelationshipWithEntity( associationKey, rowKey, rowKeyNode );
 	}
 
