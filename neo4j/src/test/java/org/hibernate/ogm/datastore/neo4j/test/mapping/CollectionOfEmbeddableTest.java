@@ -78,6 +78,26 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( accountNode + " - [:addresses] -> " + anotherAddressNode );
 	}
 
+	@Test
+	public void testNoNodeIsLeftBehindWhenDeletingRelationships() throws Exception {
+		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+		MultiAddressAccount multiAddressAccount = em.find( MultiAddressAccount.class, account.getLogin() );
+		multiAddressAccount.getAddresses().clear();
+		commitOrRollback( true );
+		em.close();
+
+		assertNumberOfNodes( 1 );
+		assertRelationships( 0 );
+
+		String accountNode = "(:MultiAddressAccount:ENTITY {"
+				+ "  `login`: '" + account.getLogin() + "'"
+				+ ", `password`: '" + account.getPassword() + "'"
+				+ " })";
+
+		assertExpectedMapping( accountNode );
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class[] { MultiAddressAccount.class, Address.class };
