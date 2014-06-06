@@ -36,13 +36,18 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class Neo4jTestHelper implements TestableGridDialect {
 
+	/**
+	 * Query for counting all entities. This takes embedded entities and temporary nodes (which never should show up
+	 * actually) into account.
+	 */
+	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " OR n:" + NodeLabel.TEMP_NODE.name() + " RETURN COUNT(n)";
+
 	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		String query = "MATCH (n:" + NodeLabel.ENTITY.name() + ") RETURN COUNT(n)";
 		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ExecutionResult result = engine.execute( query.toString() );
+		ExecutionResult result = engine.execute( ENTITY_COUNT_QUERY );
 		ResourceIterator<Map<String, Object>> iterator = result.iterator();
 		if ( iterator.hasNext() ) {
 			Map<String, Object> next = iterator.next();

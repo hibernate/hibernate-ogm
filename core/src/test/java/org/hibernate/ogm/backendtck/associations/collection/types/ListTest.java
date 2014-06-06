@@ -82,7 +82,9 @@ public class ListTest extends OgmTestCase {
 		//do an update to one of the elements
 		tx = session.beginTransaction();
 		grandMother = (GrandMother) session.get( GrandMother.class, grandMother.getId() );
+		assertThat( grandMother.getGrandChildren() ).onProperty( "name" ).containsExactly( "Luke", "Leia" );
 		grandMother.getGrandChildren().get( 0 ).setName( "Lisa" );
+
 		tx.commit();
 		session.clear();
 

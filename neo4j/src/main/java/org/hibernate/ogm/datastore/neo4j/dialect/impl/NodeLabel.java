@@ -15,5 +15,10 @@ import org.neo4j.graphdb.Label;
  */
 public enum NodeLabel implements Label {
 	ENTITY,
-	TEMP_NODE;
+	TEMP_NODE,
+
+	/**
+	 * Represents an embedded (dependent) entity.
+	 */
+	EMBEDDED;
 }
