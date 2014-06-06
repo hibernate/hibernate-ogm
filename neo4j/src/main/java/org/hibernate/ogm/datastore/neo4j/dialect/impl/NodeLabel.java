@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.neo4j.graphdb.Label;
 
 /**
@@ -14,7 +15,15 @@ import org.neo4j.graphdb.Label;
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public enum NodeLabel implements Label {
+	/**
+	 * A node mapping an entity
+	 */
 	ENTITY,
+
+	/**
+	 * In some scenarios we need to create temporary nodes that are going to be deleted once the association is between
+	 * two entities is created. More details in the javadoc of {@link Neo4jDialect}
+	 */
 	TEMP_NODE,
 
 	/**
