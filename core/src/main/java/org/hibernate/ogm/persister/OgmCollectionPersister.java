@@ -753,8 +753,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return createCollectionInitializer( session.getLoadQueryInfluencers() );
 	}
 
-	@Override
 	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, SessionImplementor session) throws HibernateException {
+		// nothing to do
+	}
+
+	// NOTE: This method has accidentally been introduced in ORM 4.3.5 and is deprecated as of ORM 4.3.6. We're
+	// overriding this variant and the one above to be compatible with any 4.3.x version. This variant can be removed
+	// once we're on ORM 5
+	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, int nextIndex, SessionImplementor session) throws HibernateException {
 		// nothing to do
 	}
 
