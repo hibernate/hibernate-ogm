@@ -317,7 +317,7 @@ public class CypherCRUD {
 	 * MATCH (n) - [r:collectionRole { 'rowkey_column_name': {0}}] - ()
 	 * DELETE r
 	 *
-	 * MATCH (n) - [r:collectionRole { 'associationKey_column_name': {0}}] - (x:EMBEDDED)
+	 * MATCH (n) - [r:collectionRole { 'rowkey_column_name': {0}}] - (x:EMBEDDED)
 	 * DELETE r, x
 	 * </pre>
 	 */

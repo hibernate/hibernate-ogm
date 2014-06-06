@@ -324,14 +324,14 @@ public class CorrectNumberOfElementsTest extends JpaTestCase {
 				+ ", `password`: '" + account.getPassword() + "'"
 				+ " })";
 
-		String addressNode = "(:MultiAddressAccount_addresses {"
+		String addressNode = "(:MultiAddressAccount_addresses:EMBEDDED {"
 				+ "  street1: '" + address.getStreet1() + "'"
 				+ ", city: '" + address.getCity() + "'"
 				+ ", country: '" + address.getCountry() + "'"
 				+ ", postal_code: '" + address.getZipCode() + "'"
 				+ " })";
 
-		String anotherAddressNode = "(:MultiAddressAccount_addresses {"
+		String anotherAddressNode = "(:MultiAddressAccount_addresses:EMBEDDED {"
 				+ "  street1: '" + anotherAddress.getStreet1() + "'"
 				+ ", city: '" + anotherAddress.getCity() + "'"
 				+ ", country: '" + anotherAddress.getCountry() + "'"
