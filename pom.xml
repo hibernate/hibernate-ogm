@@ -122,8 +122,8 @@
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
         <neo4jVersion>2.0.1</neo4jVersion>
-        <hibernateVersion>4.3.1.Final</hibernateVersion>
-        <hibernateSearchVersion>4.5.0.CR1</hibernateSearchVersion>
+        <hibernateVersion>4.3.5.Final</hibernateVersion>
+        <hibernateSearchVersion>4.5.1.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.CR1</hibernateParserVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
