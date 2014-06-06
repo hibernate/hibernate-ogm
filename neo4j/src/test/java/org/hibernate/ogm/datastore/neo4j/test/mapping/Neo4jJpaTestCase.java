@@ -12,6 +12,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 
@@ -23,7 +24,12 @@ import org.junit.After;
 public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	@After
-	public void deleteAll() throws Exception {
+	public void after() throws Exception {
+		assertNoTempNodeExists();
+		deleteAll();
+	}
+
+	private void deleteAll() throws Exception {
 		executeQuery( "MATCH (n) OPTIONAL MATCH (n)-[r]-() DELETE n, r" );
 	}
 
@@ -33,6 +39,10 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 
 	protected void assertNumberOfNodes(int nodes) throws Exception {
 		assertThat( numberOfNodes() ).as( "Unexpected number of nodes" ).isEqualTo( nodes );
+	}
+
+	protected void assertNoTempNodeExists() throws Exception {
+		assertThat( executeQuery( "MATCH (n:" + NodeLabel.TEMP_NODE + ") RETURN 1" ) ).as( "No temp node should exist at the end of the test" ).isNull();
 	}
 
 	protected void assertExpectedMapping(String element) throws Exception {
