@@ -57,6 +57,8 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.cypherdsl.query.clause.LimitClause;
+import org.neo4j.cypherdsl.query.clause.SkipClause;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
@@ -387,14 +389,36 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
-
-		String nativeQuery = customQuery.getQueryString();
+		String nativeQuery = buildNativeQuery( customQuery, queryParameters );
 		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
 
 		if ( customQuery.getSingleEntityKeyMetadataOrNull() != null ) {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
+	}
+
+	private String buildNativeQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
+		StringBuilder nativeQuery = new StringBuilder( customQuery.getQueryString() );
+		applyFirstRow( queryParameters, nativeQuery );
+		applyMaxRows( queryParameters, nativeQuery );
+		return nativeQuery.toString();
+	}
+
+	private void applyFirstRow(QueryParameters queryParameters, StringBuilder nativeQuery) {
+		Integer firstRow = queryParameters.getRowSelection().getFirstRow();
+		if ( firstRow != null ) {
+			SkipClause skipClause = new SkipClause( firstRow );
+			skipClause.asString( nativeQuery );
+		}
+	}
+
+	private void applyMaxRows(QueryParameters queryParameters, StringBuilder nativeQuery) {
+		Integer maxRows = queryParameters.getRowSelection().getMaxRows();
+		if ( maxRows != null ) {
+			LimitClause limitClause = new LimitClause( maxRows );
+			limitClause.asString( nativeQuery );
+		}
 	}
 
 	/**
