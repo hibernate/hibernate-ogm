@@ -7,6 +7,7 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.OgmAssertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
@@ -407,7 +408,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testOrderedQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h order by h.description" ).list();
-		assertThat( result ).onProperty( "description" ).containsExactly(
+		assertThat( result ).onProperty( "description" ).ignoreNullOrder().containsExactly(
 				null,
 				"Hilbert's proof of connection to 2 dimensions can be induced to reason on N dimensions",
 				"Is the truth out there?",
@@ -422,7 +423,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testOrderedDescQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h order by h.description desc" ).list();
-		assertThat( result ).onProperty( "description" ).containsExactly(
+		assertThat( result ).onProperty( "description" ).ignoreNullOrder().containsExactly(
 				"stuff works",
 				"There are more than two fools in our team.",
 				"There are more than two dimensions over the shadows we see out of the cave",
@@ -445,10 +446,10 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testOrderedDescAndAscQuery() throws Exception {
 		List<?> result = session.createQuery( "from Helicopter h order by h.make desc, h.name" ).list();
-		assertThat( result ).onProperty( "make" ).containsExactly(
+		assertThat( result ).onProperty( "make" ).ignoreNullOrder().containsExactly(
 				"Lama", "Lama", "Crusoe", null
 		);
-		assertThat( result ).onProperty( "name" ).containsExactly(
+		assertThat( result ).onProperty( "name" ).ignoreNullOrder().containsExactly(
 				"Lama", "No creative clue", "No creative clue", null
 		);
 	}
