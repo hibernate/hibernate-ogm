@@ -12,6 +12,7 @@ import static org.hibernate.ogm.datastore.neo4j.test.query.nativequery.OscarWild
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -29,7 +30,8 @@ import org.junit.Test;
 public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L	, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
+	private final OscarWildePoem ballade = new OscarWildePoem( 3L, "Ballade De Marguerite", "Oscar Wilde", new GregorianCalendar( 1881, 3, 1 ).getTime() );
 
 	@Before
 	public void init() {
@@ -37,6 +39,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		Transaction transaction = session.beginTransaction();
 		session.persist( portia );
 		session.persist( athanasia );
+		session.persist( ballade );
 		transaction.commit();
 		session.clear();
 		session.close();
@@ -48,6 +51,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		Transaction tx = session.beginTransaction();
 		delete( session, portia );
 		delete( session, athanasia );
+		delete( session, ballade);
 		tx.commit();
 		session.clear();
 		session.close();
@@ -70,7 +74,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.uniqueResult();
 
-		assertAreEquals( portia, poem );
+		assertThat( poem ).isEqualTo( portia );
 
 		transaction.commit();
 		session.clear();
@@ -88,9 +92,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.list();
 
-		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
-		assertAreEquals( athanasia, result.get( 0 ) );
-		assertAreEquals( portia, result.get( 1 ) );
+		assertThat( result ).as( "Unexpected number of results" ).containsExactly( athanasia, ballade, portia );
 
 		transaction.commit();
 		session.clear();
@@ -106,13 +108,17 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		@SuppressWarnings("unchecked")
 		List<Object[]> result = session.createNativeQuery( nativeQuery ).list();
 
-		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
+		assertThat( result ).as( "Unexpected number of results" ).hasSize( 3 );
 
 		Object[] athanasiaRow = result.get( 0 );
 		assertThat( athanasiaRow[0] ).isEqualTo( athanasia.getName() );
 		assertThat( athanasiaRow[1] ).isEqualTo( athanasia.getAuthor() );
 
-		Object[] portiaRow = result.get( 1 );
+		Object[] balladeRow = result.get( 1 );
+		assertThat( balladeRow[0] ).isEqualTo( ballade.getName() );
+		assertThat( balladeRow[1] ).isEqualTo( ballade.getAuthor() );
+
+		Object[] portiaRow = result.get( 2 );
 		assertThat( portiaRow[0] ).isEqualTo( portia.getName() );
 		assertThat( portiaRow[1] ).isEqualTo( portia.getAuthor() );
 
@@ -129,7 +135,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		try {
 			OscarWildePoem uniqueResult = (OscarWildePoem) session.getNamedQuery( "AthanasiaQuery" )
 					.uniqueResult();
-			assertAreEquals( uniqueResult, athanasia );
+			assertThat( uniqueResult ).isEqualTo( athanasia );
 			transaction.commit();
 		}
 		finally {
@@ -149,7 +155,7 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 			query.setParameter( "name", "Portia" );
 
 			OscarWildePoem uniqueResult = (OscarWildePoem) query.uniqueResult();
-			assertAreEquals( uniqueResult, portia );
+			assertThat( uniqueResult ).isEqualTo( portia );
 			transaction.commit();
 		}
 		finally {
@@ -158,11 +164,63 @@ public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 		}
 	}
 
-	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
-		assertThat( poem ).isNotNull();
-		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );
-		assertThat( poem.getName() ).as( "Wrong Name" ).isEqualTo( expectedPoem.getName() );
-		assertThat( poem.getAuthor() ).as( "Wrong Author" ).isEqualTo( expectedPoem.getAuthor() );
+	@Test
+	public void testNativeQueryWithFirstResult() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name";
+		Query query = session.createNativeQuery( nativeQuery )
+				.addEntity( OscarWildePoem.class )
+				.setFirstResult( 1 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).containsExactly( ballade, portia );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+
+	}
+
+	@Test
+	public void testNativeQueryWithMaxRows() throws Exception {
+		OgmSession session = (OgmSession) openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name";
+		Query query = session.createNativeQuery( nativeQuery )
+				.addEntity( OscarWildePoem.class )
+				.setMaxResults( 2 );
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = query.list();
+
+		assertThat( result ).containsExactly( athanasia, ballade );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+	}
+
+	@Test
+	public void testListMultipleResultQueryWithFirstResultAndMaxRows() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { author:'Oscar Wilde' } ) RETURN n ORDER BY n.name DESC";
+		@SuppressWarnings("unchecked")
+		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+				.setFirstResult( 1 )
+				.setMaxResults( 1 )
+				.list();
+
+		assertThat( result ).containsExactly( ballade );
+
+		transaction.commit();
+		session.clear();
+		session.close();
 	}
 
 	@Override
