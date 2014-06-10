@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Hibernate OGM, Domain model persistence for NoSQL datastores
+ ~
+ ~ License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ ~ See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+  -->
+<jboss-deployment-structure
+    xmlns="urn:jboss:deployment-structure:1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <deployment>
+        <dependencies>
+            <module name="org.hibernate" slot="ogm" services="export" />
+            <module name="org.hibernate.ogm.couchdb" slot="main" services="export" />
+            <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
+        </dependencies>
+        <exclusions>
+           <!-- Use Jackson 2 provider; Implicitly the case on WF 8.1 but it's required for EAP 6.x  -->
+           <module name="org.jboss.resteasy.resteasy-jackson-provider"/>
+        </exclusions>
+    </deployment>
+</jboss-deployment-structure>

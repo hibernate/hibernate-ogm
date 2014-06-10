@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl;
 
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Used to serialize and deserialize a REST CouchDB response to a PUT and a DELETE

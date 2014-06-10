@@ -9,11 +9,12 @@ package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * Represents the Result of the REST call associated with the {@link TuplesDesignDocument}
@@ -52,9 +53,9 @@ public class EntityTupleRows {
 			return value;
 		}
 
+		@SuppressWarnings("unused") //invoked reflectively
 		void setValue(EntityDocument value) {
 			this.value = value;
 		}
 	}
-
 }

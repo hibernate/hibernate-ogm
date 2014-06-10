@@ -41,7 +41,7 @@ public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 	public static Archive<?> createTestArchive() {
 		return new ModuleMemberRegistrationDeployment.Builder( CouchDBModuleMemberRegistrationIT.class )
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.couchdb services" )
+				.addAsWebInfResource( "jboss-deployment-structure.xml" )
 				.createDeployment();
 	}
 
