@@ -429,3 +429,22 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the followin
     </deployment>
 </jboss-deployment-structure>
 ----
+
+If you are working with the CouchDB backend, you furthermore need to add the following to your +jboss-deployment-structure.xml+:
+
+[source, XML]
+----
+...
+<deployment>
+    ...
+    <dependencies>
+        ...
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import" />
+    </dependencies>
+    <exclusions>
+        <module name="org.jboss.resteasy.resteasy-jackson-provider" />
+    </exclusions>
+</deployment>
+----
+
+This causes the RESTEasy Jackson 2 provider to be enabled rather the Jackson 1 provider which is used in JBoss EAP 6.x by default. That step is required as the CouchDB dialect implementation depends on Jackson 2.
