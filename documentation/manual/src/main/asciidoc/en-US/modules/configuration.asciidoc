@@ -393,7 +393,10 @@ The modules included are:
 * _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore provider besides Infinispan, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
 You only need to add those modules which you actually intend to use.
 * _javax.persistence.api:main_, this will upgrade the JPA API version in JBoss EAP to 2.1
-* _javax.ws.rs.api:main_, this will upgrade the JAX-RS API version in JBoss EAP to 2
+* _javax.ws.rs.api:main_, _org.jboss.resteasy.resteasy-*:main_>, this will upgrade the RESTEasy version in JBoss EAP to 3.0.x (JAX-RS 2);
+Note that the RESTEasy modules are obtained from the official RESTEasy distribution
+(which itself https://docs.jboss.org/resteasy/docs/3.0.7.Final/userguide/html_single/#upgrading-eap61[contains a module ZIP])
+and re-packaged into the module ZIP of Hibernate OGM for your convinience
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
 
 [WARNING]

@@ -14,11 +14,6 @@
 
     <files>
         <file>
-            <source>${module.xml.basedir}/javax/ws.rs.api/module.xml</source>
-            <outputDirectory>/system/layers/base/javax/ws/rs/api/main</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <file>
             <source>${module.xml.basedir}/javax/persistence.api/module.xml</source>
             <outputDirectory>/system/layers/base/javax/persistence/api/main</outputDirectory>
             <filtered>true</filtered>
@@ -61,15 +56,6 @@
     </files>
 
     <dependencySets>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>/system/layers/base/javax/ws/rs/api/main</outputDirectory>
-            <useTransitiveFiltering>false</useTransitiveFiltering>
-            <unpack>false</unpack>
-            <includes>
-                <include>org.jboss.resteasy:jaxrs-api</include>
-            </includes>
-        </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <outputDirectory>/system/layers/base/javax/persistence/api/main</outputDirectory>
@@ -145,21 +131,6 @@
              <unpack>false</unpack>
              <includes>
                  <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
-                 <include>javax.activation:activation</include>
-                 <include>commons-codec:commons-codec</include>
-                 <include>commons-io:commons-io</include>
-                 <include>commons-logging:commons-logging</include>
-                 <include>org.apache.httpcomponents:httpclient</include>
-                 <include>org.apache.httpcomponents:httpcore</include>
-                 <include>org.codehaus.jackson:jackson-core-asl</include>
-                 <include>org.codehaus.jackson:jackson-jaxrs</include>
-                 <include>org.codehaus.jackson:jackson-mapper-asl</include>
-                 <include>org.codehaus.jackson:jackson-xc</include>
-                 <include>net.jcip:jcip-annotations</include>
-                 <include>org.jboss.resteasy:resteasy-client</include>
-                 <include>org.jboss.resteasy:resteasy-jackson-provider</include>
-                 <include>org.jboss.resteasy:resteasy-jaxrs</include>
-                 <include>org.scannotation:scannotation</include>
              </includes>
        </dependencySet>
        <dependencySet>
@@ -183,4 +154,10 @@
               </includes>
        </dependencySet>
     </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/unpacked-resteasy-modules</directory>
+            <outputDirectory>/system/layers/base</outputDirectory>
+        </fileSet>
+    </fileSets>
 </assembly>
