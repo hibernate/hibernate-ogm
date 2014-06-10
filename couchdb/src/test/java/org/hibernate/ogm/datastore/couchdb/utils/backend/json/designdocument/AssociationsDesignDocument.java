@@ -6,12 +6,13 @@
  */
 package org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.DesignDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 
 /**
  * Creates a CouchDB Design Document with a view and list used to retrieve the number of associations stored in the

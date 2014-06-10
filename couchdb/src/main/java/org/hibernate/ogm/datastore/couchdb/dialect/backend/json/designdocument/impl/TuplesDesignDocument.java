@@ -6,9 +6,10 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Creates a CouchDB Design Document with a view used to retrieve the entities of a given table.

@@ -9,8 +9,9 @@ package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Represents a CouchDB design document. Design documents are special CouchDB documents containing application logic in
