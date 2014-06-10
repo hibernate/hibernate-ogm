@@ -99,12 +99,109 @@
     </dependencies>
 
     <build>
+        <extensions>
+            <extension>
+                <!-- Allows maven-external-dependency-plugin to follow HTTP re-directs -->
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-http-lightweight</artifactId>
+                <version>2.2</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
+            </plugin>
+            <!-- The following three plug-ins retrieve the RESTEasy distribution via
+                HTTP and install it into the local repo (if not present yet) and unzip the
+                module ZIP from the distribution so we can re-pack it into our own module
+                ZIP for EAP; That will be not necessary once the RESTeasy module ZIP itself
+                can be obtained as dependency via Maven -->
+            <plugin>
+                <groupId>com.savage7.maven.plugins</groupId>
+                <artifactId>maven-external-dependency-plugin</artifactId>
+                <inherited>false</inherited>
+                <configuration>
+                    <stagingDirectory>
+                        ${project.build.directory}/dependencies/
+                    </stagingDirectory>
+                    <createChecksum>true</createChecksum>
+                    <skipChecksumVerification>false</skipChecksumVerification>
+                    <force>false</force>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>org.jboss.resteasy</groupId>
+                            <artifactId>resteasy-dist</artifactId>
+                            <version>${resteasyVersion}</version>
+                            <packaging>zip</packaging>
+                            <downloadUrl>
+                                http://sourceforge.net/projects/resteasy/files/Resteasy%20JAX-RS/${resteasyVersion}/resteasy-jaxrs-${resteasyVersion}-all.zip/download
+                            </downloadUrl>
+                        </artifactItem>
+                    </artifactItems>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>clean-external-dependencies</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean-external</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>resolve-install-external-dependencies</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>resolve-external</goal>
+                            <goal>install-external</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-resteasy-dist</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.jboss.resteasy</groupId>
+                                    <artifactId>resteasy-dist</artifactId>
+                                    <version>${resteasyVersion}</version>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${project.build.directory}/unpacked-dependencies</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-resteasy-modules</id>
+                        <phase>process-resources</phase>
+                        <configuration>
+                            <tasks>
+                                <echo message="Unpacking RESTEasy modules ZIP" />
+                                <unzip src="${project.build.directory}/unpacked-dependencies/resteasy-jaxrs-${resteasyVersion}/resteasy-jboss-modules-${resteasyVersion}.zip" dest="${project.build.directory}/unpacked-resteasy-modules" />
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

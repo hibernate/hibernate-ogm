@@ -8,29 +8,14 @@
 <module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.couchdb" slot="${hibernate.ogm.couchdb.module.slot}">
     <resources>
         <resource-root path="hibernate-ogm-couchdb-${project.version}.jar" />
-        <resource-root path="activation-1.1.jar" />
-        <resource-root path="commons-codec-1.6.jar" />
-        <resource-root path="commons-io-2.1.jar" />
-        <resource-root path="commons-logging-1.1.1.jar" />
-        <resource-root path="httpclient-4.2.1.jar" />
-        <resource-root path="httpcore-4.2.1.jar" />
-        <resource-root path="jackson-core-asl-1.9.13.jar" />
-        <resource-root path="jackson-jaxrs-1.9.13.jar" />
-        <resource-root path="jackson-mapper-asl-1.9.13.jar" />
-        <resource-root path="jackson-xc-1.9.13.jar" />
-        <resource-root path="jcip-annotations-1.0.jar" />
-        <resource-root path="resteasy-client-3.0.6.Final.jar" />
-        <resource-root path="resteasy-jackson-provider-3.0.6.Final.jar" />
-        <resource-root path="resteasy-jaxrs-3.0.6.Final.jar" />
-        <resource-root path="scannotation-1.0.3.jar" />
     </resources>
 
     <dependencies>
-        <module name="org.hibernate" export="true" services="import" slot="ogm" />
-        <module name="javax.xml.bind.api" />
-        <module name="javax.persistence.api" />
+        <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
         <module name="javax.ws.rs.api" />
+        <module name="javax.persistence.api" />
+        <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
+        <module name="org.jboss.resteasy.resteasy-jaxrs" />
         <module name="org.jboss.logging" />
-        <module name="org.apache.log4j" />
     </dependencies>
 </module>
