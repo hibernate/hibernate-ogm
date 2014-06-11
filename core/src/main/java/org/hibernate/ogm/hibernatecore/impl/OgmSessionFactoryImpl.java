@@ -43,7 +43,6 @@ import org.hibernate.engine.query.spi.QueryPlanCache;
 import org.hibernate.engine.spi.FilterDefinition;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
-import org.hibernate.engine.spi.SessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.exception.spi.SQLExceptionConverter;
@@ -52,6 +51,7 @@ import org.hibernate.id.factory.IdentifierGeneratorFactory;
 import org.hibernate.internal.NamedQueryRepository;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.query.impl.NoSqlQueryParameterMetadataCache;
@@ -239,7 +239,7 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 	}
 
 	@Override
-	public Session openTemporarySession() throws HibernateException {
+	public OgmSession openTemporarySession() throws HibernateException {
 		return new OgmSessionImpl( this, (EventSource) delegate.openTemporarySession() );
 	}
 
@@ -299,18 +299,18 @@ public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSess
 	}
 
 	@Override
-	public SessionBuilderImplementor withOptions() {
+	public OgmSessionBuilderImplementor withOptions() {
 		return new OgmSessionBuilderDelegator( delegate.withOptions(), this );
 	}
 
 	@Override
-	public Session openSession() throws HibernateException {
+	public OgmSession openSession() throws HibernateException {
 		final Session session = delegate.openSession();
 		return new OgmSessionImpl(this, (EventSource) session);
 	}
 
 	@Override
-	public Session getCurrentSession() throws HibernateException {
+	public OgmSession getCurrentSession() throws HibernateException {
 		final Session session = delegate.getCurrentSession();
 		return new OgmSessionImpl(this, (EventSource) session);
 	}

@@ -17,6 +17,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -65,8 +66,8 @@ public abstract class OgmTestCase {
 	protected void configure(Configuration cfg) {
 	}
 
-	protected Session openSession() {
-		Session session = sessions.openSession();
+	protected OgmSession openSession() {
+		OgmSession session = sessions.openSession();
 		openedSessions.add( session );
 		return session;
 	}

@@ -24,7 +24,7 @@ import org.junit.Test;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class MongoDBSessionSQLQueryTest extends OgmTestCase {
+public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
@@ -63,7 +63,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testNativeQueryWithFirstResult() throws Exception {
-		OgmSession session = (OgmSession) openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
@@ -81,7 +81,7 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testNativeQueryWithMaxRows() throws Exception {
-		OgmSession session = (OgmSession) openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		Query query = session.createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
@@ -99,12 +99,12 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
 		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+		List<OscarWildePoem> result = session.createNativeQuery( nativeQuery )
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.list();
 
@@ -117,12 +117,12 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testListMultipleResultQueryWithFirstResultAndMaxRows() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
 		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+		List<OscarWildePoem> result = session.createNativeQuery( nativeQuery )
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.setFirstResult( 1 )
 				.setMaxResults( 1 )
@@ -137,12 +137,12 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testExceptionWhenReturnedEntityIsMissingAndUniqueResultIsExpected() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
 		try {
-			session.createSQLQuery( nativeQuery ).uniqueResult();
+			session.createNativeQuery( nativeQuery ).uniqueResult();
 			transaction.commit();
 		}
 		catch (Exception he) {
@@ -177,12 +177,12 @@ public class MongoDBSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testExceptionWhenReturnedEntityIsMissingAndManyResultsAreExpected() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
 		try {
-			session.createSQLQuery( nativeQuery ).list();
+			session.createNativeQuery( nativeQuery ).list();
 		}
 		catch (Exception he) {
 			transaction.rollback();
