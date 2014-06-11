@@ -16,12 +16,14 @@ import org.hibernate.SessionEventListener;
 import org.hibernate.engine.spi.SessionBuilderImplementor;
 import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.OgmSessionFactory.OgmSessionBuilderImplementor;
 
 /**
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmSessionBuilderDelegator implements SessionBuilderImplementor {
+public class OgmSessionBuilderDelegator implements OgmSessionBuilderImplementor {
 	private final SessionBuilderImplementor builder;
 	private final OgmSessionFactory factory;
 
@@ -32,7 +34,7 @@ public class OgmSessionBuilderDelegator implements SessionBuilderImplementor {
 	}
 
 	@Override
-	public Session openSession() {
+	public OgmSession openSession() {
 		Session session = builder.openSession();
 		return new OgmSessionImpl( factory, (EventSource) session );
 	}

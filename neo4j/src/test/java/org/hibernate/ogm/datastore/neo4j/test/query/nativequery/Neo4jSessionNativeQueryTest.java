@@ -15,6 +15,7 @@ import java.util.List;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +26,7 @@ import org.junit.Test;
  *
  * @author Davide D'Alto <davide@hibernate.org>
  */
-public class Neo4jSessionSQLQueryTest extends OgmTestCase {
+public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
@@ -61,11 +62,11 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testUniqueResultQuery() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
-		OscarWildePoem poem = (OscarWildePoem) session.createSQLQuery( nativeQuery )
+		OscarWildePoem poem = (OscarWildePoem) session.createNativeQuery( nativeQuery )
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.uniqueResult();
 
@@ -78,12 +79,12 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " ) RETURN n ORDER BY n.name";
 		@SuppressWarnings("unchecked")
-		List<OscarWildePoem> result = session.createSQLQuery( nativeQuery )
+		List<OscarWildePoem> result = session.createNativeQuery( nativeQuery )
 				.addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
 				.list();
 
@@ -98,12 +99,12 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testListMultipleResultQueryWithoutReturnedType() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		String nativeQuery = "MATCH ( n:" + TABLE_NAME + " ) RETURN n.name, n.author ORDER BY n.name";
 		@SuppressWarnings("unchecked")
-		List<Object[]> result = session.createSQLQuery( nativeQuery ).list();
+		List<Object[]> result = session.createNativeQuery( nativeQuery ).list();
 
 		assertThat( result ).as( "Unexpected number of results" ).hasSize( 2 );
 
@@ -122,7 +123,7 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testUniqueResultNamedNativeQuery() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		try {
@@ -139,12 +140,12 @@ public class Neo4jSessionSQLQueryTest extends OgmTestCase {
 
 	@Test
 	public void testUniqueResultFromNativeQueryWithParameter() throws Exception {
-		Session session = openSession();
+		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();
 
 		try {
 			String nativeQuery = "MATCH ( n:" + TABLE_NAME + " { name:{name}, author:'Oscar Wilde' } ) RETURN n";
-			SQLQuery query = session.createSQLQuery( nativeQuery ).addEntity( OscarWildePoem.class );
+			SQLQuery query = session.createNativeQuery( nativeQuery ).addEntity( OscarWildePoem.class );
 			query.setParameter( "name", "Portia" );
 
 			OscarWildePoem uniqueResult = (OscarWildePoem) query.uniqueResult();
