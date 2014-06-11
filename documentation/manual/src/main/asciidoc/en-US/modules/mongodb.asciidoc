@@ -489,13 +489,35 @@ Queries using these constructs will be transformed into equivalent native MongoD
 
 ===== Native MongoDB queries
 
-Hibernate OGM supports native queries for MongoDB with some limitations:
+Hibernate OGM also supports certain forms of native queries for MongoDB.
+Currently two forms of native queries are available via the MongoDB backend:
 
-* parameters are not supported
-* the result of a native query must be mapped to one entity
+* find queries specifying the search criteria only
+* queries specified using the MongoDB CLI syntax
 
-If your use case meets these restrictions you can execute a native query like
-in the following example:
+The former always maps results to entity types.
+The latter either maps results to entity types or to certain supported forms of projection.
+Note that parameterized queries are not supported by MongoDB, so don't expect +Query#setParameter()+ to work.
+
+[WARNING]
+====
+Specifying native MongoDB queries using the CLI syntax is an EXPERIMENTAL feature for the time being.
+Currently only +find()+ and +count()+ queries are supported via the CLI syntax.
+Further query types (including updating queries) may be supported in future revisions.
+
+No cursor operations such as +sort()+ are supported.
+Instead use the corresponding MongoDB http://docs.mongodb.org/manual/reference/operator/query-modifier/[query modifiers]
+such as +$orderby+ within the criteria parameter.
+
+JSON parameters passed via the CLI syntax must be specified using the http://docs.mongodb.org/manual/reference/mongodb-extended-json/[strict mode]
+The only relaxation of this is that single quotes may be used when specifying attribute names/values to facilitate embedding
+queries within Java strings.
+
+Note that results of projections are returned as retrieved from the MongoDB driver at the moment and
+are not (yet) converted using suitable Hibernate OGM type implementations.
+====
+
+You can execute native queries as shown in the following example:
 
 .Using the JPA API
 ====
@@ -519,27 +541,46 @@ public class Poem {
 
 javax.persistence.EntityManager em = ...
 
+// criteria-only find syntax
 String query1 = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
 Poem poem = (Poem) em.createNativeQuery( query1, Poem.class ).getSingleResult();
 
+// criteria-only find syntax with order-by
 String query2 = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
 List<Poem> poems = em.createNativeQuery( query2, Poem.class ).getResultList();
+
+// projection via CLI-syntax
+String query3 = "db.WILDE_POEM.find(" +
+    "{ '$query' : { 'name' : 'Athanasia' }, '$orderby' : { 'name' : 1 } }" +
+    "{ 'name' : 1 }" +
+    ")";
+
+// will contain name and id as MongoDB always returns the id for projections
+List<Object[]> poemNames = (List<Object[]>)em.createNativeQuery( query3 ).getResultList();
+
+// projection via CLI-syntax
+String query4 = "db.WILDE_POEM.count({ 'name' : 'Athanasia' })";
+
+Object[] count = (Object[])em.createNativeQuery( query4 ).getSingleResult();
 ----
 ====
+
+The result of a query is a managed entity (or a list thereof) or a projection of attributes in form of an object array,
+just like you would get from a JP-QL query.
 
 .Using the Hibernate native API
 ====
 [source, JAVA]
 ----
-org.hibernate.Session session = ...
+OgmSession session = ...
 
 String query1 = "{ $and: [ { name : 'Portia' }, { author : 'Oscar Wilde' } ] }";
-Poem poem = session.createSQLQuery( query1 )
+Poem poem = session.createNativeQuery( query1 )
                       .addEntity( "Poem", Poem.class )
                       .uniqueResult();
 
 String query2 = "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }";
-List<Poem> poems = session.createSQLQuery( query2 )
+List<Poem> poems = session.createNativeQuery( query2 )
                       .addEntity( "Poem", Poem.class )
                       .list();
 ----
@@ -547,14 +588,10 @@ List<Poem> poems = session.createSQLQuery( query2 )
 
 [NOTE]
 ====
-The method in +Session#createSQLQuery(...)+ might look misleading since we are not
-running a SQL query but the +Session+ API was initially thought for relational databases
-and we decided it was simpler to reuse the same method than invent something new that could
-increase the confusion.
+As +OgmSession+ extends +org.hibernate.Session+ (which originally has been designed with relational databases in mind only)
+you could also invoke +createSQLQuery()+ to create a native query. But for the sake of comprehensibility, you should prefer
++createNativeQuery()+, and in fact +createSQLQuery()+ has been deprecated on +OgmSession+.
 ====
-
-The result of the query is a managed entity or a list of managed entities.
-Just like you would get from a JP-QL query.
 
 Native queries can also be created using the +@NamedNativeQuery+ annotation:
 
