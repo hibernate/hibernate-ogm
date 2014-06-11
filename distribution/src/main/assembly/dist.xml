@@ -60,6 +60,14 @@
                             <include>org.slf4j:slf4j-api</include>
                             <include>org.antlr:stringtemplate</include>
                             <include>org.jgroups:jgroups</include>
+
+                            <!-- Parboiled and deps -->
+                            <include>org.parboiled:parboiled-java</include>
+                            <include>org.parboiled:parboiled-core</include>
+                            <include>org.ow2.asm:asm</include>
+                            <include>org.ow2.asm:asm-tree</include>
+                            <include>org.ow2.asm:asm-analysis</include>
+                            <include>org.ow2.asm:asm-util</include>
                         </includes>
                     </dependencySet>
                     <dependencySet>
@@ -188,7 +196,6 @@
                             <include>org.neo4j:neo4j-lucene-index</include>
                             <include>org.neo4j:neo4j-udc</include>
                             <include>org.scala-lang:scala-library</include>
-                            <include>org.parboiled:parboiled-java</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>
@@ -216,7 +223,7 @@
                         <scope>runtime</scope>
                         <includes>
                             <include>org.jboss.resteasy:resteasy-client</include>
-                            <include>org.jboss.resteasy:resteasy-jackson-provider</include>
+                            <include>org.jboss.resteasy:resteasy-jackson2-provider</include>
                             <include>org.jboss.resteasy:resteasy-jaxrs</include>
                             <include>org.jboss.resteasy:jaxrs-api</include>
                             <include>org.scannotation:scannotation</include>
@@ -228,10 +235,9 @@
                             <include>commons-codec:commons-codec</include>
                             <include>commons-io:commons-io</include>
                             <include>net.jcip:jcip-annotations</include>
-                            <include>org.codehaus.jackson:jackson-jaxrs</include>
-                            <include>org.codehaus.jackson:jackson-xc</include>
-                            <include>org.codehaus.jackson:jackson-core-asl</include>
-                            <include>org.codehaus.jackson:jackson-mapper-asl</include>
+                            <include>com.fasterxml.jackson.core:jackson-core</include>
+                            <include>com.fasterxml.jackson.core:jackson-databind</include>
+                            <include>com.fasterxml.jackson.core:jackson-annotations</include>
                         </includes>
                     </dependencySet>
                 </dependencySets>
