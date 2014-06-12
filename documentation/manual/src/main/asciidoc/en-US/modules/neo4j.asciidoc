@@ -104,7 +104,7 @@ Using Cypher:
 An association, bidirectional or unidirectional, is always mapped using one relationship.
 This is possible because in Neo4j relationships can be navigated in both directions.
 
-The name of the relationships depends on the type of association, but in general, it is the corresponding name of the table
+The type of the relationships depends on the type of the association, but in general, it is the corresponding name of the table
 containing the association.
 
 [WARNING]
