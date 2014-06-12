@@ -24,7 +24,7 @@ If your project uses Maven you can add this to the pom.xml:
     <version>{hibernate-ogm-version}</version>
 </dependency>
 ----
-Alternatively you can find the required libraries in the distribution package on https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-{hibernate-ogm-version}-jbossas-72-dist.zip[SourceForge]
+Alternatively you can find the required libraries in the distribution package on https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-{hibernate-ogm-version}-dist.zip[SourceForge]
 
 .2. Add the following properties:
 
@@ -102,18 +102,18 @@ Using Cypher:
 ===== Associations
 
 An association, bidirectional or unidirectional, is always mapped using one relationship.
-This is possible because in Neo4j relationships can be navigate in both directions.
+This is possible because in Neo4j relationships can be navigated in both directions.
 
-The type of the relationships depends from the type of association, but in general, it is the corresponding name of the table
+The name of the relationships depends on the type of association, but in general, it is the corresponding name of the table
 containing the association.
 
 [WARNING]
 ====
-Unidirectional many to one association are currently an exception to this rule.
+Unidirectional many-to-one associations are currently an exception to this rule.
 At the moment, in this scenario, there won't be a relationship.
 ====
 
-The id of the entities connected to the relationship are stored as properties.
+The ids of the entities connected to the relationship are stored as properties.
 In the following examples we omitted the properties containing the id for simplicity and because we are planning to remove them
 in the future.
 
@@ -184,7 +184,7 @@ class Child {
 
 ===== Auto Generated Values
 
-Hibernate OGM only support the table generation strategy in Neo4j.
+Hibernate OGM only supports the table generation strategy in Neo4j.
 A sequence is represented by a node like in the following example:
 
 .Example of a sequence using cypher
@@ -196,7 +196,7 @@ A sequence is represented by a node like in the following example:
 ====
 
 A sequence node is labeled with the constant +SEQUENCE+ and with the generator key of the sequence.
-A unique constraint is applied on the property +sequence_name+ to avoid the same sequence name is used twice in node having the same generator key.
+A unique constraint is applied on the property +sequence_name+ to avoid the same sequence name is used twice in nodes having the same generator key.
 The property +current_value+ stores the next value of the sequence.
 
 Note that when a different strategy is selected for an entity, we won't throw an exception but we will fall-back to this representation. The only difference is that we will apply
@@ -206,10 +206,9 @@ a default generator key as label.
 
 Neo4j operations can be executed only inside a transaction.
 Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will use a default one to integrate with the Neo4j transaction mechanism.
-This means that you can start and commit transaction using the hibernate session.
+This means that you can start and commit transaction using the Hibernate session.
 
-The drawback is that it is not possible to use Hibernate OGM and Neo4j inside a container.
-
+The drawback is that it is not possible at the moment to let Neo4j participate in managed JTA transactions spanning several resources (see issue https://hibernate.atlassian.net/browse/OGM-370[OGM-370]).
 
 .Example of starting and committing transactions
 ====
@@ -234,8 +233,8 @@ tx.commit();
 
 ===== Native Neo4j queries
 
-Hibernate OGM also supports cypher queries for Neo4j.
-You can execute cypher queries as shown in the following example:
+Hibernate OGM also supports native http://docs.neo4j.org/chunked/stable/cypher-query-lang.html[Cypher queries] for Neo4j.
+You can execute Cypher queries as shown in the following example:
 
 .Using the JPA API
 ====
