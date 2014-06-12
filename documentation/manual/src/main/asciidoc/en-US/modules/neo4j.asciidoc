@@ -44,12 +44,6 @@ hibernate.ogm.neo4j.database_path::
 The absolute path representing the location of the Neo4j database. Example: +C:\neo4jdb\mydb+
 hibernate.ogm.neo4j.configuration_resource_name (optional)::
 Location of the Neo4j embedded properties file. It can be an URL, name of a classpath resource or file system path.
-hibernate.ogm.neo4j.index.entity (optional)::
-Name of the neo4j index containing the stored entities. Default to +_nodes_ogm_index+
-hibernate.ogm.neo4j.index.association (optional)::
-Name of the Neo4j index containing the stored associations. Default to +_relationships_ogm_index+
-hibernate.ogm.neo4j.index.sequence (optional)::
-Name of the index that stores the next available value for a sequence. Default to +_sequences_ogm_index+
 
 [NOTE]
 ====
@@ -60,14 +54,29 @@ Common properties shared between stores are declared on +OgmProperties+.
 To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
+[[ogm-neo4j-storage-principles]]
 ==== Storage principles
+
+Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
+so that third party applications not using Hibernate OGM can still read
+and update the same datastore.
+
+[WARNING]
+====
+The mappings are still EXPERIMENTAL and they might change in future.
+====
 
 ===== Entities
 
 Entities are stored as Neo4j nodes, which means each entity property will be translated into a property of the node.
-An additional property is added to the node and it contains the name of the table representing the entity.
+The name of the table mapping the entity is used as label.
 
-.Example of entities and the list of properties contained in the corresponding node
+You can use the name property of the [classname]+@Table+ and [classname]+@Column+ annotations
+to rename the label and the node's properties.
+
+An additional label +ENTITY+ is added to the node. 
+
+.Example of entity and the corresponding representation using Cypher
 ====
 [source, JAVA]
 ----
@@ -76,46 +85,131 @@ class Account {
 
     @Id
     String login;
+
     String password;
-    Address homeAddress;
 
-    //...
-}
-
-@Embeddable
-class Address {
-    String city;
-    String zipCode;
-
-  //...
 }
 ----
 
 [subs="verbatim,attributes"]
 ----
-Node properties:
-   _table
-   id
-   login
-   password
-   homeAddress_city
-   homeAddress_zipCode
+Using Cypher:
+
+(n:Account:ENTITY {login: '...', password: '...'})
 ----
 ====
-The +_table+ property has been added by OGM and it contains the name of the table representing the entity (+Account+ in this simple case).
 
 ===== Associations
 
-Associations are mapped using Neo4j relationships.
-A unidirectional association is mapped with a relationship between two nodes that start from the node representing the owner of the association.
-The name of the association is saved as type of the relationship.
-A bidirectional association is represented by two relationships, one per direction, between the two nodes.
+An association, bidirectional or unidirectional, is always mapped using one relationship.
+This is possible because in Neo4j relationships can be navigate in both directions.
+
+The type of the relationships depends from the type of association, but in general, it is the corresponding name of the table
+containing the association.
+
+[WARNING]
+====
+Unidirectional many to one association are currently an exception to this rule.
+At the moment, in this scenario, there won't be a relationship.
+====
+
+The id of the entities connected to the relationship are stored as properties.
+In the following examples we omitted the properties containing the id for simplicity and because we are planning to remove them
+in the future.
+
+.Example of bidirectional @ManyToMany
+====
+[source, JAVA]
+----
+@Entity
+class AccountOwner {
+
+    @Id
+    String sSN;
+
+    @ManyToMany
+    Set<BankAccount> bankAccounts = new HashSet<BankAccount>();
+
+}
+
+@Entity
+class BankAccount {
+
+    @Id
+    String accountNumber;
+
+    @ManyToMany(mappedBy = "bankAccounts")
+    Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+}
+----
+
+[subs="verbatim,attributes"]
+----
+(:AccountOwner:ENTITY {...}) - [:AccountOwner_BankAccount] - (:BankAccount:ENTITY {...})
+----
+
+====
+
+.Example of unidirectional @ManyToOne with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+class Father {
+    @Id
+    String name;
+
+    @OneToMany
+    @JoinTable(name = "Father_child")
+    @OrderColumn(name = "birthorder")
+    List<Child> children = new ArrayList<Child>();
+}
+
+@Entity
+class Child {
+    @Id
+    String name;
+}
+
+----
+
+[subs="verbatim,attributes"]
+----
+(:Father:ENTITY {...}) - [:Father_child { birthorder: 0 }] - (child0:Child:ENTITY {...})
+(:Father:ENTITY {...}) - [:Father_child { birthorder: 1 }] - (child1:Child:ENTITY {...})
+----
+
+====
+
+===== Auto Generated Values
+
+Hibernate OGM only support the table generation strategy in Neo4j.
+A sequence is represented by a node like in the following example:
+
+.Example of a sequence using cypher
+====
+[subs="verbatim,attributes"]
+----
+(sequence:GeneratorKey:SEQUENCE {sequence_name: '...', current_value: '...'})
+----
+====
+
+A sequence node is labeled with the constant +SEQUENCE+ and with the generator key of the sequence.
+A unique constraint is applied on the property +sequence_name+ to avoid the same sequence name is used twice in node having the same generator key.
+The property +current_value+ stores the next value of the sequence.
+
+Note that when a different strategy is selected for an entity, we won't throw an exception but we will fall-back to this representation. The only difference is that we will apply
+a default generator key as label.
 
 ==== Transactions
 
 Neo4j operations can be executed only inside a transaction.
-Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will integrate with the Neo4j transaction mechanism,
-this means that you should start and commit transaction using the hibernate session.
+Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will use a default one to integrate with the Neo4j transaction mechanism.
+This means that you can start and commit transaction using the hibernate session.
+
+The drawback is that it is not possible to use Hibernate OGM and Neo4j inside a container.
+
 
 .Example of starting and committing transactions
 ====
@@ -137,4 +231,106 @@ Account savedAccount =  (Account) session.get( Account.class, account.getId() );
 tx.commit();
 ----
 ====
+
+===== Native Neo4j queries
+
+Hibernate OGM also supports cypher queries for Neo4j.
+You can execute cypher queries as shown in the following example:
+
+.Using the JPA API
+====
+[source, JAVA]
+----
+@Entity
+public class Poem {
+
+    @Id
+    private Long id;
+
+    private String name;
+
+    private String author;
+
+   // getters, setters ...
+
+}
+
+...
+
+javax.persistence.EntityManager em = ...
+
+// a single result query
+String query1 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) RETURN n";
+Poem poem = (Poem) em.createNativeQuery( query1, Poem.class ).getSingleResult();
+
+// query with order by
+String query2 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) " +
+                "RETURN n ORDER BY n.name";
+List<Poem> poems = em.createNativeQuery( query2, Poem.class ).getResultList();
+
+// query with projections
+String query3 = MATCH ( n:Poem ) RETURN n.name, n.author ORDER BY n.name";
+List<Object[]> poemNames = (List<Object[]>)em.createNativeQuery( query3 )
+                               .getResultList();
+
+----
+====
+
+The result of a query is a managed entity (or a list thereof) or a projection of attributes in form of an object array,
+just like you would get from a JP-QL query.
+
+.Using the Hibernate native API
+====
+[source, JAVA]
+----
+OgmSession session = ...
+
+String query1 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) " + 
+                "RETURN n";
+Poem poem = session.createNativeQuery( query1 )
+                      .addEntity( "Poem", Poem.class )
+                      .uniqueResult();
+
+String query2 = "MATCH ( n:Poem { name:'Portia', author:'Oscar Wilde' } ) " + 
+                "RETURN n ORDER BY n.name";
+List<Poem> poems = session.createNativeQuery( query2 )
+                      .addEntity( "Poem", Poem.class )
+                      .list();
+----
+====
+
+[NOTE]
+====
+As +OgmSession+ extends +org.hibernate.Session+ (which originally has been designed with relational databases in mind only)
+you could also invoke +createSQLQuery()+ to create a native query. But for the sake of comprehensibility, you should prefer
++createNativeQuery()+, and in fact +createSQLQuery()+ has been deprecated on +OgmSession+.
+====
+
+Native queries can also be created using the +@NamedNativeQuery+ annotation:
+
+.Using @NamedNativeQuery
+====
+[source, JAVA]
+----
+@Entity
+@NamedNativeQuery(
+   name = "AthanasiaPoem",
+   query = "MATCH ( n:Poem { name:'Athanasia', author:'Oscar Wilde' } ) RETURN n",
+   resultClass = Poem.class )
+public class Poem { ... }
+
+...
+
+// Using the EntityManager
+Poem poem1 = (Poem) em.createNamedQuery( "AthanasiaPoem" )
+                     .getSingleResult();
+
+// Using the Session
+Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
+                     .uniqueResult();
+----
+====
+
+Hibernate OGM stores data in a natural way so you can still execute queries using your favorite tool,
+the main drawback is that the results are going to be raw Neo4j elements and not managed entities.
 
