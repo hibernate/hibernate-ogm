@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import static java.util.Collections.singletonMap;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -123,9 +122,8 @@ public class Neo4jSequenceGenerator {
 	}
 
 	private boolean isMissingUniqueConstraint(Label generatorKeyLabel) {
-		Iterator<ConstraintDefinition> iterator = neo4jDb.schema().getConstraints( generatorKeyLabel ).iterator();
-		while ( iterator.hasNext() ) {
-			ConstraintDefinition constraint = iterator.next();
+		Iterable<ConstraintDefinition> constraints = neo4jDb.schema().getConstraints( generatorKeyLabel );
+		for ( ConstraintDefinition constraint : constraints ) {
 			if ( constraint.isConstraintType( ConstraintType.UNIQUENESS ) ) {
 				return false;
 			}
@@ -176,7 +174,7 @@ public class Neo4jSequenceGenerator {
 	}
 
 	private Map<String, Object> params(String sequenceName, int initialValue) {
-		Map<String, Object> params = new HashMap<String, Object>();
+		Map<String, Object> params = new HashMap<String, Object>( 2 );
 		params.put( INITIAL_VALUE_QUERY_PARAM, initialValue );
 		params.put( SEQUENCE_NAME_QUERY_PARAM, sequenceName );
 		return params;
@@ -187,20 +185,19 @@ public class Neo4jSequenceGenerator {
 	 *
 	 * @param rowKey identifies the sequence
 	 * @param increment the difference between to consecutive values in the sequence
-	 * @param initialValue the first value returned when a new sequence is created
 	 * @return the next value in a sequence
 	 */
-	public int nextValue(RowKey rowKey, int increment, final int initialValue) {
-		return sequence( rowKey, increment, initialValue );
+	public int nextValue(RowKey rowKey, int increment) {
+		return sequence( rowKey, increment );
 	}
 
-	private int sequence(RowKey rowKey, int increment, final int initialValue) {
+	private int sequence(RowKey rowKey, int increment) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
 			Node sequence = getSequence( rowKey );
 			lock = tx.acquireWriteLock( sequence );
-			int nextValue = updateSequenceValue( sequenceName( rowKey ), sequence, increment );
+			int nextValue = updateSequenceValue( sequence, increment );
 			tx.success();
 			lock.release();
 			return nextValue;
@@ -261,7 +258,7 @@ public class Neo4jSequenceGenerator {
 		return (String) key.getColumnValues()[0];
 	}
 
-	private int updateSequenceValue(String sequenceName, Node sequence, int increment) {
+	private int updateSequenceValue(Node sequence, int increment) {
 		int currentValue = (Integer) sequence.getProperty( CURRENT_VALUE_PROPERTY );
 		int updatedValue = currentValue + increment;
 		sequence.setProperty( CURRENT_VALUE_PROPERTY, updatedValue );

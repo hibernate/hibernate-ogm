@@ -21,7 +21,7 @@ public class OgmMutableIdentifierGeneratorFactory extends DefaultIdentifierGener
 	public OgmMutableIdentifierGeneratorFactory() {
 		register( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
 		register( org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), OgmSequenceGenerator.class );
-		// We are using OgmTableGenerator as a fall-back until we have a better solution
+		// TODO We are using OgmTableGenerator as a fall-back until we have a better solution (see OGM-436/OGM-550)
 		register( "identity", OgmTableGenerator.class );
 	}
 

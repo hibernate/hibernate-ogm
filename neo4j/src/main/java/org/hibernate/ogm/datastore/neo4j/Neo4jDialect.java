@@ -305,7 +305,7 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
 	@Override
 	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		int nextValue = neo4jSequenceGenerator.nextValue( key, increment, initialValue );
+		int nextValue = neo4jSequenceGenerator.nextValue( key, increment );
 		value.initialize( nextValue );
 	}
 

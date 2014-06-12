@@ -78,10 +78,9 @@ public class Neo4jIntegrator implements Integrator {
 		}
 
 		private Set<IdentifierGenerator> sequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
-			Set<IdentifierGenerator> generators = new HashSet<IdentifierGenerator>();
 			Map<String, EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters();
-			for ( Map.Entry<String, EntityPersister> entry : entityPersisters.entrySet() ) {
-				EntityPersister persister = entry.getValue();
+			Set<IdentifierGenerator> generators = new HashSet<IdentifierGenerator>( entityPersisters.size() );
+			for ( EntityPersister persister : entityPersisters.values() ) {
 				generators.add( persister.getIdentifierGenerator() );
 			}
 			return generators;

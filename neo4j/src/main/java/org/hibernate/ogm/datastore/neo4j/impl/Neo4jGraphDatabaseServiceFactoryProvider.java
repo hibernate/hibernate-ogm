@@ -18,7 +18,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
  * If an implementation is not selected the default one is {@link EmbeddedGraphDatabaseFactory}.
  *
  * @see GraphDatabaseServiceFactory
- * @see Environment#NEO4J_GRAPHDB_FACTORYCLASS
+ * @see InternalProperties#NEO4J_GRAPHDB_FACTORYCLASS
  * @author Davide D'Alto <davide@hibernate.org>
  */
 public class Neo4jGraphDatabaseServiceFactoryProvider {
