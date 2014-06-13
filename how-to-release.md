@@ -79,7 +79,7 @@ Verify:
      - for **EAP 6**: in _target/checkout/modules/eap6/target_
      - for **WildFly 8**: in _target/checkout/modules/wildfly/target_
 
-1. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
+1. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/hibernate/ogm/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
 
    ```
        rsync -rzh --progress --delete \
