@@ -45,7 +45,7 @@ Verify:
 
 1. [Release the version on JIRA](https://hibernate.atlassian.net/plugins/servlet/project-config/OGM/versions)
 
-2. Update the _changelog.txt_ in project root from [JIRA's release notes](https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061)
+2. Update the _changelog.txt_ in project root from [JIRA's release notes](https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160)
 
 3. Verify _readme.txt_:
    - content is up to date
