@@ -7,12 +7,10 @@
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.getAssociationFieldOrNull;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +20,7 @@ import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -34,49 +33,39 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, DBObject> map;
 	private final DBObject dbObject;
-	private final AssociationKey associationKey;
-	private final AssociationStorageStrategy storageStrategy;
+
+	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorageStrategy storageStrategy) {
+		this.dbObject = document;
+
+		Collection<DBObject> associationRows = getRows( document, key, storageStrategy );
+		this.map = new LinkedHashMap<RowKey, DBObject>( associationRows.size() );
+
+		for ( DBObject row : associationRows ) {
+			RowKey rowKey = new RowKeyBuilder()
+					.tableName( key.getTable() )
+					.addColumns( key.getRowKeyColumnNames() )
+					.values( getRowKeyColumnValues( row, key ) )
+					.build();
+
+			map.put( rowKey, row );
+		}
+	}
 
 	/**
-	 * @param document DBObject containing the association information
-	 * @param key
+	 * Returns the values of the row key of the given association; columns present in the given association key will be
+	 * obtained from there, all other columns from the given {@link DBObject}.
 	 */
-	public MongoDBAssociationSnapshot(DBObject document, AssociationKey key, AssociationStorageStrategy storageStrategy) {
-		this.storageStrategy = storageStrategy;
-		this.dbObject = document;
-		this.map = new LinkedHashMap<RowKey, DBObject>();
-		this.associationKey = key;
-		//for each element in the association property
-		for ( DBObject row : getRows() ) {
-			DBObject mongodbColumnData = row;
-			Collection<String> columnNames = Arrays.asList( key.getRowKeyColumnNames() );
+	private static Map<String, Object> getRowKeyColumnValues(DBObject row, AssociationKey key) {
+		Map<String, Object> rowKeyColumnValues = newHashMap( key.getRowKeyColumnNames().length );
 
-			//build data to construct the associated RowKey is column names and values
-			List<Object> columnValues = new ArrayList<Object>();
-			for ( String columnKey : columnNames ) {
-				boolean getFromMongoData = true;
-				int length = key.getColumnNames().length;
-				// try and find the value in the key metadata
-				for ( int index = 0 ; index < length; index++ ) {
-					String assocColumn = key.getColumnNames()[index];
-					if ( assocColumn.equals( columnKey ) ) {
-						columnValues.add( associationKey.getColumnValues()[index] );
-						getFromMongoData = false;
-						break;
-					}
-				}
-				//otherwise read it from the database structure
-				if ( getFromMongoData == true ) {
-					columnValues.add( mongodbColumnData.get( columnKey ) );
-				}
-			}
-			RowKey rowKey = new RowKey(
-					key.getTable(),
-					columnNames.toArray( new String[columnNames.size()] ),
-					columnValues.toArray() );
-			//Stock database structure per RowKey
-			this.map.put( rowKey, row );
+		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
+			rowKeyColumnValues.put(
+					rowKeyColumnName,
+					key.isKeyColumn( rowKeyColumnName ) ? key.getColumnValue( rowKeyColumnName ) : row.get( rowKeyColumnName )
+			);
 		}
+
+		return rowKeyColumnValues;
 	}
 
 	@Override
@@ -103,17 +92,13 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Collection<DBObject> getRows() {
+	private static Collection<DBObject> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			return getAssociationFieldOrNull( associationKey, dbObject );
+			return getAssociationFieldOrNull( associationKey, document );
 		}
 		else {
-			return (Collection<DBObject>) dbObject.get( MongoDBDialect.ROWS_FIELDNAME );
+			return (Collection<DBObject>) document.get( MongoDBDialect.ROWS_FIELDNAME );
 		}
-	}
-
-	public DBObject getRowKeyDBObject(RowKey rowKey) {
-		return map.get( rowKey );
 	}
 
 	@Override
@@ -121,6 +106,7 @@ public class MongoDBAssociationSnapshot implements AssociationSnapshot {
 		return map.keySet();
 	}
 
+	// TODO This only is used for tests; Can we get rid of it?
 	public DBObject getDBObject() {
 		return this.dbObject;
 	}
