@@ -22,4 +22,9 @@ public class EntityCountResponse {
 	public void setCount(long count) {
 		this.count = count;
 	}
+
+	@Override
+	public String toString() {
+		return "EntityCountResponse [count=" + count + "]";
+	}
 }

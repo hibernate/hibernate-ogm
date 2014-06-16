@@ -129,11 +129,6 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public long getNumberOEmbeddedCollections(SessionFactory sessionFactory) {
-		throw new UnsupportedOperationException( "This datastore does not support storing collections embedded within entities." );
-	}
-
-	@Override
 	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( Neo4j.class );
 	}

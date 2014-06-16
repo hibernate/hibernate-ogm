@@ -155,32 +155,6 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	}
 
 	@Override
-	public long getNumberOEmbeddedCollections(SessionFactory sessionFactory) {
-		DatabaseTestClient databaseTestClient = getDatabaseTestClient( getDataStore( sessionFactory ) );
-
-		Response response = null;
-		try {
-			response = databaseTestClient.getNumberOfAssociations( true );
-			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
-				AssociationCountResponse countResponse = response.readEntity( AssociationCountResponse.class );
-				return countResponse.getEmbeddedCollectionCount();
-			}
-			else {
-				GenericResponse responseEntity = response.readEntity( GenericResponse.class );
-				throw logger.unableToRetrieveTheNumberOfAssociations( response.getStatus(), responseEntity.getError(), responseEntity.getReason() );
-			}
-		}
-		catch (ResteasyClientException e) {
-			throw logger.couchDBConnectionProblem( e );
-		}
-		finally {
-			if ( response != null ) {
-				response.close();
-			}
-		}
-	}
-
-	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tupleMap = new HashMap<String, Object>();
 		CouchDBDatastore dataStore = getDataStore( sessionFactory );

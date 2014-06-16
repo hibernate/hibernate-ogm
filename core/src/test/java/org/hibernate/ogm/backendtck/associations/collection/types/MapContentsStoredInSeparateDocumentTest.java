@@ -8,7 +8,6 @@ package org.hibernate.ogm.backendtck.associations.collection.types;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
-import static org.hibernate.ogm.utils.TestHelper.getNumberOfEmbeddedCollections;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -58,14 +57,11 @@ public class MapContentsStoredInSeparateDocumentTest extends OgmTestCase {
 		session.clear();
 
 		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
-				.describedAs( "Map contents should be stored in separate document" )
-				.isEqualTo( 0 );
+				.describedAs( "Element collection contents should be stored within the entity document" )
+				.isEqualTo( 2 );
 		assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
 				.describedAs( "Map contents should be stored in association document" )
 				.isEqualTo( 1 );
-		assertThat( getNumberOfEmbeddedCollections( sessions ) )
-				.describedAs( "Element collection contents should be stored within the entity document" )
-				.isEqualTo( 2 );
 
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );

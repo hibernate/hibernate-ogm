@@ -9,7 +9,6 @@ package org.hibernate.ogm.backendtck.associations.collection.types;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.utils.TestHelper.getCurrentDialectType;
 import static org.hibernate.ogm.utils.TestHelper.getNumberOfAssociations;
-import static org.hibernate.ogm.utils.TestHelper.getNumberOfEmbeddedCollections;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -48,14 +47,11 @@ public class MapTest extends OgmTestCase {
 
 		if ( getCurrentDialectType().isDocumentStore() ) {
 			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.IN_ENTITY ) )
-					.describedAs( "Map contents should be stored within the entity document" )
-					.isEqualTo( 1 );
+					.describedAs( "Map contents and element collections should be stored within the entity document" )
+					.isEqualTo( 3 );
 			assertThat( getNumberOfAssociations( sessions, AssociationStorageType.ASSOCIATION_DOCUMENT ) )
 					.describedAs( "Map contents should be stored within the entity document" )
 					.isEqualTo( 0 );
-			assertThat( getNumberOfEmbeddedCollections( sessions ) )
-					.describedAs( "Element collection contents should be stored within the entity document" )
-					.isEqualTo( 2 );
 		}
 
 		tx = session.beginTransaction();

@@ -47,27 +47,11 @@ public class AssociationsDesignDocument extends DesignDocument {
 			"    if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + AssociationDocument.TYPE_NAME + "\") {\n" +
 			"        emit('association', 1);\n" +
 			"    }\n" +
-			// embedded association or collection; each embedded array is considered an association if it has a member named "..._id",
-			// and as embedded collection otherwise
+			// embedded association or collection; each embedded array is considered an association
 			"    else if(doc." + Document.TYPE_DISCRIMINATOR_FIELD_NAME + " == \"" + EntityDocument.TYPE_NAME + "\") {\n" +
 			"        for(var propt in doc) {\n" +
 			"            if( Object.prototype.toString.call( doc[propt] ) === '[object Array]' ) {\n" +
-			"                var isAssociation = false;\n" +
-			"                property:\n" +
-			"                for (var i = 0; i < doc[propt].length; i++) {\n" +
-			"                    for(var embeddedPropt in doc[propt][i]) {\n" +
-			"                        if (embeddedPropt.indexOf(\"_id\") != -1) {\n" +
-			"                            isAssociation = true;\n" +
-			"                            break property;\n" +
-			"                        }\n" +
-			"                    }\n" +
-			"                }\n" +
-			"                if ( isAssociation) {\n" +
-			"                    emit('inEntityAssociation', 1);\n" +
-			"                }\n" +
-			"                else {\n" +
-			"                    emit('embeddedCollection', 1);\n" +
-			"                }\n" +
+			"                emit('inEntityAssociation', 1);\n" +
 			"            }\n" +
 			"        }\n" +
 			"    }\n" +
@@ -86,23 +70,18 @@ public class AssociationsDesignDocument extends DesignDocument {
 			"function (head, req) {\n" +
 			"    associationDocumentCount = 0;\n" +
 			"    inEntityAssociationCount = 0;\n" +
-			"    embeddedCollectionCount = 0;\n" +
 			"    while ( row = getRow() ) {\n" +
 			"        if ( row.key == \"association\" ) {\n" +
 			"            associationDocumentCount = row.value;\n" +
 			"        }\n" +
-			"        else if ( row.key == \"inEntityAssociation\" ) {\n" +
-			"            inEntityAssociationCount = row.value;\n" +
-			"        }\n" +
 			"        else {\n" +
-			"            embeddedCollectionCount = row.value;\n" +
+			"            inEntityAssociationCount = row.value;\n" +
 			"        }\n" +
 			"    }\n" +
 			"    send(\n" +
 			"        JSON.stringify( {\n" +
 			"            associationDocumentCount : associationDocumentCount,\n" +
 			"            inEntityAssociationCount : inEntityAssociationCount,\n" +
-			"            embeddedCollectionCount : embeddedCollectionCount\n" +
 			"        } )\n" +
 			"    );\n" +
 			"}";

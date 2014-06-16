@@ -114,36 +114,19 @@ public class MongoDBTestHelper implements TestableGridDialect {
 
 			while ( entities.hasNext() ) {
 				DBObject entity = entities.next();
-				associationCount += getNumberOfReferences( entity );
+				associationCount += getNumberOfEmbeddedAssociations( entity );
 			}
 		}
 
 		return associationCount;
 	}
 
-	@Override
-	public long getNumberOEmbeddedCollections(SessionFactory sessionFactory) {
-		DB db = getProvider( sessionFactory ).getDatabase();
-		long embeddedCollectionCount = 0;
-
-		for ( String entityCollection : getEntityCollections( sessionFactory ) ) {
-			DBCursor entities = db.getCollection( entityCollection ).find();
-
-			while ( entities.hasNext() ) {
-				DBObject entity = entities.next();
-				embeddedCollectionCount += getNumberOfEmbeddedCollections( entity );
-			}
-		}
-
-		return embeddedCollectionCount;
-	}
-
-	private int getNumberOfReferences(DBObject entity) {
+	private int getNumberOfEmbeddedAssociations(DBObject entity) {
 		int numberOfReferences = 0;
 
 		for ( String fieldName : entity.keySet() ) {
 			Object field = entity.get( fieldName );
-			if ( isReference( field ) ) {
+			if ( isAssociation( field ) ) {
 				numberOfReferences++;
 			}
 		}
@@ -151,43 +134,8 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		return numberOfReferences;
 	}
 
-	private int getNumberOfEmbeddedCollections(DBObject entity) {
-		int numberOfEmbeddedCollections = 0;
-
-		for ( String fieldName : entity.keySet() ) {
-			Object field = entity.get( fieldName );
-			if ( field instanceof List && !isReference( field ) ) {
-				numberOfEmbeddedCollections++;
-			}
-		}
-
-		return numberOfEmbeddedCollections;
-	}
-
-	private boolean isReference(Object field) {
-		// TODO: *ToOne references?
-		if ( !( field instanceof List ) ) {
-			return false;
-		}
-
-		@SuppressWarnings("unchecked")
-		List<DBObject> list = (List<DBObject>) field;
-		for ( DBObject element : list ) {
-			boolean containsReference = false;
-
-			for ( String key : element.keySet() ) {
-				if ( key.endsWith( "_id" ) ) {
-					containsReference = true;
-					break;
-				}
-			}
-
-			if ( !containsReference ) {
-				return false;
-			}
-		}
-
-		return true;
+	private boolean isAssociation(Object field) {
+		return ( field instanceof List );
 	}
 
 	private Set<String> getEntityCollections(SessionFactory sessionFactory) {

@@ -14,10 +14,7 @@ package org.hibernate.ogm.datastore.couchdb.utils.backend.json;
 public class AssociationCountResponse {
 
 	private long associationDocumentCount;
-
 	private long inEntityAssociationCount;
-
-	private long embeddedCollectionCount;
 
 	public long getAssociationDocumentCount() {
 		return associationDocumentCount;
@@ -35,11 +32,9 @@ public class AssociationCountResponse {
 		this.inEntityAssociationCount = inEntityAssociationCount;
 	}
 
-	public long getEmbeddedCollectionCount() {
-		return embeddedCollectionCount;
-	}
-
-	public void setEmbeddedCollectionCount(long embeddedCollectionCount) {
-		this.embeddedCollectionCount = embeddedCollectionCount;
+	@Override
+	public String toString() {
+		return "AssociationCountResponse [associationDocumentCount=" + associationDocumentCount + ", inEntityAssociationCount=" + inEntityAssociationCount
+				+ "]";
 	}
 }
