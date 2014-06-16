@@ -21,12 +21,14 @@ public class AssociationKeyMetadata {
 	private final String[] columnNames;
 	private final int hashCode;
 
-	//role and entity key are not part of the object identity
-	private String[] rowKeyColumnNames;
+	// not part of the object identity
+	private final String[] rowKeyColumnNames;
 
-	public AssociationKeyMetadata(String table, String[] columnNames) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames) {
 		this.table = table;
 		this.columnNames = columnNames;
+		this.rowKeyColumnNames = rowKeyColumnNames;
+
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
 	}
@@ -41,10 +43,6 @@ public class AssociationKeyMetadata {
 
 	public String[] getRowKeyColumnNames() {
 		return rowKeyColumnNames;
-	}
-
-	public void setRowKeyColumnNames(String[] rowKeyColumnNames) {
-		this.rowKeyColumnNames = rowKeyColumnNames;
 	}
 
 	/**

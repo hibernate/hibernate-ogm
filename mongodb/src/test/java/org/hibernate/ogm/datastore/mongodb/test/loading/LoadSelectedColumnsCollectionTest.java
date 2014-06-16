@@ -115,8 +115,11 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		AssociationKeyMetadata metadata = new AssociationKeyMetadata( "Project_Module", new String[] { "Project_id" } );
-		metadata.setRowKeyColumnNames( new String[] { "Project_id", "module_id" } );
+		AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+				"Project_Module",
+				new String[] { "Project_id" },
+				new String[] { "Project_id", "module_id" }
+		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
 				new Object[] { "projectID" },
