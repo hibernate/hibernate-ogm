@@ -43,6 +43,10 @@ public final class AssociationKey implements Key {
 		this.hashCode = metadata.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
 
+	public AssociationKeyMetadata getMetadata() {
+		return metadata;
+	}
+
 	@Override
 	public String getTable() {
 		return metadata.getTable();
@@ -133,13 +137,7 @@ public final class AssociationKey implements Key {
 	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
 	 */
 	public boolean isKeyColumn(String columnName) {
-		for ( String keyColumName : getColumnNames() ) {
-			if ( keyColumName.equals( columnName ) ) {
-				return true;
-			}
-		}
-
-		return false;
+		return metadata.isKeyColumn( columnName );
 	}
 
 	/**

@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.grid;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Stores metadata information common to all keys related
@@ -43,6 +45,38 @@ public class AssociationKeyMetadata {
 
 	public void setRowKeyColumnNames(String[] rowKeyColumnNames) {
 		this.rowKeyColumnNames = rowKeyColumnNames;
+	}
+
+	/**
+	 * Returns all those columns from the given candidate list which are not part if this key family and thus need to be
+	 * persisted in the datastore when writing a row of this key family. All other columns don't have to be persisted as
+	 * they can be retrieved from the key meta-data itself when reading an association row.
+	 */
+	public String[] getColumnsToPersist(Iterable<String> candidates) {
+		List<String> columnsToPersist = new ArrayList<String>();
+		for ( String column : candidates ) {
+			// exclude columns from the associationKey as they can be guessed via metadata
+			if ( !isKeyColumn( column ) ) {
+				columnsToPersist.add( column );
+			}
+		}
+
+		return columnsToPersist.toArray( new String[columnsToPersist.size()] );
+	}
+
+	/**
+	 * Whether the given column is part of this key family or not.
+	 *
+	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
+	 */
+	public boolean isKeyColumn(String columnName) {
+		for ( String keyColumName : getColumnNames() ) {
+			if ( keyColumName.equals( columnName ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	@Override

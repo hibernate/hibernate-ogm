@@ -442,10 +442,17 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	/**
-	 * Returns a list of {@link DBObject}s representing the rows of the given association.
+	 * Returns the rows of the given association as to be stored in the database. Elements of the returned list are
+	 * either
+	 * <ul>
+	 * <li>plain values such as {@code String}s, {@code int}s etc. in case there is exactly one row key column which is
+	 * not part of the association key (in this case we don't need to persist the key name as it can be restored from
+	 * the association key upon loading) or</li>
+	 * <li>{@code DBObject}s with keys/values for all row key columns which are not part of the association key</li>
+	 * </ul>
 	 */
-	private List<DBObject> getAssociationRows(Association association, AssociationKey key) {
-		List<DBObject> rows = new ArrayList<DBObject>( association.getKeys().size() );
+	private List<?> getAssociationRows(Association association, AssociationKey key) {
+		List<Object> rows = new ArrayList<Object>( association.getKeys().size() );
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
@@ -454,17 +461,22 @@ public class MongoDBDialect implements BatchableGridDialect {
 		return rows;
 	}
 
-	private DBObject getAssociationRow(Tuple row, AssociationKey associationKey) {
-		DBObject rowObject = new BasicDBObject( 3 );
+	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
+		String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsToPersist( row.getColumnNames() );
 
-		for ( String column : row.getColumnNames() ) {
-			//exclude columns from the associationKey as they can be guessed via metadata
-			if ( !associationKey.isKeyColumn( column ) ) {
+		// return value itself if there is only a single column to store
+		if ( rowKeyColumnsToPersist.length == 1 ) {
+			return row.get( rowKeyColumnsToPersist[0] );
+		}
+		// otherwise a DBObject with the row contents
+		else {
+			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
+			for ( String column : rowKeyColumnsToPersist ) {
 				rowObject.put( column, row.get( column ) );
 			}
-		}
 
-		return rowObject;
+			return rowObject;
+		}
 	}
 
 	@Override
@@ -491,7 +503,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			associationField = ROWS_FIELDNAME;
 		}
 
-		List<DBObject> rows = getAssociationRows( association, key );
+		List<?> rows = getAssociationRows( association, key );
 
 		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, rows ) );
 
