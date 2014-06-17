@@ -155,7 +155,7 @@ public class CouchDBDialect implements GridDialect {
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey associationKey, AssociationContext associationContext) {
-		List<Map<String, Object>> rows = getAssociationRows( association, associationKey );
+		List<Object> rows = getAssociationRows( association, associationKey );
 
 		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();
 		couchDBAssociation.setRows( rows );
@@ -163,21 +163,31 @@ public class CouchDBDialect implements GridDialect {
 		getDataStore().saveDocument( couchDBAssociation.getOwningDocument() );
 	}
 
-	private List<Map<String, Object>> getAssociationRows(Association association, AssociationKey associationKey) {
-		List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>( association.getKeys().size() );
+	private List<Object> getAssociationRows(Association association, AssociationKey associationKey) {
+
+		List<Object> rows = new ArrayList<Object>( association.getKeys().size() );
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
 
-			Map<String, Object> row = new HashMap<String, Object>( 3 );
-			for ( String columnName : tuple.getColumnNames() ) {
-				// don't store columns which are part of the association key and can be retrieved from there
-				if ( !associationKey.isKeyColumn( columnName ) ) {
-					row.put( columnName, tuple.get( columnName ) );
-				}
-			}
+			String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsToPersist( tuple.getColumnNames() );
 
-			rows.add( row );
+			// return value itself if there is only a single column to store
+			if ( rowKeyColumnsToPersist.length == 1 ) {
+				Object row = tuple.get( rowKeyColumnsToPersist[0] );
+				rows.add( row );
+			}
+			else {
+				Map<String, Object> row = new HashMap<String, Object>( 3 );
+				for ( String columnName : tuple.getColumnNames() ) {
+					// don't store columns which are part of the association key and can be retrieved from there
+					if ( !associationKey.isKeyColumn( columnName ) ) {
+						row.put( columnName, tuple.get( columnName ) );
+					}
+				}
+
+				rows.add( row );
+			}
 		}
 		return rows;
 	}

@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -42,12 +41,12 @@ public abstract class CouchDBAssociation {
 	 * Returns a list with all the rows of this association. Does not contain columns which are part of the association
 	 * key.
 	 */
-	public abstract List<Map<String, Object>> getRows();
+	public abstract List<Object> getRows();
 
 	/**
 	 * Sets the rows of this association. The given list must not contain columns which are part of the association key.
 	 */
-	public abstract void setRows(List<Map<String, Object>> rows);
+	public abstract void setRows(List<Object> rows);
 
 	/**
 	 * Returns the CouchDB document which owns this association, either an {@link AssociationDocument} or an

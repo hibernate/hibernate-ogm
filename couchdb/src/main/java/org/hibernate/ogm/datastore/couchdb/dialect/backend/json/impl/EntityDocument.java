@@ -208,14 +208,14 @@ public class EntityDocument extends Document {
 		}
 	}
 
-	public List<Map<String, Object>> getAssociation(String name) {
+	public List<Object> getAssociation(String name) {
 		@SuppressWarnings("unchecked")
-		List<Map<String, Object>> association = (List<Map<String, Object>>) properties.get( name );
-		return association != null ? association : Collections.<Map<String, Object>>emptyList();
+		List<Object> association = (List<Object>) properties.get( name );
+		return association != null ? association : Collections.<Object>emptyList();
 	}
 
 	@JsonIgnore
-	public void setAssociation(String name, List<Map<String, Object>> rows) {
+	public void setAssociation(String name, List<Object> rows) {
 		properties.put( name, rows );
 	}
 

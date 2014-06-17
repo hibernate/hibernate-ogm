@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -33,7 +32,7 @@ public class AssociationDocument extends Document {
 	 */
 	public static final String TYPE_NAME = "association";
 
-	private List<Map<String, Object>> rows = new ArrayList<Map<String, Object>>();
+	private List<Object> rows = new ArrayList<Object>();
 
 	public AssociationDocument() {
 	}
@@ -42,11 +41,11 @@ public class AssociationDocument extends Document {
 		super( id );
 	}
 
-	public List<Map<String, Object>> getRows() {
+	public List<Object> getRows() {
 		return rows;
 	}
 
-	public void setRows(List<Map<String, Object>> rows) {
+	public void setRows(List<Object> rows) {
 		this.rows = rows;
 	}
 }

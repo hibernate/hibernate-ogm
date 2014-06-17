@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -26,12 +25,12 @@ class DocumentBasedAssociation extends CouchDBAssociation {
 	}
 
 	@Override
-	public List<Map<String, Object>> getRows() {
+	public List<Object> getRows() {
 		return document.getRows();
 	}
 
 	@Override
-	public void setRows(List<Map<String, Object>> rows) {
+	public void setRows(List<Object> rows) {
 		document.setRows( rows );
 	}
 
