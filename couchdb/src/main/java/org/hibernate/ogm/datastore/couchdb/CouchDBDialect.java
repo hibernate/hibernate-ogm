@@ -26,8 +26,6 @@ import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBBlobType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBByteType;
 import org.hibernate.ogm.datastore.couchdb.dialect.type.impl.CouchDBLongType;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
-import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
-import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
@@ -63,8 +61,6 @@ import org.hibernate.type.Type;
  * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {
-
-	private static final Log log = LoggerFactory.getLogger();
 
 	private final CouchDBDatastoreProvider provider;
 
@@ -178,12 +174,9 @@ public class CouchDBDialect implements GridDialect {
 				rows.add( row );
 			}
 			else {
-				Map<String, Object> row = new HashMap<String, Object>( 3 );
-				for ( String columnName : tuple.getColumnNames() ) {
-					// don't store columns which are part of the association key and can be retrieved from there
-					if ( !associationKey.isKeyColumn( columnName ) ) {
-						row.put( columnName, tuple.get( columnName ) );
-					}
+				Map<String, Object> row = new HashMap<String, Object>( rowKeyColumnsToPersist.length );
+				for ( String columnName : rowKeyColumnsToPersist ) {
+					row.put( columnName, tuple.get( columnName ) );
 				}
 
 				rows.add( row );

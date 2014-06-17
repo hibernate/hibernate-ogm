@@ -63,6 +63,32 @@ public class AssociationKeyMetadata {
 	}
 
 	/**
+	 * Returns the name of the single row key column which is not a column of this key itself.
+	 *
+	 * @return the name of the single row key column which is not a column of this key itself or {@code null} if there
+	 * is either no or more than one such column
+	 */
+	public String getSingleRowKeyColumnNotContainedInAssociationKey() {
+		String nonKeyColumn = null;
+
+		for ( String column : getRowKeyColumnNames() ) {
+			if ( !isKeyColumn( column ) ) {
+				if ( nonKeyColumn != null ) {
+					// more than one column which is not contained in the association key; thus rows of this
+					// association will be represented by DBObjects rather than single String, int etc. objects
+					return null;
+				}
+				else {
+					nonKeyColumn = column;
+				}
+			}
+		}
+
+		return nonKeyColumn;
+	}
+
+
+	/**
 	 * Whether the given column is part of this key family or not.
 	 *
 	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.

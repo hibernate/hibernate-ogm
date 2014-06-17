@@ -132,15 +132,6 @@ public final class AssociationKey implements Key {
 	}
 
 	/**
-	 * Whether the given column is part of this key or not.
-	 *
-	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
-	 */
-	public boolean isKeyColumn(String columnName) {
-		return metadata.isKeyColumn( columnName );
-	}
-
-	/**
 	 * Returns the value of the given column if part of this key. Use {@link AssociationKey#isKeyColumn(String)} to
 	 * check whether a given column is part of this key prior to invoking this method.
 	 *
