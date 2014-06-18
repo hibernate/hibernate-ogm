@@ -166,16 +166,16 @@ public class CouchDBDialect implements GridDialect {
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
 
-			String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsToPersist( tuple.getColumnNames() );
+			String[] columnsToPersist = associationKey.getMetadata().getColumnsToPersist( tuple.getColumnNames() );
 
 			// return value itself if there is only a single column to store
-			if ( rowKeyColumnsToPersist.length == 1 ) {
-				Object row = tuple.get( rowKeyColumnsToPersist[0] );
+			if ( columnsToPersist.length == 1 ) {
+				Object row = tuple.get( columnsToPersist[0] );
 				rows.add( row );
 			}
 			else {
-				Map<String, Object> row = new HashMap<String, Object>( rowKeyColumnsToPersist.length );
-				for ( String columnName : rowKeyColumnsToPersist ) {
+				Map<String, Object> row = new HashMap<String, Object>( columnsToPersist.length );
+				for ( String columnName : columnsToPersist ) {
 					row.put( columnName, tuple.get( columnName ) );
 				}
 

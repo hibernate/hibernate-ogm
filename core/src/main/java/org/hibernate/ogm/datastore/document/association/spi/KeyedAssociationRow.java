@@ -6,22 +6,20 @@
  */
 package org.hibernate.ogm.datastore.document.association.spi;
 
-import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
-
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 
 /**
  * A {@link TupleSnapshot} which represents one row of an association.
  * <p>
  * It obtains it values from the store-specific native representation of the association row as well as the association
- * key. Column values from both sources are exposed in a uniformed manner.
+ * key. Column values from both sources are exposed in a uniformed manner. It retains a reference to the store-specific
+ * association row, retrieving values from it via the {@link AssociationRowAccessor} contract.
  * <p>
  * The key of the row can be retrieved via {@link #getKey()}, again its values are obtained from the association key if
  * present there or from the native association representation otherwise.
@@ -33,6 +31,9 @@ public class KeyedAssociationRow<R> implements TupleSnapshot {
 	/**
 	 * Contract for obtaining association tuple values from the store-specific representation of an association row.
 	 * Columns not present in the association key will be retrieved via this contract.
+	 * <p>
+	 * Implementations should be stateless and one single instance should be used to access all associations of a given
+	 * datastore.
 	 *
 	 * @param <R> The store-specific type for representing association rows
 	 */
@@ -55,7 +56,7 @@ public class KeyedAssociationRow<R> implements TupleSnapshot {
 		this.accessor = accessor;
 		this.row = row;
 
-		this.columnNames = buildColumnNames( associationKey, accessor.getColumnNames( row ) );
+		this.columnNames = Collections.unmodifiableSet( buildColumnNames( associationKey, accessor.getColumnNames( row ) ) );
 		this.rowKey = buildRowKey( associationKey, row, accessor );
 	}
 
@@ -69,29 +70,21 @@ public class KeyedAssociationRow<R> implements TupleSnapshot {
 		return columnNames;
 	}
 
-	private static <R> RowKey buildRowKey(AssociationKey associationKey, R row, AssociationRowAccessor<R> accessor) {
-		return new RowKeyBuilder()
-			.tableName( associationKey.getTable() )
-			.addColumns( associationKey.getRowKeyColumnNames() )
-			.values( getRowKeyColumnValues( row, associationKey, accessor ) )
-			.build();
-	}
-
 	/**
-	 * Returns the values of the row key of the given association row; columns present in the given association key will
-	 * be obtained from there, all other columns from the given native association row.
+	 * Creates the row key of the given association row; columns present in the given association key will be obtained
+	 * from there, all other columns from the given native association row.
 	 */
-	private static <R> Map<String, Object> getRowKeyColumnValues(R row, AssociationKey key, AssociationRowAccessor<R> accessor) {
-		Map<String, Object> rowKeyColumnValues = newHashMap( key.getRowKeyColumnNames().length );
+	private static <R> RowKey buildRowKey(AssociationKey associationKey, R row, AssociationRowAccessor<R> accessor) {
+		String table = associationKey.getTable();
+		String[] columnNames = associationKey.getRowKeyColumnNames();
+		Object[] columnValues = new Object[columnNames.length];
 
-		for ( String rowKeyColumnName : key.getRowKeyColumnNames() ) {
-			rowKeyColumnValues.put(
-					rowKeyColumnName,
-					key.getMetadata().isKeyColumn( rowKeyColumnName ) ? key.getColumnValue( rowKeyColumnName ) : accessor.get( row, rowKeyColumnName )
-			);
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			String columnName = columnNames[i];
+			columnValues[i] = associationKey.getMetadata().isKeyColumn( columnName ) ? associationKey.getColumnValue( columnName ) : accessor.get( row, columnName );
 		}
 
-		return rowKeyColumnValues;
+		return new RowKey( table , columnNames, columnValues  );
 	}
 
 	@Override

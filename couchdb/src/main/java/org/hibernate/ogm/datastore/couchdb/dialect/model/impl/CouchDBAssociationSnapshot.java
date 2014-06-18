@@ -11,9 +11,8 @@ import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 
 /**
- * {@link AssociationSnapshot} implementation based on a
- * {@link org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument} object as written to and retrieved from
- * the CouchDB server.
+ * {@link AssociationSnapshot} implementation based on a {@link CouchDBAssociation} (which in turn wraps an association
+ * document or an association stored within an entity document) as written to and retrieved from the CouchDB server.
  *
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling

@@ -8,7 +8,6 @@ package org.hibernate.ogm.grid.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.RowKey;
@@ -17,8 +16,7 @@ import org.hibernate.ogm.grid.RowKey;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 public class RowKeyBuilder {
-	private List<String> columnNames = new ArrayList<String>();
-	private Map<String,Object> values;
+	private final List<String> columnNames = new ArrayList<String>();
 	private String tableName;
 	private Tuple tuple;
 
@@ -26,11 +24,6 @@ public class RowKeyBuilder {
 		for ( String columnName : columns ) {
 			columnNames.add( columnName );
 		}
-		return this;
-	}
-
-	public RowKeyBuilder values(Map<String,Object> values) {
-		this.values = values;
 		return this;
 	}
 
@@ -43,16 +36,11 @@ public class RowKeyBuilder {
 		final String[] columnNamesArray = columnNames.toArray( new String[columnNames.size()] );
 		final int length = columnNamesArray.length;
 		Object[] columnValuesArray = new Object[length];
-		if (values != null) {
-			for (int index = 0 ; index < length ; index++ ) {
-				columnValuesArray[index] = values.get( columnNamesArray[index] );
-			}
+
+		for (int index = 0 ; index < length ; index++ ) {
+			columnValuesArray[index] = tuple.get( columnNamesArray[index] );
 		}
-		else {
-			for (int index = 0 ; index < length ; index++ ) {
-				columnValuesArray[index] = tuple.get( columnNamesArray[index] );
-			}
-		}
+
 		return new RowKey( tableName, columnNamesArray, columnValuesArray );
 	}
 
