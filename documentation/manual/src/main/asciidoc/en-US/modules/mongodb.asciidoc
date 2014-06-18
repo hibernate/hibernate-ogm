@@ -345,7 +345,8 @@ public class AccountOwner {
 {
     "_id" : "owner0001",
     "bankAccounts" : [
-        { "bankAccounts_id" : "accountXYZ" }
+        "accountABC",
+        "accountXYZ"
     ]
 }
 ----
@@ -371,7 +372,8 @@ that the current instance is related to.
         "table": "AccountOwner_BankAccount"
     },
     "rows": [
-        { "bankAccounts_id": "accountXYZ" }
+        "accountABC",
+        "accountXYZ"
     ]
 }
 ----
@@ -389,18 +391,19 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
         "owners_id": "owner0001",
         "table": "AccountOwner_BankAccount"
     },
-    "rows": [{
-        "bankAccounts_id": "accountXYZ"
-        }]
+    "rows": [
+        "accountABC",
+        "accountXYZ"
+        ]
 }
 {
     "_id": {
         "bankAccounts_id": "accountXYZ",
         "table": "AccountOwner_BankAccount"
     },
-    "rows": [{
-        "owners_id": "owner0001"
-    }]
+    "rows": [
+        "owner0001"
+    ]
 }
 ----
 ====
@@ -427,7 +430,8 @@ Each document of an association collection has the following structure:
 {
     "_id" : { "owners_id" : "owner0001" },
     "rows" : [
-        { "bankAccounts_id" : "accountXYZ" }
+        "accountABC",
+        "accountXYZ"
     ]
 }
 ----
@@ -440,13 +444,14 @@ Each document of an association collection has the following structure:
 {
     "_id" : { "owners_id" : "owner0001" },
     "rows" : [
-        { "bankAccounts_id" : "accountXYZ" }
+        "accountABC",
+        "accountXYZ"
     ]
 }
 {
     "_id" : { "bankAccounts_id" : "accountXYZ" },
     "rows" : [
-        { "owners_id" : "owner0001" }
+        "owner0001"
     ]
 }
 ----

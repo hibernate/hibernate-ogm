@@ -360,7 +360,8 @@ public class AccountOwner {
     "$type": "entity",
     "$table": "AccountOwner",
     "bankAccounts" : [
-        { "bankAccounts_id" : "accountXYZ" }
+        "accountABC",
+        "accountXYZ"
     ]
 }
 ----
@@ -370,7 +371,7 @@ public class AccountOwner {
 
 With this strategy, Hibernate OGM uses separate association documents
 (with +$type+ set to "association") to store all navigation information.
-Each assocation document is structure in 2 parts.
+Each assocation document is structured in 2 parts.
 The first is the +_id+ field which contains the identifier information
 of the association owner and the name of the association table.
 The second part is the +rows+ field which stores (into an embedded collection) all ids
@@ -385,9 +386,7 @@ that the current instance is related to.
    "_rev": "1-18ef25ec73c1942c45c868aa92f24f2c",
    "$type": "association",
    "rows": [
-       {
-           "bankAccounts_id": "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
-       }
+        7873a2a7-c77c-447c-b000-890f0a4dfa9a
    ]
 }
 ----
@@ -405,9 +404,7 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
    "_rev": "1-18ef25ec73c1942c45c868aa92f24f2c",
    "$type": "association",
    "rows": [
-       {
-           "bankAccounts_id": "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
-       }
+        "7873a2a7-c77c-447c-b000-890f0a4dfa9a"
    ]
 }
 {
@@ -415,9 +412,7 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
    "_rev": "1-78e92f980745941a779abb914da65a6c",
    "$type": "association",
    "rows": [
-       {
-           "owners_id": "4f5b48ad-f074-4a64-8cf4-1f9c54a33f76"
-       }
+        "4f5b48ad-f074-4a64-8cf4-1f9c54a33f76"
    ]
 }
 ----
