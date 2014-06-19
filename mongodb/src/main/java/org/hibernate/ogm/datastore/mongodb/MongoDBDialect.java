@@ -62,6 +62,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
@@ -117,13 +118,14 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
-	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ROWS_FIELDNAME = "rows";
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
 	private static final Log log = LoggerFactory.getLogger();
-	private static final Integer ONE = Integer.valueOf( 1 );
+
+	private static final String DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME = "sequence_value";
+
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
@@ -315,7 +317,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 					this.addSubQuery( "$set", updater, column, operation.getValue() );
 					break;
 				case REMOVE:
-					this.addSubQuery( "$unset", updater, column, ONE );
+					this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
 					break;
 				}
 			}
@@ -517,7 +519,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
-				addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
+				addSubQuery( "$unset", updater, key.getCollectionRole(), Integer.valueOf( 1 ) );
 				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
 		}
@@ -537,28 +539,31 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		validateIdGeneratorKey( key );
+
 		DBCollection currentCollection = getCollection( key.getTable() );
 		DBObject query = this.prepareIdObject( key );
 		//all columns should match to find the value
 
+		String valueColumnName = getValueColumnName( key );
+
 		BasicDBObject update = new BasicDBObject();
-		//FIXME should "value" be hardcoded?
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
-		Integer incrementObject = increment == 1 ? ONE : Integer.valueOf( increment );
-		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, incrementObject );
+		Integer incrementObject = Integer.valueOf( increment );
+		this.addSubQuery( "$inc", update, valueColumnName, incrementObject );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
 		Object idFromDB;
-		idFromDB = result == null ? null : result.get( SEQUENCE_VALUE );
+		idFromDB = result == null ? null : result.get( valueColumnName );
 		if ( idFromDB == null ) {
 			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
 			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
 			BasicDBObject updateForInitial = new BasicDBObject();
-			this.addSubQuery( "$inc", updateForInitial, SEQUENCE_VALUE, initialValue );
+			this.addSubQuery( "$inc", updateForInitial, valueColumnName, initialValue );
 			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
 			idFromDB = initialValue; //first time we ask this value
 		}
 		else {
-			idFromDB = result.get( SEQUENCE_VALUE );
+			idFromDB = result.get( valueColumnName );
 		}
 		if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
 			Number id = (Number) idFromDB;
@@ -569,6 +574,21 @@ public class MongoDBDialect implements BatchableGridDialect {
 			throw new HibernateException( "Cannot increment a non numeric field" );
 		}
 	}
+
+	private String getValueColumnName(IdGeneratorKey key) {
+		return key.getMetadata().getValueColumnName() != null ? key.getMetadata().getValueColumnName() : DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME;
+	}
+
+	private void validateIdGeneratorKey(IdGeneratorKey key) {
+		if ( key.getMetadata().getType() != IdGeneratorType.TABLE ) {
+			throw new HibernateException( "Unsupported generator type: " + key.getMetadata().getType() );
+		}
+
+		if ( !key.getColumnNames()[0].equals( ID_FIELDNAME ) ) {
+			log.warnf( "Cannot use primary key column name '%s' for id generator, going to use '%s' instead", key.getColumnNames()[0], ID_FIELDNAME );
+		}
+	}
+
 
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
