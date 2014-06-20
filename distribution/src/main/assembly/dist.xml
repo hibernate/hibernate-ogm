@@ -195,6 +195,7 @@
                             <include>org.neo4j:neo4j-cypher-commons</include>
                             <include>org.neo4j:neo4j-cypher-compiler-1.9</include>
                             <include>org.neo4j:neo4j-cypher-compiler-2.0</include>
+                            <include>org.neo4j:neo4j-cypher-compiler-2.1</include>
                             <include>org.scala-lang:scala-library</include>
                             <include>org.parboiled:parboiled-scala_2.10</include>
                         </includes>

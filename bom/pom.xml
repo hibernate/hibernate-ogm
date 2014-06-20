@@ -245,11 +245,84 @@
                 <version>${neo4jVersion}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.apache.geronimo.specs</groupId>
+                        <artifactId>neo4j-cypher-compiler-1.9</artifactId>
+                        <groupId>org.neo4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>neo4j-cypher-compiler-2.0</artifactId>
+                        <groupId>org.neo4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>opencsv</artifactId>
+                        <groupId>net.sf.opencsv</groupId>
+                    </exclusion>
+                    <exclusion>
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
+                        <groupId>org.apache.geronimo.specs</groupId>
                     </exclusion>
                 </exclusions>
             </dependency>
+
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-cypher-compiler-1.9</artifactId>
+            <version>2.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>neo4j-graph-matching</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-kernel</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-graph-algo</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-lucene-index</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-cypher-compiler-2.0</artifactId>
+            <version>2.0.3</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>neo4j-graph-matching</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-kernel</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-graph-algo</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>neo4j-lucene-index</artifactId>
+                    <groupId>org.neo4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>opencsv</artifactId>
+                    <groupId>net.sf.opencsv</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
             <!-- RESTEasy for accessing CouchDB -->
             <dependency>
