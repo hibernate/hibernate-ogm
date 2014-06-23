@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
 import javax.persistence.EntityManager;
 
-import org.hibernate.ogm.backendtck.id.DistributedRevisionControl;
+import org.hibernate.ogm.backendtck.id.Song;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,15 +17,16 @@ import org.junit.Test;
  */
 public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 
-	private DistributedRevisionControl git;
+	private Song song;
 
 	@Before
 	public void prepareDb() throws Exception {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
-		git = new DistributedRevisionControl();
-		git.setName( "GIT" );
-		em.persist( git );
+		song = new Song();
+		song.setSinger( "Jon Bovi" );
+		song.setTitle( "Keep the pace" );
+		em.persist( song );
 		commitOrRollback( true );
 		em.close();
 	}
@@ -34,13 +35,13 @@ public class SingleEntityWithSequenceTest extends Neo4jJpaTestCase {
 	public void testMapping() throws Exception {
 		assertNumberOfNodes( 2 );
 		assertRelationships( 0 );
-		assertExpectedMapping( "(:DistributedRevisionControl:ENTITY {id: " + git.getId() + ", name: '" + git.getName() + "' })" );
-		assertExpectedMapping( "(:hibernate_sequences:SEQUENCE { sequence_name: 'DistributedRevisionControl', current_value: 2 })" );
+		assertExpectedMapping( "(:Song:ENTITY {id: " + song.getId() + ", singer: '" + song.getSinger() + "', title: '" + song.getTitle() + "' })" );
+		assertExpectedMapping( "(:SEQUENCE { sequence_name: 'song_sequence_name' })" );
 	}
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class[] { DistributedRevisionControl.class };
+		return new Class[] { Song.class };
 	}
 
 }

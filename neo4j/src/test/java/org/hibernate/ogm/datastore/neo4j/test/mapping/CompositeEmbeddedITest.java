@@ -53,7 +53,7 @@ public class CompositeEmbeddedITest extends Neo4jJpaTestCase {
 		String newsNode = "(:News:ENTITY {`newsId.author`: '" + newsOGM.getNewsId().getAuthor() + "', `newsId.title`: '" + newsOGM.getNewsId().getTitle() + "', content: '" + newsOGM.getContent() + "'})";
 		String labelNode0 = "(:Label:ENTITY {id: " + newsOgmLabels.get( 0 ).getId() + ", name: '" + newsOgmLabels.get( 0 ).getName() + "' })";
 		String labelNode1 = "(:Label:ENTITY {id: " + newsOgmLabels.get( 1 ).getId() + ", name: '" + newsOgmLabels.get( 1 ).getName() + "' })";
-		String sequenceNode = "(:hibernate_sequences:" + NodeLabel.SEQUENCE + " { sequence_name: 'Label', current_value: 3 })";
+		String sequenceNode = "(:" + NodeLabel.SEQUENCE + " { sequence_name: 'hibernate_sequence' })";
 
 		assertExpectedMapping( sequenceNode );
 		assertExpectedMapping( newsNode + " - [:Label] - " + labelNode0 );
