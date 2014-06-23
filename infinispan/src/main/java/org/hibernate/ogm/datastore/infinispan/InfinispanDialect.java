@@ -202,6 +202,10 @@ public class InfinispanDialect implements GridDialect {
 		while ( !done );
 	}
 
+	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
 
 	@Override
 	public GridType overrideType(Type type) {

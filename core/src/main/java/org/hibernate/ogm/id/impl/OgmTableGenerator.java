@@ -6,34 +6,19 @@
  */
 package org.hibernate.ogm.id.impl;
 
-import java.io.Serializable;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 
-import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
 import org.hibernate.MappingException;
-import org.hibernate.cfg.Environment;
 import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
-import org.hibernate.id.IdentifierGeneratorHelper;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.id.PersistentIdentifierGenerator;
-import org.hibernate.id.enhanced.AccessCallback;
-import org.hibernate.id.enhanced.Optimizer;
-import org.hibernate.id.enhanced.OptimizerFactory;
+import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.type.GridType;
@@ -119,65 +104,41 @@ import org.hibernate.type.Type;
  * @author Steve Ebersole
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmTableGenerator implements PersistentIdentifierGenerator, Configurable {
+public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIdentifierGenerator, Configurable {
 
 	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
 
-	public static final String TABLE_PARAM = "table_name";
-	public static final String DEF_TABLE = "hibernate_sequences";
+	public static final String TABLE_PARAM = TableGenerator.TABLE_PARAM;
+	public static final String DEF_TABLE = TableGenerator.DEF_TABLE;
 
-	public static final String VALUE_COLUMN_PARAM = "value_column_name";
-	public static final String DEF_VALUE_COLUMN = "next_val";
+	public static final String VALUE_COLUMN_PARAM = TableGenerator.VALUE_COLUMN_PARAM;
+	public static final String DEF_VALUE_COLUMN = TableGenerator.DEF_VALUE_COLUMN;
 
-	public static final String SEGMENT_COLUMN_PARAM = "segment_column_name";
-	public static final String DEF_SEGMENT_COLUMN = "sequence_name";
+	public static final String SEGMENT_COLUMN_PARAM = TableGenerator.SEGMENT_COLUMN_PARAM;
+	public static final String DEF_SEGMENT_COLUMN = TableGenerator.DEF_SEGMENT_COLUMN;
 
-	public static final String SEGMENT_VALUE_PARAM = "segment_value";
-	public static final String DEF_SEGMENT_VALUE = "default";
-
-	public static final String SEGMENT_LENGTH_PARAM = "segment_value_length";
-	public static final int DEF_SEGMENT_LENGTH = 255;
-
-	public static final String INITIAL_PARAM = "initial_value";
-	public static final int DEFAULT_INITIAL_VALUE = 1;
-
-	public static final String INCREMENT_PARAM = "increment_size";
-	public static final int DEFAULT_INCREMENT_SIZE = 1;
-
-	public static final String OPT_PARAM = "optimizer";
+	public static final String SEGMENT_VALUE_PARAM = TableGenerator.SEGMENT_VALUE_PARAM;
+	public static final String DEF_SEGMENT_VALUE = TableGenerator.DEF_SEGMENT_VALUE;
 
 	private static final Log log = LoggerFactory.make();
 
 	private Type identifierType;
+	private volatile GridType identifierValueGridType;
 
 	private String tableName;
 
 	private String segmentColumnName;
 	private String segmentValue;
-	private int segmentValueLength;
 
 	private String valueColumnName;
-	private int initialValue;
-	private int incrementSize;
 
-	private String selectQuery;
-	private String insertQuery;
-	private String updateQuery;
-
-	private Optimizer optimizer;
-	private long accessCount = 0;
-	private volatile GridType identifierValueGridType;
 	private final GridType segmentGridType = StringType.INSTANCE;
-	private volatile GridDialect gridDialect;
 
 	private IdGeneratorKeyMetadata generatorKeyMetadata;
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public Object generatorKey() {
-		return tableName;
+	public IdGeneratorKeyMetadata generatorKey() {
+		return generatorKeyMetadata;
 	}
 
 	/**
@@ -219,103 +180,15 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return segmentValue;
 	}
 
-	/**
-	 * The size of the {@link #getSegmentColumnName segment column} in the
-	 * underlying table.
-	 * <p/>
-	 * <b>NOTE</b> : should really have been called 'segmentColumnLength' or
-	 * even better 'segmentColumnSize'
-	 *
-	 * @return the column size.
-	 */
-	public final int getSegmentValueLength() {
-		return segmentValueLength;
-	}
-
-	/**
-	 * The name of the column in which we store our persistent generator value.
-	 *
-	 * @return The name of the value column.
-	 */
-	public final String getValueColumnName() {
-		return valueColumnName;
-	}
-
-	/**
-	 * The initial value to use when we find no previous state in the
-	 * generator table corresponding to our sequence.
-	 *
-	 * @return The initial value to use.
-	 */
-	public final int getInitialValue() {
-		return initialValue;
-	}
-
-	/**
-	 * The amount of increment to use.  The exact implications of this
-	 * depends on the {@link #getOptimizer() optimizer} being used.
-	 *
-	 * @return The increment amount.
-	 */
-	public final int getIncrementSize() {
-		return incrementSize;
-	}
-
-	/**
-	 * The optimizer being used by this generator.
-	 *
-	 * @return Out optimizer.
-	 */
-	public final Optimizer getOptimizer() {
-		return optimizer;
-	}
-
-	/**
-	 * Getter for property 'tableAccessCount'.  Only really useful for unit test
-	 * assertions.
-	 *
-	 * @return Value for property 'tableAccessCount'.
-	 */
-	public final long getTableAccessCount() {
-		return accessCount;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
-		identifierType = type;
+		super.configure( type, params, dialect );
 
+		identifierType = type;
 		tableName = determineGeneratorTableName( params, dialect );
 		segmentColumnName = determineSegmentColumnName( params, dialect );
 		valueColumnName = determineValueColumnName( params, dialect );
-
 		segmentValue = determineSegmentValue( params );
-
-		segmentValueLength = determineSegmentColumnSize( params );
-		initialValue = determineInitialValue( params );
-		incrementSize = determineIncrementSize( params );
-
-		//this.selectQuery = buildSelectQuery( dialect );
-		//this.updateQuery = buildUpdateQuery();
-		//this.insertQuery = buildInsertQuery();
-
-		// if the increment size is greater than one, we prefer pooled optimization; but we
-		// need to see if the user prefers POOL or POOL_LO...
-		String defaultPooledOptimizerStrategy = ConfigurationHelper.getBoolean(
-				Environment.PREFER_POOLED_VALUES_LO, params, false
-		)
-				? OptimizerFactory.POOL_LO
-				: OptimizerFactory.POOL;
-		final String defaultOptimizerStrategy = incrementSize <= 1 ? OptimizerFactory.NONE : defaultPooledOptimizerStrategy;
-		final String optimizationStrategy = ConfigurationHelper.getString( OPT_PARAM, params, defaultOptimizerStrategy );
-		optimizer = OptimizerFactory.buildOptimizer(
-				optimizationStrategy,
-				identifierType.getReturnedClass(),
-				incrementSize,
-				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
-		);
 
 		generatorKeyMetadata = IdGeneratorKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
 	}
@@ -425,116 +298,15 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		return defaultToUse;
 	}
 
-	/**
-	 * Determine the size of the {@link #getSegmentColumnName segment column}
-	 * <p/>
-	 * Called during {@link #configure configuration}.
-	 *
-	 * @param params The params supplied in the generator config (plus some standard useful extras).
-	 *
-	 * @return The size of the segment column
-	 *
-	 * @see #getSegmentValueLength()
-	 */
-	protected int determineSegmentColumnSize(Properties params) {
-		return ConfigurationHelper.getInt( SEGMENT_LENGTH_PARAM, params, DEF_SEGMENT_LENGTH );
-	}
-
-	protected int determineInitialValue(Properties params) {
-		return ConfigurationHelper.getInt( INITIAL_PARAM, params, DEFAULT_INITIAL_VALUE );
-	}
-
-	protected int determineIncrementSize(Properties params) {
-		return ConfigurationHelper.getInt( INCREMENT_PARAM, params, DEFAULT_INCREMENT_SIZE );
-	}
-
-	//TODO remove build*Query
-	protected String buildSelectQuery(Dialect dialect) {
-		final String alias = "tbl";
-		String query = "select " + StringHelper.qualify( alias, valueColumnName ) +
-				" from " + tableName + ' ' + alias +
-				" where " + StringHelper.qualify( alias, segmentColumnName ) + "=?";
-		LockOptions lockOptions = new LockOptions( LockMode.PESSIMISTIC_WRITE );
-		lockOptions.setAliasSpecificLockMode( alias, LockMode.PESSIMISTIC_WRITE );
-		Map updateTargetColumnsMap = Collections.singletonMap( alias, new String[] { valueColumnName } );
-		return dialect.applyLocksToSql( query, lockOptions, updateTargetColumnsMap );
-	}
-
-	protected String buildUpdateQuery() {
-		return "update " + tableName +
-				" set " + valueColumnName + "=? " +
-				" where " + valueColumnName + "=? and " + segmentColumnName + "=?";
-	}
-
-	protected String buildInsertQuery() {
-		return "insert into " + tableName + " (" + segmentColumnName + ", " + valueColumnName + ") " + " values (?,?)";
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public synchronized Serializable generate(final SessionImplementor session, Object obj) {
-		return optimizer.generate(
-				new AccessCallback() {
-					@Override
-					public IntegralDataTypeHolder getNextValue() {
-						return (IntegralDataTypeHolder) doWorkInIsolationTransaction( session );
-					}
-
-					@Override
-					public String getTenantIdentifier() {
-						return session.getTenantIdentifier();
-					}
-				}
-		);
-	}
-
-	//copied and altered from TransactionHelper
-	public Serializable doWorkInIsolationTransaction(final SessionImplementor session)
-			throws HibernateException {
-		class Work extends AbstractReturningWork<IntegralDataTypeHolder> {
-			private final SessionImplementor localSession = session;
-
-			@Override
-			public IntegralDataTypeHolder execute(Connection connection) throws SQLException {
-				try {
-					return doWorkInCurrentTransactionIfAny( localSession );
-				}
-				catch ( RuntimeException sqle ) {
-					throw new HibernateException( "Could not get or update next value", sqle );
-				}
-			}
-		}
-		//we want to work out of transaction
-		boolean workInTransaction = false;
-		Work work = new Work();
-		Serializable generatedValue = session.getTransactionCoordinator().getTransaction().createIsolationDelegate().delegateWork( work, workInTransaction );
-		return generatedValue;
-	}
-
-	public IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
+	protected IdGeneratorKey getGeneratorKey(SessionImplementor session) {
 		defineGridTypes( session );
-		final Object segmentColumnValue = nullSafeSet(
+
+		final String segmentName = (String) nullSafeSet(
 				segmentGridType, segmentValue, segmentColumnName, session
 		);
 
-		IdGeneratorKey key = IdGeneratorKey.forTable( generatorKeyMetadata, segmentColumnValue );
-
-		GridDialect dialect = getDialect( session );
-		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
-		dialect.nextValue( key, value, optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1, initialValue );
-
-		accessCount++;
-
-		return value;
-	}
-
-	private GridDialect getDialect(SessionImplementor session) {
-		if (gridDialect == null) {
-			gridDialect = session.getFactory().getServiceRegistry().getService( GridDialect.class );
-		}
-		return gridDialect;
+		return IdGeneratorKey.forTable( generatorKeyMetadata, segmentName );
 	}
 
 	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {
@@ -548,25 +320,5 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 			ServiceRegistryImplementor registry = session.getFactory().getServiceRegistry();
 			identifierValueGridType = registry.getService( TypeTranslator.class ).getType( new LongType() );
 		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String[] sqlCreateStrings(Dialect dialect) throws HibernateException {
-		return new String[] { };
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String[] sqlDropStrings(Dialect dialect) throws HibernateException {
-		return new String[] { };
-	}
-
-	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
-		return generatorKeyMetadata;
 	}
 }

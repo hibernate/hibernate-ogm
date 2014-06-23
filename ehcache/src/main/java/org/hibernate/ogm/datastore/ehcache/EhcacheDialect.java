@@ -193,6 +193,11 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		return false;
 	}

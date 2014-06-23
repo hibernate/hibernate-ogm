@@ -167,6 +167,11 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
+		public boolean supportsSequences() {
+			return false;
+		}
+
+		@Override
 		public GridType overrideType(Type type) {
 			return null;
 		}

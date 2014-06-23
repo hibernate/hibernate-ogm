@@ -144,6 +144,12 @@ public class MapDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+
+	@Override
 	public GridType overrideType(Type type) {
 		return null;
 	}

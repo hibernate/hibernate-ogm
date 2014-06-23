@@ -107,6 +107,11 @@ public class SampleDatastoreProvider implements DatastoreProvider {
 		}
 
 		@Override
+		public boolean supportsSequences() {
+			return false;
+		}
+
+		@Override
 		public GridType overrideType(Type type) {
 			return null;
 		}

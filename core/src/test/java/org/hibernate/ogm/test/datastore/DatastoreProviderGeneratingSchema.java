@@ -144,6 +144,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
+		public boolean supportsSequences() {
+			return false;
+		}
+
+		@Override
 		public GridType overrideType(Type type) {
 			// No types to override
 			return null;

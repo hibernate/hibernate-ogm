@@ -100,6 +100,14 @@ public interface GridDialect extends Service {
 	void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 
 	/**
+	 * Whether this dialect supports sequences for id generation or not. If not, a table-based strategy is expected to
+	 * be used as fall-back.
+	 *
+	 * @return {@code true} if this dialect supports sequences, {@code false} otherwise.
+	 */
+	boolean supportsSequences();
+
+	/**
 	 * Let the dialect override types if required to customize them to the datastore.
 	 * Returns the GridType instance to use to bind the given {@code type} or null if not overridden.
 	 *
