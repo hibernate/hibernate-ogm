@@ -18,6 +18,7 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.id.IdentifierGeneratorHelper.BasicHolder;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
@@ -28,6 +29,8 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -86,6 +89,23 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
 		assertThat( readTuple.get( "foo" ) ).isEqualTo( "bar" );
+	}
+
+	@Test
+	public void shoulReadAndWriteSequenceInClusteredMode() throws Exception {
+		// given
+		IdGeneratorKeyMetadata keyMetadata = IdGeneratorKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdGeneratorKey key = IdGeneratorKey.forTable( keyMetadata, "Foo_Sequence" );
+
+		// when
+		BasicHolder value = new BasicHolder( Long.class );
+		dialect1.nextValue( key, value, 1, 1 );
+		assertThat( value.getActualLongValue() ).isEqualTo( 1L );
+
+		// then
+		value = new BasicHolder( Long.class );
+		dialect2.nextValue( key, value, 1, 1 );
+		assertThat( value.getActualLongValue() ).isEqualTo( 2L );
 	}
 
 	@Test
