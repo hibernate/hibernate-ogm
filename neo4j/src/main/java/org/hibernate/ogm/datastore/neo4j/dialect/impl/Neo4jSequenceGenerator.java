@@ -126,10 +126,10 @@ public class Neo4jSequenceGenerator {
 
 	private void addUniqueConstraint(IdentifierGenerator identifierGenerator) {
 		if ( identifierGenerator instanceof OgmSequenceGenerator ) {
-			addUniqueConstraintForSequence( ( (OgmSequenceGenerator) identifierGenerator ).generatorKey() );
+			addUniqueConstraintForSequence( ( (OgmSequenceGenerator) identifierGenerator ).getGeneratorKeyMetadata() );
 		}
 		else if ( identifierGenerator instanceof OgmTableGenerator ) {
-			addUniqueConstraintForTableBasedSequence( ( (OgmTableGenerator) identifierGenerator ).generatorKey() );
+			addUniqueConstraintForTableBasedSequence( ( (OgmTableGenerator) identifierGenerator ).getGeneratorKeyMetadata() );
 		}
 	}
 
@@ -173,11 +173,11 @@ public class Neo4jSequenceGenerator {
 	private void addSequence(IdentifierGenerator identifierGenerator) {
 		if ( identifierGenerator instanceof OgmSequenceGenerator ) {
 			OgmSequenceGenerator sequenceGenerator = (OgmSequenceGenerator) identifierGenerator;
-			addSequence( sequenceGenerator.generatorKey(), sequenceGenerator.getInitialValue() );
+			addSequence( sequenceGenerator.getGeneratorKeyMetadata(), sequenceGenerator.getInitialValue() );
 		}
 		else if ( identifierGenerator instanceof OgmTableGenerator ) {
 			OgmTableGenerator sequenceGenerator = (OgmTableGenerator) identifierGenerator;
-			addTableSequence( sequenceGenerator.generatorKey(), sequenceGenerator.getSegmentValue(), sequenceGenerator.getInitialValue() );
+			addTableSequence( sequenceGenerator.getGeneratorKeyMetadata(), sequenceGenerator.getSegmentValue(), sequenceGenerator.getInitialValue() );
 		}
 	}
 

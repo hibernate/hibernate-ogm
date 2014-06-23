@@ -19,7 +19,6 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.Configurable;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.id.IntegralDataTypeHolder;
-import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.AccessCallback;
 import org.hibernate.id.enhanced.Optimizer;
 import org.hibernate.id.enhanced.OptimizerFactory;
@@ -28,15 +27,15 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.type.Type;
 
 /**
  * Base class for sequence and table based id generators in Hibernate OGM.
- * @author Gunnar Morling
  *
+ * @author Gunnar Morling
  */
-public abstract class OgmGeneratorBase implements PersistentIdentifierGenerator, Configurable {
+public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGenerator, Configurable {
 
 	public static final String OPT_PARAM = TableGenerator.OPT_PARAM;
 
@@ -81,16 +80,6 @@ public abstract class OgmGeneratorBase implements PersistentIdentifierGenerator,
 		);
 	}
 
-	@Override
-	public String[] sqlCreateStrings(Dialect dialect) throws HibernateException {
-		return new String[0];
-	}
-
-	@Override
-	public String[] sqlDropStrings(Dialect dialect) throws HibernateException {
-		return new String[0];
-	}
-
 	/**
 	 * The initial value to use when we find no previous state in the
 	 * generator table corresponding to our sequence.
@@ -110,9 +99,6 @@ public abstract class OgmGeneratorBase implements PersistentIdentifierGenerator,
 	public final int getIncrementSize() {
 		return incrementSize;
 	}
-
-	@Override
-	public abstract IdGeneratorKeyMetadata generatorKey();
 
 	protected abstract IdGeneratorKey getGeneratorKey(SessionImplementor session);
 

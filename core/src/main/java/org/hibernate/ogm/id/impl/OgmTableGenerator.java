@@ -104,7 +104,7 @@ import org.hibernate.type.Type;
  * @author Steve Ebersole
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIdentifierGenerator, Configurable {
+public class OgmTableGenerator extends OgmGeneratorBase implements Configurable {
 
 	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
 
@@ -137,7 +137,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIde
 	private IdGeneratorKeyMetadata generatorKeyMetadata;
 
 	@Override
-	public IdGeneratorKeyMetadata generatorKey() {
+	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
 		return generatorKeyMetadata;
 	}
 
@@ -209,11 +209,11 @@ public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIde
 		String name = ConfigurationHelper.getString( TABLE_PARAM, params, DEF_TABLE );
 		boolean isGivenNameUnqualified = name.indexOf( '.' ) < 0;
 		if ( isGivenNameUnqualified ) {
-			ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
+			ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 			name = normalizer.normalizeIdentifierQuoting( name );
 			// if the given name is un-qualified we may neen to qualify it
-			String schemaName = normalizer.normalizeIdentifierQuoting( params.getProperty( SCHEMA ) );
-			String catalogName = normalizer.normalizeIdentifierQuoting( params.getProperty( CATALOG ) );
+			String schemaName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.SCHEMA ) );
+			String catalogName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.CATALOG ) );
 			name = Table.qualify(
 					dialect.quote( catalogName ),
 					dialect.quote( schemaName ),
@@ -241,7 +241,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIde
 	 * @see #getSegmentColumnName()
 	 */
 	protected String determineSegmentColumnName(Properties params, Dialect dialect) {
-		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
+		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( SEGMENT_COLUMN_PARAM, params, DEF_SEGMENT_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
@@ -259,7 +259,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIde
 	 * @see #getValueColumnName()
 	 */
 	protected String determineValueColumnName(Properties params, Dialect dialect) {
-		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
+		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 		String name = ConfigurationHelper.getString( VALUE_COLUMN_PARAM, params, DEF_VALUE_COLUMN );
 		return dialect.quote( normalizer.normalizeIdentifierQuoting( name ) );
 	}
@@ -293,7 +293,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements PersistentIde
 	 */
 	protected String determineDefaultSegmentValue(Properties params) {
 		boolean preferSegmentPerEntity = ConfigurationHelper.getBoolean( CONFIG_PREFER_SEGMENT_PER_ENTITY, params, false );
-		String defaultToUse = preferSegmentPerEntity ? params.getProperty( TABLE ) : DEF_SEGMENT_VALUE;
+		String defaultToUse = preferSegmentPerEntity ? params.getProperty( PersistentIdentifierGenerator.TABLE ) : DEF_SEGMENT_VALUE;
 		log.info( "explicit segment value for id generator [" + tableName + '.' + segmentColumnName + "] suggested; using default [" + defaultToUse + "]" );
 		return defaultToUse;
 	}
