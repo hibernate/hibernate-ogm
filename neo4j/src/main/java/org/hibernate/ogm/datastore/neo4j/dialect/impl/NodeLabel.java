@@ -34,5 +34,10 @@ public enum NodeLabel implements Label {
 	/**
 	 * A node representing a sequence.
 	 */
-	SEQUENCE;
+	SEQUENCE,
+
+	/**
+	 * A node representing a table-based sequence.
+	 */
+	TABLE_BASED_SEQUENCE;
 }

@@ -300,7 +300,7 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 
 	@Override
 	public boolean supportsSequences() {
-		return false;
+		return true;
 	}
 
 	@Override
