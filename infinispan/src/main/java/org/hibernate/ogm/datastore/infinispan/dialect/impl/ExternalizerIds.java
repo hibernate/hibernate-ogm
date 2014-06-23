@@ -21,6 +21,7 @@ class ExternalizerIds {
 	static final int ASSOCIATION_KEY = 1401;
 	static final int ROW_KEY = 1402;
 	static final int ENTITY_METADATA = 1403;
+	static final int ID_GENERATOR_KEY = 1404;
 
 	private ExternalizerIds() {
 	}

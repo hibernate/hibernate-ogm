@@ -14,12 +14,13 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
- * An externalizer for serializing and de-serializing {@link EntityKeyMetadata} instances. Implicitly used by
- * {@link InfinispanDialect} during mass-indexing.
+ * An externalizer for serializing and de-serializing {@link IdGeneratorKey} instances. Implicitly used by
+ * {@link InfinispanDialect} which stores keys as is in the Infinispan data store.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
  * {@link InfinispanDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
@@ -29,9 +30,9 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  */
 // As an implementation of AdvancedExternalizer this is never serialized according to the Externalizer docs
 @SuppressWarnings("serial")
-public class EntityKeyMetadataExternalizer implements AdvancedExternalizer<EntityKeyMetadata> {
+public class IdGeneratorKeyExternalizer implements AdvancedExternalizer<IdGeneratorKey> {
 
-	public static final EntityKeyMetadataExternalizer INSTANCE = new EntityKeyMetadataExternalizer();
+	public static final IdGeneratorKeyExternalizer INSTANCE = new IdGeneratorKeyExternalizer();
 
 	/**
 	 * Format version of the key type; allows to apply version dependent deserialization logic in the future if
@@ -39,37 +40,39 @@ public class EntityKeyMetadataExternalizer implements AdvancedExternalizer<Entit
 	 */
 	private static final int VERSION = 1;
 
-	private static final Set<Class<? extends EntityKeyMetadata>> TYPE_CLASSES = Collections
-			.<Class<? extends EntityKeyMetadata>>singleton( EntityKeyMetadata.class );
+	private static final Set<Class<? extends IdGeneratorKey>> TYPE_CLASSES = Collections.<Class<? extends IdGeneratorKey>>singleton( IdGeneratorKey.class );
 
-	private EntityKeyMetadataExternalizer() {
+	private IdGeneratorKeyExternalizer() {
 	}
 
 	@Override
-	public void writeObject(ObjectOutput output, EntityKeyMetadata metadata) throws IOException {
+	public void writeObject(ObjectOutput output, IdGeneratorKey key) throws IOException {
 		output.writeInt( VERSION );
-		output.writeUTF( metadata.getTable() );
-		output.writeObject( metadata.getColumnNames() );
+		output.writeUTF( key.getTable() );
+		output.writeObject( key.getColumnNames() );
+		output.writeObject( key.getColumnValues() );
 	}
 
 	@Override
-	public EntityKeyMetadata readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+	public IdGeneratorKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 		// version
 		input.readInt();
 
 		String tableName = input.readUTF();
 		String[] columnNames = (String[]) input.readObject();
+		Object[] values = (Object[]) input.readObject();
 
-		return new EntityKeyMetadata( tableName, columnNames );
+		IdGeneratorKeyMetadata metadata = IdGeneratorKeyMetadata.forTable( tableName, columnNames[0], null );
+		return IdGeneratorKey.forTable( metadata , (String) values[0] );
 	}
 
 	@Override
-	public Set<Class<? extends EntityKeyMetadata>> getTypeClasses() {
+	public Set<Class<? extends IdGeneratorKey>> getTypeClasses() {
 		return TYPE_CLASSES;
 	}
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ENTITY_METADATA;
+		return ExternalizerIds.ID_GENERATOR_KEY;
 	}
 }
