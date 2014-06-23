@@ -301,6 +301,11 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		return Neo4jTypeConverter.INSTANCE.convert( type );
 	}

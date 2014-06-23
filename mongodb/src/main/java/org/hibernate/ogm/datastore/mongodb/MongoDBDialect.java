@@ -575,6 +575,11 @@ public class MongoDBDialect implements BatchableGridDialect {
 		}
 	}
 
+	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
 	private String getValueColumnName(IdGeneratorKey key) {
 		return key.getMetadata().getValueColumnName() != null ? key.getMetadata().getValueColumnName() : DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME;
 	}

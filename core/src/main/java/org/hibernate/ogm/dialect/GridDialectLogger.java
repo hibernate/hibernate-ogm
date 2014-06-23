@@ -147,6 +147,11 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return gridDialect.supportsSequences();
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		return gridDialect.overrideType( type );
 	}

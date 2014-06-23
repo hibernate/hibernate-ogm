@@ -166,6 +166,11 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		return dialect.overrideType( type );
 	}

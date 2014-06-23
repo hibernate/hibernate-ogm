@@ -221,6 +221,11 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+	@Override
 	public GridType overrideType(Type type) {
 		if ( type == StandardBasicTypes.MATERIALIZED_BLOB ) {
 			return CouchDBBlobType.INSTANCE;

@@ -27,8 +27,12 @@ public class IdGeneratorKey implements Key {
 		this.hashCode = calculateHashCode();
 	}
 
-	public static IdGeneratorKey forTable(IdGeneratorKeyMetadata metadata, Object segmentName) {
+	public static IdGeneratorKey forTable(IdGeneratorKeyMetadata metadata, String segmentName) {
 		return new IdGeneratorKey( metadata, new Object[] { segmentName } );
+	}
+
+	public static IdGeneratorKey forSequence(IdGeneratorKeyMetadata metadata) {
+		return new IdGeneratorKey( metadata, null );
 	}
 
 	public IdGeneratorKeyMetadata getMetadata() {
