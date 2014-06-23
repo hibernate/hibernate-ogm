@@ -7,7 +7,8 @@
 package org.hibernate.ogm.grid;
 
 /**
- * Meta-data about an id generator.
+ * Meta-data about an id generator. In the case of table-based generators, corresponds to the table used by several
+ * generators; In the case of sequence-based generators, corresponds to one sequence.
  *
  * @author Gunnar Morling
  */

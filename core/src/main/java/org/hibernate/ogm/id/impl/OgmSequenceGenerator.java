@@ -13,6 +13,7 @@ import org.hibernate.MappingException;
 import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.mapping.Table;
@@ -80,7 +81,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	}
 
 	@Override
-	public IdGeneratorKeyMetadata generatorKey() {
+	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
 		return delegate == null ? generatorKeyMetadata : delegate.getGeneratorKeyMetadata();
 	}
 
@@ -107,12 +108,12 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		String sequenceName = ConfigurationHelper.getBoolean( SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, params, false )
 				? params.getProperty( JPA_ENTITY_NAME ) + sequencePerEntitySuffix
 				: SequenceStyleGenerator.DEF_SEQUENCE_NAME;
-		final ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( IDENTIFIER_NORMALIZER );
+		final ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 		sequenceName = ConfigurationHelper.getString( SequenceStyleGenerator.SEQUENCE_PARAM, params, sequenceName );
 		if ( sequenceName.indexOf( '.' ) < 0 ) {
 			sequenceName = normalizer.normalizeIdentifierQuoting( sequenceName );
-			final String schemaName = params.getProperty( SCHEMA );
-			final String catalogName = params.getProperty( CATALOG );
+			final String schemaName = params.getProperty( PersistentIdentifierGenerator.SCHEMA );
+			final String catalogName = params.getProperty( PersistentIdentifierGenerator.CATALOG );
 			sequenceName = Table.qualify(
 					dialect.quote( catalogName ),
 					dialect.quote( schemaName ),
@@ -166,7 +167,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 
 		@Override
 		public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
-			return delegate.generatorKey();
+			return delegate.getGeneratorKeyMetadata();
 		}
 
 		@Override
