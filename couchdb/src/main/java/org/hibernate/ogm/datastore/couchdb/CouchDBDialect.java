@@ -38,6 +38,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -215,7 +216,7 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		value.initialize( getDataStore().nextValue( key, increment, initialValue ) );
 	}
 

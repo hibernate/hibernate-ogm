@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import org.hibernate.annotations.common.AssertionFailure;
+
 /**
  * Utility for simple consistency checks of objects and parameters.
  *
@@ -42,6 +44,12 @@ public final class Contracts {
 	public static void assertParameterNotNull(Object parameter, String parameterName) {
 		if ( parameter == null ) {
 			throw log.parameterMustNotBeNull( parameterName );
+		}
+	}
+
+	public static void assertTrue(boolean condition, String message) {
+		if ( !condition ) {
+			throw new AssertionFailure( message );
 		}
 	}
 }

@@ -6,17 +6,18 @@
  */
 package org.hibernate.ogm.datastore.ehcache.test.serialization;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 import java.util.HashMap;
 
-import org.junit.Before;
-import org.junit.Test;
 import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
-import org.hibernate.ogm.grid.RowKey;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @author Alex Snaps
@@ -38,7 +39,7 @@ public class EhcacheDialectTest {
 
 	@Test
 	public void testIsThreadSafe() throws InterruptedException {
-		final RowKey test = new RowKey( "test", null, null );
+		final IdGeneratorKey test = IdGeneratorKey.forTable( IdGeneratorKeyMetadata.forTable( "sequences", "key", "next_val" ), "my_sequence" );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
 			threads[i] = new Thread(

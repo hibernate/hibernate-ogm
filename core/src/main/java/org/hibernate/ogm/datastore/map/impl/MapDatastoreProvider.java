@@ -6,11 +6,12 @@
  */
 package org.hibernate.ogm.datastore.map.impl;
 
+import static org.hibernate.ogm.util.impl.CollectionHelper.newConcurrentHashMap;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,6 +26,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -46,10 +48,10 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ConcurrentMap<EntityKey,Map<String, Object>> entitiesKeyValueStorage = new ConcurrentHashMap<EntityKey,Map<String, Object>>();
-	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = new ConcurrentHashMap<AssociationKey, Map<RowKey, Map<String, Object>>>();
-	private final ConcurrentMap<RowKey, AtomicInteger> sequencesStorage = new ConcurrentHashMap<RowKey, AtomicInteger>();
-	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = new ConcurrentHashMap<Object, ReadWriteLock>();
+	private final ConcurrentMap<EntityKey,Map<String, Object>> entitiesKeyValueStorage = newConcurrentHashMap();
+	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = newConcurrentHashMap();
+	private final ConcurrentMap<IdGeneratorKey, AtomicInteger> sequencesStorage = newConcurrentHashMap();
+	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = newConcurrentHashMap();
 
 	/**
 	 * This simplistic data store only supports thread-bound transactions:
@@ -154,7 +156,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 		associationsKeyValueStorage.remove( key );
 	}
 
-	public int getSharedAtomicInteger(RowKey key, int initialValue, int increment) {
+	public int getSharedAtomicInteger(IdGeneratorKey key, int initialValue, int increment) {
 		AtomicInteger valueProposal = new AtomicInteger( initialValue );
 		AtomicInteger previous = sequencesStorage.putIfAbsent( key, valueProposal );
 		return previous == null ? initialValue : previous.addAndGet( increment );

@@ -30,7 +30,8 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.dialect.NoopDialect;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
@@ -112,15 +113,15 @@ public class Neo4jNextValueGenerationTest {
 
 	@Test
 	public void testFirstValueIsInitialValue() {
-		final RowKey sequenceNode = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { INITIAL_VALUE_SEQUENCE } );
+		final IdGeneratorKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
 		final IdentifierGeneratorHelper.BigIntegerHolder sequenceValue = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( sequenceNode, sequenceValue, 1, INITIAL_VALUE_FIRST_VALUE_TEST );
+		dialect.nextValue( generatorKey, sequenceValue, 1, INITIAL_VALUE_FIRST_VALUE_TEST );
 		assertThat( sequenceValue.makeValue().intValue(), equalTo( INITIAL_VALUE_FIRST_VALUE_TEST ) );
 	}
 
 	@Test
 	public void testThreadSafety() throws InterruptedException {
-		final RowKey test = new RowKey( HIBERNATE_SEQUENCES, new String[] { "sequenceName" }, new Object[] { THREAD_SAFETY_SEQUENCE } );
+		final IdGeneratorKey generatorKey = buildIdGeneratorKey( THREAD_SAFETY_SEQUENCE );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
 			threads[i] = new Thread( new Runnable() {
@@ -128,7 +129,7 @@ public class Neo4jNextValueGenerationTest {
 				public void run() {
 					final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
 					for ( int i = 0; i < LOOPS; i++ ) {
-						dialect.nextValue( test, value, 1, INITIAL_VALUE_THREAD_SAFETY_TEST );
+						dialect.nextValue( generatorKey, value, 1, INITIAL_VALUE_THREAD_SAFETY_TEST );
 					}
 				}
 			} );
@@ -138,7 +139,13 @@ public class Neo4jNextValueGenerationTest {
 			thread.join();
 		}
 		final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( test, value, 0, 1 );
+		dialect.nextValue( generatorKey, value, 0, 1 );
 		assertThat( value.makeValue().intValue(), equalTo( LOOPS * THREADS ) );
+	}
+
+
+	private IdGeneratorKey buildIdGeneratorKey(String sequenceName) {
+		IdGeneratorKeyMetadata metadata = IdGeneratorKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
+		return IdGeneratorKey.forTable( metadata, sequenceName );
 	}
 }

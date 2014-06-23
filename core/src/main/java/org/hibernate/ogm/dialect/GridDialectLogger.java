@@ -20,6 +20,7 @@ import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -140,7 +141,7 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
 		log.tracef( "Extracting next value from key %1$s", key );
 		gridDialect.nextValue( key, value, increment, initialValue );
 	}
