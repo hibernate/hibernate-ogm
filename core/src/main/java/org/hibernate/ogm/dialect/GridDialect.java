@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -96,7 +97,7 @@ public interface GridDialect extends Service {
 	 *
 	 * Especially experimental
 	 */
-	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
+	void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue);
 
 	/**
 	 * Let the dialect override types if required to customize them to the datastore.

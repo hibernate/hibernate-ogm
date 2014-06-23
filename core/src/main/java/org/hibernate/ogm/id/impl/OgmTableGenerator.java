@@ -34,7 +34,8 @@ import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -168,6 +169,8 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	private volatile GridType identifierValueGridType;
 	private final GridType segmentGridType = StringType.INSTANCE;
 	private volatile GridDialect gridDialect;
+
+	private IdGeneratorKeyMetadata generatorKeyMetadata;
 
 	/**
 	 * {@inheritDoc}
@@ -313,6 +316,8 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 				incrementSize,
 				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
+
+		generatorKeyMetadata = IdGeneratorKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
 	}
 
 	/**
@@ -513,11 +518,8 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 		final Object segmentColumnValue = nullSafeSet(
 				segmentGridType, segmentValue, segmentColumnName, session
 		);
-		RowKey key = new RowKey(
-				tableName,
-				new String[] { segmentColumnName },
-				new Object[] { segmentColumnValue }
-		);
+
+		IdGeneratorKey key = IdGeneratorKey.forTable( generatorKeyMetadata, segmentColumnValue );
 
 		GridDialect dialect = getDialect( session );
 		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
@@ -562,5 +564,9 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	@Override
 	public String[] sqlDropStrings(Dialect dialect) throws HibernateException {
 		return new String[] { };
+	}
+
+	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
+		return generatorKeyMetadata;
 	}
 }

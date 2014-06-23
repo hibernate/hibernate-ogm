@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
@@ -187,11 +188,11 @@ public class Neo4jSequenceGenerator {
 	 * @param increment the difference between to consecutive values in the sequence
 	 * @return the next value in a sequence
 	 */
-	public int nextValue(RowKey rowKey, int increment) {
+	public int nextValue(IdGeneratorKey rowKey, int increment) {
 		return sequence( rowKey, increment );
 	}
 
-	private int sequence(RowKey rowKey, int increment) {
+	private int sequence(IdGeneratorKey rowKey, int increment) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
@@ -213,7 +214,7 @@ public class Neo4jSequenceGenerator {
 	 * @param key the {@link RowKey} identifying the sequence
 	 * @return the node representing the sequence
 	 */
-	private Node getSequence(RowKey rowKey) {
+	private Node getSequence(IdGeneratorKey rowKey) {
 		String updateSequenceQuery = getQuery( rowKey );
 		ExecutionResult result = engine.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( rowKey ) ) );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -231,7 +232,7 @@ public class Neo4jSequenceGenerator {
 	 * MATCH (n:hibernate_sequences:SEQUENCE) WHERE n.sequence_name = {sequenceName} RETURN n
 	 * </pre>
 	 */
-	private String getQuery(RowKey rowKey) {
+	private String getQuery(IdGeneratorKey rowKey) {
 		String query = queryCache.get( rowKey.getTable() );
 		if ( query == null ) {
 			query = "MATCH (n" + labels( rowKey.getTable(), NodeLabel.SEQUENCE.name() ) + ") WHERE n." + SEQUENCE_NAME_PROPERTY + " = {"
@@ -254,7 +255,7 @@ public class Neo4jSequenceGenerator {
 		return builder.toString();
 	}
 
-	private String sequenceName(RowKey key) {
+	private String sequenceName(IdGeneratorKey key) {
 		return (String) key.getColumnValues()[0];
 	}
 
