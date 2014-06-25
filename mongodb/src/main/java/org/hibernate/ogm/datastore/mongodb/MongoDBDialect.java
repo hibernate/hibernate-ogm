@@ -462,7 +462,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private Object getAssociationRow(Tuple row, AssociationKey associationKey) {
-		String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsToPersist( row.getColumnNames() );
+		String[] rowKeyColumnsToPersist = associationKey.getMetadata().getColumnsWithoutKeyColumns( row.getColumnNames() );
 
 		// return value itself if there is only a single column to store
 		if ( rowKeyColumnsToPersist.length == 1 ) {

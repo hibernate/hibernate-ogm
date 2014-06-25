@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.document.association.spi;
 import org.hibernate.ogm.grid.AssociationKey;
 
 /**
- * Contract for factories creating {@link KeyedAssociationRow} objects.
+ * Contract for factories creating {@link AssociationRow} objects.
  *
  * @author Gunnar Morling
  */
@@ -23,5 +23,5 @@ public interface AssociationRowFactory {
 	 * @param row The association row in a store-specific representation
 	 * @return An association row providing access to the values of the given association key and row
 	 */
-	KeyedAssociationRow<?> createAssociationRow(AssociationKey associationKey, Object row);
+	AssociationRow<?> createAssociationRow(AssociationKey associationKey, Object row);
 }

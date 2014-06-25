@@ -46,27 +46,34 @@ public class AssociationKeyMetadata {
 	}
 
 	/**
-	 * Returns all those columns from the given candidate list which are not part if this key family and thus need to be
-	 * persisted in the datastore when writing a row of this key family. All other columns don't have to be persisted as
-	 * they can be retrieved from the key meta-data itself when reading an association row.
+	 * Returns all those columns from the given candidate list which are not part of this key family.
+	 * <p>
+	 * Stores can opt to persist only the returned columns when writing a row of this key family. All other columns can
+	 * be retrieved from the key meta-data itself when reading an association row.
 	 */
-	public String[] getColumnsToPersist(Iterable<String> candidates) {
-		List<String> columnsToPersist = new ArrayList<String>();
+	public String[] getColumnsWithoutKeyColumns(Iterable<String> candidates) {
+		List<String> nonKeyColumns = new ArrayList<String>();
 		for ( String column : candidates ) {
 			// exclude columns from the associationKey as they can be guessed via metadata
 			if ( !isKeyColumn( column ) ) {
-				columnsToPersist.add( column );
+				nonKeyColumns.add( column );
 			}
 		}
 
-		return columnsToPersist.toArray( new String[columnsToPersist.size()] );
+		return nonKeyColumns.toArray( new String[nonKeyColumns.size()] );
 	}
 
 	/**
-	 * Returns the name of the single row key column which is not a column of this key itself.
+	 * Returns the name of the single row key column which is not a column of this key itself, in case such a column
+	 * exists.
+	 * <p>
+	 * If e.g. an association key contains the column "bankAccounts_id" and the row key columns are "bankAccounts_id"
+	 * and "owners_id", this method will return "owners_id". But if the row columns were "bankAccounts_id", "owners_id"
+	 * and "order", {@code null} would be returned as there were more than one column which are not part of the
+	 * association key.
 	 *
 	 * @return the name of the single row key column which is not a column of this key itself or {@code null} if there
-	 * is either no or more than one such column
+	 * is either no or more than one such column.
 	 */
 	public String getSingleRowKeyColumnNotContainedInAssociationKey() {
 		String nonKeyColumn = null;
@@ -86,7 +93,6 @@ public class AssociationKeyMetadata {
 
 		return nonKeyColumn;
 	}
-
 
 	/**
 	 * Whether the given column is part of this key family or not.

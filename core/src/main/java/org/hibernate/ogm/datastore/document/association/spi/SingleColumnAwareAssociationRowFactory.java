@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.document.association.spi;
 
-import org.hibernate.ogm.datastore.document.association.spi.KeyedAssociationRow.AssociationRowAccessor;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.util.impl.Contracts;
 
@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.Contracts;
  * @author Gunnar Morling
  * @param <R> The type of key/value association rows supported by this factory.
  */
-public abstract class UnkeyedValueAwareAssociationRowFactory<R> implements AssociationRowFactory {
+public abstract class SingleColumnAwareAssociationRowFactory<R> implements AssociationRowFactory {
 
 	/**
 	 * The type of key/value association rows supported by this factory; This basically corresponds to {@code Class<R>}
@@ -33,13 +33,13 @@ public abstract class UnkeyedValueAwareAssociationRowFactory<R> implements Assoc
 	 */
 	private final Class<?> associationRowType;
 
-	protected UnkeyedValueAwareAssociationRowFactory(Class<?> associationRowType) {
+	protected SingleColumnAwareAssociationRowFactory(Class<?> associationRowType) {
 		this.associationRowType = associationRowType;
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public KeyedAssociationRow<?> createAssociationRow(AssociationKey associationKey, Object row) {
+	public AssociationRow<?> createAssociationRow(AssociationKey associationKey, Object row) {
 		R rowObject = null;
 
 		if ( associationRowType.isInstance( row ) ) {
@@ -51,7 +51,7 @@ public abstract class UnkeyedValueAwareAssociationRowFactory<R> implements Assoc
 			rowObject = getSingleColumnRow( columnName, row );
 		}
 
-		return new KeyedAssociationRow<R>( associationKey, getAssociationRowAccessor(), rowObject );
+		return new AssociationRow<R>( associationKey, getAssociationRowAccessor(), rowObject );
 	}
 
 	/**
@@ -60,7 +60,7 @@ public abstract class UnkeyedValueAwareAssociationRowFactory<R> implements Assoc
 	protected abstract R getSingleColumnRow(String columnName, Object value);
 
 	/**
-	 * Returns the {@link AssociationRowAccessor} to be used to obtain values from the {@link KeyedAssociationRow}
+	 * Returns the {@link AssociationRowAccessor} to be used to obtain values from the {@link AssociationRow}
 	 * created by this factory.
 	 */
 	protected abstract AssociationRowAccessor<R> getAssociationRowAccessor();

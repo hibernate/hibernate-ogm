@@ -26,7 +26,7 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * @author Gunnar Morling
  */
-public class KeyedAssociationRow<R> implements TupleSnapshot {
+public class AssociationRow<R> implements TupleSnapshot {
 
 	/**
 	 * Contract for obtaining association tuple values from the store-specific representation of an association row.
@@ -51,7 +51,7 @@ public class KeyedAssociationRow<R> implements TupleSnapshot {
 	private final Set<String> columnNames;
 	private final RowKey rowKey;
 
-	public KeyedAssociationRow(AssociationKey associationKey, AssociationRowAccessor<R> accessor, R row) {
+	public AssociationRow(AssociationKey associationKey, AssociationRowAccessor<R> accessor, R row) {
 		this.associationKey = associationKey;
 		this.accessor = accessor;
 		this.row = row;

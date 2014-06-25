@@ -9,9 +9,9 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
-import org.hibernate.ogm.datastore.document.association.spi.KeyedAssociationRow;
-import org.hibernate.ogm.datastore.document.association.spi.KeyedAssociationRow.AssociationRowAccessor;
-import org.hibernate.ogm.datastore.document.association.spi.UnkeyedValueAwareAssociationRowFactory;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRow;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
+import org.hibernate.ogm.datastore.document.association.spi.SingleColumnAwareAssociationRowFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -22,7 +22,7 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
-public class MongoDBAssociationRowFactory extends UnkeyedValueAwareAssociationRowFactory<DBObject> {
+public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRowFactory<DBObject> {
 
 	public static final MongoDBAssociationRowFactory INSTANCE = new MongoDBAssociationRowFactory();
 
@@ -40,7 +40,7 @@ public class MongoDBAssociationRowFactory extends UnkeyedValueAwareAssociationRo
 		return MongoDBAssociationRowAccessor.INSTANCE;
 	}
 
-	private static class MongoDBAssociationRowAccessor implements KeyedAssociationRow.AssociationRowAccessor<DBObject> {
+	private static class MongoDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<DBObject> {
 
 		private static final MongoDBAssociationRowAccessor INSTANCE = new MongoDBAssociationRowAccessor();
 

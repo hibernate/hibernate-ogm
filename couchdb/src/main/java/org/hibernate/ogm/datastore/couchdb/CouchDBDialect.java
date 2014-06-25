@@ -166,7 +166,7 @@ public class CouchDBDialect implements GridDialect {
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
 
-			String[] columnsToPersist = associationKey.getMetadata().getColumnsToPersist( tuple.getColumnNames() );
+			String[] columnsToPersist = associationKey.getMetadata().getColumnsWithoutKeyColumns( tuple.getColumnNames() );
 
 			// return value itself if there is only a single column to store
 			if ( columnsToPersist.length == 1 ) {

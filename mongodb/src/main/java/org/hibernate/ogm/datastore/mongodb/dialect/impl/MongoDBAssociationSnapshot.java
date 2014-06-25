@@ -10,7 +10,7 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.getA
 
 import java.util.Collection;
 
-import org.hibernate.ogm.datastore.document.association.spi.KeyedAssociationRows;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 
@@ -24,7 +24,7 @@ import com.mongodb.DBObject;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Gunnar Morling
  */
-public class MongoDBAssociationSnapshot extends KeyedAssociationRows {
+public class MongoDBAssociationSnapshot extends AssociationRows {
 
 	private final DBObject dbObject;
 

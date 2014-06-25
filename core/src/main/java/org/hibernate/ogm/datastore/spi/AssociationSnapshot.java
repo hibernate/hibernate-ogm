@@ -22,11 +22,11 @@ import org.hibernate.ogm.grid.RowKey;
 public interface AssociationSnapshot {
 
 	/**
-	 * Returns the value set in a column or null if not set
+	 * Returns the row with the specified key from this association, if present.
 	 */
-	Tuple get(RowKey column);
+	Tuple get(RowKey rowKey);
 
-	boolean containsKey(RowKey column);
+	boolean containsKey(RowKey rowKey);
 
 	int size();
 

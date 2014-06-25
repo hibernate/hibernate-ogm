@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
-import org.hibernate.ogm.datastore.document.association.spi.KeyedAssociationRows;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 
@@ -17,7 +17,7 @@ import org.hibernate.ogm.grid.AssociationKey;
  * @author Andrea Boriero <dreborier@gmail.com>
  * @author Gunnar Morling
  */
-public class CouchDBAssociationSnapshot extends KeyedAssociationRows {
+public class CouchDBAssociationSnapshot extends AssociationRows {
 
 	/**
 	 * The original association representing this snapshot as retrieved from CouchDB.
