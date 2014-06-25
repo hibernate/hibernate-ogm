@@ -26,7 +26,7 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 
 	@Override
 	protected DialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new NoopDialectFactory();
+		return new NoopDialectFactory( registry );
 	}
 
 	@Override
@@ -41,9 +41,15 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 
 	private static class NoopDialectFactory implements DialectFactory {
 
+		private final GridDialect gridDialect;
+
+		public NoopDialectFactory(ServiceRegistryImplementor registry) {
+			this.gridDialect = registry.getService( GridDialect.class );
+		}
+
 		@Override
 		public Dialect buildDialect(Map configValues, DialectResolutionInfoSource resolutionInfoSource) throws HibernateException {
-			return new NoopDialect();
+			return new OgmDialect( gridDialect );
 		}
 	}
 }

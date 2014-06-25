@@ -26,6 +26,7 @@ import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.OgmDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
@@ -52,11 +53,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	private int initialValue;
 	private int incrementSize;
 
-	/**
-	 * Needs to be volatile as it is set lazily after the initialization phase. Ideally, we'd get passed the grid
-	 * dialect to configure().
-	 */
-	private volatile GridDialect gridDialect;
+	private GridDialect gridDialect;
 
 	@Override
 	public void configure(Type type, Properties params, Dialect dialect) throws MappingException {
@@ -79,6 +76,8 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 				incrementSize,
 				ConfigurationHelper.getInt( INITIAL_PARAM, params, -1 )
 		);
+
+		gridDialect = ( (OgmDialect) dialect ).getGridDialect();
 	}
 
 	/**
@@ -103,11 +102,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 
 	protected abstract IdGeneratorKey getGeneratorKey(SessionImplementor session);
 
-	protected GridDialect getDialect(SessionImplementor session) {
-		if (gridDialect == null) {
-			gridDialect = session.getFactory().getServiceRegistry().getService( GridDialect.class );
-		}
-
+	protected GridDialect getGridDialect() {
 		return gridDialect;
 	}
 
@@ -153,7 +148,6 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 
 	private IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
 		IdGeneratorKey key = getGeneratorKey( session );
-		GridDialect gridDialect = getDialect( session );
 
 		Number nextValue = gridDialect.nextValue(
 				new IdGenerationRequest(

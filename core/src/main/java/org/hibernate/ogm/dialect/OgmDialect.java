@@ -9,7 +9,20 @@ package org.hibernate.ogm.dialect;
 import org.hibernate.dialect.Dialect;
 
 /**
+ * A pseudo {@link Dialect} implementation which exposes the current {@link GridDialect}.
+ *
  * @author Emmanuel Bernard
+ * @author Gunnar Morling
  */
-public class NoopDialect extends Dialect {
+public class OgmDialect extends Dialect {
+
+	private final GridDialect gridDialect;
+
+	public OgmDialect(GridDialect gridDialect) {
+		this.gridDialect = gridDialect;
+	}
+
+	public GridDialect getGridDialect() {
+		return gridDialect;
+	}
 }

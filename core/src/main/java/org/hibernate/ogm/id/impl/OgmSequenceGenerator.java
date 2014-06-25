@@ -78,16 +78,17 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		this.params = params;
 		sequenceName = determineSequenceName( params, dialect );
 		generatorKeyMetadata = IdGeneratorKeyMetadata.forSequence( sequenceName );
+		delegate = getDelegate();
 	}
 
 	@Override
 	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
-		return delegate == null ? generatorKeyMetadata : delegate.getGeneratorKeyMetadata();
+		return delegate.getGeneratorKeyMetadata();
 	}
 
 	@Override
 	protected IdGeneratorKey getGeneratorKey(SessionImplementor session) {
-		return getDelegate( session ).getGeneratorKey( session );
+		return delegate.getGeneratorKey( session );
 	}
 
 	/**
@@ -126,27 +127,23 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		return sequenceName;
 	}
 
-	private Executor getDelegate(SessionImplementor session) {
-		if ( delegate == null ) {
-			GridDialect gridDialect = getDialect( session );
+	private Executor getDelegate() {
+		GridDialect gridDialect = super.getGridDialect();
 
-			if ( gridDialect.supportsSequences() ) {
-				delegate = new SequenceExecutor( generatorKeyMetadata );
-			}
-			else {
-				log.dialectDoesNotSupportSequences( gridDialect.getClass().getName() );
-
-				OgmTableGenerator tableGenerator = new OgmTableGenerator();
-				Properties newParams = new Properties();
-				newParams.putAll( params );
-				newParams.put( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
-				tableGenerator.configure( type, newParams, dialect );
-
-				delegate = new TableExecutor( tableGenerator );
-			}
+		if ( gridDialect.supportsSequences() ) {
+			return new SequenceExecutor( generatorKeyMetadata );
 		}
+		else {
+			log.dialectDoesNotSupportSequences( gridDialect.getClass().getName() );
 
-		return delegate;
+			OgmTableGenerator tableGenerator = new OgmTableGenerator();
+			Properties newParams = new Properties();
+			newParams.putAll( params );
+			newParams.put( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
+			tableGenerator.configure( type, newParams, dialect );
+
+			return new TableExecutor( tableGenerator );
+		}
 	}
 
 	/**

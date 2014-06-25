@@ -27,7 +27,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
-import org.hibernate.ogm.dialect.NoopDialect;
+import org.hibernate.ogm.dialect.OgmDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
@@ -87,7 +87,7 @@ public class Neo4jNextValueGenerationTest {
 		newParams.setProperty( OgmTableGenerator.INITIAL_PARAM, String.valueOf( initialValue ) );
 		newParams.put( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, new DefaultObjectNameNormalizer() );
 		OgmTableGenerator tableGenerator = new OgmTableGenerator();
-		tableGenerator.configure( LongType.INSTANCE, newParams, new NoopDialect() );
+		tableGenerator.configure( LongType.INSTANCE, newParams, new OgmDialect( dialect ) );
 		return tableGenerator;
 	}
 
