@@ -61,7 +61,6 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
@@ -539,8 +538,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	@Override
 	public Number nextValue(IdGenerationRequest request) {
-		validateIdGeneratorKey( request.getKey() );
-
 		DBCollection currentCollection = getCollection( request.getKey().getTable() );
 		DBObject query = this.prepareIdObject( request.getKey() );
 		//all columns should match to find the value
@@ -583,17 +580,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 	private String getValueColumnName(IdGeneratorKey key) {
 		return key.getMetadata().getValueColumnName() != null ? key.getMetadata().getValueColumnName() : DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME;
 	}
-
-	private void validateIdGeneratorKey(IdGeneratorKey key) {
-		if ( key.getMetadata().getType() != IdGeneratorType.TABLE ) {
-			throw new HibernateException( "Unsupported generator type: " + key.getMetadata().getType() );
-		}
-
-		if ( !key.getColumnNames()[0].equals( ID_FIELDNAME ) ) {
-			log.warnf( "Cannot use primary key column name '%s' for id generator, going to use '%s' instead", key.getColumnNames()[0], ID_FIELDNAME );
-		}
-	}
-
 
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {

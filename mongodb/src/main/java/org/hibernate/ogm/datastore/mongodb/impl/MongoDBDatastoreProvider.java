@@ -18,7 +18,6 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
 import org.hibernate.ogm.dialect.spi.SchemaInitializer;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -86,7 +85,7 @@ public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, S
 
 	@Override
 	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return DefaultSchemaInitializer.class;
+		return MongoDBEntityMappingValidator.class;
 	}
 
 	@Override
