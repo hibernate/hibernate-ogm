@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 
@@ -25,6 +26,7 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
  *
  * @author Gunnar Morling
  */
+@Experimental("The initializeSchema() method may be replaced by more specific fine-grained hooks in the future.")
 public interface SchemaInitializer extends Service {
 
 	/**
