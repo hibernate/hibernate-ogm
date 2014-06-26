@@ -192,4 +192,8 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 			( (ServiceRegistryAwareService) gridDialect ).injectServices( serviceRegistry );
 		}
 	}
+
+	public GridDialect getGridDialect() {
+		return gridDialect;
+	}
 }

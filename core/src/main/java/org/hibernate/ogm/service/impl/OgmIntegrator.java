@@ -9,12 +9,18 @@ package org.hibernate.ogm.service.impl;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.EventType;
 import org.hibernate.integrator.spi.Integrator;
 import org.hibernate.integrator.spi.ServiceContributingIntegrator;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
+import org.hibernate.ogm.dialect.BatchOperationsDelegator;
+import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.dialect.OgmDialectFactoryInitiator;
+import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
@@ -50,6 +56,20 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		Version.touch();
 
 		sessionFactory.addObserver( new SchemaInitializingObserver( configuration ) );
+		attachBatchListenersIfRequired( serviceRegistry );
+	}
+
+	/**
+	 * If the current dialect supports batching, register the required event listeners.
+	 */
+	private void attachBatchListenersIfRequired(SessionFactoryServiceRegistry serviceRegistry) {
+		GridDialect gridDialect = serviceRegistry.getService( GridDialect.class );
+		BatchOperationsDelegator batchDelegator = asBatchDelegatorOrNull( gridDialect );
+
+		if ( batchDelegator != null ) {
+			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
+			addListeners( eventListenerRegistry, batchDelegator );
+		}
 	}
 
 	@Override
@@ -69,5 +89,21 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( DatastoreProviderInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptionsServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( GridDialectInitiator.INSTANCE );
+	}
+
+	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {
+		if ( gridDialect instanceof GridDialectLogger ) {
+			gridDialect = ( (GridDialectLogger) gridDialect ).getGridDialect();
+		}
+
+		return (BatchOperationsDelegator) ( gridDialect instanceof BatchOperationsDelegator ? gridDialect : null );
+	}
+
+	private void addListeners(EventListenerRegistry eventListenerRegistry, BatchOperationsDelegator gridDialect) {
+		eventListenerRegistry.addDuplicationStrategy( new FlushBatchManagerEventListener.FlushDuplicationStrategy() );
+		eventListenerRegistry.addDuplicationStrategy( new AutoFlushBatchManagerEventListener.AutoFlushDuplicationStrategy() );
+		eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new FlushBatchManagerEventListener( gridDialect ) );
+		eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new AutoFlushBatchManagerEventListener( gridDialect ) );
 	}
 }

@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.impl.SchemaInitializerInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
@@ -24,7 +23,6 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 public class OgmSessionFactoryServiceInitiators {
 
 	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.<SessionFactoryServiceInitiator<?>>asList(
-			GridDialectInitiator.INSTANCE,
 			QueryParserServicesInitiator.INSTANCE,
 			SchemaInitializerInitiator.INSTANCE
 	) );
