@@ -280,9 +280,9 @@ public class CouchDBDatastore {
 	public long nextValue(IdGeneratorKey key, int increment, int initialValue) {
 		long value;
 		try {
-			SequenceDocument identifier = getNextKeyValue( createId( key ), initialValue );
-			value = identifier.getValue();
-			saveIntegralIncreasedValue( increment, identifier );
+			SequenceDocument sequence = getSequence( key, initialValue );
+			value = sequence.getValue();
+			incrementValueAndSave( increment, sequence );
 		}
 		catch (ResteasyClientException crf) {
 			throw logger.errorCalculatingNextValue( crf );
@@ -426,7 +426,7 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private void saveIntegralIncreasedValue(int increment, SequenceDocument identifier) {
+	private void incrementValueAndSave(int increment, SequenceDocument identifier) {
 		identifier.increase( increment );
 		saveDocument( identifier );
 	}
@@ -465,15 +465,16 @@ public class CouchDBDatastore {
 		return builder.toString();
 	}
 
-	private SequenceDocument getNextKeyValue(String id, int initialValue) {
+	private SequenceDocument getSequence(IdGeneratorKey key, int initialValue) {
 		Response response = null;
 		try {
+			String id = createId( key );
 			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( SequenceDocument.class );
 			}
 			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
-				SequenceDocument identifier = new SequenceDocument( initialValue );
+				SequenceDocument identifier = new SequenceDocument( key.getMetadata().getValueColumnName(), initialValue );
 				identifier.setId( id );
 				return identifier;
 			}

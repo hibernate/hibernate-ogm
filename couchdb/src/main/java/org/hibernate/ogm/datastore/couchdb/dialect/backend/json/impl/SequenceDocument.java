@@ -6,14 +6,23 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl;
 
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
+
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 
 /**
- * Used to serialize and deserialize sequence objects.
+ * Used to serialize and deserialize sequence objects. A generic map with a single value is used for writing/reading the
+ * value in order to make the property customizable as per the generator's configuration.
  *
  * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 @JsonTypeName(SequenceDocument.TYPE_NAME)
@@ -24,24 +33,41 @@ public class SequenceDocument extends Document {
 	 */
 	public static final String TYPE_NAME = "sequence";
 
-	private long value;
+	private final Map<String, Object> properties = newHashMap( 1 );
+	private String valueProperty;
 
-	public SequenceDocument() {
+	// Only used by Jackson
+	SequenceDocument() {
 	}
 
-	public SequenceDocument(int initialValue) {
-		value = initialValue;
+	public SequenceDocument(String valueProperty, long initialValue) {
+		this.valueProperty = valueProperty;
+		properties.put( valueProperty, String.valueOf( initialValue ) );
 	}
 
+	@JsonIgnore
 	public long getValue() {
-		return value;
-	}
-
-	public void setValue(long value) {
-		this.value = value;
+		return Long.valueOf( (String) properties.get( valueProperty ) );
 	}
 
 	public void increase(int increment) {
-		value += increment;
+		long value = getValue() + increment;
+		properties.put( valueProperty, String.valueOf( value ) );
+	}
+
+	// Only used by Jackson
+
+	@JsonAnyGetter
+	Map<String, Object> getProperties() {
+		return properties;
+	}
+
+	@JsonAnySetter
+	void set(String name, Object value) {
+		if ( valueProperty == null ) {
+			valueProperty = name;
+		}
+
+		properties.put( name, value );
 	}
 }
