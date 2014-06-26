@@ -6,8 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -23,7 +22,6 @@ import org.hibernate.cfg.DefaultNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.cfg.ObjectNameNormalizer;
 import org.hibernate.id.IdentifierGenerator;
-import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -33,6 +31,7 @@ import org.hibernate.ogm.dialect.NoopDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
 import org.junit.After;
@@ -114,9 +113,8 @@ public class Neo4jNextValueGenerationTest {
 	@Test
 	public void testFirstValueIsInitialValue() {
 		final IdGeneratorKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
-		final IdentifierGeneratorHelper.BigIntegerHolder sequenceValue = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( generatorKey, sequenceValue, 1, INITIAL_VALUE_FIRST_VALUE_TEST );
-		assertThat( sequenceValue.makeValue().intValue(), equalTo( INITIAL_VALUE_FIRST_VALUE_TEST ) );
+		Number sequenceValue = dialect.nextValue( new IdGenerationRequest( generatorKey, 1, INITIAL_VALUE_FIRST_VALUE_TEST ) );
+		assertThat( sequenceValue ).isEqualTo( INITIAL_VALUE_FIRST_VALUE_TEST );
 	}
 
 	@Test
@@ -127,9 +125,8 @@ public class Neo4jNextValueGenerationTest {
 			threads[i] = new Thread( new Runnable() {
 				@Override
 				public void run() {
-					final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
 					for ( int i = 0; i < LOOPS; i++ ) {
-						dialect.nextValue( generatorKey, value, 1, INITIAL_VALUE_THREAD_SAFETY_TEST );
+						dialect.nextValue( new IdGenerationRequest( generatorKey, 1, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
 					}
 				}
 			} );
@@ -138,11 +135,9 @@ public class Neo4jNextValueGenerationTest {
 		for ( Thread thread : threads ) {
 			thread.join();
 		}
-		final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( generatorKey, value, 0, 1 );
-		assertThat( value.makeValue().intValue(), equalTo( LOOPS * THREADS ) );
+		Number value = dialect.nextValue( new IdGenerationRequest( generatorKey, 0, 1 ) );
+		assertThat( value ).isEqualTo( LOOPS * THREADS );
 	}
-
 
 	private IdGeneratorKey buildIdGeneratorKey(String sequenceName) {
 		IdGeneratorKeyMetadata metadata = IdGeneratorKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );

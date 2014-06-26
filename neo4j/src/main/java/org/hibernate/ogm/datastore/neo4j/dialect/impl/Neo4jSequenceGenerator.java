@@ -219,10 +219,6 @@ public class Neo4jSequenceGenerator {
 	 * @return the next value in a sequence
 	 */
 	public int nextValue(IdGeneratorKey generatorKey, int increment) {
-		return sequence( generatorKey, increment );
-	}
-
-	private int sequence(IdGeneratorKey generatorKey, int increment) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
