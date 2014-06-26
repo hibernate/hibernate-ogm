@@ -91,6 +91,8 @@ public class Neo4jModuleMemberRegistrationIT {
 		return buildDirectory + File.separator + "NEO4J-DB" + File.separator + System.currentTimeMillis();
 	}
 
+	// TODO OGM-373 Provide an actual test with some queries etc.; For now we just ensure that the module definitions
+	// are not broken and the application can be deployed/started
 	@Test
 	public void shouldBeStarted() throws Exception {
 		assertEquals( "Container should be started", HelloWorldBean.HELLO, bean.hello() );
