@@ -15,7 +15,6 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -30,8 +29,8 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -138,9 +137,8 @@ public class MapDialect implements GridDialect {
 	}
 
 	@Override
-	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		int nextValue = provider.getSharedAtomicInteger( key, initialValue, increment );
-		value.initialize( nextValue );
+	public Number nextValue(IdGenerationRequest request) {
+		return provider.getSharedAtomicInteger( request.getKey(), request.getInitialValue(), request.getIncrement() );
 	}
 
 	@Override

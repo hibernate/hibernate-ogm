@@ -17,7 +17,6 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableMapAssociationSnapshot;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
@@ -33,8 +32,8 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -172,23 +171,23 @@ public class EhcacheDialect implements GridDialect {
 	}
 
 	@Override
-	public void nextValue(IdGeneratorKey rowKey, IntegralDataTypeHolder value, int increment, int initialValue) {
+	public Number nextValue(IdGenerationRequest request) {
 		final Cache<SerializableKey> cache = datastoreProvider.getIdentifierCache();
-		SerializableKey key = new SerializableKey( rowKey );
+		SerializableKey key = new SerializableKey( request.getKey() );
 
 		Element previousValue = cache.get( key );
 		if ( previousValue == null ) {
-			previousValue = cache.putIfAbsent( new Element( key, initialValue ) );
+			previousValue = cache.putIfAbsent( new Element( key, request.getInitialValue() ) );
 		}
 		if ( previousValue != null ) {
 			while ( !cache.replace( previousValue,
-					new Element( key, ( (Integer) previousValue.getObjectValue() ) + increment ) ) ) {
+					new Element( key, ( (Integer) previousValue.getObjectValue() ) + request.getIncrement() ) ) ) {
 				previousValue = cache.get( key );
 			}
-			value.initialize( ( (Integer) previousValue.getObjectValue() ) + increment );
+			return ( (Integer) previousValue.getObjectValue() ) + request.getIncrement();
 		}
 		else {
-			value.initialize( initialValue );
+			return request.getInitialValue();
 		}
 	}
 

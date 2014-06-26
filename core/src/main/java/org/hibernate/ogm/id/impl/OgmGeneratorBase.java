@@ -27,6 +27,7 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.type.Type;
 
@@ -152,10 +153,18 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 
 	private IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
 		IdGeneratorKey key = getGeneratorKey( session );
-		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
 		GridDialect gridDialect = getDialect( session );
 
-		gridDialect.nextValue( key, value, optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1, initialValue );
+		Number nextValue = gridDialect.nextValue(
+				new IdGenerationRequest(
+						key,
+						optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1,
+						initialValue
+				)
+		);
+
+		IntegralDataTypeHolder value = IdentifierGeneratorHelper.getIntegralDataTypeHolder( identifierType.getReturnedClass() );
+		value.initialize( nextValue.longValue() );
 
 		return value;
 	}

@@ -20,7 +20,6 @@ import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
@@ -36,6 +35,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -167,39 +167,30 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+	//TODO should we use GridTypes here?
+	public Number nextValue(IdGenerationRequest request) {
 		final AdvancedCache<IdGeneratorKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
 		boolean done = false;
+		Number value = null;
+
 		do {
-			//read value
 			//skip locking proposed by Sanne
-			Object valueFromDb = identifierCache.withFlags( Flag.SKIP_LOCKING ).get( key );
-			if ( valueFromDb == null ) {
-				//if not there, insert initial value
-				value.initialize( initialValue );
-				//TODO should we use GridTypes here?
-				valueFromDb = new Long( value.makeValue().longValue() );
-				final Object oldValue = identifierCache.putIfAbsent( key, valueFromDb );
-				//check in case somebody has inserted it behind our back
+			value = (Number) identifierCache.withFlags( Flag.SKIP_LOCKING ).get( request.getKey() );
+
+			if ( value == null ) {
+				value = Long.valueOf( request.getInitialValue() );
+				final Number oldValue = (Number) identifierCache.putIfAbsent( request.getKey(), value );
 				if ( oldValue != null ) {
-					value.initialize( ( (Number) oldValue ).longValue() );
-					valueFromDb = oldValue;
+					value = oldValue;
 				}
 			}
-			else {
-				//read the value from the table
-				value.initialize( ( (Number) valueFromDb ).longValue() );
-			}
 
-			//update value
-			final IntegralDataTypeHolder updateValue = value.copy();
-			//increment value
-			updateValue.add( increment );
-			//TODO should we use GridTypes here?
-			final Object newValueFromDb = updateValue.makeValue();
-			done = identifierCache.replace( key, valueFromDb, newValueFromDb );
+			Number newValue = value.longValue() + request.getIncrement();
+			done = identifierCache.replace( request.getKey(), value, newValue );
 		}
 		while ( !done );
+
+		return value;
 	}
 
 	@Override

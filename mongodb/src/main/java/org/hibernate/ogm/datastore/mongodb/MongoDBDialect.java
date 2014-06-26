@@ -23,7 +23,6 @@ import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -65,6 +64,7 @@ import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -538,18 +538,18 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		validateIdGeneratorKey( key );
+	public Number nextValue(IdGenerationRequest request) {
+		validateIdGeneratorKey( request.getKey() );
 
-		DBCollection currentCollection = getCollection( key.getTable() );
-		DBObject query = this.prepareIdObject( key );
+		DBCollection currentCollection = getCollection( request.getKey().getTable() );
+		DBObject query = this.prepareIdObject( request.getKey() );
 		//all columns should match to find the value
 
-		String valueColumnName = getValueColumnName( key );
+		String valueColumnName = getValueColumnName( request.getKey() );
 
 		BasicDBObject update = new BasicDBObject();
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
-		Integer incrementObject = Integer.valueOf( increment );
+		Integer incrementObject = Integer.valueOf( request.getIncrement() );
 		this.addSubQuery( "$inc", update, valueColumnName, incrementObject );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
 		Object idFromDB;
@@ -558,9 +558,9 @@ public class MongoDBDialect implements BatchableGridDialect {
 			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
 			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
 			BasicDBObject updateForInitial = new BasicDBObject();
-			this.addSubQuery( "$inc", updateForInitial, valueColumnName, initialValue );
+			this.addSubQuery( "$inc", updateForInitial, valueColumnName, request.getInitialValue() );
 			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
-			idFromDB = initialValue; //first time we ask this value
+			idFromDB = request.getInitialValue(); //first time we ask this value
 		}
 		else {
 			idFromDB = result.get( valueColumnName );
@@ -568,7 +568,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
 			Number id = (Number) idFromDB;
 			//idFromDB is the one used and the BD contains the next available value to use
-			value.initialize( id.longValue() );
+			return id;
 		}
 		else {
 			throw new HibernateException( "Cannot increment a non numeric field" );

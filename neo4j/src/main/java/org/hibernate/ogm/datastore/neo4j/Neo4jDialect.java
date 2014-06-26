@@ -23,7 +23,6 @@ import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.TypedValue;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
@@ -45,8 +44,8 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -295,9 +294,8 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	}
 
 	@Override
-	public void nextValue(IdGeneratorKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		int nextValue = neo4jSequenceGenerator.nextValue( key, increment );
-		value.initialize( nextValue );
+	public Number nextValue(IdGenerationRequest request) {
+		return neo4jSequenceGenerator.nextValue( request.getKey(), request.getIncrement() );
 	}
 
 	@Override

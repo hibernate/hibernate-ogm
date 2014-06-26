@@ -11,11 +11,11 @@ import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 
-import org.hibernate.id.IdentifierGeneratorHelper;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,10 +46,8 @@ public class EhcacheDialectTest {
 					new Runnable() {
 						@Override
 						public void run() {
-							final IdentifierGeneratorHelper.BigIntegerHolder value
-									= new IdentifierGeneratorHelper.BigIntegerHolder();
 							for ( int i = 0; i < LOOPS; i++ ) {
-								dialect.nextValue( test, value, 1, 1 );
+								dialect.nextValue( new IdGenerationRequest( test, 1, 1 ) );
 							}
 						}
 					}
@@ -59,8 +57,7 @@ public class EhcacheDialectTest {
 		for ( Thread thread : threads ) {
 			thread.join();
 		}
-		final IdentifierGeneratorHelper.BigIntegerHolder value = new IdentifierGeneratorHelper.BigIntegerHolder();
-		dialect.nextValue( test, value, 0, 1 );
-		assertThat( value.makeValue().intValue(), equalTo( LOOPS * THREADS ) );
+		Number value = dialect.nextValue( new IdGenerationRequest( test, 0, 1 ) );
+		assertThat( value.intValue(), equalTo( LOOPS * THREADS ) );
 	}
 }
