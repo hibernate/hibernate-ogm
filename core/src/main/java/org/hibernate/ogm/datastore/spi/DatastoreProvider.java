@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.SchemaInitializer;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.Service;
 
@@ -29,4 +30,11 @@ public interface DatastoreProvider extends Service {
 	 * @return the default {@link QueryParserService} for the underlying datastore; never {@code null}
 	 */
 	Class<? extends QueryParserService> getDefaultQueryParserServiceType();
+
+	/**
+	 * Returns the type of the {@link SchemaInitializer} of this datastore.
+	 *
+	 * @return the schema initializer type
+	 */
+	Class<? extends SchemaInitializer> getSchemaInitializerType();
 }

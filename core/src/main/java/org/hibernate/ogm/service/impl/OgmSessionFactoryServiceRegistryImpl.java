@@ -9,7 +9,6 @@ package org.hibernate.ogm.service.impl;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.datastore.spi.StartStoppable;
 import org.hibernate.service.Service;
 import org.hibernate.service.internal.SessionFactoryServiceRegistryImpl;
 import org.hibernate.service.spi.Configurable;
@@ -29,12 +28,10 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 public class OgmSessionFactoryServiceRegistryImpl extends SessionFactoryServiceRegistryImpl {
 
 	private Configuration configuration = null;
-	private SessionFactoryImplementor sessionFactory = null;
 
 	public OgmSessionFactoryServiceRegistryImpl(ServiceRegistryImplementor parent, SessionFactoryImplementor sessionFactory, Configuration configuration) {
 		super( parent, sessionFactory, configuration );
 		this.configuration = configuration;
-		this.sessionFactory = sessionFactory;
 		createServiceBindings();
 	}
 
@@ -55,13 +52,4 @@ public class OgmSessionFactoryServiceRegistryImpl extends SessionFactoryServiceR
 			( (Configurable) serviceBinding.getService() ).configure( configuration.getProperties() );
 		}
 	}
-
-	@Override
-	public <R extends Service> void startService(ServiceBinding<R> serviceBinding) {
-		super.startService( serviceBinding );
-		if ( StartStoppable.class.isInstance( serviceBinding.getService() ) ) {
-			( (StartStoppable) serviceBinding.getService() ).start( configuration, sessionFactory );
-		}
-	}
-
 }

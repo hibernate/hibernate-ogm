@@ -6,19 +6,18 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
-import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
+import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * Initialize the {@link OptionsService} so that other components can access it using the {@link org.hibernate.service.ServiceRegistry}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public final class OptionsServiceInitiator implements SessionFactoryServiceInitiator<OptionsService> {
+public final class OptionsServiceInitiator implements StandardServiceInitiator<OptionsService> {
 
 	public static final String MAPPING = "hibernate.ogm.mapping";
 
@@ -30,12 +29,7 @@ public final class OptionsServiceInitiator implements SessionFactoryServiceIniti
 	}
 
 	@Override
-	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+	public OptionsService initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new OptionsServiceImpl();
-	}
-
-	@Override
-	public OptionsService initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		return null;
 	}
 }

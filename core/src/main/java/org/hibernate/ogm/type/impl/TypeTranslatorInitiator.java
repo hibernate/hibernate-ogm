@@ -6,23 +6,19 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
+import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * Initializes {@link TypeTranslator}.
- * <p>
- * This is a {@link SessionFactoryServiceInitiator} since it depends on {@link GridDialect} which itself is a session
- * factory scoped service.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<TypeTranslator> {
+public class TypeTranslatorInitiator implements StandardServiceInitiator<TypeTranslator> {
 
 	public static final TypeTranslatorInitiator INSTANCE = new TypeTranslatorInitiator();
 
@@ -32,18 +28,8 @@ public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<T
 	}
 
 	@Override
-	public TypeTranslator initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		return createService( registry );
-	}
-
-	@Override
-	public TypeTranslator initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		return createService( registry );
-	}
-
-	private TypeTranslator createService(ServiceRegistryImplementor registry) {
+	public TypeTranslator initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		GridDialect dialect = registry.getService( GridDialect.class );
 		return new TypeTranslatorImpl( dialect );
 	}
-
 }

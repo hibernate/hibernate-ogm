@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import java.util.Map;
+
+import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
@@ -30,7 +30,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public final class DatastoreProviderInitiator implements SessionFactoryServiceInitiator<DatastoreProvider> {
+public final class DatastoreProviderInitiator implements StandardServiceInitiator<DatastoreProvider> {
 
 	public static final DatastoreProviderInitiator INSTANCE = new DatastoreProviderInitiator();
 
@@ -42,9 +42,10 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 		return DatastoreProvider.class;
 	}
 
+
 	@Override
-	public DatastoreProvider initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
-		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configuration, registry.getService( ClassLoaderService.class ) );
+	public DatastoreProvider initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
 		DatastoreProvider datastoreProvider = propertyReader.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
 				.instantiate()
@@ -54,11 +55,6 @@ public final class DatastoreProviderInitiator implements SessionFactoryServiceIn
 
 		log.useDatastoreProvider( datastoreProvider.getClass().getName() );
 		return datastoreProvider;
-	}
-
-	@Override
-	public DatastoreProvider initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
-		throw new UnsupportedOperationException( "Cannot create " + DatastoreProvider.class.getName() + " service using metadata" );
 	}
 
 	// TODO This only public to support the hack in OgmJtaPlatformInitiator#isNeo4j(); Can be made private once that

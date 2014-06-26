@@ -22,6 +22,8 @@ import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
+import org.hibernate.ogm.dialect.spi.SchemaInitializer;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -103,6 +105,10 @@ public class BatchExecutionTest extends OgmTestCase {
 			return null;
 		}
 
+		@Override
+		public Class<? extends SchemaInitializer> getSchemaInitializerType() {
+			return DefaultSchemaInitializer.class;
+		}
 	}
 
 	public static class SampleBatchableDialect implements BatchableGridDialect {

@@ -18,10 +18,11 @@ import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.datastore.spi.StartStoppable;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
+import org.hibernate.ogm.dialect.spi.SchemaInitializer;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -43,7 +44,7 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class DatastoreProviderGeneratingSchema implements DatastoreProvider, StartStoppable {
+public class DatastoreProviderGeneratingSchema implements DatastoreProvider {
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -56,29 +57,31 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 	}
 
 	@Override
-	public void start(Configuration configuration, SessionFactoryImplementor factory) {
-		Iterator<Table> tables = configuration.getTableMappings();
-		while ( tables.hasNext() ) {
-			Table table = tables.next();
-			if ( table.isPhysicalTable() ) {
-				String tableName = table.getQuotedName();
-				// do something with table
-				Iterator<Column> columns = table.getColumnIterator();
-				while ( columns.hasNext() ) {
-					Column column = columns.next();
-					String columnName = column.getCanonicalName();
-					// do something with column
-				}
-				//TODO handle unique constraints?
-			}
-		}
-		throw new RuntimeException("STARTED!");
+	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
+		return TestSchemaInitializer.class;
 	}
 
-	@Override
-	public void stop() {
-		//not tested
-		throw new RuntimeException("STOPPED!");
+	public static class TestSchemaInitializer extends DefaultSchemaInitializer {
+
+		@Override
+		public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
+			Iterator<Table> tables = configuration.getTableMappings();
+			while ( tables.hasNext() ) {
+				Table table = tables.next();
+				if ( table.isPhysicalTable() ) {
+					String tableName = table.getQuotedName();
+					// do something with table
+					Iterator<Column> columns = table.getColumnIterator();
+					while ( columns.hasNext() ) {
+						Column column = columns.next();
+						String columnName = column.getCanonicalName();
+						// do something with column
+					}
+					//TODO handle unique constraints?
+				}
+			}
+			throw new RuntimeException("STARTED!");
+		}
 	}
 
 	public static class Dialect implements GridDialect {
