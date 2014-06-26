@@ -15,7 +15,6 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.facade.impl.DatabaseC
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.facade.impl.ServerClient;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.DesignDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.EntityTupleRows;
-import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.impl.TuplesDesignDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
@@ -71,8 +70,7 @@ public class CouchDBDatastore {
 	}
 
 	/**
-	 * Creates an instance of CouchDBDatastore, check if the CouchDB Design Document necessary to retrieve some data
-	 * (e.g. number of associations and entities) are present and create them if not
+	 * Creates an instance of CouchDBDatastore.
 	 *
 	 * @param database a handle to the database
 	 * @param createDatabase if true the database is created
@@ -96,11 +94,6 @@ public class CouchDBDatastore {
 		}
 		else if ( !databaseExists( serverClient, database.getDatabaseName() ) ) {
 			throw logger.databaseDoesNotExistException( database.getDatabaseName() );
-		}
-
-		// create tuple design document if required
-		if ( !exists( TuplesDesignDocument.DOCUMENT_ID, true ) ) {
-			saveDocument( new TuplesDesignDocument() );
 		}
 	}
 
