@@ -21,7 +21,6 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.DefaultNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.cfg.ObjectNameNormalizer;
-import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
@@ -32,6 +31,7 @@ import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
 import org.junit.After;
@@ -70,7 +70,7 @@ public class Neo4jNextValueGenerationTest {
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
 		provider.injectServices( serviceRegistry );
 
-		Set<IdentifierGenerator> sequences = new HashSet<IdentifierGenerator>();
+		Set<PersistentNoSqlIdentifierGenerator> sequences = new HashSet<PersistentNoSqlIdentifierGenerator>();
 		sequences.add( identifierGenerator( INITIAL_VALUE_SEQUENCE, INITIAL_VALUE_FIRST_VALUE_TEST ) );
 		sequences.add( identifierGenerator( THREAD_SAFETY_SEQUENCE, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
 
@@ -80,7 +80,7 @@ public class Neo4jNextValueGenerationTest {
 		dialect = new Neo4jDialect( provider );
 	}
 
-	private IdentifierGenerator identifierGenerator(String sequenceName, int initialValue) {
+	private PersistentNoSqlIdentifierGenerator identifierGenerator(String sequenceName, int initialValue) {
 		Properties newParams = new Properties();
 		newParams.setProperty( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
 		newParams.setProperty( OgmTableGenerator.TABLE_PARAM, HIBERNATE_SEQUENCES );

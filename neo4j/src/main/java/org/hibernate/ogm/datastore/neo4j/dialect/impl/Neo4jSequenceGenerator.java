@@ -20,6 +20,7 @@ import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
+import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;
@@ -105,12 +106,12 @@ public class Neo4jSequenceGenerator {
 	 *
 	 * @param identifierGenerators the generators representing the sequences
 	 */
-	public void createSequences(Set<IdentifierGenerator> identifierGenerators) {
+	public void createSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
 		addUniqueConstraints( identifierGenerators );
 		addSequences( identifierGenerators );
 	}
 
-	private void addUniqueConstraints(Set<IdentifierGenerator> identifierGenerators) {
+	private void addUniqueConstraints(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
 		Transaction tx = null;
 		try {
 			tx = neo4jDb.beginTx();
@@ -156,7 +157,7 @@ public class Neo4jSequenceGenerator {
 		return true;
 	}
 
-	private void addSequences(Set<IdentifierGenerator> identifierGenerators) {
+	private void addSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
 		Transaction tx = null;
 		try {
 			tx = neo4jDb.beginTx();
