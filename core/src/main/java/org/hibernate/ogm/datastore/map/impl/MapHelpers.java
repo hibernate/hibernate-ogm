@@ -61,17 +61,17 @@ public final class MapHelpers {
 	}
 
 	public static void updateAssociation(Association association, AssociationKey key) {
-		Map<RowKey, Map<String, Object>> atomicMap = ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
+		Map<RowKey, Map<String, Object>> underlyingMap = ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 		for ( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
 				case CLEAR:
-					atomicMap.clear();
+					underlyingMap.clear();
 				case PUT_NULL:
 				case PUT:
-					atomicMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
+					underlyingMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
 					break;
 				case REMOVE:
-					atomicMap.remove( action.getKey() );
+					underlyingMap.remove( action.getKey() );
 					break;
 			}
 		}

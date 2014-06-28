@@ -40,6 +40,9 @@ import org.hibernate.service.spi.Stoppable;
  * contents to other storage. Most important, it must be considered that different sessions won't be isolated
  * unless they avoid flushing.
  *
+ * Oh and while we lock data when Hibernate ORM acquires locks, we never unlock as ORM expects locks
+ * to be released by the transaction commit / rollback which does not happen here.
+ *
  * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
  */
 public final class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
@@ -73,6 +76,11 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	@Override
 	public void stop() {
 		entitiesKeyValueStorage.clear();
+		associationsKeyValueStorage.clear();
+		sequencesStorage.clear();
+		dataLocks.clear();
+		//not nice but that's the best we can do
+		acquiredLocksPerThread.remove();
 		log.debug( "Stopped and cleared MapDatastoreProvider" );
 	}
 
