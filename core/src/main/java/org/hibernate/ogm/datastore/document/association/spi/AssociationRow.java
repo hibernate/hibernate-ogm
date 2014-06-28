@@ -17,7 +17,7 @@ import org.hibernate.ogm.grid.RowKey;
 /**
  * A {@link TupleSnapshot} which represents one row of an association.
  * <p>
- * It obtains it values from the store-specific native representation of the association row as well as the association
+ * It obtains its values from the store-specific native representation of the association row as well as the association
  * key. Column values from both sources are exposed in a uniformed manner. It retains a reference to the store-specific
  * association row, retrieving values from it via the {@link AssociationRowAccessor} contract.
  * <p>

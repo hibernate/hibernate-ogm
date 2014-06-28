@@ -13,8 +13,10 @@ import org.hibernate.ogm.util.impl.Contracts;
 /**
  * Base class for {@link AssociationRowFactory} implementations which support association rows stored as key/value
  * tuples as well as rows stored as collections of single values.
+ * This opening the way to optimise the storage and remove the column name from the structure for collections of
+ * single values.
  * <p>
- * The latter form may be used to persist association rows with exactly one column (which is the case for collections of
+ * The single value form may be used to persist association rows with exactly one column (which is the case for collections of
  * simple values such as {@code int}s, {@code String} s etc. as well as associations based on non-composite keys). In
  * this case a row object of type {@code R} will be created using the column value and the single row key column which
  * is not part of the association key.
