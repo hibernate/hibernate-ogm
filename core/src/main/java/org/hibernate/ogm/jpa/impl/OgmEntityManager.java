@@ -302,6 +302,9 @@ public class OgmEntityManager implements EntityManager {
 				if ( queryReturn instanceof NativeSQLQueryScalarReturn ) {
 					noSqlQuery.addScalar( ( (NativeSQLQueryScalarReturn) queryReturn ).getColumnAlias() );
 				}
+				else if ( queryReturn instanceof NativeSQLQueryRootReturn ) {
+					noSqlQuery.addEntity( ( (NativeSQLQueryRootReturn) queryReturn ).getReturnEntityName() );
+				}
 			}
 		}
 
