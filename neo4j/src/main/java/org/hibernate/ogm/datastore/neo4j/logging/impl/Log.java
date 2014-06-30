@@ -26,4 +26,10 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = DEBUG)
 	@Message(id = 1402, value = "An error occured while generating the sequence %s")
 	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
+
+	@Message(id = 1403, value = "TransactionManager not found")
+	HibernateException transactionManagerNotFound();
+
+	@Message(id = 1404, value = "Error during transaction recovery")
+	HibernateException errorDuringRecovery(@Cause Exception t);
 }
