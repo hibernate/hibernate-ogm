@@ -128,6 +128,20 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	}
 
 	@Test
+	public void testMappedEntityResultFromNamedNativeQuery() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		OscarWildePoem poem = (OscarWildePoem) em.createNamedQuery( "AthanasiaQueryWithMapping" ).getSingleResult();
+
+		assertAreEquals( athanasia, poem );
+
+		commit();
+		close( em );
+	}
+
+
+	@Test
 	public void testExceptionWhenReturnedEntityIsMissing() throws Exception {
 		begin();
 		EntityManager em = createEntityManager();
