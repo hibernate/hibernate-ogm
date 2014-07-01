@@ -75,14 +75,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 				"from Hypothesis" ) );
 		assertQuery( session, 8, session.createQuery(
 				"from org.hibernate.ogm.backendtck.queries.Hypothesis" ) );
-		assertQuery( session, 4, session.createQuery(
+		assertQuery( session, 5, session.createQuery(
 				"from Helicopter" ) );
 	}
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 12, session.createQuery(
+		assertQuery( session, 13, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -446,11 +446,24 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	public void testOrderedDescAndAscQuery() throws Exception {
 		List<?> result = session.createQuery( "from Helicopter h order by h.make desc, h.name" ).list();
+
 		assertThat( result ).onProperty( "make" ).ignoreNullOrder().containsExactly(
-				"Lama", "Lama", "Crusoe", null
+				"Lama", "Lama", "Howard", "Crusoe", null
 		);
 		assertThat( result ).onProperty( "name" ).ignoreNullOrder().containsExactly(
-				"Lama", "No creative clue", "No creative clue", null
+				"Lama", "No creative clue", null, "No creative clue", null
+		);
+	}
+
+	@Test
+	public void testProjectionWithNullValue() throws Exception {
+		List<ProjectionResult> projectionResult = asProjectionResults( "select name, make from Helicopter" );
+		assertThat( projectionResult ).containsOnly(
+				new ProjectionResult( null, null ),
+				new ProjectionResult( "Lama", "Lama" ),
+				new ProjectionResult( "No creative clue", "Lama" ),
+				new ProjectionResult( null, "Howard" ),
+				new ProjectionResult( "No creative clue", "Crusoe" )
 		);
 	}
 
@@ -559,6 +572,10 @@ public class SimpleQueriesTest extends OgmTestCase {
 		yetAnotherHelicopter.setMake( "Crusoe" );
 		yetAnotherHelicopter.setName( "No creative clue" );
 		session.persist( yetAnotherHelicopter );
+
+		Helicopter evenYetAnotherHelicopter = new Helicopter();
+		evenYetAnotherHelicopter.setMake( "Howard" );
+		session.persist( evenYetAnotherHelicopter );
 
 		Helicopter helicopterWithoutName = new Helicopter();
 		session.persist( helicopterWithoutName );
