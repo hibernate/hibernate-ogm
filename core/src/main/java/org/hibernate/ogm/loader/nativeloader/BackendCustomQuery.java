@@ -121,4 +121,9 @@ public class BackendCustomQuery implements CustomQuery {
 
 		return metadata;
 	}
+
+	@Override
+	public String toString() {
+		return queryObject != null ? queryObject.toString() : queryString;
+	}
 }

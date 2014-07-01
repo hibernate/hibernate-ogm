@@ -40,6 +40,7 @@ import org.hibernate.engine.query.spi.HQLQueryPlan;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryConstructorReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.query.spi.sql.NativeSQLQueryRootReturn;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryScalarReturn;
 import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -287,10 +288,23 @@ public class OgmEntityManager implements EntityManager {
 		}
 		String sqlQueryString = sqlDefinition.getQueryString();
 		SQLQuery noSqlQuery = ( (Session) getDelegate() ).createSQLQuery( sqlQueryString );
-		if ( sqlDefinition.getQueryReturns().length == 1 ) {
-			NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
-			noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
+
+		if ( sqlDefinition.getQueryReturns() != null ) {
+			if ( sqlDefinition.getQueryReturns().length == 1 ) {
+				NativeSQLQueryRootReturn rootReturn = (NativeSQLQueryRootReturn) sqlDefinition.getQueryReturns()[0];
+				noSqlQuery.addEntity( "alias1", rootReturn.getReturnEntityName(), LockMode.READ );
+			}
 		}
+		else if ( sqlDefinition.getResultSetRef() != null ) {
+			SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) factory.getSessionFactory();
+			ResultSetMappingDefinition resultSetMapping = sessionFactory.getResultSetMapping( sqlDefinition.getResultSetRef() );
+			for (NativeSQLQueryReturn queryReturn : resultSetMapping.getQueryReturns() ) {
+				if ( queryReturn instanceof NativeSQLQueryScalarReturn ) {
+					noSqlQuery.addScalar( ( (NativeSQLQueryScalarReturn) queryReturn ).getColumnAlias() );
+				}
+			}
+		}
+
 		return new OgmJpaQuery<T>( noSqlQuery, hibernateEm );
 	}
 

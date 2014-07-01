@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.backendtck.queries;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -42,7 +43,8 @@ public class Helicopter {
 		this.uuid = uuid;
 	}
 
-	@Field(analyze = Analyze.NO)
+	@Field(analyze = Analyze.NO, store = Store.YES, indexNullAs = "#<NULL>#")
+	@Column(name = "helicopterName")
 	public String getName() {
 		return name;
 	}
@@ -58,5 +60,10 @@ public class Helicopter {
 
 	public void setMake(String make) {
 		this.make = make;
+	}
+
+	@Override
+	public String toString() {
+		return "Helicopter [uuid=" + uuid + ", name=" + name + ", make=" + make + "]";
 	}
 }
