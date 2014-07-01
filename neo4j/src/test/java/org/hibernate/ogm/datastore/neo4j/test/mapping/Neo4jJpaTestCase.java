@@ -64,7 +64,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		List<Object> results = em.createNativeQuery( queryString ).getResultList();
 		Long uniqueResult = null;
 		if ( !results.isEmpty() ) {
-			uniqueResult = (Long) ( (Object[]) results.get( 0 ) )[0];
+			uniqueResult = (Long) results.get( 0 );
 		}
 		commitOrRollback( true );
 		em.close();

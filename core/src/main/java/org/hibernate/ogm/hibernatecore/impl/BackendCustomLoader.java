@@ -115,8 +115,14 @@ public class BackendCustomLoader extends CustomLoader {
 				}
 			}
 
-			results.add( entry );
+			if ( entry.length == 1 ) {
+				results.add( entry[0] );
+			}
+			else {
+				results.add( entry );
+			}
 		}
+
 		return results;
 	}
 

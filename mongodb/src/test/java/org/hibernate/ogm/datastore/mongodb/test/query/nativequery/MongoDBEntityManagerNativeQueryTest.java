@@ -82,9 +82,9 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
 				+ "{ 'name' : 1 }"
 				+ " )";
-		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "poemAuthorNameMapping" ).getSingleResult();
+		String result = (String) em.createNativeQuery( nativeQuery, "poemAuthorNameMapping" ).getSingleResult();
 
-		assertThat( result ).containsOnly( "Portia" );
+		assertThat( result ).isEqualTo( "Portia" );
 
 		commit();
 		close( em );
@@ -95,8 +95,8 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		begin();
 		EntityManager em = createEntityManager();
 
-		Object[] result = (Object[]) em.createNamedQuery( "CountPoems" ).getSingleResult();
-		assertThat( result ).containsOnly( 2L );
+		Long result = (Long) em.createNamedQuery( "CountPoems" ).getSingleResult();
+		assertThat( result ).isEqualTo( 2L );
 
 		commit();
 		close( em );
@@ -120,8 +120,8 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		begin();
 		EntityManager em = createEntityManager();
 
-		Object[] result = (Object[]) em.createNamedQuery( "AthanasiaProjectionQuery" ).getSingleResult();
-		assertThat( result ).containsOnly( athanasia.getName() );
+		String result = (String) em.createNamedQuery( "AthanasiaProjectionQuery" ).getSingleResult();
+		assertThat( result ).isEqualTo( athanasia.getName() );
 
 		commit();
 		close( em );
