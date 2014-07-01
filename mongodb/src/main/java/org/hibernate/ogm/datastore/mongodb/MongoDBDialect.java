@@ -60,7 +60,6 @@ import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
@@ -122,8 +121,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
 	private static final Log log = LoggerFactory.getLogger();
-
-	private static final String DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME = "sequence_value";
 
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
@@ -542,7 +539,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		DBObject query = this.prepareIdObject( request.getKey() );
 		//all columns should match to find the value
 
-		String valueColumnName = getValueColumnName( request.getKey() );
+		String valueColumnName = request.getKey().getMetadata().getValueColumnName();
 
 		BasicDBObject update = new BasicDBObject();
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
@@ -575,10 +572,6 @@ public class MongoDBDialect implements BatchableGridDialect {
 	@Override
 	public boolean supportsSequences() {
 		return false;
-	}
-
-	private String getValueColumnName(IdGeneratorKey key) {
-		return key.getMetadata().getValueColumnName() != null ? key.getMetadata().getValueColumnName() : DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME;
 	}
 
 	@Override
