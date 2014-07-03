@@ -23,12 +23,12 @@ import org.hibernate.ogm.grid.RowKey;
 /**
  * Represents an Association (think of it as a set of rows)
  *
- * A Association accepts a AssociationShapshot which is a read-only state
+ * A Association accepts a {@link AssociationSnapshot} which is a read-only state
  * of the association at creation time.
  *
  * An association collects changes applied to it. These changes are represented by a
- * list of AssociationOperation. It is intended that GridDialects retrieve to these actions and
- * reproduce them to the datastore. The list of changes is computed based off the snapshot.
+ * list of AssociationOperation. It is intended that {@link org.hibernate.ogm.dialect.GridDialect}s retrieve these
+ * actions and apply them to the datastore. The list of changes is computed against the snapshot.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
