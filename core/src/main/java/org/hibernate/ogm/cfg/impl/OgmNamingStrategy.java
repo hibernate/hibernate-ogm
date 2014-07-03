@@ -28,9 +28,11 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 	private static final String ELEMENT_COLLECTION_NAME_PATTERN = "collection&&element";
 
 
-	private String addPropertySeparator(String name) {
+	// noop method kept for documentation purposes
+	private String replacePropertySeparator(String name) {
 		//the . is already present, no need to replace it
-		return name; //name.replace( '.', '_' ).toLowerCase();
+		// Other strategies would typically replace '.' with '_'
+		return name;
 	}
 
 	@Override
@@ -40,7 +42,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 			propertyName = propertyName.substring( propertyName.lastIndexOf( "." ) + 1 );
 		}
 
-		return addPropertySeparator( propertyName );
+		return replacePropertySeparator( propertyName );
 	}
 
 	@Override
@@ -53,7 +55,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 						.append(
 								associatedEntityTable != null ?
 										associatedEntityTable :
-										addPropertySeparator( propertyName )
+										replacePropertySeparator( propertyName )
 						).toString()
 		);
 	}
@@ -63,7 +65,7 @@ public class OgmNamingStrategy extends EJB3NamingStrategy {
 	public String foreignKeyColumnName(
 			String propertyName, String propertyEntityName, String propertyTableName, String referencedColumnName
 	) {
-		String header = propertyName != null ? addPropertySeparator( propertyName ) : propertyTableName;
+		String header = propertyName != null ? replacePropertySeparator( propertyName ) : propertyTableName;
 		if ( header == null ) {
 			throw new AssertionFailure( "NamingStrategy not properly filled" );
 		}
