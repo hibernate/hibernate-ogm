@@ -23,7 +23,6 @@ import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -61,7 +60,11 @@ import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
+import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -115,13 +118,14 @@ public class MongoDBDialect implements BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
-	public static final String SEQUENCE_VALUE = "sequence_value";
 	public static final String ROWS_FIELDNAME = "rows";
 	public static final String TABLE_FIELDNAME = "table";
 	public static final String ASSOCIATIONS_COLLECTION_PREFIX = "associations_";
 
 	private static final Log log = LoggerFactory.getLogger();
-	private static final Integer ONE = Integer.valueOf( 1 );
+
+	private static final String DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME = "sequence_value";
+
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
@@ -212,11 +216,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	 *
 	 * @return the DBObject which represents the id field
 	 */
-	private BasicDBObject prepareIdObject(EntityKey key) {
-		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
-	}
-
-	private BasicDBObject prepareIdObject(RowKey key) {
+	private BasicDBObject prepareIdObject(Key key) {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
@@ -317,7 +317,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 					this.addSubQuery( "$set", updater, column, operation.getValue() );
 					break;
 				case REMOVE:
-					this.addSubQuery( "$unset", updater, column, ONE );
+					this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
 					break;
 				}
 			}
@@ -519,7 +519,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
-				addSubQuery( "$unset", updater, key.getCollectionRole(), ONE );
+				addSubQuery( "$unset", updater, key.getCollectionRole(), Integer.valueOf( 1 ) );
 				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
 		}
@@ -538,39 +538,62 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		DBCollection currentCollection = getCollection( key.getTable() );
-		DBObject query = this.prepareIdObject( key );
+	public Number nextValue(IdGenerationRequest request) {
+		validateIdGeneratorKey( request.getKey() );
+
+		DBCollection currentCollection = getCollection( request.getKey().getTable() );
+		DBObject query = this.prepareIdObject( request.getKey() );
 		//all columns should match to find the value
 
+		String valueColumnName = getValueColumnName( request.getKey() );
+
 		BasicDBObject update = new BasicDBObject();
-		//FIXME should "value" be hardcoded?
 		//FIXME how to set the initialValue if the document is not present? It seems the inc value is used as initial new value
-		Integer incrementObject = increment == 1 ? ONE : Integer.valueOf( increment );
-		this.addSubQuery( "$inc", update, SEQUENCE_VALUE, incrementObject );
+		Integer incrementObject = Integer.valueOf( request.getIncrement() );
+		this.addSubQuery( "$inc", update, valueColumnName, incrementObject );
 		DBObject result = currentCollection.findAndModify( query, null, null, false, update, false, true );
 		Object idFromDB;
-		idFromDB = result == null ? null : result.get( SEQUENCE_VALUE );
+		idFromDB = result == null ? null : result.get( valueColumnName );
 		if ( idFromDB == null ) {
 			//not inserted yet so we need to add initial value to increment to have the right next value in the DB
 			//FIXME that means there is a small hole as when there was not value in the DB, we do add initial value in a non atomic way
 			BasicDBObject updateForInitial = new BasicDBObject();
-			this.addSubQuery( "$inc", updateForInitial, SEQUENCE_VALUE, initialValue );
+			this.addSubQuery( "$inc", updateForInitial, valueColumnName, request.getInitialValue() );
 			currentCollection.findAndModify( query, null, null, false, updateForInitial, false, true );
-			idFromDB = initialValue; //first time we ask this value
+			idFromDB = request.getInitialValue(); //first time we ask this value
 		}
 		else {
-			idFromDB = result.get( SEQUENCE_VALUE );
+			idFromDB = result.get( valueColumnName );
 		}
 		if ( idFromDB.getClass().equals( Integer.class ) || idFromDB.getClass().equals( Long.class ) ) {
 			Number id = (Number) idFromDB;
 			//idFromDB is the one used and the BD contains the next available value to use
-			value.initialize( id.longValue() );
+			return id;
 		}
 		else {
 			throw new HibernateException( "Cannot increment a non numeric field" );
 		}
 	}
+
+	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
+
+	private String getValueColumnName(IdGeneratorKey key) {
+		return key.getMetadata().getValueColumnName() != null ? key.getMetadata().getValueColumnName() : DEFAULT_TABLE_GENERATOR_VALUE_COLUMN_NAME;
+	}
+
+	private void validateIdGeneratorKey(IdGeneratorKey key) {
+		if ( key.getMetadata().getType() != IdGeneratorType.TABLE ) {
+			throw new HibernateException( "Unsupported generator type: " + key.getMetadata().getType() );
+		}
+
+		if ( !key.getColumnNames()[0].equals( ID_FIELDNAME ) ) {
+			log.warnf( "Cannot use primary key column name '%s' for id generator, going to use '%s' instead", key.getColumnNames()[0], ID_FIELDNAME );
+		}
+	}
+
 
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {

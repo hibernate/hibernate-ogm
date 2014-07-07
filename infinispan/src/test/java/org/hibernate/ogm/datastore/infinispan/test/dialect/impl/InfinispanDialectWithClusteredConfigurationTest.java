@@ -28,7 +28,10 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
@@ -86,6 +89,21 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
 		assertThat( readTuple.get( "foo" ) ).isEqualTo( "bar" );
+	}
+
+	@Test
+	public void shoulReadAndWriteSequenceInClusteredMode() throws Exception {
+		// given
+		IdGeneratorKeyMetadata keyMetadata = IdGeneratorKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdGeneratorKey key = IdGeneratorKey.forTable( keyMetadata, "Foo_Sequence" );
+
+		// when
+		Number value = dialect1.nextValue( new IdGenerationRequest( key, 1, 1 ) );
+		assertThat( value ).isEqualTo( 1L );
+
+		// then
+		value = dialect2.nextValue( new IdGenerationRequest( key, 1, 1 ) );
+		assertThat( value ).isEqualTo( 2L );
 	}
 
 	@Test

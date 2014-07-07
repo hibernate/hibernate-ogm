@@ -182,4 +182,8 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 59, value = "Unable to find a GridType for %s")
 	HibernateException unableToFindGridType(String typeName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 60, value = "Grid dialect %1$s does not support sequences, falling back to table-based id generation. Consider to use @TableGenerator rather than @SequenceGenerator.")
+	void dialectDoesNotSupportSequences(String dialectClass);
 }

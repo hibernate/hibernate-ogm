@@ -26,7 +26,7 @@ import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.IdGeneratorKey;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -277,12 +277,12 @@ public class CouchDBDatastore {
 		return getTuplesByTableName( tableName );
 	}
 
-	public long nextValue(RowKey key, int increment, int initialValue) {
+	public long nextValue(IdGeneratorKey key, int increment, int initialValue) {
 		long value;
 		try {
-			SequenceDocument identifier = getNextKeyValue( createId( key ), initialValue );
-			value = identifier.getValue();
-			saveIntegralIncreasedValue( increment, identifier );
+			SequenceDocument sequence = getSequence( key, initialValue );
+			value = sequence.getValue();
+			incrementValueAndSave( increment, sequence );
 		}
 		catch (ResteasyClientException crf) {
 			throw logger.errorCalculatingNextValue( crf );
@@ -426,7 +426,7 @@ public class CouchDBDatastore {
 		}
 	}
 
-	private void saveIntegralIncreasedValue(int increment, SequenceDocument identifier) {
+	private void incrementValueAndSave(int increment, SequenceDocument identifier) {
 		identifier.increase( increment );
 		saveDocument( identifier );
 	}
@@ -452,7 +452,7 @@ public class CouchDBDatastore {
 		document.setRevision( revision );
 	}
 
-	private String createId(RowKey key) {
+	private String createId(IdGeneratorKey key) {
 		StringBuilder builder = new StringBuilder( key.getTable() );
 		builder.append( ":" );
 		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
@@ -465,15 +465,16 @@ public class CouchDBDatastore {
 		return builder.toString();
 	}
 
-	private SequenceDocument getNextKeyValue(String id, int initialValue) {
+	private SequenceDocument getSequence(IdGeneratorKey key, int initialValue) {
 		Response response = null;
 		try {
+			String id = createId( key );
 			response = databaseClient.getKeyValueById( id );
 			if ( response.getStatus() == Response.Status.OK.getStatusCode() ) {
 				return response.readEntity( SequenceDocument.class );
 			}
 			else if ( response.getStatus() == Response.Status.NOT_FOUND.getStatusCode() ) {
-				SequenceDocument identifier = new SequenceDocument( initialValue );
+				SequenceDocument identifier = new SequenceDocument( key.getMetadata().getValueColumnName(), initialValue );
 				identifier.setId( id );
 				return identifier;
 			}

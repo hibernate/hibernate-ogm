@@ -7,7 +7,6 @@
 package org.hibernate.ogm.type;
 
 import org.hibernate.MappingException;
-import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
@@ -33,14 +32,11 @@ public class StringType extends AbstractGenericBasicType<String> {
 		return true;
 	}
 
-	public String objectToSQLString(String value, Dialect dialect) throws Exception {
-		return '\'' + value + '\'';
-	}
-
 	public String stringToObject(String xml) throws Exception {
 		return xml;
 	}
 
+	@Override
 	public String toString(String value) {
 		return value;
 	}

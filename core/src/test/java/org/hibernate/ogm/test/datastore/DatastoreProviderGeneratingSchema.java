@@ -13,7 +13,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -27,6 +26,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -139,7 +139,13 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider, Sta
 		}
 
 		@Override
-		public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
+		public Number nextValue(IdGenerationRequest request) {
+			return null;
+		}
+
+		@Override
+		public boolean supportsSequences() {
+			return false;
 		}
 
 		@Override

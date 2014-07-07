@@ -14,7 +14,6 @@ import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -39,6 +38,7 @@ import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -215,8 +215,13 @@ public class CouchDBDialect implements GridDialect {
 	}
 
 	@Override
-	public void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue) {
-		value.initialize( getDataStore().nextValue( key, increment, initialValue ) );
+	public Number nextValue(IdGenerationRequest request) {
+		return getDataStore().nextValue( request.getKey(), request.getIncrement(), request.getInitialValue() );
+	}
+
+	@Override
+	public boolean supportsSequences() {
+		return false;
 	}
 
 	@Override

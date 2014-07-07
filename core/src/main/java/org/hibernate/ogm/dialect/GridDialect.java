@@ -9,7 +9,6 @@ package org.hibernate.ogm.dialect;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.id.IntegralDataTypeHolder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -18,6 +17,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -92,11 +92,19 @@ public interface GridDialect extends Service {
 	boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext);
 
 	/**
-	 * Update value with the guaranteed next value with the defined increment
+	 * Returns the next value from the specified id generator with the specified increment.
 	 *
-	 * Especially experimental
+	 * @return the next value from the specified id generator
 	 */
-	void nextValue(RowKey key, IntegralDataTypeHolder value, int increment, int initialValue);
+	Number nextValue(IdGenerationRequest request);
+
+	/**
+	 * Whether this dialect supports sequences for id generation or not. If not, a table-based strategy is expected to
+	 * be used as fall-back.
+	 *
+	 * @return {@code true} if this dialect supports sequences, {@code false} otherwise.
+	 */
+	boolean supportsSequences();
 
 	/**
 	 * Let the dialect override types if required to customize them to the datastore.
