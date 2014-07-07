@@ -19,6 +19,7 @@ import org.hibernate.ogm.utils.PackagingRule;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -33,7 +34,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	public PackagingRule packaging = new PackagingRule( "persistencexml/jpajtastandalone.xml", Poem.class );
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
-	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde" );
+	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 5 );
 
 	@Before
 	public void init() throws Exception {
@@ -122,6 +123,20 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 		String result = (String) em.createNamedQuery( "AthanasiaProjectionQuery" ).getSingleResult();
 		assertThat( result ).isEqualTo( athanasia.getName() );
+
+		commit();
+		close( em );
+	}
+
+	@Test
+	@Ignore
+	// TODO OGM-564 Re-enable once HHH-8237 is resolved and we're on ORM 4.3.6
+	public void testProjectionQueryWithTypeConversion() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		List<Byte> result = em.createNamedQuery( "PoemRatings" ).getResultList();
+		assertThat( result ).containsOnly( portia.getRating(), athanasia.getRating() );
 
 		commit();
 		close( em );

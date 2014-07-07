@@ -298,6 +298,11 @@ public class OgmEntityManager implements EntityManager {
 		else if ( sqlDefinition.getResultSetRef() != null ) {
 			SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) factory.getSessionFactory();
 			ResultSetMappingDefinition resultSetMapping = sessionFactory.getResultSetMapping( sqlDefinition.getResultSetRef() );
+
+			if ( resultSetMapping == null ) {
+				throw new HibernateException( "Result set mapping '" + sqlDefinition.getResultSetRef() + "' referenced by query '" + sqlDefinition.getName() + "' does not exist." );
+			}
+
 			for (NativeSQLQueryReturn queryReturn : resultSetMapping.getQueryReturns() ) {
 				if ( queryReturn instanceof NativeSQLQueryScalarReturn ) {
 					noSqlQuery.addScalar( ( (NativeSQLQueryScalarReturn) queryReturn ).getColumnAlias() );

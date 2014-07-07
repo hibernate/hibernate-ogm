@@ -22,22 +22,23 @@ import javax.persistence.Table;
 	@NamedNativeQuery(name = "AthanasiaQuery", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultClass = OscarWildePoem.class ),
 	@NamedNativeQuery(name = "AthanasiaQueryWithMapping", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultSetMapping = "poemAuthorMapping" ),
 	@NamedNativeQuery(name = "AthanasiaProjectionQuery", query = "db.WILDE_POEM.find({ '$and' : [ { 'name' : 'Athanasia' }, { 'author' : 'Oscar Wilde' } ] })", resultSetMapping = "poemAuthorNameMapping" ),
+	@NamedNativeQuery(name = "PoemRatings", query = "db.WILDE_POEM.find({}, { 'rating' : 1 })", resultSetMapping = "ratingMapping" ),
 	@NamedNativeQuery(name = "CountPoems", query = "db.WILDE_POEM.count()", resultSetMapping = "countMapping")
 })
 @SqlResultSetMappings({
 	@SqlResultSetMapping(name = "poemAuthorNameMapping", columns = @ColumnResult(name = "name")),
 	@SqlResultSetMapping(name = "poemAuthorMapping", entities = @EntityResult(entityClass = OscarWildePoem.class)),
-	@SqlResultSetMapping(name = "countMapping", columns = @ColumnResult(name = "n"))
+	@SqlResultSetMapping(name = "countMapping", columns = @ColumnResult(name = "n")),
+	@SqlResultSetMapping(name = "ratingMapping", columns = @ColumnResult(name = "rating", type = byte.class))
 })
 public class OscarWildePoem {
 
 	public static final String TABLE_NAME = "WILDE_POEM";
 
 	private Long id;
-
 	private String name;
-
 	private String author;
+	private byte rating;
 
 	public OscarWildePoem() {
 	}
@@ -46,6 +47,13 @@ public class OscarWildePoem {
 		this.id = id;
 		this.name = name;
 		this.author = author;
+	}
+
+	public OscarWildePoem(Long id, String name, String author, byte rating) {
+		this.id = id;
+		this.name = name;
+		this.author = author;
+		this.rating = rating;
 	}
 
 	@Id
@@ -73,9 +81,16 @@ public class OscarWildePoem {
 		this.author = author;
 	}
 
-	@Override
-	public String toString() {
-		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + "]";
+	public byte getRating() {
+		return rating;
 	}
 
+	public void setRating(byte rating) {
+		this.rating = rating;
+	}
+
+	@Override
+	public String toString() {
+		return "OscarWildePoem [id=" + id + ", name=" + name + ", author=" + author + ", rating=" + rating + "]";
+	}
 }
