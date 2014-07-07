@@ -4,13 +4,19 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.fest.assertions;
+package org.hibernate.ogm.utils;
 
 import static java.util.Collections.emptyList;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.fest.assertions.Assertions;
+import org.fest.assertions.ListAssert;
 
 /**
  * Provide additional assert methods to {@link ListAssert}
@@ -40,8 +46,7 @@ public class OrderedListAssert extends ListAssert {
 		if ( actual.isEmpty() ) {
 			return new OrderedListAssert( emptyList() );
 		}
-		List<Object> propertyValues = PropertySupport.instance().propertyValues( propertyName, actual );
-		return new OrderedListAssert( propertyValues );
+		return new OrderedListAssert( getProjection( actual, propertyName ) );
 	}
 
 	/**
@@ -102,4 +107,28 @@ public class OrderedListAssert extends ListAssert {
 		return -1;
 	}
 
+	private List<Object> getProjection(List<?> source, String propertyName) {
+		List<Object> projection = new ArrayList<Object>( source.size() );
+		for ( Object object : source ) {
+			projection.add( getPropertyValue( object, propertyName ) );
+		}
+		return projection;
+	}
+
+	private Object getPropertyValue(Object object, String propertyName) {
+		try {
+			BeanInfo info = Introspector.getBeanInfo( object.getClass() );
+			PropertyDescriptor[] properties = info.getPropertyDescriptors();
+			for ( PropertyDescriptor property : properties ) {
+				if ( property.getName().equals( propertyName ) ) {
+					return property.getReadMethod().invoke( object );
+				}
+			}
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
+
+		throw new IllegalArgumentException( "No property " + propertyName + " exists in " + object.getClass() );
+	}
 }

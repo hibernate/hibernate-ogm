@@ -4,17 +4,20 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.fest.assertions;
+package org.hibernate.ogm.utils.test;
 
 import static java.util.Arrays.asList;
 
+import org.hibernate.ogm.utils.OgmAssertions;
+import org.hibernate.ogm.utils.OrderedListAssert;
 import org.junit.ComparisonFailure;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-
 /**
+ * Unit test for {@link OrderedListAssert}.
+ *
  * @author Davide D'Alto
  */
 public class OrderedListAssertionsTest {

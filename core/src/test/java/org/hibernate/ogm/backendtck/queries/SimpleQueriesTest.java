@@ -7,9 +7,9 @@
 package org.hibernate.ogm.backendtck.queries;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.fest.assertions.OgmAssertions.assertThat;
 import static org.hibernate.ogm.utils.GridDialectType.MONGODB;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
+import static org.hibernate.ogm.utils.OgmAssertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
