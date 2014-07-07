@@ -27,9 +27,9 @@ import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.ClosableIterator;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
@@ -41,12 +41,13 @@ import org.hibernate.type.Type;
  */
 public class BackendCustomLoader extends CustomLoader {
 
-	private static final Log log = LoggerFactory.make();
 	private final BackendCustomQuery customQuery;
+	private final TypeTranslator typeTranslator;
 
 	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
 		this.customQuery = customQuery;
+		typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
 	}
 
 	/**
@@ -71,7 +72,7 @@ public class BackendCustomLoader extends CustomLoader {
 				return listOfEntities( session, resultTypes, tuples );
 			}
 			else {
-				return listOfArrays( tuples );
+				return listOfArrays( session, tuples );
 			}
 		}
 		finally {
@@ -91,7 +92,7 @@ public class BackendCustomLoader extends CustomLoader {
 		return results;
 	}
 
-	private List<Object> listOfArrays(Iterator<Tuple> tuples) {
+	private List<Object> listOfArrays(SessionImplementor session, Iterator<Tuple> tuples) {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
@@ -99,8 +100,17 @@ public class BackendCustomLoader extends CustomLoader {
 			if ( !customQuery.getCustomQueryReturns().isEmpty() ) {
 				entry = new Object[customQuery.getCustomQueryReturns().size()];
 				int i = 0;
-				for ( Return column : customQuery.getCustomQueryReturns() ) {
-					entry[i++] = tuple.get( ( (ScalarReturn) column ).getColumnAlias() );
+				for ( Return queryReturn : customQuery.getCustomQueryReturns() ) {
+					ScalarReturn scalarReturn = (ScalarReturn) queryReturn;
+					Type type = scalarReturn.getType();
+
+					if ( type != null ) {
+						GridType gridType = typeTranslator.getType( type );
+						entry[i++] = gridType.nullSafeGet( tuple, scalarReturn.getColumnAlias(), session, null );
+					}
+					else {
+						entry[i++] = tuple.get( ( scalarReturn ).getColumnAlias() );
+					}
 				}
 			}
 			else {
