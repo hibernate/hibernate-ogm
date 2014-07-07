@@ -166,7 +166,7 @@
                                 <exclude>**/hibernate.properties</exclude>
                                 <exclude>**/log4j.properties</exclude>
                                 <exclude>org/hibernate/ogm/test/**/*</exclude>
-                                <exclude>org/hibernate/ogm/utils/*Test.class</exclude>
+                                <exclude>org/hibernate/ogm/utils/test/**/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>
