@@ -71,7 +71,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		String targetAlias = resolverDelegate.findAliasForType( targetTypeName );
 		String label = getKeyMetaData( targetType ).getTable();
 		PathExpression matchExpression = node( new LabelValue( targetAlias, label ) );
-		BooleanExpression whereExpression = (BooleanExpression) builder.build();
+		BooleanExpression whereExpression = builder.build();
 		Expression[] returnExpression = returnExpression( targetAlias );
 		Query cypherQuery = createCypherQuery( matchExpression, whereExpression, returnExpression, orderByExpressions );
 		return new Neo4jQueryParsingResult( targetType, projections, cypherQuery );

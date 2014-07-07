@@ -64,7 +64,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression
 	public InPredicate<BooleanExpression> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
-		List<Object> gridTypedElements = new ArrayList<Object>();
+		List<Object> gridTypedElements = new ArrayList<Object>( typedElements.size() );
 		for ( Object typedElement : typedElements ) {
 			gridTypedElements.add( propertyHelper.convertToLiteral( entityType, propertyPath, typedElement ) );
 		}
