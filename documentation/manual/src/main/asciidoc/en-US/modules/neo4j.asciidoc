@@ -184,23 +184,48 @@ class Child {
 
 ===== Auto Generated Values
 
-Hibernate OGM only supports the table generation strategy in Neo4j.
-A sequence is represented by a node like in the following example:
+Hibernate OGM supports the table generation strategy as well as the sequence generation strategy with Neo4j.
+It is generally recommended to work with the latter,
+as it allows a slightly more efficient querying for the next sequence value.
 
-.Example of a sequence using cypher
+Sequence-based generators are represented by nodes in the following form:
+
+.Example of a sequence-based generator using Cypher
 ====
 [subs="verbatim,attributes"]
 ----
-(sequence:GeneratorKey:SEQUENCE {sequence_name: '...', current_value: '...'})
+(:SEQUENCE { sequence_name = 'ExampleSequence', next_val : 3 })
 ----
 ====
 
-A sequence node is labeled with the constant +SEQUENCE+ and with the generator key of the sequence.
-A unique constraint is applied on the property +sequence_name+ to avoid the same sequence name is used twice in nodes having the same generator key.
-The property +current_value+ stores the next value of the sequence.
+Each sequence generator node is labelled with +SEQUENCE+.
+The sequence name can be specified via +@SequenceGenerator#sequenceName()+.
+A unique constraint is applied to the property +sequence_name+ in order to ensure uniqueness of sequences.
 
-Note that when a different strategy is selected for an entity, we won't throw an exception but we will fall-back to this representation. The only difference is that we will apply
-a default generator key as label.
+If required, you can set the initial value of a sequence and the increment size via
++@SequenceGenerator#initialValue()+ and +@SequenceGenerator#allocationSize()+, respectively.
+The options +@SequenceGenerator#catalog()+ and +@SequenceGenerator#schema()+ are not supported.
+
+Table-based generators are represented by nodes in the following form:
+
+.Example of a table-based generator using Cypher
+====
+[subs="verbatim,attributes"]
+----
+(:hibernate_sequences:TABLE_BASED_SEQUENCE { sequence_name = 'ExampleSequence', current_value : 3 })
+----
+====
+
+Each table generator node is labelled with +TABLE_BASED_SEQUENCE+
+and the table name as specified via +@TableGenerator#table()+.
+The sequence name is to be given via +@TableGenerator#pkColumnValue()+.
+The node properties holding the sequence name and value can be configured via
++@TableGenerator#pkColumnName()+ and +@TableGenerator#valueColumnName()+, respectively.
+A unique constraint is applied to the property +sequence_name+ to avoid the same sequence name is used twice within the same "table".
+
+If required, you can set the initial value of a sequence and the increment size via
++@TableGenerator#initialValue()+ and +@TableGenerator#allocationSize()+, respectively.
+The options +@TableGenerator#catalog()+, +@TableGenerator#schema()+, +@TableGenerator#uniqueConstraints()+ and +@TableGenerator#indexes()+  are not supported.
 
 ==== Transactions
 
