@@ -12,7 +12,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 
 /**
@@ -20,7 +20,7 @@ import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
  *
  * @author Gunnar Morling
  */
-public class MongoDBEntityMappingValidator extends DefaultSchemaInitializer {
+public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 
 	private static final Log log = LoggerFactory.getLogger();
 

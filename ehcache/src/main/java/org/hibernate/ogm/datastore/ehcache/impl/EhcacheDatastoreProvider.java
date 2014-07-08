@@ -25,8 +25,8 @@ import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfigurati
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
@@ -65,8 +65,8 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	@Override
-	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return DefaultSchemaInitializer.class;
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return BaseSchemaDefiner.class;
 	}
 
 	@Override

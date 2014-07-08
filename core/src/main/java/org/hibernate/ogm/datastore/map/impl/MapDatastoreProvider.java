@@ -24,8 +24,8 @@ import javax.persistence.PessimisticLockException;
 import org.hibernate.ogm.datastore.map.MapDialect;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.IdSourceKey;
@@ -78,8 +78,8 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	}
 
 	@Override
-	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return DefaultSchemaInitializer.class;
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return BaseSchemaDefiner.class;
 	}
 
 	@Override

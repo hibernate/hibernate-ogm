@@ -15,7 +15,7 @@ import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
@@ -77,8 +77,8 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	}
 
 	@Override
-	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return CouchDBSchemaInitializer.class;
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return CouchDBSchemaSchemaDefiner.class;
 	}
 
 	/**

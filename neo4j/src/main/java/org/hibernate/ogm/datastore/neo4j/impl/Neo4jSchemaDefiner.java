@@ -11,7 +11,7 @@ import java.util.Set;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
@@ -20,7 +20,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Gunnar Morling
  */
-public class Neo4jSchemaInitializer extends DefaultSchemaInitializer {
+public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {

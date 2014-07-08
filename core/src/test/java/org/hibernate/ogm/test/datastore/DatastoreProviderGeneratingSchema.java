@@ -21,8 +21,8 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -57,11 +57,11 @@ public class DatastoreProviderGeneratingSchema implements DatastoreProvider {
 	}
 
 	@Override
-	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return TestSchemaInitializer.class;
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return TestSchemaDefiner.class;
 	}
 
-	public static class TestSchemaInitializer extends DefaultSchemaInitializer {
+	public static class TestSchemaDefiner extends BaseSchemaDefiner {
 
 		@Override
 		public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {

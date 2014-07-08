@@ -16,12 +16,12 @@ import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
- * Default implementation of {@link SchemaInitializer}. Specific implementations can override those hooks they're
+ * Default implementation of {@link SchemaDefiner}. Specific implementations can override those hooks they're
  * interested in. Also provides utility methods useful for implementors.
  *
  * @author Gunnar Morling
  */
-public class DefaultSchemaInitializer implements SchemaInitializer {
+public class BaseSchemaDefiner implements SchemaDefiner {
 
 	@Override
 	public void validateMapping(SessionFactoryImplementor factory) {
@@ -29,10 +29,13 @@ public class DefaultSchemaInitializer implements SchemaInitializer {
 	}
 
 	@Override
-	public void initializeSchema(Configuration configuration, org.hibernate.engine.spi.SessionFactoryImplementor factory) {
+	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
 		// No-op
 	}
 
+	/**
+	 * Returns all the persistent id generators which potentially require the creation of an object in the schema.
+	 */
 	protected Set<PersistentNoSqlIdentifierGenerator> getPersistentGenerators(SessionFactoryImplementor factory) {
 		Map<String, EntityPersister> entityPersisters = factory.getEntityPersisters();
 

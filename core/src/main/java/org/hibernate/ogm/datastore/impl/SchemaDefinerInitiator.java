@@ -10,34 +10,34 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Contributes the {@link SchemaInitializer} service as obtained via
- * {@link DatastoreProvider#getSchemaInitializerType()}.
+ * Contributes the {@link SchemaDefiner} service as obtained via
+ * {@link DatastoreProvider#getSchemaDefinerType()}.
  *
  * @author Gunnar Morling
  */
-public class SchemaInitializerInitiator implements SessionFactoryServiceInitiator<SchemaInitializer> {
+public class SchemaDefinerInitiator implements SessionFactoryServiceInitiator<SchemaDefiner> {
 
-	public static final SchemaInitializerInitiator INSTANCE = new SchemaInitializerInitiator();
+	public static final SchemaDefinerInitiator INSTANCE = new SchemaDefinerInitiator();
 
 	private static final Log log = LoggerFactory.make();
 
 	@Override
-	public Class<SchemaInitializer> getServiceInitiated() {
-		return SchemaInitializer.class;
+	public Class<SchemaDefiner> getServiceInitiated() {
+		return SchemaDefiner.class;
 	}
 
 	@Override
-	public SchemaInitializer initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
+	public SchemaDefiner initiateService(SessionFactoryImplementor sessionFactory, Configuration configuration, ServiceRegistryImplementor registry) {
 		DatastoreProvider datastoreProvider = registry.getService( DatastoreProvider.class );
-		Class<? extends SchemaInitializer> schemaInitializerType = datastoreProvider.getSchemaInitializerType();
+		Class<? extends SchemaDefiner> schemaInitializerType = datastoreProvider.getSchemaDefinerType();
 
 		if ( schemaInitializerType != null ) {
 			try {
@@ -48,11 +48,11 @@ public class SchemaInitializerInitiator implements SessionFactoryServiceInitiato
 			}
 		}
 
-		return new DefaultSchemaInitializer();
+		return new BaseSchemaDefiner();
 	}
 
 	@Override
-	public SchemaInitializer initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
+	public SchemaDefiner initiateService(SessionFactoryImplementor sessionFactory, MetadataImplementor metadata, ServiceRegistryImplementor registry) {
 		throw new UnsupportedOperationException( "Cannot initiate schema initializer based on meta-data" );
 	}
 }

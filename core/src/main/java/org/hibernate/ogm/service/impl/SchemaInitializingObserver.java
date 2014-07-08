@@ -10,7 +10,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -31,7 +31,7 @@ public class SchemaInitializingObserver implements SessionFactoryObserver {
 		SessionFactoryImplementor sessionFactoryImplementor = (SessionFactoryImplementor) factory;
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 
-		SchemaInitializer schemaInitializer = registry.getService( SchemaInitializer.class );
+		SchemaDefiner schemaInitializer = registry.getService( SchemaDefiner.class );
 		schemaInitializer.validateMapping( sessionFactoryImplementor );
 		schemaInitializer.initializeSchema( configuration, sessionFactoryImplementor );
 	}

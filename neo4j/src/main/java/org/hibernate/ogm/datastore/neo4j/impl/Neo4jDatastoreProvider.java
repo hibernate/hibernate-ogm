@@ -16,7 +16,7 @@ import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl.Neo4jBasedQuery
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.SchemaInitializer;
+import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
@@ -91,7 +91,7 @@ public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Sto
 	}
 
 	@Override
-	public Class<? extends SchemaInitializer> getSchemaInitializerType() {
-		return Neo4jSchemaInitializer.class;
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return Neo4jSchemaDefiner.class;
 	}
 }

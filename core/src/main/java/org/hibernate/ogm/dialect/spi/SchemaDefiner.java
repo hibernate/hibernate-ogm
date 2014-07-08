@@ -19,15 +19,18 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
  * Implementations can vary from simply validating the entity model to creating physical structures in the underlying
  * datastore. As this is a {@link Service} contract, implementations can optionally implement service facts such as
  * {@link Configurable} or {@link ServiceRegistryAwareService} etc. Implementations should be derived from
- * {@link DefaultSchemaInitializer} rather than implementing this interface directly.
+ * {@link BaseSchemaDefiner} rather than implementing this interface directly.
  * <p>
  * The initializer type to be used for a given datastore is retrieved via
- * {@link DatastoreProvider#getSchemaInitializerType()}.
+ * {@link DatastoreProvider#getSchemaDefinerType()}.
  *
  * @author Gunnar Morling
  */
-@Experimental("The initializeSchema() method may be replaced by more specific fine-grained hooks in the future.")
-public interface SchemaInitializer extends Service {
+@Experimental(
+	"The initializeSchema() method may be replaced by more specific fine-grained hooks in the future. A drop method " +
+	"will be added in the future."
+)
+public interface SchemaDefiner extends Service {
 
 	/**
 	 * Validates the mapped objects such as entities, id generators etc. against any specific requirements of the

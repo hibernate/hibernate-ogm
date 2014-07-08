@@ -16,7 +16,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
+import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
@@ -26,7 +26,7 @@ import org.hibernate.persister.entity.EntityPersister;
  *
  * @author Gunnar Morling
  */
-public class CouchDBSchemaInitializer extends DefaultSchemaInitializer {
+public class CouchDBSchemaSchemaDefiner extends BaseSchemaDefiner {
 
 	private static final Log logger = LoggerFactory.getLogger();
 
