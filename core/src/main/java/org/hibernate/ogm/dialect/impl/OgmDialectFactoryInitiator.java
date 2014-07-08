@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.dialect;
+package org.hibernate.ogm.dialect.impl;
 
 import java.util.Map;
 
@@ -14,11 +14,15 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.engine.jdbc.dialect.internal.DialectFactoryInitiator;
 import org.hibernate.engine.jdbc.dialect.spi.DialectFactory;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfoSource;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
+ * Contributes OGM's {@link DialectFactory} which always returns an instance of {@link OgmDialect}.
+ *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Gunnar Morling
  */
 public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<DialectFactory> {
 
@@ -26,7 +30,7 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 
 	@Override
 	protected DialectFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
-		return new NoopDialectFactory( registry );
+		return new OgmDialectFactory( registry );
 	}
 
 	@Override
@@ -39,11 +43,11 @@ public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<Dialect
 		return DialectFactory.class;
 	}
 
-	private static class NoopDialectFactory implements DialectFactory {
+	private static class OgmDialectFactory implements DialectFactory {
 
 		private final GridDialect gridDialect;
 
-		public NoopDialectFactory(ServiceRegistryImplementor registry) {
+		public OgmDialectFactory(ServiceRegistryImplementor registry) {
 			this.gridDialect = registry.getService( GridDialect.class );
 		}
 

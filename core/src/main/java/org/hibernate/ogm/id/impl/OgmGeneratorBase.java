@@ -26,7 +26,7 @@ import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.OgmDialect;
+import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;

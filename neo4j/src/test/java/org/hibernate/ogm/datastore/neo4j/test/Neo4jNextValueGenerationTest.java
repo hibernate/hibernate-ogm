@@ -26,7 +26,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
-import org.hibernate.ogm.dialect.OgmDialect;
+import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
