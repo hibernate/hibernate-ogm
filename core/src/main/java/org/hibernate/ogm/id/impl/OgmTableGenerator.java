@@ -19,8 +19,8 @@ import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -134,10 +134,10 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 
 	private final GridType segmentGridType = StringType.INSTANCE;
 
-	private IdGeneratorKeyMetadata generatorKeyMetadata;
+	private IdSourceKeyMetadata generatorKeyMetadata;
 
 	@Override
-	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
+	public IdSourceKeyMetadata getGeneratorKeyMetadata() {
 		return generatorKeyMetadata;
 	}
 
@@ -190,7 +190,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 		valueColumnName = determineValueColumnName( params, dialect );
 		segmentValue = determineSegmentValue( params );
 
-		generatorKeyMetadata = IdGeneratorKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
+		generatorKeyMetadata = IdSourceKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
 	}
 
 	/**
@@ -299,14 +299,14 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	}
 
 	@Override
-	protected IdGeneratorKey getGeneratorKey(SessionImplementor session) {
+	protected IdSourceKey getGeneratorKey(SessionImplementor session) {
 		defineGridTypes( session );
 
 		final String segmentName = (String) nullSafeSet(
 				segmentGridType, segmentValue, segmentColumnName, session
 		);
 
-		return IdGeneratorKey.forTable( generatorKeyMetadata, segmentName );
+		return IdSourceKey.forTable( generatorKeyMetadata, segmentName );
 	}
 
 	private Object nullSafeSet(GridType type, Object value, String columnName, SessionImplementor session) {

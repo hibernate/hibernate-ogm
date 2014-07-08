@@ -9,40 +9,40 @@ package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdGeneratorKeyExternalizer;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.grid.Key;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit test for {@link IdGeneratorKeyExternalizer}.
+ * Unit test for {@link IdSourceKeyExternalizer}.
  *
  * @author Gunnar Morling
  */
-public class IdGeneratorKeyExternalizerTest {
+public class IdSourceKeyExternalizerTest {
 
-	private ExternalizerTestHelper<IdGeneratorKey, IdGeneratorKeyExternalizer> externalizerHelper;
+	private ExternalizerTestHelper<IdSourceKey, IdSourceKeyExternalizer> externalizerHelper;
 
 	@Before
 	public void setupMarshallerFactory() {
-		externalizerHelper = ExternalizerTestHelper.getInstance( IdGeneratorKeyExternalizer.INSTANCE );
+		externalizerHelper = ExternalizerTestHelper.getInstance( IdSourceKeyExternalizer.INSTANCE );
 	}
 
 	@Test
 	public void shouldSerializeAndDeserializeRowKey() throws Exception {
-		IdGeneratorKeyMetadata keyMetadata = IdGeneratorKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdSourceKeyMetadata keyMetadata = IdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
 
 		// given
-		IdGeneratorKey key = IdGeneratorKey.forTable( keyMetadata, "Foo_Sequence" );
+		IdSourceKey key = IdSourceKey.forTable( keyMetadata, "Foo_Sequence" );
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );
 		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( IdGeneratorKey.class );
+		assertThat( unmarshalledKey.getClass() ).isEqualTo( IdSourceKey.class );
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );

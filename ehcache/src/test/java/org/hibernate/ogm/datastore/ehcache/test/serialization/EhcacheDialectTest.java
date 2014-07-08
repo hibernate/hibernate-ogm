@@ -13,8 +13,8 @@ import java.util.HashMap;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class EhcacheDialectTest {
 
 	@Test
 	public void testIsThreadSafe() throws InterruptedException {
-		final IdGeneratorKey test = IdGeneratorKey.forTable( IdGeneratorKeyMetadata.forTable( "sequences", "key", "next_val" ), "my_sequence" );
+		final IdSourceKey test = IdSourceKey.forTable( IdSourceKeyMetadata.forTable( "sequences", "key", "next_val" ), "my_sequence" );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
 			threads[i] = new Thread(

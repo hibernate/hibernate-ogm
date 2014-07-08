@@ -7,27 +7,27 @@
 package org.hibernate.ogm.grid;
 
 /**
- * Meta-data about an id generator. In the case of table-based generators, corresponds to the table used by several
- * generators; In the case of sequence-based generators, corresponds to one sequence.
+ * Meta-data about an id sequence source. In the case of table-based generators, corresponds to the table used by one
+ * ore more generators. In the case of sequence-based generators, corresponds to one sequence.
  *
  * @author Gunnar Morling
  */
-public class IdGeneratorKeyMetadata {
+public class IdSourceKeyMetadata {
 
 	/**
-	 * The type of an id generator.
+	 * The type of an id sequence source.
 	 */
-	public enum IdGeneratorType {
+	public enum IdSourceType {
 		TABLE, SEQUENCE;
 	}
 
-	private final IdGeneratorType type;
+	private final IdSourceType type;
 	private final String name;
 	private final String keyColumnName;
 	private final String valueColumnName;
 	private final int hashCode;
 
-	private IdGeneratorKeyMetadata(IdGeneratorType type, String name, String keyColumnName, String valueColumnName) {
+	private IdSourceKeyMetadata(IdSourceType type, String name, String keyColumnName, String valueColumnName) {
 		this.type = type;
 		this.name = name;
 		this.keyColumnName = keyColumnName;
@@ -35,37 +35,37 @@ public class IdGeneratorKeyMetadata {
 		this.hashCode = calculateHashCode();
 	}
 
-	public static IdGeneratorKeyMetadata forTable(String table, String keyColumnName, String valueColumnName) {
-		return new IdGeneratorKeyMetadata( IdGeneratorType.TABLE, table, keyColumnName, valueColumnName );
+	public static IdSourceKeyMetadata forTable(String table, String keyColumnName, String valueColumnName) {
+		return new IdSourceKeyMetadata( IdSourceType.TABLE, table, keyColumnName, valueColumnName );
 	}
 
-	public static IdGeneratorKeyMetadata forSequence(String sequence) {
-		return new IdGeneratorKeyMetadata( IdGeneratorType.SEQUENCE, sequence, null, null );
+	public static IdSourceKeyMetadata forSequence(String sequence) {
+		return new IdSourceKeyMetadata( IdSourceType.SEQUENCE, sequence, null, null );
 	}
 
 	/**
-	 * Returns the type of the represented id generator.
+	 * Returns the type of the represented id source.
 	 */
-	public IdGeneratorType getType() {
+	public IdSourceType getType() {
 		return type;
 	}
 
 	/**
-	 * Returns the table name for table-based generators, the sequence name otherwise.
+	 * Returns the table name for table-based sources, the sequence name otherwise.
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Returns the key column name for table-based generators, {@code null} otherwise.
+	 * Returns the key column name for table-based sources, {@code null} otherwise.
 	 */
 	public String getKeyColumnName() {
 		return keyColumnName;
 	}
 
 	/**
-	 * Returns the value column name for table-based generators, {@code null} otherwise.
+	 * Returns the value column name for table-based sources, {@code null} otherwise.
 	 */
 	public String getValueColumnName() {
 		return valueColumnName;
@@ -87,7 +87,7 @@ public class IdGeneratorKeyMetadata {
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		IdGeneratorKeyMetadata other = (IdGeneratorKeyMetadata) obj;
+		IdSourceKeyMetadata other = (IdSourceKeyMetadata) obj;
 		if ( name == null ) {
 			if ( other.name != null ) {
 				return false;
@@ -104,7 +104,7 @@ public class IdGeneratorKeyMetadata {
 
 	@Override
 	public String toString() {
-		return "IdGeneratorKeyMetadata [type=" + type + ", name=" + name + ", keyColumnName=" + keyColumnName + ", valueColumnName=" + valueColumnName + "]";
+		return "IdSourceKeyMetadata [type=" + type + ", name=" + name + ", keyColumnName=" + keyColumnName + ", valueColumnName=" + valueColumnName + "]";
 	}
 
 	private int calculateHashCode() {

@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 
@@ -50,7 +50,7 @@ public class SerializableKey implements Serializable {
 		else if ( key instanceof RowKey ) {
 			type = ROW_KEY;
 		}
-		else if ( key instanceof IdGeneratorKey ) {
+		else if ( key instanceof IdSourceKey ) {
 			type = ID_GENERATOR_KEY;
 		}
 		else {

@@ -28,8 +28,8 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
@@ -94,8 +94,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	@Test
 	public void shoulReadAndWriteSequenceInClusteredMode() throws Exception {
 		// given
-		IdGeneratorKeyMetadata keyMetadata = IdGeneratorKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
-		IdGeneratorKey key = IdGeneratorKey.forTable( keyMetadata, "Foo_Sequence" );
+		IdSourceKeyMetadata keyMetadata = IdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdSourceKey key = IdSourceKey.forTable( keyMetadata, "Foo_Sequence" );
 
 		// when
 		Number value = dialect1.nextValue( new IdGenerationRequest( key, 1, 1 ) );

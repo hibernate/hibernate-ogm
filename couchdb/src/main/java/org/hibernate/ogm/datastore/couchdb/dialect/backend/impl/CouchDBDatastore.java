@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;
 import org.jboss.resteasy.client.jaxrs.ResteasyClient;
@@ -270,7 +270,7 @@ public class CouchDBDatastore {
 		return getTuplesByTableName( tableName );
 	}
 
-	public long nextValue(IdGeneratorKey key, int increment, int initialValue) {
+	public long nextValue(IdSourceKey key, int increment, int initialValue) {
 		long value;
 		try {
 			SequenceDocument sequence = getSequence( key, initialValue );
@@ -445,7 +445,7 @@ public class CouchDBDatastore {
 		document.setRevision( revision );
 	}
 
-	private String createId(IdGeneratorKey key) {
+	private String createId(IdSourceKey key) {
 		StringBuilder builder = new StringBuilder( key.getTable() );
 		builder.append( ":" );
 		for ( int i = 0; i < key.getColumnNames().length; i++ ) {
@@ -458,7 +458,7 @@ public class CouchDBDatastore {
 		return builder.toString();
 	}
 
-	private SequenceDocument getSequence(IdGeneratorKey key, int initialValue) {
+	private SequenceDocument getSequence(IdSourceKey key, int initialValue) {
 		Response response = null;
 		try {
 			String id = createId( key );

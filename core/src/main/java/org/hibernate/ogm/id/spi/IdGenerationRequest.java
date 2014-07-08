@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.id.spi;
 
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 
 /**
  * Represents a request for obtaining the next value from a given id generator.
@@ -15,17 +15,17 @@ import org.hibernate.ogm.grid.IdGeneratorKey;
  */
 public class IdGenerationRequest {
 
-	private final IdGeneratorKey key;
+	private final IdSourceKey key;
 	private final int increment;
 	private final int initialValue;
 
-	public IdGenerationRequest(IdGeneratorKey key, int increment, int initialValue) {
+	public IdGenerationRequest(IdSourceKey key, int increment, int initialValue) {
 		this.key = key;
 		this.increment = increment;
 		this.initialValue = initialValue;
 	}
 
-	public IdGeneratorKey getKey() {
+	public IdSourceKey getKey() {
 		return key;
 	}
 

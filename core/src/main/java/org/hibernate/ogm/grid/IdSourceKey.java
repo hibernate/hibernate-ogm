@@ -9,33 +9,33 @@ package org.hibernate.ogm.grid;
 import java.util.Arrays;
 
 /**
- * Represents a table- or sequence-based id generator.
+ * Represents a source of an id sequence such as a table (row) or a physical sequence.
  *
  * @author Gunnar Morling
  */
-public class IdGeneratorKey implements Key {
+public class IdSourceKey implements Key {
 
-	private final IdGeneratorKeyMetadata metadata;
+	private final IdSourceKeyMetadata metadata;
 	private final String[] columnNames;
 	private final Object[] columnValues;
 	private final int hashCode;
 
-	private IdGeneratorKey(IdGeneratorKeyMetadata metadata, Object[] columnValues) {
+	private IdSourceKey(IdSourceKeyMetadata metadata, Object[] columnValues) {
 		this.metadata = metadata;
 		this.columnNames = metadata.getKeyColumnName() != null ? new String[] { metadata.getKeyColumnName() } : null;
 		this.columnValues = columnValues;
 		this.hashCode = calculateHashCode();
 	}
 
-	public static IdGeneratorKey forTable(IdGeneratorKeyMetadata metadata, String segmentName) {
-		return new IdGeneratorKey( metadata, new Object[] { segmentName } );
+	public static IdSourceKey forTable(IdSourceKeyMetadata metadata, String segmentName) {
+		return new IdSourceKey( metadata, new Object[] { segmentName } );
 	}
 
-	public static IdGeneratorKey forSequence(IdGeneratorKeyMetadata metadata) {
-		return new IdGeneratorKey( metadata, null );
+	public static IdSourceKey forSequence(IdSourceKeyMetadata metadata) {
+		return new IdSourceKey( metadata, null );
 	}
 
-	public IdGeneratorKeyMetadata getMetadata() {
+	public IdSourceKeyMetadata getMetadata() {
 		return metadata;
 	}
 
@@ -79,7 +79,7 @@ public class IdGeneratorKey implements Key {
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		IdGeneratorKey other = (IdGeneratorKey) obj;
+		IdSourceKey other = (IdSourceKey) obj;
 		if ( !Arrays.equals( columnValues, other.columnValues ) ) {
 			return false;
 		}
@@ -96,7 +96,7 @@ public class IdGeneratorKey implements Key {
 
 	@Override
 	public String toString() {
-		return "IdGeneratorKey [metadata=" + metadata + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues=" + Arrays.toString( columnValues )
+		return "IdSourceKey [metadata=" + metadata + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues=" + Arrays.toString( columnValues )
 				+ "]";
 	}
 

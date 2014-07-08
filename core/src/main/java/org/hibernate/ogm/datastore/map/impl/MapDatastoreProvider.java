@@ -28,7 +28,7 @@ import org.hibernate.ogm.dialect.spi.DefaultSchemaInitializer;
 import org.hibernate.ogm.dialect.spi.SchemaInitializer;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -55,7 +55,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 
 	private final ConcurrentMap<EntityKey,Map<String, Object>> entitiesKeyValueStorage = newConcurrentHashMap();
 	private final ConcurrentMap<AssociationKey, Map<RowKey, Map<String, Object>>> associationsKeyValueStorage = newConcurrentHashMap();
-	private final ConcurrentMap<IdGeneratorKey, AtomicInteger> sequencesStorage = newConcurrentHashMap();
+	private final ConcurrentMap<IdSourceKey, AtomicInteger> sequencesStorage = newConcurrentHashMap();
 	private final ConcurrentMap<Object, ReadWriteLock> dataLocks = newConcurrentHashMap();
 
 	/**
@@ -171,7 +171,7 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 		associationsKeyValueStorage.remove( key );
 	}
 
-	public int getSharedAtomicInteger(IdGeneratorKey key, int initialValue, int increment) {
+	public int getSharedAtomicInteger(IdSourceKey key, int initialValue, int increment) {
 		AtomicInteger valueProposal = new AtomicInteger( initialValue );
 		AtomicInteger previous = sequencesStorage.putIfAbsent( key, valueProposal );
 		return previous == null ? initialValue : previous.addAndGet( increment );

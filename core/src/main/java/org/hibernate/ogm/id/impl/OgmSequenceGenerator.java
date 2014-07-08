@@ -18,8 +18,8 @@ import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.Type;
@@ -62,9 +62,9 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	private Properties params;
 
 	private String sequenceName;
-	private IdGeneratorKeyMetadata generatorKeyMetadata;
+	private IdSourceKeyMetadata generatorKeyMetadata;
 
-	private volatile Executor delegate;
+	private volatile IdSourceKeyAndKeyMetadataProvider delegate;
 
 	public OgmSequenceGenerator() {
 	}
@@ -77,17 +77,17 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		this.dialect = dialect;
 		this.params = params;
 		sequenceName = determineSequenceName( params, dialect );
-		generatorKeyMetadata = IdGeneratorKeyMetadata.forSequence( sequenceName );
+		generatorKeyMetadata = IdSourceKeyMetadata.forSequence( sequenceName );
 		delegate = getDelegate();
 	}
 
 	@Override
-	public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
+	public IdSourceKeyMetadata getGeneratorKeyMetadata() {
 		return delegate.getGeneratorKeyMetadata();
 	}
 
 	@Override
-	protected IdGeneratorKey getGeneratorKey(SessionImplementor session) {
+	protected IdSourceKey getGeneratorKey(SessionImplementor session) {
 		return delegate.getGeneratorKey( session );
 	}
 
@@ -127,11 +127,11 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		return sequenceName;
 	}
 
-	private Executor getDelegate() {
+	private IdSourceKeyAndKeyMetadataProvider getDelegate() {
 		GridDialect gridDialect = super.getGridDialect();
 
 		if ( gridDialect.supportsSequences() ) {
-			return new SequenceExecutor( generatorKeyMetadata );
+			return new SequenceKeyAndMetadataProvider( generatorKeyMetadata );
 		}
 		else {
 			log.dialectDoesNotSupportSequences( gridDialect.getClass().getName() );
@@ -142,53 +142,53 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			newParams.put( OgmTableGenerator.SEGMENT_VALUE_PARAM, sequenceName );
 			tableGenerator.configure( type, newParams, dialect );
 
-			return new TableExecutor( tableGenerator );
+			return new TableKeyAndMetadataProvider( tableGenerator );
 		}
 	}
 
 	/**
 	 * Provides a uniform way for handling the actual sequence case and the case of delegation to the table generator.
 	 */
-	private interface Executor {
-		IdGeneratorKeyMetadata getGeneratorKeyMetadata();
-		IdGeneratorKey getGeneratorKey(SessionImplementor session);
+	private interface IdSourceKeyAndKeyMetadataProvider {
+		IdSourceKeyMetadata getGeneratorKeyMetadata();
+		IdSourceKey getGeneratorKey(SessionImplementor session);
 	}
 
-	private static class TableExecutor implements Executor {
+	private static class TableKeyAndMetadataProvider implements IdSourceKeyAndKeyMetadataProvider {
 
 		private final OgmTableGenerator delegate;
 
-		public TableExecutor(OgmTableGenerator delegate) {
+		public TableKeyAndMetadataProvider(OgmTableGenerator delegate) {
 			this.delegate = delegate;
 		}
 
 		@Override
-		public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
+		public IdSourceKeyMetadata getGeneratorKeyMetadata() {
 			return delegate.getGeneratorKeyMetadata();
 		}
 
 		@Override
-		public IdGeneratorKey getGeneratorKey(SessionImplementor session) {
+		public IdSourceKey getGeneratorKey(SessionImplementor session) {
 			return delegate.getGeneratorKey( session );
 		}
 	}
 
-	private static class SequenceExecutor implements Executor {
+	private static class SequenceKeyAndMetadataProvider implements IdSourceKeyAndKeyMetadataProvider {
 
-		private final IdGeneratorKey generatorKey;
+		private final IdSourceKey idSourceKey;
 
-		private SequenceExecutor(IdGeneratorKeyMetadata generatorKeyMetadata) {
-			generatorKey = IdGeneratorKey.forSequence( generatorKeyMetadata );
+		private SequenceKeyAndMetadataProvider(IdSourceKeyMetadata idSourceKeyMetadata) {
+			idSourceKey = IdSourceKey.forSequence( idSourceKeyMetadata );
 		}
 
 		@Override
-		public IdGeneratorKeyMetadata getGeneratorKeyMetadata() {
-			return generatorKey.getMetadata();
+		public IdSourceKeyMetadata getGeneratorKeyMetadata() {
+			return idSourceKey.getMetadata();
 		}
 
 		@Override
-		public IdGeneratorKey getGeneratorKey(SessionImplementor session) {
-			return generatorKey;
+		public IdSourceKey getGeneratorKey(SessionImplementor session) {
+			return idSourceKey;
 		}
 	}
 }

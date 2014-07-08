@@ -14,9 +14,9 @@ import java.util.Set;
 
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata.IdGeneratorType;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata.IdSourceType;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
@@ -34,28 +34,24 @@ import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.ConstraintType;
 
 /**
- * Generates the next value in a sequence for a RowKey.
+ * Generates the next value of an id sequence as represented by {@link IdSourceKey}.
  * <p>
- * A {@link RowKey} for a sequence contains exactly the following information:
- * <ul>
- * <li>The table where the sequence names are stored
- * <li>One column which contains the name of the sequence as value
- * </ul>
- * <p>
- * A sequence is a node with the labels:
- * <ul>
- * <li>{@code RowKey#getTable()}
- * <li>The sequence name (contained in the column value of the {@code RowKey})
- * <li> the label {@link NodeLabel#SEQUENCE}
- * </ul>
- * <p>
- * Sequences are created at startup.
- * <p>
- * Using cypher, an example of a sequence node looks like this:
+ * Both, {@link IdSourceType#TABLE} and {@link IdSourceType#SEQUENCE} are supported. For the table strategy, nodes in
+ * the following form are used (the exact property names and the label value can be configured using the options exposed
+ * by {@link OgmTableGenerator}):
  *
  * <pre>
- * (:hibernate_sequences:SEQUENCE { sequence_name = 'ExampleSequence', current_value : 3 })
+ * (:hibernate_sequences:TABLE_BASED_SEQUENCE { sequence_name = 'ExampleSequence', current_value : 3 })
  * </pre>
+ *
+ * For the sequence strategy, nodes in the following form are used (the sequence name can be configured using the option
+ * exposed by {@link OgmSequenceGenerator}):
+ *
+ * <pre>
+ * (:SEQUENCE { sequence_name = 'ExampleSequence', next_val : 3 })
+ * </pre>
+ *
+ * Sequences are created at startup.
  * <p>
  * A write lock is acquired on the node every time the sequence needs to be updated.
  *
@@ -134,13 +130,13 @@ public class Neo4jSequenceGenerator {
 		}
 	}
 
-	private void addUniqueConstraintForSequence(IdGeneratorKeyMetadata generatorKeyMetadata) {
+	private void addUniqueConstraintForSequence(IdSourceKeyMetadata idSourceKeyMetadata) {
 		if ( isMissingUniqueConstraint( NodeLabel.SEQUENCE ) ) {
 			neo4jDb.schema().constraintFor( NodeLabel.SEQUENCE ).assertPropertyIsUnique( SEQUENCE_NAME_PROPERTY ).create();
 		}
 	}
 
-	private void addUniqueConstraintForTableBasedSequence(IdGeneratorKeyMetadata generatorKeyMetadata) {
+	private void addUniqueConstraintForTableBasedSequence(IdSourceKeyMetadata generatorKeyMetadata) {
 		Label generatorKeyLabel = DynamicLabel.label( generatorKeyMetadata.getName() );
 		if ( isMissingUniqueConstraint( generatorKeyLabel ) ) {
 			neo4jDb.schema().constraintFor( generatorKeyLabel ).assertPropertyIsUnique( generatorKeyMetadata.getKeyColumnName() ).create();
@@ -188,10 +184,10 @@ public class Neo4jSequenceGenerator {
 	 * MERGE (n:hibernate_sequences:TABLE_BASED_SEQUENCE {sequence_name: {sequenceName}}) ON CREATE SET n.current_value = {initialValue} RETURN n
 	 * </pre>
 	 */
-	private void addTableSequence(IdGeneratorKeyMetadata generatorKeyMetadata, String sequenceName, int initialValue) {
-		Label generatorKeyLabel = DynamicLabel.label( generatorKeyMetadata.getName() );
-		String query = "MERGE (n" + labels( generatorKeyLabel.name(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + " { " + generatorKeyMetadata.getKeyColumnName() + ": {"
-				+ SEQUENCE_NAME_QUERY_PARAM + "}} ) ON CREATE SET n." + generatorKeyMetadata.getValueColumnName() + " = {" + INITIAL_VALUE_QUERY_PARAM + "} RETURN n";
+	private void addTableSequence(IdSourceKeyMetadata idSourceKeyMetadata, String sequenceName, int initialValue) {
+		Label generatorKeyLabel = DynamicLabel.label( idSourceKeyMetadata.getName() );
+		String query = "MERGE (n" + labels( generatorKeyLabel.name(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + " { " + idSourceKeyMetadata.getKeyColumnName() + ": {"
+				+ SEQUENCE_NAME_QUERY_PARAM + "}} ) ON CREATE SET n." + idSourceKeyMetadata.getValueColumnName() + " = {" + INITIAL_VALUE_QUERY_PARAM + "} RETURN n";
 		engine.execute( query, params( sequenceName, initialValue ) );
 	}
 
@@ -201,8 +197,8 @@ public class Neo4jSequenceGenerator {
 	 * MERGE (n:SEQUENCE {sequence_name: {sequenceName}}) ON CREATE SET n.current_value = {initialValue} RETURN n
 	 * </pre>
 	 */
-	private void addSequence(IdGeneratorKeyMetadata generatorKeyMetadata, int initialValue) {
-		engine.execute( SEQUENCE_CREATION_QUERY, params( generatorKeyMetadata.getName(), initialValue ) );
+	private void addSequence(IdSourceKeyMetadata idSourceKeyMetadata, int initialValue) {
+		engine.execute( SEQUENCE_CREATION_QUERY, params( idSourceKeyMetadata.getName(), initialValue ) );
 	}
 
 	private Map<String, Object> params(String sequenceName, int initialValue) {
@@ -215,17 +211,17 @@ public class Neo4jSequenceGenerator {
 	/**
 	 * Generate the next value in a sequence for a given {@link RowKey}.
 	 *
-	 * @param generatorKey identifies the generator
+	 * @param idSourceKey identifies the generator
 	 * @param increment the difference between to consecutive values in the sequence
 	 * @return the next value in a sequence
 	 */
-	public int nextValue(IdGeneratorKey generatorKey, int increment) {
+	public int nextValue(IdSourceKey idSourceKey, int increment) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
-			Node sequence = getSequence( generatorKey );
+			Node sequence = getSequence( idSourceKey );
 			lock = tx.acquireWriteLock( sequence );
-			int nextValue = updateSequenceValue( generatorKey, sequence, increment );
+			int nextValue = updateSequenceValue( idSourceKey, sequence, increment );
 			tx.success();
 			lock.release();
 			return nextValue;
@@ -238,12 +234,12 @@ public class Neo4jSequenceGenerator {
 	/**
 	 * Given a {@link RowKey}, get the corresponding sequence node.
 	 *
-	 * @param key the {@link RowKey} identifying the sequence
+	 * @param idSourceKey the {@link RowKey} identifying the sequence
 	 * @return the node representing the sequence
 	 */
-	private Node getSequence(IdGeneratorKey generatorKey) {
-		String updateSequenceQuery = getQuery( generatorKey );
-		ExecutionResult result = engine.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( generatorKey ) ) );
+	private Node getSequence(IdSourceKey idSourceKey) {
+		String updateSequenceQuery = getQuery( idSourceKey );
+		ExecutionResult result = engine.execute( updateSequenceQuery, singletonMap( SEQUENCE_NAME_QUERY_PARAM, (Object) sequenceName( idSourceKey ) ) );
 		ResourceIterator<Node> column = result.columnAs( "n" );
 		Node node = null;
 		if ( column.hasNext() ) {
@@ -253,8 +249,8 @@ public class Neo4jSequenceGenerator {
 		return node;
 	}
 
-	private String getQuery(IdGeneratorKey generatorKey) {
-		return generatorKey.getMetadata().getType() == IdGeneratorType.TABLE ? getTableQuery( generatorKey ) : SEQUENCE_VALUE_QUERY;
+	private String getQuery(IdSourceKey idSourceKey) {
+		return idSourceKey.getMetadata().getType() == IdSourceType.TABLE ? getTableQuery( idSourceKey ) : SEQUENCE_VALUE_QUERY;
 	}
 
 	/**
@@ -263,12 +259,12 @@ public class Neo4jSequenceGenerator {
 	 * MATCH (n:hibernate_sequences:TABLE_BASED_SEQUENCE) WHERE n.sequence_name = {sequenceName} RETURN n
 	 * </pre>
 	 */
-	private String getTableQuery(IdGeneratorKey generatorKey) {
-		String query = queryCache.get( generatorKey.getTable() );
+	private String getTableQuery(IdSourceKey idSourceKey) {
+		String query = queryCache.get( idSourceKey.getTable() );
 		if ( query == null ) {
-			query = "MATCH (n" + labels( generatorKey.getTable(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + ") WHERE n." + generatorKey.getMetadata().getKeyColumnName() + " = {"
+			query = "MATCH (n" + labels( idSourceKey.getTable(), NodeLabel.TABLE_BASED_SEQUENCE.name() ) + ") WHERE n." + idSourceKey.getMetadata().getKeyColumnName() + " = {"
 						+ SEQUENCE_NAME_QUERY_PARAM + "} RETURN n";
-			String cached = queryCache.putIfAbsent( generatorKey.getTable(), query );
+			String cached = queryCache.putIfAbsent( idSourceKey.getTable(), query );
 			if ( cached != null ) {
 				query = cached;
 			}
@@ -286,12 +282,12 @@ public class Neo4jSequenceGenerator {
 		return builder.toString();
 	}
 
-	private String sequenceName(IdGeneratorKey key) {
-		return key.getMetadata().getType() == IdGeneratorType.SEQUENCE ? key.getMetadata().getName() : (String) key.getColumnValues()[0];
+	private String sequenceName(IdSourceKey key) {
+		return key.getMetadata().getType() == IdSourceType.SEQUENCE ? key.getMetadata().getName() : (String) key.getColumnValues()[0];
 	}
 
-	private int updateSequenceValue(IdGeneratorKey generatorKey, Node sequence, int increment) {
-		String valueProperty = generatorKey.getMetadata().getType() == IdGeneratorType.TABLE ? generatorKey.getMetadata().getValueColumnName() : SEQUENCE_VALUE_PROPERTY;
+	private int updateSequenceValue(IdSourceKey idSourceKey, Node sequence, int increment) {
+		String valueProperty = idSourceKey.getMetadata().getType() == IdSourceType.TABLE ? idSourceKey.getMetadata().getValueColumnName() : SEQUENCE_VALUE_PROPERTY;
 		int currentValue = (Integer) sequence.getProperty( valueProperty );
 		int updatedValue = currentValue + increment;
 		sequence.setProperty( valueProperty, updatedValue );

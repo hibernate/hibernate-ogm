@@ -27,8 +27,8 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.dialect.OgmDialect;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
@@ -112,14 +112,14 @@ public class Neo4jNextValueGenerationTest {
 
 	@Test
 	public void testFirstValueIsInitialValue() {
-		final IdGeneratorKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
+		final IdSourceKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
 		Number sequenceValue = dialect.nextValue( new IdGenerationRequest( generatorKey, 1, INITIAL_VALUE_FIRST_VALUE_TEST ) );
 		assertThat( sequenceValue ).isEqualTo( INITIAL_VALUE_FIRST_VALUE_TEST );
 	}
 
 	@Test
 	public void testThreadSafety() throws InterruptedException {
-		final IdGeneratorKey generatorKey = buildIdGeneratorKey( THREAD_SAFETY_SEQUENCE );
+		final IdSourceKey generatorKey = buildIdGeneratorKey( THREAD_SAFETY_SEQUENCE );
 		Thread[] threads = new Thread[THREADS];
 		for ( int i = 0; i < threads.length; i++ ) {
 			threads[i] = new Thread( new Runnable() {
@@ -139,8 +139,8 @@ public class Neo4jNextValueGenerationTest {
 		assertThat( value ).isEqualTo( LOOPS * THREADS );
 	}
 
-	private IdGeneratorKey buildIdGeneratorKey(String sequenceName) {
-		IdGeneratorKeyMetadata metadata = IdGeneratorKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
-		return IdGeneratorKey.forTable( metadata, sequenceName );
+	private IdSourceKey buildIdGeneratorKey(String sequenceName) {
+		IdSourceKeyMetadata metadata = IdSourceKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
+		return IdSourceKey.forTable( metadata, sequenceName );
 	}
 }

@@ -27,7 +27,7 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.OgmDialect;
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.type.Type;
@@ -100,7 +100,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		return incrementSize;
 	}
 
-	protected abstract IdGeneratorKey getGeneratorKey(SessionImplementor session);
+	protected abstract IdSourceKey getGeneratorKey(SessionImplementor session);
 
 	protected GridDialect getGridDialect() {
 		return gridDialect;
@@ -147,7 +147,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	}
 
 	private IntegralDataTypeHolder doWorkInCurrentTransactionIfAny(SessionImplementor session) {
-		IdGeneratorKey key = getGeneratorKey( session );
+		IdSourceKey key = getGeneratorKey( session );
 
 		Number nextValue = gridDialect.nextValue(
 				new IdGenerationRequest(

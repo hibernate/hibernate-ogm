@@ -33,7 +33,7 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.IdGeneratorKey;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.IdGenerationRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
@@ -169,7 +169,7 @@ public class InfinispanDialect implements GridDialect {
 	@Override
 	//TODO should we use GridTypes here?
 	public Number nextValue(IdGenerationRequest request) {
-		final AdvancedCache<IdGeneratorKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
+		final AdvancedCache<IdSourceKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
 		boolean done = false;
 		Number value = null;
 

@@ -14,12 +14,12 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.grid.IdGeneratorKey;
-import org.hibernate.ogm.grid.IdGeneratorKeyMetadata;
+import org.hibernate.ogm.grid.IdSourceKey;
+import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
- * An externalizer for serializing and de-serializing {@link IdGeneratorKey} instances. Implicitly used by
+ * An externalizer for serializing and de-serializing {@link IdSourceKey} instances. Implicitly used by
  * {@link InfinispanDialect} which stores keys as is in the Infinispan data store.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
@@ -30,9 +30,9 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  */
 // As an implementation of AdvancedExternalizer this is never serialized according to the Externalizer docs
 @SuppressWarnings("serial")
-public class IdGeneratorKeyExternalizer implements AdvancedExternalizer<IdGeneratorKey> {
+public class IdSourceKeyExternalizer implements AdvancedExternalizer<IdSourceKey> {
 
-	public static final IdGeneratorKeyExternalizer INSTANCE = new IdGeneratorKeyExternalizer();
+	public static final IdSourceKeyExternalizer INSTANCE = new IdSourceKeyExternalizer();
 
 	/**
 	 * Format version of the key type; allows to apply version dependent deserialization logic in the future if
@@ -40,13 +40,13 @@ public class IdGeneratorKeyExternalizer implements AdvancedExternalizer<IdGenera
 	 */
 	private static final int VERSION = 1;
 
-	private static final Set<Class<? extends IdGeneratorKey>> TYPE_CLASSES = Collections.<Class<? extends IdGeneratorKey>>singleton( IdGeneratorKey.class );
+	private static final Set<Class<? extends IdSourceKey>> TYPE_CLASSES = Collections.<Class<? extends IdSourceKey>>singleton( IdSourceKey.class );
 
-	private IdGeneratorKeyExternalizer() {
+	private IdSourceKeyExternalizer() {
 	}
 
 	@Override
-	public void writeObject(ObjectOutput output, IdGeneratorKey key) throws IOException {
+	public void writeObject(ObjectOutput output, IdSourceKey key) throws IOException {
 		output.writeInt( VERSION );
 		output.writeUTF( key.getTable() );
 		output.writeObject( key.getColumnNames() );
@@ -54,7 +54,7 @@ public class IdGeneratorKeyExternalizer implements AdvancedExternalizer<IdGenera
 	}
 
 	@Override
-	public IdGeneratorKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+	public IdSourceKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 		// version
 		input.readInt();
 
@@ -62,12 +62,12 @@ public class IdGeneratorKeyExternalizer implements AdvancedExternalizer<IdGenera
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		IdGeneratorKeyMetadata metadata = IdGeneratorKeyMetadata.forTable( tableName, columnNames[0], null );
-		return IdGeneratorKey.forTable( metadata , (String) values[0] );
+		IdSourceKeyMetadata metadata = IdSourceKeyMetadata.forTable( tableName, columnNames[0], null );
+		return IdSourceKey.forTable( metadata , (String) values[0] );
 	}
 
 	@Override
-	public Set<Class<? extends IdGeneratorKey>> getTypeClasses() {
+	public Set<Class<? extends IdSourceKey>> getTypeClasses() {
 		return TYPE_CLASSES;
 	}
 

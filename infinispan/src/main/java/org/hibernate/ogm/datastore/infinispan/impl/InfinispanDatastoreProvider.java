@@ -18,7 +18,7 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdGeneratorKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -130,7 +130,7 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 				AdvancedExternalizer<?> associationKeyExternalizer = AssociationKeyExternalizer.INSTANCE;
 				AdvancedExternalizer<?> rowKeyExternalizer = RowKeyExternalizer.INSTANCE;
 				AdvancedExternalizer<?> entityKeyMetadataExternalizer = EntityKeyMetadataExternalizer.INSTANCE;
-				AdvancedExternalizer<?> idGeneratorKeyExternalizer = IdGeneratorKeyExternalizer.INSTANCE;
+				AdvancedExternalizer<?> idGeneratorKeyExternalizer = IdSourceKeyExternalizer.INSTANCE;
 
 				// override global configuration from the config file to inject externalizers
 				GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder()
