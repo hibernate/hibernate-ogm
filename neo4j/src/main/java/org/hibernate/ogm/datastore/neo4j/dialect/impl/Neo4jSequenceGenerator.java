@@ -64,14 +64,16 @@ public class Neo4jSequenceGenerator {
 	private static final String SEQUENCE_NAME_QUERY_PARAM = "sequenceName";
 
 	/**
-	 * Name of the property of SEQUENCE nodes which holds the sequence name.
+	 * Name of the property of SEQUENCE nodes which holds the sequence name. ORM's default for emulated sequences,
+	 * "sequence_name", is used.
 	 */
-	private static final String SEQUENCE_NAME_PROPERTY = "sequence_name";
+	private static final String SEQUENCE_NAME_PROPERTY = OgmTableGenerator.DEF_SEGMENT_COLUMN;
 
 	/**
-	 * Name of the property of SEQUENCE nodes which holds the next value.
+	 * Name of the property of SEQUENCE nodes which holds the next value. ORM's default for emulated sequences,
+	 * "next_val", is used.
 	 */
-	private static final String SEQUENCE_VALUE_PROPERTY = "next_val";
+	private static final String SEQUENCE_VALUE_PROPERTY = OgmTableGenerator.DEF_VALUE_COLUMN;
 
 	/**
 	 * Query for creating SEQUENCE nodes.
