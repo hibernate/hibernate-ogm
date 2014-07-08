@@ -33,12 +33,9 @@ public class MongoDBEntityMappingValidator extends BaseSchemaDefiner {
 	private void validateGenerators(Iterable<PersistentNoSqlIdentifierGenerator> generators) {
 		for ( PersistentNoSqlIdentifierGenerator identifierGenerator : generators ) {
 			String keyColumn = identifierGenerator.getGeneratorKeyMetadata().getKeyColumnName();
+
 			if ( !keyColumn.equals( MongoDBDialect.ID_FIELDNAME ) ) {
-				log.warnf(
-						"Cannot use primary key column name '%s' for id generator, going to use '%s' instead",
-						keyColumn,
-						MongoDBDialect.ID_FIELDNAME
-				);
+				log.cannotUseGivenPrimaryKeyColumnName( keyColumn, MongoDBDialect.ID_FIELDNAME );
 			}
 		}
 	}

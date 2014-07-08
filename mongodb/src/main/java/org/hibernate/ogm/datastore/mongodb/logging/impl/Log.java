@@ -68,4 +68,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1217, value = "The following native does neither specify the collection name nor is its result type mapped to an entity: %s")
 	HibernateException unableToDetermineCollectionName(String nativeQuery);
+
+	@Message(id = 1218, value = "Cannot use primary key column name '%s' for id generator, going to use '%s' instead")
+	HibernateException cannotUseGivenPrimaryKeyColumnName(String givenKeyColumnName, String usedKeyColumnName);
 }
