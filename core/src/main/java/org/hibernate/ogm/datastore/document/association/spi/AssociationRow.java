@@ -63,10 +63,7 @@ public class AssociationRow<R> implements TupleSnapshot {
 	private static Set<String> buildColumnNames(AssociationKey associationKey, Set<String> columnsFromRow) {
 		Set<String> columnNames = new HashSet<String>( columnsFromRow.size() + associationKey.getColumnNames().length );
 		columnNames.addAll( columnsFromRow );
-		for ( String column : associationKey.getColumnNames() ) {
-			columnNames.add( column );
-		}
-
+		Collections.addAll( columnNames, associationKey.getColumnNames() );
 		return columnNames;
 	}
 
