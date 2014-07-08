@@ -170,8 +170,8 @@ public class InfinispanDialect implements GridDialect {
 	//TODO should we use GridTypes here?
 	public Number nextValue(NextValueRequest request) {
 		final AdvancedCache<IdSourceKey, Object> identifierCache = provider.getCache( IDENTIFIER_STORE ).getAdvancedCache();
-		boolean done = false;
-		Number value = null;
+		boolean done;
+		Number value;
 
 		do {
 			//skip locking proposed by Sanne
