@@ -28,7 +28,7 @@ import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.OgmDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
-import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.type.Type;
 
@@ -154,7 +154,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 		IdSourceKey key = getGeneratorKey( session );
 
 		Number nextValue = gridDialect.nextValue(
-				new IdGenerationRequest(
+				new NextValueRequest(
 						key,
 						optimizer.applyIncrementSizeToSourceValues() ? incrementSize : 1,
 						initialValue

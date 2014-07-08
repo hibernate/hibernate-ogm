@@ -31,7 +31,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
@@ -98,11 +98,11 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		IdSourceKey key = IdSourceKey.forTable( keyMetadata, "Foo_Sequence" );
 
 		// when
-		Number value = dialect1.nextValue( new IdGenerationRequest( key, 1, 1 ) );
+		Number value = dialect1.nextValue( new NextValueRequest( key, 1, 1 ) );
 		assertThat( value ).isEqualTo( 1L );
 
 		// then
-		value = dialect2.nextValue( new IdGenerationRequest( key, 1, 1 ) );
+		value = dialect2.nextValue( new NextValueRequest( key, 1, 1 ) );
 		assertThat( value ).isEqualTo( 2L );
 	}
 

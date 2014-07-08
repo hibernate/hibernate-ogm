@@ -30,7 +30,7 @@ import org.hibernate.ogm.dialect.OgmDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
-import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.LongType;
@@ -113,7 +113,7 @@ public class Neo4jNextValueGenerationTest {
 	@Test
 	public void testFirstValueIsInitialValue() {
 		final IdSourceKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
-		Number sequenceValue = dialect.nextValue( new IdGenerationRequest( generatorKey, 1, INITIAL_VALUE_FIRST_VALUE_TEST ) );
+		Number sequenceValue = dialect.nextValue( new NextValueRequest( generatorKey, 1, INITIAL_VALUE_FIRST_VALUE_TEST ) );
 		assertThat( sequenceValue ).isEqualTo( INITIAL_VALUE_FIRST_VALUE_TEST );
 	}
 
@@ -126,7 +126,7 @@ public class Neo4jNextValueGenerationTest {
 				@Override
 				public void run() {
 					for ( int i = 0; i < LOOPS; i++ ) {
-						dialect.nextValue( new IdGenerationRequest( generatorKey, 1, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
+						dialect.nextValue( new NextValueRequest( generatorKey, 1, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
 					}
 				}
 			} );
@@ -135,7 +135,7 @@ public class Neo4jNextValueGenerationTest {
 		for ( Thread thread : threads ) {
 			thread.join();
 		}
-		Number value = dialect.nextValue( new IdGenerationRequest( generatorKey, 0, 1 ) );
+		Number value = dialect.nextValue( new NextValueRequest( generatorKey, 0, 1 ) );
 		assertThat( value ).isEqualTo( LOOPS * THREADS );
 	}
 

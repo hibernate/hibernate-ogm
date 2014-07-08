@@ -17,7 +17,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -96,7 +96,7 @@ public interface GridDialect extends Service {
 	 *
 	 * @return the next value from the specified id generator
 	 */
-	Number nextValue(IdGenerationRequest request);
+	Number nextValue(NextValueRequest request);
 
 	/**
 	 * Whether this dialect supports sequences for id generation or not. If not, a table-based strategy is expected to

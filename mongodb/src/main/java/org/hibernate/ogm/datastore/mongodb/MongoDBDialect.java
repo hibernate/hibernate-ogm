@@ -62,7 +62,7 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.id.spi.IdGenerationRequest;
+import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
@@ -534,7 +534,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	@Override
-	public Number nextValue(IdGenerationRequest request) {
+	public Number nextValue(NextValueRequest request) {
 		DBCollection currentCollection = getCollection( request.getKey().getTable() );
 		DBObject query = this.prepareIdObject( request.getKey() );
 		//all columns should match to find the value
