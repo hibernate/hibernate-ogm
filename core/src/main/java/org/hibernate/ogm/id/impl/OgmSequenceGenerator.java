@@ -60,13 +60,12 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	private static final Log log = LoggerFactory.make();
 
 	private Type type;
-	private Dialect dialect;
 	private Properties params;
 
 	private String sequenceName;
 	private IdSourceKeyMetadata generatorKeyMetadata;
 
-	private volatile IdSourceKeyAndKeyMetadataProvider delegate;
+	private IdSourceKeyAndKeyMetadataProvider delegate;
 
 	public OgmSequenceGenerator() {
 	}
@@ -76,11 +75,10 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		super.configure( type, params, dialect );
 
 		this.type = type;
-		this.dialect = dialect;
 		this.params = params;
 		sequenceName = determineSequenceName( params, dialect );
 		generatorKeyMetadata = IdSourceKeyMetadata.forSequence( sequenceName );
-		delegate = getDelegate();
+		delegate = getDelegate( dialect );
 	}
 
 	@Override
@@ -129,7 +127,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		return sequenceName;
 	}
 
-	private IdSourceKeyAndKeyMetadataProvider getDelegate() {
+	private IdSourceKeyAndKeyMetadataProvider getDelegate(Dialect dialect) {
 		GridDialect gridDialect = super.getGridDialect();
 
 		if ( gridDialect.supportsSequences() ) {
