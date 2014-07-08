@@ -186,4 +186,20 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = WARN)
 	@Message(id = 60, value = "Grid dialect %1$s does not support sequences, falling back to table-based id generation. Consider to use @TableGenerator rather than @SequenceGenerator.")
 	void dialectDoesNotSupportSequences(String dialectClass);
+
+	@LogMessage(level = WARN)
+	@Message(id = 61, value = "The option '@TableGenerator#catalog()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
+	void catalogOptionNotSupportedForTableGenerator(String catalogName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 62, value = "The option '@TableGenerator#schema()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
+	void schemaOptionNotSupportedForTableGenerator(String schemaName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 63, value = "The option '@SequenceGenerator#catalog()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
+	void catalogOptionNotSupportedForSequenceGenerator(String catalogName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 64, value = "The option '@SequenceGenerator#schema()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
+	void schemaOptionNotSupportedForSequenceGenerator(String schemaName);
 }

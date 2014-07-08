@@ -16,7 +16,6 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
@@ -113,13 +112,16 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		sequenceName = ConfigurationHelper.getString( SequenceStyleGenerator.SEQUENCE_PARAM, params, sequenceName );
 		if ( sequenceName.indexOf( '.' ) < 0 ) {
 			sequenceName = normalizer.normalizeIdentifierQuoting( sequenceName );
+
 			final String schemaName = params.getProperty( PersistentIdentifierGenerator.SCHEMA );
+			if ( schemaName != null ) {
+				log.schemaOptionNotSupportedForSequenceGenerator( schemaName );
+			}
+
 			final String catalogName = params.getProperty( PersistentIdentifierGenerator.CATALOG );
-			sequenceName = Table.qualify(
-					dialect.quote( catalogName ),
-					dialect.quote( schemaName ),
-					dialect.quote( sequenceName )
-			);
+			if ( catalogName != null ) {
+				log.catalogOptionNotSupportedForSequenceGenerator( catalogName );
+			}
 		}
 		// if already qualified there is not much we can do in a portable manner so we pass it
 		// through and assume the user has set up the name correctly.

@@ -17,7 +17,6 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
-import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
@@ -31,26 +30,8 @@ import org.hibernate.type.LongType;
 import org.hibernate.type.Type;
 
 /**
- * An enhanced version of table-based id generation.
- * <p>
- * Unlike the simplistic legacy one (which, btw, was only ever intended for subclassing
- * support) we "segment" the table into multiple values.  Thus a single table can
- * actually serve as the persistent storage for multiple independent generators.  One
- * approach would be to segment the values by the name of the entity for which we are
- * performing generation, which would mean that we would have a row in the generator
- * table for each entity name.  Or any configuration really; the setup is very flexible.
- * <p>
- * In this respect it is very similar to the legacy
- * {@link org.hibernate.id.MultipleHiLoPerTableGenerator} in terms of the
- * underlying storage structure (namely a single table capable of holding
- * multiple generator values).  The differentiator is, as with
- * {@link org.hibernate.id.enhanced.SequenceStyleGenerator} as well, the externalized notion
- * of an optimizer.
- * <p>
- * <b>NOTE</b> that by default we use a single row for all generators (based
- * on {@link #DEF_SEGMENT_VALUE}).  The configuration parameter
- * {@link #CONFIG_PREFER_SEGMENT_PER_ENTITY} can be used to change that to
- * instead default to using a row for each entity name.
+ * A table-based id generator. Inspired by ORM's {@link TableGenerator}. Refer to its JavaDoc for some design
+ * considerations.
  * <p>
  * <table>
  * <caption>Configuration parameters</caption>
@@ -77,7 +58,8 @@ import org.hibernate.type.Type;
  * <tr>
  * <td>{@link #SEGMENT_VALUE_PARAM}</td>
  * <td>{@link #DEF_SEGMENT_VALUE}</td>
- * <td>The value indicating which segment is used by this generator; refers to values in the {@link #SEGMENT_COLUMN_PARAM} column</td>
+ * <td>The value indicating which segment is used by this generator; refers to values in the
+ * {@link #SEGMENT_COLUMN_PARAM} column</td>
  * </tr>
  * <tr>
  * <td>{@link #INITIAL_PARAM}</td>
@@ -87,7 +69,8 @@ import org.hibernate.type.Type;
  * <tr>
  * <td>{@link #INCREMENT_PARAM}</td>
  * <td>{@link #DEFAULT_INCREMENT_SIZE}</td>
- * <td>The increment size for the underlying segment; see the discussion on {@link org.hibernate.id.enhanced.Optimizer} for more details.</td>
+ * <td>The increment size for the underlying segment; see the discussion on {@link org.hibernate.id.enhanced.Optimizer}
+ * for more details.</td>
  * </tr>
  * <tr>
  * <td>{@link #OPT_PARAM}</td>
@@ -98,10 +81,11 @@ import org.hibernate.type.Type;
  *
  * @author Steve Ebersole
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Gunnar Morling
  */
 public class OgmTableGenerator extends OgmGeneratorBase implements Configurable {
 
-	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = "prefer_entity_table_as_segment_value";
+	public static final String CONFIG_PREFER_SEGMENT_PER_ENTITY = TableGenerator.CONFIG_PREFER_SEGMENT_PER_ENTITY;
 
 	public static final String TABLE_PARAM = TableGenerator.TABLE_PARAM;
 	public static final String DEF_TABLE = TableGenerator.DEF_TABLE;
@@ -206,14 +190,16 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 		if ( isGivenNameUnqualified ) {
 			ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
 			name = normalizer.normalizeIdentifierQuoting( name );
-			// if the given name is un-qualified we may neen to qualify it
+
 			String schemaName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.SCHEMA ) );
+			if ( schemaName != null ) {
+				log.schemaOptionNotSupportedForTableGenerator( schemaName );
+			}
+
 			String catalogName = normalizer.normalizeIdentifierQuoting( params.getProperty( PersistentIdentifierGenerator.CATALOG ) );
-			name = Table.qualify(
-					dialect.quote( catalogName ),
-					dialect.quote( schemaName ),
-					dialect.quote( name )
-			);
+			if ( catalogName != null ) {
+				log.catalogOptionNotSupportedForTableGenerator( catalogName );
+			}
 		}
 		else {
 			// if already qualified there is not much we can do in a portable manner so we pass it
