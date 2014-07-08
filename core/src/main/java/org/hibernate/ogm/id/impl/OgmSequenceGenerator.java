@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.Type;
 
 /**
- * A JPA sequence-based identifier generator.
+ * A JPA sequence-based identifier generator (inspired by {@link SequenceStyleGenerator}.
  * <p>
  * This identifier generator is also used for JPA auto identifier generation. {@link OgmTableGenerator} is used as
  * fall-back, if the current datastore does not support sequences.
@@ -51,6 +51,8 @@ import org.hibernate.type.Type;
  * </table>
  *
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
+ * @author Steve Ebersole
+ * @author Lukasz Antoniak (lukasz dot antoniak at gmail dot com)
  * @author Gunnar Morling
  */
 public class OgmSequenceGenerator extends OgmGeneratorBase {

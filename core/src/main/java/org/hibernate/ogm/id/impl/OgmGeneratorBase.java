@@ -34,7 +34,11 @@ import org.hibernate.type.Type;
 
 /**
  * Base class for sequence and table based id generators in Hibernate OGM.
+ * <p>
+ * Inspired by the corresponding classes in ORM (e.g. {@link TableGenerator}).
  *
+ * @author Steve Ebersole
+ * @author Emmanuel Bernard <emmanuel@hibernate.org>
  * @author Gunnar Morling
  */
 public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGenerator, Configurable {

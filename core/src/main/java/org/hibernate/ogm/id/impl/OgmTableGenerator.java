@@ -80,11 +80,6 @@ import org.hibernate.type.Type;
  * <td>The value indicating which segment is used by this generator; refers to values in the {@link #SEGMENT_COLUMN_PARAM} column</td>
  * </tr>
  * <tr>
- * <td>{@link #SEGMENT_LENGTH_PARAM}</td>
- * <td>{@link #DEF_SEGMENT_LENGTH}</td>
- * <td>The data length of the {@link #SEGMENT_COLUMN_PARAM} column; used for schema creation</td>
- * </tr>
- * <tr>
  * <td>{@link #INITIAL_PARAM}</td>
  * <td>{@link #DEFAULT_INITIAL_VALUE}</td>
  * <td>The initial value to be stored for the given segment</td>
