@@ -19,7 +19,7 @@ import org.hibernate.type.CustomType;
 /**
  * Store Enums as either integer or string
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 //TODO It would probably be better to implement all of this as a subclass of BasicGridType
 public class EnumType extends GridTypeDelegatingToCoreType {

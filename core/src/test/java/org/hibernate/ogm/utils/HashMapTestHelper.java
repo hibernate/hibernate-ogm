@@ -21,7 +21,7 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class HashMapTestHelper implements TestableGridDialect {
 

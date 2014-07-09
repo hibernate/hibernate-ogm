@@ -53,7 +53,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  * dot-separated property paths. When (de-)serializing this document from/to JSON via Jackson, this flat representation
  * is converted into a hierarchical representation using nested maps (if embedded properties are present).
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)

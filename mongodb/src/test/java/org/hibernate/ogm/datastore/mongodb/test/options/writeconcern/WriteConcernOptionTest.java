@@ -27,7 +27,7 @@ import com.mongodb.WriteConcern;
 /**
  * Test the {@link WriteConcernOption} used to set the {@link WriteConcernType} in MongoDB.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class WriteConcernOptionTest {
 

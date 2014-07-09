@@ -20,7 +20,7 @@ import org.hibernate.engine.transaction.spi.TransactionImplementor;
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class JTATransactionManagerTransactionFactory implements TransactionFactory {
 

@@ -14,7 +14,7 @@ import javax.naming.Context;
 import org.hibernate.cfg.Environment;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class JndiHelper {
 	public static Properties extractJndiProperties(Map configurationValues) {

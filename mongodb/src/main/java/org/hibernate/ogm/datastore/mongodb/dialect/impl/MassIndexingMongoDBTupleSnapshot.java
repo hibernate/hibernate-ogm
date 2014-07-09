@@ -15,7 +15,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import com.mongodb.DBObject;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class MassIndexingMongoDBTupleSnapshot implements TupleSnapshot {
 

@@ -12,7 +12,7 @@ import org.hibernate.boot.registry.StandardServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ConfigurationServiceInitiator implements StandardServiceInitiator<ConfigurationService> {
 	public static ConfigurationServiceInitiator INSTANCE = new ConfigurationServiceInitiator();

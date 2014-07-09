@@ -18,7 +18,7 @@ import javax.persistence.OrderColumn;
 import org.hibernate.annotations.GenericGenerator;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Entity
 public class Father {

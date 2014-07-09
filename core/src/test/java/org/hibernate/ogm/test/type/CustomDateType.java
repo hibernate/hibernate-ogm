@@ -28,7 +28,7 @@ import java.util.Date;
 /**
  * Convert date into yyMMdd
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class CustomDateType extends AbstractGenericBasicType<Date> {
 

@@ -38,7 +38,7 @@ import org.neo4j.graphdb.ResourceIterator;
  * <p>
  * This class must be thread-safe since it's used by the dialect as a reference.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class CypherCRUD {
 

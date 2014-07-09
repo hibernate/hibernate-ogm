@@ -27,7 +27,7 @@ import org.hibernate.service.spi.Stoppable;
 /**
  * Creates a fully configured instance of {@link CouchDBDatastore}
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService, Configurable {

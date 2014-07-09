@@ -14,7 +14,7 @@ import java.util.List;
  * Stores metadata information common to all keys related
   * to a given association
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class AssociationKeyMetadata {
 	private final String table;

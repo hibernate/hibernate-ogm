@@ -16,7 +16,7 @@ import org.hibernate.service.Service;
  * Implementations of this service offer native interfaces to access the underlying datastore. It is also responsible
  * for starting and stopping the connection to the datastore.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public interface DatastoreProvider extends Service {

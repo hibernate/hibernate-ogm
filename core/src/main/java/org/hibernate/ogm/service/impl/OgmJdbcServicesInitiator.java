@@ -27,7 +27,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * Return a JdbcServicesImpl that does not access the underlying database
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmJdbcServicesInitiator extends OptionalServiceInitiator<JdbcServices> {
 	public static final OgmJdbcServicesInitiator INSTANCE = new OgmJdbcServicesInitiator();

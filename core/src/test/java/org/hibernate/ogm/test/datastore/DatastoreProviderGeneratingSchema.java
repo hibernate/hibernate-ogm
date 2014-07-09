@@ -41,7 +41,7 @@ import org.hibernate.type.Type;
  * Example of datastore provider using metadata to generate some hypothetical
  * schema.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class DatastoreProviderGeneratingSchema implements DatastoreProvider, StartStoppable {
 

@@ -29,8 +29,8 @@ import org.hibernate.ogm.datastore.impl.SetFromCollection;
  * list of TupleOperation. It is intended that GridDialects retrieve to these actions and
  * reproduce them to the datastore. The list of changes is computed based off the snapshot.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero  <sanne@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero  &lt;sanne@hibernate.org&gt;
  */
 public class Tuple {
 

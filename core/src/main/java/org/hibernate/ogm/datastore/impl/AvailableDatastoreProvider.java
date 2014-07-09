@@ -10,7 +10,7 @@ package org.hibernate.ogm.datastore.impl;
  * This enumeration describes all available datastore providers by providing some shortcuts.
  * It's used for the Datastore Provider initialization to find the provider to instantiate.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
 public enum AvailableDatastoreProvider {

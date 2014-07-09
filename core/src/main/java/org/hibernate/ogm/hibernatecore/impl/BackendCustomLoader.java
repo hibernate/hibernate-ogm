@@ -34,7 +34,7 @@ import org.hibernate.type.Type;
 /**
  * Extension point for a loader that executes native NoSQL queries.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class BackendCustomLoader extends CustomLoader {
 

@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * Test {@link SkipByGridDialect} is working with {@link JpaTestCase}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 

@@ -14,7 +14,7 @@ import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.Test;
 
 /**
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 public class IdentityIdGeneratorTest extends JpaTestCase {
 

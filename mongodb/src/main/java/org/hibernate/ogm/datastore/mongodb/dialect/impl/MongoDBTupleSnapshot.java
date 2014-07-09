@@ -19,14 +19,14 @@ import org.hibernate.ogm.grid.EntityKey;
 import com.mongodb.DBObject;
 
 /**
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	/**
 	 * Identify the purpose for the creation of a {@link MongoDBTupleSnapshot}
 	 *
-	 * @author Davide D'Alto <davide@hibernate.org>
+	 * @author Davide D'Alto &lt;davide@hibernate.org&gt;
 	 */
 	public enum SnapshotType {
 		INSERT, UPDATE

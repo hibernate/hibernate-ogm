@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Used to serialize and deserialize a REST CouchDB response to a PUT and a DELETE
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GenericResponse {

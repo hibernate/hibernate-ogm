@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 /**
  * Test the hibernate OGM module in JBoss AS using CouchDB
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
 public class CouchDBModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {

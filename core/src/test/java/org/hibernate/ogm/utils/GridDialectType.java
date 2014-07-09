@@ -11,7 +11,7 @@ package org.hibernate.ogm.utils;
  * We mainly need the name of it's TestableGridDialect implementation, but this
  * is also used to disable some tests for a specific GridDialect.
  *
-* @author Sanne Grinovero <sanne@hibernate.org>
+* @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
 * @author Gunnar Morling
 */
 public enum GridDialectType {

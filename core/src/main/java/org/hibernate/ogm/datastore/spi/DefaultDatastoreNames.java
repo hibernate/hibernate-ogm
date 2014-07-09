@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.spi;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public interface DefaultDatastoreNames {
 	String ENTITY_STORE = "ENTITIES";

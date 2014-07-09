@@ -17,7 +17,7 @@ import org.neo4j.cypherdsl.query.Operator;
 import org.neo4j.cypherdsl.query.Value;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jRangePredicate extends RangePredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
 

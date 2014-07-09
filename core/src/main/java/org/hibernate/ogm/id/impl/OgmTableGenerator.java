@@ -116,7 +116,7 @@ import org.hibernate.type.Type;
  * </table>
  *
  * @author Steve Ebersole
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmTableGenerator implements PersistentIdentifierGenerator, Configurable {
 

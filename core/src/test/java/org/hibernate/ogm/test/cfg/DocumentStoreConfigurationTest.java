@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 /**
  * Unit test for {@link DocumentStoreConfiguration}.
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class DocumentStoreConfigurationTest {

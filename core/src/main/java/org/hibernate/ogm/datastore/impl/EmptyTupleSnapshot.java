@@ -12,7 +12,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public final class EmptyTupleSnapshot implements TupleSnapshot {
 

@@ -16,7 +16,7 @@ import org.junit.Test;
 /**
  * Test case for Auto identifier generator using the session.
  *
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  * @author Davide D'Alto
  */
 public class AutoIdGeneratorWithSessionTest extends OgmTestCase {

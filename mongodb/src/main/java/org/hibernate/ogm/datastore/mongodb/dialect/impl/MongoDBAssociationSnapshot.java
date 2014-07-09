@@ -20,8 +20,8 @@ import com.mongodb.DBObject;
 /**
  * An association snapshot based on a {@link DBObject} retrieved from MongoDB.
  *
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class MongoDBAssociationSnapshot extends AssociationRows {

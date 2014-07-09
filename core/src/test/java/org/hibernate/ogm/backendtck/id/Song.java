@@ -15,7 +15,7 @@ import javax.persistence.SequenceGenerator;
 /**
  * Test entity for {@link org.hibernate.ogm.id.impl.OgmSequenceGenerator OGM Sequence Generator}
  *
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 @Entity
 public class Song {

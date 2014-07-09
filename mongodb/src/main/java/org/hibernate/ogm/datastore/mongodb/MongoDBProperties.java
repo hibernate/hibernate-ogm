@@ -19,7 +19,7 @@ import com.mongodb.WriteConcern;
 /**
  * Properties for configuring the MongoDB datastore via {@code persistence.xml} or {@link OgmConfiguration}.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
  */
 public final class MongoDBProperties implements DocumentStoreProperties {

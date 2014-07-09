@@ -15,7 +15,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 /**
  * Test that PersistenceProvider#createContainerEntityManagerFactory work properly in a JTA environment
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class JPAAndJTAViaContainerAPITest extends JpaTestCase {
 	@Test

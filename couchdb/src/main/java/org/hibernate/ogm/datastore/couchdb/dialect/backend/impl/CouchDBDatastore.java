@@ -37,7 +37,7 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 /**
  * Provides access and interaction with a database instance of CouchDB.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBDatastore {

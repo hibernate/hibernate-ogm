@@ -47,7 +47,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * be stopped when no longer needed.
  *
  * @author Sanne Grinovero
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class InfinispanDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {

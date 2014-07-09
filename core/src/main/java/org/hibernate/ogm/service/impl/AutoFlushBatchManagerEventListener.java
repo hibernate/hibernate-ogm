@@ -15,8 +15,8 @@ import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 /**
  * Prepares and executes batched operations when an {@link AutoFlushEvent} is caught
  *
- * @author Davide D'Alto <davide@hibernate.org>
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class AutoFlushBatchManagerEventListener extends BatchManagerEventListener<AutoFlushEventListener, AutoFlushEvent> implements AutoFlushEventListener {
 

@@ -16,7 +16,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 /**
  * Factory for the creation of {@link OgmSessionFactoryServiceRegistryImpl}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  *
  */
 public class OgmSessionFactoryServiceRegistryFactoryImpl implements SessionFactoryServiceRegistryFactory {

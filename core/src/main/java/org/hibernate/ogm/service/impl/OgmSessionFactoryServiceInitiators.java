@@ -21,7 +21,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
  *
  * @see OgmSessionFactoryServiceRegistryImpl
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmSessionFactoryServiceInitiators {
 

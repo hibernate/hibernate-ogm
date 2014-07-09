@@ -34,7 +34,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * Contributes the {@link GridDialect} service, based on the configuration via {@link OgmProperties#GRID_DIALECT}, using
  * the implementation returned by {@link DatastoreProvider#getDefaultDialect()} as fallback.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class GridDialectInitiator implements SessionFactoryServiceInitiator<GridDialect> {

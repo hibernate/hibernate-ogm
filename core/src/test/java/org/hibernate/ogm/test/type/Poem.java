@@ -17,7 +17,7 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Entity
 public class Poem {

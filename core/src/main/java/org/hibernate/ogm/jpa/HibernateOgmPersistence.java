@@ -33,7 +33,7 @@ import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
  * JPA PersistenceProvider implementation specific to Hibernate OGM
  * All specific configurations are set transparently for the user.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class HibernateOgmPersistence implements PersistenceProvider {
 	private static String IMPLEMENTATION_NAME = HibernateOgmPersistence.class.getName();

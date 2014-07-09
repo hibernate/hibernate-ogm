@@ -27,7 +27,7 @@ import org.hibernate.search.exception.ErrorHandler;
  * and IndexWriters.
  *
  * @author Sanne Grinovero
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class BatchCoordinator implements Runnable {
 

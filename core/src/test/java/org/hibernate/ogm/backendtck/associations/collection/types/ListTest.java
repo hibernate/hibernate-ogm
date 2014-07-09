@@ -14,7 +14,7 @@ import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class ListTest extends OgmTestCase {

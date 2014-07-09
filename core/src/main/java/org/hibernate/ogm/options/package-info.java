@@ -103,8 +103,8 @@
  * <code>
  * </pre>
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 package org.hibernate.ogm.options;
 

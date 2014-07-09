@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
  * Every Json document in CouchDB contains, The field '_id' representing the id of the document and '_rev' representing
  * the revision number of the document
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @JsonTypeInfo(
 	use = JsonTypeInfo.Id.NAME,

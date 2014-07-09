@@ -23,7 +23,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * The implementation can be configured via {@link OgmProperties#QUERY_PARSER_SERVICE}. If no implementation is
  * configured that way, the default implementation as retrieved from the current {@link DatastoreProvider} will be used.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  * @author Gunnar Morling
  */
 class QueryParserServicesInitiator implements SessionFactoryServiceInitiator<QueryParserService> {

@@ -25,7 +25,7 @@ import org.hibernate.service.spi.SessionFactoryServiceRegistry;
  *
  * In particular, set or override OGM specific services.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmIntegrator implements Integrator, ServiceContributingIntegrator {
 

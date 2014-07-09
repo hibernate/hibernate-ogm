@@ -12,7 +12,7 @@ import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
 import org.junit.Test;
 
 /**
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class DatabaseIdentifierTest {
 

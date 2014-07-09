@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
 /**
  * Used to serialize and deserialize sequence objects.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @JsonSerialize(include = Inclusion.NON_NULL)
 @JsonTypeName(SequenceDocument.TYPE_NAME)

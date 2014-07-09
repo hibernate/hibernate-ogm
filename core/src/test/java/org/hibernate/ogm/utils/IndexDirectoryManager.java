@@ -16,7 +16,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 /**
  * Collects static constants used across several tests.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class IndexDirectoryManager {
 

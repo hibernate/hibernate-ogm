@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 /**
  * Identify annotations that can be used as {@link org.hibernate.ogm.options.spi.Option}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 @Target(ANNOTATION_TYPE)
 @Retention(RUNTIME)

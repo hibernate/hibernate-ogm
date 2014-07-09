@@ -11,6 +11,6 @@
  * <p>
  * These helper classes are particularly useful for JSON or JSON-like structures.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 package org.hibernate.ogm.datastore.document.association.spi;

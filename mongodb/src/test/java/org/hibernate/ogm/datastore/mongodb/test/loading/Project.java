@@ -15,7 +15,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OrderColumn;
 
 /**
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @Entity
 public class Project {

@@ -18,7 +18,7 @@ import java.sql.Statement;
  * Hibernate OGM doesn't use JDBC connection so there aren't any statement to execute.
  * This class has been introduce to solve compatibility issues with Hibernate 4.1.9.Final.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NoopStatement implements Statement {
 

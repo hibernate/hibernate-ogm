@@ -12,7 +12,7 @@ import org.neo4j.graphdb.Label;
 /**
  * Identifies the role of the node created by the neo4j dialect.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public enum NodeLabel implements Label {
 	/**

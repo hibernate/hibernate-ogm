@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * Test that it is possible to create and initialize the {@link EmbeddedGraphDatabaseFactory} without exceptions.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedGraphDatabaseFactoryTest {
 

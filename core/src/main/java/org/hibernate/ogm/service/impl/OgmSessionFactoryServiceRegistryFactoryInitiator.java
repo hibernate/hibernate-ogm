@@ -14,7 +14,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmSessionFactoryServiceRegistryFactoryInitiator extends OptionalServiceInitiator<SessionFactoryServiceRegistryFactory> {
 

@@ -14,7 +14,7 @@ import org.hibernate.type.descriptor.java.DateTypeDescriptor;
 /**
  * Converts a {@link Date} into a {@link String} representing a timestamp.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class TimestampDateTypeDescriptor extends DateTypeDescriptor {
 

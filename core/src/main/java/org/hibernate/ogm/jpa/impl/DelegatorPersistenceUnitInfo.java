@@ -23,7 +23,7 @@ import org.hibernate.jpa.HibernatePersistenceProvider;
  * Delegate most PersistenceUnitInfo method except for:
  *  - getPersistenceProviderClassName which is set to Hibernate EntityManager's persistence provider
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class DelegatorPersistenceUnitInfo implements PersistenceUnitInfo {
 	private final PersistenceUnitInfo delegator;

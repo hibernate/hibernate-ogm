@@ -14,7 +14,7 @@ import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class CalendarDateType extends AbstractGenericBasicType<Calendar> {
 	public static final CalendarDateType INSTANCE = new CalendarDateType();

@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 /**
  * Test for the Hibernate OGM module in WildFly using MongoDB
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
 public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {

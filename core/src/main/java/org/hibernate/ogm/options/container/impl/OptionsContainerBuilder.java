@@ -24,7 +24,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * This class is not thread-safe, callers need to synchronize externally when accessing this container from several
  * threads in parallel.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class OptionsContainerBuilder {

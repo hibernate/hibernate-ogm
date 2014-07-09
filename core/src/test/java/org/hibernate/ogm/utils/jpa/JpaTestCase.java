@@ -36,8 +36,8 @@ import org.junit.Before;
 import org.junit.runner.RunWith;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero <sanne@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
 @RunWith(GridDialectSkippableTestRunner.class)
 public abstract class JpaTestCase {

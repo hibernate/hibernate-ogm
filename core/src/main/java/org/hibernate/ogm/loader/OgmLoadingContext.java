@@ -15,7 +15,7 @@ import java.util.List;
  * Object holding contextual information around data loading
  * and that are OGM specific. This object is used by {@link OgmLoader}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmLoadingContext {
 	/**

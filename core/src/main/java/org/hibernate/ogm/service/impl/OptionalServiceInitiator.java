@@ -13,7 +13,7 @@ import org.hibernate.service.Service;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public abstract class OptionalServiceInitiator<S extends Service> implements StandardServiceInitiator<S> {
 

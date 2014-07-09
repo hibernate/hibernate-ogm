@@ -11,7 +11,7 @@ import com.mongodb.WriteConcern;
 /**
  * Write concern options for MongoDB. Represents the non-deprecated constants from {@link WriteConcern}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public enum WriteConcernType {
 

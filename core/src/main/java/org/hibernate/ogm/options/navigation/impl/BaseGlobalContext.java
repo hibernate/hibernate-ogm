@@ -12,7 +12,7 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
 /**
  * Base implementation {@link GlobalContext}s.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public abstract class BaseGlobalContext<G extends GlobalContext<G, E>, E extends EntityContext<E, ?>> extends BaseContext implements GlobalContext<G, E> {

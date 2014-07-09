@@ -20,7 +20,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * This is a {@linl SessionFactoryServiceInitiator} since it depends on {@link DatastoreServices}
  * which itself is a {@code SessionFactoryServiceInitiator}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class TypeTranslatorInitiator implements SessionFactoryServiceInitiator<TypeTranslator> {
 

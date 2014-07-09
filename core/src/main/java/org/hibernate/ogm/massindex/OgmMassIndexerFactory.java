@@ -18,7 +18,7 @@ import org.hibernate.search.spi.MassIndexerFactory;
  * {@link MassIndexerFactory} that can be used to register the {@link OgmMassIndexer} to Hibernate Search.
  *
  * @see org.hibernate.search.hcore.impl.MassIndexerFactoryIntegrator#MASS_INDEXER_FACTORY_CLASSNAME
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmMassIndexerFactory implements MassIndexerFactory {
 

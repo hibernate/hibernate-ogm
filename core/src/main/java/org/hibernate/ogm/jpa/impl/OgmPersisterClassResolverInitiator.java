@@ -15,7 +15,7 @@ import org.hibernate.persister.spi.PersisterClassResolver;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmPersisterClassResolverInitiator extends OptionalServiceInitiator<PersisterClassResolver> {
 	public static final OgmPersisterClassResolverInitiator INSTANCE = new OgmPersisterClassResolverInitiator();

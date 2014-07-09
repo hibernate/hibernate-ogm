@@ -38,7 +38,7 @@ import com.mongodb.WriteConcern;
 /**
  * Test for the write concern setting.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class WriteConcernTest {

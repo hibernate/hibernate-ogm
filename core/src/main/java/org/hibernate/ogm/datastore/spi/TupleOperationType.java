@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.spi;
 /**
  * Type of operations on the tuple
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum TupleOperationType {
 	PUT,

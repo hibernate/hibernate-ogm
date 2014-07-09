@@ -18,7 +18,7 @@ import org.hibernate.type.Type;
 /**
  * Container for methods used to obtain the {@link GridType} representation of a {@link Type}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jTypeConverter {
 

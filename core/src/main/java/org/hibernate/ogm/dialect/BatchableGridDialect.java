@@ -13,7 +13,7 @@ import org.hibernate.ogm.dialect.batch.OperationsQueue;
  * <p>
  * Which operations can be batched and when they are executed depends on the underlying database.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface BatchableGridDialect extends GridDialect {
 

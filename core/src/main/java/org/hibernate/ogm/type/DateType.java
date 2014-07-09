@@ -16,7 +16,7 @@ import org.hibernate.type.descriptor.java.JdbcDateTypeDescriptor;
 /**
  * Represents a date
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class DateType extends AbstractGenericBasicType<Date> {
 

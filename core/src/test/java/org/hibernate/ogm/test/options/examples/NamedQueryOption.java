@@ -12,7 +12,7 @@ import org.hibernate.ogm.options.spi.Option;
  * An {@link Option} representing a named query.
  * The value represents the HQL query
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NamedQueryOption extends Option<String, String> {
 

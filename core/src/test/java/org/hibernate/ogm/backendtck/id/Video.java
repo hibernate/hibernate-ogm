@@ -13,7 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.TableGenerator;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Entity
 public class Video {

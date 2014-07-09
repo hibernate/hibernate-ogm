@@ -11,7 +11,7 @@ import org.hibernate.type.Type;
 /**
  * Used when a discriminator is not needed.
  *
- * @author "Davide D'Alto" <davide@hiberante.org>
+ * @author "Davide D'Alto" &lt;davide@hibernate.org&gt;
  */
 public class NotNeededDiscriminator implements EntityDiscriminator {
 

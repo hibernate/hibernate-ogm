@@ -19,7 +19,7 @@ import org.hibernate.mapping.PersistentClass;
  * Use table per class strategy.
  *
  * @see javax.persistence.InheritanceType#TABLE_PER_CLASS
- * @author "Davide D'Alto" <davide@hibernate.org>
+ * @author "Davide D'Alto" &lt;davide@hibernate.org&gt;
  */
 public class UnionSubclassOgmEntityPersister extends OgmEntityPersister {
 

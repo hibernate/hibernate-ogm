@@ -30,7 +30,7 @@ import org.hibernate.ogm.grid.RowKey;
  * list of AssociationOperation. It is intended that {@link org.hibernate.ogm.dialect.GridDialect}s retrieve these
  * actions and apply them to the datastore. The list of changes is computed against the snapshot.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class Association {
 	private final AssociationSnapshot snapshot;

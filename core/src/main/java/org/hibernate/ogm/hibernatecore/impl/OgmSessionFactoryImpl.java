@@ -65,7 +65,7 @@ import org.hibernate.type.Type;
 import org.hibernate.type.TypeResolver;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSessionFactory {

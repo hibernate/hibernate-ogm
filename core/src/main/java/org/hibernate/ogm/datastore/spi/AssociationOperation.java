@@ -13,7 +13,7 @@ import org.hibernate.ogm.grid.RowKey;
  * A RowKey is provided and when it makes sense a Tuple
  * (eg DELETE or PUT_NULL do not have tuples)
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class AssociationOperation {
 	private final RowKey key;

@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.spi.MappingOption;
  * given for non-association properties, the setting on the property-level will be ignored and the setting from the
  * entity will be applied.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  * @see http://docs.mongodb.org/manual/core/write-concern/
  */

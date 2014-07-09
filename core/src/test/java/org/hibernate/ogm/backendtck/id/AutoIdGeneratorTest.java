@@ -16,7 +16,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * Test case for JPA Auto identifier generator.
  *
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 public class AutoIdGeneratorTest extends JpaTestCase {
 

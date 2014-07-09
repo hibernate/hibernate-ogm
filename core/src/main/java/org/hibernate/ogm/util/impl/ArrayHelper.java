@@ -9,7 +9,7 @@ package org.hibernate.ogm.util.impl;
 import java.util.Collection;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ArrayHelper {
 	public static final int[] EMPTY_INT_ARRAY = {};

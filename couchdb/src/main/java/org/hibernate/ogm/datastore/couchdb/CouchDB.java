@@ -18,7 +18,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  * Allows to configure options specific to the CouchDB document data store.
  *
  * @author Gunnar Morling
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
 

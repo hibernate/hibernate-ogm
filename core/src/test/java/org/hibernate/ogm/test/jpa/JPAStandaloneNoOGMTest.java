@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero <sanne@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
 public class JPAStandaloneNoOGMTest {
 

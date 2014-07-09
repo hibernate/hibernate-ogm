@@ -17,7 +17,7 @@ import org.hibernate.type.Type;
 /**
  * The entity class is used as a discriminator.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class TablePerClassDiscriminator implements EntityDiscriminator {
 

@@ -43,7 +43,7 @@ import org.hibernate.type.Type;
 /**
  * Grid dialect which uses a plain map for storing objects in memory. For testing purposes.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class MapDialect implements GridDialect {
 

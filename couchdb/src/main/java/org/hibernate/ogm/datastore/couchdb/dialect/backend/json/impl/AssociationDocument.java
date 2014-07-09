@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  *
  * { "_id": "", "_rev": " ", "$type": "association", "rows": [{ "key": "value" }] }
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)

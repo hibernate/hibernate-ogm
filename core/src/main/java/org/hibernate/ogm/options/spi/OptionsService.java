@@ -12,7 +12,7 @@ import org.hibernate.service.Service;
 /**
  * Access point to OGM specific metadata information.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public interface OptionsService extends Service {
 
@@ -34,7 +34,7 @@ public interface OptionsService extends Service {
 	/**
 	 * Contain a group of options separated in different scopes
 	 *
-	 * @author Davide D'Alto <davide@hibernate.org>
+	 * @author Davide D'Alto &lt;davide@hibernate.org&gt;
 	 */
 	public interface OptionsServiceContext {
 

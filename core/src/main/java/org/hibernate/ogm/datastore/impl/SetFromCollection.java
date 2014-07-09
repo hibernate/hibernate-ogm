@@ -14,7 +14,7 @@ import java.util.Set;
  * Wrap a Collection object into a Set assuming the Collection does not contain duplicates.
  * The Set is read-only
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public final class SetFromCollection<E> implements Set<E> {
 	private Collection delegate;

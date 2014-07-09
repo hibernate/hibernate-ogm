@@ -10,7 +10,7 @@ package org.hibernate.ogm.util.impl;
  * List of log categories used by Hibernate OGM core module.
  * under impl package as it's still a work in progress.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum CoreLogCategories {
 	DATASTORE_ACCESS("org.hibernate.ogm.datastore.access");

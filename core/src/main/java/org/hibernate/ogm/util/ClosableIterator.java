@@ -12,7 +12,7 @@ import java.util.Iterator;
 /**
  * An iterator that has to be closed.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface ClosableIterator<T> extends Iterator<T>, Closeable {
 

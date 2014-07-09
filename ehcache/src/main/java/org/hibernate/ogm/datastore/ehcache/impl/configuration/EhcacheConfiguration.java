@@ -15,7 +15,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class EhcacheConfiguration {
 

@@ -16,7 +16,7 @@ import org.hibernate.ogm.grid.RowKey;
 /**
  * Represents an empty {@link AssociationSnapshot}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class EmptyAssociationSnapshot implements AssociationSnapshot {
 

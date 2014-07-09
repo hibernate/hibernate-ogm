@@ -23,7 +23,7 @@ import org.junit.Test;
  * Tests that map contents are stored in a separate association document if configured so, while the contents of
  * embedded collections should always be stored within the entity document.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 @SkipByGridDialect(

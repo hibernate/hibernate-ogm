@@ -15,7 +15,7 @@ import javax.persistence.JoinColumns;
 import javax.persistence.OneToMany;
 
 /**
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @Entity
 public class News {

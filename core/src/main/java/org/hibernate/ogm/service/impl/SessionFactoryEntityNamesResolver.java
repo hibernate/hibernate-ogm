@@ -15,8 +15,8 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
  * Resolves entity names into Class references using the metadata
  * from the Hibernate SessionFactory.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class SessionFactoryEntityNamesResolver implements EntityNamesResolver {
 

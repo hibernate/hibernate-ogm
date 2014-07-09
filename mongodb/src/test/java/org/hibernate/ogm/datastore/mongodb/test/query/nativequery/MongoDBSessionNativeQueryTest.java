@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  *  Test the execution of native queries on MongoDB using the {@link Session}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 

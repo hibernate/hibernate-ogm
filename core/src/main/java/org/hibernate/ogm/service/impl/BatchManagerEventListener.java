@@ -16,7 +16,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * Contains the methods to signal to a {@link BatchableGridDialect} when to prepare for the execution of batch
  * operations and when to execute them
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @param <L> the type of the delegate
  */
 abstract class BatchManagerEventListener<L, E extends AbstractEvent> {

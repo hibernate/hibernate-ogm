@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize.Inclusion;
  * documents returned by the map function. The list function creates an easily consumable representation of the view
  * result.
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 @JsonSerialize(include = Inclusion.NON_NULL)

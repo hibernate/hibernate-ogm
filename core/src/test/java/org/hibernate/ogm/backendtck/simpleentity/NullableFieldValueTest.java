@@ -21,7 +21,7 @@ import org.junit.Test;
  * For example, Neo4j does not allow to set the property of a node to null. In that case you could decide to remove the
  * property, throw an exception or skip the operation.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NullableFieldValueTest extends OgmTestCase {
 

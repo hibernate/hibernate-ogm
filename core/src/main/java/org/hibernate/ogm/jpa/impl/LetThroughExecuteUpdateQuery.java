@@ -22,7 +22,7 @@ import org.hibernate.ogm.exception.NotSupportedException;
 /**
  * Let through executeUpdate() operations and raise not supported exceptions otherwise
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class LetThroughExecuteUpdateQuery implements Query {
 

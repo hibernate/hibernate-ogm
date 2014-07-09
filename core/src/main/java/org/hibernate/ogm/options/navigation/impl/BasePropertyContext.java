@@ -12,7 +12,7 @@ import org.hibernate.ogm.options.navigation.PropertyContext;
 /**
  * Base implementation for {@link PropertyContext}s.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public abstract class BasePropertyContext<E extends EntityContext<E, P>, P extends PropertyContext<E, P>> extends BaseContext implements PropertyContext<E, P> {

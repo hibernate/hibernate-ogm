@@ -11,7 +11,7 @@ import java.lang.annotation.Annotation;
 /**
  * Convert option {@link Annotation}s into equivalent {@link OptionValuePair}s.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface AnnotationConverter<T extends Annotation> {
 

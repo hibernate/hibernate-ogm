@@ -13,7 +13,7 @@ import org.hibernate.ogm.grid.AssociationKey;
 /**
  * Contains the data required to update an association
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class UpdateAssociationOperation implements Operation {
 

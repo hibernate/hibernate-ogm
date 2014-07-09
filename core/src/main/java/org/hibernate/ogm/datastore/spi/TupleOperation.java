@@ -11,7 +11,7 @@ package org.hibernate.ogm.datastore.spi;
  * A column name is provided and when it makes sense a column value
  * (eg DELETE or PUT_NULL do not have column value)
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class TupleOperation {
 	private final String column;
