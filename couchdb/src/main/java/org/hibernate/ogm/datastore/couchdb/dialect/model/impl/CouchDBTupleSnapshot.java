@@ -10,15 +10,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 
 /**
- * A {@link TupleSnapshot} based on the properties of a CouchDB
- * {@link org.hibernate.ogm.dialect.couchdb.backend.json.EntityDocument}.
+ * A {@link TupleSnapshot} based on the properties of a CouchDB {@link EntityDocument}.
  * <p>
- * Fundamentally a {@link org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot} except that the
- * {@link org.hibernate.ogm.grid.EntityKey} column names and values are copied.
+ * Fundamentally a {@link MapTupleSnapshot} except that the {@link EntityKey} column names and values are copied.
  *
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling

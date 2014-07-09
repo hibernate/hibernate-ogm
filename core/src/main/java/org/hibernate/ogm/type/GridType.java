@@ -23,11 +23,11 @@ import org.hibernate.type.ForeignKeyDirection;
  * Defines a mapping between a Java type and one grid type, as well
  * as describing the in-memory semantics of the given java type (how do we check it for 'dirtiness', how do
  * we copy values, etc).
- * <p/>
+ * <p>
  * Application developers needing custom types can implement this interface (either directly or via subclassing an
  * existing impl) or by the (slightly more stable, though more limited) {@link org.hibernate.usertype.UserType}
  * interface.
- * <p/>
+ * <p>
  * Implementations of this interface must certainly be thread-safe.  It is recommended that they be immutable as
  * well, though that is difficult to achieve completely given the no-arg constructor requirement for custom types.
  *
@@ -48,7 +48,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.CollectionType}. Essentially a polymorphic version of
 	 * {@code (type instanceof CollectionType.class)}
-	 * <p/>
+	 * <p>
 	 * A {@link org.hibernate.type.CollectionType} is additionally an {@link org.hibernate.type.AssociationType}; so if this method returns true,
 	 * {@link #isAssociationType()} should also return true.
 	 *
@@ -59,7 +59,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.EntityType}. Essentially a polymorphic
 	 * version of {@code (type instanceof EntityType.class)}.
-	 * <p/>
+	 * <p>
 	 * An {@link org.hibernate.type.EntityType} is additionally an {@link org.hibernate.type.AssociationType}; so if this method returns true,
 	 * {@link #isAssociationType()} should also return true.
 	 *
@@ -70,7 +70,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.AnyType}. Essentially a polymorphic
 	 * version of {@code (type instanceof AnyType.class)}.
-	 * <p/>
+	 * <p>
 	 * An {@link org.hibernate.type.AnyType} is additionally an {@link org.hibernate.type.AssociationType}; so if this method returns true,
 	 * {@link #isAssociationType()} should also return true.
 	 *
@@ -111,7 +111,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
 	 * state) taking a shortcut for entity references.
-	 * <p/>
+	 * <p>
 	 * For most types this should equate to {@link java.lang.Object#equals} check on the values.  For associations the implication
 	 * is a bit different.  For most types it is conceivable to simply delegate to {@link #isEqual}
 	 *
@@ -127,7 +127,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
 	 * state).
-	 * <p/>
+	 * <p>
 	 * This should always equate to some form of comparison of the value's internal state.  As an example, for
 	 * something like a date the comparison should be based on its internal "time" state based on the specific portion
 	 * it is meant to represent (timestamp, date, time).
@@ -144,7 +144,7 @@ public interface GridType extends Serializable {
 	/**
 	 * Compare two instances of the class mapped by this type for persistence "equality" (equality of persistent
 	 * state).
-	 * <p/>
+	 * <p>
 	 * This should always equate to some form of comparison of the value's internal state.  As an example, for
 	 * something like a date the comparison should be based on its internal "time" state based on the specific portion
 	 * it is meant to represent (timestamp, date, time).

@@ -11,17 +11,17 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 /**
  * A configuration option describing a generic or datastore-specific setting for which a (set of) value is attached. A
  * setting can apply globally, for a given entity type or for a given entity property.
- * <p/>
+ * <p>
  * Options are maintained in {@link OptionsContext}s and can be unique or non-unique. Unique options are the most common
  * type. An example is "show_query". Non-unique options really represent a family of options differentiated by a key. An
  * example is named query where the identifying key is the query name.
- * <p/>
+ * <p>
  * When adding a unique option to a given container several times this option will only be contained exactly once. When
  * in contrast adding a non-unique option several times, all the values set are stored and retrievable from the
  * container.
- * <p/>
+ * <p>
  * Unique option types should be derived from {@link UniqueOption}.
- * <p/>
+ * <p>
  * The Option implementor defines what it means for a given setting to be unique. This identity is captured by
  * getUniqueIdentifier() which should return the same value if two Option instances represent the same setting.
  *

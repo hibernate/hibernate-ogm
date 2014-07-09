@@ -67,7 +67,7 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	/**
 	 * Constructs a NoSQLQuery given a sql query defined in the mappings.
 	 *
-	 * @param queryDef The representation of the defined <sql-query/>.
+	 * @param queryDef The representation of the defined query.
 	 * @param session The session to which this NoSQLQuery belongs.
 	 * @param parameterMetadata Metadata about parameters found in the query.
 	 */

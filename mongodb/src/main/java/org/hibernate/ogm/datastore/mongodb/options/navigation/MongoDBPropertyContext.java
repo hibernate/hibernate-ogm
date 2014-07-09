@@ -23,12 +23,12 @@ import com.mongodb.WriteConcern;
 public interface MongoDBPropertyContext extends DocumentStorePropertyContext<MongoDBEntityContext, MongoDBPropertyContext> {
 
 	/**
-	 * Defines the type of write concern to be applied when performing write operations in case the current property
-	 * represents an association. Otherwise the setting takes no effect.
+	 * Defines the type of <a href="http://docs.mongodb.org/manual/core/write-concern/">write concern</a> to be applied
+	 * when performing write operations in case the current property represents an association. Otherwise the setting
+	 * takes no effect.
 	 *
 	 * @param concern the write concern type
 	 * @return this context, allowing for further fluent API invocations
-	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
 	MongoDBPropertyContext writeConcern(WriteConcernType concern);
 
@@ -44,12 +44,12 @@ public interface MongoDBPropertyContext extends DocumentStorePropertyContext<Mon
 	MongoDBPropertyContext writeConcern(WriteConcern writeConcern);
 
 	/**
-	 * Defines the type of read preference to be applied when performing read operations in case the current property
-	 * represents an association. Otherwise the setting takes no effect.
+	 * Defines the type of <a href="http://docs.mongodb.org/manual/core/read-preference/">read preference</a> to be
+	 * applied when performing read operations in case the current property represents an association. Otherwise the
+	 * setting takes no effect.
 	 *
 	 * @param readPreference the read preference type
 	 * @return this context, allowing for further fluent API invocations
-	 * @see http://docs.mongodb.org/manual/core/read-preference/
 	 */
 	MongoDBPropertyContext readPreference(ReadPreferenceType readPreference);
 

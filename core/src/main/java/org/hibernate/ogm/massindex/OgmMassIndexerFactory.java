@@ -12,12 +12,13 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;
 import org.hibernate.search.spi.MassIndexerFactory;
 
 /**
  * {@link MassIndexerFactory} that can be used to register the {@link OgmMassIndexer} to Hibernate Search.
  *
- * @see org.hibernate.search.hcore.impl.MassIndexerFactoryIntegrator#MASS_INDEXER_FACTORY_CLASSNAME
+ * @see MassIndexerFactoryProvider#MASS_INDEXER_FACTORY_CLASSNAME
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmMassIndexerFactory implements MassIndexerFactory {

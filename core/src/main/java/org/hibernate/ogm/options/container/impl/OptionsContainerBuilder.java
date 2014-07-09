@@ -20,7 +20,7 @@ import org.hibernate.ogm.options.spi.UniqueOption;
  * Container for a group of options. Can hold unique as well as non-unique options. While several options of a given
  * non-unique option type can be stored in this container, at most one option of a given unique option type can be
  * stored.
- * <p/>
+ * <p>
  * This class is not thread-safe, callers need to synchronize externally when accessing this container from several
  * threads in parallel.
  *

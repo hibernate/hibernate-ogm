@@ -46,28 +46,28 @@ import org.hibernate.type.Type;
 
 /**
  * An enhanced version of table-based id generation.
- * <p/>
+ * <p>
  * Unlike the simplistic legacy one (which, btw, was only ever intended for subclassing
  * support) we "segment" the table into multiple values.  Thus a single table can
  * actually serve as the persistent storage for multiple independent generators.  One
  * approach would be to segment the values by the name of the entity for which we are
  * performing generation, which would mean that we would have a row in the generator
  * table for each entity name.  Or any configuration really; the setup is very flexible.
- * <p/>
+ * <p>
  * In this respect it is very similar to the legacy
  * {@link org.hibernate.id.MultipleHiLoPerTableGenerator} in terms of the
  * underlying storage structure (namely a single table capable of holding
  * multiple generator values).  The differentiator is, as with
  * {@link org.hibernate.id.enhanced.SequenceStyleGenerator} as well, the externalized notion
  * of an optimizer.
- * <p/>
+ * <p>
  * <b>NOTE</b> that by default we use a single row for all generators (based
  * on {@link #DEF_SEGMENT_VALUE}).  The configuration parameter
  * {@link #CONFIG_PREFER_SEGMENT_PER_ENTITY} can be used to change that to
  * instead default to using a row for each entity name.
- * <p/>
- * Configuration parameters:
+ * <p>
  * <table>
+ * <caption>Configuration parameters</caption>
  * <tr>
  * <td><b>NAME</b></td>
  * <td><b>DEFAULT</b></td>
@@ -219,7 +219,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * The size of the {@link #getSegmentColumnName segment column} in the
 	 * underlying table.
-	 * <p/>
+	 * <p>
 	 * <b>NOTE</b> : should really have been called 'segmentColumnLength' or
 	 * even better 'segmentColumnSize'
 	 *
@@ -317,7 +317,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	/**
 	 * Determine the table name to use for the generator values.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
@@ -352,7 +352,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 	/**
 	 * Determine the name of the column used to indicate the segment for each
 	 * row.  This column acts as the primary key.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
@@ -370,7 +370,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	/**
 	 * Determine the name of the column in which we will store the generator persistent value.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
@@ -388,7 +388,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	/**
 	 * Determine the segment value corresponding to this generator instance.
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
@@ -422,7 +422,7 @@ public class OgmTableGenerator implements PersistentIdentifierGenerator, Configu
 
 	/**
 	 * Determine the size of the {@link #getSegmentColumnName segment column}
-	 * <p/>
+	 * <p>
 	 * Called during {@link #configure configuration}.
 	 *
 	 * @param params The params supplied in the generator config (plus some standard useful extras).

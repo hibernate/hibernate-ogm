@@ -29,7 +29,6 @@ public class EhcacheConfiguration {
 	/**
 	 * Initialize the internal values from the given {@link Map}.
 	 *
-	 * @see Environment
 	 * @param configurationMap The values to use as configuration
 	 */
 	public void initialize(Map configurationMap) {
@@ -40,7 +39,7 @@ public class EhcacheConfiguration {
 	}
 
 	/**
-	 * @see EhcacheProperties#CONFIGURATION_RESOURCENAME
+	 * @see EhcacheProperties#CONFIGURATION_RESOURCE_NAME
 	 * @return An URL to an XML file compliant with the ehcache.xsd schema.
 	 */
 	public URL getUrl() {

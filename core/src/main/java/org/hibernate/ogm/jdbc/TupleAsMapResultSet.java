@@ -34,12 +34,12 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**
  * Implements JDBC's ResultSet interface but is essentially a wrapper for
- * propagating a list of Map<String, Object> that reach represent a tuple.
- *
+ * propagating a list of {@code Map<String, Object>} that reach represent a tuple.
+ * <p>
  * The ResultSet implementation is close to none (don't use it as a regular ResultSet)
  *  - currently only implement next() for moving along the set of tuples
  *  - implements unwrap / isWrapperFor for TupleAsMapResultSet.class
- *
+ * <p>
  * Otherwise, to add a tuple, use addTuple.
  * To read the current tuple, use getTuple()
  * To move forward, use next() (throws a SQLException, I know that sucks)
@@ -1023,10 +1023,12 @@ public class TupleAsMapResultSet implements ResultSet {
 		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 
+	@Override
 	public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}

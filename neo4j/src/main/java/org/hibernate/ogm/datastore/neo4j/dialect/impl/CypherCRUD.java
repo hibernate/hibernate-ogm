@@ -80,7 +80,8 @@ public class CypherCRUD {
 	/**
 	 * Find the node representing the {@link Key}.
 	 * <pre>
-	 * MATCH (n:Table {`id`: {0} })</p>
+	 * MATCH (n:Table {`id`: {0} })
+	 * </pre>
 	 *
 	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null
@@ -92,7 +93,8 @@ public class CypherCRUD {
 	/**
 	 * Find the node representing the entity key.
 	 * <pre>
-	 * MATCH (n:ENTITY:Table {`id`: {0} })</p>
+	 * MATCH (n:ENTITY:Table {`id`: {0} })
+	 * </pre>
 	 *
 	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null

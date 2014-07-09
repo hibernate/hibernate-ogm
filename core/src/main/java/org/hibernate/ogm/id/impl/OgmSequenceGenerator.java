@@ -25,8 +25,8 @@ import org.hibernate.type.Type;
  * <p>This identifier generator is also used for
  * JPA auto identifier generation.</p>
  *
- * Configuration parameters:
  * <table>
+ * <caption>Configuration parameters</caption>
  * <tr>
  * <td><b>NAME</b></td>
  * <td><b>DESCRIPTION</b></td>

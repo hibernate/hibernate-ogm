@@ -18,9 +18,10 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 
 /**
- * Specifies the write concern to be applied when performing write operations to the annotated entity or property. Can
- * either be given using a pre-configured write concern such as {@link WriteConcernType#JOURNALED} or by specifying the
- * type of a custom {@link WriteConcern} implementation.
+ * Specifies the <a href="http://docs.mongodb.org/manual/core/write-concern/">write concern</a> to be applied when
+ * performing write operations to the annotated entity or property. Can either be given using a pre-configured write
+ * concern such as {@link WriteConcernType#JOURNALED} or by specifying the type of a custom {@link WriteConcern}
+ * implementation.
  * <p>
  * When given on the property-level, this setting will only take effect when the property represents an association. If
  * given for non-association properties, the setting on the property-level will be ignored and the setting from the
@@ -28,7 +29,6 @@ import org.hibernate.ogm.options.spi.MappingOption;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
- * @see http://docs.mongodb.org/manual/core/write-concern/
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)

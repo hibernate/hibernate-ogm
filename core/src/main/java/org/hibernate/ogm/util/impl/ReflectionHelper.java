@@ -54,7 +54,7 @@ public final class ReflectionHelper {
 
 	/**
 	 * Returns the JavaBeans property name of the given method if it is a getter method.
-	 * <p/>
+	 * <p>
 	 * Getter methods are methods
 	 * <ul>
 	 * <li>whose name start with "get" and who have a return type but no parameter or</li>

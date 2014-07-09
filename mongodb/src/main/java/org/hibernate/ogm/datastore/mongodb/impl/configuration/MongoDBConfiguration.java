@@ -53,7 +53,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
 	 *
-	 * @param configurationValues configuration values given via {@code persistence.xml} etc.
+	 * @param propertyReader provides access to configuration values given via {@code persistence.xml} etc.
 	 * @param globalOptions global settings given via an option configurator
 	 */
 	public MongoDBConfiguration(ConfigurationPropertyReader propertyReader, OptionsContext globalOptions) {
