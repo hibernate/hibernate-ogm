@@ -38,7 +38,7 @@ import org.hibernate.type.Type;
  * Inspired by the corresponding classes in ORM (e.g. {@link TableGenerator}).
  *
  * @author Steve Ebersole
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGenerator, Configurable {
@@ -95,8 +95,7 @@ public abstract class OgmGeneratorBase implements PersistentNoSqlIdentifierGener
 	}
 
 	/**
-	 * The amount of increment to use.  The exact implications of this
-	 * depends on the {@link #getOptimizer() optimizer} being used.
+	 * The amount of increment to use. The exact implications of this depends on the optimizer being used.
 	 *
 	 * @return The increment amount.
 	 */

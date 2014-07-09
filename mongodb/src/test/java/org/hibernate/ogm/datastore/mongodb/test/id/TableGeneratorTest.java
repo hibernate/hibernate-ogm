@@ -53,7 +53,7 @@ public class TableGeneratorTest extends OgmTestCase {
 	private void assertCountQueryResult(OgmSession session, String queryString, long expectedCount) {
 		NoSQLQuery query = session.createNativeQuery( queryString );
 		query.addScalar( "n" );
-		long actualCount = (Long) ( (Object[]) query.list().iterator().next() )[0];
+		long actualCount = (Long) query.list().iterator().next();
 		assertThat( actualCount ).describedAs( "Count query didn't yield expected result" ).isEqualTo( expectedCount );
 	}
 
