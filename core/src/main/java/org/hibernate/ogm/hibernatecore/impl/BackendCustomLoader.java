@@ -109,7 +109,7 @@ public class BackendCustomLoader extends CustomLoader {
 						entry[i++] = gridType.nullSafeGet( tuple, scalarReturn.getColumnAlias(), session, null );
 					}
 					else {
-						entry[i++] = tuple.get( ( scalarReturn ).getColumnAlias() );
+						entry[i++] = tuple.get( scalarReturn.getColumnAlias() );
 					}
 				}
 			}

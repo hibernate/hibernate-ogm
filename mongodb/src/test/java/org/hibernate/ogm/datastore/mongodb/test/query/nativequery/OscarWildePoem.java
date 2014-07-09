@@ -20,14 +20,22 @@ import javax.persistence.Table;
 @Table(name = OscarWildePoem.TABLE_NAME)
 @NamedNativeQueries({
 	@NamedNativeQuery(name = "AthanasiaQuery", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultClass = OscarWildePoem.class ),
-	@NamedNativeQuery(name = "AthanasiaQueryWithMapping", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultSetMapping = "poemAuthorMapping" ),
-	@NamedNativeQuery(name = "AthanasiaProjectionQuery", query = "db.WILDE_POEM.find({ '$and' : [ { 'name' : 'Athanasia' }, { 'author' : 'Oscar Wilde' } ] })", resultSetMapping = "poemAuthorNameMapping" ),
+	@NamedNativeQuery(name = "AthanasiaQueryWithMapping", query = "{ $and: [ { name : 'Athanasia' }, { author : 'Oscar Wilde' } ] }", resultSetMapping = "poemMapping" ),
+	@NamedNativeQuery(name = "AthanasiaProjectionQuery", query = "db.WILDE_POEM.find({ '$and' : [ { 'name' : 'Athanasia' }, { 'author' : 'Oscar Wilde' } ] })", resultSetMapping = "poemNameMapping" ),
 	@NamedNativeQuery(name = "PoemRatings", query = "db.WILDE_POEM.find({}, { 'rating' : 1 })", resultSetMapping = "ratingMapping" ),
 	@NamedNativeQuery(name = "CountPoems", query = "db.WILDE_POEM.count()", resultSetMapping = "countMapping")
 })
 @SqlResultSetMappings({
-	@SqlResultSetMapping(name = "poemAuthorNameMapping", columns = @ColumnResult(name = "name")),
-	@SqlResultSetMapping(name = "poemAuthorMapping", entities = @EntityResult(entityClass = OscarWildePoem.class)),
+	@SqlResultSetMapping(name = "poemNameMapping", columns = @ColumnResult(name = "name")),
+	@SqlResultSetMapping(name = "poemMapping", entities = @EntityResult(entityClass = OscarWildePoem.class)),
+	@SqlResultSetMapping(
+			name = "poemNameAuthorIdMapping",
+			columns = {
+					@ColumnResult(name = "name"),
+					@ColumnResult(name = "author"),
+					@ColumnResult(name = "_id")
+			}
+	),
 	@SqlResultSetMapping(name = "countMapping", columns = @ColumnResult(name = "n")),
 	@SqlResultSetMapping(name = "ratingMapping", columns = @ColumnResult(name = "rating", type = byte.class))
 })

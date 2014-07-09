@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.test.query.nativequery;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -83,9 +84,26 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
 				+ "{ 'name' : 1 }"
 				+ " )";
-		String result = (String) em.createNativeQuery( nativeQuery, "poemAuthorNameMapping" ).getSingleResult();
+		String result = (String) em.createNativeQuery( nativeQuery, "poemNameMapping" ).getSingleResult();
 
 		assertThat( result ).isEqualTo( "Portia" );
+
+		commit();
+		close( em );
+	}
+
+	@Test
+	public void testSingleResultQueryWithSeveralProjections() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		String nativeQuery = "db.WILDE_POEM.find( "
+				+ "{ '$and' : [ { 'name' : 'Portia' }, { 'author' : 'Oscar Wilde' } ] }, "
+				+ "{ 'name' : 1, 'author' : 1 }"
+				+ " )";
+		Object[] result = (Object[]) em.createNativeQuery( nativeQuery, "poemNameAuthorIdMapping" ).getSingleResult();
+
+		assertThat( Arrays.asList( result ) ).containsExactly( "Portia", "Oscar Wilde", 1L );
 
 		commit();
 		close( em );
