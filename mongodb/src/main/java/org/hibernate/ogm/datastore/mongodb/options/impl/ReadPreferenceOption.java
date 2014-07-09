@@ -14,10 +14,10 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 import com.mongodb.ReadPreference;
 
 /**
- * Option for specifying the {@link ReadPreference} in MongoDB.
+ * Option for specifying the <a href="http://docs.mongodb.org/manual/core/read-preference/">read preference</a> in
+ * MongoDB.
  *
  * @author Gunnar Morling
- * @see http://docs.mongodb.org/manual/core/read-preference/
  */
 public class ReadPreferenceOption extends UniqueOption<ReadPreference> {
 

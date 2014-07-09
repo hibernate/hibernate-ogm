@@ -21,8 +21,7 @@ public interface DocumentStorePropertyContext<E extends DocumentStoreEntityConte
 	 * Specifies how associations of the configured property should be persisted. Only applies if the property
 	 * represents an association.
 	 *
-	 * @param associationStorage the association storage type to be used; overrides any settings on the entity or global
-	 * level
+	 * @param storage the association storage type to be used; overrides any settings on the entity or global level
 	 * @return this context, allowing for further fluent API invocations
 	 */
 	P associationStorage(AssociationStorageType storage);

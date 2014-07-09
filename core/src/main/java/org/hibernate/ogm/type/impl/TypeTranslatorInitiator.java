@@ -15,10 +15,10 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Inialize {@link TypeTranslator}.
- *
- * This is a {@linl SessionFactoryServiceInitiator} since it depends on {@link DatastoreServices}
- * which itself is a {@code SessionFactoryServiceInitiator}.
+ * Initializes {@link TypeTranslator}.
+ * <p>
+ * This is a {@link SessionFactoryServiceInitiator} since it depends on {@link GridDialect} which itself is a session
+ * factory scoped service.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */

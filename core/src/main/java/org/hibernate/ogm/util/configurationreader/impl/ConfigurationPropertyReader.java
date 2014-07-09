@@ -24,7 +24,7 @@ import org.hibernate.cfg.Configuration;
  * representations:
  * <ul>
  * <li>as instance of the expected target type</li>
- * <li>as {@link Class<?>}, representing a sub-type of the expected target type</li>
+ * <li>as {@link Class}, representing a sub-type of the expected target type</li>
  * <li>as string, representing the FQN of a sub-type of the expected target type</li>
  * <li>as string, representing a short name as resolvable via a given {@link ShortNameResolver}</li>
  * </ul>

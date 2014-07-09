@@ -15,10 +15,10 @@ import javax.naming.spi.ObjectFactory;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.internal.SessionFactoryRegistry;
+import org.hibernate.ogm.OgmSessionFactory;
 
 /**
- * Resolves {@link org.hibernate.ogm.OgmSessionFactory.OgmSessionFactory} instances during
- * <tt>JNDI<tt> look-ups as well as during deserialization
+ * Resolves {@link OgmSessionFactory} instances during JNDI look-ups as well as during de-serialization.
  *
  * @author Davide D'Alto
  */

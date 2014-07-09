@@ -10,12 +10,13 @@ import java.net.URL;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
+import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
- * Configuration for {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}.
+ * Configuration for {@link InfinispanDatastoreProvider}.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
@@ -29,7 +30,7 @@ public class InfinispanConfiguration {
 	private String jndi;
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.InfinispanProperties#CONFIGURATION_RESOURCENAME
+	 * @see InfinispanProperties#CONFIGURATION_RESOURCE_NAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
 	 */
 	public URL getConfigurationUrl() {
@@ -37,7 +38,7 @@ public class InfinispanConfiguration {
 	}
 
 	/**
-	 * @see org.hibernate.ogm.datastore.infinispan.InfinispanProperties#CACHE_MANAGER_JNDI_NAME
+	 * @see InfinispanProperties#CACHE_MANAGER_JNDI_NAME
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
 	public String getJndiName() {

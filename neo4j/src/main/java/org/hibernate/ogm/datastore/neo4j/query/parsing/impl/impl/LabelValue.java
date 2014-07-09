@@ -13,7 +13,7 @@ import org.neo4j.cypherdsl.query.AbstractExpression;
 /**
  * Represents matching a label to a value
  *
- * @deprecated Update {@code org.neo4j:neo4j-cypher-dsl} to version 2.0.2 and use the methods in {@link CypherQuery}
+ * @deprecated Update {@code org.neo4j:neo4j-cypher-dsl} to version 2.0.2 and use the methods in {@code CypherQuery}
  * instead
  */
 @Deprecated

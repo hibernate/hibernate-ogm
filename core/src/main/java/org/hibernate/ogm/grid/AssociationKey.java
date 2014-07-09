@@ -132,8 +132,8 @@ public final class AssociationKey implements Key {
 	}
 
 	/**
-	 * Returns the value of the given column if part of this key. Use {@link AssociationKey#isKeyColumn(String)} to
-	 * check whether a given column is part of this key prior to invoking this method.
+	 * Returns the value of the given column if part of this key. Use {@link AssociationKeyMetadata#isKeyColumn(String)}
+	 * to check whether a given column is part of this key prior to invoking this method.
 	 *
 	 * @param columnName the name of interest
 	 * @return the value of the given column.

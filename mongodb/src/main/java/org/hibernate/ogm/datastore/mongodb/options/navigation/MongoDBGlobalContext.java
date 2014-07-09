@@ -24,11 +24,11 @@ import com.mongodb.WriteConcern;
 public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> {
 
 	/**
-	 * Defines the type of write concern to be applied when performing write operations against the datastore.
+	 * Defines the type of <a href="http://docs.mongodb.org/manual/core/write-concern/">write concern</a> to be applied
+	 * when performing write operations against the datastore.
 	 *
 	 * @param writeConcern the write concern type
 	 * @return this context, allowing for further fluent API invocations
-	 * @see http://docs.mongodb.org/manual/core/write-concern/
 	 */
 	MongoDBGlobalContext writeConcern(WriteConcernType writeConcern);
 
@@ -42,11 +42,11 @@ public interface MongoDBGlobalContext extends DocumentStoreGlobalContext<MongoDB
 	MongoDBGlobalContext writeConcern(WriteConcern writeConcern);
 
 	/**
-	 * Defines the type of read preference to be applied when performing read operations against the datastore.
+	 * Defines the type of <a href="http://docs.mongodb.org/manual/core/read-preference/">read preference</a> to be
+	 * applied when performing read operations against the datastore.
 	 *
 	 * @param readPreference the read preference type
 	 * @return this context, allowing for further fluent API invocations
-	 * @see http://docs.mongodb.org/manual/core/read-preference/
 	 */
 	MongoDBGlobalContext readPreference(ReadPreferenceType readPreference);
 

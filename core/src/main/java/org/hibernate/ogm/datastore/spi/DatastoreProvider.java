@@ -24,9 +24,7 @@ public interface DatastoreProvider extends Service {
 	Class<? extends GridDialect> getDefaultDialect();
 
 	/**
-	 * Returns the type of {@link QueryParserService} to be used for executing queries against the underlying datastore
-	 * if no parser service type was explicitly configured by the user via the
-	 * {@link org.hibernate.ogm.cfg.OgmConfiguration#OGM_QUERY_PARSER_SERVICE} option.
+	 * Returns the type of {@link QueryParserService} to be used for executing queries against the underlying datastore.
 	 *
 	 * @return the default {@link QueryParserService} for the underlying datastore; never {@code null}
 	 */

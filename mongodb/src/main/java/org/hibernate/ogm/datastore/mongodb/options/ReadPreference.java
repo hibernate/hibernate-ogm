@@ -18,14 +18,14 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 
 /**
- * Specifies the "read preference" to be applied when performing read operations for the annotated entity or property.
+ * Specifies the <a href="http://docs.mongodb.org/manual/core/read-preference/">read preference</a> to be applied when
+ * performing read operations for the annotated entity or property.
  * <p>
  * When given on the property-level, this setting will only take effect when the property represents an association. If
  * given for non-association properties, the setting on the property-level will be ignored and the setting from the
  * entity will be applied.
  *
  * @author Gunnar Morling
- * @see http://docs.mongodb.org/manual/core/read-preference/
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)
