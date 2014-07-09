@@ -14,7 +14,7 @@ import javax.persistence.Id;
 /**
  * Test entity for JPA Auto identifier generator.
  *
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 @Entity
 public class DistributedRevisionControl {

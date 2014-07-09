@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.logging.impl;
 import org.jboss.logging.Logger;
 
 /**
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class LoggerFactory {
 

@@ -18,7 +18,7 @@ import org.neo4j.graphdb.PropertyContainer;
  * Any {@link PropertyContainer} (node or relationship) can represent a tuple. The columns of the tuple are mapped as
  * properties of the property container.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class Neo4jTupleSnapshot implements TupleSnapshot {
 

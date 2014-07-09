@@ -21,7 +21,7 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.OgmSessionFactory.OgmSessionBuilderImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmSessionBuilderDelegator implements OgmSessionBuilderImplementor {
 	private final SessionBuilderImplementor builder;

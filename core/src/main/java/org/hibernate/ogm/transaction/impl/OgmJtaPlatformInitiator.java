@@ -24,7 +24,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatform> {
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();

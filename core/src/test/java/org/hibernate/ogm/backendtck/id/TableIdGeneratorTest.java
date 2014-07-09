@@ -14,7 +14,7 @@ import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class TableIdGeneratorTest extends JpaTestCase {
 

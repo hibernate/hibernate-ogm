@@ -14,7 +14,7 @@ import org.hibernate.ogm.grid.AssociationKey;
  * {@link AssociationSnapshot} implementation based on a {@link CouchDBAssociation} (which in turn wraps an association
  * document or an association stored within an entity document) as written to and retrieved from the CouchDB server.
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBAssociationSnapshot extends AssociationRows {

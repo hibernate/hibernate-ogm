@@ -9,7 +9,7 @@ package org.hibernate.ogm.backendtck.associations.collection.types;
 import javax.persistence.Embeddable;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Embeddable
 public class GrandChild {

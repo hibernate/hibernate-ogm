@@ -27,8 +27,8 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry} calls {@code StartStoppable} and passes the
  * {@link org.hibernate.SessionFactory}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class DatastoreProviderInitiator implements SessionFactoryServiceInitiator<DatastoreProvider> {
 

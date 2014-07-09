@@ -40,7 +40,7 @@ import org.jboss.logging.Logger;
  * It is only used when this class's logger level is set to Trace
  *
  * @author Sebastien Lorber (<i>lorber.sebastien@gmail.com</i>)
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  *
  * @see GridDialectInitiator
  */

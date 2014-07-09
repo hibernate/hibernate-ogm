@@ -22,7 +22,7 @@ import org.hibernate.ogm.options.navigation.impl.PropertyKey;
  * <p>
  * This class is safe to be accessed from several threads at the same time.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  * @see org.hibernate.ogm.options.spi.OptionsService
  */

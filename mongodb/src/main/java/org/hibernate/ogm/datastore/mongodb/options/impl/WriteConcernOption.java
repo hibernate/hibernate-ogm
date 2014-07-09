@@ -16,7 +16,7 @@ import com.mongodb.WriteConcern;
 /**
  * Option for specifying the {@link WriteConcern} in MongoDB.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @see http://docs.mongodb.org/manual/reference/write-concern/
  */
 public class WriteConcernOption extends UniqueOption<WriteConcern> {

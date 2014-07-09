@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * Test the {@link AssociationStorageOption} used to set the {@link AssociationStorageType} in MongoDB.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class AssociationStorageOptionTest {
 

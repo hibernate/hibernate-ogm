@@ -19,7 +19,7 @@ import org.hibernate.persister.spi.PersisterClassResolver;
 /**
  * Return the Ogm persisters
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmPersisterClassResolver extends StandardPersisterClassResolver implements PersisterClassResolver {
 

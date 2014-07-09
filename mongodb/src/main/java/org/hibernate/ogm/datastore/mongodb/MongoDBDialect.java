@@ -107,9 +107,9 @@ import com.mongodb.WriteConcern;
  * If these conditions are not met, the MongoDB mechanism for batch operations
  * is not going to be used.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
+ * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class MongoDBDialect implements BatchableGridDialect {
 

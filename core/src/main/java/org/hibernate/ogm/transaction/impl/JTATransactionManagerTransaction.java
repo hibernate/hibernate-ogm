@@ -27,8 +27,8 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 /**
  * Transaction implementation using JTA transactions exclusively from the TransactionManager
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero  <sanne@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero  &lt;sanne@hibernate.org&gt;
  */
 public class JTATransactionManagerTransaction extends AbstractTransactionImpl implements Transaction {
 

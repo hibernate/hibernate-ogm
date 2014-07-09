@@ -14,7 +14,7 @@ package org.hibernate.ogm.options.navigation;
  * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
  * {@link org.hibernate.ogm.options.navigation.impl.BaseGlobalContext}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @param <G> the type of a provider-specific global context definition, following the self-referential generic type
  * pattern
  * @param <E> the type of provider-specific entity context definition, associated with the specific global context type

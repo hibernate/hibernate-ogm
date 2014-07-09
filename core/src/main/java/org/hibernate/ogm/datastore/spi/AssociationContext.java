@@ -13,7 +13,7 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
  *
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class AssociationContext implements GridDialectOperationContext {

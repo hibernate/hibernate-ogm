@@ -14,7 +14,7 @@ import org.hibernate.ogm.type.descriptor.PassThroughGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class TimestampType extends AbstractGenericBasicType<Date> {
 	public static final TimestampType INSTANCE = new TimestampType();

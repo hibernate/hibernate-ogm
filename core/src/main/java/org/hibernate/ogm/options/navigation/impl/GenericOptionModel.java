@@ -13,7 +13,7 @@ import org.hibernate.ogm.options.navigation.PropertyContext;
 /**
  * A generic option model that provides no store-specific options.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class GenericOptionModel {

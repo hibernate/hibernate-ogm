@@ -14,7 +14,7 @@ import java.net.URL;
 /**
  * Provides all information required to connect to a CouchDB database.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class DatabaseIdentifier {

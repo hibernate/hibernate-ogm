@@ -22,7 +22,7 @@ import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 /**
  * Annotation equivalent of {@link EmbedExampleOption}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 @Target({ TYPE, FIELD, METHOD })
 @Retention(RUNTIME)

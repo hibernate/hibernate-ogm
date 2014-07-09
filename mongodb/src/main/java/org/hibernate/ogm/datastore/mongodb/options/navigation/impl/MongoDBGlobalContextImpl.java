@@ -23,7 +23,7 @@ import com.mongodb.WriteConcern;
 /**
  * Converts global MongoDB options.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public abstract class MongoDBGlobalContextImpl extends DocumentStoreGlobalContextImpl<MongoDBGlobalContext, MongoDBEntityContext> implements

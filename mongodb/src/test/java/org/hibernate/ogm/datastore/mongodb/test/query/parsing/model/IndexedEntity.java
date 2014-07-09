@@ -11,7 +11,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 /**
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  */
 @Entity
 public class IndexedEntity {

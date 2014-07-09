@@ -14,7 +14,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
  * <p>
  * This is a {@link UniqueOption} that can be used for testing.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NameExampleOption extends UniqueOption<String> {
 

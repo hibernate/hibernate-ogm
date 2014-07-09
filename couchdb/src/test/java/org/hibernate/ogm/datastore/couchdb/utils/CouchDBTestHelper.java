@@ -44,7 +44,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyWebTarget;
 /**
  * Testing infrastructure for CouchDB.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBTestHelper implements TestableGridDialect {

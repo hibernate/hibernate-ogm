@@ -11,7 +11,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 /**
  * Represents an object that can consume a {@link Tuple}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface Consumer {
 

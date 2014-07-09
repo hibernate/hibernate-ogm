@@ -30,7 +30,7 @@ import org.junit.Test;
 /**
  * Test for putting/retrieving values into/from {@link ProgrammaticOptionValueSource}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class ProgrammaticOptionValueSourceTest {

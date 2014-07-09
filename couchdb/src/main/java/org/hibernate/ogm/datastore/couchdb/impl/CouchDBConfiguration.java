@@ -12,7 +12,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 /**
  * Provides utility methods to access the CouchDB configuration value
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBConfiguration extends DocumentStoreConfiguration {

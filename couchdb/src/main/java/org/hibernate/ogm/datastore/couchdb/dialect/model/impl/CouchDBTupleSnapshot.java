@@ -20,7 +20,7 @@ import org.hibernate.ogm.grid.EntityKey;
  * Fundamentally a {@link org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot} except that the
  * {@link org.hibernate.ogm.grid.EntityKey} column names and values are copied.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBTupleSnapshot implements TupleSnapshot {

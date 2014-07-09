@@ -10,7 +10,7 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 
 /**
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @Embeddable
 public class NewsID implements Serializable {

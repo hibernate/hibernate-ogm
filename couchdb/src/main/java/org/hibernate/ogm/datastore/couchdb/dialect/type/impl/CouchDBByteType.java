@@ -15,7 +15,7 @@ import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 /**
  * Type for storing {@code byte}s in CouchDB. They are stored as JSON numbers.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class CouchDBByteType extends AbstractGenericBasicType<Byte> {
 

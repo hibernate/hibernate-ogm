@@ -10,7 +10,7 @@ import org.hibernate.hql.ast.spi.predicate.RootPredicate;
 import org.neo4j.cypherdsl.expression.BooleanExpression;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jRootPredicate extends RootPredicate<BooleanExpression> {
 

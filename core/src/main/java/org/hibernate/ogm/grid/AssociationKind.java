@@ -11,7 +11,7 @@ import javax.persistence.ElementCollection;
 /**
  * The kind of an association.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum AssociationKind {
 

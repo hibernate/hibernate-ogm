@@ -13,7 +13,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class RowKeyBuilder {
 	private final List<String> columnNames = new ArrayList<String>();

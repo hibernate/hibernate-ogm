@@ -49,7 +49,7 @@ import org.hibernate.type.Type;
  * <p>
  * It also has a better name for a class dealing with NoSQL databases.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 

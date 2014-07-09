@@ -17,7 +17,7 @@ import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class CompositeIdTest extends JpaTestCase {
 

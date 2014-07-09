@@ -16,7 +16,7 @@ import org.neo4j.cypherdsl.expression.BooleanExpression;
 
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  *
  */
 public class Neo4jConjuctionPredicate extends ConjunctionPredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {

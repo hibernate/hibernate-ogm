@@ -16,7 +16,7 @@ import java.lang.annotation.ElementType;
  * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
  * {@link org.hibernate.ogm.options.navigation.impl.BaseEntityContext}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @param <E> the type of a provider-specific entity context definition, following the self-referential generic type
  * pattern
  * @param <P> the type of provider-specific property context definition, associated with the specific entity context

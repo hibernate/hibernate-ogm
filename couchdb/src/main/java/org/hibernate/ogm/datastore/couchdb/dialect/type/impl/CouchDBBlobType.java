@@ -13,7 +13,7 @@ import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
 import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
 
 /**
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class CouchDBBlobType extends AbstractGenericBasicType<byte[]> {
 

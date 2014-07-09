@@ -17,7 +17,7 @@ import org.hibernate.ogm.grid.RowKey;
  *
  * Note that this snapshot will not be modified by the Hibernate OGM engine
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public interface AssociationSnapshot {
 

@@ -15,7 +15,7 @@ import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
 /**
-* @author Emmanuel Bernard <emmanuel@hibernate.org>
+* @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
 */
 public class OverridingTypeDialect extends MapDialect {
 

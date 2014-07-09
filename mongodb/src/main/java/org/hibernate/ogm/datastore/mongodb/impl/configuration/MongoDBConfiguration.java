@@ -25,7 +25,7 @@ import com.mongodb.WriteConcern;
 /**
  * Configuration for {@link MongoDBDatastoreProvider}.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class MongoDBConfiguration extends DocumentStoreConfiguration {

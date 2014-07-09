@@ -21,7 +21,7 @@ import org.neo4j.cypherdsl.Property;
 import org.neo4j.cypherdsl.expression.BooleanExpression;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jInPredicate extends InPredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
 

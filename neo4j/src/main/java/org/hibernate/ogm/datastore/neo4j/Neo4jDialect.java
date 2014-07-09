@@ -74,7 +74,7 @@ import org.neo4j.graphdb.ResourceIterator;
  * <p>
  * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 

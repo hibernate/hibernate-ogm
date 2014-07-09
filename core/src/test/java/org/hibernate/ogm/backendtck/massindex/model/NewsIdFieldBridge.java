@@ -13,7 +13,7 @@ import org.hibernate.search.bridge.TwoWayStringBridge;
  * This is a simple implementation used by some tests; it's not supposed to be an example on how to implement a
  * {@link TwoWayStringBridge}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class NewsIdFieldBridge implements TwoWayStringBridge {
 

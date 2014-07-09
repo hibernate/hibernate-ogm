@@ -24,8 +24,8 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.Lockable;
 
 /**
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class MapPessimisticWriteLockingStrategy implements LockingStrategy {
 

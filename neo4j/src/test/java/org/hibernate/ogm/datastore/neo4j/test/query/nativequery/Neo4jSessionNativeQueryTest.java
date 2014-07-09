@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  *  Test the execution of native queries on Neo4j using the {@link Session}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jSessionNativeQueryTest extends OgmTestCase {
 

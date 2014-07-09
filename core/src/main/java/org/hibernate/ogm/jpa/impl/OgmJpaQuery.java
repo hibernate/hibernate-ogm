@@ -17,7 +17,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmQuery;
 /**
  * Hibernate OGM implementation of both {@link HibernateQuery} and {@link TypedQuery}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmJpaQuery<X> extends QueryImpl<X> implements HibernateQuery, TypedQuery<X> {
 

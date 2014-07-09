@@ -22,7 +22,7 @@ import org.neo4j.graphdb.Relationship;
 /**
  * Represents the association snapshot as loaded by Neo4j.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 

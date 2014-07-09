@@ -28,7 +28,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * to be executed by OGM on the corresponding backend, returning managed entities, collections and
  * simple scalar values.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class BackendCustomQuery implements CustomQuery {
 

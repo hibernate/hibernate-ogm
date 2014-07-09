@@ -11,7 +11,7 @@ import org.hibernate.type.Type;
 /**
  * Recognizes the class of an entity in a hierarchy.
  *
- * @author "Davide D'Alto" <davide@hibernate.org>
+ * @author "Davide D'Alto" &lt;davide@hibernate.org&gt;
  */
 interface EntityDiscriminator {
 

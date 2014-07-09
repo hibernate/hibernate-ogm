@@ -20,7 +20,7 @@ import org.junit.Test;
 /**
  * Tests the retrieval of options specified via Java annotations.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class AnnotationOptionValueSourceTest {

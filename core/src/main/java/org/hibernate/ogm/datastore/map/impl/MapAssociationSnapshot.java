@@ -14,8 +14,8 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public final class MapAssociationSnapshot implements AssociationSnapshot {
 

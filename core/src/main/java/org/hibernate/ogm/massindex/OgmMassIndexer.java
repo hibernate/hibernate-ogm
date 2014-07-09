@@ -28,7 +28,7 @@ import org.hibernate.search.jmx.IndexingProgressMonitor;
  * {@link MassIndexer} that can be register in Hibernate Search to index existing data stores.
  *
  * @see org.hibernate.search.spi.MassIndexerFactory
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmMassIndexer implements MassIndexer {
 

@@ -26,7 +26,7 @@ import org.hibernate.type.Type;
 /**
  * The discriminator is a column containing a different value for each entity type.
  *
- * @author "Davide D'Alto" <davide@hibernate.org>
+ * @author "Davide D'Alto" &lt;davide@hibernate.org&gt;
  */
 class ColumnBasedDiscriminator implements EntityDiscriminator {
 

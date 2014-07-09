@@ -15,7 +15,7 @@ import org.hibernate.ogm.util.impl.StringHelper;
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class TupleContext implements GridDialectOperationContext {

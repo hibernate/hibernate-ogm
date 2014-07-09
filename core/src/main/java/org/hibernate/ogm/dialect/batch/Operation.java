@@ -9,7 +9,7 @@ package org.hibernate.ogm.dialect.batch;
 /**
  * Represents a CRUD operation on the datastore
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public interface Operation {
 }

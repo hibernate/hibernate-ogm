@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * form of JavaScript, more specifically views (which apply map/reduce routines) and lists (which render other documents
  * or views).
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class DesignDocument extends Document {

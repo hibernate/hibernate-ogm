@@ -17,7 +17,7 @@ import org.junit.runners.model.Statement;
  * support transactions: if rollback capabilities are required or different
  * transactions should be isolated.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class RequiresTransactionalCapabilitiesRule implements TestRule {
 

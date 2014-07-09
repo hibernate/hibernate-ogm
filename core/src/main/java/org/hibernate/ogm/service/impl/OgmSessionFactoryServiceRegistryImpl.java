@@ -23,7 +23,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
  * Specifically customize the list of SessionFactory services and
  * execute the {@link StartStoppable} start calls.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  *
  */
 public class OgmSessionFactoryServiceRegistryImpl extends SessionFactoryServiceRegistryImpl {

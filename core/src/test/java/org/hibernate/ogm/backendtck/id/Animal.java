@@ -12,7 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 /**
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 @Entity
 public class Animal {

@@ -19,8 +19,8 @@ import org.hibernate.jpa.spi.IdentifierGeneratorStrategyProvider;
  * it's corresponding OGM implementations.
  *
  * @author Davide D'Alto
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 public class OgmIdentifierGeneratorStrategyProvider implements IdentifierGeneratorStrategyProvider {
 	/**

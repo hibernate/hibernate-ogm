@@ -34,7 +34,7 @@ import org.junit.After;
 import org.junit.Test;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class AssociationMassIndexerTest extends JpaTestCase {
 

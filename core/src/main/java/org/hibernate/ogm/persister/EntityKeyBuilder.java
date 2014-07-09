@@ -15,7 +15,7 @@ import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public final class EntityKeyBuilder {
 

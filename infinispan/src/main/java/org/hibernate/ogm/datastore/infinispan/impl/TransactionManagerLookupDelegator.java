@@ -15,7 +15,7 @@ import org.infinispan.transaction.lookup.TransactionManagerLookup;
  * Wraps the TransactionManager lookup strategy as configured in the Hibernate main properties
  * into an implementation usable by Infinispan
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public class TransactionManagerLookupDelegator implements TransactionManagerLookup {
 

@@ -47,7 +47,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  * corresponding entity.
  *
  * @author Sanne Grinovero
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class TupleIndexer implements SessionAwareRunnable {
 

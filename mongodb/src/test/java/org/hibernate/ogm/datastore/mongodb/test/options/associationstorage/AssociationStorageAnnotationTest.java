@@ -19,7 +19,7 @@ import org.junit.Test;
 /**
  * Test the {@link AssociationStorage} annotation used to set the {@link AssociationStorageType} in MongoDB.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class AssociationStorageAnnotationTest {
 

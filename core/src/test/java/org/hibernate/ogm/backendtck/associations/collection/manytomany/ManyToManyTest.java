@@ -19,7 +19,7 @@ import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ManyToManyTest extends OgmTestCase {
 

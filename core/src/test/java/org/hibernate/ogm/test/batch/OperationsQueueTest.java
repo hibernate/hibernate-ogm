@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Tests the methods in the {@link OperationsQueue}
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OperationsQueueTest {
 

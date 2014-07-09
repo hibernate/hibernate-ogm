@@ -57,7 +57,7 @@ import org.hibernate.type.Type;
  * Tuples are stored in CouchDB documents obtained as a JSON serialization of a {@link EntityDocument} object.
  * Associations are stored in CouchDB documents obtained as a JSON serialization of a {@link AssociationDocument} object.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
 public class CouchDBDialect implements GridDialect {

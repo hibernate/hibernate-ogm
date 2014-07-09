@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * Test that DatastoreProvider implementing StartStoppable are properly receiving events.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class DatastoreWithStartStoppableTest {
 

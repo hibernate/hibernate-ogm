@@ -7,7 +7,7 @@
 package org.hibernate.ogm.backendtck.type;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum BookmarkType {
 	URL,

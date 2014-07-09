@@ -14,7 +14,7 @@ import org.hibernate.ogm.grid.EntityKey;
 /**
  * Generates the ids used to create the {@link org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document}
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 public class Identifier {
 

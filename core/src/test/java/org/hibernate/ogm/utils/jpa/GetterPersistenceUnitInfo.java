@@ -18,7 +18,7 @@ import javax.persistence.spi.PersistenceUnitTransactionType;
 import javax.sql.DataSource;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class GetterPersistenceUnitInfo implements PersistenceUnitInfo {
 	private String persistenceUnitName;

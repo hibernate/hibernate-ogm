@@ -17,7 +17,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider}.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class InfinispanConfiguration {
 

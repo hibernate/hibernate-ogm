@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder;
  * test case useful when one want to write a test relying on an archive (like a JPA archive)
  *
  * @author Hardy Ferentschik
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero
  */
 public class PackagingRule extends TemporaryFolder {

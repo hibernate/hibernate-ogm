@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Represents the Result of the REST call associated with the {@link TuplesDesignDocument}
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EntityTupleRows {

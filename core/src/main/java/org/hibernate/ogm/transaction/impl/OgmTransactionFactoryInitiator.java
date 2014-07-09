@@ -21,7 +21,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * Use JTATransactionManagerTransactionFactory as the default value if no TransactionFactory is set
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SuppressWarnings("rawtypes")
 public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<TransactionFactory> {

@@ -15,8 +15,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 /**
- * @author Alan Fitton <alan at eth0.org.uk>
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class MongoHelpers {
 

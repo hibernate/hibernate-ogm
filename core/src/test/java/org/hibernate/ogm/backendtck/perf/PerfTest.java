@@ -20,7 +20,7 @@ import org.junit.Ignore;
  * Fire up jconsole and make sure the end of the populating phase does not go over the amount of RAM you
  * give your test VM. Typically 2.000.000 Authors fit in 2GB.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Ignore
 public class PerfTest extends JpaTestCase {

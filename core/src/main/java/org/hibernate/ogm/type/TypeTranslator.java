@@ -10,7 +10,7 @@ import org.hibernate.service.Service;
 import org.hibernate.type.Type;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public interface TypeTranslator extends Service {
 	GridType getType(Type type);

@@ -18,7 +18,7 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmSharedSessionBuilderDelegator implements SharedSessionBuilder {
 	private final SharedSessionBuilder builder;

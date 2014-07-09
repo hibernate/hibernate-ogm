@@ -21,8 +21,8 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * It keeps track of the element that are going to be affected by an {@link UpdateTupleOperation}.
  * The queue can be closed, in that case it will throw an exception when trying to add or poll an operation.
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
- * @author Davide D'Alto <davide@hibernate.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OperationsQueue {
 

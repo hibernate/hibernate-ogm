@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 /**
  * Test for the Hibernate OGM module using Neo4j
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
 public class Neo4jModuleMemberRegistrationIT {

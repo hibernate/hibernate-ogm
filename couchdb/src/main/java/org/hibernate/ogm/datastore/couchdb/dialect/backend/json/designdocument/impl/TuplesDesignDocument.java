@@ -18,7 +18,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * name. This allows to limit the result set to entities of specific tables by specifying the "key" query parameter when
  * querying the view.
  *
- * @author Andrea Boriero <dreborier@gmail.com>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class TuplesDesignDocument extends DesignDocument {

@@ -13,7 +13,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 /**
  * Contains methods to create a {@link GraphDatabaseService}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface GraphDatabaseServiceFactory {
 

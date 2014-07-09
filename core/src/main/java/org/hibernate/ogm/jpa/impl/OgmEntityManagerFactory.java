@@ -29,7 +29,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
  * Delegate most work to the underlying EntityManagerFactory.
  * REturn an OgmEntityManager to cope with query operations
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateEntityManagerFactory {
 	private final EntityManagerFactory hibernateEmf;

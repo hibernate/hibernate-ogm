@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
  * The Option implementor defines what it means for a given setting to be unique. This identity is captured by
  * getUniqueIdentifier() which should return the same value if two Option instances represent the same setting.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  * @param <I> The type of this option's identifier
  * @param <V> The type of value associated to the option

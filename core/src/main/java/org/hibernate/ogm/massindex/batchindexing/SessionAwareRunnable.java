@@ -10,7 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public interface SessionAwareRunnable {
 

@@ -53,7 +53,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 /**
- * @author Guillaume Scheibel<guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 

@@ -20,7 +20,7 @@ import org.junit.rules.ExpectedException;
 /**
  * Verify we provide useful information in case Infinispan is not starting correctly.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  */
 public class WrongConfigurationBootTest {
 

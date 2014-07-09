@@ -12,7 +12,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class CompositeIdInEmbeddedTest extends CompositeIdTest {
 	@Override

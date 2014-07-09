@@ -14,7 +14,7 @@ import org.hibernate.service.spi.Stoppable;
  * DatastoreProvider implementations can be started and stopped.
  * Metadata information is provided upon start
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public interface StartStoppable extends Stoppable {
 	void start(Configuration configuration, SessionFactoryImplementor sessionFactoryImplementor);

@@ -13,7 +13,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 import org.hibernate.service.Service;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class ConfigurationService implements Service {
 

@@ -20,7 +20,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 /**
  * Contains methods to create an {@link org.neo4j.kernel.EmbeddedGraphDatabase}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory {
 

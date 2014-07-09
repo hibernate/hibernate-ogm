@@ -27,8 +27,8 @@ import org.junit.Test;
  * Verifies basic integration of Hibernate Search works
  * as expected. Indirectly tests transaction synchronizations (OGM-216)
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2012 Red Hat Inc.
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2012 Red Hat Inc.
  */
 public class SearchOnStandaloneOGMTest extends OgmTestCase {
 

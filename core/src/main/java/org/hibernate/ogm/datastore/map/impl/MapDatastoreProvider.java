@@ -43,7 +43,7 @@ import org.hibernate.service.spi.Stoppable;
  * Oh and while we lock data when Hibernate ORM acquires locks, we never unlock as ORM expects locks
  * to be released by the transaction commit / rollback which does not happen here.
  *
- * @author Sanne Grinovero <sanne@hibernate.org> (C) 2011 Red Hat Inc.
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
 public final class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
 

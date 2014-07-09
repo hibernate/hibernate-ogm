@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
  * The Interface used by RESTEasy to create the REST calls used to
  * interact with the CouchDB server
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @Path("/")
 @Produces("application/json")

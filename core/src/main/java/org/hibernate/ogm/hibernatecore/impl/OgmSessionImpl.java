@@ -60,7 +60,7 @@ import org.hibernate.type.Type;
  * Delegate most of the work to the underlying Hibernate Session
  * except that queries are redirected to our own engine
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSession, EventSource {
 

@@ -27,7 +27,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
  * passed between the individual context types created in the course of using the fluent API. The book-keeping of
  * configured options is delegated to {@link AppendableConfigurationContext}.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class ConfigurationContext {

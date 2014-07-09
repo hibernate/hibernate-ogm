@@ -36,8 +36,8 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 
 /**
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
- * @author Sanne Grinovero <sanne@hibernate.org>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
+ * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
 public class MongoDBTestHelper implements TestableGridDialect {
 

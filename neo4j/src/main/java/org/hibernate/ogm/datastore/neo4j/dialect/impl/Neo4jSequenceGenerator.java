@@ -55,7 +55,7 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * <p>
  * A write lock is acquired on the node every time the sequence needs to be updated.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jSequenceGenerator {
 

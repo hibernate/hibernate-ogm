@@ -37,7 +37,7 @@ import org.hibernate.type.Type;
  * </tr>
  * </table>
  *
- * @author Nabeel Ali Memon <nabeel@nabeelalimemon.com>
+ * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 public class OgmSequenceGenerator implements PersistentIdentifierGenerator, Configurable {
 	private final OgmTableGenerator tableGenerator;

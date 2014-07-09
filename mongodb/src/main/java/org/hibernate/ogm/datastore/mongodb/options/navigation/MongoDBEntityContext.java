@@ -18,7 +18,7 @@ import com.mongodb.WriteConcern;
  * Allows to configure MongoDB-specific options applying on a global level. These options may be overridden for single
  * properties.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDBEntityContext, MongoDBPropertyContext> {

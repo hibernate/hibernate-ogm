@@ -12,7 +12,7 @@ import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public final class InfinispanTupleSnapshot implements TupleSnapshot {
 	private final FineGrainedAtomicMap<String, Object> atomicMap;

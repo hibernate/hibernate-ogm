@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
  * The Interface used by RESTEasy to create the REST calls used to interact with the CouchDB database instance. The
  * methods return a {@link Response} instance in order to have more information in case of failures.
  *
- * @author Andrea Boriero <dreborier@gmail.com/>
+ * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  */
 @Path("/")
 @Produces("application/json")

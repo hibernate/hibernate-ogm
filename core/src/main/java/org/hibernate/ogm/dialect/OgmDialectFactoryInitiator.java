@@ -18,7 +18,7 @@ import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmDialectFactoryInitiator extends OptionalServiceInitiator<DialectFactory> {
 

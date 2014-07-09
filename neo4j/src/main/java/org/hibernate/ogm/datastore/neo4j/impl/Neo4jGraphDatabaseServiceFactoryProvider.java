@@ -19,7 +19,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
  *
  * @see GraphDatabaseServiceFactory
  * @see InternalProperties#NEO4J_GRAPHDB_FACTORYCLASS
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jGraphDatabaseServiceFactoryProvider {
 

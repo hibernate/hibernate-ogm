@@ -25,7 +25,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
 /**
  * An {@link OptionValueSource} which retrieves option values from Java annotations.
  *
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class AnnotationOptionValueSource implements OptionValueSource {

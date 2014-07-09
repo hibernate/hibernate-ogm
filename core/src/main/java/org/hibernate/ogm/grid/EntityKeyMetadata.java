@@ -11,7 +11,7 @@ import java.util.Arrays;
 /**
  * Stores metadata information common to all keys related to a given entity.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class EntityKeyMetadata {
 

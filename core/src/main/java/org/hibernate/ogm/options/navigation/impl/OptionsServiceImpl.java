@@ -25,7 +25,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 /**
  * Provides read access to option contexts maintained at the session factory and session level.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class OptionsServiceImpl implements OptionsService, Configurable, ServiceRegistryAwareService {

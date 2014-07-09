@@ -25,7 +25,7 @@ import org.hibernate.search.util.logging.impl.LoggerFactory;
  * of entities, managing the lifecycle of several ThreadPools.
  *
  * @author Sanne Grinovero
- * @author Davide D'Alto <davide@hibernate.org>
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class BatchIndexingWorkspace implements Runnable {
 

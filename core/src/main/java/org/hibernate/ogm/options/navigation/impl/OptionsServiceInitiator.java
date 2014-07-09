@@ -16,7 +16,7 @@ import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 /**
  * Initialize the {@link OptionsService} so that other components can access it using the {@link org.hibernate.service.ServiceRegistry}.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public final class OptionsServiceInitiator implements SessionFactoryServiceInitiator<OptionsService> {
 
