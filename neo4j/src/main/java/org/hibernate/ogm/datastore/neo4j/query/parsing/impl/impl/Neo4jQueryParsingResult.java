@@ -8,15 +8,13 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl;
 
 import java.util.List;
 
-import org.neo4j.cypherdsl.query.Query;
-
 public class Neo4jQueryParsingResult {
 
 	private final Class<?> entityType;
-	private final Query query;
+	private final String query;
 	private final List<String> projections;
 
-	public Neo4jQueryParsingResult(Class<?> entityType, List<String> projections, Query query) {
+	public Neo4jQueryParsingResult(Class<?> entityType, List<String> projections, String query) {
 		this.entityType = entityType;
 		this.projections = projections;
 		this.query = query;
@@ -26,7 +24,7 @@ public class Neo4jQueryParsingResult {
 		return entityType;
 	}
 
-	public Query getQuery() {
+	public String getQuery() {
 		return query;
 	}
 

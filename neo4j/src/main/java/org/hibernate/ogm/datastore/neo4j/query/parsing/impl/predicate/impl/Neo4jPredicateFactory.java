@@ -20,14 +20,14 @@ import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
 import org.hibernate.hql.ast.spi.predicate.PredicateFactory;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl.Neo4jPropertyHelper;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl.Neo4jQueryResolverDelegate;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression> {
+public class Neo4jPredicateFactory implements PredicateFactory<CypherExpression> {
 
 	private final Neo4jPropertyHelper propertyHelper;
 	private final Neo4jQueryResolverDelegate resolverDelegate;
@@ -38,12 +38,12 @@ public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression
 	}
 
 	@Override
-	public RootPredicate<BooleanExpression> getRootPredicate(String entityType) {
+	public RootPredicate<CypherExpression> getRootPredicate(String entityType) {
 		return new Neo4jRootPredicate();
 	}
 
 	@Override
-	public ComparisonPredicate<BooleanExpression> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
+	public ComparisonPredicate<CypherExpression> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
 		String columnName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
 		Object neo4jValue = propertyHelper.convertToLiteral( entityType, propertyPath, value );
@@ -51,17 +51,17 @@ public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression
 	}
 
 	@Override
-	public DisjunctionPredicate<BooleanExpression> getDisjunctionPredicate() {
+	public DisjunctionPredicate<CypherExpression> getDisjunctionPredicate() {
 		return new Neo4jDisjunctionPredicate();
 	}
 
 	@Override
-	public ConjunctionPredicate<BooleanExpression> getConjunctionPredicate() {
+	public ConjunctionPredicate<CypherExpression> getConjunctionPredicate() {
 		return new Neo4jConjuctionPredicate();
 	}
 
 	@Override
-	public InPredicate<BooleanExpression> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
+	public InPredicate<CypherExpression> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
 		List<Object> gridTypedElements = new ArrayList<Object>( typedElements.size() );
@@ -72,7 +72,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression
 	}
 
 	@Override
-	public RangePredicate<BooleanExpression> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
+	public RangePredicate<CypherExpression> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
 		Object neo4jLowerValue = propertyHelper.convertToLiteral( entityType, propertyPath, lowerValue );
@@ -81,19 +81,19 @@ public class Neo4jPredicateFactory implements PredicateFactory<BooleanExpression
 	}
 
 	@Override
-	public NegationPredicate<BooleanExpression> getNegationPredicate() {
+	public NegationPredicate<CypherExpression> getNegationPredicate() {
 		return new Neo4jNegationPredicate();
 	}
 
 	@Override
-	public LikePredicate<BooleanExpression> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
+	public LikePredicate<CypherExpression> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
 		return new Neo4jLikePredicate( alias, propertyName, patternValue, escapeCharacter );
 	}
 
 	@Override
-	public IsNullPredicate<BooleanExpression> getIsNullPredicate(String entityType, List<String> propertyPath) {
+	public IsNullPredicate<CypherExpression> getIsNullPredicate(String entityType, List<String> propertyPath) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
 		return new Neo4jIsNullPredicate( alias, propertyName );

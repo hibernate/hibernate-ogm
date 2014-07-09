@@ -5,14 +5,10 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl;
-
-import static org.neo4j.cypherdsl.CypherQuery.as;
-import static org.neo4j.cypherdsl.CypherQuery.identifier;
-import static org.neo4j.cypherdsl.CypherQuery.node;
-import static org.neo4j.cypherdsl.CypherQuery.order;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.node;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,32 +17,25 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.IdentifierExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.OrderByClause;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.persister.OgmEntityPersister;
-import org.neo4j.cypherdsl.CypherQuery;
-import org.neo4j.cypherdsl.Order;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
-import org.neo4j.cypherdsl.expression.Expression;
-import org.neo4j.cypherdsl.expression.PathExpression;
-import org.neo4j.cypherdsl.query.OrderByExpression;
-import org.neo4j.cypherdsl.query.Query;
-import org.neo4j.cypherdsl.query.clause.MatchClause;
-import org.neo4j.cypherdsl.query.clause.OrderByClause;
-import org.neo4j.cypherdsl.query.clause.ReturnClause;
-import org.neo4j.cypherdsl.query.clause.WhereClause;
 
 /**
- * Parser delegate which creates Neo4j queries in form of {@link Expression}s.
+ * Parser delegate which creates Neo4j queries in form of {@link CypherExpression}s.
  *
  * @author Davide D'Alto
  */
-public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<BooleanExpression, Neo4jQueryParsingResult> {
+public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegate<CypherExpression, Neo4jQueryParsingResult> {
 
 	private final Neo4jPropertyHelper propertyHelper;
 	private final Neo4jQueryResolverDelegate resolverDelegate;
 	private final SessionFactoryImplementor sessionFactory;
-	private List<Expression> orderByExpressions;
+	private List<OrderByClause> orderByExpressions;
 
 	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, Neo4jQueryResolverDelegate resolverDelegate, EntityNamesResolver entityNames,
 			Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
@@ -56,7 +45,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		this.propertyHelper = propertyHelper;
 	}
 
-	private static SingleEntityQueryBuilder<BooleanExpression> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper,
+	private static SingleEntityQueryBuilder<CypherExpression> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper,
 			Neo4jQueryResolverDelegate resolverDelegate) {
 		return SingleEntityQueryBuilder.getInstance( new Neo4jPredicateFactory( propertyHelper, resolverDelegate ), propertyHelper );
 	}
@@ -70,37 +59,27 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	public Neo4jQueryParsingResult getResult() {
 		String targetAlias = resolverDelegate.findAliasForType( targetTypeName );
 		String label = getKeyMetaData( targetType ).getTable();
-		PathExpression matchExpression = node( new LabelValue( targetAlias, label ) );
-		BooleanExpression whereExpression = builder.build();
-		Expression[] returnExpression = returnExpression( targetAlias );
-		Query cypherQuery = createCypherQuery( matchExpression, whereExpression, returnExpression, orderByExpressions );
+		String cypherQuery = CypherDSL
+			.match( node( targetAlias, label ) )
+			.where( builder.build() )
+			.orderBy( orderByExpressions )
+			.returns( returnExpression( targetAlias ) )
+			.toString();
+
 		return new Neo4jQueryParsingResult( targetType, projections, cypherQuery );
 	}
 
-	private Query createCypherQuery(PathExpression matchExpression, BooleanExpression whereExpression, Expression[] projectionsExpression, List<Expression> orderByExpressions) {
-		Query cypherQuery = new Query();
-		cypherQuery.add( new MatchClause( Arrays.asList( matchExpression ) ) );
-		if ( whereExpression != null ) {
-			cypherQuery.add( new WhereClause( whereExpression ) );
-		}
-		cypherQuery.add( new ReturnClause( Arrays.asList( projectionsExpression ) ) );
-		if ( orderByExpressions != null ) {
-			cypherQuery.add( new OrderByClause( orderByExpressions ) );
-		}
-		return cypherQuery;
-	}
-
-	private Expression[] returnExpression(String targetAlias) {
+	private IdentifierExpression[] returnExpression(String targetAlias) {
 		if ( projections.isEmpty() ) {
-			return new Expression[] { identifier( targetAlias ) };
+			return new IdentifierExpression[] { identifier( targetAlias ) };
 		}
 		else {
-			Expression[] projectionsExpression = new Expression[projections.size()];
+			IdentifierExpression[] projectionsExpressions = new IdentifierExpression[projections.size()];
 			int i = 0;
 			for ( String projection : projections ) {
-				projectionsExpression[i++] = as( identifier( targetAlias ).property( projection ), projection );
+				projectionsExpressions[i++] = identifier( targetAlias ).property( projection ).as( projection );
 			}
-			return projectionsExpression;
+			return projectionsExpressions;
 		}
 	}
 
@@ -124,12 +103,12 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	@Override
 	protected void addSortField(PropertyPath propertyPath, String collateName, boolean isAscending) {
 		if ( orderByExpressions == null ) {
-			orderByExpressions = new ArrayList<Expression>();
+			orderByExpressions = new ArrayList<OrderByClause>();
 		}
 		String columnName = propertyHelper.getColumnName( targetType, propertyPath.asStringPathWithoutAlias() );
 		String alias = resolverDelegate.findAliasForType( targetTypeName );
 
-		OrderByExpression order = order( CypherQuery.identifier( alias ).property( columnName ), isAscending ? Order.ASCENDING : Order.DESCENDING );
+		OrderByClause order =  new OrderByClause( identifier( alias ).property( columnName ), isAscending );
 		orderByExpressions.add( order );
 	}
 

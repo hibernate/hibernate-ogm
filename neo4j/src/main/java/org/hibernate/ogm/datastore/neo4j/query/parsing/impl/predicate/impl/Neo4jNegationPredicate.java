@@ -6,28 +6,28 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.neo4j.cypherdsl.CypherQuery.not;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.not;
 
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jNegationPredicate extends NegationPredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
+public class Neo4jNegationPredicate extends NegationPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
 
 	@Override
-	public BooleanExpression getQuery() {
+	public CypherExpression getQuery() {
 		if ( getChild() instanceof NegatablePredicate ) {
-			NegatablePredicate<BooleanExpression> negatable = (NegatablePredicate<BooleanExpression>) getChild();
+			NegatablePredicate<CypherExpression> negatable = (NegatablePredicate<CypherExpression>) getChild();
 			return negatable.getNegatedQuery();
 		}
 		return not( getChild().getQuery() );
 	}
 
 	@Override
-	public BooleanExpression getNegatedQuery() {
+	public CypherExpression getNegatedQuery() {
 		return getChild().getQuery();
 	}
 

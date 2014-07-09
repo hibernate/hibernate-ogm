@@ -9,6 +9,8 @@ package org.hibernate.ogm.datastore.neo4j;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.TEMP_NODE;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,8 +59,6 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.cypherdsl.query.clause.LimitClause;
-import org.neo4j.cypherdsl.query.clause.SkipClause;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
@@ -412,16 +412,14 @@ public class Neo4jDialect implements GridDialect, ServiceRegistryAwareService {
 	private void applyFirstRow(QueryParameters queryParameters, StringBuilder nativeQuery) {
 		Integer firstRow = queryParameters.getRowSelection().getFirstRow();
 		if ( firstRow != null ) {
-			SkipClause skipClause = new SkipClause( firstRow );
-			skipClause.asString( nativeQuery );
+			skip( nativeQuery, firstRow );
 		}
 	}
 
 	private void applyMaxRows(QueryParameters queryParameters, StringBuilder nativeQuery) {
 		Integer maxRows = queryParameters.getRowSelection().getMaxRows();
 		if ( maxRows != null ) {
-			LimitClause limitClause = new LimitClause( maxRows );
-			limitClause.asString( nativeQuery );
+			limit( nativeQuery, maxRows );
 		}
 	}
 

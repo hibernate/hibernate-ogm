@@ -6,33 +6,35 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.neo4j.cypherdsl.CypherQuery.identifier;
-import static org.neo4j.cypherdsl.CypherQuery.isNotNull;
-import static org.neo4j.cypherdsl.CypherQuery.isNull;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
 
 import org.hibernate.hql.ast.spi.predicate.IsNullPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.HasExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.IdentifierExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.NotExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jIsNullPredicate extends IsNullPredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
+public class Neo4jIsNullPredicate extends IsNullPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
 
-	private final String alias;
+	private final IdentifierExpression identifier;
 
 	public Neo4jIsNullPredicate(String alias, String propertyName) {
 		super( propertyName );
-		this.alias = alias;
+		identifier = identifier( alias ).property( propertyName );
 	}
 
 	@Override
-	public BooleanExpression getQuery() {
-		return isNull( identifier( alias ).property( propertyName ) );
+	public CypherExpression getQuery() {
+		return new NotExpression( new HasExpression( identifier ) );
 	}
 
 	@Override
-	public BooleanExpression getNegatedQuery() {
-		return isNotNull( identifier( alias ).property( propertyName ) );
+	public CypherExpression getNegatedQuery() {
+		return new HasExpression( identifier );
 	}
+
 }

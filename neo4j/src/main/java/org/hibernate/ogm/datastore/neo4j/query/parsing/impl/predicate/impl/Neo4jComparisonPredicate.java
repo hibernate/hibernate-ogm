@@ -6,20 +6,19 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.neo4j.cypherdsl.CypherQuery.identifier;
-import static org.neo4j.cypherdsl.CypherQuery.literal;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.literal;
 
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.ComparisonExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 import org.hibernate.ogm.util.impl.Contracts;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
-import org.neo4j.cypherdsl.query.Operator;
-import org.neo4j.cypherdsl.query.Value;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jComparisonPredicate extends ComparisonPredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
+public class Neo4jComparisonPredicate extends ComparisonPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
 
 	private final String alias;
 
@@ -29,36 +28,36 @@ public class Neo4jComparisonPredicate extends ComparisonPredicate<BooleanExpress
 	}
 
 	@Override
-	protected BooleanExpression getStrictlyLessQuery() {
-		return comparator( "<", value );
+	protected CypherExpression getStrictlyLessQuery() {
+		return comparator( "<" );
 	}
 
 	@Override
-	protected BooleanExpression getLessOrEqualsQuery() {
-		return comparator( "<=", value );
+	protected CypherExpression getLessOrEqualsQuery() {
+		return comparator( "<=" );
 	}
 
 	@Override
-	protected BooleanExpression getEqualsQuery() {
-		return comparator( "=", value );
+	protected CypherExpression getEqualsQuery() {
+		return comparator( "=" );
 	}
 
-	private BooleanExpression getNotEqualsQuery() {
-		return comparator( "<>", value );
-	}
-
-	@Override
-	protected BooleanExpression getGreaterOrEqualsQuery() {
-		return comparator( ">=", value );
+	private CypherExpression getNotEqualsQuery() {
+		return comparator( "<>" );
 	}
 
 	@Override
-	protected BooleanExpression getStrictlyGreaterQuery() {
-		return comparator( ">", value );
+	protected CypherExpression getGreaterOrEqualsQuery() {
+		return comparator( ">=" );
 	}
 
 	@Override
-	public BooleanExpression getNegatedQuery() {
+	protected CypherExpression getStrictlyGreaterQuery() {
+		return comparator( ">" );
+	}
+
+	@Override
+	public CypherExpression getNegatedQuery() {
 		switch ( type ) {
 			case LESS:
 				return getGreaterOrEqualsQuery();
@@ -75,9 +74,9 @@ public class Neo4jComparisonPredicate extends ComparisonPredicate<BooleanExpress
 		}
 	}
 
-	private BooleanExpression comparator(String operator, Object value) {
+	private CypherExpression comparator(String operator) {
 		Contracts.assertNotNull( value, "Value" );
-		return new Value( new Operator( identifier( alias ).property( propertyName ), operator ), literal( value ) );
+		return new ComparisonExpression( identifier( alias ).property( propertyName ), operator, literal( value ) );
 	}
 
 }

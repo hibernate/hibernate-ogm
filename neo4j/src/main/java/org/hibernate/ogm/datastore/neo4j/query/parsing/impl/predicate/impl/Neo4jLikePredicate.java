@@ -6,44 +6,48 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.neo4j.cypherdsl.CypherQuery.has;
-import static org.neo4j.cypherdsl.CypherQuery.identifier;
-import static org.neo4j.cypherdsl.CypherQuery.not;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.has;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.literal;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.not;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.or;
 
 import org.hibernate.hql.ast.spi.predicate.LikePredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.ComparisonExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.IdentifierExpression;
 import org.hibernate.ogm.util.parser.impl.LikeExpressionToRegExpConverter;
-import org.neo4j.cypherdsl.Property;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jLikePredicate extends LikePredicate<BooleanExpression> implements NegatablePredicate<BooleanExpression> {
+public class Neo4jLikePredicate extends LikePredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
 
 	private final String regexp;
-	private final String alias;
+	private final IdentifierExpression identifier;
 
 	public Neo4jLikePredicate(String alias, String propertyName, String patternValue, Character escapeCharacter) {
 		super( propertyName, patternValue, escapeCharacter );
-		this.alias = alias;
+		identifier = identifier( alias ).property( propertyName );
 
 		LikeExpressionToRegExpConverter converter = new LikeExpressionToRegExpConverter( escapeCharacter );
 		regexp = converter.getRegExpFromLikeExpression( patternValue ).pattern();
 	}
 
+	/**
+	 * <pre>{@code n.property =~ '...'}</pre>
+	 */
 	@Override
-	public BooleanExpression getQuery() {
-		return property().regexp( regexp );
+	public CypherExpression getQuery() {
+		return new ComparisonExpression( identifier, "=~", literal( regexp ) );
 	}
 
+	/**
+	 * <pre>{@code NOT (HAS aslias.property) OR ( NOT ( alias.property =~ '...' )}</pre>
+	 */
 	@Override
-	public BooleanExpression getNegatedQuery() {
-		return not( has( property() ) ).or( not( getQuery() ) );
+	public CypherExpression getNegatedQuery() {
+		return or( not( has( identifier ) ), not( getQuery() ) );
 	}
-
-	private Property property() {
-		return identifier( alias ).property( propertyName );
-	}
-
 }

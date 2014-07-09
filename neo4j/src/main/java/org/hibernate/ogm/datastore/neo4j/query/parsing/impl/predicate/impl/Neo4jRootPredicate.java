@@ -7,15 +7,15 @@
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
-import org.neo4j.cypherdsl.expression.BooleanExpression;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jRootPredicate extends RootPredicate<BooleanExpression> {
+public class Neo4jRootPredicate extends RootPredicate<CypherExpression> {
 
 	@Override
-	public BooleanExpression getQuery() {
+	public CypherExpression getQuery() {
 		if ( child == null ) {
 			return null;
 		}
