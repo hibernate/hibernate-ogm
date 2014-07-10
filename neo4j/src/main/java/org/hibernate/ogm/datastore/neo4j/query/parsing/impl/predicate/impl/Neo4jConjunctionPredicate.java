@@ -13,11 +13,11 @@ import org.hibernate.hql.ast.spi.predicate.Predicate;
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jConjuctionPredicate extends ConjunctionPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
+public class Neo4jConjunctionPredicate extends ConjunctionPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
 	private final StringBuilder builder;
 
-	public Neo4jConjuctionPredicate(StringBuilder builder) {
+	public Neo4jConjunctionPredicate(StringBuilder builder) {
 		this.builder = builder;
 	}
 

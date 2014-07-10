@@ -20,8 +20,8 @@ import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
 import org.hibernate.hql.ast.spi.predicate.PredicateFactory;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl.Neo4jPropertyHelper;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.impl.Neo4jQueryResolverDelegate;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDelegate;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -58,7 +58,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	@Override
 	public ConjunctionPredicate<StringBuilder> getConjunctionPredicate() {
-		return new Neo4jConjuctionPredicate( builder );
+		return new Neo4jConjunctionPredicate( builder );
 	}
 
 	@Override
