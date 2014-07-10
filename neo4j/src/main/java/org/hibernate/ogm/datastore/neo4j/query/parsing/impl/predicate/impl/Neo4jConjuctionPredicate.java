@@ -6,36 +6,46 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.and;
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.or;
-
 import org.hibernate.hql.ast.spi.predicate.ConjunctionPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.Predicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jConjuctionPredicate extends ConjunctionPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
+public class Neo4jConjuctionPredicate extends ConjunctionPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
-	@Override
-	public CypherExpression getQuery() {
-		CypherExpression[] expressions = new CypherExpression[children.size()];
-		int i = 0;
-		for ( Predicate<CypherExpression> child : children ) {
-			expressions[i++] = child.getQuery();
-		}
-		return and( expressions );
+	private final StringBuilder builder;
+
+	public Neo4jConjuctionPredicate(StringBuilder builder) {
+		this.builder = builder;
 	}
 
 	@Override
-	public CypherExpression getNegatedQuery() {
-		CypherExpression[] expressions = new CypherExpression[children.size()];
-		int i = 0;
-		for ( Predicate<CypherExpression> child : children) {
-			expressions[i++] = ( (NegatablePredicate<CypherExpression>) child ).getNegatedQuery();
+	public StringBuilder getQuery() {
+		int counter = 1;
+		builder.append( "(" );
+		for ( Predicate<StringBuilder> child : children ) {
+			child.getQuery();
+			builder.append( ")" );
+			if ( counter++ < children.size() ) {
+				builder.append( " AND (" );
+			}
 		}
-		return or( expressions );
+		return builder;
+	}
+
+	@Override
+	public StringBuilder getNegatedQuery() {
+		int counter = 1;
+		builder.append( "(" );
+		for ( Predicate<StringBuilder> child : children ) {
+			( (NegatablePredicate<StringBuilder>) child ).getNegatedQuery();
+			builder.append( ")" );
+			if ( counter++ < children.size() ) {
+				builder.append( " OR (" );
+			}
+		}
+		return builder;
 	}
 }

@@ -6,58 +6,57 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.compare;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.literal;
 
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.ComparisonExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
-import org.hibernate.ogm.util.impl.Contracts;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jComparisonPredicate extends ComparisonPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
+public class Neo4jComparisonPredicate extends ComparisonPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
 	private final String alias;
+	private final StringBuilder builder;
 
-	public Neo4jComparisonPredicate(String alias, String propertyName, ComparisonPredicate.Type comparisonType, Object value) {
+	public Neo4jComparisonPredicate(StringBuilder builder, String alias, String propertyName, ComparisonPredicate.Type comparisonType, Object value) {
 		super( propertyName, comparisonType, value );
+		this.builder = builder;
 		this.alias = alias;
 	}
 
 	@Override
-	protected CypherExpression getStrictlyLessQuery() {
-		return comparator( "<" );
+	protected StringBuilder getStrictlyLessQuery() {
+		return comparison( "<" );
 	}
 
 	@Override
-	protected CypherExpression getLessOrEqualsQuery() {
-		return comparator( "<=" );
+	protected StringBuilder getLessOrEqualsQuery() {
+		return comparison( "<=" );
 	}
 
 	@Override
-	protected CypherExpression getEqualsQuery() {
-		return comparator( "=" );
+	protected StringBuilder getEqualsQuery() {
+		return comparison( "=" );
 	}
 
-	private CypherExpression getNotEqualsQuery() {
-		return comparator( "<>" );
-	}
-
-	@Override
-	protected CypherExpression getGreaterOrEqualsQuery() {
-		return comparator( ">=" );
+	private StringBuilder getNotEqualsQuery() {
+		return comparison( "<>" );
 	}
 
 	@Override
-	protected CypherExpression getStrictlyGreaterQuery() {
-		return comparator( ">" );
+	protected StringBuilder getGreaterOrEqualsQuery() {
+		return comparison( ">=" );
 	}
 
 	@Override
-	public CypherExpression getNegatedQuery() {
+	protected StringBuilder getStrictlyGreaterQuery() {
+		return comparison( ">" );
+	}
+
+	@Override
+	public StringBuilder getNegatedQuery() {
 		switch ( type ) {
 			case LESS:
 				return getGreaterOrEqualsQuery();
@@ -74,9 +73,8 @@ public class Neo4jComparisonPredicate extends ComparisonPredicate<CypherExpressi
 		}
 	}
 
-	private CypherExpression comparator(String operator) {
-		Contracts.assertNotNull( value, "Value" );
-		return new ComparisonExpression( identifier( alias ).property( propertyName ), operator, literal( value ) );
+	private StringBuilder comparison(String operator) {
+		return compare( identifier( builder, alias, propertyName ), operator, value );
 	}
 
 }

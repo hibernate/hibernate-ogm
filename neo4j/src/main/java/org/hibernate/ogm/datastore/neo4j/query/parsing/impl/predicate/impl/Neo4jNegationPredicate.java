@@ -6,28 +6,36 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.not;
-
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.NegationPredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jNegationPredicate extends NegationPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
+public class Neo4jNegationPredicate extends NegationPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
-	@Override
-	public CypherExpression getQuery() {
-		if ( getChild() instanceof NegatablePredicate ) {
-			NegatablePredicate<CypherExpression> negatable = (NegatablePredicate<CypherExpression>) getChild();
-			return negatable.getNegatedQuery();
-		}
-		return not( getChild().getQuery() );
+	private final StringBuilder builder;
+
+	public Neo4jNegationPredicate(StringBuilder builder) {
+		this.builder = builder;
 	}
 
 	@Override
-	public CypherExpression getNegatedQuery() {
+	public StringBuilder getQuery() {
+		if ( getChild() instanceof NegatablePredicate ) {
+			NegatablePredicate<StringBuilder> negatable = (NegatablePredicate<StringBuilder>) getChild();
+			return negatable.getNegatedQuery();
+		}
+		else {
+			builder.append( "NOT (" );
+			getChild().getQuery();
+			builder.append( ")" );
+			return builder;
+		}
+	}
+
+	@Override
+	public StringBuilder getNegatedQuery() {
 		return getChild().getQuery();
 	}
 

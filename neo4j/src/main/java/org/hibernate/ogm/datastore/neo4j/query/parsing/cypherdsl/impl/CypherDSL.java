@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.ConjunctionExpression.Type;
+import org.hibernate.ogm.util.impl.Contracts;
 
 /**
  * Contains a set of function that can be used to create a cypher query.
@@ -27,52 +27,49 @@ public class CypherDSL {
 	 */
 	private static final Pattern SIMPLE_NAME = Pattern.compile( "\\p{Alpha}\\w*" );
 
-	public static void escape(StringBuilder builder, String name) {
-		if ( SIMPLE_NAME.matcher( name ).matches() ) {
-			builder.append( name );
+	public static void identifier(StringBuilder builder, String identifier) {
+		escapeIdentifier( builder, identifier );
+	}
+
+	public static StringBuilder identifier(StringBuilder builder, String identifier, String propertyName) {
+		identifier( builder, identifier );
+		if ( propertyName != null ) {
+			builder.append( "." );
+			escapeIdentifier( builder, propertyName );
 		}
-		else {
-			builder.append( '`' );
-			builder.append( name );
-			builder.append( '`' );
+		return builder;
+	}
+
+	public static void as(StringBuilder builder, String alias) {
+		if ( alias != null ) {
+			builder.append( " as " );
+			escapeIdentifier( builder, alias );
 		}
 	}
 
-	public static IdentifierExpression identifier(String alias) {
-		return new IdentifierExpression( alias );
+	public static StringBuilder compare(StringBuilder builder, String operator, Object value) {
+		Contracts.assertNotNull( value, "Value" );
+		builder.append( operator );
+		literal( builder, value );
+		return builder;
 	}
 
-	public static NodeExpression node(String alias, String... labels) {
-		return new NodeExpression(alias, labels);
-	}
-
-	public static WhereClause match(NodeExpression node) {
-		StringBuilder builder = new StringBuilder( "MATCH " );
-		node.asString( builder );
-		return new WhereClause( builder );
-	}
-
-	public static CypherExpression not(CypherExpression expression) {
-		return new NotExpression( expression );
-	}
-
-	public static CypherExpression or(CypherExpression... expressions) {
-		return new ConjunctionExpression( Type.OR, expressions );
-	}
-
-	public static CypherExpression and(CypherExpression... expressions) {
-		return new ConjunctionExpression( Type.AND, expressions );
-	}
-
-	public static CypherExpression has(IdentifierExpression identifier) {
-		return new HasExpression( identifier );
+	public static StringBuilder node(StringBuilder builder, String alias, String... labels) {
+		builder.append( "(" );
+		escapeIdentifier( builder, alias );
+		for ( String label : labels ) {
+			builder.append( ":" );
+			escapeIdentifier( builder, label );
+		}
+		builder.append( ")" );
+		return builder;
 	}
 
 	public static void collection(StringBuilder builder, List<Object> values) {
 		builder.append( "[" );
 		int counter = 1;
 		for ( Object value : values ) {
-			literal( value ).asString( builder );
+			literal( builder, value );
 			if ( counter++ < values.size() ) {
 				builder.append( ", " );
 			}
@@ -81,16 +78,35 @@ public class CypherDSL {
 	}
 
 	public static void limit(StringBuilder builder, Integer maxRows) {
-		builder.append( " LIMIT " );
-		builder.append( maxRows );
+		builder.append( " LIMIT " ).append( maxRows );
 	}
 
 	public static void skip(StringBuilder builder, Integer firstRow) {
-		builder.append( " SKIP " );
-		builder.append( firstRow );
+		builder.append( " SKIP " ).append( firstRow );
 	}
 
-	public static LiteralExpression literal(Object value) {
-		return new LiteralExpression( value );
+	public static void literal(StringBuilder builder, Object value) {
+		if ( value instanceof String ) {
+			builder.append( '"' );
+			escapeLiteral( builder, value );
+			builder.append( '"' );
+		}
+		else {
+			builder.append( value );
+		}
 	}
+
+	public static void escapeIdentifier(StringBuilder builder, String name) {
+		if ( SIMPLE_NAME.matcher( name ).matches() ) {
+			builder.append( name );
+		}
+		else {
+			builder.append( '`' ).append( name ).append( '`' );
+		}
+	}
+
+	private static void escapeLiteral(StringBuilder builder, Object value) {
+		builder.append( value.toString().replace( "\\", "\\\\" ).replace( "\"", "\\\"" ) );
+	}
+
 }

@@ -6,43 +6,46 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.and;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
-import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.or;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.literal;
 
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.ComparisonExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.IdentifierExpression;
-import org.hibernate.ogm.util.impl.Contracts;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jRangePredicate extends RangePredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
+public class Neo4jRangePredicate extends RangePredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
-	private final IdentifierExpression identifier;
+	private final String alias;
+	private final StringBuilder builder;
 
-	public Neo4jRangePredicate(String alias, String propertyName, Object lower, Object upper) {
+	public Neo4jRangePredicate(StringBuilder builder, String alias, String propertyName, Object lower, Object upper) {
 		super( propertyName, lower, upper );
-		identifier = identifier( alias ).property( propertyName );
+		this.builder = builder;
+		this.alias = alias;
 	}
 
 	@Override
-	public CypherExpression getQuery() {
-		return and( comparator( identifier, ">=", lower ), comparator( identifier, "<=", upper ) );
+	public StringBuilder getQuery() {
+		comparator( ">=", lower );
+		builder.append( " AND " );
+		comparator( "<=", upper );
+		return builder;
 	}
 
 	@Override
-	public CypherExpression getNegatedQuery() {
-		return or( comparator( identifier, "<", lower ), comparator( identifier, ">", upper ) );
+	public StringBuilder getNegatedQuery() {
+		comparator( "<", lower );
+		builder.append( " OR " );
+		comparator( ">", upper );
+		return builder;
 	}
 
-	private ComparisonExpression comparator(IdentifierExpression identifier, String operator, Object value) {
-		Contracts.assertNotNull( value, "Value" );
-		return new ComparisonExpression( identifier, operator, literal( value ) );
+	private void comparator(String operator, Object value) {
+		identifier( builder, alias, propertyName );
+		builder.append( operator );
+		literal( builder, value );
 	}
 
 }

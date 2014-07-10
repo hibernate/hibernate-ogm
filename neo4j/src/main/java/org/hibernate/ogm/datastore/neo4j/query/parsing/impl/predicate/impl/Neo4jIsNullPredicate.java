@@ -10,31 +10,35 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 
 import org.hibernate.hql.ast.spi.predicate.IsNullPredicate;
 import org.hibernate.hql.ast.spi.predicate.NegatablePredicate;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.HasExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.IdentifierExpression;
-import org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.NotExpression;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jIsNullPredicate extends IsNullPredicate<CypherExpression> implements NegatablePredicate<CypherExpression> {
+public class Neo4jIsNullPredicate extends IsNullPredicate<StringBuilder> implements NegatablePredicate<StringBuilder> {
 
-	private final IdentifierExpression identifier;
+	private final StringBuilder builder;
+	private final String alias;
 
-	public Neo4jIsNullPredicate(String alias, String propertyName) {
+	public Neo4jIsNullPredicate(StringBuilder builder, String alias, String propertyName) {
 		super( propertyName );
-		identifier = identifier( alias ).property( propertyName );
+		this.builder = builder;
+		this.alias = alias;
 	}
 
 	@Override
-	public CypherExpression getQuery() {
-		return new NotExpression( new HasExpression( identifier ) );
+	public StringBuilder getQuery() {
+		builder.append( "NOT HAS(" );
+		identifier( builder, alias, propertyName );
+		builder.append( ")" );
+		return builder;
 	}
 
 	@Override
-	public CypherExpression getNegatedQuery() {
-		return new HasExpression( identifier );
+	public StringBuilder getNegatedQuery() {
+		builder.append( "HAS(" );
+		identifier( builder, alias, propertyName );
+		builder.append( ")" );
+		return builder;
 	}
 
 }
