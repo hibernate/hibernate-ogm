@@ -21,6 +21,7 @@ import org.hibernate.hql.ast.spi.predicate.PredicateFactory;
 import org.hibernate.hql.ast.spi.predicate.RangePredicate;
 import org.hibernate.hql.ast.spi.predicate.RootPredicate;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
+import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDelegate;
 
 /**
@@ -47,7 +48,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	public ComparisonPredicate<StringBuilder> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
 		String columnName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
-		Object neo4jValue = propertyHelper.convertToLiteral( entityType, propertyPath, value );
+		Object neo4jValue = value instanceof Neo4jQueryParameter ? value : propertyHelper.convertToLiteral( entityType, propertyPath, value );
 		return new Neo4jComparisonPredicate( builder, alias, columnName, comparisonType, neo4jValue );
 	}
 
@@ -76,8 +77,8 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	public RangePredicate<StringBuilder> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
 		String propertyName = columnName( entityType, propertyPath );
 		String alias = alias( entityType );
-		Object neo4jLowerValue = propertyHelper.convertToLiteral( entityType, propertyPath, lowerValue );
-		Object neo4jUpperValue = propertyHelper.convertToLiteral( entityType, propertyPath, upperValue );
+		Object neo4jLowerValue = lowerValue instanceof Neo4jQueryParameter ? lowerValue : propertyHelper.convertToLiteral( entityType, propertyPath, lowerValue );
+		Object neo4jUpperValue = upperValue instanceof Neo4jQueryParameter ? upperValue : propertyHelper.convertToLiteral( entityType, propertyPath, upperValue );
 		return new Neo4jRangePredicate( builder, alias, propertyName, neo4jLowerValue, neo4jUpperValue );
 	}
 

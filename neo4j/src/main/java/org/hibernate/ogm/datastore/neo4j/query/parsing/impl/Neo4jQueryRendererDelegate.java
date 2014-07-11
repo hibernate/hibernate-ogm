@@ -19,6 +19,7 @@ import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
+import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -137,4 +138,94 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		orderByExpressions.add( order );
 	}
 
+
+	// TODO Methods below were not required here if fromNamedQuery() could be overidden from super
+
+	@Override
+	public void predicateLess(String comparativePredicate) {
+		addComparisonPredicate( comparativePredicate, Type.LESS );
+	}
+
+	@Override
+	public void predicateLessOrEqual(String comparativePredicate) {
+		addComparisonPredicate( comparativePredicate, Type.LESS_OR_EQUAL );
+	}
+
+	/**
+	 * This implements the equality predicate; the comparison
+	 * predicate could be a constant, a subfunction or
+	 * some random type parameter.
+	 * The tree node has all details but with current tree rendering
+	 * it just passes it's text so we have to figure out the options again.
+	 */
+	@Override
+	public void predicateEquals(final String comparativePredicate) {
+		addComparisonPredicate( comparativePredicate, Type.EQUALS );
+	}
+
+	@Override
+	public void predicateNotEquals(String comparativePredicate) {
+		builder.pushNotPredicate();
+		addComparisonPredicate( comparativePredicate, Type.EQUALS );
+		builder.popBooleanPredicate();
+	}
+
+	@Override
+	public void predicateGreaterOrEqual(String comparativePredicate) {
+		addComparisonPredicate( comparativePredicate, Type.GREATER_OR_EQUAL );
+	}
+
+	@Override
+	public void predicateGreater(String comparativePredicate) {
+		addComparisonPredicate( comparativePredicate, Type.GREATER );
+	}
+
+	private void addComparisonPredicate(String comparativePredicate, Type comparisonType) {
+		Object comparisonValue = fromNamedQuery( comparativePredicate );
+		builder.addComparisonPredicate( propertyPath.getNodeNamesWithoutAlias(), comparisonType, comparisonValue );
+	}
+
+	@Override
+	public void predicateIn(List<String> list) {
+		List<Object> values = fromNamedQuery( list );
+		builder.addInPredicate( propertyPath.getNodeNamesWithoutAlias(), values );
+	}
+
+	@Override
+	public void predicateBetween(String lower, String upper) {
+		Object lowerComparisonValue = fromNamedQuery( lower );
+		Object upperComparisonValue = fromNamedQuery( upper );
+
+		builder.addRangePredicate( propertyPath.getNodeNamesWithoutAlias(), lowerComparisonValue, upperComparisonValue );
+	}
+
+	@Override
+	public void predicateLike(String patternValue, Character escapeCharacter) {
+		Object pattern = fromNamedQuery( patternValue );
+		builder.addLikePredicate( propertyPath.getNodeNamesWithoutAlias(), (String) pattern, escapeCharacter );
+	}
+
+	@Override
+	public void predicateIsNull() {
+		builder.addIsNullPredicate( propertyPath.getNodeNamesWithoutAlias() );
+	}
+
+	private Object fromNamedQuery(String comparativePredicate) {
+		if ( comparativePredicate.startsWith( ":" ) ) {
+			return new Neo4jQueryParameter( comparativePredicate.substring( 1 ) );
+		}
+		else {
+			return comparativePredicate;
+		}
+	}
+
+	private List<Object> fromNamedQuery(List<String> list) {
+		List<Object> elements = new ArrayList<Object>( list.size() );
+
+		for ( String string : list ) {
+			elements.add( fromNamedQuery( string ) );
+		}
+
+		return elements;
+	}
 }

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.SessionFactory;
@@ -29,8 +30,13 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 
 	@Override
 	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
+		throw new UnsupportedOperationException( "The Neo4j query parser supports parameterized queries" );
+	}
+
+	@Override
+	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString) {
 		QueryParser queryParser = new QueryParser();
-		Neo4jProcessingChain processingChain = createProcessingChain( sessionFactory, namedParameters );
+		Neo4jProcessingChain processingChain = createProcessingChain( sessionFactory );
 		Neo4jQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 
 		log.createdQuery( queryString, result );
@@ -39,18 +45,13 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 	}
 
 	@Override
-	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString) {
-		return null;
-	}
-
-	@Override
 	public boolean supportsParameters() {
-		return false;
+		return true;
 	}
 
-	private Neo4jProcessingChain createProcessingChain(SessionFactoryImplementor sessionFactory, Map<String, Object> namedParameters) {
+	private Neo4jProcessingChain createProcessingChain(SessionFactoryImplementor sessionFactory) {
 		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( sessionFactory );
-		return new Neo4jProcessingChain( sessionFactory, entityNamesResolver, namedParameters );
+		return new Neo4jProcessingChain( sessionFactory, entityNamesResolver, Collections.<String, Object>emptyMap() );
 	}
 
 	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {

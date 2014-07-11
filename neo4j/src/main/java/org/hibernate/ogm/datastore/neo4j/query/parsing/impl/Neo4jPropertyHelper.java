@@ -35,6 +35,8 @@ public class Neo4jPropertyHelper implements PropertyHelper {
 
 	@Override
 	public Object convertToPropertyType(String entityType, List<String> propertyPath, String value) {
+		//TODO Don't invoke for params
+
 		if ( propertyPath.size() > 1 ) {
 			throw new UnsupportedOperationException( "Queries on embedded/associated entities are not supported yet." );
 		}
