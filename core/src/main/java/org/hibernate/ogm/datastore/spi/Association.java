@@ -21,13 +21,14 @@ import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Represents an Association (think of it as a set of rows)
+ * Represents an Association (think of it as a set of rows, each representing a specific link).
  *
  * A Association accepts a {@link AssociationSnapshot} which is a read-only state
- * of the association at creation time.
+ * of the association when read from the database or freshly created.
  *
  * An association collects changes applied to it. These changes are represented by a
- * list of AssociationOperation. It is intended that {@link org.hibernate.ogm.dialect.GridDialect}s retrieve these
+ * list of {@link org.hibernate.ogm.datastore.spi.AssociationOperation}.
+ * It is intended that {@link org.hibernate.ogm.dialect.GridDialect}s retrieve these
  * actions and apply them to the datastore. The list of changes is computed against the snapshot.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
