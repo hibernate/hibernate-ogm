@@ -4,8 +4,9 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.hibernatecore.impl;
+package org.hibernate.ogm.query.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -17,15 +18,13 @@ import org.hibernate.LockOptions;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.loader.custom.CustomLoader;
-import org.hibernate.loader.custom.Return;
-import org.hibernate.loader.custom.RootReturn;
-import org.hibernate.loader.custom.ScalarReturn;
+import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
+import org.hibernate.hql.internal.ast.tree.SelectClause;
+import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.persister.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.type.GridType;
@@ -36,49 +35,39 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 
 /**
- * Extension point for a loader that executes native NoSQL queries.
+ * A {@link QueryLoader} which loads the results of JP-QL queries translated into store-specific native queries or
+ * Lucene queries.
  *
- * @author Davide D'Alto &lt;davide@hibernate.org&gt;
+ * @author Gunnar Morling
  */
-public class BackendCustomLoader extends CustomLoader {
+public class OgmQueryLoader extends QueryLoader {
 
-	private final BackendCustomQuery customQuery;
-	private final TypeTranslator typeTranslator;
 	private final BackendQuery query;
+	private final boolean hasScalars;
+	private final List<String> scalarColumns;
+	private final Type[] queryReturnTypes;
+	private final TypeTranslator typeTranslator;
 
-	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
-		super( customQuery, factory );
-		this.customQuery = customQuery;
-		this.query = new BackendQuery(
-				customQuery.getQueryObject() != null ? customQuery.getQueryObject() : customQuery.getQueryString(),
-				customQuery.getSingleEntityKeyMetadataOrNull()
-		);
-		typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
-	}
-
-	/**
-	 * Whether this query is a selection of a complete entity or not. Queries mixing scalar values and entire entities
-	 * in one result are not supported atm.
-	 */
-	private boolean isEntityQuery() {
-		for ( Return queryReturn : customQuery.getCustomQueryReturns() ) {
-			if ( queryReturn instanceof RootReturn ) {
-				return true;
-			}
-		}
-
-		return false;
+	public OgmQueryLoader(QueryTranslatorImpl queryTranslator, SessionFactoryImplementor factory, SelectClause selectClause, BackendQuery query, List<String> scalarColumns) {
+		super( queryTranslator, factory, selectClause );
+		this.query = query;
+		this.hasScalars = selectClause.isScalarSelect();
+		this.scalarColumns = scalarColumns;
+		this.queryReturnTypes = selectClause.getQueryReturnTypes();
+		this.typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
 	}
 
 	@Override
-	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
+	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
+			throws HibernateException {
+
 		ClosableIterator<Tuple> tuples = service( session, GridDialect.class ).executeBackendQuery( query, queryParameters );
 		try {
-			if ( isEntityQuery() ) {
-				return listOfEntities( session, resultTypes, tuples );
+			if ( hasScalars ) {
+				return listOfArrays( session, tuples );
 			}
 			else {
-				return listOfArrays( session, tuples );
+				return listOfEntities( session, resultTypes, tuples );
 			}
 		}
 		finally {
@@ -102,33 +91,13 @@ public class BackendCustomLoader extends CustomLoader {
 		List<Object> results = new ArrayList<Object>();
 		while ( tuples.hasNext() ) {
 			Tuple tuple = tuples.next();
-			Object[] entry = null;
-			if ( !customQuery.getCustomQueryReturns().isEmpty() ) {
-				entry = new Object[customQuery.getCustomQueryReturns().size()];
-				int i = 0;
-				for ( Return queryReturn : customQuery.getCustomQueryReturns() ) {
-					ScalarReturn scalarReturn = (ScalarReturn) queryReturn;
-					Type type = scalarReturn.getType();
+			Object[] entry = new Object[queryReturnTypes.length];
 
-					if ( type != null ) {
-						GridType gridType = typeTranslator.getType( type );
-						entry[i++] = gridType.nullSafeGet( tuple, scalarReturn.getColumnAlias(), session, null );
-					}
-					else {
-						entry[i++] = tuple.get( scalarReturn.getColumnAlias() );
-					}
-				}
-			}
-			else {
-				// TODO OGM-564 As a temporary work-around, retrieving the names from the actual result in case there
-				// are no query returns defined (no result mapping has been given for a native query). Actually we
-				// should drive this based on the selected columns as otherwise the order might not be correct and/or
-				// null values will not show up
-				entry = new Object[tuple.getColumnNames().size()];
-				int i = 0;
-				for ( String column : tuple.getColumnNames() ) {
-					entry[i++] = tuple.get( column );
-				}
+			int i = 0;
+			for ( Type type : queryReturnTypes ) {
+				GridType gridType = typeTranslator.getType( type );
+				entry[i] = gridType.nullSafeGet( tuple, scalarColumns.get( i ), session, null );
+				i++;
 			}
 
 			if ( entry.length == 1 ) {

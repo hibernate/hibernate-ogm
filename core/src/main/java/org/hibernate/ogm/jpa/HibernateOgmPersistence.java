@@ -28,6 +28,7 @@ import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
 import org.hibernate.ogm.jpa.impl.OgmEntityManagerFactory;
 import org.hibernate.ogm.jpa.impl.OgmIdentifierGeneratorStrategyProvider;
+import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
 
 /**
  * JPA PersistenceProvider implementation specific to Hibernate OGM
@@ -87,6 +88,8 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( AvailableSettings.IDENTIFIER_GENERATOR_STRATEGY_PROVIDER, OgmIdentifierGeneratorStrategyProvider.class.getName());
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 		map.put( InternalProperties.OGM_ON, "true" );
+		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
+
 		// Hibernate will check the syntax of the queries when using NativeNamedQueries if this property is not set to
 		// false
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_STARTUP_CHECKING, "false" );

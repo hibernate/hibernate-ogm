@@ -8,10 +8,12 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
 import java.util.Map;
 
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.origin.hql.resolve.path.PropertyPath;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
+import org.hibernate.ogm.persister.OgmEntityPersister;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -23,21 +25,31 @@ import com.mongodb.DBObject;
  */
 public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDelegate<DBObject, MongoDBQueryParsingResult> {
 
+	private final SessionFactoryImplementor sessionFactory;
 	private final MongoDBPropertyHelper propertyHelper;
 	private DBObject orderBy;
 
-	public MongoDBQueryRendererDelegate(EntityNamesResolver entityNames, MongoDBPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
+	public MongoDBQueryRendererDelegate(SessionFactoryImplementor sessionFactory, EntityNamesResolver entityNames, MongoDBPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
 		super(
 				entityNames,
 				SingleEntityQueryBuilder.getInstance( new MongoDBPredicateFactory( propertyHelper ), propertyHelper ),
 				namedParameters );
 
+		this.sessionFactory = sessionFactory;
 		this.propertyHelper = propertyHelper;
 	}
 
 	@Override
 	public MongoDBQueryParsingResult getResult() {
-		return new MongoDBQueryParsingResult( targetType, builder.build(), getProjectionDBObject(), orderBy );
+		OgmEntityPersister entityPersister = (OgmEntityPersister) sessionFactory.getEntityPersister( targetType.getName() );
+
+		return new MongoDBQueryParsingResult(
+				targetType,
+				entityPersister.getTableName(),
+				builder.build(),
+				getProjectionDBObject(),
+				orderBy
+		);
 	}
 
 	@Override

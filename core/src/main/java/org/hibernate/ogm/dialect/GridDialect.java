@@ -19,8 +19,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.ClosableIterator;
@@ -132,11 +132,12 @@ public interface GridDialect extends Service {
 	/**
 	 * Returns the result of a native query executed on the backend.
 	 *
-	 * @param customQuery the query to execute on the backend
+	 * @param query the query to execute in a representation understood by the underlying datastore. May have been
+	 * created by converting a JP-QL query or from a (named) native query.
 	 * @param queryParameters parameters passed for this query
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters);
+	ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.

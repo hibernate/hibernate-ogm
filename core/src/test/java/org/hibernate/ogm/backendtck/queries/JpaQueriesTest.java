@@ -150,6 +150,7 @@ public class JpaQueriesTest extends JpaTestCase {
 
 		em = getFactory().createEntityManager();
 		getTransactionManager().begin();
+		em.joinTransaction();
 	}
 
 	@After

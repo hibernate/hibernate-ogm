@@ -24,6 +24,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.query.impl.OgmQueryTranslatorFactory;
 import org.hibernate.type.Type;
 
 /**
@@ -51,6 +52,8 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+
+		setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 	}
 
 	@Override
@@ -58,18 +61,22 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		final Mapping delegate = super.buildMapping();
 		return new Mapping() {
 
+			@Override
 			public IdentifierGeneratorFactory getIdentifierGeneratorFactory() {
 				return identifierGeneratorFactory;
 			}
 
+			@Override
 			public Type getIdentifierType(String entityName) throws MappingException {
 				return delegate.getIdentifierType( entityName );
 			}
 
+			@Override
 			public String getIdentifierPropertyName(String entityName) throws MappingException {
 				return delegate.getIdentifierPropertyName( entityName );
 			}
 
+			@Override
 			public Type getReferencedPropertyType(String entityName, String propertyName) throws MappingException {
 				return delegate.getReferencedPropertyType( entityName, propertyName );
 			}
@@ -100,6 +107,9 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		}
 		if ( ! properties.containsKey(  "hibernate.search.massindexer.factoryclass" ) ) {
 			setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+		}
+		if ( !properties.containsKey( AvailableSettings.QUERY_TRANSLATOR ) ) {
+			setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 		}
 		return this;
 	}

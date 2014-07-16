@@ -26,10 +26,6 @@ public class MongoDBQueryDescriptor {
 	private final DBObject projection;
 	private final DBObject orderBy;
 
-	public MongoDBQueryDescriptor(String collectionName, DBObject criteria) {
-		this( collectionName, Operation.FIND, criteria, null, null );
-	}
-
 	public MongoDBQueryDescriptor(String collectionName, Operation operation, DBObject criteria, DBObject projection, DBObject orderBy) {
 		this.collectionName = collectionName;
 		this.operation = operation;

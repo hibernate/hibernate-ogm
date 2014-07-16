@@ -7,7 +7,6 @@
 package org.hibernate.ogm.hibernatecore.impl;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,8 +22,6 @@ import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
 import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.engine.query.spi.HQLQueryPlan;
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.ActionQueue;
 import org.hibernate.engine.spi.EntityEntry;
@@ -35,7 +32,6 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionDelegatorBaseImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.event.spi.EventSource;
-import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
 import org.hibernate.loader.custom.CustomLoader;
@@ -49,7 +45,6 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
 import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
@@ -68,7 +63,6 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	private final EventSource delegate;
 	private final OgmSessionFactoryImpl factory;
-	private QueryParserService queryParserService;
 
 	public OgmSessionImpl(OgmSessionFactory factory, EventSource delegate) {
 		super( delegate, delegate );
@@ -112,39 +106,12 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	}
 
 	@Override
-	public Query createQuery(String queryString) throws HibernateException {
-		errorIfClosed();
-		Map enabledFilters = Collections.EMPTY_MAP; //What here?
-		// Use existing Hibernate ORM special-purpose parser to extract the parameters metadata.
-		// I think we have the same details in our AST already, but I keep this for now to not
-		// diverge too much from ORM code.
-		try {
-			HQLQueryPlan plan = new HQLQueryPlan( queryString, false, enabledFilters, factory );
-			ParameterMetadata parameterMetadata = plan.getParameterMetadata();
-			//TODO make sure the HQLQueryPlan et al are cached at some level
-			OgmQuery query = new OgmQuery( queryString, getFlushMode(), this, parameterMetadata, getQueryParserService() );
-			query.setComment( queryString );
-			return query;
-		}
-		catch ( QuerySyntaxException qse ) {
-			throw log.querySyntaxException( qse, queryString );
-		}
-	}
-
-	@Override
 	public Query createQuery(NamedQueryDefinition namedQueryDefinition) {
 		String queryString = namedQueryDefinition.getQueryString();
 		Query query = createQuery( queryString );
 		query.setComment( "named HQL/JP-QL query " + namedQueryDefinition.getName() );
 		query.setFlushMode( namedQueryDefinition.getFlushMode() );
 		return query;
-	}
-
-	private QueryParserService getQueryParserService() {
-		if ( queryParserService == null ) {
-			queryParserService = getSessionFactory().getServiceRegistry().getService( QueryParserService.class );
-		}
-		return queryParserService;
 	}
 
 	@Override

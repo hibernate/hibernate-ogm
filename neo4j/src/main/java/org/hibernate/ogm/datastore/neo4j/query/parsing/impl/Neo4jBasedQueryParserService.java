@@ -8,16 +8,11 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 
 import java.util.Map;
 
-import org.hibernate.Query;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
-import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.query.NoSQLQuery;
-import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
+import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.service.impl.BaseQueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 import org.hibernate.ogm.util.impl.Log;
@@ -33,33 +28,24 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 	private volatile SessionFactoryEntityNamesResolver entityNamesResolver;
 
 	@Override
-	public Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters) {
+	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters) {
 		QueryParser queryParser = new QueryParser();
-		Neo4jProcessingChain processingChain = createProcessingChain( (SessionFactoryImplementor) session.getSessionFactory(), unwrap( namedParameters ) );
+		Neo4jProcessingChain processingChain = createProcessingChain( sessionFactory, namedParameters );
 		Neo4jQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 
 		log.createdQuery( queryString, result );
-		NoSQLQuery query = nosqlQuery( session, result );
-		return query;
+
+		return result;
 	}
 
-	private NoSQLQuery nosqlQuery(OgmSession session, Neo4jQueryParsingResult result) {
-		NoSQLQuery query = new NoSQLQueryImpl( result.getQuery(), (SessionImplementor) session, new ParameterMetadata( null, null ) );
-		// Register the result types of the query; Currently either a number of scalar values or an entity return
-		// are supported only; JP-QL would actually a combination of both, though (see OGM-514)
-		if ( hasProjections( result ) ) {
-			for ( String field : result.getProjections() ) {
-				query.addScalar( field );
-			}
-		}
-		else {
-			query.addEntity( result.getEntityType() );
-		}
-		return query;
+	@Override
+	public QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString) {
+		return null;
 	}
 
-	private boolean hasProjections(Neo4jQueryParsingResult result) {
-		return result.getProjections() != null && !result.getProjections().isEmpty();
+	@Override
+	public boolean supportsParameters() {
+		return false;
 	}
 
 	private Neo4jProcessingChain createProcessingChain(SessionFactoryImplementor sessionFactory, Map<String, Object> namedParameters) {
@@ -73,5 +59,4 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 		}
 		return entityNamesResolver;
 	}
-
 }

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.map;
 
-	import java.util.HashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.LockMode;

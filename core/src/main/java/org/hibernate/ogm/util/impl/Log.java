@@ -18,7 +18,6 @@ import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
-import org.hibernate.hql.internal.ast.QuerySyntaxException;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
@@ -85,7 +84,7 @@ public interface Log extends BasicLogger {
 	TransactionException unableToSetTimeout(@Cause SystemException se, int timeout);
 
 	@Message(id = 24, value = "Syntax error in query: [%1$s]")
-	HibernateException querySyntaxException(@Cause QuerySyntaxException qse, String queryString);
+	HibernateException querySyntaxException(@Cause Exception qse, String queryString);
 
 	@LogMessage(level = ERROR)
 	@Message(id = 25, value = "Batch indexing was interrupted")

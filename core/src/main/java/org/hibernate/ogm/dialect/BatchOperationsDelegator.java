@@ -23,8 +23,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.ClosableIterator;
@@ -182,8 +182,8 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-		return dialect.executeBackendQuery( customQuery, queryParameters );
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters) {
+		return dialect.executeBackendQuery( query, queryParameters );
 	}
 
 	@Override

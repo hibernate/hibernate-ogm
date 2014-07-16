@@ -8,7 +8,9 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 
 import java.util.List;
 
-public class Neo4jQueryParsingResult {
+import org.hibernate.ogm.query.spi.QueryParsingResult;
+
+public class Neo4jQueryParsingResult implements QueryParsingResult {
 
 	private final Class<?> entityType;
 	private final String query;
@@ -24,10 +26,6 @@ public class Neo4jQueryParsingResult {
 		return entityType;
 	}
 
-	public String getQuery() {
-		return query;
-	}
-
 	public List<String> getProjections() {
 		return projections;
 	}
@@ -37,4 +35,13 @@ public class Neo4jQueryParsingResult {
 		return "Neo4jQueryParsingResult [entityType=" + entityType + ", query=" + query + ", projections=" + projections + "]";
 	}
 
+	@Override
+	public Object getQueryObject() {
+		return query;
+	}
+
+	@Override
+	public List<String> getColumnNames() {
+		return projections;
+	}
 }

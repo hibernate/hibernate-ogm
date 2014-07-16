@@ -12,10 +12,10 @@ import java.util.List;
 
 import org.hibernate.ogm.datastore.impl.SchemaDefinerInitiator;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
+import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
- * Central definition of the standard set of initiators defined by OGM for the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry}
+ * Central definition of the standard set of initiators defined by OGM for the {@link SessionFactoryServiceRegistry}.
  *
  * @see OgmSessionFactoryServiceRegistryImpl
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;

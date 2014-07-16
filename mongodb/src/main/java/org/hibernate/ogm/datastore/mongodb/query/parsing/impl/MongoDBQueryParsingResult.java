@@ -6,6 +6,14 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
+import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor.Operation;
+import org.hibernate.ogm.query.spi.QueryParsingResult;
+
 import com.mongodb.DBObject;
 
 /**
@@ -13,15 +21,17 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
-public class MongoDBQueryParsingResult {
+public class MongoDBQueryParsingResult implements QueryParsingResult {
 
 	private final Class<?> entityType;
+	private final String collectionName;
 	private final DBObject query;
 	private final DBObject projection;
 	private final DBObject orderBy;
 
-	public MongoDBQueryParsingResult(Class<?> entityType, DBObject query, DBObject projection, DBObject orderBy) {
+	public MongoDBQueryParsingResult(Class<?> entityType, String collectionName, DBObject query, DBObject projection, DBObject orderBy) {
 		this.entityType = entityType;
+		this.collectionName = collectionName;
 		this.query = query;
 		this.projection = projection;
 		this.orderBy = orderBy;
@@ -41,6 +51,23 @@ public class MongoDBQueryParsingResult {
 
 	public DBObject getOrderBy() {
 		return orderBy;
+	}
+
+	@Override
+	public Object getQueryObject() {
+		return new MongoDBQueryDescriptor(
+			collectionName,
+			Operation.FIND, //so far only SELECT is supported
+			query,
+			projection,
+			orderBy
+		);
+	}
+
+	@Override
+	public List<String> getColumnNames() {
+		//TODO Non-scalar case
+		return projection != null ? new ArrayList<String>( projection.keySet() ) : Collections.<String>emptyList();
 	}
 
 	@Override

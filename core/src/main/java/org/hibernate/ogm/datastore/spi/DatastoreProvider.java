@@ -24,12 +24,19 @@ import org.hibernate.service.Service;
  */
 public interface DatastoreProvider extends Service {
 
+	/**
+	 * Returns the {@link GridDialect} type for the underlying datastore.
+	 *
+	 * @return The {@link GridDialect} type; Never {@code null}.
+	 */
 	Class<? extends GridDialect> getDefaultDialect();
 
 	/**
 	 * Returns the type of {@link QueryParserService} to be used for executing queries against the underlying datastore.
 	 *
-	 * @return the default {@link QueryParserService} for the underlying datastore; never {@code null}
+	 * @return The query parser implementation type of the current dialect or {@code null} if the underlying datastore
+	 * does not support the execution of queries and full-text searches via Lucene / Hibernate Search are to be used
+	 * instead.
 	 */
 	Class<? extends QueryParserService> getDefaultQueryParserServiceType();
 

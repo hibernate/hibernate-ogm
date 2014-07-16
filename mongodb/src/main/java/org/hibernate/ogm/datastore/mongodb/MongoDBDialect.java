@@ -64,9 +64,9 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.StringCalendarDateType;
@@ -604,36 +604,37 @@ public class MongoDBDialect extends BaseGridDialect implements BatchableGridDial
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-		MongoDBQueryDescriptor query = null;
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
+		MongoDBQueryDescriptor queryDescriptor = null;
 
 		// query already given in DBObject-representation (created by JP-QL parser)
-		if ( customQuery.getQueryObject() != null ) {
-			query = (MongoDBQueryDescriptor) customQuery.getQueryObject();
+		if ( backendQuery.getQuery() instanceof MongoDBQueryDescriptor ) {
+			queryDescriptor = (MongoDBQueryDescriptor) backendQuery.getQuery();
 		}
 		// a string-based native query; need to create the DBObject from that
 		else {
 			// TODO OGM-414 This should actually be cached in the native query plan
 			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-			ParsingResult<MongoDBQueryDescriptorBuilder> parseResult =  new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() ).run( customQuery.getQueryString() );
+			ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+					.run( (String) backendQuery.getQuery() );
 			if (parseResult.hasErrors() ) {
 				throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
 			}
 
-			query = parseResult.resultValue.build();
+			queryDescriptor = parseResult.resultValue.build();
 		}
 
-		EntityKeyMetadata entityKeyMetadata = customQuery.getSingleEntityKeyMetadataOrNull();
-		String collectionName = getCollectionName( customQuery, query, entityKeyMetadata );
+		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
+		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
 		DBCollection collection = provider.getDatabase().getCollection( collectionName );
 
-		switch( query.getOperation() ) {
+		switch( queryDescriptor.getOperation() ) {
 			case FIND:
-				return doFind( query, queryParameters, collection, entityKeyMetadata );
+				return doFind( queryDescriptor, queryParameters, collection, entityKeyMetadata );
 			case COUNT:
-				return doCount( query, collection );
+				return doCount( queryDescriptor, collection );
 			default:
-				throw new IllegalArgumentException( "Unexpected query operation: " + query );
+				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
 	}
 
@@ -675,7 +676,7 @@ public class MongoDBDialect extends BaseGridDialect implements BatchableGridDial
 	 * @param entityKeyMetadata meta-data in case this is a query with exactly one entity return
 	 * @return the name of the MongoDB collection to execute the given query against
 	 */
-	private String getCollectionName(BackendCustomQuery customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
+	private String getCollectionName(BackendQuery customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
 		if ( queryDescriptor.getCollectionName() != null ) {
 			return queryDescriptor.getCollectionName();
 		}
@@ -683,7 +684,7 @@ public class MongoDBDialect extends BaseGridDialect implements BatchableGridDial
 			return entityKeyMetadata.getTable();
 		}
 		else {
-			throw log.unableToDetermineCollectionName( customQuery.getQueryString() );
+			throw log.unableToDetermineCollectionName( customQuery.getQuery().toString() );
 		}
 	}
 

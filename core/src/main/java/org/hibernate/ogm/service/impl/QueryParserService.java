@@ -8,8 +8,9 @@ package org.hibernate.ogm.service.impl;
 
 import java.util.Map;
 
-import org.hibernate.Query;
-import org.hibernate.ogm.OgmSession;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.query.spi.QueryParsingResult;
+import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
 
 /**
@@ -17,12 +18,13 @@ import org.hibernate.service.Service;
  * but we expect to support multiple types using different or hybrid
  * strategies.
  */
+@Experimental("This contract is still under active development")
 public interface QueryParserService extends Service {
 
-	/**
-	 * Experimental!
-	 * Parameters will very likely need to change.
-	 */
-	Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters);
+	boolean supportsParameters();
 
+	// TODO: Should SF be injected during construction?
+	QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters);
+
+	QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString);
 }

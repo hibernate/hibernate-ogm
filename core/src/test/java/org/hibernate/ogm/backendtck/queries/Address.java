@@ -14,12 +14,14 @@ import javax.persistence.OneToMany;
 
 import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 
 /**
  * @author Gunnar Morling
  */
 @Entity
+@Indexed
 public class Address {
 
 	@Id

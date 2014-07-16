@@ -48,8 +48,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
@@ -391,19 +391,19 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
-		String nativeQuery = buildNativeQuery( customQuery, queryParameters );
+		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
 
-		if ( customQuery.getSingleEntityKeyMetadataOrNull() != null ) {
+		if ( backendQuery.getSingleEntityKeyMetadataOrNull() != null ) {
 			return new NodesTupleIterator( result );
 		}
 		return new MapsTupleIterator( result );
 	}
 
-	private String buildNativeQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-		StringBuilder nativeQuery = new StringBuilder( customQuery.getQueryString() );
+	private String buildNativeQuery(BackendQuery customQuery, QueryParameters queryParameters) {
+		StringBuilder nativeQuery = new StringBuilder( (String) customQuery.getQuery() );
 		applyFirstRow( queryParameters, nativeQuery );
 		applyMaxRows( queryParameters, nativeQuery );
 		return nativeQuery.toString();
