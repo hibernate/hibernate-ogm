@@ -12,10 +12,12 @@ import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.Service;
 
 /**
- * Provides datastore centric configurations and native access.
+ * Provides datastore-centric configurations and native access.
  * <p>
- * Implementations of this service offer native interfaces to access the underlying datastore. It is also responsible
+ * Implementations of this service offer native interfaces to access the underlying datastore. They are also responsible
  * for starting and stopping the connection to the datastore.
+ * <p>
+ * Instead of implementing this interface directly, consider to extend {@link BaseDatastoreProvider} instead.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling

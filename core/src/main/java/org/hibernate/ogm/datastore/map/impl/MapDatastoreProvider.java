@@ -22,16 +22,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.persistence.PessimisticLockException;
 
 import org.hibernate.ogm.datastore.map.MapDialect;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.RowKey;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Startable;
@@ -49,7 +45,7 @@ import org.hibernate.service.spi.Stoppable;
  *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
  */
-public final class MapDatastoreProvider implements DatastoreProvider, Startable, Stoppable {
+public final class MapDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -70,16 +66,6 @@ public final class MapDatastoreProvider implements DatastoreProvider, Startable,
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return MapDialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
-	}
-
-	@Override
-	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return BaseSchemaDefiner.class;
 	}
 
 	@Override

@@ -11,12 +11,10 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -26,7 +24,6 @@ import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
@@ -35,21 +32,11 @@ import org.hibernate.type.Type;
 /**
  * @author Gunnar Morling
  */
-public class SampleDatastoreProvider implements DatastoreProvider {
+public class SampleDatastoreProvider extends BaseDatastoreProvider {
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return SampleDialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return BaseSchemaDefiner.class;
 	}
 
 	public static class SampleDialect implements GridDialect {

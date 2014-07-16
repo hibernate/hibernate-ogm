@@ -16,14 +16,12 @@ import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -32,7 +30,6 @@ import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -93,21 +90,11 @@ public class BatchExecutionTest extends OgmTestCase {
 		return new Class[] { Hypothesis.class };
 	}
 
-	public static class SampleBatchableDatastoreProvider implements DatastoreProvider {
+	public static class SampleBatchableDatastoreProvider extends BaseDatastoreProvider {
 
 		@Override
 		public Class<? extends GridDialect> getDefaultDialect() {
 			return SampleBatchableDialect.class;
-		}
-
-		@Override
-		public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-			return null;
-		}
-
-		@Override
-		public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-			return BaseSchemaDefiner.class;
 		}
 	}
 

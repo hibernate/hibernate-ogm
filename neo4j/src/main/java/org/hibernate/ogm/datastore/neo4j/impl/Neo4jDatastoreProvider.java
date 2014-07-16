@@ -14,7 +14,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.service.impl.QueryParserService;
@@ -31,7 +31,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
  *
  * @author Davide D'Alto
  */
-public class Neo4jDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
 

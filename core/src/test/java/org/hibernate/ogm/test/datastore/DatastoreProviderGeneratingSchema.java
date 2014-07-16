@@ -17,7 +17,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -31,8 +31,6 @@ import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
@@ -44,16 +42,11 @@ import org.hibernate.type.Type;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class DatastoreProviderGeneratingSchema implements DatastoreProvider {
+public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return Dialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
 	}
 
 	@Override

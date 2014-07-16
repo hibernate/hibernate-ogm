@@ -21,13 +21,9 @@ import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExte
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
@@ -52,7 +48,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * @author Sanne Grinovero
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class InfinispanDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
+public class InfinispanDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
 	private static final Log log = LoggerFactory.make();
@@ -67,16 +63,6 @@ public class InfinispanDatastoreProvider implements DatastoreProvider, Startable
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return InfinispanDialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
-	}
-
-	@Override
-	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return BaseSchemaDefiner.class;
 	}
 
 	@Override

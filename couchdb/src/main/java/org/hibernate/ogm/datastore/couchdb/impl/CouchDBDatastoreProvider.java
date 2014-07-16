@@ -13,11 +13,9 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -31,7 +29,7 @@ import org.hibernate.service.spi.Stoppable;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, ServiceRegistryAwareService, Configurable {
+public class CouchDBDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, ServiceRegistryAwareService, Configurable {
 
 	private static final Log logger = LoggerFactory.getLogger();
 
@@ -69,11 +67,6 @@ public class CouchDBDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return CouchDBDialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
 	}
 
 	@Override

@@ -22,13 +22,9 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
-import org.hibernate.ogm.service.impl.LuceneBasedQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -38,7 +34,7 @@ import org.hibernate.service.spi.Stoppable;
 /**
  * @author Alex Snaps
  */
-public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, Stoppable,
+public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
 
 	private JtaPlatform jtaPlatform;
@@ -57,16 +53,6 @@ public class EhcacheDatastoreProvider implements DatastoreProvider, Startable, S
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
 		return EhcacheDialect.class;
-	}
-
-	@Override
-	public Class<? extends QueryParserService> getDefaultQueryParserServiceType() {
-		return LuceneBasedQueryParserService.class;
-	}
-
-	@Override
-	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
-		return BaseSchemaDefiner.class;
 	}
 
 	@Override

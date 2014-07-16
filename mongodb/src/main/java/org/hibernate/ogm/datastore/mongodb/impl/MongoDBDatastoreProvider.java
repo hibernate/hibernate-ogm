@@ -16,7 +16,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.impl.MongoDBBasedQueryParserService;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -39,7 +39,7 @@ import com.mongodb.ServerAddress;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class MongoDBDatastoreProvider implements DatastoreProvider, Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final Log log = LoggerFactory.getLogger();
 
