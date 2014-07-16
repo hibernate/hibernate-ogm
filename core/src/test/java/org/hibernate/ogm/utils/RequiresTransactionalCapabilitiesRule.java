@@ -32,7 +32,7 @@ public class RequiresTransactionalCapabilitiesRule implements TestRule {
 					base.evaluate();
 				}
 				else {
-					log.info( "Skipping test " + description.getMethodName() + " as the current GridDialect doesn't support transactions" );
+					log.infof( "Skipping test $s as the current GridDialect doesn't support transactions", description.getMethodName() );
 				}
 			}
 		};

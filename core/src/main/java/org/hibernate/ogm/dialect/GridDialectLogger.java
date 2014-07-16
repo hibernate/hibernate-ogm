@@ -73,7 +73,7 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext.toString() );
+		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext );
 		return gridDialect.getTuple( key, tupleContext );
 	}
 

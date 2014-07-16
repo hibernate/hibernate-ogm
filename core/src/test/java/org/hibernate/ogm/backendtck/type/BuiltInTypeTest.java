@@ -90,7 +90,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		UUID serialNumber = UUID.randomUUID();
 		b.setSerialNumber( serialNumber );
 		final Long userId = RANDOM.nextLong();
-		log.info( "User ID created: " + userId );
+		log.infof( "User ID created: $s", userId );
 		b.setUserId( userId );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );

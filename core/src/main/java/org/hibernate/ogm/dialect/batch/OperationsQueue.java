@@ -62,7 +62,7 @@ public class OperationsQueue {
 	}
 
 	private void addOperation(Operation operation) {
-		log.debug( "Add batched operation " + operation );
+		log.debugf( "Add batched operation %1$s", operation );
 		operations.add( operation );
 	}
 

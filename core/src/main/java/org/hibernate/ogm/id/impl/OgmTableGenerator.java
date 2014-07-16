@@ -275,7 +275,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	protected String determineDefaultSegmentValue(Properties params) {
 		boolean preferSegmentPerEntity = ConfigurationHelper.getBoolean( CONFIG_PREFER_SEGMENT_PER_ENTITY, params, false );
 		String defaultToUse = preferSegmentPerEntity ? params.getProperty( PersistentIdentifierGenerator.TABLE ) : DEF_SEGMENT_VALUE;
-		log.info( "explicit segment value for id generator [" + tableName + '.' + segmentColumnName + "] suggested; using default [" + defaultToUse + "]" );
+		log.infof( "explicit segment value for id generator [%1$s.%2$s] suggested; using default [%3$s]", tableName, segmentColumnName, defaultToUse );
 		return defaultToUse;
 	}
 
