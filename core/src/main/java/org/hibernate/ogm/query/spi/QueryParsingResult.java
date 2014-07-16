@@ -9,7 +9,6 @@ package org.hibernate.ogm.query.spi;
 import java.util.List;
 
 import org.hibernate.hql.spi.QueryTranslator;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.util.Experimental;
 
 /**

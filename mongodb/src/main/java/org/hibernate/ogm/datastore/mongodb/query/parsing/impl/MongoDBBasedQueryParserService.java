@@ -14,9 +14,9 @@ import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.query.spi.BaseQueryParserService;
+import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.ogm.query.spi.QueryParsingResult;
-import org.hibernate.ogm.service.impl.BaseQueryParserService;
-import org.hibernate.ogm.service.impl.QueryParserService;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 
 import com.mongodb.DBObject;

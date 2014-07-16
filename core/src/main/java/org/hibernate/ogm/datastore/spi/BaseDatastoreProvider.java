@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
-import org.hibernate.ogm.service.impl.QueryParserService;
+import org.hibernate.ogm.query.spi.QueryParserService;
 
 /**
  * Recommended base class for {@link DatastoreProvider} implementations.
