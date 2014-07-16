@@ -11,7 +11,6 @@ import java.util.Iterator;
 import org.hibernate.LockMode;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -21,6 +20,7 @@ import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -28,13 +28,8 @@ import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
-import org.hibernate.type.Type;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical
@@ -77,7 +72,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		}
 	}
 
-	public static class Dialect implements GridDialect {
+	public static class Dialect extends BaseGridDialect {
 
 		public Dialect(DatastoreProviderGeneratingSchema provider) {
 
@@ -145,23 +140,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public GridType overrideType(Type type) {
-			// No types to override
-			return null;
-		}
-
-		@Override
 		public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		}
-
-		@Override
-		public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-			return null;
-		}
-
-		@Override
-		public ParameterMetadataBuilder getParameterMetadataBuilder() {
-			return null;
 		}
 	}
 }

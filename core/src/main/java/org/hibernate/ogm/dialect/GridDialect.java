@@ -13,6 +13,7 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -29,6 +30,8 @@ import org.hibernate.type.Type;
 
 /**
  * Dialect abstracting Hibernate OGM from the grid implementation
+ * <p>
+ * Rather than implementing this interface directly, it is recommend to extend {@link BaseGridDialect}.
  *
  * @author Emmanuel Bernard
  * @author Gunnar Morling

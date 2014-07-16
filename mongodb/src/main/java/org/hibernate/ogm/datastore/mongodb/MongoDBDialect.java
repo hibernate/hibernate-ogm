@@ -57,6 +57,7 @@ import org.hibernate.ogm.dialect.batch.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
@@ -112,7 +113,7 @@ import com.mongodb.WriteConcern;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBDialect implements BatchableGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";

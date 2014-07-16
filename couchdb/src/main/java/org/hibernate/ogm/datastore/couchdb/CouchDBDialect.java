@@ -13,7 +13,6 @@ import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -32,21 +31,17 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.Iso8601StringDateType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
@@ -60,7 +55,7 @@ import org.hibernate.type.Type;
  * @author Andrea Boriero &lt;dreborier@gmail.com&gt;
  * @author Gunnar Morling
  */
-public class CouchDBDialect implements GridDialect {
+public class CouchDBDialect extends BaseGridDialect {
 
 	private final CouchDBDatastoreProvider provider;
 
@@ -283,15 +278,5 @@ public class CouchDBDialect implements GridDialect {
 		if ( currentRevision != null ) {
 			getDataStore().deleteDocument( id, currentRevision );
 		}
-	}
-
-	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-		throw new UnsupportedOperationException( "Native queries not supported for CouchDB" );
-	}
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 }

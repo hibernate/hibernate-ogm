@@ -19,7 +19,6 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
@@ -29,21 +28,15 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
-import org.hibernate.type.Type;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
@@ -57,7 +50,7 @@ import org.infinispan.distexec.mapreduce.Reducer;
 /**
  * @author Emmanuel Bernard
  */
-public class InfinispanDialect implements GridDialect {
+public class InfinispanDialect extends BaseGridDialect {
 
 	private final InfinispanDatastoreProvider provider;
 
@@ -199,16 +192,6 @@ public class InfinispanDialect implements GridDialect {
 	}
 
 	@Override
-	public GridType overrideType(Type type) {
-		return null;
-	}
-
-	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendCustomQuery customQuery, QueryParameters queryParameters) {
-		throw new UnsupportedOperationException( "Native queries not supported for Infinispan" );
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
@@ -222,11 +205,6 @@ public class InfinispanDialect implements GridDialect {
 		MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> queryTask = new MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>>( cache );
 		queryTask.mappedWith( new TupleMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer() );
 		return queryTask.execute();
-	}
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
 	static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {
