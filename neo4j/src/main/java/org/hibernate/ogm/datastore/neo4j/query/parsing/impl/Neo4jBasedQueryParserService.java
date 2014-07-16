@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 import java.util.Map;
 
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -36,7 +35,7 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 	@Override
 	public Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters) {
 		QueryParser queryParser = new QueryParser();
-		Neo4jProcessingChain processingChain = createProcessingChain( session, unwrap( namedParameters ) );
+		Neo4jProcessingChain processingChain = createProcessingChain( (SessionFactoryImplementor) session.getSessionFactory(), unwrap( namedParameters ) );
 		Neo4jQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 
 		log.createdQuery( queryString, result );
@@ -63,9 +62,9 @@ public class Neo4jBasedQueryParserService extends BaseQueryParserService {
 		return result.getProjections() != null && !result.getProjections().isEmpty();
 	}
 
-	private Neo4jProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters) {
-		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
-		return new Neo4jProcessingChain( (SessionFactoryImplementor) session.getSessionFactory(), entityNamesResolver, namedParameters );
+	private Neo4jProcessingChain createProcessingChain(SessionFactoryImplementor sessionFactory, Map<String, Object> namedParameters) {
+		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( sessionFactory );
+		return new Neo4jProcessingChain( sessionFactory, entityNamesResolver, namedParameters );
 	}
 
 	private EntityNamesResolver getDefinedEntityNames(SessionFactory sessionFactory) {

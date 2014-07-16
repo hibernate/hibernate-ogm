@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.mongodb.query.parsing.impl;
 import java.util.Map;
 
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -42,7 +41,7 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 	@Override
 	public Query getParsedQueryExecutor(OgmSession session, String queryString, Map<String, Object> namedParameters) {
 		QueryParser queryParser = new QueryParser();
-		MongoDBProcessingChain processingChain = createProcessingChain( session, unwrap( namedParameters ) );
+		MongoDBProcessingChain processingChain = createProcessingChain( (SessionFactoryImplementor) session.getSessionFactory(), unwrap( namedParameters ) );
 
 		MongoDBQueryParsingResult result = queryParser.parseQuery( queryString, processingChain );
 		log.createdQuery( queryString, result );
@@ -80,11 +79,11 @@ public class MongoDBBasedQueryParserService extends BaseQueryParserService {
 		return query;
 	}
 
-	private MongoDBProcessingChain createProcessingChain(Session session, Map<String, Object> namedParameters) {
-		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( session.getSessionFactory() );
+	private MongoDBProcessingChain createProcessingChain(SessionFactoryImplementor sessionFactory, Map<String, Object> namedParameters) {
+		EntityNamesResolver entityNamesResolver = getDefinedEntityNames( sessionFactory );
 
 		return new MongoDBProcessingChain(
-				(SessionFactoryImplementor) session.getSessionFactory(),
+				sessionFactory,
 				entityNamesResolver,
 				namedParameters );
 	}
