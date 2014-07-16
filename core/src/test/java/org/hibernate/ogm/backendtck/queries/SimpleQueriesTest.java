@@ -80,7 +80,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
 		assertQuery( session, 18, session.createQuery(
 				"from java.lang.Object" ) );
