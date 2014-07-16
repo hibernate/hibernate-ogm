@@ -43,6 +43,8 @@ import org.hibernate.type.Type;
  */
 public class BatchOperationsDelegator implements BatchableGridDialect {
 
+	// The threadlocal is properly set and cleaned in a try / catch by {@link org.hibernate.ogm.service.impl.BatchManagerEventListener}
+	// if used elsewhere, apply the same pattern
 	private final ThreadLocal<OperationsQueue> operationQueueLocal = new ThreadLocal<OperationsQueue>();
 
 	private final BatchableGridDialect dialect;
