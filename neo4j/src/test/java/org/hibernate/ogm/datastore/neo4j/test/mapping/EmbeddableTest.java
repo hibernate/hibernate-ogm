@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.embeddable.Account;
@@ -46,14 +49,26 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 	public void testMapping() throws Exception {
 		assertNumberOfNodes( 1 );
 		assertRelationships( 0 );
-		assertExpectedMapping( "(n:Account:ENTITY {"
-				+ "  `login`: '" + account.getLogin() + "'"
-				+ ", `password`: '" + account.getPassword() + "'"
-				+ ", `homeAddress.street1`: '" + account.getHomeAddress().getStreet1() + "'"
-				+ ", `homeAddress.city`: '" + account.getHomeAddress().getCity() + "'"
-				+ ", `homeAddress.country`: '" + account.getHomeAddress().getCountry() + "'"
-				+ ", `postal_code`: '" + account.getHomeAddress().getZipCode() + "'"
-				+ " })" );
+
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "login", account.getLogin() );
+		properties.put( "password", account.getPassword());
+		properties.put( "homeAddress.street1", account.getHomeAddress().getStreet1() );
+		properties.put( "homeAddress.city", account.getHomeAddress().getCity() );
+		properties.put( "homeAddress.country", account.getHomeAddress().getCountry() );
+		properties.put( "postal_code", account.getHomeAddress().getZipCode() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "n", properties );
+
+		assertExpectedMapping( "n", "(n:Account:ENTITY {"
+				+ "  `login`: {n}.login"
+				+ ", `password`: {n}.password"
+				+ ", `homeAddress.street1`: {n}.`homeAddress.street1`"
+				+ ", `homeAddress.city`: {n}.`homeAddress.city`"
+				+ ", `homeAddress.country`: {n}.`homeAddress.country`"
+				+ ", `postal_code`: {n}.postal_code"
+				+ " })", params );
 	}
 
 	@Override

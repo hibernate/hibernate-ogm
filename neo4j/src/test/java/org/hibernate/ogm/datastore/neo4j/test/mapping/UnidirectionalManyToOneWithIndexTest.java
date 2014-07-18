@@ -6,6 +6,11 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import static java.util.Collections.singletonMap;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.types.Child;
@@ -59,26 +64,42 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 
 		em.persist( father2 );
 		commitOrRollback( true );
-
-		assertNumberOfNodes( 6 );
-		assertRelationships( 4 );
 	}
 
 	@Test
 	public void testMapping() throws Exception {
-		String father1Node = "(:Father:ENTITY {id: '" + father1.getId() + "' })";
-		String child1Node = "(:Child:ENTITY {id: '" + child11.getId() + "', name: '" + child11.getName() + "' })";
-		String child2Node = "(:Child:ENTITY {id: '" + child12.getId() + "', name: '" + child12.getName() + "' })";
+		assertNumberOfNodes( 6 );
+		assertRelationships( 4 );
 
-		assertExpectedMapping( father1Node + " - [:Father_child {birthorder: 0}] - " + child1Node );
-		assertExpectedMapping( father1Node + " - [:Father_child {birthorder: 1}] - " + child2Node );
+		String fatherNode = "(f:Father:ENTITY {id: {f}.id })";
+		String childNode = "(c:Child:ENTITY {id: {c}.id, name: {c}.name })";
+		String relationshipCypher = fatherNode + " - [r:Father_child {birthorder: {r}.birthorder}] - " + childNode;
 
-		String father2Node = "(:Father:ENTITY {id: '" + father2.getId() + "' })";
-		String child3Node = "(:Child:ENTITY {id: '" + child21.getId() + "', name: '" + child21.getName() + "' })";
-		String child4Node = "(:Child:ENTITY {id: '" + child22.getId() + "', name: '" + child22.getName() + "' })";
+		assertExpectedMapping( "r", relationshipCypher, params( father1, child11, 0 ) );
+		assertExpectedMapping( "r", relationshipCypher, params( father1, child12, 1 ) );
+		assertExpectedMapping( "r", relationshipCypher, params( father2, child21, 0 ) );
+		assertExpectedMapping( "r", relationshipCypher, params( father2, child22, 1 ) );
+	}
 
-		assertExpectedMapping( father2Node + " - [:Father_child {birthorder: 0}] - " + child3Node );
-		assertExpectedMapping( father2Node + " - [:Father_child {birthorder: 1}] - " + child4Node );
+	private Map<String, Object> params(Father father, Child child, int birthOrder) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "f", properties( father ) );
+		params.put( "c", properties( child ) );
+		params.put( "r", singletonMap( "birthorder", birthOrder ) );
+		return params;
+	}
+
+	private Map<String, Object> properties(Father father) {
+		Map<String, Object> fatherProperties = new HashMap<String, Object>();
+		fatherProperties.put( "id", father.getId() );
+		return fatherProperties;
+	}
+
+	private Map<String, Object> properties(Child child) {
+		Map<String, Object> childProperties = new HashMap<String, Object>();
+		childProperties.put( "id", child.getId() );
+		childProperties.put( "name", child.getName() );
+		return childProperties;
 	}
 
 	@Override

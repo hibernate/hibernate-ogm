@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.AccountOwner;
@@ -50,12 +53,38 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		assertNumberOfNodes( 3 );
 		assertRelationships( 2 );
 
-		String ownerNode = "(owner:AccountOwner:ENTITY {id: '" + owner.getId() + "', SSN: '" + owner.getSSN() + "' })";
-		String barcklaysNode = "(barclays:BankAccount:ENTITY {id: '" + barclays.getId() + "', accountNumber: '" + barclays.getAccountNumber() + "' })";
-		String sogeNode = "(soge:BankAccount:ENTITY {id: '" + soge.getId() + "', accountNumber: '" + soge.getAccountNumber() + "' })";
+		String ownerNode = "(o:AccountOwner:ENTITY {id: {o}.id, SSN: {o}.SSN })";
+		String accountNode = "(a:BankAccount:ENTITY {id: {a}.id, accountNumber: {a}.accountNumber })";
 
-		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + barcklaysNode );
-		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + sogeNode );
+		assertExpectedMapping( "o", ownerNode, params( barclays, owner ) );
+		assertExpectedMapping( "a", accountNode, params( barclays, owner ) );
+		assertExpectedMapping( "a", accountNode, params( soge, owner ) );
+		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + accountNode, params( barclays, owner ) );
+		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + accountNode, params( soge, owner ) );
+	}
+
+	private Map<String, Object> params(BankAccount account, AccountOwner owner) {
+		Map<String, Object> accountProperties = accountProperties( account );
+		Map<String, Object> ownerProperties = ownerProperties( owner );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "o", ownerProperties );
+		params.put( "a", accountProperties );
+		return params;
+	}
+
+	private Map<String, Object> accountProperties(BankAccount account) {
+		Map<String, Object> accountProperties = new HashMap<String, Object>();
+		accountProperties.put( "id", account.getId() );
+		accountProperties.put( "accountNumber", account.getAccountNumber() );
+		return accountProperties;
+	}
+
+	private Map<String, Object> ownerProperties(AccountOwner owner) {
+		Map<String, Object> ownerProperties = new HashMap<String, Object>();
+		ownerProperties.put( "id", owner.getId() );
+		ownerProperties.put( "SSN", owner.getSSN() );
+		return ownerProperties;
 	}
 
 	@Override
