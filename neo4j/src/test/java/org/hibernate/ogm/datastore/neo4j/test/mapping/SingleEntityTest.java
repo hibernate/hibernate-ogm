@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.JUG;
@@ -34,7 +37,15 @@ public class SingleEntityTest extends Neo4jJpaTestCase {
 	public void testMapping() throws Exception {
 		assertNumberOfNodes( 1 );
 		assertRelationships( 0 );
-		assertExpectedMapping( "(n:JUG:ENTITY {jug_id: '" + jug.getId() + "', name: '" + jug.getName() + "' })" );
+
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "jug_id", jug.getId() );
+		properties.put( "name", jug.getName() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "n", properties );
+
+		assertExpectedMapping( "n", "(n:JUG:ENTITY {jug_id: {n}.jug_id, name: {n}.name})", params );
 	}
 
 	@Override
