@@ -179,6 +179,8 @@ public class BatchOperationsDelegator implements GridDialect {
 	private AssociationContext withQueue(AssociationContext associationContext) {
 		return new AssociationContext(
 				associationContext.getOptionsContext(),
+				associationContext.getTargetEntityKeyMetadata(),
+				associationContext.getTargetAssociationKeyMetadata(),
 				getOperationQueue()
 		);
 	}

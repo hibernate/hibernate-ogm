@@ -8,6 +8,8 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
@@ -20,14 +22,18 @@ public class AssociationContext implements GridDialectOperationContext {
 
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
+	private final EntityKeyMetadata targetEntityKeyMetadata;
+	private final AssociationKeyMetadata targetAssociationKeyMetada;
 
-	public AssociationContext(OptionsContext optionsContext) {
-		this( optionsContext, null );
+	public AssociationContext(OptionsContext optionsContext, EntityKeyMetadata targetEntityKeyMetadata, AssociationKeyMetadata targetAssociationKeyMetada) {
+		this( optionsContext, targetEntityKeyMetadata, targetAssociationKeyMetada, null );
 	}
 
-	public AssociationContext(OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	public AssociationContext(OptionsContext optionsContext, EntityKeyMetadata targetEntityKeyMetadata, AssociationKeyMetadata targetAssociationKeyMetada, OperationsQueue operationsQueue) {
 		this.optionsContext = optionsContext;
 		this.operationsQueue = operationsQueue;
+		this.targetEntityKeyMetadata = targetEntityKeyMetadata;
+		this.targetAssociationKeyMetada = targetAssociationKeyMetada;
 	}
 
 	public OperationsQueue getOperationsQueue() {
@@ -37,6 +43,21 @@ public class AssociationContext implements GridDialectOperationContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	/**
+	 * Return the metadata of the entity that is the target of the association.
+	 * Note that for embedded collection this value is null and this information is stored in the RowKey.
+	 */
+	public EntityKeyMetadata getTargetEntityKeyMetadata() {
+		return targetEntityKeyMetadata;
+	}
+
+	/**
+	 * The column identifying the target side of the association
+	 */
+	public AssociationKeyMetadata getTargetAssociationKeyMetadata() {
+		return targetAssociationKeyMetada;
 	}
 
 	@Override

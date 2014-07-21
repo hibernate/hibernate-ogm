@@ -17,12 +17,21 @@ import org.hibernate.ogm.grid.RowKey;
  */
 public class RowKeyBuilder {
 	private final List<String> columnNames = new ArrayList<String>();
+	private final List<String> indexColumnNames = new ArrayList<String>();
 	private String tableName;
 	private Tuple tuple;
 
 	public RowKeyBuilder addColumns(String... columns) {
 		for ( String columnName : columns ) {
 			columnNames.add( columnName );
+		}
+		return this;
+	}
+
+	public RowKeyBuilder addIndexColumns(String... columns) {
+		for ( String columnName : columns ) {
+			columnNames.add( columnName );
+			indexColumnNames.add( columnName );
 		}
 		return this;
 	}
@@ -51,5 +60,9 @@ public class RowKeyBuilder {
 
 	public String[] getColumnNames() {
 		return columnNames.toArray( new String[ columnNames.size() ] );
+	}
+
+	public String[] getIndexColumnNames() {
+		return indexColumnNames.toArray( new String[ indexColumnNames.size() ] );
 	}
 }

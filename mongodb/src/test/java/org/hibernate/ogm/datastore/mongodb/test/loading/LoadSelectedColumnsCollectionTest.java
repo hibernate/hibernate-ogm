@@ -136,7 +136,9 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
 						Project.class,
 						"modules"
-				)
+				),
+				null,
+				null
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
