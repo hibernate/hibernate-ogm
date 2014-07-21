@@ -54,6 +54,30 @@ public final class RowKey implements Key {
 		return columnValues;
 	}
 
+	/**
+	 * @return the corresponding value of the column, null if the column does not exist in the row key
+	 */
+	public Object getColumnValue(String columnName) {
+		for ( int j = 0; j < columnNames.length; j++ ) {
+			if ( columnNames[j].equals( columnName ) ) {
+				return columnValues[j];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return true if the column is one of the row key columns, false otherwise
+	 */
+	public boolean contains(String column) {
+		for ( String columnName : columnNames ) {
+			if ( columnName.equals( column ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
@@ -101,4 +125,5 @@ public final class RowKey implements Key {
 		sb.append( '}' );
 		return sb.toString();
 	}
+
 }

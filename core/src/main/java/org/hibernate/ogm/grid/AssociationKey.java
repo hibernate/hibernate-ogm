@@ -28,10 +28,16 @@ public final class AssociationKey implements Key {
 	//role and entity key are not part of the object identity
 	private final String collectionRole;
 	private final EntityKey entityKey;
+	private final Key targetKey;
 	private final AssociationKind associationKind;
 
 	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind) {
+		this( metadata, columnValues, collectionRole, entityKey, associationKind, null );
+	}
+
+	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind, Key elementKey) {
 		this.metadata = metadata;
+		this.targetKey = elementKey;
 		if ( metadata.getColumnNames().length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
 		}
@@ -89,6 +95,14 @@ public final class AssociationKey implements Key {
 	 */
 	public EntityKey getEntityKey() {
 		return entityKey;
+	}
+
+	/**
+	 * Returns the key on the end side (not the owner one) of the association. The target key can only be obtained when
+	 * we are on the inverse side of a bidirectional association, null is returned in all the other scenarios.
+	 */
+	public Key getTargetKey() {
+		return targetKey;
 	}
 
 	/**

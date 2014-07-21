@@ -17,17 +17,26 @@ import java.util.List;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class AssociationKeyMetadata {
+
+	private static final String[] EMPTY_COLUMN_NAMES = new String[0];
+
 	private final String table;
 	private final String[] columnNames;
 	private final int hashCode;
 
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
+	private final String[] rowKeyIndexColumnNames;
 
 	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames) {
+		this( table, columnNames, rowKeyColumnNames, EMPTY_COLUMN_NAMES );
+	}
+
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
+		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -46,6 +55,13 @@ public class AssociationKeyMetadata {
 	 */
 	public String[] getRowKeyColumnNames() {
 		return rowKeyColumnNames;
+	}
+
+	/**
+	 * The columns representing the index of the element of the association
+	 */
+	public String[] getRowKeyIndexColumnNames() {
+		return rowKeyIndexColumnNames;
 	}
 
 	/**

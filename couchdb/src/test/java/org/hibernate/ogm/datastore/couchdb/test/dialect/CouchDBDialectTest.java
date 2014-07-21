@@ -177,7 +177,7 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ) );
+		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ), null, null );
 	}
 
 	private TupleContext emptyTupleContext() {
