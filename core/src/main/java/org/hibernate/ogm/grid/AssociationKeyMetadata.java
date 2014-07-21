@@ -17,17 +17,24 @@ import java.util.List;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class AssociationKeyMetadata {
+
 	private final String table;
 	private final String[] columnNames;
 	private final int hashCode;
 
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
+	private final String[] rowKeyIndexColumnNames;
+	private final String[] rowKeyTargetAssociationKeyColumnNames;
+	private final EntityKeyMetadata rowKeyEntityKeyMetadata;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata, String[] rowKeyTargetAssociationKeyColumnNames) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
+		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
+		this.rowKeyEntityKeyMetadata = rowKeyEntityKeyMetadata;
+		this.rowKeyTargetAssociationKeyColumnNames = rowKeyTargetAssociationKeyColumnNames;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -46,6 +53,30 @@ public class AssociationKeyMetadata {
 	 */
 	public String[] getRowKeyColumnNames() {
 		return rowKeyColumnNames;
+	}
+
+	/**
+	 * The columns representing the index of the element of the association.
+	 * <p>
+	 * For example, the key columns of a map-type property or the column with the order if the property is annotated with
+	 * {@link javax.persistence.OrderColumn}
+	 */
+	public String[] getRowKeyIndexColumnNames() {
+		return rowKeyIndexColumnNames;
+	}
+
+	/**
+	 * @return the {@link EntityKeyMetadata} of the target entity of the association
+	 */
+	public EntityKeyMetadata getRowKeyEntityKeyMetadata() {
+		return rowKeyEntityKeyMetadata;
+	}
+
+	/**
+	 * @return the column names of the association referring to the identifier of the target entity
+	 */
+	public String[] getRowKeyTargetAssociationKeyColumnNames() {
+		return rowKeyTargetAssociationKeyColumnNames;
 	}
 
 	/**

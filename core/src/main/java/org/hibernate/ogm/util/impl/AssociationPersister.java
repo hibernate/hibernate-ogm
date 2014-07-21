@@ -20,7 +20,9 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.CollectionPhysicalModel;
@@ -422,11 +424,67 @@ public class AssociationPersister {
 					.getService( OptionsService.class )
 					.context();
 
-			associationContext = new AssociationContext(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() )
-			);
+			OptionsContext optionsContext = serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() );
+			associationContext = new AssociationContext( optionsContext );
 		}
-
 		return associationContext;
+	}
+
+	/**
+	 * Given the {@link Tuple} representing the {@link RowKey}, it creates the key to identify the target of the
+	 * association.
+	 */
+	public EntityKey createTargetKey(String[] rowKeyColumnNames, Tuple tuple) {
+		Object[] rowKeyColumnValues = new Object[rowKeyColumnNames.length];
+		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+			rowKeyColumnValues[i] = tuple.get( rowKeyColumnNames[i] );
+		}
+		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
+	}
+
+	/**
+	 * Given the {@link Tuple} representing the {@link RowKey}, it creates the key to identify the target of the
+	 * association.
+	 */
+	public EntityKey createTargetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
+		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
+	}
+
+	private EntityKey targetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
+		if ( isEmbeddedWithIndex( associationKey ) ) {
+			// The embedded collection has an index, I don't need to know the column names or values of the target.
+			// It is going to be identified by the index on the relationship,
+			return targeKeyForEmbeddedWithIndex( associationKey );
+		}
+		else {
+			return targetKeyForAssociationOrEmbedded( rowKeyColumnNames, rowKeyColumnValues, associationKey );
+		}
+	}
+
+	private boolean isEmbeddedWithIndex(AssociationKey associationKey) {
+		return AssociationKind.EMBEDDED_COLLECTION == associationKey.getAssociationKind()
+				&& associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0;
+	}
+
+	private static EntityKey targeKeyForEmbeddedWithIndex(AssociationKey associationKey) {
+		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), ArrayHelper.EMPTY_STRING_ARRAY ), ArrayHelper.EMPTY_OBJECT_ARRAY );
+	}
+
+	private EntityKey targetKeyForAssociationOrEmbedded(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
+		String[] targetKeyColumnNames = associationKey.getMetadata().getRowKeyEntityKeyMetadata().getColumnNames();
+		Object[] targetKeyColumnValues = new Object[targetKeyColumnNames.length];
+		String[] targetAssociationKeyMetadataColumnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
+		for ( int i = 0; i < targetAssociationKeyMetadataColumnNames.length; i++ ) {
+			int index = ArrayHelper.indexOf( rowKeyColumnNames, targetAssociationKeyMetadataColumnNames[i] );
+			if ( index > -1 ) {
+				targetKeyColumnValues[i] = rowKeyColumnValues[index];
+			}
+			else {
+				// The RowKey does not contain the value of the target side of the association, it means we are on the
+				// owner side.
+				return null;
+			}
+		}
+		return new EntityKey( associationKey.getMetadata().getRowKeyEntityKeyMetadata(), targetKeyColumnValues );
 	}
 }
