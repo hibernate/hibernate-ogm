@@ -82,7 +82,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on supertypes is not yet implemented.")
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 13, session.createQuery(
+		assertQuery( session, 14, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -587,6 +587,9 @@ public class SimpleQueriesTest extends OgmTestCase {
 		fool.setDate( calendar.getTime() );
 		session.persist( fool );
 
+		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1" ) );
+		session.persist( with );
+
 		transaction.commit();
 		session.close();
 	}
@@ -656,8 +659,22 @@ public class SimpleQueriesTest extends OgmTestCase {
 		}
 	}
 
+	@Test
+	public void when_has_embedded_then_query_fills_it() {
+		//If you remove this get, then this test fails when run from core...
+		WithEmbedded with = (WithEmbedded) session.get( WithEmbedded.class, 1L );
+		assertThat( with ).isNotNull();
+		assertThat( with.anEmbeddable ).isNotNull();
+
+		session.clear();
+
+		List list = session.createQuery( "from WithEmbedded we" ).list();
+		assertThat( list ).hasSize( 1 ).onProperty( "anEmbeddable" ).excludes( (Object) null ).onProperty( "embeddedString" ).containsExactly( "string 1" );
+
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class, Helicopter.class, Author.class, Address.class };
+		return new Class<?>[] { Hypothesis.class, Helicopter.class, Author.class, Address.class, WithEmbedded.class };
 	}
 }
