@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.query;
 
+
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.List;
-import junit.framework.Assert;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -23,21 +23,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Test for queries with MongoDB.
+ * Test for {@code LIKE} queries with MongoDB.
  *
  * @author Gunnar Morling
  */
-public class MongoDBQueryTest extends OgmTestCase {
+public class MongoDBLikeQueryTest extends OgmTestCase {
 
 	@TestSessionFactory
-	private static SessionFactory sessionFactory;
+	private static SessionFactory sessions;
 
 	private Session session;
 	private Transaction transaction;
 
 	@BeforeClass
 	public static void addTestEntities() {
-		Session session = sessionFactory.openSession();
+		Session session = sessions.openSession();
 		Transaction transaction = session.getTransaction();
 		transaction.begin();
 
@@ -89,9 +89,6 @@ public class MongoDBQueryTest extends OgmTestCase {
 		hypothesis.setDescription( "100\nscientiae" );
 		session.persist( hypothesis );
 
-		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1" ) );
-		session.persist( with );
-
 		transaction.commit();
 		session.clear();
 		session.close();
@@ -99,7 +96,7 @@ public class MongoDBQueryTest extends OgmTestCase {
 
 	@AfterClass
 	public static void deleteTestEntities() throws Exception {
-		Session session = sessionFactory.openSession();
+		Session session = sessions.openSession();
 		Transaction transaction = session.getTransaction();
 		transaction.begin();
 
@@ -119,7 +116,7 @@ public class MongoDBQueryTest extends OgmTestCase {
 
 	@Before
 	public void startTransaction() {
-		session = sessionFactory.openSession();
+		session = sessions.openSession();
 		transaction = session.getTransaction();
 		transaction.begin();
 	}
@@ -153,20 +150,8 @@ public class MongoDBQueryTest extends OgmTestCase {
 		results = session.createQuery( "from Hypothesis h where h.description like '100%% scientia' escape '%'" ).list();
 		assertThat( results ).onProperty( "id" ).containsOnly( "7" );
 	}
-
-	@Test
-	public void when_has_embedded_then_query_fills_it() {
-		List list = session.createQuery( "from WithEmbedded we" ).list();
-		Assert.assertNotNull( list );
-		Assert.assertEquals( 1, list.size() );
-		WithEmbedded we = (WithEmbedded) list.get( 0 );
-		Assert.assertEquals( 1L, we.id.longValue() );
-		Assert.assertNotNull( we.anEmbeddable );
-		Assert.assertEquals( "string 1", we.anEmbeddable.embeddedString );
-	}
-
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[]{Hypothesis.class, WithEmbedded.class};
+		return new Class<?>[] { Hypothesis.class };
 	}
 }
