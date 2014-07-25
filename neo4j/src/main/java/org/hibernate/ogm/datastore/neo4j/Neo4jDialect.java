@@ -129,7 +129,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 		PropertyContainer property = createRelationshipToEntityOrToTempNode( associationKey, rowKey );
 		return new Tuple( new Neo4jTupleSnapshot( property ) );
 	}

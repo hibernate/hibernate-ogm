@@ -120,7 +120,7 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+		public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 			return null;
 		}
 

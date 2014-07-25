@@ -145,7 +145,7 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+		public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 			return null;
 		}
 
