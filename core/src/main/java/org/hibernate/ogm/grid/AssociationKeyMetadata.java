@@ -41,6 +41,9 @@ public class AssociationKeyMetadata {
 		return columnNames;
 	}
 
+	/**
+	 * The columns identifying an element of the association
+	 */
 	public String[] getRowKeyColumnNames() {
 		return rowKeyColumnNames;
 	}

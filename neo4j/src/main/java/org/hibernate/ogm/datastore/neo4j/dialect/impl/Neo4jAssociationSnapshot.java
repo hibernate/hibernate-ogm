@@ -61,7 +61,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	private RowKey convert(AssociationKey associationKey, PropertyContainer container) {
-		String[] columnNames = associationKey.getRowKeyColumnNames();
+		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
 
 		for ( int i = 0; i < columnNames.length; i++ ) {
