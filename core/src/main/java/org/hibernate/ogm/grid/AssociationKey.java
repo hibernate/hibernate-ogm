@@ -98,13 +98,6 @@ public final class AssociationKey implements Key {
 		return associationKind;
 	}
 
-	/**
-	 * The columns identifying an element of the association
-	 */
-	public String[] getRowKeyColumnNames() {
-		return metadata.getRowKeyColumnNames();
-	}
-
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
