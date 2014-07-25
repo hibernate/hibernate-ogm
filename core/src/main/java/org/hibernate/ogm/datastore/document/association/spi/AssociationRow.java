@@ -73,7 +73,7 @@ public class AssociationRow<R> implements TupleSnapshot {
 	 */
 	private static <R> RowKey buildRowKey(AssociationKey associationKey, R row, AssociationRowAccessor<R> accessor) {
 		String table = associationKey.getTable();
-		String[] columnNames = associationKey.getRowKeyColumnNames();
+		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] columnValues = new Object[columnNames.length];
 
 		for ( int i = 0; i < columnNames.length; i++ ) {
