@@ -31,6 +31,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
@@ -109,6 +110,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		Node node = neo4jCRUD.createNodeUnlessExists( key, ENTITY );
+		GraphLogger.log( "Created node: %1$s", node );
 		return createTuple( node );
 	}
 
@@ -121,6 +123,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 		Node node = snapshot.getNode();
 		applyTupleOperations( node, tuple.getOperations() );
+		GraphLogger.log( "Updated node: %1$s", node );
 	}
 
 	@Override
@@ -131,6 +134,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		Relationship relationship = createRelationship( associationKey, rowKey );
+		GraphLogger.log( "Relationship: %1$s", relationship );
 		if ( relationship == null ) {
 			// This should only happen for bidirectional associations, when we are creating the association on the owner side.
 			// We can ignore the creation of the relationship in this case and we will create it when dealing with the inverese side of
@@ -203,6 +207,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		Node entityNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
+		GraphLogger.log( "Found owner node: %1$s", entityNode );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -274,6 +279,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 						applyOperation( relationship.getEndNode(), operation );
 					}
 				}
+				GraphLogger.log( "Updated relationship: %1$s", relationship );
 			}
 		}
 	}
