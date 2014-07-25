@@ -130,7 +130,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 		PropertyContainer property = createRelationshipToEntityOrToTempNode( associationKey, rowKey );
 		return new Tuple( new Neo4jTupleSnapshot( property ) );
 	}

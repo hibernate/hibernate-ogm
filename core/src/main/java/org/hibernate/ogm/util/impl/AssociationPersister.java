@@ -319,7 +319,7 @@ public class AssociationPersister {
 	}
 
 	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = gridDialect.createTupleAssociation( getAssociationKey(), rowKey );
+		Tuple associationTuple = gridDialect.createTupleAssociation( getAssociationKey(), getAssociationContext(), rowKey );
 		getAssociation().put( rowKey, associationTuple);
 		return associationTuple;
 	}
