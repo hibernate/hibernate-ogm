@@ -38,6 +38,7 @@ import org.hibernate.type.Type;
  * A {@link QueryLoader} which loads the results of JP-QL queries translated into store-specific native queries or
  * Lucene queries.
  *
+ * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class OgmQueryLoader extends QueryLoader {

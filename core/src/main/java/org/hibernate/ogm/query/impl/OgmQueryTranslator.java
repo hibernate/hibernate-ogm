@@ -37,7 +37,6 @@ import org.hibernate.ogm.query.spi.QueryParsingResult;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
@@ -46,11 +45,17 @@ import antlr.TokenStreamException;
 import antlr.collections.AST;
 
 /**
- * A {@link QueryTranslator} which converts JP-QL queries into store-dependent native queries.
+ * A {@link QueryTranslator} which converts JP-QL queries into store-dependent native queries, e.g. Cypher queries for
+ * Neo4j or {@code DBObject}-based queries for MongoDB.
+ * <p>
+ * Query conversion is done by invoking the dialect's query parser service. Results are loaded through OgmQueryLoader.
+ * Depending on whether a store supports parameterized queries (Neo4j does, MongoDB doesn't) we either use one and the
+ * same loader for a query executed several times with different parameter values or we create a new loader for each set
+ * of parameter values.
  *
  * @author Gunnar Morling
  */
-public class OgmQueryTranslator extends DelegatingQueryTranslator {
+public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -74,15 +79,13 @@ public class OgmQueryTranslator extends DelegatingQueryTranslator {
 
 	private EntityKeyMetadata singleEntityKeyMetadata;
 
-	public OgmQueryTranslator(String queryIdentifier, String query, Map<?, ?> filters, SessionFactoryImplementor sessionFactory) {
-		super( queryIdentifier, query, filters, sessionFactory );
+	public OgmQueryTranslator(SessionFactoryImplementor sessionFactory, QueryParserService queryParser, String queryIdentifier, String query, Map<?, ?> filters) {
+		super( sessionFactory, queryIdentifier, query, filters );
 
+		this.queryParser = queryParser;
 		this.query = query;
 		this.sessionFactory = sessionFactory;
 		this.filters = filters;
-
-		ServiceRegistryImplementor serviceRegistry = sessionFactory.getServiceRegistry();
-		this.queryParser = serviceRegistry.getService( QueryParserService.class );
 	}
 
 	@Override

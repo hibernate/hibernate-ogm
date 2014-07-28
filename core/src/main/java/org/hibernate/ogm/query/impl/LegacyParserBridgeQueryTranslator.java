@@ -23,36 +23,41 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.Type;
 
 /**
- * A {@link QueryTranslator} which translates most of the work to the existing JP-QL parser implementation.
- * Specifically, all methods which only depend on the structure of the incoming JP-QL query are delegated. Only those
- * methods depending on the translated query (such as
+ * A {@link QueryTranslator} which delegates most of the work to the existing JP-QL parser implementation. Specifically,
+ * all methods which only depend on the structure of the incoming JP-QL query are delegated. Only those methods
+ * depending on the translated query (such as
  * {@link #list(org.hibernate.engine.spi.SessionImplementor, org.hibernate.engine.spi.QueryParameters)} are handled by
  * this class and its sub-classes. Over time, more and more methods should be implemented here rather than delegating
  * them.
  *
  * @author Gunnar Morling
  */
-public abstract class DelegatingQueryTranslator implements QueryTranslator {
+public abstract class LegacyParserBridgeQueryTranslator implements QueryTranslator {
 
 	private static final Log log = LoggerFactory.make();
 
 	protected final QueryTranslatorImpl delegate;
 
-	public DelegatingQueryTranslator(String queryIdentifier, String query, Map<?, ?> filters, SessionFactoryImplementor sessionFactory) {
+	public LegacyParserBridgeQueryTranslator(SessionFactoryImplementor sessionFactory, String queryIdentifier, String query, Map<?, ?> filters) {
 		this.delegate = new QueryTranslatorImpl( queryIdentifier, query, filters, sessionFactory );
 	}
 
 	@Override
 	public void compile(Map replacements, boolean shallow) throws QueryException, MappingException {
 		try {
+			// Need to prepare the delegate so getQuerySpaces() etc. canbe invoked on it
 			delegate.compile( replacements, shallow );
 		}
 		catch ( Exception qse ) {
 			throw log.querySyntaxException( qse, getQueryString() );
 		}
+
 		doCompile( replacements, shallow );
 	}
 
+	/**
+	 * Compiles the given query so it can be executed several times with different parameter values.
+	 */
 	protected abstract void doCompile(Map replacements, boolean shallow) throws QueryException, MappingException;
 
 	@Override

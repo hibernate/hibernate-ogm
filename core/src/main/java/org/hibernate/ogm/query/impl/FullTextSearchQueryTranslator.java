@@ -23,7 +23,6 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.hql.QueryParser;
-import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.lucene.LuceneProcessingChain;
 import org.hibernate.hql.lucene.LuceneQueryParsingResult;
 import org.hibernate.hql.spi.QueryTranslator;
@@ -42,15 +41,13 @@ import org.hibernate.search.query.ObjectLookupMethod;
  *
  * @author Gunnar Morling
  */
-public class FullTextSearchQueryTranslator extends DelegatingQueryTranslator {
+public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
-	private final SessionFactoryImplementor sessionFactory;
+	private final SessionFactoryEntityNamesResolver entityNamesResolver;
 
-	private SessionFactoryEntityNamesResolver entityNamesResolver;
-
-	public FullTextSearchQueryTranslator(String queryIdentifier, String query, Map<?, ?> filters, SessionFactoryImplementor sessionFactory) {
-		super( queryIdentifier, query, filters, sessionFactory );
-		this.sessionFactory = sessionFactory;
+	public FullTextSearchQueryTranslator(SessionFactoryImplementor sessionFactory, String queryIdentifier, String query, Map<?, ?> filters) {
+		super( sessionFactory, queryIdentifier, query, filters );
+		entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
 	}
 
 	@Override
@@ -115,19 +112,11 @@ public class FullTextSearchQueryTranslator extends DelegatingQueryTranslator {
 	}
 
 	private LuceneProcessingChain createProcessingChain(Map<String, Object> namedParameters, FullTextSession fullTextSession) {
-		EntityNamesResolver entityNamesResolver = getDefinedEntityNames();
 		SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
 
 		return new LuceneProcessingChain.Builder( searchFactory, entityNamesResolver )
 				.namedParameters( namedParameters )
 				.buildProcessingChainForClassBasedEntities();
-	}
-
-	private EntityNamesResolver getDefinedEntityNames() {
-		if ( entityNamesResolver == null ) {
-			entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
-		}
-		return entityNamesResolver;
 	}
 
 	private Map<String, Object> getNamedParameterValues(QueryParameters queryParameters) {
