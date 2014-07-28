@@ -37,6 +37,21 @@ public class EntityKeyMetadata {
 		return columnNames;
 	}
 
+	/**
+	 * Whether the given column is part of this key family or not.
+	 *
+	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
+	 */
+	public boolean isKeyColumn(String columnName) {
+		for ( String keyColumName : getColumnNames() ) {
+			if ( keyColumName.equals( columnName ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();

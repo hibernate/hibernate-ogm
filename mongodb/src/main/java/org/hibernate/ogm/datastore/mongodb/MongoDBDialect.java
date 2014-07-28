@@ -6,13 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -29,14 +27,11 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
@@ -83,6 +78,14 @@ import org.parboiled.Parboiled;
 import org.parboiled.errors.ErrorUtils;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.support.ParsingResult;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -330,7 +333,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 	}
 
 	private boolean notInIdField(BatchableMongoDBTupleSnapshot snapshot, String column) {
-		return !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.columnInIdField( column );
+		return !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.isKeyColumn( column );
 	}
 
 	@Override
@@ -862,7 +865,7 @@ public class MongoDBDialect implements BatchableGridDialect {
 		@Override
 		public Tuple next() {
 			DBObject dbObject = cursor.next();
-			return new Tuple( new MongoDBTupleSnapshot(dbObject, metadata));
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata ) );
 		}
 
 		@Override

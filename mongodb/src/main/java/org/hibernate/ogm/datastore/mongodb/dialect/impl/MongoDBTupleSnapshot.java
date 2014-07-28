@@ -6,33 +6,33 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import com.mongodb.DBObject;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 
+import com.mongodb.DBObject;
+
 /**
- *
- * @author caust_000
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
+ * @author Christopher Auston
  */
 public class MongoDBTupleSnapshot implements TupleSnapshot {
 
 	public static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
-	protected final DBObject dbObject;
-
-	private final String[] columnNames;
-
-	public MongoDBTupleSnapshot(DBObject dbObject, String[] columnNames) {
-		this.dbObject = dbObject;
-		this.columnNames = columnNames;
-	}
+	private final DBObject dbObject;
+	private final EntityKeyMetadata keyMetadata;
 
 	public MongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata meta) {
-		this( dbObject, null == meta ? null : meta.getColumnNames() );
+		this.dbObject = dbObject;
+		this.keyMetadata = meta;
+	}
+
+	public DBObject getDbObject() {
+		return dbObject;
 	}
 
 	@Override
@@ -45,60 +45,39 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 		return dbObject.keySet().isEmpty();
 	}
 
-	public boolean columnInIdField(String column) {
-		if (columnNames == null) {
-			return false;
-		}
-
-		for (String idColumn : columnNames) {
-			if (idColumn.equals( column )) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * The internal structure of a DBOject is like a tree. Each embedded object
-	 * is a new branch represented by a Map. This method browses recursively all
-	 * nodes and returns the leaf value
-	 */
-	private Object getObject(Map<?, ?> fields, String[] remainingFields, int startIndex) {
-		if (startIndex == remainingFields.length - 1) {
-			return fields.get( remainingFields[startIndex] );
-		}
-		else {
-			Map<?, ?> subMap = (Map<?, ?>) fields.get( remainingFields[startIndex] );
-			if (subMap != null) {
-				return this.getObject( subMap, remainingFields, ++startIndex );
-			}
-			else {
-				return null;
-			}
-		}
+	public boolean isKeyColumn(String column) {
+		return keyMetadata != null && keyMetadata.isKeyColumn( column );
 	}
 
 	@Override
 	public Object get(String column) {
-		if (columnInIdField( column )) {
+		return isKeyColumn( column ) ? getKeyColumnValue( column ) : getValue( dbObject, column );
+	}
 
-			if (column.contains( MongoDBDialect.PROPERTY_SEPARATOR )) {
-				DBObject idObject = (DBObject) dbObject.get( MongoDBDialect.ID_FIELDNAME );
-				int firstSep = column.indexOf( MongoDBDialect.PROPERTY_SEPARATOR );
-				String[] idFields = EMBEDDED_FIELDNAME_SEPARATOR.split( column.substring( firstSep + 1 ), 0 );
-				return getObject( idObject.toMap(), idFields, 0 );
-			}
-			else {
-				return dbObject.get( MongoDBDialect.ID_FIELDNAME );
-			}
-		}
-
-		if (column.contains( MongoDBDialect.PROPERTY_SEPARATOR )) {
-			String[] fields = EMBEDDED_FIELDNAME_SEPARATOR.split( column, 0 );
-			return this.getObject( this.dbObject.toMap(), fields, 0 );
+	private Object getKeyColumnValue(String column) {
+		// for composite ids we need to get the value from the _id DBObject
+		if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
+			return getValue( (DBObject) dbObject.get( MongoDBDialect.ID_FIELDNAME ), column );
 		}
 		else {
-			return this.dbObject.get( column );
+			return dbObject.get( MongoDBDialect.ID_FIELDNAME );
 		}
+	}
+
+	/**
+	 * The internal structure of a {@link DBOject} is like a tree. Each embedded object is a new {@code DBObject}
+	 * itself. We traverse the tree until we've arrived at a leaf and retrieve the value from it.
+	 */
+	private Object getValue(DBObject dbObject, String column) {
+		// for embedded columns, get the DBObject hosting the leaf and the leaf name
+		if ( column.contains( MongoDBDialect.PROPERTY_SEPARATOR ) ) {
+			String[] parts = EMBEDDED_FIELDNAME_SEPARATOR.split( column );
+			for ( int i = 0; i < parts.length - 1; i++ ) {
+				dbObject = (DBObject) dbObject.get( parts[i] );
+			}
+			column = parts[parts.length - 1];
+		}
+
+		return dbObject.get( column );
 	}
 }

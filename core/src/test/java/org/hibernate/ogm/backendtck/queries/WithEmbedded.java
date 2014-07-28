@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.queries;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Indexed;
 
@@ -18,10 +19,10 @@ public class WithEmbedded {
 
 	@Field
 	@Id
-	Long id;
+	private Long id;
 
 	@Embedded
-	AnEmbeddable anEmbeddable;
+	private AnEmbeddable anEmbeddable;
 
 	public WithEmbedded() {
 	}
@@ -31,8 +32,11 @@ public class WithEmbedded {
 		this.anEmbeddable = anEmbeddable;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
 	public AnEmbeddable getAnEmbeddable() {
 		return anEmbeddable;
 	}
-
 }

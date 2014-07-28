@@ -6,8 +6,9 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import com.mongodb.DBObject;
 import org.hibernate.ogm.grid.EntityKey;
+
+import com.mongodb.DBObject;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -27,17 +28,11 @@ public class BatchableMongoDBTupleSnapshot extends MongoDBTupleSnapshot {
 	private final SnapshotType operationType;
 
 	public BatchableMongoDBTupleSnapshot(DBObject dbObject, EntityKey key, SnapshotType operationType) {
-		super( dbObject, key.getColumnNames() );
+		super( dbObject, key.getMetadata() );
 		this.operationType = operationType;
-
-	}
-
-	public DBObject getDbObject() {
-		return dbObject;
 	}
 
 	public SnapshotType getOperationType() {
 		return operationType;
 	}
-
 }

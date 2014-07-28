@@ -467,6 +467,16 @@ public class SimpleQueriesTest extends OgmTestCase {
 		);
 	}
 
+	@Test
+	public void testQueryReturningEmbeddedObject() {
+		List<?> list = session.createQuery( "from WithEmbedded we" ).list();
+
+		assertThat( list )
+			.onProperty( "anEmbeddable" )
+			.onProperty( "embeddedString" )
+			.containsExactly( "string 1" );
+	}
+
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		final Session session = sessions.openSession();
@@ -657,20 +667,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 		public String toString() {
 			return Arrays.deepToString( elements );
 		}
-	}
-
-	@Test
-	public void when_has_embedded_then_query_fills_it() {
-		//If you remove this get, then this test fails when run from core...
-		WithEmbedded with = (WithEmbedded) session.get( WithEmbedded.class, 1L );
-		assertThat( with ).isNotNull();
-		assertThat( with.anEmbeddable ).isNotNull();
-
-		session.clear();
-
-		List list = session.createQuery( "from WithEmbedded we" ).list();
-		assertThat( list ).hasSize( 1 ).onProperty( "anEmbeddable" ).excludes( (Object) null ).onProperty( "embeddedString" ).containsExactly( "string 1" );
-
 	}
 
 	@Override

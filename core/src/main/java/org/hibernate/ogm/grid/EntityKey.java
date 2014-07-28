@@ -50,6 +50,10 @@ public final class EntityKey implements Key {
 		return keyMetadata.getColumnNames();
 	}
 
+	public EntityKeyMetadata getMetadata() {
+		return keyMetadata;
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
