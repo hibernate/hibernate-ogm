@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -28,6 +29,7 @@ import org.hibernate.hql.internal.ast.QueryTranslatorImpl.JavaConstantConverter;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.hql.internal.ast.util.NodeTraverser;
 import org.hibernate.hql.spi.QueryTranslator;
+import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -79,6 +81,13 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
 	private EntityKeyMetadata singleEntityKeyMetadata;
 
+	/**
+	 * Not all stores support parameterized queries. As a temporary measure, we therefore cache created queries per set
+	 * of parameter values. At one point, this should be replaced by caching the AST after validation but before the
+	 * actual Lucene query is created.
+	 */
+	private final ConcurrentMap<CacheKey, QueryParsingResult> queryCache;
+
 	public OgmQueryTranslator(SessionFactoryImplementor sessionFactory, QueryParserService queryParser, String queryIdentifier, String query, Map<?, ?> filters) {
 		super( sessionFactory, queryIdentifier, query, filters );
 
@@ -86,6 +95,12 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 		this.query = query;
 		this.sessionFactory = sessionFactory;
 		this.filters = filters;
+
+		queryCache = new BoundedConcurrentHashMap<CacheKey, QueryParsingResult>(
+				100,
+				20,
+				BoundedConcurrentHashMap.Eviction.LIRS
+		);
 	}
 
 	@Override
@@ -101,33 +116,24 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 		}
 
 		if ( queryParser.supportsParameters() ) {
-			QueryParsingResult queryParsingResult = queryParser.parseQuery( sessionFactory, query );
-
-			BackendQuery query = new BackendQuery(
-					queryParsingResult.getQueryObject(),
-					singleEntityKeyMetadata
-			);
-
-			loader = new OgmQueryLoader( delegate, sessionFactory, selectClause, query, queryParsingResult.getColumnNames() );
+			loader = getLoader( null );
 		}
 	}
 
 	@Override
 	public List<?> list(SessionImplementor session, QueryParameters queryParameters) throws HibernateException {
-		if ( loader != null ) {
-			return loader.list( session, queryParameters );
-		}
-		else {
-			QueryParsingResult queryParsingResult = queryParser.parseQuery( sessionFactory, query, getNamedParameterValuesConvertedByGridType( queryParameters ) );
+		OgmQueryLoader loaderToUse = loader != null ? loader : getLoader( queryParameters );
+		return loaderToUse.list( session, queryParameters );
+	}
 
-			BackendQuery query = new BackendQuery(
-					queryParsingResult.getQueryObject(),
-					singleEntityKeyMetadata
-			);
+	private OgmQueryLoader getLoader(QueryParameters queryParameters) {
+		QueryParsingResult queryParsingResult = queryParameters != null ?
+				getQuery( queryParameters ) :
+				queryParser.parseQuery( sessionFactory, query );
 
-			OgmQueryLoader loader = new OgmQueryLoader( delegate, sessionFactory, selectClause, query, queryParsingResult.getColumnNames() );
-			return loader.list( session, queryParameters );
-		}
+		BackendQuery query = new BackendQuery( queryParsingResult.getQueryObject(), singleEntityKeyMetadata );
+
+		return new OgmQueryLoader( delegate, sessionFactory, selectClause, query, queryParsingResult.getColumnNames() );
 	}
 
 	/**
@@ -152,6 +158,26 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 		}
 
 		return metadata;
+	}
+
+	private QueryParsingResult getQuery(QueryParameters queryParameters) {
+		CacheKey cacheKey = new CacheKey( queryParameters.getNamedParameters() );
+		QueryParsingResult parsingResult = queryCache.get( cacheKey );
+
+		if ( parsingResult == null ) {
+			parsingResult = queryParser.parseQuery(
+					sessionFactory,
+					query,
+					getNamedParameterValuesConvertedByGridType( queryParameters )
+			);
+
+			QueryParsingResult cached = queryCache.putIfAbsent( cacheKey, parsingResult );
+			if ( cached != null ) {
+				parsingResult = cached;
+			}
+		}
+
+		return parsingResult;
 	}
 
 	/**
@@ -227,5 +253,44 @@ public class OgmQueryTranslator extends LegacyParserBridgeQueryTranslator {
 
 		parser.getParseErrorHandler().throwQueryException();
 		return parser;
+	}
+
+	private static class CacheKey {
+
+		private final Map<String, TypedValue> parameters;
+		private final int hashCode;
+
+		public CacheKey(Map<String, TypedValue> parameters) {
+			this.parameters = Collections.unmodifiableMap( parameters );
+			this.hashCode = parameters.hashCode();
+		}
+
+		@Override
+		public int hashCode() {
+			return hashCode;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if ( this == obj ) {
+				return true;
+			}
+			if ( obj == null ) {
+				return false;
+			}
+			if ( getClass() != obj.getClass() ) {
+				return false;
+			}
+			CacheKey other = (CacheKey) obj;
+			if ( parameters == null ) {
+				if ( other.parameters != null ) {
+					return false;
+				}
+			}
+			else if ( !parameters.equals( other.parameters ) ) {
+				return false;
+			}
+			return true;
+		}
 	}
 }

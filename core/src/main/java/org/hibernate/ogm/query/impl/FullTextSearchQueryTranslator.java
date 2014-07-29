@@ -6,11 +6,13 @@
  */
 package org.hibernate.ogm.query.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -26,6 +28,7 @@ import org.hibernate.hql.QueryParser;
 import org.hibernate.hql.lucene.LuceneProcessingChain;
 import org.hibernate.hql.lucene.LuceneQueryParsingResult;
 import org.hibernate.hql.spi.QueryTranslator;
+import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
@@ -45,9 +48,22 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 
 	private final SessionFactoryEntityNamesResolver entityNamesResolver;
 
+	/**
+	 * Lucene does not support parameterized queries. As a temporary measure, we therefore cache created queries per set
+	 * of parameter values. At one point, this should be replaced by caching the AST after validation but before the
+	 * actual Lucene query is created.
+	 */
+	private final ConcurrentMap<CacheKey, LuceneQueryParsingResult> luceneQueryCache;
+
 	public FullTextSearchQueryTranslator(SessionFactoryImplementor sessionFactory, String queryIdentifier, String query, Map<?, ?> filters) {
 		super( sessionFactory, queryIdentifier, query, filters );
 		entityNamesResolver = new SessionFactoryEntityNamesResolver( sessionFactory );
+
+		luceneQueryCache = new BoundedConcurrentHashMap<CacheKey, LuceneQueryParsingResult>(
+				100,
+				20,
+				BoundedConcurrentHashMap.Eviction.LIRS
+		);
 	}
 
 	@Override
@@ -58,12 +74,10 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 	public List<?> list(SessionImplementor session, QueryParameters queryParameters) throws HibernateException {
 		FullTextSession fullTextSession = Search.getFullTextSession( (Session) session );
 
-		LuceneQueryParsingResult parsingResult = new QueryParser().parseQuery(
-				getQueryString(),
-				createProcessingChain( getNamedParameterValues( queryParameters ), fullTextSession )
-		);
+		LuceneQueryParsingResult parsingResult = getLuceneQuery( queryParameters, fullTextSession );
 
 		FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( parsingResult.getQuery(), parsingResult.getTargetEntity() );
+
 		if ( requiresProjections( parsingResult.getProjections() ) ) {
 			fullTextQuery.setProjection( parsingResult.getProjections().toArray( new String[parsingResult.getProjections().size()] ) );
 		}
@@ -82,6 +96,25 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 		}
 
 		return fullTextQuery.list();
+	}
+
+	private LuceneQueryParsingResult getLuceneQuery(QueryParameters queryParameters, FullTextSession fullTextSession) {
+		CacheKey cacheKey = new CacheKey( queryParameters.getNamedParameters() );
+		LuceneQueryParsingResult parsingResult = luceneQueryCache.get( cacheKey );
+
+		if ( parsingResult == null ) {
+			parsingResult = new QueryParser().parseQuery(
+					getQueryString(),
+					createProcessingChain( getNamedParameterValues( queryParameters ), fullTextSession )
+			);
+
+			LuceneQueryParsingResult cached = luceneQueryCache.putIfAbsent( cacheKey, parsingResult );
+			if ( cached != null ) {
+				parsingResult = cached;
+			}
+		}
+
+		return parsingResult;
 	}
 
 	@Override
@@ -127,5 +160,44 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 		}
 
 		return parameterValues;
+	}
+
+	private static class CacheKey {
+
+		private final Map<String, TypedValue> parameters;
+		private final int hashCode;
+
+		public CacheKey(Map<String, TypedValue> parameters) {
+			this.parameters = Collections.unmodifiableMap( parameters );
+			this.hashCode = parameters.hashCode();
+		}
+
+		@Override
+		public int hashCode() {
+			return hashCode;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if ( this == obj ) {
+				return true;
+			}
+			if ( obj == null ) {
+				return false;
+			}
+			if ( getClass() != obj.getClass() ) {
+				return false;
+			}
+			CacheKey other = (CacheKey) obj;
+			if ( parameters == null ) {
+				if ( other.parameters != null ) {
+					return false;
+				}
+			}
+			else if ( !parameters.equals( other.parameters ) ) {
+				return false;
+			}
+			return true;
+		}
 	}
 }
