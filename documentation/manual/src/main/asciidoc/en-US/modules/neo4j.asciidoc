@@ -45,6 +45,27 @@ The absolute path representing the location of the Neo4j database. Example: +C:\
 hibernate.ogm.neo4j.configuration_resource_name (optional)::
 Location of the Neo4j embedded properties file. It can be an URL, name of a classpath resource or file system path.
 
+[WARNING]
+====
+At the moment, you must not specify the property +hibernate.transaction.jta.platform+ when using Neo4j.
+When this property is explicitly set it will override the specific JtaPlatform required to integrate OGM with Neo4j
+causing transaction not to work correctly.
+====
+
+[NOTE]
+====
+Use the following method to retrieve the transaction manager (it needs to be done after the EMF has been bootstrapped):
+
+[source, JAVA]
+----
+private static TransactionManager extractJBossTransactionManager(EntityManagerFactory factory) {
+    SessionFactoryImplementor sessionFactory =
+        (SessionFactoryImplementor) ( (HibernateEntityManagerFactory) factory ).getSessionFactory();
+    return sessionFactory.getServiceRegistry().getService( JtaPlatform.class ).retrieveTransactionManager();
+}
+----
+====
+
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
@@ -230,7 +251,7 @@ The options +@TableGenerator#catalog()+, +@TableGenerator#schema()+, +@TableGene
 ==== Transactions
 
 Neo4j operations can be executed only inside a transaction.
-Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will use a default one to integrate with the Neo4j transaction mechanism.
+Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will use a specific implementation to integrate with the Neo4j transaction mechanism.
 This means that you can start and commit transaction using the Hibernate session.
 
 The drawback is that it is not possible at the moment to let Neo4j participate in managed JTA transactions spanning several resources (see issue https://hibernate.atlassian.net/browse/OGM-370[OGM-370]).
