@@ -99,23 +99,52 @@ Using Cypher:
 ----
 ====
 
+.Example of enitty with @Embaddable
+====
+[source, JAVA]
+----
+@Entity
+class Account {
+	String login;
+	String password;
+	Address homeAddress;
+	...
+}
+
+@Embeddable
+public class Address {
+	String street1;
+	String street2;
+	String city;
+	String country;
+
+	@Column(name = "postal_code")
+	String zipCode;
+}
+----
+
+[subs="verbatim,attributes"]
+----
+(n:Account:ENTITY {login: ..., 
+                   , password: ...
+                   , `homeAddress.street1`: ...
+                   , `homeAddress.city`: ...
+                   , `homeAddress.country`: ...
+                   , postal_code`: ...})
+----
+
+====
+
+Currently an embeddable element is stored saving the values on the node that represents the entity.
+
 ===== Associations
 
 An association, bidirectional or unidirectional, is always mapped using one relationship.
 This is possible because in Neo4j relationships can be navigated in both directions.
 
 The type of the relationships depends on the type of the association, but in general, it is the corresponding name of the table
-containing the association.
-
-[WARNING]
-====
-Unidirectional many-to-one associations are currently an exception to this rule.
-At the moment, in this scenario, there won't be a relationship.
-====
-
-The ids of the entities connected to the relationship are stored as properties.
-In the following examples we omitted the properties containing the id for simplicity and because we are planning to remove them
-in the future.
+containing the association. The only property stored on the relationship is going to be the index of the association when required,
+for example, when the association is annotated with +@OrderColumn+ or when a +java.util.Map+ is used.
 
 .Example of bidirectional @ManyToMany
 ====
@@ -176,8 +205,112 @@ class Child {
 
 [subs="verbatim,attributes"]
 ----
-(:Father:ENTITY {...}) - [:Father_child { birthorder: 0 }] - (child0:Child:ENTITY {...})
-(:Father:ENTITY {...}) - [:Father_child { birthorder: 1 }] - (child1:Child:ENTITY {...})
+(:Father:ENTITY {...}) - [:Father_child { birthorder: 0 }] - (:Child:ENTITY {...})
+(:Father:ENTITY {...}) - [:Father_child { birthorder: 1 }] - (:Child:ENTITY {...})
+----
+
+====
+
+.Example of bidirectional @OneToOne
+====
+[source, JAVA]
+----
+@Entity
+class Husband {
+	String id;
+	String name;
+	Wife wife;
+
+	@Id
+	Long getId() {
+		return id;
+	}
+
+	...
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "wife")
+	Wife getWife() {
+		return wife;
+	}
+
+	void setWife(Wife wife) {
+		this.wife = wife;
+	}
+
+}
+
+@Entity
+class Wife {
+	String id;
+	String name;
+	...
+	
+	@Id
+	Long getId() {
+		return id;
+	}
+
+	...
+
+	@OneToOne(mappedBy = "wife")
+	public Husband getHusband() {
+		return husband;
+	}
+
+}
+
+----
+
+[subs="verbatim,attributes"]
+----
+(:Wife:ENTITY { id: 1, name: "Karen" }) - [:Husband] - (:Husband:ENTITY {id: 2, name: "Mark", wife: 1 })
+----
+
+====
+
+.Example of collection of @Embeddable
+====
+[source, JAVA]
+----
+@Entity
+class MultiAddressAccount {
+	String login;
+	String password;
+	List<Address> addresses = new ArrayList<Address>();
+
+	@Id
+	public String getLogin() {
+		return login;
+	}
+
+	...
+
+	@ElementCollection
+	public List<Address> getAddresses() {
+		return addresses;
+	}
+
+	public void setAddresses(List<Address> addresses) {
+		this.addresses = addresses;
+	}
+}
+
+@Embeddable
+public class Address {
+	String street1;
+	String street2;
+	String city;
+	String country;
+
+	@Column(name = "postal_code")
+	String zipCode;
+}
+----
+
+[subs="verbatim,attributes"]
+----
+(:MultiAddressAccount:ENTITY{login: '...', password: '...' }) - [:MultiAddressAccount_addresses] - (:MultiAddressAccount_addresses:EMBEDDED {street1: '...', city: '...', country: '...', postal_code: '...'})
 ----
 
 ====
