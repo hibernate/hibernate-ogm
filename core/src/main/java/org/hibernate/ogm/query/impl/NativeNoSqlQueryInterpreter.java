@@ -6,11 +6,14 @@
  */
 package org.hibernate.ogm.query.impl;
 
+import java.util.Set;
+
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
@@ -22,10 +25,12 @@ import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
  */
 public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 
+	private final GridDialect gridDialect;
 	private final ParameterMetadataBuilder builder;
 
-	public NativeNoSqlQueryInterpreter(ParameterMetadataBuilder builder) {
-		this.builder = builder;
+	public NativeNoSqlQueryInterpreter(GridDialect gridDialect) {
+		this.gridDialect = gridDialect;
+		this.builder = gridDialect.getParameterMetadataBuilder();
 	}
 
 	@Override
@@ -35,9 +40,18 @@ public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 
 	@Override
 	public NativeSQLQueryPlan createQueryPlan(NativeSQLQuerySpecification specification, SessionFactoryImplementor sessionFactory) {
-		return new NativeNoSqlQueryPlan(
+		Object query = gridDialect.parseNativeQuery( specification.getQueryString() );
+		@SuppressWarnings("unchecked")
+		Set<String> querySpaces = specification.getQuerySpaces();
+
+		BackendCustomQuery customQuery = new BackendCustomQuery(
 				specification.getQueryString(),
-				new BackendCustomQuery( specification, sessionFactory )
+				query,
+				specification.getQueryReturns(),
+				querySpaces,
+				sessionFactory
 		);
+
+		return new NativeNoSqlQueryPlan( specification.getQueryString(), customQuery );
 	}
 }

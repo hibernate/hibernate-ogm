@@ -402,6 +402,13 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 		return new MapsTupleIterator( result );
 	}
 
+	@Override
+	public String parseNativeQuery(String nativeQuery) {
+		// We return given Cypher queries as they are; Currently there is no API for validating Cypher queries without
+		// actually executing them (see https://github.com/neo4j/neo4j/issues/2766)
+		return nativeQuery;
+	}
+
 	private String buildNativeQuery(BackendQuery customQuery, QueryParameters queryParameters) {
 		StringBuilder nativeQuery = new StringBuilder( (String) customQuery.getQuery() );
 		applyFirstRow( queryParameters, nativeQuery );

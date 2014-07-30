@@ -195,4 +195,9 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return dialect.getParameterMetadataBuilder();
 	}
+
+	@Override
+	public Object parseNativeQuery(String nativeQuery) {
+		return dialect.parseNativeQuery( nativeQuery );
+	}
 }

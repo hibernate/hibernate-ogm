@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.HibernateException;
+import org.hibernate.engine.query.spi.sql.NativeSQLQueryReturn;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
@@ -19,7 +20,6 @@ import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.persister.OgmEntityPersister;
-import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -40,24 +40,22 @@ public class BackendCustomQuery implements CustomQuery {
 	private final Set<String> querySpaces;
 	private final List<Return> customQueryReturns;
 
-	public BackendCustomQuery(NativeNoSqlQuerySpecification spec, SessionFactoryImplementor factory) throws HibernateException {
-		LOG.tracev( "Starting processing of NoSQL query [{0}]", spec.getQueryString() );
+	public BackendCustomQuery(String queryString, Object query, NativeSQLQueryReturn[] queryReturns, Set<String> querySpaces, SessionFactoryImplementor factory) throws HibernateException {
+		LOG.tracev( "Starting processing of NoSQL query [{0}]", queryString );
 
-		this.queryString = spec.getQueryString();
-		this.queryObject = spec.getQueryObject();
+		this.queryString = queryString;
+		this.queryObject = query;
 		this.sessionFactory = factory;
 
-		SQLQueryReturnProcessor processor = new SQLQueryReturnProcessor(spec.getQueryReturns(), factory);
+		SQLQueryReturnProcessor processor = new SQLQueryReturnProcessor( queryReturns, factory );
 		processor.process();
 		customQueryReturns = Collections.unmodifiableList( processor.generateCustomReturns( false ) );
 
-		if ( spec.getQuerySpaces() != null ) {
-			@SuppressWarnings("unchecked")
-			Set<String> spaces = spec.getQuerySpaces();
-			querySpaces = Collections.<String>unmodifiableSet( spaces );
+		if ( querySpaces != null ) {
+			this.querySpaces = Collections.<String>unmodifiableSet( querySpaces );
 		}
 		else {
-			querySpaces = Collections.emptySet();
+			this.querySpaces = Collections.emptySet();
 		}
 	}
 
