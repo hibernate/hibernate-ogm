@@ -194,73 +194,13 @@
         </profile>
         <profile>
             <!--
-                This profile will download EAP 6.1.Alpha1 from the Red Hat repository but it requires
-                the Red Hat repository defined in the maven settings.
-
-                Example from hibernate-ogm/integrationtest folder:
-
-                mvn install -Peap -s ../settings-example.xml
-            -->
-            <id>eap</id>
-            <properties>
-                    <version.arquillian.jbossas>7.2.0.Final</version.arquillian.jbossas>
-                    <version.jbossas>7.2.0.Alpha1-redhat-4</version.jbossas>
-                    <jboss.home>${project.build.directory}/jboss-eap-6.1</jboss.home>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.jboss.as</groupId>
-                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
-                    <version>${version.arquillian.jbossas}</version>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>unpack</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>unpack</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.jboss.as</groupId>
-                                            <artifactId>jboss-as-dist</artifactId>
-                                            <version>${version.jbossas}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${project.build.directory}</outputDirectory>
-                                        </artifactItem>
-                                        <artifactItem>
-                                            <groupId>${project.groupId}</groupId>
-                                            <artifactId>hibernate-ogm-modules-eap6</artifactId>
-                                            <version>${project.version}</version>
-                                            <type>zip</type>
-                                            <overWrite>false</overWrite>
-                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
-                                        </artifactItem>
-                                    </artifactItems>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <!--
                 This profile won't download EAP and it will use the one defined in the variable eap.home.
 
                 Example from hibernate-ogm/integrationtest:
 
                 mvn install -Deap.home=/home/user/jbossas/jboss-eap-6.2
             -->
-            <id>eap-custom</id>
+            <id>eap</id>
             <activation>
                 <property>
                     <name>eap.home</name>
