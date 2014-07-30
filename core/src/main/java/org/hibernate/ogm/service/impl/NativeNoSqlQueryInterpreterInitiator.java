@@ -12,7 +12,6 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
@@ -48,7 +47,6 @@ public class NativeNoSqlQueryInterpreterInitiator implements SessionFactoryServi
 	}
 
 	private NativeQueryInterpreter getParameterMetadataRecognizer(ServiceRegistryImplementor registry) {
-		ParameterMetadataBuilder parameterMetadataBuilder = registry.getService( GridDialect.class ).getParameterMetadataBuilder();
-		return new NativeNoSqlQueryInterpreter( parameterMetadataBuilder );
+		return new NativeNoSqlQueryInterpreter( registry.getService( GridDialect.class ) );
 	}
 }

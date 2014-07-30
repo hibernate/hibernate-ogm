@@ -172,6 +172,11 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
+	public Object parseNativeQuery(String nativeQuery) {
+		return gridDialect.parseNativeQuery( nativeQuery );
+	}
+
+	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKey );
 		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );

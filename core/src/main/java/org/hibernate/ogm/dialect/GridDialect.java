@@ -145,4 +145,6 @@ public interface GridDialect extends Service {
 	 * @return a builder for retrieving parameter meta-data
 	 */
 	ParameterMetadataBuilder getParameterMetadataBuilder();
+
+	Object parseNativeQuery(String nativeQuery);
 }

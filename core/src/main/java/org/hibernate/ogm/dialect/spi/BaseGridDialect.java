@@ -37,4 +37,9 @@ public abstract class BaseGridDialect implements GridDialect {
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
+
+	@Override
+	public Object parseNativeQuery(String nativeQuery) {
+		throw new UnsupportedOperationException( "Execution of native queries is not supported by this dialect" );
+	}
 }

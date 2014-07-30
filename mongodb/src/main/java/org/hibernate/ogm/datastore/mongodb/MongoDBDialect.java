@@ -605,24 +605,7 @@ public class MongoDBDialect extends BaseGridDialect implements BatchableGridDial
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
-		MongoDBQueryDescriptor queryDescriptor = null;
-
-		// query already given in DBObject-representation (created by JP-QL parser)
-		if ( backendQuery.getQuery() instanceof MongoDBQueryDescriptor ) {
-			queryDescriptor = (MongoDBQueryDescriptor) backendQuery.getQuery();
-		}
-		// a string-based native query; need to create the DBObject from that
-		else {
-			// TODO OGM-414 This should actually be cached in the native query plan
-			NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
-			ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
-					.run( (String) backendQuery.getQuery() );
-			if (parseResult.hasErrors() ) {
-				throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
-			}
-
-			queryDescriptor = parseResult.resultValue.build();
-		}
+		MongoDBQueryDescriptor queryDescriptor = (MongoDBQueryDescriptor) backendQuery.getQuery();
 
 		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
@@ -636,6 +619,18 @@ public class MongoDBDialect extends BaseGridDialect implements BatchableGridDial
 			default:
 				throw new IllegalArgumentException( "Unexpected query operation: " + queryDescriptor );
 		}
+	}
+
+	@Override
+	public MongoDBQueryDescriptor parseNativeQuery(String nativeQuery) {
+		NativeQueryParser parser = Parboiled.createParser( NativeQueryParser.class );
+		ParsingResult<MongoDBQueryDescriptorBuilder> parseResult = new RecoveringParseRunner<MongoDBQueryDescriptorBuilder>( parser.Query() )
+				.run( nativeQuery );
+		if (parseResult.hasErrors() ) {
+			throw new IllegalArgumentException( "Unsupported native query: " + ErrorUtils.printParseErrors( parseResult.parseErrors ) );
+		}
+
+		return parseResult.resultValue.build();
 	}
 
 	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
