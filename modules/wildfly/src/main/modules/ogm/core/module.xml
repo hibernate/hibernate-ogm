@@ -11,10 +11,10 @@
         <resource-root path="hibernate-ogm-infinispan-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" />
+        <module name="org.hibernate" slot="${hibernateVersion}" export="true" />
         <module name="org.hibernate.commons-annotations" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" export="true" services="export" optional="true" />
-        <module name="org.hibernate.search.orm" export="true" services="export" optional="true" />
+        <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}-orm-${hibernateVersion}" export="true" services="export" optional="false" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

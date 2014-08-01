@@ -129,6 +129,7 @@
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
+        <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.6.Final</resteasyVersion>
@@ -180,6 +181,23 @@
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>${hibernateVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-envers</artifactId>
+                <version>${hibernateVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-infinispan</artifactId>
+                <version>${hibernateVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jipijapa</groupId>
+                <artifactId>jipijapa-hibernate4-3</artifactId>
+                <version>${jipiJapaVersion}</version>
+            </dependency>
+
+            <!-- Hibernate Search -->
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-search-orm</artifactId>
