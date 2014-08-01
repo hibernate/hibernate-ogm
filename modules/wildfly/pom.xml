@@ -55,6 +55,21 @@
             <artifactId>hibernate-ogm-couchdb</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-envers</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-infinispan</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>jipijapa-hibernate4-3</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
