@@ -22,7 +22,7 @@ import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.ScalarReturn;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
@@ -31,8 +31,6 @@ import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.ClosableIterator;
-import org.hibernate.service.Service;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 
 /**
@@ -42,12 +40,14 @@ import org.hibernate.type.Type;
  */
 public class BackendCustomLoader extends CustomLoader {
 
+	private final QueryableGridDialect gridDialect;
 	private final BackendCustomQuery customQuery;
 	private final TypeTranslator typeTranslator;
 	private final BackendQuery query;
 
 	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
+		this.gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
 		this.customQuery = customQuery;
 		this.query = new BackendQuery(
 				customQuery.getQueryObject(),
@@ -72,7 +72,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = service( session, GridDialect.class ).executeBackendQuery( query, queryParameters );
+		ClosableIterator<Tuple> tuples = gridDialect.executeBackendQuery( query, queryParameters );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -140,14 +140,6 @@ public class BackendCustomLoader extends CustomLoader {
 		}
 
 		return results;
-	}
-
-	private <T extends Service> T service(SessionImplementor session, Class<T> serviceRole) {
-		return serviceRegistry( session ).getService( serviceRole );
-	}
-
-	private ServiceRegistryImplementor serviceRegistry(SessionImplementor session) {
-		return session.getFactory().getServiceRegistry();
 	}
 
 	private <T> T entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {

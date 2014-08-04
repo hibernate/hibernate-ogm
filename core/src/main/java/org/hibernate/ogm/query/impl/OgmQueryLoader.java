@@ -22,7 +22,7 @@ import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.OgmLoader;
 import org.hibernate.ogm.loader.OgmLoadingContext;
 import org.hibernate.ogm.persister.OgmEntityPersister;
@@ -30,8 +30,6 @@ import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.ClosableIterator;
-import org.hibernate.service.Service;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 
 /**
@@ -43,6 +41,7 @@ import org.hibernate.type.Type;
  */
 public class OgmQueryLoader extends QueryLoader {
 
+	private final QueryableGridDialect gridDialect;
 	private final BackendQuery query;
 	private final boolean hasScalars;
 	private final List<String> scalarColumns;
@@ -51,6 +50,8 @@ public class OgmQueryLoader extends QueryLoader {
 
 	public OgmQueryLoader(QueryTranslatorImpl queryTranslator, SessionFactoryImplementor factory, SelectClause selectClause, BackendQuery query, List<String> scalarColumns) {
 		super( queryTranslator, factory, selectClause );
+
+		this.gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
 		this.query = query;
 		this.hasScalars = selectClause.isScalarSelect();
 		this.scalarColumns = scalarColumns;
@@ -62,7 +63,7 @@ public class OgmQueryLoader extends QueryLoader {
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
 
-		ClosableIterator<Tuple> tuples = service( session, GridDialect.class ).executeBackendQuery( query, queryParameters );
+		ClosableIterator<Tuple> tuples = gridDialect.executeBackendQuery( query, queryParameters );
 		try {
 			if ( hasScalars ) {
 				return listOfArrays( session, tuples );
@@ -110,14 +111,6 @@ public class OgmQueryLoader extends QueryLoader {
 		}
 
 		return results;
-	}
-
-	private <T extends Service> T service(SessionImplementor session, Class<T> serviceRole) {
-		return serviceRegistry( session ).getService( serviceRole );
-	}
-
-	private ServiceRegistryImplementor serviceRegistry(SessionImplementor session) {
-		return session.getFactory().getServiceRegistry();
 	}
 
 	private <T> T entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {

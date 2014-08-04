@@ -42,6 +42,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
@@ -76,7 +77,7 @@ import org.neo4j.graphdb.ResourceIterator;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwareService {
+public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect, ServiceRegistryAwareService {
 
 	private final CypherCRUD neo4jCRUD;
 
