@@ -22,6 +22,7 @@ import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
 import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.persister.entity.Lockable;
@@ -47,9 +48,7 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	private final GridDialect gridDialect; // the real wrapped grid dialect
 
 	public GridDialectLogger(GridDialect gridDialect) {
-		if ( gridDialect == null ) {
-			throw new IllegalArgumentException( "GridDialect should never be null" );
-		}
+		Contracts.assertParameterNotNull( gridDialect, "gridDialect" );
 		this.gridDialect = gridDialect;
 	}
 

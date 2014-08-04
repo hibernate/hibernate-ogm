@@ -38,6 +38,9 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 
 	private static final Log log = LoggerFactory.make();
 
+	private GridDialectInitiator() {
+	}
+
 	@Override
 	public Class<GridDialect> getServiceInitiated() {
 		return GridDialect.class;
