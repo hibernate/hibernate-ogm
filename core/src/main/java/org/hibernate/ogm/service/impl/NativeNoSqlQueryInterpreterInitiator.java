@@ -11,12 +11,14 @@ import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
- * Contributes the {@link NativeNoSqlQueryInterpreter}.
+ * Contributes the {@link NativeNoSqlQueryInterpreter}. No service implementation will be registered in case the current
+ * grid dialect does not support the execution of native queries.
  *
  * @author Gunnar Morling
  */
@@ -47,6 +49,13 @@ public class NativeNoSqlQueryInterpreterInitiator implements SessionFactoryServi
 	}
 
 	private NativeQueryInterpreter getParameterMetadataRecognizer(ServiceRegistryImplementor registry) {
-		return new NativeNoSqlQueryInterpreter( registry.getService( GridDialect.class ) );
+		GridDialect gridDialect = registry.getService( GridDialect.class );
+
+		if ( gridDialect instanceof QueryableGridDialect ) {
+			return new NativeNoSqlQueryInterpreter( (QueryableGridDialect) gridDialect );
+		}
+		else {
+			return null;
+		}
 	}
 }

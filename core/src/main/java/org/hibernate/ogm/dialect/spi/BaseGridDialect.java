@@ -6,14 +6,8 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
-import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
-import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.type.Type;
 
 /**
@@ -26,20 +20,5 @@ public abstract class BaseGridDialect implements GridDialect {
 	@Override
 	public GridType overrideType(Type type) {
 		return null;
-	}
-
-	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
-		throw new UnsupportedOperationException( "Execution of native queries is not supported by this dialect" );
-	}
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return NoOpParameterMetadataBuilder.INSTANCE;
-	}
-
-	@Override
-	public Object parseNativeQuery(String nativeQuery) {
-		throw new UnsupportedOperationException( "Execution of native queries is not supported by this dialect" );
 	}
 }

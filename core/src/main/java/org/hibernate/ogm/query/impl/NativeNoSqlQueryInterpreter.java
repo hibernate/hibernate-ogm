@@ -13,7 +13,7 @@ import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
@@ -25,10 +25,10 @@ import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
  */
 public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 
-	private final GridDialect gridDialect;
+	private final QueryableGridDialect gridDialect;
 	private final ParameterMetadataBuilder builder;
 
-	public NativeNoSqlQueryInterpreter(GridDialect gridDialect) {
+	public NativeNoSqlQueryInterpreter(QueryableGridDialect gridDialect) {
 		this.gridDialect = gridDialect;
 		this.builder = gridDialect.getParameterMetadataBuilder();
 	}

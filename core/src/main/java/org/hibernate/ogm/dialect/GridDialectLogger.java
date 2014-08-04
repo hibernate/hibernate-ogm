@@ -10,7 +10,6 @@ import java.util.Map;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -22,10 +21,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.persister.entity.Lockable;
@@ -158,22 +154,6 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
-	}
-
-	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters) {
-		log.tracef( "Executing backend query: %1$s", query.getQuery() );
-		return gridDialect.executeBackendQuery( query, queryParameters );
-	}
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return gridDialect.getParameterMetadataBuilder();
-	}
-
-	@Override
-	public Object parseNativeQuery(String nativeQuery) {
-		return gridDialect.parseNativeQuery( nativeQuery );
 	}
 
 	@Override

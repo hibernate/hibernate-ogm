@@ -21,6 +21,7 @@ import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
+import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.jdbc.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
@@ -90,6 +91,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( OptionsServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( GridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {

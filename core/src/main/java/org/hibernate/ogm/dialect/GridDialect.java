@@ -8,7 +8,6 @@ package org.hibernate.ogm.dialect;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -20,10 +19,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;
@@ -128,23 +124,4 @@ public interface GridDialect extends Service {
 	 *            the key metadata of the tables for which we want to apply the costumer
 	 */
 	void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas);
-
-	/**
-	 * Returns the result of a native query executed on the backend.
-	 *
-	 * @param query the query to execute in a representation understood by the underlying datastore. May have been
-	 * created by converting a JP-QL query or from a (named) native query.
-	 * @param queryParameters parameters passed for this query
-	 * @return an {@link ClosableIterator} with the result of the query
-	 */
-	ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters);
-
-	/**
-	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.
-	 *
-	 * @return a builder for retrieving parameter meta-data
-	 */
-	ParameterMetadataBuilder getParameterMetadataBuilder();
-
-	Object parseNativeQuery(String nativeQuery);
 }

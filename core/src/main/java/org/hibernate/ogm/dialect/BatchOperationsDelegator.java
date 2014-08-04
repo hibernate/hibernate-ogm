@@ -8,7 +8,6 @@ package org.hibernate.ogm.dialect;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -24,10 +23,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
@@ -182,22 +178,7 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters) {
-		return dialect.executeBackendQuery( query, queryParameters );
-	}
-
-	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		return dialect.isStoredInEntityStructure( associationKey, associationContext );
-	}
-
-	@Override
-	public ParameterMetadataBuilder getParameterMetadataBuilder() {
-		return dialect.getParameterMetadataBuilder();
-	}
-
-	@Override
-	public Object parseNativeQuery(String nativeQuery) {
-		return dialect.parseNativeQuery( nativeQuery );
 	}
 }

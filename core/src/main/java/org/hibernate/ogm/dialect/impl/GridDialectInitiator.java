@@ -17,6 +17,7 @@ import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.GridDialectLogger;
+import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.impl.Log;
@@ -82,19 +83,20 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					log.gridDialectHasNoProperConstructor( clazz );
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+				boolean supportsQueries = gridDialect instanceof QueryableGridDialect;
 
 				if ( gridDialect instanceof ServiceRegistryAwareService ) {
 					( (ServiceRegistryAwareService) gridDialect ).injectServices( registry );
 				}
 
 				if ( gridDialect instanceof BatchableGridDialect ) {
-					BatchOperationsDelegator delegator = new BatchOperationsDelegator( (BatchableGridDialect) gridDialect );
-					gridDialect = delegator;
+					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
+					gridDialect = supportsQueries ? new QueryableBatchOperationsDelegator( batchable ) : new BatchOperationsDelegator( batchable );
 				}
 
 				log.useGridDialect( gridDialect.getClass().getName() );
 				if ( GridDialectLogger.activationNeeded() ) {
-					gridDialect = new GridDialectLogger( gridDialect );
+					gridDialect = supportsQueries ? new QueryableGridDialectLogger( (QueryableGridDialect) gridDialect ) : new GridDialectLogger( gridDialect );
 					log.info( "Grid dialect logs are active" );
 				}
 				else {
