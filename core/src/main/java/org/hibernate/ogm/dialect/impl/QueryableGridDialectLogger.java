@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import java.io.Serializable;
+
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -26,19 +28,19 @@ import org.jboss.logging.Logger;
  *
  * @see GridDialectInitiator
  */
-public class QueryableGridDialectLogger extends GridDialectLogger implements QueryableGridDialect {
+public class QueryableGridDialectLogger<T extends Serializable> extends GridDialectLogger implements QueryableGridDialect<T> {
 
 	private static final Log log = Logger.getMessageLogger( Log.class, CoreLogCategories.DATASTORE_ACCESS.toString() );
 
-	private final QueryableGridDialect gridDialect; // the real wrapped grid dialect
+	private final QueryableGridDialect<T> gridDialect; // the real wrapped grid dialect
 
-	public QueryableGridDialectLogger(QueryableGridDialect gridDialect) {
+	public QueryableGridDialectLogger(QueryableGridDialect<T> gridDialect) {
 		super( gridDialect );
 		this.gridDialect = gridDialect;
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
 		log.tracef( "Executing backend query: %1$s", query.getQuery() );
 		return gridDialect.executeBackendQuery( query, queryParameters );
 	}
@@ -49,7 +51,7 @@ public class QueryableGridDialectLogger extends GridDialectLogger implements Que
 	}
 
 	@Override
-	public Object parseNativeQuery(String nativeQuery) {
+	public T parseNativeQuery(String nativeQuery) {
 		return gridDialect.parseNativeQuery( nativeQuery );
 	}
 }

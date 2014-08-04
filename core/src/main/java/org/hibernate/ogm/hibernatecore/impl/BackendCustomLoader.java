@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.hibernatecore.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -18,6 +19,7 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.loader.custom.CustomLoader;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.ScalarReturn;
@@ -40,20 +42,22 @@ import org.hibernate.type.Type;
  */
 public class BackendCustomLoader extends CustomLoader {
 
-	private final QueryableGridDialect gridDialect;
-	private final BackendCustomQuery customQuery;
+	private final CustomQuery customQuery;
 	private final TypeTranslator typeTranslator;
-	private final BackendQuery query;
+	private final BackendCustomLoaderContext<?> loaderContext;
 
-	public BackendCustomLoader(BackendCustomQuery customQuery, SessionFactoryImplementor factory) {
+	public BackendCustomLoader(BackendCustomQuery<?> customQuery, SessionFactoryImplementor factory) {
 		super( customQuery, factory );
-		this.gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
+
 		this.customQuery = customQuery;
-		this.query = new BackendQuery(
-				customQuery.getQueryObject(),
-				customQuery.getSingleEntityKeyMetadataOrNull()
-		);
-		typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
+		this.typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
+		this.loaderContext = getLoaderContext( customQuery, factory );
+	}
+
+	private static <T extends Serializable> BackendCustomLoaderContext<T> getLoaderContext(BackendCustomQuery<T> customQuery, SessionFactoryImplementor factory) {
+		@SuppressWarnings("unchecked")
+		QueryableGridDialect<T> gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
+		return new BackendCustomLoaderContext<T>( gridDialect, customQuery );
 	}
 
 	/**
@@ -72,7 +76,7 @@ public class BackendCustomLoader extends CustomLoader {
 
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set querySpaces, Type[] resultTypes) throws HibernateException {
-		ClosableIterator<Tuple> tuples = gridDialect.executeBackendQuery( query, queryParameters );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( queryParameters );
 		try {
 			if ( isEntityQuery() ) {
 				return listOfEntities( session, resultTypes, tuples );
@@ -154,5 +158,28 @@ public class BackendCustomLoader extends CustomLoader {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
 		return loader;
+	}
+
+	/**
+	 * Extracted as separate class for the sole purpose of capturing the type parameter {@code T} without exposing it to
+	 * the callers which don't actually need it.
+	 *
+	 * @author Gunnar Morling
+	 */
+	private static class BackendCustomLoaderContext<T extends Serializable> {
+		private final QueryableGridDialect<T> gridDialect;
+		private final BackendQuery<T> query;
+
+		public BackendCustomLoaderContext(QueryableGridDialect<T> gridDialect, BackendCustomQuery<T> customQuery) {
+			this.gridDialect = gridDialect;
+			this.query = new BackendQuery<T>(
+					customQuery.getQueryObject(),
+					customQuery.getSingleEntityKeyMetadataOrNull()
+			);
+		}
+
+		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
+			return gridDialect.executeBackendQuery( query, queryParameters );
+		}
 	}
 }

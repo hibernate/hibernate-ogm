@@ -249,7 +249,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
 		}
 
-		CustomLoader loader = new BackendCustomLoader( (BackendCustomQuery) customQuery, getFactory() );
+		CustomLoader loader = new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, getFactory() );
 		return loader.list( getDelegate(), queryParameters );
 	}
 

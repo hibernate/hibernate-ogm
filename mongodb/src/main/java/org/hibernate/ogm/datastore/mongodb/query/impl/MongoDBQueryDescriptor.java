@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb.query.impl;
 
+import java.io.Serializable;
+
 import com.mongodb.DBObject;
 
 /**
@@ -13,7 +15,7 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
-public class MongoDBQueryDescriptor {
+public class MongoDBQueryDescriptor implements Serializable {
 
 	public enum Operation {
 		FIND,
@@ -63,6 +65,8 @@ public class MongoDBQueryDescriptor {
 	public DBObject getOrderBy() {
 		return orderBy;
 	}
+
+
 
 	@Override
 	public String toString() {

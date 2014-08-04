@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
+import java.io.Serializable;
+
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -17,8 +19,10 @@ import org.hibernate.ogm.util.ClosableIterator;
  * A facet for {@link GridDialect} implementations which support the execution of native queries.
  *
  * @author Gunnar Morling
+ *
+ * @param <T> The type of native queries supported by this dialect
  */
-public interface QueryableGridDialect extends GridDialect {
+public interface QueryableGridDialect<T extends Serializable> extends GridDialect {
 
 	/**
 	 * Returns the result of a native query executed on the backend.
@@ -28,7 +32,7 @@ public interface QueryableGridDialect extends GridDialect {
 	 * @param queryParameters parameters passed for this query
 	 * @return an {@link ClosableIterator} with the result of the query
 	 */
-	ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters);
+	ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters);
 
 	/**
 	 * Returns a builder for retrieving parameter meta-data from native queries in this datastore's format.
@@ -43,5 +47,5 @@ public interface QueryableGridDialect extends GridDialect {
 	 * @param nativeQuery the native query to parse
 	 * @return the parsed query
 	 */
-	Object parseNativeQuery(String nativeQuery);
+	T parseNativeQuery(String nativeQuery);
 }

@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.loader.nativeloader;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -30,22 +31,22 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class BackendCustomQuery implements CustomQuery {
+public class BackendCustomQuery<T extends Serializable> implements CustomQuery, Serializable {
 
 	private static final Log LOG = LoggerFactory.make();
 
 	private final String queryString;
-	private final Object queryObject;
-	private final SessionFactoryImplementor sessionFactory;
+	private final T queryObject;
 	private final Set<String> querySpaces;
 	private final List<Return> customQueryReturns;
 
-	public BackendCustomQuery(String queryString, Object query, NativeSQLQueryReturn[] queryReturns, Set<String> querySpaces, SessionFactoryImplementor factory) throws HibernateException {
+	private final EntityKeyMetadata singleEntityKeyMetadata;
+
+	public BackendCustomQuery(String queryString, T query, NativeSQLQueryReturn[] queryReturns, Set<String> querySpaces, SessionFactoryImplementor factory) throws HibernateException {
 		LOG.tracev( "Starting processing of NoSQL query [{0}]", queryString );
 
 		this.queryString = queryString;
 		this.queryObject = query;
-		this.sessionFactory = factory;
 
 		SQLQueryReturnProcessor processor = new SQLQueryReturnProcessor( queryReturns, factory );
 		processor.process();
@@ -57,6 +58,25 @@ public class BackendCustomQuery implements CustomQuery {
 		else {
 			this.querySpaces = Collections.emptySet();
 		}
+
+		this.singleEntityKeyMetadata = determineSingleEntityKeyMetadata( factory, customQueryReturns );
+	}
+
+	private static EntityKeyMetadata determineSingleEntityKeyMetadata(SessionFactoryImplementor sessionFactory, List<Return> customQueryReturns) {
+		EntityKeyMetadata metadata = null;
+
+		for ( Return queryReturn : customQueryReturns ) {
+			if ( queryReturn instanceof RootReturn ) {
+				if ( metadata != null ) {
+					return null;
+				}
+				RootReturn rootReturn = (RootReturn) queryReturn;
+				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
+				metadata = new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+			}
+		}
+
+		return metadata;
 	}
 
 	/**
@@ -77,7 +97,7 @@ public class BackendCustomQuery implements CustomQuery {
 	 *
 	 * @return an object-based representation of this query, or {@code null} if this is a string-based query.
 	 */
-	public Object getQueryObject() {
+	public T getQueryObject() {
 		return queryObject;
 	}
 
@@ -104,20 +124,7 @@ public class BackendCustomQuery implements CustomQuery {
 	 * query does not select exactly one entity type (e.g. in case of scalar values or joins (if supported in future revisions)).
 	 */
 	public EntityKeyMetadata getSingleEntityKeyMetadataOrNull() {
-		EntityKeyMetadata metadata = null;
-
-		for ( Return queryReturn : getCustomQueryReturns() ) {
-			if ( queryReturn instanceof RootReturn ) {
-				if ( metadata != null ) {
-					return null;
-				}
-				RootReturn rootReturn = (RootReturn) queryReturn;
-				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
-				metadata = new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
-			}
-		}
-
-		return metadata;
+		return singleEntityKeyMetadata;
 	}
 
 	@Override
