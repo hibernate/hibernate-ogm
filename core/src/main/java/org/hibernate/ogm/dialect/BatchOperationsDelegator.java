@@ -37,7 +37,7 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class BatchOperationsDelegator implements BatchableGridDialect {
+public class BatchOperationsDelegator implements GridDialect {
 
 	// The threadlocal is properly set and cleaned in a try / catch by {@link org.hibernate.ogm.service.impl.BatchManagerEventListener}
 	// if used elsewhere, apply the same pattern
@@ -72,11 +72,6 @@ public class BatchOperationsDelegator implements BatchableGridDialect {
 	}
 
 	public void executeBatch() {
-		executeBatch( getOperationQueue() );
-	}
-
-	@Override
-	public void executeBatch(OperationsQueue queue) {
 		dialect.executeBatch( getOperationQueue() );
 	}
 
