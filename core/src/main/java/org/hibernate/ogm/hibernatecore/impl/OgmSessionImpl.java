@@ -44,7 +44,6 @@ import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.impl.NoSQLQueryImpl;
-import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.EntityPersister;
@@ -131,7 +130,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		return new NoSQLQueryImpl(
 				nativeQuery,
 				this,
-				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( nativeQuery )
+				factory.getQueryPlanCache().getSQLParameterMetadata( nativeQuery )
 		);
 	}
 
@@ -262,12 +261,10 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	@Override
 	public List<?> list(NativeSQLQuerySpecification spec, QueryParameters queryParameters) throws HibernateException {
-		// TODO OGM-414 Implement query plan cache
-
-		NativeNoSqlQuerySpecification noSqlQuerySpec = (NativeNoSqlQuerySpecification) spec;
-		CustomQuery customQuery = new BackendCustomQuery( noSqlQuerySpec, factory );
-
-		return listCustomQuery( customQuery, queryParameters );
+		return listCustomQuery(
+				factory.getQueryPlanCache().getNativeSQLQueryPlan( spec ).getCustomQuery(),
+				queryParameters
+		);
 	}
 
 	@Override
@@ -296,7 +293,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 		Query query = new NoSQLQueryImpl(
 				nsqlqd,
 				this,
-				factory.getNativeQueryParameterMetadataCache().getParameterMetadata( nsqlqd.getQuery() )
+				factory.getQueryPlanCache().getSQLParameterMetadata( nsqlqd.getQuery() )
 		);
 		query.setComment( "named native query " + queryName );
 		return query;

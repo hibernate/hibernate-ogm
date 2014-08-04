@@ -50,7 +50,7 @@ public class BackendCustomLoader extends CustomLoader {
 		super( customQuery, factory );
 		this.customQuery = customQuery;
 		this.query = new BackendQuery(
-				customQuery.getQueryObject() != null ? customQuery.getQueryObject() : customQuery.getQueryString(),
+				customQuery.getQueryString(),
 				customQuery.getSingleEntityKeyMetadataOrNull()
 		);
 		typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );

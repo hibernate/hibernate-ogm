@@ -24,6 +24,7 @@ public class OgmSessionFactoryServiceInitiators {
 
 	public static List<SessionFactoryServiceInitiator<?>> LIST = Collections.unmodifiableList( Arrays.<SessionFactoryServiceInitiator<?>>asList(
 			QueryParserServicesInitiator.INSTANCE,
-			SchemaDefinerInitiator.INSTANCE
+			SchemaDefinerInitiator.INSTANCE,
+			NativeNoSqlQueryInterpreterInitiator.INSTANCE
 	) );
 }
