@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.query.spi;
 
-import javax.persistence.NamedNativeQuery;
-
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 
@@ -16,24 +14,23 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
  * {@link GridDialect#executeBackendQuery(NoSqlQuery, org.hibernate.engine.spi.QueryParameters)}.
  * <p>
  * The wrapped query object generally represents the query in the native form supported by a given datastore, e.g. a
- * String in a native query syntax. Dialects may be able to deal with several representations, e.g. the MongoDB dialect
- * can deal with Strings in the CLI query syntax as well as queries in form of {@code DBObject}s. Depending on the
- * origin of this query object (e.g. from a named native query specified via {@link NamedNativeQuery} or translated from
- * a JP-QL query, one form or the other may be actually used.
+ * String in a native query syntax or an object-based query representation such as the {@code DBObject}-based query
+ * representation in the case of MongoDB.
  *
  * @author Gunnar Morling
+ * @param <T> The type of query as understood by the underlying dialect implementation
  */
-public class BackendQuery {
+public class BackendQuery<T> {
 
-	private final Object query;
+	private final T query;
 	private final EntityKeyMetadata singleEntityKeyMetadata;
 
-	public BackendQuery(Object query, EntityKeyMetadata singleEntityKeyMetadata) {
+	public BackendQuery(T query, EntityKeyMetadata singleEntityKeyMetadata) {
 		this.query = query;
 		this.singleEntityKeyMetadata = singleEntityKeyMetadata;
 	}
 
-	public Object getQuery() {
+	public T getQuery() {
 		return query;
 	}
 

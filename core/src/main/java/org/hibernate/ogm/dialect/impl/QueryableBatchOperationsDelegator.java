@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
+import java.io.Serializable;
+
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.BatchOperationsDelegator;
@@ -21,17 +23,18 @@ import org.hibernate.ogm.util.ClosableIterator;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class QueryableBatchOperationsDelegator extends BatchOperationsDelegator implements QueryableGridDialect {
+public class QueryableBatchOperationsDelegator<T extends Serializable> extends BatchOperationsDelegator implements QueryableGridDialect<T> {
 
-	private final QueryableGridDialect dialect;
+	private final QueryableGridDialect<T> dialect;
 
+	@SuppressWarnings("unchecked")
 	public QueryableBatchOperationsDelegator(BatchableGridDialect dialect) {
 		super( dialect );
-		this.dialect = (QueryableGridDialect) dialect;
+		this.dialect = (QueryableGridDialect<T>) dialect;
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery query, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
 		return dialect.executeBackendQuery( query, queryParameters );
 	}
 
@@ -41,7 +44,7 @@ public class QueryableBatchOperationsDelegator extends BatchOperationsDelegator 
 	}
 
 	@Override
-	public Object parseNativeQuery(String nativeQuery) {
+	public T parseNativeQuery(String nativeQuery) {
 		return dialect.parseNativeQuery( nativeQuery );
 	}
 }

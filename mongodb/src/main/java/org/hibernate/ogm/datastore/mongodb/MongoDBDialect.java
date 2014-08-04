@@ -114,7 +114,7 @@ import com.mongodb.WriteConcern;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect, BatchableGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -605,8 +605,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
-		MongoDBQueryDescriptor queryDescriptor = (MongoDBQueryDescriptor) backendQuery.getQuery();
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<MongoDBQueryDescriptor> backendQuery, QueryParameters queryParameters) {
+		MongoDBQueryDescriptor queryDescriptor = backendQuery.getQuery();
 
 		EntityKeyMetadata entityKeyMetadata = backendQuery.getSingleEntityKeyMetadataOrNull();
 		String collectionName = getCollectionName( backendQuery, queryDescriptor, entityKeyMetadata );
@@ -672,7 +672,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * @param entityKeyMetadata meta-data in case this is a query with exactly one entity return
 	 * @return the name of the MongoDB collection to execute the given query against
 	 */
-	private String getCollectionName(BackendQuery customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
+	private String getCollectionName(BackendQuery<?> customQuery, MongoDBQueryDescriptor queryDescriptor, EntityKeyMetadata entityKeyMetadata) {
 		if ( queryDescriptor.getCollectionName() != null ) {
 			return queryDescriptor.getCollectionName();
 		}

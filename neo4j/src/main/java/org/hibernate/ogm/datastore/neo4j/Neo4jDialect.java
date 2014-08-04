@@ -77,7 +77,7 @@ import org.neo4j.graphdb.ResourceIterator;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect, ServiceRegistryAwareService {
+public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService {
 
 	private final CypherCRUD neo4jCRUD;
 
@@ -392,7 +392,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery backendQuery, QueryParameters queryParameters) {
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
 		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
@@ -410,8 +410,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		return nativeQuery;
 	}
 
-	private String buildNativeQuery(BackendQuery customQuery, QueryParameters queryParameters) {
-		StringBuilder nativeQuery = new StringBuilder( (String) customQuery.getQuery() );
+	private String buildNativeQuery(BackendQuery<String> customQuery, QueryParameters queryParameters) {
+		StringBuilder nativeQuery = new StringBuilder( customQuery.getQuery() );
 		applyFirstRow( queryParameters, nativeQuery );
 		applyMaxRows( queryParameters, nativeQuery );
 		return nativeQuery.toString();

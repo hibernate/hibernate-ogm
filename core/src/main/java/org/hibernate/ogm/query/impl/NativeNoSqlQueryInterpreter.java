@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.query.impl;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
@@ -13,6 +14,7 @@ import org.hibernate.engine.query.spi.NativeSQLQueryPlan;
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
@@ -25,10 +27,10 @@ import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
  */
 public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 
-	private final QueryableGridDialect gridDialect;
+	private final QueryableGridDialect<?> gridDialect;
 	private final ParameterMetadataBuilder builder;
 
-	public NativeNoSqlQueryInterpreter(QueryableGridDialect gridDialect) {
+	public NativeNoSqlQueryInterpreter(QueryableGridDialect<?> gridDialect) {
 		this.gridDialect = gridDialect;
 		this.builder = gridDialect.getParameterMetadataBuilder();
 	}
@@ -40,18 +42,22 @@ public class NativeNoSqlQueryInterpreter implements NativeQueryInterpreter {
 
 	@Override
 	public NativeSQLQueryPlan createQueryPlan(NativeSQLQuerySpecification specification, SessionFactoryImplementor sessionFactory) {
-		Object query = gridDialect.parseNativeQuery( specification.getQueryString() );
+		CustomQuery customQuery = getCustomQuery( gridDialect, specification, sessionFactory );
+		return new NativeNoSqlQueryPlan( specification.getQueryString(), customQuery );
+	}
+
+	private <T extends Serializable> CustomQuery getCustomQuery(QueryableGridDialect<T> gridDialect, NativeSQLQuerySpecification specification, SessionFactoryImplementor sessionFactory) {
+		T query = gridDialect.parseNativeQuery( specification.getQueryString() );
+
 		@SuppressWarnings("unchecked")
 		Set<String> querySpaces = specification.getQuerySpaces();
 
-		BackendCustomQuery customQuery = new BackendCustomQuery(
+		return new BackendCustomQuery<T>(
 				specification.getQueryString(),
 				query,
 				specification.getQueryReturns(),
 				querySpaces,
 				sessionFactory
 		);
-
-		return new NativeNoSqlQueryPlan( specification.getQueryString(), customQuery );
 	}
 }

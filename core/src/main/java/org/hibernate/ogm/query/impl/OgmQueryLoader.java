@@ -41,29 +41,33 @@ import org.hibernate.type.Type;
  */
 public class OgmQueryLoader extends QueryLoader {
 
-	private final QueryableGridDialect gridDialect;
-	private final BackendQuery query;
+	private final OgmQueryLoaderContext<?> loaderContext;
 	private final boolean hasScalars;
 	private final List<String> scalarColumns;
 	private final Type[] queryReturnTypes;
 	private final TypeTranslator typeTranslator;
 
-	public OgmQueryLoader(QueryTranslatorImpl queryTranslator, SessionFactoryImplementor factory, SelectClause selectClause, BackendQuery query, List<String> scalarColumns) {
+	public OgmQueryLoader(QueryTranslatorImpl queryTranslator, SessionFactoryImplementor factory, SelectClause selectClause, BackendQuery<?> query, List<String> scalarColumns) {
 		super( queryTranslator, factory, selectClause );
 
-		this.gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
-		this.query = query;
+		this.loaderContext = getLoaderContext( query, factory );
 		this.hasScalars = selectClause.isScalarSelect();
 		this.scalarColumns = scalarColumns;
 		this.queryReturnTypes = selectClause.getQueryReturnTypes();
 		this.typeTranslator = factory.getServiceRegistry().getService( TypeTranslator.class );
 	}
 
+	@SuppressWarnings("unchecked")
+	private static <T extends Serializable> OgmQueryLoaderContext<T> getLoaderContext(BackendQuery<?> query, SessionFactoryImplementor factory) {
+		QueryableGridDialect<T> gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );
+		return new OgmQueryLoaderContext<T>( gridDialect, (BackendQuery<T>) query );
+	}
+
 	@Override
 	protected List<?> list(SessionImplementor session, QueryParameters queryParameters, Set<Serializable> querySpaces, Type[] resultTypes)
 			throws HibernateException {
 
-		ClosableIterator<Tuple> tuples = gridDialect.executeBackendQuery( query, queryParameters );
+		ClosableIterator<Tuple> tuples = loaderContext.executeQuery( queryParameters );
 		try {
 			if ( hasScalars ) {
 				return listOfArrays( session, tuples );
@@ -113,11 +117,11 @@ public class OgmQueryLoader extends QueryLoader {
 		return results;
 	}
 
-	private <T> T entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {
+	private <E> E entity(SessionImplementor session, Tuple tuple, OgmLoader loader) {
 		OgmLoadingContext ogmLoadingContext = new OgmLoadingContext();
 		ogmLoadingContext.setTuples( Arrays.asList( tuple ) );
 		@SuppressWarnings("unchecked")
-		List<T> entities = (List<T>) loader.loadEntities( session, LockOptions.NONE, ogmLoadingContext );
+		List<E> entities = (List<E>) loader.loadEntities( session, LockOptions.NONE, ogmLoadingContext );
 		return entities.get( 0 );
 	}
 
@@ -125,5 +129,25 @@ public class OgmQueryLoader extends QueryLoader {
 		OgmEntityPersister persister = (OgmEntityPersister) ( session.getFactory() ).getEntityPersister( entityClass.getName() );
 		OgmLoader loader = new OgmLoader( new OgmEntityPersister[] { persister } );
 		return loader;
+	}
+
+	/**
+	 * Extracted as separate class for the sole purpose of capturing the type parameter {@code T} without exposing it to
+	 * the callers which don't actually need it.
+	 *
+	 * @author Gunnar Morling
+	 */
+	private static class OgmQueryLoaderContext<T extends Serializable> {
+		private final QueryableGridDialect<T> gridDialect;
+		private final BackendQuery<T> query;
+
+		public OgmQueryLoaderContext(QueryableGridDialect<T> gridDialect, BackendQuery<T> query) {
+			this.gridDialect = gridDialect;
+			this.query = query;
+		}
+
+		public ClosableIterator<Tuple> executeQuery(QueryParameters queryParameters) {
+			return gridDialect.executeBackendQuery( query, queryParameters );
+		}
 	}
 }
