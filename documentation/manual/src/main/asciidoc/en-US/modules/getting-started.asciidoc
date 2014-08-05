@@ -17,34 +17,60 @@ according to the guidelines found
 http://community.jboss.org/wiki/MavenGettingStarted-Users[on this webpage].
 In this example we will use Infinispan as the targeted datastore.
 
-Add +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+
-to your project dependencies.
+Add +org.hibernate.ogm:hibernate-ogm-bom:{hibernate-ogm-version}+ to your dependency management block
+and +org.hibernate.ogm:hibernate-ogm-infinispan:{hibernate-ogm-version}+
+to your project dependencies:
 
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.ogm</groupId>
+            <artifactId>hibernate-ogm-bom</artifactId>
+            <version>{hibernate-ogm-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+<dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-infinispan</artifactId>
+    </dependency>
+</dependencies>
+----
+
+The former is a so-called "bill of materials" POM
+which specifies a matching set of versions for Hibernate OGM and its dependencies.
+That way you never need to specify a version explicitly within your dependencies block,
+you will rather get the versions from the BOM automatically.
+
+[NOTE]
+====
+If you're deploying your application onto JBoss WildFly or JBoss EAP,
+you don't need to add the Hibernate OGM modules to your deployment unit
+but you can rather add them as modules to the application server itself.
+Refer to <<ogm-configuration-jbossmodule>> to learn more.
+====
+
+We will use the JPA APIs in this tutorial.
+While Hibernate OGM depends on JPA 2.1,
+it is marked as provided in the Maven POM file.
+If you run outside a Java EE container,
+make sure to explicitly add the dependency:
 
 [source, XML]
 [subs="verbatim,attributes"]
 ----
 <dependency>
-    <groupId>org.hibernate.ogm</groupId>
-    <artifactId>hibernate-ogm-infinispan</artifactId>
-    <version>{hibernate-ogm-version}</version>
-</dependency>
-<dependency>
     <groupId>org.hibernate.javax.persistence</groupId>
-    <artifactId>hibernate-jpa-2.0-api</artifactId>
-    <version>1.0.1.Final</version>
+    <artifactId>hibernate-jpa-2.1-api</artifactId>
 </dependency>
 ----
-
-[NOTE]
-====
-While Hibernate OGM depends on JPA 2.0,
-it is marked as provided in the Maven POM file.
-If you run outside a Java EE container,
-make sure to explicitly add the dependency.
-====
-
-We will use the JPA APIs in this tutorial.
 
 Let's now map our first Hibernate OGM entity.
 
@@ -94,37 +120,34 @@ If you are familiar with JPA,
 you can see that there is nothing specific to Hibernate OGM in our mapping.
 
 In this tutorial, we will use JBoss Transactions for our JTA transaction manager.
+So let's add the JTA API and JBoss Transactions to our POM as well.
 The final list of dependencies should look like this:
 
 [source, XML]
 [subs="verbatim,attributes"]
 ----
 <dependencies>
-    <!-- Hibernate OGM dependency -->
+    <!-- Hibernate OGM Infinispan module; pulls in the OGM core module -->
     <dependency>
         <groupId>org.hibernate.ogm</groupId>
-        <artifactId>hibernate-ogm-core</artifactId>
-        <version>{hibernate-ogm-version}</version>
+        <artifactId>hibernate-ogm-infinispan</artifactId>
     </dependency>
 
     <!-- standard APIs dependencies - provided in a Java EE container -->
     <dependency>
         <groupId>org.hibernate.javax.persistence</groupId>
-        <artifactId>hibernate-jpa-2.0-api</artifactId>
-        <version>1.0.1.Final</version>
+        <artifactId>hibernate-jpa-2.1-api</artifactId>
     </dependency>
     <dependency>
         <groupId>org.jboss.spec.javax.transaction</groupId>
         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
-        <version>1.0.0.Final</version>
-        <scope>provided</scope>
     </dependency>
 
-    <!-- JBoss Transactions dependency -->
+    <!-- JBoss Transactions dependency - this (or another implementation) is
+         provided in a Java EE container -->
     <dependency>
         <groupId>org.jboss.jbossts</groupId>
         <artifactId>jbossjta</artifactId>
-        <version>{jboss-jta-version}</version>
     </dependency>
 </dependencies>
 ----
@@ -144,10 +167,9 @@ Create a [filename]+META-INF/persistence.xml+ file.
         <!-- Use Hibernate OGM provider: configuration will be transparent -->
         <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
         <properties>
-            <!-- property optional if you plan and use Infinispan, otherwise adjust to your favorite
+            <!-- property is optional if you want to use Infinispan, otherwise adjust to your favorite
                 NoSQL Datastore provider.
-            <property name="hibernate.ogm.datastore.provider"
-                      value="org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider"/>
+            <property name="hibernate.ogm.datastore.provider" value="infinispan"/>
             -->
             <!-- defines which JTA Transaction we plan to use -->
             <property name="hibernate.transaction.jta.platform"
