@@ -337,7 +337,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	// Centralize the RowKey column setting logic as the values settings are slightly different between insert / update and delete
 	public RowKeyBuilder initializeRowKeyBuilder() {
-		RowKeyBuilder builder = new RowKeyBuilder().tableName( getTableName() );
+		RowKeyBuilder builder = new RowKeyBuilder();
 		if ( hasIdentifier ) {
 			builder.addColumns( getIdentifierColumnName() );
 		}
@@ -775,6 +775,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	// NOTE: This method has accidentally been introduced in ORM 4.3.5 and is deprecated as of ORM 4.3.6. We're
 	// overriding this variant and the one above to be compatible with any 4.3.x version. This variant can be removed
 	// once we're on ORM 5
+	@Override
 	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, int nextIndex, SessionImplementor session) throws HibernateException {
 		// nothing to do
 	}

@@ -37,20 +37,23 @@ public class SerializableKey implements Serializable {
 	private final int type;
 
 	public SerializableKey(Key key) {
-		table = key.getTable();
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
 
 		if ( key instanceof EntityKey ) {
+			table = ( (EntityKey) key ).getTable();
 			type = ENTITY_KEY;
 		}
 		else if ( key instanceof AssociationKey ) {
+			table = ( (AssociationKey) key ).getTable();
 			type = ASSOCIATION_KEY;
 		}
 		else if ( key instanceof RowKey ) {
+			table = null;
 			type = ROW_KEY;
 		}
 		else if ( key instanceof IdSourceKey ) {
+			table = ( (IdSourceKey) key ).getTable();
 			type = ID_GENERATOR_KEY;
 		}
 		else {

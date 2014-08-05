@@ -10,7 +10,6 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,15 +34,13 @@ public class RowKeyExternalizerTest {
 		Object[] values = { 123, "Hello", 456L };
 
 		// given
-		RowKey key = new RowKey( "Foobar", columnNames, values );
+		RowKey key = new RowKey( columnNames, values );
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
+		RowKey unmarshalledKey = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( RowKey.class );
-		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
 

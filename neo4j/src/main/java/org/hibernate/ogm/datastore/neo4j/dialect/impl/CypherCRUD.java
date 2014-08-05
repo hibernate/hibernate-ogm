@@ -17,7 +17,6 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -64,7 +63,7 @@ public class CypherCRUD {
 	 * @param rowKey identify the relationship
 	 * @return the corresponding relationship
 	 */
-	public Relationship findRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, Key targetKey) {
+	public Relationship findRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, EntityKey targetKey) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH" );
@@ -93,7 +92,7 @@ public class CypherCRUD {
 	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null
 	 */
-	public Node findNode(Key key, NodeLabel... labels) {
+	public Node findNode(EntityKey key, NodeLabel... labels) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( key, parameters, query, labels );
@@ -149,7 +148,7 @@ public class CypherCRUD {
 	 * @param key identify the type of the relationship
 	 * @return the resulting node
 	 */
-	public Node createNodeUnlessExists(Key key, NodeLabel label) {
+	public Node createNodeUnlessExists(EntityKey key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MERGE" );
 		appendNodePattern( key, parameters, query, label );
@@ -164,7 +163,7 @@ public class CypherCRUD {
 		return node;
 	}
 
-	public Node createNode(Key key, NodeLabel label) {
+	public Node createNode(EntityKey key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "CREATE" );
 		appendNodePattern( key, parameters, query, label );
@@ -191,11 +190,11 @@ public class CypherCRUD {
 	 * @param query where the resulting pattern will be appended
 	 * @param labels a label to be attached
 	 */
-	private void appendNodePattern(Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
+	private void appendNodePattern(EntityKey key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
 		appendNodePattern( "n", key, parameters, query, labels );
 	}
 
-	private void appendNodePattern(String alias, Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
+	private void appendNodePattern(String alias, EntityKey key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
 		query.append( "(" );
 		identifier( query, alias );
 		query.append( ":" );
@@ -229,7 +228,7 @@ public class CypherCRUD {
 		query.append( ")" );
 	}
 
-	public static Label nodeLabel(Key key) {
+	public static Label nodeLabel(EntityKey key) {
 		return DynamicLabel.label( key.getTable() );
 	}
 
@@ -255,7 +254,7 @@ public class CypherCRUD {
 				}
 			}
 		}
-		String table = rowKey.getTable();
+		String table = associationKey.getTable();
 		StringBuilder relationshipBuilder = new StringBuilder("[r");
 		if (associationKey != null) {
 			relationshipBuilder.append( ":" );
@@ -344,7 +343,7 @@ public class CypherCRUD {
 	 * DELETE r, x
 	 * </pre>
 	 */
-	public void remove(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, Key targetKey) {
+	public void remove(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, EntityKey targetKey) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH " );
 		appendNodePattern( associationKey.getEntityKey(), parameters, query, ENTITY );

@@ -44,7 +44,6 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -154,7 +153,9 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
 	 */
 	private Relationship createRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
+		EntityKey targetKey = targetKey( associationKey, associationContext, rowKey );
+		Node rowKeyNode = targetKey == null ? null : neo4jCRUD.findNode( targetKey );
+
 		// Check if the RowKey represents an entity
 		if ( rowKeyNode == null ) {
 			// We create a relationship using the rowKey
@@ -181,7 +182,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Key key = targetKey( associationKey, associationContext, rowKey );
+		EntityKey key = targetKey( associationKey, associationContext, rowKey );
 		Node embeddedNode = neo4jCRUD.createNode( key, EMBEDDED );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationContext, rowKey, embeddedNode );
 		applyProperties( associationKey, rowKey, relationship );
@@ -192,7 +193,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	 * Returns the key that identify the entity on the target side of the association. It might not be possible to
 	 * create the key if the association key and the row key refer to the owner side of the association.
 	 */
-	public static Key targetKey(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public static EntityKey targetKey(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 		if ( associationKey.getTargetKey() != null ) {
 			// This can only happen when we are on the target side of a bidirectional relationship
 			return associationKey.getTargetKey();
@@ -216,7 +217,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 				&& associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0;
 	}
 
-	private static Key targetKeyForAssociationOrEmbedded(AssociationContext associationContext, RowKey rowKey) {
+	private static EntityKey targetKeyForAssociationOrEmbedded(AssociationContext associationContext, RowKey rowKey) {
 		String[] targetKeyColumnNames = associationContext.getTargetEntityKeyMetadata().getColumnNames();
 		Object[] targetKeyColumnValues = new Object[targetKeyColumnNames.length];
 		String[] associationTargetColumnNames = associationContext.getTargetAssociationKeyMetadata().getColumnNames();
@@ -234,7 +235,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Key targetKey = targetKey( associationKey, associationContext, rowKey );
+		EntityKey targetKey = targetKey( associationKey, associationContext, rowKey );
 		if ( targetKey == null ) {
 			// We have to wait the creation of the target side of the association before
 			// we can obtain the targetKey
@@ -335,7 +336,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 
 	private void putAssociationOperation(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
 		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			Key targetKey = targetKey( associationKey, associationContext, action.getKey() );
+			EntityKey targetKey = targetKey( associationKey, associationContext, action.getKey() );
 			Relationship relationship = neo4jCRUD.findRelationship( associationKey, associationContext, action.getKey(), targetKey );
 			if (relationship != null) {
 				for ( TupleOperation operation : action.getValue().getOperations() ) {
@@ -358,7 +359,7 @@ public class Neo4jDialect extends BaseGridDialect implements ServiceRegistryAwar
 	}
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
-		Key targetKey = targetKey( associationKey, associationContext, action.getKey() );
+		EntityKey targetKey = targetKey( associationKey, associationContext, action.getKey() );
 		neo4jCRUD.remove( associationKey, associationContext, action.getKey(), targetKey );
 	}
 

@@ -23,7 +23,6 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -149,7 +148,7 @@ public class AssociationPersister {
 			final Object[] columnValues = getKeyColumnValues();
 			String collectionRole = null;
 			EntityKey ownerEntityKey;
-			Key nonOwnerKey = null;
+			EntityKey nonOwnerKey = null;
 			AssociationKind associationKind = null;
 
 			// We have a collection on the main side
