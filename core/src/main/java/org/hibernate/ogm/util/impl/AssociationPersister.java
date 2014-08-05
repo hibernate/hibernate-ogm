@@ -23,7 +23,6 @@ import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -51,7 +50,6 @@ import org.hibernate.type.Type;
 public class AssociationPersister {
 	private GridType keyGridType;
 	private Object key;
-	private Object targetKey;
 	private SessionImplementor session;
 	private AssociationKey associationKey;
 	private Association association;
@@ -107,11 +105,6 @@ public class AssociationPersister {
 		return this;
 	}
 
-	public AssociationPersister targetKey(Object key) {
-		this.targetKey = key;
-		return this;
-	}
-
 	public AssociationPersister keyColumnValues(Object[] columnValues) {
 		this.columnValues = columnValues;
 		return this;
@@ -148,29 +141,33 @@ public class AssociationPersister {
 		if ( associationKey == null ) {
 			final Object[] columnValues = getKeyColumnValues();
 			String collectionRole = null;
-			EntityKey ownerEntityKey;
-			Key nonOwnerKey = null;
+			EntityKey ownerEntityKey = null;
 			AssociationKind associationKind = null;
 
 			// We have a collection on the main side
 			if (collectionPersister != null) {
-				OgmEntityPersister ownerPersister = null;
-				OgmEntityPersister nonOwnerPersister = null;
+				EntityKey entityKey;
 				// we are explicitly looking to update the non owning side
 				if ( inverse ) {
 					//look for the other side of the collection, build the key of the other side's entity
-					ownerPersister = (OgmEntityPersister) collectionPersister.getElementPersister();
-					nonOwnerPersister = (OgmEntityPersister) collectionPersister.getOwnerEntityPersister();
+					OgmEntityPersister elementPersister = (OgmEntityPersister) collectionPersister.getElementPersister();
+					entityKey = EntityKeyBuilder.fromPersister(
+							elementPersister,
+							(Serializable) key,
+							session
+					);
 					collectionRole = buildCollectionRole( collectionPersister );
-					// we have already create the other association: I can obtain the target entity
-					nonOwnerKey = EntityKeyBuilder.fromPersister( nonOwnerPersister, (Serializable) targetKey, session );
 				}
 				else {
 					//we are on the right side, use the association property
-					ownerPersister = (OgmEntityPersister) collectionPersister.getOwnerEntityPersister();
 					collectionRole = getUnqualifiedRole( collectionPersister );
+					entityKey = EntityKeyBuilder.fromPersister(
+							(OgmEntityPersister) collectionPersister.getOwnerEntityPersister(),
+							(Serializable) key,
+							session
+					);
 				}
-				ownerEntityKey = EntityKeyBuilder.fromPersister( ownerPersister, (Serializable) key, session );
+				ownerEntityKey = entityKey;
 				//TODO add information on the collection type, set, map, bag, list etc
 
 				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION;
@@ -182,7 +179,11 @@ public class AssociationPersister {
 				if ( propertyType instanceof EntityType ) {
 					EntityType entityType = (EntityType) propertyType;
 					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
-					ownerEntityKey = new EntityKey( associatedPersister.getEntityKeyMetadata(), columnValues );
+					EntityKey entityKey = new EntityKey(
+							associatedPersister.getEntityKeyMetadata(),
+							columnValues
+					);
+					ownerEntityKey = entityKey;
 					collectionRole = getCollectionRoleFromToOne( associatedPersister );
 				}
 				else {
@@ -193,7 +194,7 @@ public class AssociationPersister {
 				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
 
-			associationKey = new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, associationKind, nonOwnerKey );
+			associationKey = new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, associationKind );
 		}
 
 		return associationKey;
@@ -437,7 +438,12 @@ public class AssociationPersister {
 		AssociationKeyMetadata associationKeyMetadataFromElement = null;
 		// We have a collection on the main side
 		if ( collectionPersister != null ) {
-			associationKeyMetadataFromElement = collectionPersister.getAssociationKeyMetadataFromElement();
+			if ( inverse ) {
+				associationKeyMetadataFromElement = collectionPersister.getAssociationKeyMetadata();
+			}
+			else {
+				associationKeyMetadataFromElement = collectionPersister.getAssociationKeyMetadataFromElement();
+			}
 		}
 		else if ( propertyType != null ) {
 			if ( propertyType instanceof EntityType ) {

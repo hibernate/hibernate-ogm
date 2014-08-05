@@ -269,7 +269,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				}
 				// update the matching element
 				// FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey, key );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
 
 				getElementGridType().nullSafeSet(
 						assocEntryTuple,
@@ -281,7 +281,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				// put back entry tuple to actually apply changes to the store
 				associationPersister.getAssociation().put( assocEntryKey, assocEntryTuple );
 
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey, key );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey );
 
 				count++;
 			}
@@ -464,7 +464,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
 					// delete the tuple
-					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey, id );
+					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
 					associationPersister.getAssociation().remove( assocEntryKey );
 
 					count++;
@@ -514,7 +514,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					// TODO: copy/paste from recreate()
 					RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
 					completeTuple( keyAndTuple, collection, session, entry );
-					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key, id );
+					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -562,7 +562,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						// TODO: copy/paste from insertRows()
 						RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
 						completeTuple( keyAndTuple, collection, session, entry );
-						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key, id );
+						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -584,7 +584,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey, Serializable targetId) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
@@ -631,7 +631,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.associationKeyMetadata( associationKeyMetadataFromElement )
 					.collectionPersister( this )
 					.key( entityId )
-					.targetKey( targetId )
 					.inverse();
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
@@ -702,8 +701,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 								null,
 								association.get( assocEntryKey ),
 								Action.REMOVE,
-								assocEntryKey,
-								id
+								assocEntryKey
 								);
 					}
 				}

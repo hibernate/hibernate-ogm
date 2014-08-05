@@ -194,11 +194,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * create the key if the association key and the row key refer to the owner side of the association.
 	 */
 	public static Key targetKey(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		if ( associationKey.getTargetKey() != null ) {
-			// This can only happen when we are on the target side of a bidirectional relationship
-			return associationKey.getTargetKey();
-		}
-		else if ( isEmbeddedWithIndex( associationKey ) ) {
+		if ( isEmbeddedWithIndex( associationKey ) ) {
 			// The embedded collection has an index, I don't need to know the column names or values of the target.
 			// It is going to be identified by the index on the relationship,
 			return targeKeyForEmbeddedWithIndex( associationKey );
