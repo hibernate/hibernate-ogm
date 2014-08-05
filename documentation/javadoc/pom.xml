@@ -27,9 +27,21 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>hibernate-ogm-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
-    	<!-- We need the dependencies having annotations we're using
-        	to workaround a javadoc tool bug -->
+        <!-- We need the dependencies having annotations we're using
+            to workaround a javadoc tool bug -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
@@ -39,7 +51,7 @@
             <artifactId>hibernate-search-orm</artifactId>
         </dependency>
         <!-- We also need our own module dependencies so that
-        	we import all types from dependant modules -->
+            we import all types from dependant modules -->
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-ehcache</artifactId>
