@@ -67,7 +67,7 @@
         </dependency>
         <dependency>
             <groupId>org.jboss.spec.javax.transaction</groupId>
-            <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+            <artifactId>jboss-transaction-api_1.2_spec</artifactId>
             <scope>provided</scope>
             <!-- I do hope it is optional but that needs to be verified -->
             <optional>true</optional>
