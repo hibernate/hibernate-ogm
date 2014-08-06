@@ -13,7 +13,7 @@
         <resource-root path="hibernate-entitymanager-${hibernateVersion}.jar" />
         <resource-root path="hibernate-hql-lucene-${hibernateParserVersion}.jar" />
         <resource-root path="hibernate-hql-parser-${hibernateParserVersion}.jar" />
-        <resource-root path="hibernate-commons-annotations-4.0.4.Final.jar" />
+        <resource-root path="hibernate-commons-annotations-${hibernateCommonsAnnotationsVersion}.jar" />
         <resource-root path="hibernate-search-engine-${hibernateSearchVersion}.jar" />
         <resource-root path="hibernate-search-orm-${hibernateSearchVersion}.jar" />
         <resource-root path="hibernate-search-infinispan-${hibernateSearchVersion}.jar" />

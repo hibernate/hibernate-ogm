@@ -291,7 +291,7 @@
             <dependency>
                 <groupId>org.hibernate.common</groupId>
                 <artifactId>hibernate-commons-annotations</artifactId>
-                <version>4.0.4.Final</version>
+                <version>${hibernateCommonsAnnotationsVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.javassist</groupId>
@@ -301,7 +301,7 @@
             <dependency>
                 <groupId>com.fasterxml</groupId>
                 <artifactId>classmate</artifactId>
-                <version>0.8.0</version>
+                <version>${classmateVersion}</version>
             </dependency>
             <dependency>
                 <groupId>org.parboiled</groupId>

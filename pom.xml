@@ -119,6 +119,7 @@
     </mailingLists>
 
     <properties>
+        <classmateVersion>1.0.0</classmateVersion>
         <ehcacheVersion>2.6.6</ehcacheVersion>
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.10.1</mongodbVersion>
@@ -126,9 +127,10 @@
         <hibernateVersion>4.3.6.Final</hibernateVersion>
         <hibernateSearchVersion>4.5.1.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.CR1</hibernateParserVersion>
+        <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
-        <jbossLoggingVersion>3.1.1.GA</jbossLoggingVersion>
+        <jbossLoggingVersion>3.1.4.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
         <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
@@ -137,6 +139,7 @@
         <jacksonVersion>2.2.1</jacksonVersion>
         <parboiledVersion>1.1.6</parboiledVersion>
         <asmVersion>4.1</asmVersion>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- 
