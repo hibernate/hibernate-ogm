@@ -18,8 +18,6 @@ import java.util.List;
  */
 public class AssociationKeyMetadata {
 
-	private static final String[] EMPTY_COLUMN_NAMES = new String[0];
-
 	private final String table;
 	private final String[] columnNames;
 	private final int hashCode;
@@ -27,10 +25,6 @@ public class AssociationKeyMetadata {
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
-
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames) {
-		this( table, columnNames, rowKeyColumnNames, EMPTY_COLUMN_NAMES );
-	}
 
 	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames) {
 		this.table = table;

@@ -41,6 +41,7 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
@@ -118,7 +119,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 				"Project_Module",
 				new String[] { "Project_id" },
-				new String[] { "Project_id", "module_id" }
+				new String[] { "Project_id", "module_id" },
+				ArrayHelper.EMPTY_STRING_ARRAY
 		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,

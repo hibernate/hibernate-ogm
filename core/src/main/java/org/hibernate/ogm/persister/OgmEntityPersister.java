@@ -237,7 +237,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 						getTableName(),
 						propertyColumnNames,
-						buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames )
+						buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames ),
+						ArrayHelper.EMPTY_STRING_ARRAY
 				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}

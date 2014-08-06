@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.persister;
 
+import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
+
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
@@ -175,7 +177,8 @@ class EntityDehydrator {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
 				persister.getTableName( tableIndex ),
 				propertyColumnNames,
-				rowKeyColumnNames
+				rowKeyColumnNames,
+				EMPTY_STRING_ARRAY
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
@@ -232,7 +235,8 @@ class EntityDehydrator {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
 				persister.getTableName( tableIndex ),
 				propertyColumnNames,
-				rowKeyColumnNames
+				rowKeyColumnNames,
+				EMPTY_STRING_ARRAY
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(

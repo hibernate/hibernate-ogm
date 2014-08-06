@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.environmentProperties;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
+import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
 import static org.junit.Assert.assertThat;
 
 import java.util.Collections;
@@ -158,7 +159,7 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames
+				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY
 		);
 
 		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
