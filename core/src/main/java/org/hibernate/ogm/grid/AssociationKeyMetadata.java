@@ -52,7 +52,10 @@ public class AssociationKeyMetadata {
 	}
 
 	/**
-	 * The columns representing the index of the element of the association
+	 * The columns representing the index of the element of the association.
+	 * <p>
+	 * For example, the key columns of a map-type property or the column with the order if the property is annotated with
+	 * {@link javax.persistence.OrderColumn}
 	 */
 	public String[] getRowKeyIndexColumnNames() {
 		return rowKeyIndexColumnNames;
