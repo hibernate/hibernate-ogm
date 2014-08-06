@@ -13,6 +13,7 @@ import java.util.Collection;
  */
 public class ArrayHelper {
 	public static final int[] EMPTY_INT_ARRAY = {};
+	public static final String[] EMPTY_STRING_ARRAY = {};
 
 	public static String[] toStringArray(Collection coll) {
 		return (String[]) coll.toArray( new String[coll.size()] );
