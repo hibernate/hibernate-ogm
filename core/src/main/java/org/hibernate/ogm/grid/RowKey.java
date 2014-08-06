@@ -21,12 +21,14 @@ public final class RowKey implements Key {
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 	private final int hashCode;
+	private final EntityKey entityKey;
 
-	public RowKey(String table, String[] columnNames, Object[] columnValues) {
+	public RowKey(String table, String[] columnNames, Object[] columnValues, EntityKey entityKey) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.columnValues = columnValues;
 		this.hashCode = generateHashCode();
+		this.entityKey = entityKey;
 	}
 
 	@Override
@@ -64,6 +66,13 @@ public final class RowKey implements Key {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @return the entityKey
+	 */
+	public EntityKey getEntityKey() {
+		return entityKey;
 	}
 
 	/**

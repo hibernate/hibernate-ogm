@@ -455,6 +455,62 @@ public class AssociationPersister {
 		return associationKeyMetadataFromElement;
 	}
 
+	public EntityKey createTargetKey(String[] rowKeyColumnNames, Tuple tuple) {
+		Object[] rowKeyColumnValues = new Object[rowKeyColumnNames.length];
+		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+			rowKeyColumnValues[i] = tuple.get( rowKeyColumnNames[i] );
+		}
+		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
+	}
+
+	public EntityKey createTargetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
+		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
+	}
+
+	/**
+	 * Returns the key that identify the entity on the target side of the association. It might not be possible to
+	 * create the key if the association key and the row key refer to the owner side of the association.
+	 */
+	public EntityKey targetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
+		if ( isEmbeddedWithIndex( associationKey ) ) {
+			// The embedded collection has an index, I don't need to know the column names or values of the target.
+			// It is going to be identified by the index on the relationship,
+			return targeKeyForEmbeddedWithIndex( associationKey );
+		}
+		else {
+			EntityKeyMetadata targetEntityKeyMetadata = targetEntityKeyMetadata();
+			AssociationKeyMetadata associationKeyMetadataFromElement = associationKeyMetadataFromElement( targetEntityKeyMetadata );
+			return targetKeyForAssociationOrEmbedded( rowKeyColumnNames, rowKeyColumnValues, associationKeyMetadataFromElement, targetEntityKeyMetadata );
+		}
+	}
+
+	private boolean isEmbeddedWithIndex(AssociationKey associationKey) {
+		return AssociationKind.EMBEDDED_COLLECTION == associationKey.getAssociationKind()
+				&& associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0;
+	}
+
+	private static EntityKey targeKeyForEmbeddedWithIndex(AssociationKey associationKey) {
+		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), ArrayHelper.EMPTY_STRING_ARRAY ), ArrayHelper.EMPTY_OBJECT_ARRAY );
+	}
+
+	private EntityKey targetKeyForAssociationOrEmbedded(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKeyMetadata targetAssociationKeyMetadata, EntityKeyMetadata targetEntityKeyMetadata) {
+		String[] targetKeyColumnNames = targetEntityKeyMetadata.getColumnNames();
+		Object[] targetKeyColumnValues = new Object[targetKeyColumnNames.length];
+		String[] associationTargetColumnNames = targetAssociationKeyMetadata.getColumnNames();
+		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
+			int index = ArrayHelper.indexOf( rowKeyColumnNames, associationTargetColumnNames[i] );
+			if ( index > -1 ) {
+				targetKeyColumnValues[i] = rowKeyColumnValues[index];
+			}
+			else {
+				// The RowKey does not contain the value of the target side of the association, it means we are on the
+				// owner side.
+				return null;
+			}
+		}
+		return new EntityKey( targetEntityKeyMetadata, targetKeyColumnValues );
+	}
+
 	private EntityKeyMetadata targetEntityKeyMetadata() {
 		if (collectionPersister != null ) {
 			if ( inverse ) {

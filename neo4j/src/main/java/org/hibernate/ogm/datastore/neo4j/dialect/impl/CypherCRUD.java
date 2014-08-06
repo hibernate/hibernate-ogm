@@ -64,7 +64,8 @@ public class CypherCRUD {
 	 * @param rowKey identify the relationship
 	 * @return the corresponding relationship
 	 */
-	public Relationship findRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, Key targetKey) {
+	public Relationship findRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+		EntityKey targetKey = rowKey.getEntityKey();
 		EntityKey entityKey = associationKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH" );
@@ -344,7 +345,8 @@ public class CypherCRUD {
 	 * DELETE r, x
 	 * </pre>
 	 */
-	public void remove(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey, Key targetKey) {
+	public void remove(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+		EntityKey targetKey = rowKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH " );
 		appendNodePattern( associationKey.getEntityKey(), parameters, query, ENTITY );

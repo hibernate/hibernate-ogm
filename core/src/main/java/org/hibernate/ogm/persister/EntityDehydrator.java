@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.type.GridType;
@@ -204,7 +205,8 @@ class EntityDehydrator {
 							session
 					);
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, rowKeyColumnNames );
-		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues );
+		EntityKey targetKey = associationPersister.createTargetKey( rowKeyColumnNames, columnValues );
+		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues, targetKey );
 
 		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
@@ -265,6 +267,7 @@ class EntityDehydrator {
 					.tableName( persister.getTableName() )
 					.addColumns( buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames ) )
 					.values( tupleKey )
+					.entityKey( associationPersister.createTargetKey( rowKeyColumnNames, tupleKey ) )
 					.build();
 			//TODO what should we do if that's null?
 			associationPersister.getAssociation().remove( matchingTuple );

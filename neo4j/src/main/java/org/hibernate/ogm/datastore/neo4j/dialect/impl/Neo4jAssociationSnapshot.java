@@ -69,6 +69,6 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 			values[i] = snapshot.get( columnNames[i] );
 		}
 
-		return new RowKey( associationKey.getTable(), columnNames, values );
+		return new RowKey( associationKey.getTable(), columnNames, values, null );
 	}
 }

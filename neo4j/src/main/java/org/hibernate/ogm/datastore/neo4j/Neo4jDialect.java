@@ -77,10 +77,6 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService {
 
-	private static final Object[] EMPTY_VALUES_ARRAY = new Object[0];
-
-	private static final String[] EMPTY_COLUMN_ARRAY = new String[0];
-
 	private final CypherCRUD neo4jCRUD;
 
 	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
@@ -155,22 +151,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
 	 */
 	private Relationship createRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Node rowKeyNode = neo4jCRUD.findNode( rowKey );
-		// Check if the RowKey represents an entity
-		if ( rowKeyNode == null ) {
-			// We create a relationship using the rowKey
-			return convertRowKeyToRelationship( associationKey, associationContext, rowKey );
-		}
-		else if ( rowKeyNode.hasLabel( ENTITY ) ) {
-			// CompositeId: The RowKey represents an entity and we are going to create the relationship to it
-			return createRelationshipWithTargetNode( associationKey, associationContext, rowKey, rowKeyNode );
-		}
-		else {
-			throw new AssertionFailure( "Unrecognized row key node: " + rowKeyNode );
-		}
-	}
-
-	private Relationship convertRowKeyToRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
 		switch ( associationKey.getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
 				return createRelationshipWithEmbeddedNode( associationKey, associationContext, rowKey );
@@ -182,63 +162,21 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Key key = targetKey( associationKey, associationContext, rowKey );
-		Node embeddedNode = neo4jCRUD.createNode( key, EMBEDDED );
+		Node embeddedNode = neo4jCRUD.createNode( rowKey.getEntityKey(), EMBEDDED );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationContext, rowKey, embeddedNode );
 		applyProperties( associationKey, rowKey, relationship );
 		return relationship;
 	}
 
-	/**
-	 * Returns the key that identify the entity on the target side of the association. It might not be possible to
-	 * create the key if the association key and the row key refer to the owner side of the association.
-	 */
-	public static Key targetKey(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		if ( isEmbeddedWithIndex( associationKey ) ) {
-			// The embedded collection has an index, I don't need to know the column names or values of the target.
-			// It is going to be identified by the index on the relationship,
-			return targeKeyForEmbeddedWithIndex( associationKey );
-		}
-		else {
-			return targetKeyForAssociationOrEmbedded( associationContext, rowKey );
-		}
-	}
-
-	private static EntityKey targeKeyForEmbeddedWithIndex(AssociationKey associationKey) {
-		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), EMPTY_COLUMN_ARRAY ), EMPTY_VALUES_ARRAY );
-	}
-
-	private static boolean isEmbeddedWithIndex(AssociationKey associationKey) {
-		return AssociationKind.EMBEDDED_COLLECTION == associationKey.getAssociationKind()
-				&& associationKey.getMetadata().getRowKeyIndexColumnNames().length > 0;
-	}
-
-	private static Key targetKeyForAssociationOrEmbedded(AssociationContext associationContext, RowKey rowKey) {
-		String[] targetKeyColumnNames = associationContext.getTargetEntityKeyMetadata().getColumnNames();
-		Object[] targetKeyColumnValues = new Object[targetKeyColumnNames.length];
-		String[] associationTargetColumnNames = associationContext.getTargetAssociationKeyMetadata().getColumnNames();
-		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
-			if ( rowKey.contains( associationTargetColumnNames[i] ) ) {
-				targetKeyColumnValues[i] = rowKey.getColumnValue( associationTargetColumnNames[i] );
-			}
-			else {
-				// The RowKey does not contain the value of the target side of the association, it means we are on the
-				// owner side.
-				return null;
-			}
-		}
-		return new EntityKey( associationContext.getTargetEntityKeyMetadata(), targetKeyColumnValues );
-	}
-
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		Key targetKey = targetKey( associationKey, associationContext, rowKey );
+		Key targetKey = rowKey.getEntityKey();
 		if ( targetKey == null ) {
 			// We have to wait the creation of the target side of the association before
 			// we can obtain the targetKey
 			return null;
 		}
 
-		Relationship relationship = neo4jCRUD.findRelationship( associationKey, associationContext, rowKey, targetKey );
+		Relationship relationship = neo4jCRUD.findRelationship( associationKey, associationContext, rowKey );
 		if ( relationship != null ) {
 			return relationship;
 		}
@@ -332,8 +270,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private void putAssociationOperation(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
 		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			Key targetKey = targetKey( associationKey, associationContext, action.getKey() );
-			Relationship relationship = neo4jCRUD.findRelationship( associationKey, associationContext, action.getKey(), targetKey );
+			Relationship relationship = neo4jCRUD.findRelationship( associationKey, associationContext, action.getKey() );
 			if (relationship != null) {
 				for ( TupleOperation operation : action.getValue().getOperations() ) {
 					if ( !contains( associationKey.getMetadata().getRowKeyColumnNames(), operation.getColumn() ) ) {
@@ -355,8 +292,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void removeAssociationOperation(AssociationKey associationKey, AssociationContext associationContext, AssociationOperation action) {
-		Key targetKey = targetKey( associationKey, associationContext, action.getKey() );
-		neo4jCRUD.remove( associationKey, associationContext, action.getKey(), targetKey );
+		neo4jCRUD.remove( associationKey, associationContext, action.getKey() );
 	}
 
 	private void applyTupleOperations(PropertyContainer propertyContainer, Set<TupleOperation> operations) {
