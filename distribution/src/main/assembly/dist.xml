@@ -99,10 +99,8 @@
                         <useProjectArtifact>false</useProjectArtifact>
                         <scope>runtime</scope>
                         <includes>
-                            <include>org.hibernate:hibernate-search-infinispan</include>
                             <include>org.infinispan:infinispan-commons</include>
                             <include>org.infinispan:infinispan-core</include>
-                            <include>org.infinispan:infinispan-lucene-directory</include>
                             <include>org.jboss.marshalling:jboss-marshalling</include>
                             <include>org.jboss.marshalling:jboss-marshalling-river</include>
                         </includes>
@@ -319,5 +317,23 @@
             <outputDirectory>docs/reference</outputDirectory>
         </fileSet>
     </fileSets>
+
+    <!--
+    #######################################################################
+    #  Optional dependencies of hibernate-ogm-infinispan
+    #######################################################################
+     -->
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>dist/lib/infinispan</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
+                <include>org.infinispan:infinispan-lucene-directory</include>
+                <include>org.hibernate:hibernate-search-infinispan</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
 
 </assembly>
