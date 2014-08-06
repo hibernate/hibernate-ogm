@@ -15,7 +15,6 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.search.exception.AssertionFailure;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -44,7 +43,7 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 		}
 
 		// Properties stored in the target side of the association
-		String[] targetColumnNames = targetColumnNames( associationKey, associationContext );
+		String[] targetColumnNames = associationContext.getTargetEntityKeyMetadata().getColumnNames();
 		String[] associationTargetColumnNames = associationContext.getTargetAssociationKeyMetadata().getColumnNames();
 		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
 			if ( targetNode.hasProperty( targetColumnNames[i] ) ) {
@@ -59,17 +58,6 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 			}
 		}
 		return properties;
-	}
-
-	private static String[] targetColumnNames(AssociationKey associationKey, AssociationContext associationContext) {
-		switch ( associationKey.getAssociationKind() ) {
-			case EMBEDDED_COLLECTION:
-				return associationContext.getTargetAssociationKeyMetadata().getColumnNames();
-			case ASSOCIATION:
-				return associationContext.getTargetEntityKeyMetadata().getColumnNames();
-			default:
-				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getAssociationKind() );
-		}
 	}
 
 	private static Node ownerNode(AssociationKey associationKey, Relationship relationship) {

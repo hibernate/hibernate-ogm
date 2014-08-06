@@ -13,7 +13,6 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
@@ -64,7 +63,7 @@ public class CypherCRUD {
 	 * @param rowKey identify the relationship
 	 * @return the corresponding relationship
 	 */
-	public Relationship findRelationship(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public Relationship findRelationship(AssociationKey associationKey, RowKey rowKey) {
 		EntityKey targetKey = rowKey.getEntityKey();
 		EntityKey entityKey = associationKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -311,7 +310,7 @@ public class CypherCRUD {
 	 * DELETE r, x
 	 * </pre>
 	 */
-	public void remove(AssociationKey associationKey, AssociationContext associationContext) {
+	public void remove(AssociationKey associationKey) {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder();
 		query.append( "MATCH (n:" );
@@ -345,7 +344,7 @@ public class CypherCRUD {
 	 * DELETE r, x
 	 * </pre>
 	 */
-	public void remove(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public void remove(AssociationKey associationKey, RowKey rowKey) {
 		EntityKey targetKey = rowKey.getEntityKey();
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH " );

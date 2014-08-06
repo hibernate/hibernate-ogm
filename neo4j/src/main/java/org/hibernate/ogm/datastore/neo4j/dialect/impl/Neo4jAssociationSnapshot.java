@@ -31,7 +31,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey, AssociationContext associationContext) {
 		for ( Relationship relationship : relationships( ownerNode, associationKey ) ) {
 			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associationContext );
-			RowKey rowKey = convert( associationKey, associationContext, snapshot );
+			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot ) );
 		}
 	}
@@ -61,7 +61,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( associationKey ) );
 	}
 
-	private RowKey convert(AssociationKey associationKey, AssociationContext associationContext, Neo4jTupleAssociationSnapshot snapshot) {
+	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {
 		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
 
