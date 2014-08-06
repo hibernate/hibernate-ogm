@@ -71,7 +71,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		}
 		for ( Iterator<String> iterator = propertyKeys.iterator(); iterator.hasNext(); ) {
 			String actual = iterator.next();
-			if ( !contains( expectedProperties, actual ) ) {
+			if ( !expectedProperties.contains( actual ) ) {
 				unexpectedProperties.add( actual );
 			}
 		}
@@ -89,41 +89,11 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		commitOrRollback( true );
 	}
 
-	private boolean contains(Set<String> values, String expected) {
-		if ( values != null ) {
-			for ( String value : values ) {
-				if ( value.equals( expected ) ) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	private boolean contains(String[] values, String value) {
-		if ( value != null ) {
-			for ( int i = 0; i < values.length; i++ ) {
-				if ( values[i].equals( value ) ) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
 	private ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
 		ExecutionEngine engine = new ExecutionEngine( provider.getDataBase() );
 		ExecutionResult result = engine.execute( query, parameters );
-		return result;
-	}
-
-	private ExecutionResult executeCypherQuery(String query) throws Exception {
-		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
-		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
-		ExecutionEngine engine = new ExecutionEngine( provider.getDataBase() );
-		ExecutionResult result = engine.execute( query );
 		return result;
 	}
 
