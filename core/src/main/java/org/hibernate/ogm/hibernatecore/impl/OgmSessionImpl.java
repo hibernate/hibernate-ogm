@@ -15,11 +15,13 @@ import org.hibernate.Criteria;
 import org.hibernate.Filter;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
+import org.hibernate.NaturalIdLoadAccess;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.ScrollableResults;
 import org.hibernate.SessionException;
 import org.hibernate.SharedSessionBuilder;
+import org.hibernate.SimpleNaturalIdLoadAccess;
 import org.hibernate.cache.spi.CacheKey;
 import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
@@ -370,5 +372,25 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 	 */
 	public EventSource getDelegate() {
 		return delegate;
+	}
+
+	@Override
+	public NaturalIdLoadAccess byNaturalId(Class entityClass) {
+		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	public NaturalIdLoadAccess byNaturalId(String entityName) {
+		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	public SimpleNaturalIdLoadAccess bySimpleNaturalId(Class entityClass) {
+		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
+	}
+
+	@Override
+	public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName) {
+		throw new UnsupportedOperationException( "OGM-589 - Natural id look-ups are not yet supported" );
 	}
 }
