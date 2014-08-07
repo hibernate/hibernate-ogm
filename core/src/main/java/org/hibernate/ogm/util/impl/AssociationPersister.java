@@ -459,6 +459,10 @@ public class AssociationPersister {
 		}
 	}
 
+	/**
+	 * Given the {@link Tuple} representing the {@link RowKey}, it creates the key to identify the target of the
+	 * association.
+	 */
 	public EntityKey createTargetKey(String[] rowKeyColumnNames, Tuple tuple) {
 		Object[] rowKeyColumnValues = new Object[rowKeyColumnNames.length];
 		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
@@ -467,15 +471,15 @@ public class AssociationPersister {
 		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
 	}
 
+	/**
+	 * Given the {@link Tuple} representing the {@link RowKey}, it creates the key to identify the target of the
+	 * association.
+	 */
 	public EntityKey createTargetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
 		return targetKey( rowKeyColumnNames, rowKeyColumnValues, getAssociationKey() );
 	}
 
-	/**
-	 * Returns the key that identify the entity on the target side of the association. It might not be possible to
-	 * create the key if the association key and the row key refer to the owner side of the association.
-	 */
-	public EntityKey targetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
+	private EntityKey targetKey(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
 		if ( isEmbeddedWithIndex( associationKey ) ) {
 			// The embedded collection has an index, I don't need to know the column names or values of the target.
 			// It is going to be identified by the index on the relationship,
