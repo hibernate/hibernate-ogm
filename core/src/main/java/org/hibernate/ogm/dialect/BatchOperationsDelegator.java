@@ -118,32 +118,31 @@ public class BatchOperationsDelegator implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		associationContext.setOperationsQueue( getOperationQueue() );
-		return dialect.getAssociation( key, associationContext );
+		return dialect.getAssociation( key, withQueue( associationContext ) );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		return dialect.createAssociation( key, associationContext );
+		return dialect.createAssociation( key, withQueue( associationContext ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		if ( isBatchDisabled() ) {
-			dialect.updateAssociation( association, key, associationContext );
+			dialect.updateAssociation( association, key, withQueue( associationContext ) );
 		}
 		else {
-			getOperationQueue().add( new UpdateAssociationOperation( association, key, associationContext ) );
+			getOperationQueue().add( new UpdateAssociationOperation( association, key, withQueue( associationContext ) ) );
 		}
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isBatchDisabled() ) {
-			dialect.removeAssociation( key, associationContext );
+			dialect.removeAssociation( key, withQueue( associationContext ) );
 		}
 		else {
-			getOperationQueue().add( new RemoveAssociationOperation( key, associationContext ) );
+			getOperationQueue().add( new RemoveAssociationOperation( key, withQueue( associationContext ) ) );
 		}
 	}
 
@@ -175,5 +174,12 @@ public class BatchOperationsDelegator implements GridDialect {
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		return dialect.isStoredInEntityStructure( associationKey, associationContext );
+	}
+
+	private AssociationContext withQueue(AssociationContext associationContext) {
+		return new AssociationContext(
+				associationContext.getOptionsContext(),
+				getOperationQueue()
+		);
 	}
 }

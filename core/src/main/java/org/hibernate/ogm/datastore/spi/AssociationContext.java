@@ -19,18 +19,19 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public class AssociationContext implements GridDialectOperationContext {
 
 	private final OptionsContext optionsContext;
-	private OperationsQueue operationsQueue;
+	private final OperationsQueue operationsQueue;
 
 	public AssociationContext(OptionsContext optionsContext) {
+		this( optionsContext, null );
+	}
+
+	public AssociationContext(OptionsContext optionsContext, OperationsQueue operationsQueue) {
 		this.optionsContext = optionsContext;
+		this.operationsQueue = operationsQueue;
 	}
 
 	public OperationsQueue getOperationsQueue() {
 		return operationsQueue;
-	}
-
-	public void setOperationsQueue(OperationsQueue operationsQueue) {
-		this.operationsQueue = operationsQueue;
 	}
 
 	@Override
