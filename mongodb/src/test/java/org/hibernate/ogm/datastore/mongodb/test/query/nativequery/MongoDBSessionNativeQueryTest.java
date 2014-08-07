@@ -176,6 +176,35 @@ public class MongoDBSessionNativeQueryTest extends OgmTestCase {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
+	public void testEntitiesInsertedInCurrentSessionAreFoundByNativeQuery() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		String nativeQuery = "{ name : 'Her Voice' }";
+
+		Query query = session.createNativeQuery( nativeQuery )
+				.addEntity( OscarWildePoem.class );
+
+		List<OscarWildePoem> result = query.list();
+		assertThat( result ).isEmpty();
+
+		OscarWildePoem voice = new OscarWildePoem( 4L, "Her Voice", "Oscar Wilde" );
+		session.persist( voice );
+
+		result = query.list();
+		assertThat( result ).onProperty( "id" ).containsExactly( 4L );
+
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+		session.delete( voice );
+		transaction.commit();
+
+		session.close();
+	}
+
+	@Test
 	public void testExceptionWhenReturnedEntityIsMissingAndManyResultsAreExpected() throws Exception {
 		OgmSession session = openSession();
 		Transaction transaction = session.beginTransaction();

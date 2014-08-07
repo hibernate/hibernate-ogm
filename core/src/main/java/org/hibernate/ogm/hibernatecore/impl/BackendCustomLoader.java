@@ -54,6 +54,13 @@ public class BackendCustomLoader extends CustomLoader {
 		this.loaderContext = getLoaderContext( customQuery, factory );
 	}
 
+	@Override
+	public Set<String> getQuerySpaces() {
+		@SuppressWarnings("unchecked")
+		Set<String> querySpaces = super.getQuerySpaces();
+		return querySpaces;
+	}
+
 	private static <T extends Serializable> BackendCustomLoaderContext<T> getLoaderContext(BackendCustomQuery<T> customQuery, SessionFactoryImplementor factory) {
 		@SuppressWarnings("unchecked")
 		QueryableGridDialect<T> gridDialect = factory.getServiceRegistry().getService( QueryableGridDialect.class );

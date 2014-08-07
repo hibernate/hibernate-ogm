@@ -12,11 +12,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -196,10 +198,6 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		}
 	}
 
-	private void begin() throws NotSupportedException, SystemException, Exception {
-		getTransactionManager().begin();
-	}
-
 	@Test
 	public void testListMultipleResultQuery() throws Exception {
 		begin();
@@ -212,6 +210,32 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( athanasia, results.get( 0 ) );
 		assertAreEquals( portia, results.get( 1 ) );
 
+		commit();
+		close( em );
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	@TestForIssue(jiraKey = "OGM-424")
+	public void testEntitiesInsertedInCurrentSessionAreFoundByNativeQuery() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		String nativeQuery = "{ name : 'Her Voice' }";
+		Query query = em.createNativeQuery( nativeQuery, OscarWildePoem.class );
+
+		List<OscarWildePoem> results = query.getResultList();
+		assertThat( results ).as( "Unexpected number of results" ).hasSize( 0 );
+
+		OscarWildePoem voice = new OscarWildePoem( 3L, "Her Voice", "Oscar Wilde" );
+		em.persist( voice );
+
+		results = query.getResultList();
+		assertThat( results ).as( "Unexpected number of results" ).hasSize( 1 );
+
+		assertAreEquals( voice, results.get( 0 ) );
+
+		em.remove( voice );
 		commit();
 		close( em );
 	}
@@ -254,6 +278,10 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 			em.detach( object );
 		}
 		return em;
+	}
+
+	private void begin() throws NotSupportedException, SystemException, Exception {
+		getTransactionManager().begin();
 	}
 
 	private void commit() throws Exception {

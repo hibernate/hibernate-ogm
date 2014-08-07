@@ -31,10 +31,15 @@ import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionDelegatorBaseImpl;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.event.service.spi.EventListenerGroup;
+import org.hibernate.event.service.spi.EventListenerRegistry;
+import org.hibernate.event.spi.AutoFlushEvent;
+import org.hibernate.event.spi.AutoFlushEventListener;
 import org.hibernate.event.spi.EventSource;
+import org.hibernate.event.spi.EventType;
+import org.hibernate.internal.SessionImpl;
 import org.hibernate.jdbc.ReturningWork;
 import org.hibernate.jdbc.Work;
-import org.hibernate.loader.custom.CustomLoader;
 import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
@@ -249,8 +254,39 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 			log.tracev( "NoSQL query: {0}", customQuery.getSQL() );
 		}
 
-		CustomLoader loader = new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, getFactory() );
+		BackendCustomLoader loader = new BackendCustomLoader( (BackendCustomQuery<?>) customQuery, getFactory() );
+		autoFlushIfRequired( loader.getQuerySpaces() );
+
 		return loader.list( getDelegate(), queryParameters );
+	}
+
+	/**
+	 * detect in-memory changes, determine if the changes are to tables named in the query and, if so, complete
+	 * execution the flush
+	 * <p>
+	 * NOTE: Copied as-is from {@link SessionImpl}. We need it here as
+	 * {@link #listCustomQuery(CustomQuery, QueryParameters)} needs to be customized (which makes use of auto flushes)
+	 * to work with our custom loaders.
+	 */
+	private boolean autoFlushIfRequired(Set<String> querySpaces) throws HibernateException {
+		errorIfClosed();
+		if ( ! isTransactionInProgress() ) {
+			// do not auto-flush while outside a transaction
+			return false;
+		}
+		AutoFlushEvent event = new AutoFlushEvent( querySpaces, this );
+		for ( AutoFlushEventListener listener : listeners( EventType.AUTO_FLUSH ) ) {
+			listener.onAutoFlush( event );
+		}
+		return event.isFlushRequired();
+	}
+
+	private <T> Iterable<T> listeners(EventType<T> type) {
+		return eventListenerGroup( type ).listeners();
+	}
+
+	private <T> EventListenerGroup<T> eventListenerGroup(EventType<T> type) {
+		return factory.getServiceRegistry().getService( EventListenerRegistry.class ).getEventListenerGroup( type );
 	}
 
 	@Override
