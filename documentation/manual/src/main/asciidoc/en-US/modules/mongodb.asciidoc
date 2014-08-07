@@ -479,6 +479,21 @@ You can express queries in a few different ways:
 * using a native MongoQL query
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
 
+[NOTE]
+====
+In order to reflect changes performed in the current session,
+all entities affected by a given query are flushed to the datastore prior to query execution
+(that's the case for Hibernate ORM as well as Hibernate OGM).
+
+For not fully transactional stores such as MongoDB
+this can cause changes to be written as a side-effect of running queries
+which cannot be reverted by a possible later rollback.
+
+Depending on your specific use cases and requirements you may prefer to disable auto-flushing,
+e.g. by invoking +query.setFlushMode( FlushMode.MANUAL )+.
+Bear in mind though that query results will then not reflect changes applied within the current session.
+====
+
 ===== JP-QL queries
 
 Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
