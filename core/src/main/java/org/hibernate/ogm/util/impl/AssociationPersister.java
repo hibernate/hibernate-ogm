@@ -429,7 +429,7 @@ public class AssociationPersister {
 			EntityKeyMetadata targetEntityKeyMetadata = targetEntityKeyMetadata();
 			AssociationKeyMetadata associationKeyMetadataFromElement = associationKeyMetadataFromElement( targetEntityKeyMetadata );
 			OptionsContext optionsContext = serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() );
-			associationContext = new AssociationContext( optionsContext, targetEntityKeyMetadata, associationKeyMetadataFromElement );
+			associationContext = new AssociationContext( optionsContext, associationKeyMetadataFromElement );
 		}
 		return associationContext;
 	}
