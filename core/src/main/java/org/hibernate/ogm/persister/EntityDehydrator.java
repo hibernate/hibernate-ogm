@@ -16,6 +16,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.type.GridType;
@@ -174,12 +175,15 @@ class EntityDehydrator {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
+		String tableName =	persister.getTableName( tableIndex );
+		EntityKeyMetadata targetEntityKeyMetadata = persister.createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				persister.getTableName( tableIndex ),
+				tableName,
 				propertyColumnNames,
 				rowKeyColumnNames,
-				EMPTY_STRING_ARRAY
+				EMPTY_STRING_ARRAY,
+				targetEntityKeyMetadata
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
@@ -233,12 +237,15 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
+		String tableName =	persister.getTableName( tableIndex );
+		EntityKeyMetadata targetEntityKeyMetadata = persister.createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				persister.getTableName( tableIndex ),
+				tableName,
 				propertyColumnNames,
 				rowKeyColumnNames,
-				EMPTY_STRING_ARRAY
+				EMPTY_STRING_ARRAY,
+				targetEntityKeyMetadata
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(

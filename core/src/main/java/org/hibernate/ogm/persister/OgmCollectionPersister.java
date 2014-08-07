@@ -34,6 +34,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
@@ -116,17 +117,41 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getTableName(),
 				getKeyColumnNames(),
 				rowKeyColumnNames,
-				rowKeyIndexColumnNames
+				rowKeyIndexColumnNames,
+				targetEntityKeyMetadata( false )
 		);
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata(
 				getTableName(),
 				getElementColumnNames(),
 				rowKeyColumnNames,
-				rowKeyIndexColumnNames
+				rowKeyIndexColumnNames,
+				targetEntityKeyMetadata( true )
 		);
 
 		nodeName = collection.getNodeName();
+	}
+
+	private EntityKeyMetadata targetEntityKeyMetadata( boolean inverse ) {
+		if ( inverse ) {
+			// Bidirectional *ToMany
+			return ( (OgmEntityPersister) getOwnerEntityPersister() ).getEntityKeyMetadata();
+		}
+		else if ( getElementType().isEntityType() ) {
+			// *ToMany
+			return ( (OgmEntityPersister) getElementPersister() ).getEntityKeyMetadata();
+		}
+		else {
+			// Embedded we need to build the key metadata
+			String[] targetColumnNames = null;
+			if ( inverse ) {
+				targetColumnNames = getKeyColumnNames();
+			}
+			else {
+				targetColumnNames = getElementColumnNames();
+			}
+			return new EntityKeyMetadata( getTableName(), targetColumnNames );
+		}
 	}
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {

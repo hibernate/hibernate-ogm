@@ -448,7 +448,7 @@ public class AssociationPersister {
 			if ( propertyType instanceof EntityType ) {
 				// Unidirectional *ToOne
 				return new AssociationKeyMetadata( associationKeyMetadata.getTable(), targetEntityKeyMetadata.getColumnNames(),
-						associationKeyMetadata.getRowKeyColumnNames(), associationKeyMetadata.getRowKeyIndexColumnNames() );
+						associationKeyMetadata.getRowKeyColumnNames(), associationKeyMetadata.getRowKeyIndexColumnNames(), targetEntityKeyMetadata );
 			}
 			else {
 				throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
