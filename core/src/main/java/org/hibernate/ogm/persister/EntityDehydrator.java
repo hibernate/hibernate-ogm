@@ -183,7 +183,8 @@ class EntityDehydrator {
 				propertyColumnNames,
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
-				targetEntityKeyMetadata
+				targetEntityKeyMetadata,
+				targetEntityKeyMetadata.getColumnNames()
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
@@ -245,7 +246,8 @@ class EntityDehydrator {
 				propertyColumnNames,
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
-				targetEntityKeyMetadata
+				targetEntityKeyMetadata,
+				targetEntityKeyMetadata.getColumnNames()
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(

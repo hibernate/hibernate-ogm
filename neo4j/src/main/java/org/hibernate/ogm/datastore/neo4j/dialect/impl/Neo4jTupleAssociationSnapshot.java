@@ -44,7 +44,7 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 		// Properties stored in the target side of the association
 		String[] targetColumnNames = associationKey.getMetadata().getRowKeyEntityKeyMetadata().getColumnNames();
-		String[] associationTargetColumnNames = associationContext.getTargetAssociationKeyMetadata().getColumnNames();
+		String[] associationTargetColumnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
 		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
 			if ( targetNode.hasProperty( targetColumnNames[i] ) ) {
 				properties.put( associationTargetColumnNames[i], targetNode.getProperty( targetColumnNames[i] ) );

@@ -25,14 +25,16 @@ public class AssociationKeyMetadata {
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
+	private final String[] rowKeyTargetAssociationKeyColumnNames;
 	private final EntityKeyMetadata rowKeyEntityKeyMetadata;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata, String[] rowKeyTargetAssociationKeyColumnNames) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 		this.rowKeyEntityKeyMetadata = rowKeyEntityKeyMetadata;
+		this.rowKeyTargetAssociationKeyColumnNames = rowKeyTargetAssociationKeyColumnNames;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -68,6 +70,13 @@ public class AssociationKeyMetadata {
 	 */
 	public EntityKeyMetadata getRowKeyEntityKeyMetadata() {
 		return rowKeyEntityKeyMetadata;
+	}
+
+	/**
+	 * @return the column names of the association referring to the identifier of the target entity
+	 */
+	public String[] getRowKeyTargetAssociationKeyColumnNames() {
+		return rowKeyTargetAssociationKeyColumnNames;
 	}
 
 	/**

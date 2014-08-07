@@ -7,9 +7,7 @@
 package org.hibernate.ogm.util.impl;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -426,37 +424,10 @@ public class AssociationPersister {
 					.getService( OptionsService.class )
 					.context();
 
-			EntityKeyMetadata targetEntityKeyMetadata = targetEntityKeyMetadata();
-			AssociationKeyMetadata associationKeyMetadataFromElement = associationKeyMetadataFromElement( targetEntityKeyMetadata );
 			OptionsContext optionsContext = serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() );
-			associationContext = new AssociationContext( optionsContext, associationKeyMetadataFromElement );
+			associationContext = new AssociationContext( optionsContext );
 		}
 		return associationContext;
-	}
-
-	private AssociationKeyMetadata associationKeyMetadataFromElement(EntityKeyMetadata targetEntityKeyMetadata) {
-		// We have a collection on the main side
-		if ( collectionPersister != null ) {
-			if ( inverse ) {
-				return collectionPersister.getAssociationKeyMetadata();
-			}
-			else {
-				return collectionPersister.getAssociationKeyMetadataFromElement();
-			}
-		}
-		else if ( propertyType != null ) {
-			if ( propertyType instanceof EntityType ) {
-				// Unidirectional *ToOne
-				return new AssociationKeyMetadata( associationKeyMetadata.getTable(), targetEntityKeyMetadata.getColumnNames(),
-						associationKeyMetadata.getRowKeyColumnNames(), associationKeyMetadata.getRowKeyIndexColumnNames(), targetEntityKeyMetadata );
-			}
-			else {
-				throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
-			}
-		}
-		else {
-			throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
-		}
 	}
 
 	/**
@@ -486,9 +457,7 @@ public class AssociationPersister {
 			return targeKeyForEmbeddedWithIndex( associationKey );
 		}
 		else {
-			EntityKeyMetadata targetEntityKeyMetadata = targetEntityKeyMetadata();
-			AssociationKeyMetadata associationKeyMetadataFromElement = associationKeyMetadataFromElement( targetEntityKeyMetadata );
-			return targetKeyForAssociationOrEmbedded( rowKeyColumnNames, rowKeyColumnValues, associationKeyMetadataFromElement, targetEntityKeyMetadata );
+			return targetKeyForAssociationOrEmbedded( rowKeyColumnNames, rowKeyColumnValues, associationKey );
 		}
 	}
 
@@ -501,12 +470,12 @@ public class AssociationPersister {
 		return new EntityKey( new EntityKeyMetadata( associationKey.getTable(), ArrayHelper.EMPTY_STRING_ARRAY ), ArrayHelper.EMPTY_OBJECT_ARRAY );
 	}
 
-	private EntityKey targetKeyForAssociationOrEmbedded(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKeyMetadata targetAssociationKeyMetadata, EntityKeyMetadata targetEntityKeyMetadata) {
-		String[] targetKeyColumnNames = targetEntityKeyMetadata.getColumnNames();
+	private EntityKey targetKeyForAssociationOrEmbedded(String[] rowKeyColumnNames, Object[] rowKeyColumnValues, AssociationKey associationKey) {
+		String[] targetKeyColumnNames = associationKey.getMetadata().getRowKeyEntityKeyMetadata().getColumnNames();
 		Object[] targetKeyColumnValues = new Object[targetKeyColumnNames.length];
-		String[] associationTargetColumnNames = targetAssociationKeyMetadata.getColumnNames();
-		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
-			int index = ArrayHelper.indexOf( rowKeyColumnNames, associationTargetColumnNames[i] );
+		String[] targetAssociationKeyMetadataColumnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
+		for ( int i = 0; i < targetAssociationKeyMetadataColumnNames.length; i++ ) {
+			int index = ArrayHelper.indexOf( rowKeyColumnNames, targetAssociationKeyMetadataColumnNames[i] );
 			if ( index > -1 ) {
 				targetKeyColumnValues[i] = rowKeyColumnValues[index];
 			}
@@ -516,60 +485,6 @@ public class AssociationPersister {
 				return null;
 			}
 		}
-		return new EntityKey( targetEntityKeyMetadata, targetKeyColumnValues );
+		return new EntityKey( associationKey.getMetadata().getRowKeyEntityKeyMetadata(), targetKeyColumnValues );
 	}
-
-	private EntityKeyMetadata targetEntityKeyMetadata() {
-		if (collectionPersister != null ) {
-			if ( inverse ) {
-				// Bidirectional *ToMany
-				return ( (OgmEntityPersister) collectionPersister.getOwnerEntityPersister() ).getEntityKeyMetadata();
-			}
-			else if ( collectionPersister.getElementType().isEntityType() ) {
-				// *ToMany
-				return ( (OgmEntityPersister) collectionPersister.getElementPersister() ).getEntityKeyMetadata();
-			}
-			else {
-				// Embedded we need to build the key metadata
-				String[] targetColumnNames = null;
-				if ( inverse ) {
-					targetColumnNames = collectionPersister.getAssociationKeyMetadata().getColumnNames();
-				}
-				else {
-					targetColumnNames = collectionPersister.getAssociationKeyMetadataFromElement().getColumnNames();
-				}
-				return new EntityKeyMetadata( associationKeyMetadata.getTable(), targetColumnNames );
-			}
-		}
-		else if ( propertyType != null ) {
-			if ( propertyType instanceof EntityType ) {
-				// *ToOne or Embedded
-				String[] rowKeyColumnNames = associationKeyMetadata.getRowKeyColumnNames();
-				List<String> targetColumnList = new ArrayList<String>( rowKeyColumnNames.length );
-				for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
-					if ( !contains( getAssociationKey().getColumnNames(), rowKeyColumnNames[i] ) ) {
-						targetColumnList.add( rowKeyColumnNames[i] );
-					}
-				}
-				String[] targetKeyColumnNames = targetColumnList.toArray( new String[targetColumnList.size()] );
-				return new EntityKeyMetadata( associationKeyMetadata.getTable(), targetKeyColumnNames );
-			}
-			else {
-				throw new AssertionFailure( "Cannot detect associated entity metadata. propertyType is of unexpected type: " + propertyType.getClass() );
-			}
-		}
-		else {
-			throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
-		}
-	}
-
-	private boolean contains(String[] columns, String element) {
-		for ( String column : columns ) {
-			if ( column.equals( element ) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 }

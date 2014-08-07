@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
-import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
@@ -21,16 +20,14 @@ public class AssociationContext implements GridDialectOperationContext {
 
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
-	private final AssociationKeyMetadata targetAssociationKeyMetada;
 
-	public AssociationContext(OptionsContext optionsContext, AssociationKeyMetadata targetAssociationKeyMetada) {
-		this( optionsContext, targetAssociationKeyMetada, null );
+	public AssociationContext(OptionsContext optionsContext) {
+		this( optionsContext, null );
 	}
 
-	public AssociationContext(OptionsContext optionsContext, AssociationKeyMetadata targetAssociationKeyMetada, OperationsQueue operationsQueue) {
+	public AssociationContext(OptionsContext optionsContext, OperationsQueue operationsQueue) {
 		this.optionsContext = optionsContext;
 		this.operationsQueue = operationsQueue;
-		this.targetAssociationKeyMetada = targetAssociationKeyMetada;
 	}
 
 	public OperationsQueue getOperationsQueue() {
@@ -40,13 +37,6 @@ public class AssociationContext implements GridDialectOperationContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
-	}
-
-	/**
-	 * The column identifying the target side of the association
-	 */
-	public AssociationKeyMetadata getTargetAssociationKeyMetadata() {
-		return targetAssociationKeyMetada;
 	}
 
 	@Override

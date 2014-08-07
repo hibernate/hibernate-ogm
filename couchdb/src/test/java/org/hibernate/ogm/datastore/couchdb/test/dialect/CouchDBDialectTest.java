@@ -159,7 +159,7 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, null
+				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, null, EMPTY_STRING_ARRAY
 		);
 
 		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
@@ -178,7 +178,7 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ), null, null );
+		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ) );
 	}
 
 	private TupleContext emptyTupleContext() {

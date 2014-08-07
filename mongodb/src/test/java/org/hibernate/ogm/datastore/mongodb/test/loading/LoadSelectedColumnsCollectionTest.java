@@ -121,7 +121,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new String[] { "Project_id" },
 				new String[] { "Project_id", "module_id" },
 				ArrayHelper.EMPTY_STRING_ARRAY,
-				new EntityKeyMetadata( "Module", new String[] { "id" } )
+				new EntityKeyMetadata( "Module", new String[] { "id" } ),
+				new String[] { "module_id" }
 		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
@@ -139,9 +140,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
 						Project.class,
 						"modules"
-				),
-				null,
-				null
+				)
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );

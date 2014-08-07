@@ -118,7 +118,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getKeyColumnNames(),
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
-				targetEntityKeyMetadata( false )
+				targetEntityKeyMetadata( false ),
+				getElementColumnNames()
 		);
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata(
@@ -126,7 +127,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getElementColumnNames(),
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
-				targetEntityKeyMetadata( true )
+				targetEntityKeyMetadata( true ),
+				getKeyColumnNames()
 		);
 
 		nodeName = collection.getNodeName();

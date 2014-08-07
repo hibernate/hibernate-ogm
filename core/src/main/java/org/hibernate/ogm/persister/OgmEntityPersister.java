@@ -222,12 +222,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				String[] propertyColumnNames = getPropertyColumnNames( index );
 				String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 				String tableName = getTableName();
+				EntityKeyMetadata entityKeyMetadata = createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 						tableName,
 						propertyColumnNames,
 						rowKeyColumnNames,
 						ArrayHelper.EMPTY_STRING_ARRAY,
-						createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames )
+						entityKeyMetadata,
+						entityKeyMetadata.getColumnNames()
 				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
@@ -243,7 +245,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 		String[] targetKeyColumnNames = targetColumnList.toArray( new String[targetColumnList.size()] );
-		return new EntityKeyMetadata( tableName,targetKeyColumnNames );
+		return new EntityKeyMetadata( tableName, targetKeyColumnNames );
 	}
 
 	private boolean contains(String[] associationKeyColumnNames, String element) {
