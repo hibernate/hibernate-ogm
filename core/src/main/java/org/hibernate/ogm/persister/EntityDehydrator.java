@@ -201,7 +201,7 @@ class EntityDehydrator {
 							session
 					);
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, rowKeyColumnNames );
-		final RowKey rowKey = new RowKey( persister.getTableName(), rowKeyColumnNames, columnValues );
+		final RowKey rowKey = new RowKey( rowKeyColumnNames, columnValues );
 
 		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
@@ -258,7 +258,6 @@ class EntityDehydrator {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
 			//this is a StarToOne case ie the FK is on the owning entity
 			final RowKey matchingTuple = new RowKeyBuilder()
-					.tableName( persister.getTableName() )
 					.addColumns( buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames ) )
 					.values( tupleKey )
 					.build();

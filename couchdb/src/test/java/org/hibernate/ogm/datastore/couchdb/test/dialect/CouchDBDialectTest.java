@@ -144,7 +144,7 @@ public class CouchDBDialectTest {
 		properties.put( "addresses_id", 1 );
 		Tuple associationTuple = new Tuple( new CouchDBTupleSnapshot( properties ) );
 
-		RowKey rowKey = createRowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
+		RowKey rowKey = new RowKey( rowKeyColumnNames, rowKeyColumnValues );
 		createAssociation.put( rowKey, associationTuple );
 		dialect.updateAssociation( createAssociation, key, emptyAssociationContext() );
 
@@ -164,10 +164,6 @@ public class CouchDBDialectTest {
 		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
 	}
 
-	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
-		return new RowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
-	}
-
 	private void createDataStoreProvider() throws Exception {
 		Properties properties = new Properties();
 		properties.putAll( environmentProperties() );
@@ -177,7 +173,7 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ) );
+		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ), null, null );
 	}
 
 	private TupleContext emptyTupleContext() {

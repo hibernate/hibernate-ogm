@@ -51,7 +51,7 @@ public final class SerializableMapAssociationSnapshot implements AssociationSnap
 		Set<RowKey> rowKeys = new HashSet<RowKey>( associationMap.size() );
 
 		for ( SerializableKey key : associationMap.keySet() ) {
-			rowKeys.add( new RowKey( key.getTable(), key.getColumnNames(), key.getColumnValues() ) );
+			rowKeys.add( new RowKey( key.getColumnNames(), key.getColumnValues() ) );
 		}
 
 		return rowKeys;

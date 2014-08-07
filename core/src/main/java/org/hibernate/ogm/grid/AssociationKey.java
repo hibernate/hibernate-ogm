@@ -28,10 +28,16 @@ public final class AssociationKey implements Key {
 	//role and entity key are not part of the object identity
 	private final String collectionRole;
 	private final EntityKey entityKey;
+	private final EntityKey targetKey;
 	private final AssociationKind associationKind;
 
 	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind) {
+		this( metadata, columnValues, collectionRole, entityKey, associationKind, null );
+	}
+
+	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, String collectionRole, EntityKey entityKey, AssociationKind associationKind, EntityKey elementKey) {
 		this.metadata = metadata;
+		this.targetKey = elementKey;
 		if ( metadata.getColumnNames().length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
 		}
@@ -47,11 +53,25 @@ public final class AssociationKey implements Key {
 		return metadata;
 	}
 
-	@Override
 	public String getTable() {
 		return metadata.getTable();
 	}
 
+	/**
+	 * The columns identifying the association.
+	 *
+	 * For example, in a many to many association, the row key will look like:
+	 *
+	 * <pre>
+	 * RowKey{table='AccountOwner_BankAccount', columnNames=[owners_id, bankAccounts_id], columnValues=[...]},
+	 * </pre>
+	 *
+	 * the association key will be something like:
+	 *
+	 * <pre>
+	 * AssociationKey{table='AccountOwner_BankAccount', columnNames=[owners_id], columnValues=[...]},
+	 * </pre>
+	 */
 	@Override
 	public String[] getColumnNames() {
 		return metadata.getColumnNames();
@@ -77,14 +97,18 @@ public final class AssociationKey implements Key {
 	}
 
 	/**
+	 * Returns the key on the end side (not the owner one) of the association. The target key can only be obtained when
+	 * we are on the inverse side of a bidirectional association, null is returned in all the other scenarios.
+	 */
+	public EntityKey getTargetKey() {
+		return targetKey;
+	}
+
+	/**
 	 * Returns the type of association
 	 */
 	public AssociationKind getAssociationKind() {
 		return associationKind;
-	}
-
-	public String[] getRowKeyColumnNames() {
-		return metadata.getRowKeyColumnNames();
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,10 +40,9 @@ public class AssociationKeyExternalizerTest {
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
+		AssociationKey unmarshalledKey = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( AssociationKey.class );
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );

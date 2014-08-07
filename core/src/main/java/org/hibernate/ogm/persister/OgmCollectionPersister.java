@@ -107,16 +107,23 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
+
+		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
+		String[] rowKeyColumnNames = rowKeyBuilder.getColumnNames();
+		String[] rowKeyIndexColumnNames = rowKeyBuilder.getIndexColumnNames();
+
 		associationKeyMetadata = new AssociationKeyMetadata(
 				getTableName(),
 				getKeyColumnNames(),
-				getRowKeyColumnNames()
+				rowKeyColumnNames,
+				rowKeyIndexColumnNames
 		);
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata(
 				getTableName(),
 				getElementColumnNames(),
-				getRowKeyColumnNames()
+				rowKeyColumnNames,
+				rowKeyIndexColumnNames
 		);
 
 		nodeName = collection.getNodeName();
@@ -124,6 +131,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
+	}
+
+	public AssociationKeyMetadata getAssociationKeyMetadataFromElement() {
+		return associationKeyMetadataFromElement;
 	}
 
 	/** represents the type of associations at stake */
@@ -258,7 +269,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				}
 				// update the matching element
 				// FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey, key );
 
 				getElementGridType().nullSafeSet(
 						assocEntryTuple,
@@ -270,7 +281,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				// put back entry tuple to actually apply changes to the store
 				associationPersister.getAssociation().put( assocEntryKey, assocEntryTuple );
 
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey, key );
 
 				count++;
 			}
@@ -326,7 +337,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	// Centralize the RowKey column setting logic as the values settings are slightly different between insert / update and delete
 	public RowKeyBuilder initializeRowKeyBuilder() {
-		RowKeyBuilder builder = new RowKeyBuilder().tableName( getTableName() );
+		RowKeyBuilder builder = new RowKeyBuilder();
 		if ( hasIdentifier ) {
 			builder.addColumns( getIdentifierColumnName() );
 		}
@@ -334,17 +345,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			builder.addColumns( getKeyColumnNames() );
 			// !isOneToMany() present in delete not in update
 			if ( !isOneToMany() && hasIndex && !indexContainsFormula ) {
-				builder.addColumns( getIndexColumnNames() );
+				builder.addIndexColumns( getIndexColumnNames() );
 			}
 			else {
 				builder.addColumns( getElementColumnNames() );
 			}
 		}
 		return builder;
-	}
-
-	public String[] getRowKeyColumnNames() {
-		return initializeRowKeyBuilder().getColumnNames();
 	}
 
 	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
@@ -457,7 +464,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
 					// delete the tuple
-					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
+					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey, id );
 					associationPersister.getAssociation().remove( assocEntryKey );
 
 					count++;
@@ -507,7 +514,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					// TODO: copy/paste from recreate()
 					RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
 					completeTuple( keyAndTuple, collection, session, entry );
-					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key, id );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -555,7 +562,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						// TODO: copy/paste from insertRows()
 						RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
 						completeTuple( keyAndTuple, collection, session, entry );
-						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key, id );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -577,7 +584,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey, Serializable targetId) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
@@ -624,6 +631,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.associationKeyMetadata( associationKeyMetadataFromElement )
 					.collectionPersister( this )
 					.key( entityId )
+					.targetKey( targetId )
 					.inverse();
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
@@ -694,7 +702,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 								null,
 								association.get( assocEntryKey ),
 								Action.REMOVE,
-								assocEntryKey
+								assocEntryKey,
+								id
 								);
 					}
 				}
@@ -766,6 +775,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	// NOTE: This method has accidentally been introduced in ORM 4.3.5 and is deprecated as of ORM 4.3.6. We're
 	// overriding this variant and the one above to be compatible with any 4.3.x version. This variant can be removed
 	// once we're on ORM 5
+	@Override
 	protected void doProcessQueuedOps(PersistentCollection collection, Serializable key, int nextIndex, SessionImplementor session) throws HibernateException {
 		// nothing to do
 	}

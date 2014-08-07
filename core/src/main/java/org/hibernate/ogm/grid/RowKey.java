@@ -15,23 +15,16 @@ import java.util.Arrays;
  */
 public final class RowKey implements Key {
 
-	private final String table;
 	private final String[] columnNames;
 	//column value types do have to be serializable so RowKey can be serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
 	private final Object[] columnValues;
 	private final int hashCode;
 
-	public RowKey(String table, String[] columnNames, Object[] columnValues) {
-		this.table = table;
+	public RowKey(String[] columnNames, Object[] columnValues) {
 		this.columnNames = columnNames;
 		this.columnValues = columnValues;
 		this.hashCode = generateHashCode();
-	}
-
-	@Override
-	public String getTable() {
-		return table;
 	}
 
 	/**
@@ -54,6 +47,30 @@ public final class RowKey implements Key {
 		return columnValues;
 	}
 
+	/**
+	 * @return the corresponding value of the column, null if the column does not exist in the row key
+	 */
+	public Object getColumnValue(String columnName) {
+		for ( int j = 0; j < columnNames.length; j++ ) {
+			if ( columnNames[j].equals( columnName ) ) {
+				return columnValues[j];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * @return true if the column is one of the row key columns, false otherwise
+	 */
+	public boolean contains(String column) {
+		for ( String columnName : columnNames ) {
+			if ( columnName.equals( column ) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if ( this == o ) {
@@ -64,10 +81,6 @@ public final class RowKey implements Key {
 		}
 
 		RowKey that = (RowKey) o;
-
-		if ( !table.equals( that.table ) ) {
-			return false;
-		}
 
 		// Probably incorrect - comparing Object[] arrays with Arrays.equals
 		if ( !Arrays.equals( columnValues, that.columnValues ) ) {
@@ -86,19 +99,22 @@ public final class RowKey implements Key {
 	}
 
 	private int generateHashCode() {
-		final int result = table.hashCode();
-		return 31 * result + Arrays.hashCode( columnValues );
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode( columnNames );
+		result = prime * result + Arrays.hashCode( columnValues );
+		return result;
 	}
 
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
 		sb.append( "RowKey" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
+		sb.append( "{columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
 		sb.append( ", columnValues=" )
 				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
 		sb.append( '}' );
 		return sb.toString();
 	}
+
 }

@@ -10,48 +10,47 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Node;
 
 /**
  * Represents the Tuple snapshot as loaded by the Neo4j datastore.
  * <p>
- * Any {@link PropertyContainer} (node or relationship) can represent a tuple. The columns of the tuple are mapped as
- * properties of the property container.
+ * The columns of the tuple are mapped as properties of the node.
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
-	private final PropertyContainer propertyContainer;
+	private final Node node;
 
-	public Neo4jTupleSnapshot(PropertyContainer propertyContainer) {
-		this.propertyContainer = propertyContainer;
+	public Neo4jTupleSnapshot(Node node) {
+		this.node = node;
 	}
 
 	@Override
 	public Object get(String column) {
-		if ( propertyContainer.hasProperty( column ) ) {
-			return propertyContainer.getProperty( column );
+		if ( node.hasProperty( column ) ) {
+			return node.getProperty( column );
 		}
 		return null;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return !propertyContainer.getPropertyKeys().iterator().hasNext();
+		return !node.getPropertyKeys().iterator().hasNext();
 	}
 
 	@Override
 	public Set<String> getColumnNames() {
 		Set<String> names = new HashSet<String>();
-		for ( String string : propertyContainer.getPropertyKeys() ) {
+		for ( String string : node.getPropertyKeys() ) {
 			names.add( string );
 		}
 		return names;
 	}
 
-	public PropertyContainer getPropertyContainer() {
-		return propertyContainer;
+	public Node getNode() {
+		return node;
 	}
 
 }

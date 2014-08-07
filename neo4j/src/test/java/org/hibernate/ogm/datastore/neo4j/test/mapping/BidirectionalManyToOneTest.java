@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.SalesForce;
@@ -52,25 +55,50 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		assertNumberOfNodes( 3 );
 		assertRelationships( 2 );
 
-		String forceNode = "(:SalesForce:ENTITY {"
-				+ "  id: '" + salesForce.getId() + "'"
-				+ ", corporation: '" + salesForce.getCorporation() + "'"
-				+ " })";
+		String forceNode = "(f:SalesForce:ENTITY { id: {f}.id, corporation: {f}.corporation})";
+		String guyNode = "(g:SalesGuy:ENTITY {id: {g}.id, name: {g}.name, salesForce_id: {g}.salesForce_id})";
+		String relationship = forceNode + " - [r:SalesGuy] - " + guyNode;
 
-		String ericNode = "(:SalesGuy:ENTITY {"
-				+ "  id: '" + eric.getId() + "'"
-				+ ", name: '" + eric.getName() + "'"
-				+ ", salesForce_id: '" + salesForce.getId() + "'"
-				+ " })";
+		assertExpectedMapping( "f", forceNode, params( salesForce ) );
+		assertExpectedMapping( "g", guyNode, params( eric ) );
+		assertExpectedMapping( "g", guyNode, params( simon ) );
 
-		String simonNode = "(:SalesGuy:ENTITY {"
-				+ "  id: '" + simon.getId() + "'"
-				+ ", name: '" + simon.getName() + "'"
-				+ ", salesForce_id: '" + salesForce.getId() + "'"
-				+ " })";
+		assertExpectedMapping( "r", relationship, params( eric, salesForce ) );
+		assertExpectedMapping( "r", relationship, params( simon, salesForce ) );
+	}
 
-		assertExpectedMapping( forceNode + " - [:SalesGuy] - " + ericNode );
-		assertExpectedMapping( forceNode + " - [:SalesGuy] - " + simonNode );
+	private Map<String, Object> params(SalesGuy salesGuy) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "g", properties( salesGuy ) );
+		return params;
+	}
+
+	private Map<String, Object> params(SalesForce salesForce) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "f", properties( salesForce ) );
+		return params;
+	}
+
+	private Map<String, Object> params(SalesGuy salesGuy, SalesForce salesForce) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.putAll( params( salesForce ) );
+		params.putAll( params( salesGuy ) );
+		return params;
+	}
+
+	private Map<String, Object> properties(SalesForce salesForce2) {
+		Map<String, Object> properties = new HashMap<String, Object>();
+		properties.put( "id", salesForce.getId() );
+		properties.put( "corporation", salesForce2.getCorporation() );
+		return properties;
+	}
+
+	private Map<String, Object> properties(SalesGuy salesGuy) {
+		Map<String, Object> salesGuyProperties = new HashMap<String, Object>();
+		salesGuyProperties.put( "id", eric.getId() );
+		salesGuyProperties.put( "name", eric.getName() );
+		salesGuyProperties.put( "salesForce_id", salesGuy.getSalesForce().getId() );
+		return salesGuyProperties;
 	}
 
 	@Override

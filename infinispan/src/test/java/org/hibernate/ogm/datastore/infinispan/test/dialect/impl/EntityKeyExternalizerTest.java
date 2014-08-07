@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,10 +40,9 @@ public class EntityKeyExternalizerTest {
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
+		EntityKey unmarshalledKey = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( EntityKey.class );
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
