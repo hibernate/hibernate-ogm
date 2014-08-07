@@ -15,9 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -26,6 +28,8 @@ import org.hibernate.Transaction;
 import org.hibernate.hql.ParsingException;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.TestForIssue;
+import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.ogm.utils.TestSessionFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -476,6 +480,78 @@ public class SimpleQueriesTest extends OgmTestCase {
 			.containsExactly( "string 1" );
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-424")
+	public void testAutoFlushIsAppliedDuringQueryExecution() throws Exception {
+		Query query = session.createQuery( "from Hypothesis" );
+		assertQuery( session, 8, query );
+
+		Hypothesis hypothesis = new Hypothesis();
+		hypothesis.setId( "29" );
+		hypothesis.setDescription( "In the morning it's darker than outside" );
+		hypothesis.setPosition( 29 );
+		session.persist( hypothesis );
+
+		if ( EnumSet.of( MONGODB, NEO4J ).contains( TestHelper.getCurrentDialectType() ) ) {
+			assertQuery( session, query, 9, "Auto-flush should be performed prior to query execution" );
+		}
+		else {
+			assertQuery( session, query, 8, "Auto-flush should not be reflected by queries executed via Hibernate Search" );
+		}
+
+		session.delete( hypothesis );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-424")
+	public void testEntitiesInsertedInCurrentSessionAreFoundByQueriesNotBasedOnHibernateSearch() throws Exception {
+		Query query = session.createQuery( "from Hypothesis h where h.position = 30" );
+		assertQuery( session, 0, query );
+
+		Hypothesis hypothesis = new Hypothesis();
+		hypothesis.setId( "30" );
+		hypothesis.setDescription( "In the morning it's darker than outside" );
+		hypothesis.setPosition( 30 );
+		session.persist( hypothesis );
+
+		if ( TestHelper.getCurrentDialectType().supportsQueries() ) {
+			assertQuery( session, query, 1, "Newly inserted entity should have been flushed and returned by the query" );
+		}
+		else {
+			assertQuery( session, query, 0, "Newly inserted entity should not have been returned by the query" );
+		}
+
+		session.delete( hypothesis );
+	}
+
+	@Test
+	@TestForIssue(jiraKey = "OGM-424")
+	public void testSetFlushModeIsApplied() throws Exception {
+		Query query = session.createQuery( "from Hypothesis h where h.position = 31" );
+		assertQuery( session, 0, query );
+
+		Hypothesis hypothesis = new Hypothesis();
+		hypothesis.setId( "31" );
+		hypothesis.setDescription( "In the morning it's darker than outside" );
+		hypothesis.setPosition( 31 );
+		session.persist( hypothesis );
+
+		query.setFlushMode( FlushMode.MANUAL );
+
+		assertQuery( session, query, 0, "No auto-flush should be performed prior to query execution" );
+
+		session.flush();
+
+		if ( TestHelper.getCurrentDialectType().supportsQueries() ) {
+			assertQuery( session, query, 1, "Flushed result should be returned by query" );
+		}
+		else {
+			assertQuery( session, query, 0, "Flushed result not be returned by query executed via Hibernate Search" );
+		}
+
+		session.delete( hypothesis );
+	}
+
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
 		final Session session = sessions.openSession();
@@ -606,6 +682,11 @@ public class SimpleQueriesTest extends OgmTestCase {
 	private void assertQuery(final Session session, final int expectedSize, final Query testedQuery) {
 		List<?> list = testedQuery.list();
 		assertThat( list ).as( "Query failed" ).hasSize( expectedSize );
+	}
+
+	private void assertQuery(Session session, Query testedQuery, int expectedSize, String message) {
+		List<?> list = testedQuery.list();
+		assertThat( list ).as( message ).hasSize( expectedSize );
 	}
 
 	private List<ProjectionResult> asProjectionResults(String projectionQuery) {

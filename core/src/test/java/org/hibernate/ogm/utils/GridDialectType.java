@@ -16,28 +16,30 @@ package org.hibernate.ogm.utils;
 */
 public enum GridDialectType {
 
-	HASHMAP( "org.hibernate.ogm.utils.HashMapTestHelper", false ) {
+	HASHMAP( "org.hibernate.ogm.utils.HashMapTestHelper", false, false ) {
 		@Override public Class<?> loadTestableGridDialectClass() {
 			return null; //this one is special, we want it only as fallback when all others fail
 		}
 	},
 
-	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper", false ),
+	INFINISPAN( "org.hibernate.ogm.datastore.infinispan.utils.InfinispanTestHelper", false, false ),
 
-	EHCACHE( "org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper", false ),
+	EHCACHE( "org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper", false, false ),
 
-	MONGODB( "org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper", true ),
+	MONGODB( "org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper", true, true ),
 
-	NEO4J( "org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper", false ),
+	NEO4J( "org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper", false, true ),
 
-	COUCHDB( "org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper", true );
+	COUCHDB( "org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper", true, false );
 
 	private final String testHelperClassName;
 	private final boolean isDocumentStore;
+	private final boolean supportsQueries;
 
-	GridDialectType(String testHelperClassName, boolean isDocumentStore) {
+	GridDialectType(String testHelperClassName, boolean isDocumentStore, boolean supportsQueries) {
 		this.testHelperClassName = testHelperClassName;
 		this.isDocumentStore = isDocumentStore;
+		this.supportsQueries = supportsQueries;
 	}
 
 	public Class<?> loadTestableGridDialectClass() {
@@ -59,6 +61,16 @@ public enum GridDialectType {
 		return isDocumentStore;
 	}
 
+	/**
+	 * Whether this store supports the execution of queries or not.
+	 *
+	 * @return {@code true} if this store has its own query backend, {@code false} if it uses Hibernate Search for query
+	 * execution.
+	 */
+	public boolean supportsQueries() {
+		return supportsQueries;
+	}
+
 	public static GridDialectType valueFromHelperClass(Class<? extends TestableGridDialect> class1) {
 		for ( GridDialectType type : values() ) {
 			if ( type.testHelperClassName.equals( class1.getName() ) ) {
@@ -68,5 +80,4 @@ public enum GridDialectType {
 		throw new IllegalArgumentException( class1 +
 				" is not one of the TestableGridDialect implementation known to " + GridDialectType.class );
 	}
-
 }
