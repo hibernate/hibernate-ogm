@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.manytoone.JUG;
@@ -48,11 +51,36 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 	@Test
 	public void testMapping() throws Exception {
 		assertNumberOfNodes( 3 );
-		assertRelationships( 0 );
+		assertRelationships( 2 );
 
-		assertExpectedMapping( "(n:JUG:ENTITY {jug_id: '" + jug.getId() + "', name: '" + jug.getName() + "' })" );
-		assertExpectedMapping( "(n:Member:ENTITY {member_id: '" + emmanuel.getId() + "', name: '" + emmanuel.getName() + "', memberOf_jug_id: '" + jug.getId() + "' })" );
-		assertExpectedMapping( "(n:Member:ENTITY {member_id: '" + jerome.getId() + "' , name: '" + jerome.getName() + "', memberOf_jug_id: '" + jug.getId() + "' })" );
+		String jugNode = "(jug:JUG:ENTITY {jug_id: {jug}.jug_id, name: {jug}.name })";
+		String emmanuelNode = "(e:Member:ENTITY {member_id: {e}.member_id, name: {e}.name, memberOf_jug_id: {e}.memberOf_jug_id })";
+		String jeromeNode = "(j:Member:ENTITY {member_id: {j}.member_id, name: {j}.name, memberOf_jug_id: {j}.memberOf_jug_id })";
+
+		Map<String, Object> jugProperties = new HashMap<String, Object>();
+		jugProperties.put( "jug_id", jug.getId() );
+		jugProperties.put( "name", jug.getName() );
+
+		Map<String, Object> emmanuelProperties = new HashMap<String, Object>();
+		emmanuelProperties.put( "member_id", emmanuel.getId() );
+		emmanuelProperties.put( "name", emmanuel.getName() );
+		emmanuelProperties.put( "memberOf_jug_id", emmanuel.getMemberOf().getId() );
+
+		Map<String, Object> jeromeProperties = new HashMap<String, Object>();
+		jeromeProperties.put( "member_id", jerome.getId() );
+		jeromeProperties.put( "name", jerome.getName() );
+		jeromeProperties.put( "memberOf_jug_id", jerome.getMemberOf().getId() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "jug", jugProperties );
+		params.put( "e", emmanuelProperties );
+		params.put( "j", jeromeProperties );
+
+		assertExpectedMapping( "jug", jugNode, params );
+		assertExpectedMapping( "e", emmanuelNode, params );
+		assertExpectedMapping( "j", jeromeNode, params );
+		assertExpectedMapping( "r", jugNode + " - [r:Member] - " + emmanuelNode, params );
+		assertExpectedMapping( "r", jugNode + " - [r:Member] - " + jeromeNode, params );
 	}
 
 	@Override

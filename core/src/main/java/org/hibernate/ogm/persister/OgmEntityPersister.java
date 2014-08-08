@@ -234,14 +234,36 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
 				String[] propertyColumnNames = getPropertyColumnNames( index );
+				String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
+				String tableName = getTableName();
+				EntityKeyMetadata entityKeyMetadata = createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-						getTableName(),
+						tableName,
 						propertyColumnNames,
-						buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames )
+						rowKeyColumnNames,
+						ArrayHelper.EMPTY_STRING_ARRAY,
+						entityKeyMetadata,
+						entityKeyMetadata.getColumnNames()
 				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
 		}
+	}
+
+	public EntityKeyMetadata createTargetEntityKeyMetadatata(String tableName, String[] associationKeyColumnNames, String[] rowKeyColumnNames) {
+		// *ToOne or Embedded
+		List<String> targetColumnList = new ArrayList<String>( rowKeyColumnNames.length );
+		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
+			if ( !contains( associationKeyColumnNames, rowKeyColumnNames[i] ) ) {
+				targetColumnList.add( rowKeyColumnNames[i] );
+			}
+		}
+		String[] targetKeyColumnNames = targetColumnList.toArray( new String[targetColumnList.size()] );
+		return new EntityKeyMetadata( tableName, targetKeyColumnNames );
+	}
+
+	private boolean contains(String[] associationKeyColumnNames, String element) {
+		return ArrayHelper.indexOf( associationKeyColumnNames, element ) > -1;
 	}
 
 	@Override

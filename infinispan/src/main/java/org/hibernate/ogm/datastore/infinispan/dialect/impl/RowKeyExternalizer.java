@@ -61,7 +61,7 @@ public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		return new RowKey( tableName, columnNames, values );
+		return new RowKey( tableName, columnNames, values, null );
 	}
 
 	@Override

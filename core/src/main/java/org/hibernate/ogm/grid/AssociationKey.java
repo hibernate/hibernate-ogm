@@ -52,6 +52,21 @@ public final class AssociationKey implements Key {
 		return metadata.getTable();
 	}
 
+	/**
+	 * The columns identifying the association.
+	 *
+	 * For example, in a many to many association, the row key will look like:
+	 *
+	 * <pre>
+	 * RowKey{table='AccountOwner_BankAccount', columnNames=[owners_id, bankAccounts_id], columnValues=[...]},
+	 * </pre>
+	 *
+	 * the association key will be something like:
+	 *
+	 * <pre>
+	 * AssociationKey{table='AccountOwner_BankAccount', columnNames=[owners_id], columnValues=[...]},
+	 * </pre>
+	 */
 	@Override
 	public String[] getColumnNames() {
 		return metadata.getColumnNames();
@@ -81,10 +96,6 @@ public final class AssociationKey implements Key {
 	 */
 	public AssociationKind getAssociationKind() {
 		return associationKind;
-	}
-
-	public String[] getRowKeyColumnNames() {
-		return metadata.getRowKeyColumnNames();
 	}
 
 	@Override

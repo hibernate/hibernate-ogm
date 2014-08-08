@@ -15,7 +15,9 @@ import static org.junit.Assert.assertNotNull;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.OgmTestCase;
+import org.hibernate.ogm.utils.TestHelper;
 import org.junit.Test;
 
 /**
@@ -40,10 +42,10 @@ public class ManyToOneTest extends OgmTestCase {
 		session.persist( jerome );
 		session.flush();
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
 		transaction.commit();
 		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 3 );
-		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( 0 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociations() );
 
 		session.clear();
 
@@ -61,6 +63,14 @@ public class ManyToOneTest extends OgmTestCase {
 		session.close();
 
 		checkCleanCache();
+	}
+
+	private Long expectedAssociations() {
+		if ( TestHelper.getCurrentDialectType() == GridDialectType.NEO4J ) {
+			// A relationship is created in Neo4j that will result in the count
+			return 1L;
+		}
+		return 0L;
 	}
 
 	@Test

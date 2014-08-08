@@ -16,7 +16,6 @@ import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
 /**
@@ -30,15 +29,16 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey) {
 		for ( Relationship relationship : relationships( ownerNode, associationKey ) ) {
-			RowKey rowKey = convert( associationKey, relationship );
-			Tuple tuple = new Tuple( new Neo4jTupleSnapshot( relationship ) );
-			tuples.put( rowKey, tuple );
+			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey);
+			RowKey rowKey = convert( associationKey, snapshot );
+			tuples.put( rowKey, new Tuple( snapshot ) );
 		}
 	}
 
 	@Override
 	public Tuple get(RowKey rowKey) {
-		return tuples.get( rowKey );
+		Tuple tuple = tuples.get( rowKey );
+		return tuple;
 	}
 
 	@Override
@@ -60,17 +60,14 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( associationKey ) );
 	}
 
-	private RowKey convert(AssociationKey associationKey, PropertyContainer container) {
-		String[] columnNames = associationKey.getRowKeyColumnNames();
+	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {
+		String[] columnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Object[] values = new Object[columnNames.length];
 
 		for ( int i = 0; i < columnNames.length; i++ ) {
-			String columnName = columnNames[i];
-			if ( container.hasProperty( columnName ) ) {
-				values[i] = container.getProperty( columnName );
-			}
+			values[i] = snapshot.get( columnNames[i] );
 		}
 
-		return new RowKey( associationKey.getTable(), columnNames, values );
+		return new RowKey( associationKey.getTable(), columnNames, values, null );
 	}
 }
