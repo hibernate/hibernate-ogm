@@ -125,13 +125,13 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		log.tracef(
 				"Build Tuple object for row key entry %1$s in association %2$s (does not trigger access to the datastore)",
 				rowKey,
 				associationKey
 		);
-		return gridDialect.createTupleAssociation( associationKey, associationContext, rowKey );
+		return gridDialect.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override

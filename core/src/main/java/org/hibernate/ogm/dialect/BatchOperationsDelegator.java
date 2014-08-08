@@ -147,8 +147,8 @@ public class BatchOperationsDelegator implements GridDialect {
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
-		return dialect.createTupleAssociation( associationKey, associationContext, rowKey );
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
+		return dialect.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override

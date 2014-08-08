@@ -78,7 +78,7 @@ public interface GridDialect extends Service {
 	 */
 	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
-	Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey);
+	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
 
 	/**
 	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may

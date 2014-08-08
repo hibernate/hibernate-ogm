@@ -150,7 +150,7 @@ public class InfinispanDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		return new Tuple();
 	}
 

@@ -132,7 +132,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, AssociationContext associationContext, RowKey rowKey) {
+	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
 		Relationship relationship = createRelationship( associationKey, rowKey );
 		GraphLogger.log( "Relationship: %1$s", relationship );
 		if ( relationship == null ) {
