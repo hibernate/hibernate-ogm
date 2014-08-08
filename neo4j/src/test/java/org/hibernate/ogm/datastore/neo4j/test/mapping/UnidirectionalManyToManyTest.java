@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test.mapping;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.associations.collection.manytomany.AccountOwner;
@@ -50,12 +53,32 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		assertNumberOfNodes( 3 );
 		assertRelationships( 2 );
 
-		String ownerNode = "(owner:AccountOwner:ENTITY {id: '" + owner.getId() + "', SSN: '" + owner.getSSN() + "' })";
-		String barcklaysNode = "(barclays:BankAccount:ENTITY {id: '" + barclays.getId() + "', accountNumber: '" + barclays.getAccountNumber() + "' })";
-		String sogeNode = "(soge:BankAccount:ENTITY {id: '" + soge.getId() + "', accountNumber: '" + soge.getAccountNumber() + "' })";
+		String ownerNode = "(o:AccountOwner:ENTITY {id: {o}.id, SSN: {o}.SSN })";
+		String barcklaysNode = "(b:BankAccount:ENTITY {id: {b}.id, accountNumber: {b}.accountNumber })";
+		String sogeNode = "(s:BankAccount:ENTITY {id: {s}.id, accountNumber: {s}.accountNumber })";
 
-		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + barcklaysNode );
-		assertExpectedMapping( ownerNode + " - [:AccountOwner_BankAccount] - " + sogeNode );
+		Map<String, Object> ownerProperties = new HashMap<String, Object>();
+		ownerProperties.put( "id", owner.getId() );
+		ownerProperties.put( "SSN", owner.getSSN() );
+
+		Map<String, Object> barcklaysProperties = new HashMap<String, Object>();
+		barcklaysProperties.put( "id", barclays.getId() );
+		barcklaysProperties.put( "accountNumber", barclays.getAccountNumber() );
+
+		Map<String, Object> sogeProperties = new HashMap<String, Object>();
+		sogeProperties.put( "id", soge.getId() );
+		sogeProperties.put( "accountNumber", soge.getAccountNumber() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "o", ownerProperties );
+		params.put( "b", barcklaysProperties );
+		params.put( "s", sogeProperties );
+
+		assertExpectedMapping( "o", ownerNode, params );
+		assertExpectedMapping( "b", barcklaysNode, params );
+		assertExpectedMapping( "s", sogeNode, params );
+		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + barcklaysNode, params );
+		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + sogeNode, params );
 	}
 
 	@Override

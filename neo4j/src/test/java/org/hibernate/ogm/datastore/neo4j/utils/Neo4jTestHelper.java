@@ -40,7 +40,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	 * Query for counting all entities. This takes embedded entities and temporary nodes (which never should show up
 	 * actually) into account.
 	 */
-	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " OR n:" + NodeLabel.TEMP_NODE.name() + " RETURN COUNT(n)";
+	private static final String ENTITY_COUNT_QUERY = "MATCH (n) WHERE n:" + NodeLabel.ENTITY.name() + " OR n:" + NodeLabel.EMBEDDED.name() + " RETURN COUNT(n)";
 
 	private static final String ROOT_FOLDER = buildDirectory() + File.separator + "NEO4J";
 
