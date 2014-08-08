@@ -72,6 +72,13 @@ public class AssociationKeyMetadata {
 	}
 
 	/**
+	 * Returns the column namess of the {@link RowKey} containing the identifier of the entity on the other side of the
+	 * association.
+	 * <p>
+	 * Note that most of the time this value can be obtain using {@link #rowKeyColumnNames},
+	 * {@link #rowKeyIndexColumnNames} and {@link #columnNames}. This is not always true though,
+	 * for example, when dealing with map-type properties.
+	 *
 	 * @return the column names of the association referring to the identifier of the target entity
 	 */
 	public String[] getRowKeyTargetAssociationKeyColumnNames() {
