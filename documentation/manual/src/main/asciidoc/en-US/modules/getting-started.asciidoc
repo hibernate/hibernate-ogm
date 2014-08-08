@@ -244,6 +244,12 @@ to your JVM or upgrade to a recent JDK version.
 jdk7u6 (b22) is known to work on Max OS X.
 ====
 
+[NOTE]
+====
+There are some additional constraints related to transactions when working with Neo4j.
+You will find more details in the Neo4j transactions section: <<ogm-neo4j-transactions>>
+====
+
 A working example can be found in Hibernate OGM's distribution under
 [filename]+hibernate-ogm-documentation/examples/gettingstarted+.
 
