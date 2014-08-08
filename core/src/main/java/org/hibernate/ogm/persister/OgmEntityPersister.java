@@ -233,6 +233,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						tableName,
 						propertyColumnNames,
 						rowKeyColumnNames,
+						// Because it is an association to one entity it should not need an index column
 						ArrayHelper.EMPTY_STRING_ARRAY,
 						new AssociatedEntityKeyMetadata(
 							entityKeyMetadata.getColumnNames(),
