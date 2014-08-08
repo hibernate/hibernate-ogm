@@ -34,6 +34,7 @@ import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
+import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
 import org.hibernate.ogm.jdbc.TupleAsMapResultSet;
@@ -107,23 +108,60 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			gridTypeOfAssociatedId = null;
 			associationType = AssociationType.OTHER;
 		}
+
+		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
+		String[] rowKeyColumnNames = rowKeyBuilder.getColumnNames();
+		String[] rowKeyIndexColumnNames = rowKeyBuilder.getIndexColumnNames();
+
 		associationKeyMetadata = new AssociationKeyMetadata(
 				getTableName(),
 				getKeyColumnNames(),
-				getRowKeyColumnNames()
+				rowKeyColumnNames,
+				rowKeyIndexColumnNames,
+				targetEntityKeyMetadata( false ),
+				getElementColumnNames()
 		);
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata(
 				getTableName(),
 				getElementColumnNames(),
-				getRowKeyColumnNames()
+				rowKeyColumnNames,
+				rowKeyIndexColumnNames,
+				targetEntityKeyMetadata( true ),
+				getKeyColumnNames()
 		);
 
 		nodeName = collection.getNodeName();
 	}
 
+	private EntityKeyMetadata targetEntityKeyMetadata( boolean inverse ) {
+		if ( inverse ) {
+			// Bidirectional *ToMany
+			return ( (OgmEntityPersister) getOwnerEntityPersister() ).getEntityKeyMetadata();
+		}
+		else if ( getElementType().isEntityType() ) {
+			// *ToMany
+			return ( (OgmEntityPersister) getElementPersister() ).getEntityKeyMetadata();
+		}
+		else {
+			// Embedded we need to build the key metadata
+			String[] targetColumnNames = null;
+			if ( inverse ) {
+				targetColumnNames = getKeyColumnNames();
+			}
+			else {
+				targetColumnNames = getElementColumnNames();
+			}
+			return new EntityKeyMetadata( getTableName(), targetColumnNames );
+		}
+	}
+
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
+	}
+
+	public AssociationKeyMetadata getAssociationKeyMetadataFromElement() {
+		return associationKeyMetadataFromElement;
 	}
 
 	/** represents the type of associations at stake */
@@ -251,7 +289,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			Object entry = entries.next();
 			if ( collection.needsUpdating( entry, i, elementType ) ) {
 				// find the matching element
-				RowKey assocEntryKey = getTupleKeyForUpdate( key, collection, session, i, entry );
+				RowKey assocEntryKey = getTupleKeyForUpdate( key, collection, session, i, entry, associationPersister );
 				Tuple assocEntryTuple = associationPersister.getAssociation().get( assocEntryKey );
 				if ( assocEntryTuple == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
@@ -309,8 +347,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			getElementGridType().nullSafeSet( tuple, element, getElementColumnNames(), session );
 
 		}
+
 		RowKeyAndTuple result = new RowKeyAndTuple();
-		result.key = rowKeyBuilder.values( tuple ).build();
+		EntityKey entityKey = associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple );
+		result.key = rowKeyBuilder.values( tuple ).entityKey( entityKey ).build();
+
 		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( result.key );
 		for ( String column : tuple.getColumnNames() ) {
 			assocEntryTuple.put( column, tuple.get( column ) );
@@ -334,7 +375,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			builder.addColumns( getKeyColumnNames() );
 			// !isOneToMany() present in delete not in update
 			if ( !isOneToMany() && hasIndex && !indexContainsFormula ) {
-				builder.addColumns( getIndexColumnNames() );
+				builder.addIndexColumns( getIndexColumnNames() );
 			}
 			else {
 				builder.addColumns( getElementColumnNames() );
@@ -343,11 +384,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return builder;
 	}
 
-	public String[] getRowKeyColumnNames() {
-		return initializeRowKeyBuilder().getColumnNames();
-	}
-
-	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry) {
+	private RowKey getTupleKeyForUpdate(Serializable key, PersistentCollection collection, SessionImplementor session, int i, Object entry, AssociationPersister associationPersister) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
@@ -370,10 +407,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getElementGridType().nullSafeSet( tuple, snapshotElement, getElementColumnNames(), session );
 			}
 		}
-		return rowKeyBuilder.values( tuple ).build();
+		rowKeyBuilder.values( tuple );
+		rowKeyBuilder.entityKey( associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple ) );
+		return rowKeyBuilder.build();
 	}
 
-	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex) {
+	private RowKey getTupleKeyForDelete(Serializable key, PersistentCollection collection, SessionImplementor session, Object entry, boolean findByIndex, AssociationPersister associationPersister) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
 		Tuple tuple = new Tuple();
 		if ( hasIdentifier ) {
@@ -397,6 +436,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 		}
 		rowKeyBuilder.values( tuple );
+		rowKeyBuilder.entityKey( associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple ) );
 		return rowKeyBuilder.build();
 	}
 
@@ -451,7 +491,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				while ( deletes.hasNext() ) {
 					Object entry = deletes.next();
 					// find the matching element
-					RowKey assocEntryKey = getTupleKeyForDelete( id, collection, session, entry, deleteByIndex );
+					RowKey assocEntryKey = getTupleKeyForDelete( id, collection, session, entry, deleteByIndex, associationPersister );
 					Tuple assocEntryTuple = associationPersister.getAssociation().get( assocEntryKey );
 					if ( assocEntryTuple == null ) {
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
@@ -628,12 +668,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
-				// FIXME build the key
-				Tuple assocTuple = associationPersister.createAndPutAssociationTuple( rowKey );
+				RowKey inverseRowKey = updateRowKeyEntityKey( rowKey, associationPersister );
+				Tuple assocTuple = associationPersister.createAndPutAssociationTuple( inverseRowKey );
 				for ( String columnName : tuple.getColumnNames() ) {
 					assocTuple.put( columnName, tuple.get( columnName ) );
 				}
-				associationPersister.getAssociation().put( rowKey, assocTuple );
+				associationPersister.getAssociation().put( inverseRowKey, assocTuple );
 			}
 			else if ( action == Action.REMOVE ) {
 				// we try and match the whole tuple as it should be on both sides of the navigation
@@ -642,7 +682,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 							+ getTableName() + "} key column names {" + Arrays.toString( elementColumnNames )
 							+ "} key column values {" + Arrays.toString( elementColumnValues ) + "}" );
 				}
-				associationPersister.getAssociation().remove( rowKey );
+				RowKey inverseRowKey = updateRowKeyEntityKey( rowKey, associationPersister );
+				associationPersister.getAssociation().remove( inverseRowKey );
 			}
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
@@ -656,6 +697,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			associationPersister.flushToCache();
 		}
+	}
+
+	private RowKey updateRowKeyEntityKey(RowKey rowKey, AssociationPersister associationPersister) {
+		EntityKey targetKey = associationPersister.createTargetKey( rowKey.getColumnNames(), rowKey.getColumnValues() );
+		return new RowKey( rowKey.getTable(), rowKey.getColumnNames(), rowKey.getColumnValues(), targetKey );
 	}
 
 	private static enum Action {

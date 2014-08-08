@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
@@ -17,8 +18,10 @@ import org.hibernate.ogm.grid.RowKey;
  */
 public class RowKeyBuilder {
 	private final List<String> columnNames = new ArrayList<String>();
+	private final List<String> indexColumnNames = new ArrayList<String>( 3 );
 	private String tableName;
 	private Tuple tuple;
+	private EntityKey entityKey;
 
 	public RowKeyBuilder addColumns(String... columns) {
 		for ( String columnName : columns ) {
@@ -27,8 +30,21 @@ public class RowKeyBuilder {
 		return this;
 	}
 
+	public RowKeyBuilder addIndexColumns(String... columns) {
+		for ( String columnName : columns ) {
+			columnNames.add( columnName );
+			indexColumnNames.add( columnName );
+		}
+		return this;
+	}
+
 	public RowKeyBuilder tableName(String tableName) {
 		this.tableName = tableName;
+		return this;
+	}
+
+	public RowKeyBuilder entityKey(EntityKey entityKey) {
+		this.entityKey = entityKey;
 		return this;
 	}
 
@@ -41,7 +57,7 @@ public class RowKeyBuilder {
 			columnValuesArray[index] = tuple.get( columnNamesArray[index] );
 		}
 
-		return new RowKey( tableName, columnNamesArray, columnValuesArray );
+		return new RowKey( tableName, columnNamesArray, columnValuesArray, entityKey );
 	}
 
 	public RowKeyBuilder values(Tuple tuple) {
@@ -51,5 +67,9 @@ public class RowKeyBuilder {
 
 	public String[] getColumnNames() {
 		return columnNames.toArray( new String[ columnNames.size() ] );
+	}
+
+	public String[] getIndexColumnNames() {
+		return indexColumnNames.toArray( new String[ indexColumnNames.size() ] );
 	}
 }
