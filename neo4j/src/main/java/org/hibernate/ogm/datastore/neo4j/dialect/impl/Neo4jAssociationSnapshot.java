@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.grid.AssociationKey;
@@ -28,9 +27,9 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
-	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey, AssociationContext associationContext) {
+	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey) {
 		for ( Relationship relationship : relationships( ownerNode, associationKey ) ) {
-			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associationContext );
+			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey);
 			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot ) );
 		}

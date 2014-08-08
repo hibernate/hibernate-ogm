@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.neo4j.graphdb.Node;
@@ -25,11 +24,11 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
 
-	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociationContext associationContext) {
-		properties = collectProperties( relationship, associationKey, associationContext );
+	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey) {
+		properties = collectProperties( relationship, associationKey);
 	}
 
-	private Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey, AssociationContext associationContext) {
+	private Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		String[] rowKeyColumnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Node ownerNode = ownerNode( associationKey, relationship );

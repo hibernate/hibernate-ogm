@@ -141,7 +141,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			// the same association
 			return new Tuple();
 		}
-		return new Tuple( new Neo4jTupleAssociationSnapshot( relationship, associationKey, associationContext ) );
+		return new Tuple( new Neo4jTupleAssociationSnapshot( relationship, associationKey ) );
 	}
 
 	/**
@@ -211,7 +211,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( entityNode == null ) {
 			return null;
 		}
-		return new Association( new Neo4jAssociationSnapshot( entityNode, associationKey, associationContext ) );
+		return new Association( new Neo4jAssociationSnapshot( entityNode, associationKey ) );
 	}
 
 	@Override
