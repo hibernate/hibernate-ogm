@@ -89,7 +89,7 @@ public abstract class Neo4jJpaTestCase extends JpaTestCase {
 		commitOrRollback( true );
 	}
 
-	private ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
+	protected ExecutionResult executeCypherQuery(String query, Map<String, Object> parameters) throws Exception {
 		SessionFactoryImplementor sessionFactory = (SessionFactoryImplementor) ( (OgmEntityManagerFactory) getFactory() ).getSessionFactory();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) sessionFactory.getServiceRegistry().getService( DatastoreProvider.class );
 		ExecutionEngine engine = new ExecutionEngine( provider.getDataBase() );
