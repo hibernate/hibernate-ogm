@@ -35,7 +35,7 @@ public class RowKeyExternalizerTest {
 		Object[] values = { 123, "Hello", 456L };
 
 		// given
-		RowKey key = new RowKey( "Foobar", columnNames, values );
+		RowKey key = new RowKey( "Foobar", columnNames, values, null );
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );

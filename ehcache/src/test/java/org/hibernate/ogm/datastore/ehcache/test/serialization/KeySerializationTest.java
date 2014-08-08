@@ -33,7 +33,7 @@ public class KeySerializationTest {
 		Object[] values = { 123, "Hello", 456L };
 
 		// given
-		SerializableKey key = new SerializableKey( new RowKey( "Foobar", columnNames, values ) );
+		SerializableKey key = new SerializableKey( new RowKey( "Foobar", columnNames, values, null ) );
 
 		// when
 		byte[] bytes = marshall( key );
