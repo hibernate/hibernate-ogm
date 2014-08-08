@@ -41,7 +41,11 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * Note that unique constraints involving multiple columns won't be applied because Neo4j does not support it.
  * <p>
  * The creation of unique constraints can be skipped setting the property
- * {@link Environment#UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY} to the value {@link UniqueConstraintSchemaUpdateStrategy#SKIP}
+ * {@link Environment#UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY} to the value
+ * {@link UniqueConstraintSchemaUpdateStrategy#SKIP}. Because in Neo4j unique constraints don't have a name, setting the
+ * value to {@link UniqueConstraintSchemaUpdateStrategy#RECREATE_QUIETLY} or
+ * {@link UniqueConstraintSchemaUpdateStrategy#DROP_RECREATE_QUIETLY} will have the same effect: keep the existing
+ * constraints and create the missing one.
  *
  * @author Davide D'Alto
  * @author Gunnar Morling
