@@ -19,6 +19,7 @@ public class Address {
 	private String city;
 	private String zipCode;
 	private String country;
+	private AddressType type;
 
 	public String getStreet1() {
 		return street1;
@@ -59,5 +60,13 @@ public class Address {
 
 	public void setCountry(String country) {
 		this.country = country;
+	}
+
+	public AddressType getType() {
+		return type;
+	}
+
+	public void setType(AddressType type) {
+		this.type = type;
 	}
 }

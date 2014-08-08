@@ -17,7 +17,7 @@ import org.junit.Test;
  * Tests for {@code @Embeddable} types and {@code @ElementCollection}s there-of.
  *
  * @author Emmanuel Bernard
- * @Gunnar Morling
+ * @author Gunnar Morling
  */
 public class EmbeddableTest extends OgmTestCase {
 
@@ -136,6 +136,53 @@ public class EmbeddableTest extends OgmTestCase {
 
 		transaction = session.beginTransaction();
 		assertThat( session.get( MultiAddressAccount.class, account.getLogin() ) ).isNull();
+		transaction.commit();
+
+		session.close();
+	}
+
+	@Test
+	public void testNestedEmbeddable() {
+		final Session session = openSession();
+
+		// persist entity without the embeddables
+		Transaction transaction = session.beginTransaction();
+		Account account = new Account();
+		account.setLogin( "gunnar" );
+		session.persist( account );
+
+		transaction.commit();
+		session.clear();
+
+		// read back
+		transaction = session.beginTransaction();
+		Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddables which are null" ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress() ).isNull();
+
+		// update
+		loadedAccount.setHomeAddress( new Address() );
+		loadedAccount.getHomeAddress().setCity( "Lima" );
+		loadedAccount.getHomeAddress().setType( new AddressType( "primary" ) );
+
+		transaction.commit();
+		session.clear();
+
+		// read back nested embeddable
+		transaction = session.beginTransaction();
+		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress() ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress().getCity() ).isEqualTo( "Lima" );
+		assertThat( loadedAccount.getHomeAddress().getType() ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress().getType().getName() ).isEqualTo( "primary" );
+
+		session.delete( loadedAccount );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertThat( session.get( Account.class, account.getLogin() ) ).isNull();
 		transaction.commit();
 
 		session.close();

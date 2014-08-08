@@ -74,10 +74,13 @@ public class MongoDBTupleSnapshot implements TupleSnapshot {
 			String[] parts = EMBEDDED_FIELDNAME_SEPARATOR.split( column );
 			for ( int i = 0; i < parts.length - 1; i++ ) {
 				dbObject = (DBObject) dbObject.get( parts[i] );
+				if ( dbObject == null ) {
+					break;
+				}
 			}
 			column = parts[parts.length - 1];
 		}
 
-		return dbObject.get( column );
+		return dbObject != null ? dbObject.get( column ) : null;
 	}
 }
