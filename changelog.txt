@@ -1,6 +1,37 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Beta6 (08-08-2014)
+-------------------------
+
+** Sub-task
+    * [OGM-307] - Maintain one OgmQueryLoader per query plan
+
+** Bug
+    * [OGM-424] - Queries don't return entries inserted in the current session
+    * [OGM-557] - Embedded classes are not initialized when using query in MongoDB
+    * [OGM-558] - Remove jboss early access repository from the settings-example.xml
+    * [OGM-590] - NPE when accessing nested embeddedable on MongoDB
+
+** Improvement
+    * [OGM-414] - Hook our own native query parser for parameter substitution
+    * [OGM-528] - Remove custom native query parameter metadata cache
+    * [OGM-548] - Avoid redundant association properties in Neo4j
+    * [OGM-569] - Pass JP-QL parameters as actual parameters to Neo4j backend
+    * [OGM-575] - Don't expose mutator methods on AssociationContext to grid dialects
+    * [OGM-578] - Avoid unnecessary object creation upon log.trace
+
+** New Feature
+    * [OGM-344] - Support polymorphic queries on MongoDB
+    * [OGM-574] - Provide Bill-of-Materials POM with matching versions of OGM dependencies and components
+
+** Task
+    * [OGM-369] - Re-enable test disabled due to ORM version update
+    * [OGM-541] - Cache JP-QL/HQL query plans
+    * [OGM-573] - Upgrade to Hibernate ORM 4.3.6.Final
+    * [OGM-586] - Upgrade to Neo4j 2.1.3
+
+
 4.1.0.Beta5 (09-07-2014)
 -------------------------
 
