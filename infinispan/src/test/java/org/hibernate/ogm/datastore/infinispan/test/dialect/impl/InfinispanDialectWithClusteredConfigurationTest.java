@@ -21,6 +21,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -158,6 +159,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
+				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
 				EmptyOptionsContext.INSTANCE
 		);
 	}
