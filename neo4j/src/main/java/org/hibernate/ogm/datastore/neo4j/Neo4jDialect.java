@@ -104,25 +104,29 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( entityNode == null ) {
 			return null;
 		}
-		return createTuple( entityNode );
+		return createTuple( entityNode, context );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		Node node = neo4jCRUD.createNodeUnlessExists( key, ENTITY );
 		GraphLogger.log( "Created node: %1$s", node );
-		return createTuple( node );
+		return createTuple( node, tupleContext );
 	}
 
 	private static Tuple createTuple(Node entityNode) {
 		return new Tuple( new Neo4jTupleSnapshot( entityNode ) );
 	}
 
+	private static Tuple createTuple(Node entityNode, TupleContext tupleContext) {
+		return new Tuple( new Neo4jTupleSnapshot( entityNode, tupleContext ) );
+	}
+
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 		Node node = snapshot.getNode();
-		applyTupleOperations( node, tuple.getOperations() );
+		applyTupleOperations( node, tuple.getOperations(), tupleContext );
 		GraphLogger.log( "Updated node: %1$s", node );
 	}
 
@@ -297,9 +301,11 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		neo4jCRUD.remove( associationKey, action.getKey() );
 	}
 
-	private void applyTupleOperations(PropertyContainer propertyContainer, Set<TupleOperation> operations) {
+	private void applyTupleOperations(PropertyContainer propertyContainer, Set<TupleOperation> operations, TupleContext tupleContext) {
 		for ( TupleOperation operation : operations ) {
-			applyOperation( propertyContainer, operation );
+			if ( !tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
+				applyOperation( propertyContainer, operation );
+			}
 		}
 	}
 
