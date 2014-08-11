@@ -84,6 +84,7 @@ public class BatchOperationsDelegator implements GridDialect {
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		TupleContext contextWithQueue = new TupleContext(
 				tupleContext.getSelectableColumns(),
+				tupleContext.getAssociatedEntitiesMetadata(),
 				tupleContext.getOptionsContext(),
 				getOperationQueue()
 		);

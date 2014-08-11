@@ -27,6 +27,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
@@ -161,6 +162,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 		TupleContext tupleContext = new TupleContext(
 				selectedColumns,
+				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
 				EmptyOptionsContext.INSTANCE
 		);
 

@@ -23,6 +23,7 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -184,6 +185,7 @@ public class CouchDBDialectTest {
 	private TupleContext emptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
+				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
 				EmptyOptionsContext.INSTANCE
 		);
 	}

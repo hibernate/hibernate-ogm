@@ -11,6 +11,7 @@ import java.util.Collections;
 
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.RemoveTupleOperation;
@@ -119,6 +120,7 @@ public class OperationsQueueTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
+				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
 				OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class )
 		);
 	}
