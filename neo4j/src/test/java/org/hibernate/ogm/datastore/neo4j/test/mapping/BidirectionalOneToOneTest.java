@@ -49,7 +49,7 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 		assertRelationships( 1 );
 
 		String wifeNode = "(w:Wife:ENTITY { id: {w}.id, name: {w}.name })";
-		String husbandNode = "(h:Husband:ENTITY {id: {h}.id, name: {h}.name, wife: {h}.wife })";
+		String husbandNode = "(h:Husband:ENTITY {id: {h}.id, name: {h}.name})";
 
 		Map<String, Object> wifeProperties = new HashMap<String, Object>();
 		wifeProperties.put( "id", wife.getId() );
@@ -58,7 +58,6 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 		Map<String, Object> husbandProperties = new HashMap<String, Object>();
 		husbandProperties.put( "id", husband.getId() );
 		husbandProperties.put( "name", husband.getName() );
-		husbandProperties.put( "wife", husband.getWife().getId() );
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put( "w", wifeProperties );
