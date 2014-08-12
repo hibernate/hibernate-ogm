@@ -227,7 +227,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				String[] propertyColumnNames = getPropertyColumnNames( index );
 				String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 				String tableName = getTableName();
-				EntityKeyMetadata entityKeyMetadata = createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 						tableName,
 						propertyColumnNames,
@@ -253,22 +252,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			columnNames.add( discriminator.getColumnName() );
 		}
 		return columnNames;
-	}
-
-	public EntityKeyMetadata createTargetEntityKeyMetadatata(String tableName, String[] associationKeyColumnNames, String[] rowKeyColumnNames) {
-		// *ToOne or Embedded
-		List<String> targetColumnList = new ArrayList<String>( rowKeyColumnNames.length );
-		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
-			if ( !contains( associationKeyColumnNames, rowKeyColumnNames[i] ) ) {
-				targetColumnList.add( rowKeyColumnNames[i] );
-			}
-		}
-		String[] targetKeyColumnNames = targetColumnList.toArray( new String[targetColumnList.size()] );
-		return new EntityKeyMetadata( tableName, targetKeyColumnNames );
-	}
-
-	private boolean contains(String[] associationKeyColumnNames, String element) {
-		return ArrayHelper.indexOf( associationKeyColumnNames, element ) > -1;
 	}
 
 	@Override
