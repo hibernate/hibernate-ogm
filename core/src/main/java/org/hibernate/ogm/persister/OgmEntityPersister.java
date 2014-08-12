@@ -41,6 +41,8 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata.Builder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -96,7 +98,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
-	private final TupleContext tupleContext;
 
 	//service references
 	private final GridDialect gridDialect;
@@ -105,6 +106,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private final OptionsService optionsService;
 
+	private TupleContext tupleContext;
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
@@ -203,8 +205,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
-		List<String> columnNames = selectableColumnNames( discriminator );
-		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata
@@ -261,6 +261,20 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected void doPostInstantiate() {
+		this.tupleContext = createTupleContext();
+	}
+
+	private TupleContext createTupleContext() {
+		Builder metadataBuilder = new AssociatedEntitiesMetadata.Builder();
+		for ( int index = 0; index < getPropertySpan(); index++ ) {
+			final Type uniqueKeyType = getPropertyTypes()[index];
+			if ( uniqueKeyType.isEntityType() ) {
+				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getEntityPersister(
+						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
+				metadataBuilder.add( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() );
+			}
+		}
+		return new TupleContext( selectableColumnNames( discriminator ), metadataBuilder.build(), optionsService.context().getEntityOptions( getMappedClass() ) );
 	}
 
 	public GridType getGridIdentifierType() {
