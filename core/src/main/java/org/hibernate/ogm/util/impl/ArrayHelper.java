@@ -45,4 +45,8 @@ public class ArrayHelper {
 		}
 		return -1;
 	}
+
+	public static boolean contains(Object[] array, Object element) {
+		return indexOf( array, element ) != -1;
+	}
 }
