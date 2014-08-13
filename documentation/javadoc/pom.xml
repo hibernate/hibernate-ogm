@@ -112,15 +112,8 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>attach-javadocs</id>
+                        <id>create-javadocs</id>
                         <phase>install</phase>
-                        <goals>
-                            <goal>javadoc</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>bundle-javadocs</id>
-                        <phase>package</phase>
                         <goals>
                             <goal>javadoc</goal>
                         </goals>
