@@ -43,6 +43,9 @@ Verify:
 
 ### Release
 
+The Jenkins [release job](http://ci.hibernate.org/view/OGM/job/hibernate-ogm-release/) should be used for performing releases.
+This parameterized job automates step 5 from this section as well as steps 1 and 2 from the "Publish" section.
+
 1. [Release the version on JIRA](https://hibernate.atlassian.net/plugins/servlet/project-config/OGM/versions)
 
 2. Update the _changelog.txt_ in project root from [JIRA's release notes](https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160)
