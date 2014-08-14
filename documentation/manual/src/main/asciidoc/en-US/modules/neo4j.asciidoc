@@ -285,7 +285,7 @@ class Wife {
 
 [subs="verbatim,attributes"]
 ----
-(:Wife:ENTITY { id: 1, name: "Karen" }) - [:Husband] - (:Husband:ENTITY {id: 2, name: "Mark", wife: 1 })
+(:Wife:ENTITY { id: 1, name: "Karen" }) - [:Husband] - (:Husband:ENTITY {id: 2, name: "Mark"})
 ----
 
 ====
