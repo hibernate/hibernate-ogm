@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.neo4j.impl;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
@@ -14,6 +15,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Constraint;
+import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
@@ -112,14 +114,33 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 
 	private void createConstraint(GraphDatabaseService neo4jDb, Table table, Label label, Constraint constraint) {
 		if ( constraint != null ) {
-			if ( constraint.getColumnSpan() == 1 ) {
-				String propertyName = constraint.getColumn( 0 ).getName();
-				createUniqueConstraintIfMissing( neo4jDb, label, propertyName );
-			}
-			else if ( log.isEnabled( Level.WARN ) ) {
-				logMultipleColumnsWarning( table, constraint );
+			// Neo4j does not store properties representing foreign key columns, so we don't need to create unique
+			// constraints for them
+			if ( !isAppliedToForeignColumns( table, constraint ) ) {
+				if ( constraint.getColumnSpan() == 1 ) {
+					String propertyName = constraint.getColumn( 0 ).getName();
+					createUniqueConstraintIfMissing( neo4jDb, label, propertyName );
+				}
+				else if ( log.isEnabled( Level.WARN ) ) {
+					logMultipleColumnsWarning( table, constraint );
+				}
 			}
 		}
+	}
+
+	private boolean isAppliedToForeignColumns(Table table, Constraint constraint) {
+		List<?> constraintColumns = constraint.getColumns();
+		for ( Iterator<?> iterator = table.getForeignKeyIterator(); iterator.hasNext(); ) {
+			ForeignKey foreignKey = (ForeignKey) iterator.next();
+			List<?> foreignKeyColumns = foreignKey.getColumns();
+			for ( Object object : foreignKeyColumns ) {
+				if ( constraintColumns.contains( object ) ) {
+					// This constraint requires a foreign column
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private void logMultipleColumnsWarning(Table table, Constraint constraint) {
