@@ -175,8 +175,8 @@ class EntityDehydrator {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		String tableName =	persister.getTableName( tableIndex );
-		EntityKeyMetadata targetEntityKeyMetadata = persister.createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
+		String tableName = persister.getTableName( tableIndex );
+		EntityKeyMetadata targetEntityKeyMetadata = persister.getEntityKeyMetadata();
 
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
 				tableName,
@@ -238,8 +238,8 @@ class EntityDehydrator {
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		String tableName =	persister.getTableName( tableIndex );
-		EntityKeyMetadata targetEntityKeyMetadata = persister.createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
+		String tableName = persister.getTableName( tableIndex );
+		EntityKeyMetadata targetEntityKeyMetadata = persister.getEntityKeyMetadata();
 
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
 				tableName,

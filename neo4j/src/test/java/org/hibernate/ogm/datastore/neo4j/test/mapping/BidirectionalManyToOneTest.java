@@ -56,7 +56,7 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		assertRelationships( 2 );
 
 		String forceNode = "(f:SalesForce:ENTITY { id: {f}.id, corporation: {f}.corporation})";
-		String guyNode = "(g:SalesGuy:ENTITY {id: {g}.id, name: {g}.name, salesForce_id: {g}.salesForce_id})";
+		String guyNode = "(g:SalesGuy:ENTITY {id: {g}.id, name: {g}.name})";
 		String relationship = forceNode + " - [r:SalesGuy] - " + guyNode;
 
 		assertExpectedMapping( "f", forceNode, params( salesForce ) );
@@ -97,7 +97,6 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		Map<String, Object> salesGuyProperties = new HashMap<String, Object>();
 		salesGuyProperties.put( "id", eric.getId() );
 		salesGuyProperties.put( "name", eric.getName() );
-		salesGuyProperties.put( "salesForce_id", salesGuy.getSalesForce().getId() );
 		return salesGuyProperties;
 	}
 

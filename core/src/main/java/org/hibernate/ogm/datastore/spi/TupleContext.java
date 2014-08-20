@@ -24,14 +24,18 @@ public class TupleContext implements GridDialectOperationContext {
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext) {
-		this.selectableColumns = selectableColumns;
-		this.optionsContext = optionsContext;
-		this.operationsQueue = null;
+	/**
+	 * Information of the associated entity stored per foreign key column names
+	 */
+	private final AssociatedEntitiesMetadata associatedEntityMetadata;
+
+	public TupleContext(List<String> selectableColumns, AssociatedEntitiesMetadata associatedEntityKeyMetadata, OptionsContext optionsContext) {
+		this( selectableColumns, associatedEntityKeyMetadata, optionsContext, null );
 	}
 
-	public TupleContext(List<String> selectableColumns, OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	public TupleContext(List<String> selectableColumns, AssociatedEntitiesMetadata associatedEntityKeyMetadata, OptionsContext optionsContext, OperationsQueue operationsQueue) {
 		this.selectableColumns = selectableColumns;
+		this.associatedEntityMetadata = associatedEntityKeyMetadata;
 		this.optionsContext = optionsContext;
 		this.operationsQueue = operationsQueue;
 	}
@@ -42,6 +46,16 @@ public class TupleContext implements GridDialectOperationContext {
 	 */
 	public List<String> getSelectableColumns() {
 		return selectableColumns;
+	}
+
+	/**
+	 * Provides access to the metadata of the entities associated to the tuple via foreign columns
+	 *
+	 * @return an {@link AssociatedEntitiesMetadata} containing metadata of the entities associated to this tuple via
+	 * foreign columns
+	 */
+	public AssociatedEntitiesMetadata getAssociatedEntitiesMetadata() {
+		return associatedEntityMetadata;
 	}
 
 	@Override

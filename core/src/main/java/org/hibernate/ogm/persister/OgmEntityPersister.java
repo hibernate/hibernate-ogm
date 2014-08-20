@@ -41,6 +41,8 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
+import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata.Builder;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -96,7 +98,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final GridType gridVersionType;
 	private final GridType gridIdentifierType;
 	private final String jpaEntityName;
-	private final TupleContext tupleContext;
 
 	//service references
 	private final GridDialect gridDialect;
@@ -105,6 +106,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private final OptionsService optionsService;
 
+	private TupleContext tupleContext;
 
 	OgmEntityPersister(
 			final PersistentClass persistentClass,
@@ -203,17 +205,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
-		List<String> columnNames = new ArrayList<String>();
-		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
-			String[] property = this.getPropertyColumnNames( propertyCount );
-			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
-				columnNames.add( property[columnCount] );
-			}
-		}
-		if ( discriminator.getColumnName() != null ) {
-			columnNames.add( discriminator.getColumnName() );
-		}
-		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata
@@ -236,7 +227,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				String[] propertyColumnNames = getPropertyColumnNames( index );
 				String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 				String tableName = getTableName();
-				EntityKeyMetadata entityKeyMetadata = createTargetEntityKeyMetadatata( tableName, propertyColumnNames, rowKeyColumnNames );
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 						tableName,
 						propertyColumnNames,
@@ -250,20 +240,18 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 	}
 
-	public EntityKeyMetadata createTargetEntityKeyMetadatata(String tableName, String[] associationKeyColumnNames, String[] rowKeyColumnNames) {
-		// *ToOne or Embedded
-		List<String> targetColumnList = new ArrayList<String>( rowKeyColumnNames.length );
-		for ( int i = 0; i < rowKeyColumnNames.length; i++ ) {
-			if ( !contains( associationKeyColumnNames, rowKeyColumnNames[i] ) ) {
-				targetColumnList.add( rowKeyColumnNames[i] );
+	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
+		List<String> columnNames = new ArrayList<String>();
+		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
+			String[] property = this.getPropertyColumnNames( propertyCount );
+			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
+				columnNames.add( property[columnCount] );
 			}
 		}
-		String[] targetKeyColumnNames = targetColumnList.toArray( new String[targetColumnList.size()] );
-		return new EntityKeyMetadata( tableName, targetKeyColumnNames );
-	}
-
-	private boolean contains(String[] associationKeyColumnNames, String element) {
-		return ArrayHelper.indexOf( associationKeyColumnNames, element ) > -1;
+		if ( discriminator.getColumnName() != null ) {
+			columnNames.add( discriminator.getColumnName() );
+		}
+		return columnNames;
 	}
 
 	@Override
@@ -273,6 +261,20 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected void doPostInstantiate() {
+		this.tupleContext = createTupleContext();
+	}
+
+	private TupleContext createTupleContext() {
+		Builder metadataBuilder = new AssociatedEntitiesMetadata.Builder();
+		for ( int index = 0; index < getPropertySpan(); index++ ) {
+			final Type uniqueKeyType = getPropertyTypes()[index];
+			if ( uniqueKeyType.isEntityType() ) {
+				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getEntityPersister(
+						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
+				metadataBuilder.add( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() );
+			}
+		}
+		return new TupleContext( selectableColumnNames( discriminator ), metadataBuilder.build(), optionsService.context().getEntityOptions( getMappedClass() ) );
 	}
 
 	public GridType getGridIdentifierType() {

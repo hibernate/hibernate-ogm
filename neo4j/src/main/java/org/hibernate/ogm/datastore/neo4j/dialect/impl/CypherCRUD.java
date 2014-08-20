@@ -233,6 +233,10 @@ public class CypherCRUD {
 		return DynamicLabel.label( key.getTable() );
 	}
 
+	public static Label nodeLabel(String table) {
+		return DynamicLabel.label( table );
+	}
+
 	/**
 	 * Appends to a query the pattern that can be used in a Cypher to identify a relationship.
 	 * <p>
@@ -295,7 +299,11 @@ public class CypherCRUD {
 	 * @return the corresponding {@link RelationshipType}
 	 */
 	public static RelationshipType relationshipType(AssociationKey associationKey) {
-		return DynamicRelationshipType.withName( associationKey.getTable() );
+		return relationshipType( associationKey.getTable() );
+	}
+
+	public static RelationshipType relationshipType(String table) {
+		return DynamicRelationshipType.withName( table);
 	}
 
 	/**

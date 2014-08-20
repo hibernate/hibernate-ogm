@@ -54,8 +54,8 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		assertRelationships( 2 );
 
 		String jugNode = "(jug:JUG:ENTITY {jug_id: {jug}.jug_id, name: {jug}.name })";
-		String emmanuelNode = "(e:Member:ENTITY {member_id: {e}.member_id, name: {e}.name, memberOf_jug_id: {e}.memberOf_jug_id })";
-		String jeromeNode = "(j:Member:ENTITY {member_id: {j}.member_id, name: {j}.name, memberOf_jug_id: {j}.memberOf_jug_id })";
+		String emmanuelNode = "(e:Member:ENTITY {member_id: {e}.member_id, name: {e}.name})";
+		String jeromeNode = "(j:Member:ENTITY {member_id: {j}.member_id, name: {j}.name})";
 
 		Map<String, Object> jugProperties = new HashMap<String, Object>();
 		jugProperties.put( "jug_id", jug.getId() );
@@ -64,12 +64,10 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		Map<String, Object> emmanuelProperties = new HashMap<String, Object>();
 		emmanuelProperties.put( "member_id", emmanuel.getId() );
 		emmanuelProperties.put( "name", emmanuel.getName() );
-		emmanuelProperties.put( "memberOf_jug_id", emmanuel.getMemberOf().getId() );
 
 		Map<String, Object> jeromeProperties = new HashMap<String, Object>();
 		jeromeProperties.put( "member_id", jerome.getId() );
 		jeromeProperties.put( "name", jerome.getName() );
-		jeromeProperties.put( "memberOf_jug_id", jerome.getMemberOf().getId() );
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put( "jug", jugProperties );
