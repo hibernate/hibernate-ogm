@@ -203,16 +203,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
-		List<String> columnNames = new ArrayList<String>();
-		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
-			String[] property = this.getPropertyColumnNames( propertyCount );
-			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
-				columnNames.add( property[columnCount] );
-			}
-		}
-		if ( discriminator.getColumnName() != null ) {
-			columnNames.add( discriminator.getColumnName() );
-		}
+		List<String> columnNames = selectableColumnNames( discriminator );
 		this.tupleContext = new TupleContext( columnNames, optionsService.context().getEntityOptions( getMappedClass() ) );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
@@ -248,6 +239,20 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
 		}
+	}
+
+	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
+		List<String> columnNames = new ArrayList<String>();
+		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
+			String[] property = this.getPropertyColumnNames( propertyCount );
+			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
+				columnNames.add( property[columnCount] );
+			}
+		}
+		if ( discriminator.getColumnName() != null ) {
+			columnNames.add( discriminator.getColumnName() );
+		}
+		return columnNames;
 	}
 
 	public EntityKeyMetadata createTargetEntityKeyMetadatata(String tableName, String[] associationKeyColumnNames, String[] rowKeyColumnNames) {
