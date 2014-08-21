@@ -146,4 +146,20 @@ public class Association {
 		cleared = true;
 		currentState.clear();
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder( "Association[\n");
+		int i = 0;
+		for ( RowKey rowKey : getKeys() ) {
+			sb.append( "  " ).append( rowKey ).append( "=" ).append( get( rowKey ) );
+			i++;
+			if ( i < getKeys().size() ) {
+				sb.append( ",\n" );
+			}
+		}
+
+		sb.append( "\n]" );
+		return sb.toString();
+	}
 }

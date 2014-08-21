@@ -115,4 +115,20 @@ public class Tuple {
 		}
 		return columnNames;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder( "Tuple[");
+		int i = 0;
+		for ( String column : getColumnNames() ) {
+			sb.append( column ).append( "=" ).append( get( column ) );
+			i++;
+			if ( i < getColumnNames().size() ) {
+				sb.append( ", " );
+			}
+		}
+
+		sb.append( "]" );
+		return sb.toString();
+	}
 }

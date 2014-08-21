@@ -126,13 +126,16 @@ public final class RowKey implements Key {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "RowKey" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( ", columnValues=" )
-				.append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
-		sb.append( '}' );
+		sb.append( "RowKey[" );
+		int i = 0;
+		for ( String column : columnNames ) {
+			sb.append( column ).append( "=" ).append( columnValues[i] );
+			i++;
+			if ( i < columnNames.length ) {
+				sb.append( ", " );
+			}
+		}
+		sb.append( "]" );
 		return sb.toString();
 	}
-
 }
