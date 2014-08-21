@@ -118,6 +118,52 @@ public class ManyToOneTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testBidirectionalManyToOneRemoval() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		SalesForce force = new SalesForce();
+		force.setCorporation( "Red Hat" );
+		session.save( force );
+		SalesGuy eric = new SalesGuy();
+		eric.setName( "Eric" );
+		eric.setSalesForce( force );
+		force.getSalesGuys().add( eric );
+		session.save( eric );
+		SalesGuy simon = new SalesGuy();
+		simon.setName( "Simon" );
+		simon.setSalesForce( force );
+		force.getSalesGuys().add( simon );
+		session.save( simon );
+		transaction.commit();
+		session.clear();
+
+		// removing one sales guy, leaving the other in place
+		transaction = session.beginTransaction();
+		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		assertEquals( 2, force.getSalesGuys().size() );
+		SalesGuy salesGuy = (SalesGuy) session.get( SalesGuy.class, eric.getId() );
+		salesGuy.setSalesForce( null );
+		force.getSalesGuys().remove( salesGuy );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		force = (SalesForce) session.get( SalesForce.class, force.getId() );
+		assertEquals( 1, force.getSalesGuys().size() );
+		salesGuy = force.getSalesGuys().iterator().next();
+		assertThat( salesGuy.getName() ).isEqualTo( "Simon" );
+
+		session.delete( session.get( SalesGuy.class, eric.getId() ) );
+		session.delete( session.get( SalesGuy.class, simon.getId() ) );
+		session.delete( force );
+		transaction.commit();
+
+		session.close();
+
+		checkCleanCache();
+	}
+
+	@Test
 	public void testBiDirManyToOneInsertUpdateFalse() throws Exception {
 		final Session session = openSession();
 		Transaction tx = session.beginTransaction();

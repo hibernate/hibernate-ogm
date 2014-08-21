@@ -66,7 +66,7 @@ public class MapTest extends OgmTestCase {
 		tx = session.beginTransaction();
 		user = (User) session.get( User.class, user.getId() );
 		// TODO do null value
-		assertThat( user.getAddresses() ).as( "List should have 2 elements" ).hasSize( 2 );
+		assertThat( user.getAddresses() ).as( "Map should have 2 elements" ).hasSize( 2 );
 		assertThat( user.getAddresses().get( "home" ).getCity() ).as( "home address should be under home" ).isEqualTo(
 				home.getCity() );
 		assertThat( user.getNicknames() ).as( "Should have 1 nick1" ).hasSize( 1 );
@@ -84,6 +84,54 @@ public class MapTest extends OgmTestCase {
 
 		session.close();
 
+		checkCleanCache();
+	}
+
+	@Test
+	public void testRemovalOfMapEntry() throws Exception {
+		// Create user with two addresses
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Address home = new Address();
+		home.setCity( "Paris" );
+		Address work = new Address();
+		work.setCity( "San Francisco" );
+		User user = new User();
+		user.getAddresses().put( "home", home );
+		user.getAddresses().put( "work", work );
+
+		session.persist( home );
+		session.persist( work );
+		session.persist( user );
+		tx.commit();
+		session.clear();
+
+		// Load user and remove one address
+		tx = session.beginTransaction();
+
+		user = (User) session.get( User.class, user.getId() );
+		user.getAddresses().remove( "work" );
+
+		tx.commit();
+		session.clear();
+
+		// assert
+		tx = session.beginTransaction();
+
+		user = (User) session.get( User.class, user.getId() );
+
+		assertThat( user.getAddresses() ).hasSize( 1 );
+		assertThat( user.getAddresses().containsKey( "home" ) ).isTrue();
+		assertThat( user.getAddresses().get( "home" ).getCity() ).isEqualTo( home.getCity() );
+
+		// clean up
+		session.delete( user );
+		session.delete( session.load( Address.class, home.getId() ) );
+		session.delete( session.load( Address.class, work.getId() ) );
+
+		tx.commit();
+		session.close();
 		checkCleanCache();
 	}
 
