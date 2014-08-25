@@ -8,6 +8,8 @@ package org.hibernate.ogm.datastore.neo4j.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -22,10 +24,15 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
+import org.hibernate.ogm.options.navigation.source.impl.AnnotationOptionValueSource;
+import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.utils.TestableGridDialect;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -71,7 +78,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
 		Neo4jDialect dialect = new Neo4jDialect( getProvider( sessionFactory ) );
-		TupleSnapshot snapshot = dialect.getTuple( key, null ).getSnapshot();
+		TupleSnapshot snapshot = dialect.getTuple( key, getEmptyTupleContext() ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
 		}
@@ -131,5 +138,14 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	@Override
 	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( Neo4j.class );
+	}
+
+	private TupleContext getEmptyTupleContext() {
+		return new TupleContext(
+				Collections.<String>emptyList(),
+				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
+				Collections.<String, String>emptyMap(),
+				OptionsContextImpl.forEntity( Arrays.<OptionValueSource>asList( new AnnotationOptionValueSource() ), Object.class )
+		);
 	}
 }

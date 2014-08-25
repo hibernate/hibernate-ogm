@@ -13,6 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,6 +34,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.AssociationOperation;
@@ -59,7 +61,6 @@ import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -117,14 +118,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private static Tuple createTuple(Node entityNode, TupleContext tupleContext) {
-		return new Tuple( new Neo4jTupleSnapshot( entityNode, tupleContext ) );
+		return new Tuple( new Neo4jTupleSnapshot( entityNode, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles() ) );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 		Node node = snapshot.getNode();
-		applyTupleOperations( node, tuple.getOperations(), tupleContext );
+		applyTupleOperations( tuple, node, tuple.getOperations(), tupleContext );
 		GraphLogger.log( "Updated node: %1$s", node );
 	}
 
@@ -288,67 +289,72 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		neo4jCRUD.remove( associationKey, action.getKey() );
 	}
 
-	private void applyTupleOperations(Node propertyContainer, Set<TupleOperation> operations, TupleContext tupleContext) {
+	private void applyTupleOperations(Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
+		Set<String> processedAssociationRoles = new HashSet<String>();
+
 		for ( TupleOperation operation : operations ) {
-			applyOperation( propertyContainer, operation, tupleContext );
+			applyOperation( tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
 	}
 
-	private void applyOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
+	private void applyOperation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		switch ( operation.getType() ) {
 		case PUT:
-			putTupleOperation( node, operation, tupleContext );
+			putTupleOperation( tuple, node, operation, tupleContext, processedAssociationRoles );
 			break;
 		case PUT_NULL:
-			removeTupleOperation( node, operation, tupleContext );
+			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
 			break;
 		case REMOVE:
-			removeTupleOperation( node, operation, tupleContext );
+			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
 			break;
 		}
 	}
 
-	private void removeTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
-		if ( node.hasProperty( operation.getColumn() ) ) {
-			node.removeProperty( operation.getColumn() );
+	private void removeTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+			if ( node.hasProperty( operation.getColumn() ) ) {
+				node.removeProperty( operation.getColumn() );
+			}
 		}
 		// if the column represents a to-one association, remove the relationship
-		else if ( tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
-			RelationshipType relationshipType = relationshipType( tupleContext.getAssociatedEntitiesMetadata().getRole( operation.getColumn() ) );
-			Iterator<Relationship> relationships = node.getRelationships( relationshipType ).iterator();
+		else {
+			String associationRole = tupleContext.getRole( operation.getColumn() );
+			if ( !processedAssociationRoles.contains( associationRole ) ) {
 
-			if ( relationships.hasNext() ) {
-				relationships.next().delete();
+				Iterator<Relationship> relationships = node.getRelationships( relationshipType( associationRole ) ).iterator();
+
+				if ( relationships.hasNext() ) {
+					relationships.next().delete();
+				}
 			}
 		}
 	}
 
-	private void putTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
-		if ( !tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
+	private void putTupleOperation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
 			node.setProperty( operation.getColumn(), operation.getValue() );
 		}
-		// the column represents a to-one association, so a relationship needs to be maintained rather than a node property
+		// the column represents a to-one association, map it as relationship
 		else {
-			RelationshipType relationshipType = relationshipType( tupleContext.getAssociatedEntitiesMetadata().getRole( operation.getColumn() ) );
+			String associationRole = tupleContext.getRole( operation.getColumn() );
 
-			// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
-			// properties, so the type is uniquely identifying it
-			Iterator<Relationship> relationships = node.getRelationships( relationshipType ).iterator();
-			if ( relationships.hasNext() ) {
-				relationships.next().delete();
+			if ( !processedAssociationRoles.contains( associationRole ) ) {
+				processedAssociationRoles.add( associationRole );
+
+				EntityKey targetKey = tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ).getEntityKey( tuple );
+
+				// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
+				// properties, so the type is uniquely identifying it
+				Iterator<Relationship> relationships = node.getRelationships( relationshipType( associationRole ) ).iterator();
+				if ( relationships.hasNext() ) {
+					relationships.next().delete();
+				}
+
+				// create a new relationship
+				Node targetNode = neo4jCRUD.findNode( targetKey , ENTITY );
+				node.createRelationshipTo( targetNode, relationshipType( associationRole ) );
 			}
-
-			// create a new relationship
-			EntityKey targetKey = null;
-			targetKey = new EntityKey(
-					new EntityKeyMetadata(
-							tupleContext.getAssociatedEntitiesMetadata().getTargetEntityTable( operation.getColumn() ),
-							new String[] { tupleContext.getAssociatedEntitiesMetadata().getTargetColumnName( operation.getColumn() ) }
-					),
-					new Object[] { operation.getValue() }
-			);
-			Node targetNode = neo4jCRUD.findNode( targetKey , ENTITY );
-			node.createRelationshipTo( targetNode, relationshipType );
 		}
 	}
 

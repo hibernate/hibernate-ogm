@@ -6,11 +6,17 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
+
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -24,20 +30,22 @@ import org.neo4j.graphdb.Relationship;
 public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
 	private final Node node;
-	private final TupleContext tupleContext;
+	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
+	private final Map<String, String> rolesByColumn;
 
 	public Neo4jTupleSnapshot(Node node) {
-		this( node, null);
+		this( node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap() );
 	}
 
-	public Neo4jTupleSnapshot(Node node, TupleContext tupleContext) {
+	public Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn) {
 		this.node = node;
-		this.tupleContext = tupleContext;
+		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
+		this.rolesByColumn = rolesByColumn;
 	}
 
 	@Override
 	public Object get(String column) {
-		if ( tupleContext != null && tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( column ) ) {
+		if ( associatedEntityKeyMetadata.containsKey( column ) ) {
 			return readPropertyOnOtherNode( column );
 		}
 		else {
@@ -46,16 +54,13 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 	}
 
 	private Object readPropertyOnOtherNode(String column) {
-		String tableName = tupleContext.getAssociatedEntitiesMetadata().getTargetEntityTable( column );
-		String targetColumnName = tupleContext.getAssociatedEntitiesMetadata().getTargetColumnName( column );
-		for ( Relationship relationship : node.getRelationships() ) {
-			Node otherNode = relationship.getOtherNode( node );
-			if ( otherNode.hasLabel( CypherCRUD.nodeLabel( tableName ) ) ) {
-				Object value = readProperty( otherNode, targetColumnName );
-				return value;
-			}
+		Iterator<Relationship> relationships = node.getRelationships( Direction.OUTGOING, relationshipType( rolesByColumn.get( column ) ) ).iterator();
 
+		if ( relationships.hasNext() ) {
+			Node otherNode = relationships.next().getEndNode();
+			return readProperty( otherNode, associatedEntityKeyMetadata.get( column ).getCorrespondingEntityKeyColumn( column ) );
 		}
+
 		return null;
 	}
 
