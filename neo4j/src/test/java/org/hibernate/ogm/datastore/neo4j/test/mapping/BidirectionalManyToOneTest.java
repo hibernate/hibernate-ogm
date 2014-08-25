@@ -57,7 +57,7 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 
 		String forceNode = "(f:SalesForce:ENTITY { id: {f}.id, corporation: {f}.corporation})";
 		String guyNode = "(g:SalesGuy:ENTITY {id: {g}.id, name: {g}.name})";
-		String relationship = forceNode + " - [r:SalesGuy] - " + guyNode;
+		String relationship = forceNode + " - [r:salesForce] - " + guyNode;
 
 		assertExpectedMapping( "f", forceNode, params( salesForce ) );
 		assertExpectedMapping( "g", guyNode, params( eric ) );

@@ -160,7 +160,7 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, null, EMPTY_STRING_ARRAY
+				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, null, EMPTY_STRING_ARRAY, false, null
 		);
 
 		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );

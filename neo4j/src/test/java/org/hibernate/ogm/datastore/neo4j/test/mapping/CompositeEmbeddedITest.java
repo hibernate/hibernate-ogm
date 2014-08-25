@@ -60,8 +60,8 @@ public class CompositeEmbeddedITest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "l", labelNode, params( 0 ) );
 		assertExpectedMapping( "l", labelNode, params( 1 ) );
 
-		assertExpectedMapping( "r", newsNode + " - [r:Label] - " + labelNode, params( 0 ) );
-		assertExpectedMapping( "r", newsNode + " - [r:Label] - " + labelNode, params( 1 ) );
+		assertExpectedMapping( "r", newsNode + " - [r:labels] - " + labelNode, params( 0 ) );
+		assertExpectedMapping( "r", newsNode + " - [r:labels] - " + labelNode, params( 1 ) );
 	}
 
 	private Map<String, Object> params(int labelIndex) {

@@ -64,8 +64,15 @@ public class CypherCRUD {
 	 * @return the corresponding relationship
 	 */
 	public Relationship findRelationship(AssociationKey associationKey, RowKey rowKey) {
-		EntityKey targetKey = rowKey.getEntityKey();
 		EntityKey entityKey = associationKey.getEntityKey();
+		EntityKey targetKey = null;
+
+		// no index columns, i.e. the relationship has no properties identifying it; we need the node
+		// on the other side to uniquely identify it
+		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
+			targetKey = getTargetKey( associationKey, rowKey );
+		}
+
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( "o", entityKey, parameters, query, ENTITY );
@@ -198,15 +205,19 @@ public class CypherCRUD {
 	private void appendNodePattern(String alias, Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
 		query.append( "(" );
 		identifier( query, alias );
-		query.append( ":" );
-		identifier( query, nodeLabel( key ).name() );
+
+		if ( key != null ) {
+			query.append( ":" );
+			identifier( query, nodeLabel( key ).name() );
+		}
+
 		if ( labels != null ) {
 			for ( NodeLabel label : labels ) {
 				query.append( ":" );
 				identifier( query, label.name() );
 			}
 		}
-		if ( key.getColumnNames().length > 0 ) {
+		if ( key != null && key.getColumnNames().length > 0 ) {
 			query.append( " {" );
 			int counter = parameters.size();
 			int columnsLength = key.getColumnNames().length;
@@ -299,11 +310,11 @@ public class CypherCRUD {
 	 * @return the corresponding {@link RelationshipType}
 	 */
 	public static RelationshipType relationshipType(AssociationKey associationKey) {
-		return relationshipType( associationKey.getTable() );
+		return relationshipType( associationKey.getMetadata().isInverse() ? associationKey.getMetadata().getRoleOnMainSide() : associationKey.getCollectionRole() );
 	}
 
-	public static RelationshipType relationshipType(String table) {
-		return DynamicRelationshipType.withName( table);
+	public static RelationshipType relationshipType(String role) {
+		return DynamicRelationshipType.withName( role );
 	}
 
 	/**
@@ -353,7 +364,14 @@ public class CypherCRUD {
 	 * </pre>
 	 */
 	public void remove(AssociationKey associationKey, RowKey rowKey) {
-		EntityKey targetKey = rowKey.getEntityKey();
+		EntityKey targetKey = null;
+
+		// no index columns, i.e. the relationship has no properties identifying it; we need the node
+		// on the other side to uniquely identify it
+		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
+			targetKey = getTargetKey( associationKey, rowKey );
+		}
+
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder( "MATCH " );
 		appendNodePattern( associationKey.getEntityKey(), parameters, query, ENTITY );
@@ -370,6 +388,20 @@ public class CypherCRUD {
 		}
 
 		engine.execute( query.toString(), parameters );
+	}
+
+	private EntityKey getTargetKey(AssociationKey associationKey, RowKey rowKey) {
+		EntityKey targetKey;
+		String[] columnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
+		Object[] columnValues = new Object[columnNames.length];
+
+		//TODO Order in case of compound keys ???
+		for ( int i = 0; i < columnNames.length; i++ ) {
+			columnValues[i] = rowKey.getColumnValue( columnNames[i] );
+		}
+
+		targetKey = new EntityKey( associationKey.getMetadata().getRowKeyEntityKeyMetadata(), columnValues  );
+		return targetKey;
 	}
 
 	public ExecutionResult executeQuery( String query, Map<String, Object> parameters ) {

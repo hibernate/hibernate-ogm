@@ -13,6 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -26,7 +27,6 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
@@ -42,10 +42,8 @@ import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -60,8 +58,8 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
@@ -137,15 +135,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		Relationship relationship = createRelationship( associationKey, rowKey );
-		GraphLogger.log( "Relationship: %1$s", relationship );
-		if ( relationship == null ) {
-			// This should only happen for bidirectional associations, when we are creating the association on the owner side.
-			// We can ignore the creation of the relationship in this case and we will create it when dealing with the inverese side of
-			// the same association
-			return new Tuple();
-		}
-		return new Tuple( new Neo4jTupleAssociationSnapshot( relationship, associationKey ) );
+		return new Tuple();
 	}
 
 	/**
@@ -154,32 +144,25 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * the first time with the information related to the owner of the association and the {@link RowKey},
 	 * the second time using the same {@link RowKey} but with the {@link AssociationKey} referring to the other side of the association.
 	 */
-	private Relationship createRelationship(AssociationKey associationKey, RowKey rowKey) {
+	private Relationship createRelationship(AssociationKey associationKey, RowKey rowKey, EntityKey targetKey) {
 		switch ( associationKey.getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
-				return createRelationshipWithEmbeddedNode( associationKey, rowKey );
+				return createRelationshipWithEmbeddedNode( associationKey, rowKey, targetKey );
 			case ASSOCIATION:
-				return findOrCreateRelationshipWithEntityNode( associationKey, rowKey );
+				return findOrCreateRelationshipWithEntityNode( associationKey, rowKey, targetKey );
 			default:
 				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getAssociationKind() );
 		}
 	}
 
-	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, RowKey rowKey) {
-		Node embeddedNode = neo4jCRUD.createNode( rowKey.getEntityKey(), EMBEDDED );
+	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, RowKey rowKey, EntityKey targetKey) {
+		Node embeddedNode = neo4jCRUD.createNode( targetKey, EMBEDDED );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, rowKey, embeddedNode );
 		applyProperties( associationKey, rowKey, relationship );
 		return relationship;
 	}
 
-	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, RowKey rowKey) {
-		Key targetKey = rowKey.getEntityKey();
-		if ( targetKey == null ) {
-			// We have to wait the creation of the target side of the association before
-			// we can obtain the targetKey
-			return null;
-		}
-
+	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, RowKey rowKey, EntityKey targetKey) {
 		Relationship relationship = neo4jCRUD.findRelationship( associationKey, rowKey );
 		if ( relationship != null ) {
 			return relationship;
@@ -225,8 +208,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+		// If this is the inverse side of a bi-directional association, we don't create a relationship for this; this
+		// will happen when updating the main side
+		if ( key.getMetadata().isInverse() ) {
+			return;
+		}
+
 		for ( AssociationOperation action : association.getOperations() ) {
-			applyAssociationOperation( key, action, associationContext );
+			applyAssociationOperation( association, key, action, associationContext );
 		}
 	}
 
@@ -252,85 +241,115 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( key != null ) {
-			neo4jCRUD.remove( key );
+		// If this is the inverse side of a bi-directional association, we don't manage the relationship from this side
+		if ( key.getMetadata().isInverse() ) {
+			return;
 		}
+
+		neo4jCRUD.remove( key );
 	}
 
-	private void applyAssociationOperation(AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
+	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
 		switch ( operation.getType() ) {
 		case CLEAR:
 			removeAssociation( key, associationContext );
 			break;
 		case PUT:
-			putAssociationOperation( key, operation );
+			putAssociationOperation( association, key, operation );
 			break;
 		case PUT_NULL:
-			removeAssociationOperation( key, operation );
+			removeAssociationOperation( association, key, operation );
 			break;
 		case REMOVE:
-			removeAssociationOperation( key, operation );
+			removeAssociationOperation( association, key, operation );
 			break;
 		}
 	}
 
-	private void putAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
-		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
-			Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey() );
-			if (relationship != null) {
-				for ( TupleOperation operation : action.getValue().getOperations() ) {
-					if ( !contains( associationKey.getMetadata().getRowKeyColumnNames(), operation.getColumn() ) ) {
-						applyOperation( relationship.getEndNode(), operation );
-					}
-				}
-				GraphLogger.log( "Updated relationship: %1$s", relationship );
+	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action) {
+		Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey() );
+
+		if (relationship != null) {
+			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
+				relationship.setProperty( relationshipProperty, action.getValue().get( relationshipProperty ) );
+
 			}
+			GraphLogger.log( "Updated relationship: %1$s", relationship );
+		}
+		else {
+			EntityKey targetKey = association.getTargetKey( action.getKey(), associationKey.getMetadata() );
+			relationship = createRelationship( associationKey, action.getKey(), targetKey );
+
+			GraphLogger.log( "Created relationship: %1$s", relationship );
 		}
 	}
 
-	private boolean contains(String[] columnNames, String column) {
-		for ( String each : columnNames ) {
-			if ( each.equals( column ) ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	private void removeAssociationOperation(AssociationKey associationKey, AssociationOperation action) {
+	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action) {
 		neo4jCRUD.remove( associationKey, action.getKey() );
 	}
 
-	private void applyTupleOperations(PropertyContainer propertyContainer, Set<TupleOperation> operations, TupleContext tupleContext) {
+	private void applyTupleOperations(Node propertyContainer, Set<TupleOperation> operations, TupleContext tupleContext) {
 		for ( TupleOperation operation : operations ) {
-			if ( !tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
-				applyOperation( propertyContainer, operation );
+			applyOperation( propertyContainer, operation, tupleContext );
+		}
+	}
+
+	private void applyOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
+		switch ( operation.getType() ) {
+		case PUT:
+			putTupleOperation( node, operation, tupleContext );
+			break;
+		case PUT_NULL:
+			removeTupleOperation( node, operation, tupleContext );
+			break;
+		case REMOVE:
+			removeTupleOperation( node, operation, tupleContext );
+			break;
+		}
+	}
+
+	private void removeTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
+		if ( node.hasProperty( operation.getColumn() ) ) {
+			node.removeProperty( operation.getColumn() );
+		}
+		// if the column represents a to-one association, remove the relationship
+		else if ( tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
+			RelationshipType relationshipType = relationshipType( tupleContext.getAssociatedEntitiesMetadata().getRole( operation.getColumn() ) );
+			Iterator<Relationship> relationships = node.getRelationships( relationshipType ).iterator();
+
+			if ( relationships.hasNext() ) {
+				relationships.next().delete();
 			}
 		}
 	}
 
-	private void applyOperation(PropertyContainer node, TupleOperation operation) {
-		switch ( operation.getType() ) {
-		case PUT:
-			putTupleOperation( node, operation );
-			break;
-		case PUT_NULL:
-			removeTupleOperation( node, operation );
-			break;
-		case REMOVE:
-			removeTupleOperation( node, operation );
-			break;
+	private void putTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext) {
+		if ( !tupleContext.getAssociatedEntitiesMetadata().isForeignKeyColumn( operation.getColumn() ) ) {
+			node.setProperty( operation.getColumn(), operation.getValue() );
 		}
-	}
+		// the column represents a to-one association, so a relationship needs to be maintained rather than a node property
+		else {
+			RelationshipType relationshipType = relationshipType( tupleContext.getAssociatedEntitiesMetadata().getRole( operation.getColumn() ) );
 
-	private void removeTupleOperation(PropertyContainer node, TupleOperation operation) {
-		if ( node.hasProperty( operation.getColumn() ) ) {
-			node.removeProperty( operation.getColumn() );
+			// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
+			// properties, so the type is uniquely identifying it
+			Iterator<Relationship> relationships = node.getRelationships( relationshipType ).iterator();
+			if ( relationships.hasNext() ) {
+				relationships.next().delete();
+			}
+
+			// create a new relationship
+			EntityKey targetKey = null;
+			targetKey = new EntityKey(
+					new EntityKeyMetadata(
+							tupleContext.getAssociatedEntitiesMetadata().getTargetEntityTable( operation.getColumn() ),
+							new String[] { tupleContext.getAssociatedEntitiesMetadata().getTargetColumnName( operation.getColumn() ) }
+					),
+					new Object[] { operation.getValue() }
+			);
+			Node targetNode = neo4jCRUD.findNode( targetKey , ENTITY );
+			node.createRelationshipTo( targetNode, relationshipType );
 		}
-	}
-
-	private void putTupleOperation(PropertyContainer node, TupleOperation operation) {
-		node.setProperty( operation.getColumn(), operation.getValue() );
 	}
 
 	@Override

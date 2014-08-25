@@ -47,8 +47,10 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
+import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
@@ -119,7 +121,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
 				targetEntityKeyMetadata( false ),
-				getElementColumnNames()
+				getElementColumnNames(),
+				isInverse,
+				isInverse ? determineMainSidePropertyName( factory ) : null
 		);
 
 		associationKeyMetadataFromElement = new AssociationKeyMetadata(
@@ -128,11 +132,64 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
 				targetEntityKeyMetadata( true ),
-				getKeyColumnNames()
+				getKeyColumnNames(),
+				!isInverse,
+				!isInverse ? collection.getNodeName() : null
 		);
 
 		nodeName = collection.getNodeName();
 	}
+
+	/**
+	 * Returns the property name on the main side, if this collection represents the inverse (non-main) side of a
+	 * bi-directional association, {@code null} otherwise.
+	 */
+	private String determineMainSidePropertyName(SessionFactoryImplementor sessionFactory) {
+		String mainSidePropertyName = null;
+		Loadable elementPersister = (Loadable) getElementPersister();
+		Type[] propertyTypes = elementPersister.getPropertyTypes();
+
+		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
+			Type type = propertyTypes[index];
+
+			// we try and restrict type search as much as possible
+			if ( type.isAssociationType() ) {
+				boolean matching = false;
+
+				// the main side is a many-to-one
+				if ( type.isEntityType() ) {
+					matching = isToOneMatching( elementPersister, index );
+				}
+				// the main side is a many-to-many
+				else if ( type.isCollectionType() ) {
+					String roleOnMainSide = ( (CollectionType) type ).getRole();
+					CollectionPhysicalModel mainSidePersister = (CollectionPhysicalModel) sessionFactory.getCollectionPersister( roleOnMainSide );
+					matching = isCollectionMatching( mainSidePersister );
+				}
+				// Should never happen
+				else {
+					throw new HibernateException( "Unexpected type:" + type );
+				}
+
+				if ( matching ) {
+					mainSidePropertyName = elementPersister.getPropertyNames()[index];
+					break;
+				}
+			}
+		}
+
+		return mainSidePropertyName;
+	}
+
+	private boolean isToOneMatching(Loadable elementPersister, int index) {
+		return Arrays.equals( getKeyColumnNames(), elementPersister.getPropertyColumnNames( index ) );
+	}
+
+	private boolean isCollectionMatching(CollectionPhysicalModel mainSidePersister) {
+		boolean isSameTable = getTableName().equals( mainSidePersister.getTableName() );
+		return isSameTable && Arrays.equals( getElementColumnNames(), mainSidePersister.getKeyColumnNames() );
+	}
+
 
 	private EntityKeyMetadata targetEntityKeyMetadata( boolean inverse ) {
 		if ( inverse ) {

@@ -54,7 +54,7 @@ public class ElementCollectionListWithIndexTest extends Neo4jJpaTestCase {
 
 		String grannyNode = "(granny:GrandMother:ENTITY { id: {granny}.id })";
 		String grandChileNode = "(gc:GrandMother_grandChildren:EMBEDDED {name: {gc}.name})";
-		String relationship = grannyNode + " - [r:GrandMother_grandChildren{birthorder:{r}.birthorder}] - " + grandChileNode;
+		String relationship = grannyNode + " - [r:grandChildren{birthorder:{r}.birthorder}] - " + grandChileNode;
 
 		assertExpectedMapping( "granny", grannyNode, params( null, null ) );
 		assertExpectedMapping( "gc", grandChileNode, params( luke, 0 ) );

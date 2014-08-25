@@ -65,7 +65,7 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 
 		assertExpectedMapping( "w", wifeNode, params );
 		assertExpectedMapping( "h", husbandNode, params );
-		assertExpectedMapping( "r", wifeNode + " - [r:Husband] - " + husbandNode, params );
+		assertExpectedMapping( "r", wifeNode + " - [r:wife] - " + husbandNode, params );
 	}
 
 	@Override

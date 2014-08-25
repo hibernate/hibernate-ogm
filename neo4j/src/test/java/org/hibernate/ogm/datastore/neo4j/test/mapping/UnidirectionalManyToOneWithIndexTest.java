@@ -73,7 +73,7 @@ public class UnidirectionalManyToOneWithIndexTest extends Neo4jJpaTestCase {
 
 		String fatherNode = "(f:Father:ENTITY {id: {f}.id })";
 		String childNode = "(c:Child:ENTITY {id: {c}.id, name: {c}.name })";
-		String relationshipCypher = fatherNode + " - [r:Father_child {birthorder: {r}.birthorder}] - " + childNode;
+		String relationshipCypher = fatherNode + " - [r:orderedChildren {birthorder: {r}.birthorder}] - " + childNode;
 
 		assertExpectedMapping( "r", relationshipCypher, params( father1, child11, 0 ) );
 		assertExpectedMapping( "r", relationshipCypher, params( father1, child12, 1 ) );

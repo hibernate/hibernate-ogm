@@ -17,6 +17,7 @@ import java.util.List;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class AssociationKeyMetadata {
+
 	private final String table;
 	private final String[] columnNames;
 	private final int hashCode;
@@ -26,14 +27,18 @@ public class AssociationKeyMetadata {
 	private final String[] rowKeyIndexColumnNames;
 	private final String[] rowKeyTargetAssociationKeyColumnNames;
 	private final EntityKeyMetadata rowKeyEntityKeyMetadata;
+	private final boolean isInverse;
+	private final String roleOnMainSide;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata, String[] rowKeyTargetAssociationKeyColumnNames) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata, String[] rowKeyTargetAssociationKeyColumnNames, boolean isInverse, String roleOnMainSide) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 		this.rowKeyEntityKeyMetadata = rowKeyEntityKeyMetadata;
 		this.rowKeyTargetAssociationKeyColumnNames = rowKeyTargetAssociationKeyColumnNames;
+		this.isInverse = isInverse;
+		this.roleOnMainSide = roleOnMainSide;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -140,6 +145,28 @@ public class AssociationKeyMetadata {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether this key meta-data represents the inverse side of a bi-directional association.
+	 *
+	 * @return {@code true} if this key meta-data represents the inverse side of a bi-directional association,
+	 * {@code false} otherwise.
+	 */
+	public boolean isInverse() {
+		return isInverse;
+	}
+
+	/**
+	 * The role of the represented association on the main side in case this key meta-data represents the inverse side
+	 * of a bi-directional association.
+	 *
+	 * @return The role of the represented association on the main side or {@code null} in case this key meta-data does
+	 * not represent the inverse side of a bi-directional association (i.e. it either represents an uni-directional
+	 * association or the main-side of a bi-directional association).
+	 */
+	public String getRoleOnMainSide() {
+		return roleOnMainSide;
 	}
 
 	@Override

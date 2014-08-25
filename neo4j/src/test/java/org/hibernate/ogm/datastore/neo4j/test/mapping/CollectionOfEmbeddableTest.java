@@ -30,7 +30,7 @@ public class CollectionOfEmbeddableTest extends Neo4jJpaTestCase {
 			+ ", postal_code: {ad}.postal_code"
 			+ " })";
 
-	private static final String RELATIONSHIP = ACCOUNT_NODE + " - [r:MultiAddressAccount_addresses] - " + ADDRESS_NODE;
+	private static final String RELATIONSHIP = ACCOUNT_NODE + " - [r:addresses] - " + ADDRESS_NODE;
 
 	private Address address;
 	private Address anotherAddress;

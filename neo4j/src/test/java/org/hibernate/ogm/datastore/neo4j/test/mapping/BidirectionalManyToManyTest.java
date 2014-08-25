@@ -59,8 +59,8 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "o", ownerNode, params( barclays, owner ) );
 		assertExpectedMapping( "a", accountNode, params( barclays, owner ) );
 		assertExpectedMapping( "a", accountNode, params( soge, owner ) );
-		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + accountNode, params( barclays, owner ) );
-		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + accountNode, params( soge, owner ) );
+		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + accountNode, params( barclays, owner ) );
+		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + accountNode, params( soge, owner ) );
 	}
 
 	private Map<String, Object> params(BankAccount account, AccountOwner owner) {
