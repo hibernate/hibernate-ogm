@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.neo4j.graphdb.Node;
@@ -24,11 +25,11 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 
 	private final Map<String, Object> properties;
 
-	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey) {
-		properties = collectProperties( relationship, associationKey);
+	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		properties = collectProperties( relationship, associationKey, associatedEntityKeyMetadata);
 	}
 
-	private Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey) {
+	private static Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		Map<String, Object> properties = new HashMap<String, Object>();
 		String[] rowKeyColumnNames = associationKey.getMetadata().getRowKeyColumnNames();
 		Node ownerNode = ownerNode( associationKey, relationship );
@@ -42,11 +43,10 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 		}
 
 		// Properties stored in the target side of the association
-		String[] targetColumnNames = associationKey.getMetadata().getRowKeyEntityKeyMetadata().getColumnNames();
-		String[] associationTargetColumnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
-		for ( int i = 0; i < associationTargetColumnNames.length; i++ ) {
-			if ( targetNode.hasProperty( targetColumnNames[i] ) ) {
-				properties.put( associationTargetColumnNames[i], targetNode.getProperty( targetColumnNames[i] ) );
+		for ( String associationColumn : associatedEntityKeyMetadata.getAssociationKeyColumns() ) {
+			String targetColumnName = associatedEntityKeyMetadata.getCorrespondingEntityKeyColumn( associationColumn );
+			if ( targetNode.hasProperty( targetColumnName ) ) {
+				properties.put( associationColumn, targetNode.getProperty( targetColumnName ) );
 			}
 		}
 

@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
-import org.hibernate.ogm.grid.AssociationKeyMetadata;
-import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
@@ -147,28 +145,6 @@ public class Association {
 	public void clear() {
 		cleared = true;
 		currentState.clear();
-	}
-
-	/**
-	 * Returns the key of the referenced entity corresponding to the specified row.
-	 *
-	 * @param rowKey the association row of interest
-	 * @param metadata metadata for the association keys. It must match this association.
-	 * @return the key of the referenced entity corresponding to the specified row or {@code null} if the row has been
-	 * removed from this association or never has been present.
-	 */
-	public EntityKey getTargetKey(RowKey rowKey, AssociationKeyMetadata metadata) {
-		Tuple associationRow = get( rowKey );
-
-		String[] columnNames = metadata.getRowKeyTargetAssociationKeyColumnNames();
-		Object[] columnValues = new Object[columnNames.length];
-
-		//TODO Order in case of compound keys ???
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			columnValues[i] = associationRow.get( columnNames[i] );
-		}
-
-		return new EntityKey( metadata.getRowKeyEntityKeyMetadata(), columnValues  );
 	}
 
 	@Override

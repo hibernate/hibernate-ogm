@@ -23,7 +23,7 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
@@ -160,7 +160,7 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, null, EMPTY_STRING_ARRAY, false, null
+				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ), false, null
 		);
 
 		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
@@ -179,13 +179,17 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext( OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ) );
+		return new AssociationContext(
+				OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ),
+				null
+		);
 	}
 
 	private TupleContext emptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
+				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
+				Collections.<String, String>emptyMap(),
 				EmptyOptionsContext.INSTANCE
 		);
 	}
