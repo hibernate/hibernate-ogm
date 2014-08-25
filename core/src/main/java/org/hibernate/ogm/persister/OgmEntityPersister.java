@@ -233,7 +233,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						rowKeyColumnNames,
 						ArrayHelper.EMPTY_STRING_ARRAY,
 						entityKeyMetadata,
-						entityKeyMetadata.getColumnNames()
+						entityKeyMetadata.getColumnNames(),
+						true,
+						getPropertyNames()[index]
 				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
@@ -272,6 +274,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getEntityPersister(
 						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
 				metadataBuilder.add( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() );
+				metadataBuilder.add( getPropertyColumnNames( index ), getPropertyNames()[index] );
 			}
 		}
 		return new TupleContext( selectableColumnNames( discriminator ), metadataBuilder.build(), optionsService.context().getEntityOptions( getMappedClass() ) );

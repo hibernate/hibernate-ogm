@@ -22,26 +22,34 @@ import org.hibernate.ogm.grid.EntityKeyMetadata;
  */
 public class AssociatedEntitiesMetadata {
 
-	public static final AssociatedEntitiesMetadata EMPTY_INSTANCE = new AssociatedEntitiesMetadata( Collections.<List<String>, EntityKeyMetadata>emptyMap() );
+	public static final AssociatedEntitiesMetadata EMPTY_INSTANCE = new AssociatedEntitiesMetadata( Collections.<List<String>, EntityKeyMetadata>emptyMap(), Collections.<List<String>, String>emptyMap() );
 
 	private final Map<List<String>, EntityKeyMetadata> associatedEntityKeyMetadata;
+	private final Map<List<String>, String> roles;
 
 	public static class Builder {
 
 		private final Map<List<String>, EntityKeyMetadata> builderMap = new HashMap<List<String>, EntityKeyMetadata>();
+		private final Map<List<String>, String> roles = new HashMap<List<String>, String>();
 
 		public Builder add(String[] columns, EntityKeyMetadata entityKeyMetadata) {
 			builderMap.put( Collections.unmodifiableList( Arrays.asList( columns ) ), entityKeyMetadata );
 			return this;
 		}
 
+		public Builder add(String[] columns, String role) {
+			roles.put( Collections.unmodifiableList( Arrays.asList( columns ) ), role );
+			return this;
+		}
+
 		public AssociatedEntitiesMetadata build() {
-			return new AssociatedEntitiesMetadata( builderMap );
+			return new AssociatedEntitiesMetadata( builderMap, roles );
 		}
 	}
 
-	private AssociatedEntitiesMetadata( Map<List<String>, EntityKeyMetadata> associatedEntityKeyMetadataMap) {
+	private AssociatedEntitiesMetadata(Map<List<String>, EntityKeyMetadata> associatedEntityKeyMetadataMap, Map<List<String>, String> roles) {
 		this.associatedEntityKeyMetadata = Collections.unmodifiableMap( associatedEntityKeyMetadataMap );
+		this.roles = Collections.unmodifiableMap( roles );
 	}
 
 	/**
@@ -86,6 +94,22 @@ public class AssociatedEntitiesMetadata {
 			if ( index != -1 ) {
 				EntityKeyMetadata value = entry.getValue();
 				return value.getColumnNames()[index];
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Given a column part of a foreign key, it will return the corresponding column name on the associated entity
+	 *
+	 * @param column the column that it is a foreign key
+	 * @return the corresponding column name on the associated entity or {@code null}
+	 */
+	public String getRole(String column) {
+		for ( Entry<List<String>, String> entry : roles.entrySet() ) {
+			int index = entry.getKey().indexOf( column );
+			if ( index != -1 ) {
+				return entry.getValue();
 			}
 		}
 		return null;

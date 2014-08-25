@@ -123,7 +123,9 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new String[] { "Project_id", "module_id" },
 				ArrayHelper.EMPTY_STRING_ARRAY,
 				new EntityKeyMetadata( "Module", new String[] { "id" } ),
-				new String[] { "module_id" }
+				new String[] { "module_id" },
+				false,
+				null
 		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,

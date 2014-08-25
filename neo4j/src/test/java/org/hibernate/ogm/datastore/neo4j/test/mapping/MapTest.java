@@ -65,10 +65,10 @@ public class MapTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "n", nickNameNode, params( "day[9]" ) );
 		assertNumberOfNodes( 5 );
 
-		assertExpectedMapping( "r", userNode + " - [r:Nicks] - " + nickNameNode, params( "idrA" ) );
-		assertExpectedMapping( "r", userNode + " - [r:Nicks] - " + nickNameNode, params( "day[9]" ) );
-		assertExpectedMapping( "r", userNode + " - [r:User_Address{nick: {r}.nick}] - " + addressNode, params( home, "home" ) );
-		assertExpectedMapping( "r", userNode + " - [r:User_Address{nick: {r}.nick}] - " + addressNode, params( work, "work" ) );
+		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "idrA" ) );
+		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "day[9]" ) );
+		assertExpectedMapping( "r", userNode + " - [r:addresses{nick: {r}.nick}] - " + addressNode, params( home, "home" ) );
+		assertExpectedMapping( "r", userNode + " - [r:addresses{nick: {r}.nick}] - " + addressNode, params( work, "work" ) );
 		assertRelationships( 4 );
 	}
 

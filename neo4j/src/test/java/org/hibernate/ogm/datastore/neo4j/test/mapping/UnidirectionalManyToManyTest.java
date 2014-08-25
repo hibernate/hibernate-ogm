@@ -77,8 +77,8 @@ public class UnidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "o", ownerNode, params );
 		assertExpectedMapping( "b", barcklaysNode, params );
 		assertExpectedMapping( "s", sogeNode, params );
-		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + barcklaysNode, params );
-		assertExpectedMapping( "r", ownerNode + " - [r:AccountOwner_BankAccount] - " + sogeNode, params );
+		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + barcklaysNode, params );
+		assertExpectedMapping( "r", ownerNode + " - [r:bankAccounts] - " + sogeNode, params );
 	}
 
 	@Override

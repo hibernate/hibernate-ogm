@@ -184,7 +184,9 @@ class EntityDehydrator {
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
 				targetEntityKeyMetadata,
-				targetEntityKeyMetadata.getColumnNames()
+				targetEntityKeyMetadata.getColumnNames(),
+				true,
+				persister.getPropertyNames()[propertyIndex]
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(
@@ -197,6 +199,7 @@ class EntityDehydrator {
 				.session( session )
 				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
 				.propertyType( persister.getPropertyTypes()[propertyIndex] );
+
 		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
@@ -247,7 +250,9 @@ class EntityDehydrator {
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
 				targetEntityKeyMetadata,
-				targetEntityKeyMetadata.getColumnNames()
+				targetEntityKeyMetadata.getColumnNames(),
+				true,
+				persister.getPropertyNames()[propertyIndex]
 		);
 
 		AssociationPersister associationPersister = new AssociationPersister(

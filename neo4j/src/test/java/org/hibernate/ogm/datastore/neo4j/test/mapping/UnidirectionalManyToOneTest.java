@@ -77,8 +77,8 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "jug", jugNode, params );
 		assertExpectedMapping( "e", emmanuelNode, params );
 		assertExpectedMapping( "j", jeromeNode, params );
-		assertExpectedMapping( "r", jugNode + " - [r:Member] - " + emmanuelNode, params );
-		assertExpectedMapping( "r", jugNode + " - [r:Member] - " + jeromeNode, params );
+		assertExpectedMapping( "r", jugNode + " - [r:memberOf] - " + emmanuelNode, params );
+		assertExpectedMapping( "r", jugNode + " - [r:memberOf] - " + jeromeNode, params );
 	}
 
 	@Override
