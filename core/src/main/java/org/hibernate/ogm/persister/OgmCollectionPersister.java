@@ -406,8 +406,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 
 		RowKeyAndTuple result = new RowKeyAndTuple();
-		EntityKey entityKey = associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple );
-		result.key = rowKeyBuilder.values( tuple ).entityKey( entityKey ).build();
+		result.key = rowKeyBuilder.values( tuple ).build();
 
 		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( result.key );
 		for ( String column : tuple.getColumnNames() ) {
@@ -465,7 +464,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 		}
 		rowKeyBuilder.values( tuple );
-		rowKeyBuilder.entityKey( associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple ) );
 		return rowKeyBuilder.build();
 	}
 
@@ -493,7 +491,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 		}
 		rowKeyBuilder.values( tuple );
-		rowKeyBuilder.entityKey( associationPersister.createTargetKey( rowKeyBuilder.getColumnNames(), tuple ) );
 		return rowKeyBuilder.build();
 	}
 
@@ -757,8 +754,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	private RowKey updateRowKeyEntityKey(RowKey rowKey, AssociationPersister associationPersister) {
-		EntityKey targetKey = associationPersister.createTargetKey( rowKey.getColumnNames(), rowKey.getColumnValues() );
-		return new RowKey( rowKey.getTable(), rowKey.getColumnNames(), rowKey.getColumnValues(), targetKey );
+		return new RowKey( rowKey.getTable(), rowKey.getColumnNames(), rowKey.getColumnValues() );
 	}
 
 	private static enum Action {

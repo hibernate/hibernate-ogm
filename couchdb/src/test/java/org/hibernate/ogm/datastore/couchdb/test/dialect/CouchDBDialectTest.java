@@ -167,7 +167,7 @@ public class CouchDBDialectTest {
 	}
 
 	private RowKey createRowKey(String tableName, String[] rowKeyColumnNames, Object[] rowKeyColumnValues) {
-		return new RowKey( tableName, rowKeyColumnNames, rowKeyColumnValues, null );
+		return new RowKey( tableName, rowKeyColumnNames, rowKeyColumnValues );
 	}
 
 	private void createDataStoreProvider() throws Exception {

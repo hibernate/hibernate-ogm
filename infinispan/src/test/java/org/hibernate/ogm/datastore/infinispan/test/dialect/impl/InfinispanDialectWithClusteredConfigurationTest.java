@@ -116,7 +116,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 		AssociationKey key = new AssociationKey( keyMetadata, values, null, null, null );
 
-		RowKey rowKey = new RowKey( "QaxZup", columnNames, values, null );
+		RowKey rowKey = new RowKey( "QaxZup", columnNames, values );
 		Tuple tuple = new Tuple();
 		tuple.put( "zip", "zap" );
 
