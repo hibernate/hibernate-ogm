@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -43,7 +44,7 @@ public class User {
 
 	@OneToMany
 	@JoinTable(name = "User_Address")
-	@MapKeyColumn(name = "nick")
+	@MapKeyColumn(name = "addressType")
 	public Map<String, Address> getAddresses() {
 		return addresses;
 	}

@@ -67,14 +67,14 @@ public class MapTest extends Neo4jJpaTestCase {
 
 		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "idrA" ) );
 		assertExpectedMapping( "r", userNode + " - [r:nicknames] - " + nickNameNode, params( "day[9]" ) );
-		assertExpectedMapping( "r", userNode + " - [r:addresses{nick: {r}.nick}] - " + addressNode, params( home, "home" ) );
-		assertExpectedMapping( "r", userNode + " - [r:addresses{nick: {r}.nick}] - " + addressNode, params( work, "work" ) );
+		assertExpectedMapping( "r", userNode + " - [r:addresses{addressType: {r}.addressType}] - " + addressNode, params( home, "home" ) );
+		assertExpectedMapping( "r", userNode + " - [r:addresses{addressType: {r}.addressType}] - " + addressNode, params( work, "work" ) );
 		assertRelationships( 4 );
 	}
 
 	private Map<String, Object> params(Address address, String key) {
 		Map<String, Object> relationshipProperties = new HashMap<String, Object>();
-		relationshipProperties.put( "nick", key );
+		relationshipProperties.put( "addressType", key );
 
 		Map<String, Object> params = params( user );
 		params.putAll( params( address ) );
