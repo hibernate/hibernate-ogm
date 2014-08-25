@@ -7,6 +7,7 @@
 package org.hibernate.ogm.persister;
 
 import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -41,8 +42,7 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
-import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata.Builder;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -267,17 +267,28 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	private TupleContext createTupleContext() {
-		Builder metadataBuilder = new AssociatedEntitiesMetadata.Builder();
+		Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata = newHashMap();
+		Map<String, String> roles = newHashMap();
+
 		for ( int index = 0; index < getPropertySpan(); index++ ) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
 				OgmEntityPersister associatedJoinable = (OgmEntityPersister) getFactory().getEntityPersister(
 						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
-				metadataBuilder.add( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() );
-				metadataBuilder.add( getPropertyColumnNames( index ), getPropertyNames()[index] );
+
+				for ( String column : getPropertyColumnNames( index ) ) {
+					associatedEntityKeyMetadata.put( column, new AssociatedEntityKeyMetadata( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() ) );
+					roles.put( column, getPropertyNames()[index] );
+				}
 			}
 		}
-		return new TupleContext( selectableColumnNames( discriminator ), metadataBuilder.build(), optionsService.context().getEntityOptions( getMappedClass() ) );
+
+		return new TupleContext(
+				selectableColumnNames( discriminator ),
+				associatedEntityKeyMetadata,
+				roles,
+				optionsService.context().getEntityOptions( getMappedClass() )
+		);
 	}
 
 	public GridType getGridIdentifierType() {

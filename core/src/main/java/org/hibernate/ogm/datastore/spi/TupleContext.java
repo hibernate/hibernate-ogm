@@ -6,7 +6,9 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hibernate.ogm.dialect.batch.OperationsQueue;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -27,15 +29,22 @@ public class TupleContext implements GridDialectOperationContext {
 	/**
 	 * Information of the associated entity stored per foreign key column names
 	 */
-	private final AssociatedEntitiesMetadata associatedEntityMetadata;
+	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata;
 
-	public TupleContext(List<String> selectableColumns, AssociatedEntitiesMetadata associatedEntityKeyMetadata, OptionsContext optionsContext) {
-		this( selectableColumns, associatedEntityKeyMetadata, optionsContext, null );
+	private final Map<String, String> roles;
+
+	public TupleContext(TupleContext original, OperationsQueue operationsQueue) {
+		this( original.selectableColumns, original.associatedEntityMetadata, original.roles, original.optionsContext, operationsQueue );
 	}
 
-	public TupleContext(List<String> selectableColumns, AssociatedEntitiesMetadata associatedEntityKeyMetadata, OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	public TupleContext(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext) {
+		this( selectableColumns, associatedEntityMetadata, roles, optionsContext, null );
+	}
+
+	private TupleContext(List<String> selectableColumns, Map<String, AssociatedEntityKeyMetadata> associatedEntityMetadata, Map<String, String> roles, OptionsContext optionsContext, OperationsQueue operationsQueue) {
 		this.selectableColumns = selectableColumns;
-		this.associatedEntityMetadata = associatedEntityKeyMetadata;
+		this.associatedEntityMetadata = Collections.unmodifiableMap( associatedEntityMetadata );
+		this.roles = Collections.unmodifiableMap( roles );
 		this.optionsContext = optionsContext;
 		this.operationsQueue = operationsQueue;
 	}
@@ -48,19 +57,45 @@ public class TupleContext implements GridDialectOperationContext {
 		return selectableColumns;
 	}
 
-	/**
-	 * Provides access to the metadata of the entities associated to the tuple via foreign columns
-	 *
-	 * @return an {@link AssociatedEntitiesMetadata} containing metadata of the entities associated to this tuple via
-	 * foreign columns
-	 */
-	public AssociatedEntitiesMetadata getAssociatedEntitiesMetadata() {
-		return associatedEntityMetadata;
-	}
-
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	/**
+	 * Whether the given column is part of a *-to-one association or not. If so, a dialect may choose to not persist the
+	 * column value in the corresponding tuple data structure itself but e.g. as a native relationship (in the case of
+	 * graph stores).
+	 */
+	public boolean isPartOfAssociation(String column) {
+		return associatedEntityMetadata.containsKey( column );
+	}
+
+	/**
+	 * Provides meta-data about the *-to-one associations represented in a given tuple. Note that the same meta-data
+	 * object will be returned for different columns, if those columns are part of a compound key.
+	 *
+	 * @param column The column name to return the *-to-one association meta-data for.
+	 * @return meta-data about the *-to-one association of which the given column is part of or {@code null} if the
+	 * given column is not part of such an association
+	 */
+	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column) {
+		return associatedEntityMetadata.get( column );
+	}
+
+	/**
+	 * Returns meta-data about all the *-to-one associations represented in a given tuple, keyed by column name.
+	 */
+	public Map<String, AssociatedEntityKeyMetadata> getAllAssociatedEntityKeyMetadata() {
+		return associatedEntityMetadata;
+	}
+
+	public String getRole(String column) {
+		return roles.get( column );
+	}
+
+	public Map<String, String> getAllRoles() {
+		return roles;
 	}
 
 	/**
