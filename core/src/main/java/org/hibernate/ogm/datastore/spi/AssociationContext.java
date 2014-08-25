@@ -20,13 +20,19 @@ public class AssociationContext implements GridDialectOperationContext {
 
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
+	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 
-	public AssociationContext(OptionsContext optionsContext) {
-		this( optionsContext, null );
+	public AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		this( optionsContext, associatedEntityKeyMetadata, null );
 	}
 
-	public AssociationContext(OptionsContext optionsContext, OperationsQueue operationsQueue) {
+	public AssociationContext(AssociationContext original, OperationsQueue operationsQueue) {
+		this( original.optionsContext, original.associatedEntityKeyMetadata, operationsQueue );
+	}
+
+	private AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, OperationsQueue operationsQueue) {
 		this.optionsContext = optionsContext;
+		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.operationsQueue = operationsQueue;
 	}
 
@@ -37,6 +43,15 @@ public class AssociationContext implements GridDialectOperationContext {
 	@Override
 	public OptionsContext getOptionsContext() {
 		return optionsContext;
+	}
+
+	/**
+	 * Provides meta-data about the entity key on the other side of this association.
+	 *
+	 * @return A meta-data object providing information about the entity key on the other side of this information.
+	 */
+	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
+		return associatedEntityKeyMetadata;
 	}
 
 	@Override

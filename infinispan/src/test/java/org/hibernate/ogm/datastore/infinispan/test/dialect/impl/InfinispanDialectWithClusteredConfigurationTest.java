@@ -21,7 +21,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.AssociatedEntitiesMetadata;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
@@ -111,7 +111,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadAssociationInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, null, null, false, null );
+		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, new AssociatedEntityKeyMetadata( null, null ), false, null );
 		Object[] values = { 123, "Hello", 456L };
 
 		AssociationKey key = new AssociationKey( keyMetadata, values, null, null, null );
@@ -159,7 +159,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private TupleContext getEmptyTupleContext() {
 		return new TupleContext(
 				Collections.<String>emptyList(),
-				AssociatedEntitiesMetadata.EMPTY_INSTANCE,
+				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
+				Collections.<String, String>emptyMap(),
 				EmptyOptionsContext.INSTANCE
 		);
 	}

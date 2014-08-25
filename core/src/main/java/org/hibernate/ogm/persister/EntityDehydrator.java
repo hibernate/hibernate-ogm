@@ -11,6 +11,7 @@ import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -182,8 +183,10 @@ class EntityDehydrator {
 				propertyColumnNames,
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
-				targetEntityKeyMetadata,
-				targetEntityKeyMetadata.getColumnNames(),
+				new AssociatedEntityKeyMetadata(
+					targetEntityKeyMetadata.getColumnNames(),
+					targetEntityKeyMetadata
+				),
 				true,
 				persister.getPropertyNames()[propertyIndex]
 		);
@@ -247,8 +250,10 @@ class EntityDehydrator {
 				propertyColumnNames,
 				rowKeyColumnNames,
 				EMPTY_STRING_ARRAY,
-				targetEntityKeyMetadata,
-				targetEntityKeyMetadata.getColumnNames(),
+				new AssociatedEntityKeyMetadata(
+					targetEntityKeyMetadata.getColumnNames(),
+					targetEntityKeyMetadata
+				),
 				true,
 				persister.getPropertyNames()[propertyIndex]
 		);

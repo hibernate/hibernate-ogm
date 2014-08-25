@@ -232,8 +232,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						propertyColumnNames,
 						rowKeyColumnNames,
 						ArrayHelper.EMPTY_STRING_ARRAY,
-						entityKeyMetadata,
-						entityKeyMetadata.getColumnNames(),
+						new AssociatedEntityKeyMetadata(
+							entityKeyMetadata.getColumnNames(),
+							entityKeyMetadata
+						),
 						true,
 						getPropertyNames()[index]
 				);

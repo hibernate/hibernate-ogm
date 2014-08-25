@@ -29,6 +29,7 @@ import org.hibernate.internal.StaticFilterAliasGenerator;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
@@ -120,8 +121,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getKeyColumnNames(),
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
-				targetEntityKeyMetadata( false ),
-				getElementColumnNames(),
+				new AssociatedEntityKeyMetadata(
+					getElementColumnNames(),
+					targetEntityKeyMetadata( false )
+				),
 				isInverse,
 				isInverse ? determineMainSidePropertyName( factory ) : null
 		);
@@ -131,8 +134,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				getElementColumnNames(),
 				rowKeyColumnNames,
 				rowKeyIndexColumnNames,
-				targetEntityKeyMetadata( true ),
-				getKeyColumnNames(),
+				new AssociatedEntityKeyMetadata(
+					getKeyColumnNames(),
+					targetEntityKeyMetadata( true )
+				),
 				!isInverse,
 				!isInverse ? collection.getNodeName() : null
 		);

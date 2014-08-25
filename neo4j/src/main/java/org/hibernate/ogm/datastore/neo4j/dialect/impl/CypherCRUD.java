@@ -13,6 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
@@ -63,14 +64,14 @@ public class CypherCRUD {
 	 * @param rowKey identify the relationship
 	 * @return the corresponding relationship
 	 */
-	public Relationship findRelationship(AssociationKey associationKey, RowKey rowKey) {
+	public Relationship findRelationship(AssociationKey associationKey, RowKey rowKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		EntityKey targetKey = null;
 
 		// no index columns, i.e. the relationship has no properties identifying it; we need the node
 		// on the other side to uniquely identify it
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
-			targetKey = getTargetKey( associationKey, rowKey );
+			targetKey = associatedEntityKeyMetadata.getEntityKey( rowKey );
 		}
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -363,13 +364,13 @@ public class CypherCRUD {
 	 * DELETE r, x
 	 * </pre>
 	 */
-	public void remove(AssociationKey associationKey, RowKey rowKey) {
+	public void remove(AssociationKey associationKey, RowKey rowKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		EntityKey targetKey = null;
 
 		// no index columns, i.e. the relationship has no properties identifying it; we need the node
 		// on the other side to uniquely identify it
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
-			targetKey = getTargetKey( associationKey, rowKey );
+			targetKey = associatedEntityKeyMetadata.getEntityKey( rowKey );
 		}
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -388,20 +389,6 @@ public class CypherCRUD {
 		}
 
 		engine.execute( query.toString(), parameters );
-	}
-
-	private EntityKey getTargetKey(AssociationKey associationKey, RowKey rowKey) {
-		EntityKey targetKey;
-		String[] columnNames = associationKey.getMetadata().getRowKeyTargetAssociationKeyColumnNames();
-		Object[] columnValues = new Object[columnNames.length];
-
-		//TODO Order in case of compound keys ???
-		for ( int i = 0; i < columnNames.length; i++ ) {
-			columnValues[i] = rowKey.getColumnValue( columnNames[i] );
-		}
-
-		targetKey = new EntityKey( associationKey.getMetadata().getRowKeyEntityKeyMetadata(), columnValues  );
-		return targetKey;
 	}
 
 	public ExecutionResult executeQuery( String query, Map<String, Object> parameters ) {

@@ -427,7 +427,8 @@ public class AssociationPersister {
 					.context();
 
 			associationContext = new AssociationContext(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() )
+					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ),
+					associationKeyMetadata.getAssociatedEntityKeyMetadata()
 			);
 		}
 

@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.RowKey;
 
 /**
  * Provides meta-data about a one-to-one/many-to-one association represented by one or more columns contained within a
@@ -52,6 +53,25 @@ public class AssociatedEntityKeyMetadata {
 	}
 
 	/**
+	 * Returns the entity key on the other side of association row represented by the given row key.
+	 * <p>
+	 * <b>Note:</b> May only be invoked if the row key actually contains all the columns making up that entity key.
+	 * Specifically, it may <b>not</b> invoked if the association has index columns (maps, ordered collections), as the
+	 * entity key columns will not be part of the row key in this case.
+	 */
+	public EntityKey getEntityKey(RowKey rowKey) {
+		Object[] columnValues = new Object[ associationKeyColumns.length];
+		int i = 0;
+
+		for ( String associationKeyColumn : associationKeyColumns ) {
+			columnValues[i] = rowKey.getColumnValue( associationKeyColumn );
+			i++;
+		}
+
+		return new EntityKey( entityKeyMetadata, columnValues );
+	}
+
+	/**
 	 * Returns the name of the column in the target entity key corresponding to the given association key column.
 	 * <p>
 	 * E.g. let there be an entity key comprising the columns {@code id.countryCode} and {@code id.sequenceNo} which is
@@ -71,5 +91,12 @@ public class AssociatedEntityKeyMetadata {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Returns the names of those columns of a tuple or association row which make up the represented association.
+	 */
+	public String[] getAssociationKeyColumns() {
+		return associationKeyColumns;
 	}
 }

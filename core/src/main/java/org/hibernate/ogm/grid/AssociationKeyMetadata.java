@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
+
 /**
  * Stores metadata information common to all keys related
   * to a given association
@@ -25,20 +27,18 @@ public class AssociationKeyMetadata {
 	// not part of the object identity
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
-	private final String[] rowKeyTargetAssociationKeyColumnNames;
-	private final EntityKeyMetadata rowKeyEntityKeyMetadata;
 	private final boolean isInverse;
 	private final String roleOnMainSide;
+	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, EntityKeyMetadata rowKeyEntityKeyMetadata, String[] rowKeyTargetAssociationKeyColumnNames, boolean isInverse, String roleOnMainSide) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String roleOnMainSide) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
-		this.rowKeyEntityKeyMetadata = rowKeyEntityKeyMetadata;
-		this.rowKeyTargetAssociationKeyColumnNames = rowKeyTargetAssociationKeyColumnNames;
 		this.isInverse = isInverse;
 		this.roleOnMainSide = roleOnMainSide;
+		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -70,17 +70,12 @@ public class AssociationKeyMetadata {
 	}
 
 	/**
-	 * @return the {@link EntityKeyMetadata} of the target entity of the association
+	 * Returns meta-data about the entity key referenced by associations of this key family.
+	 *
+	 * @return meta-data about the entity key referenced by associations of this key family.
 	 */
-	public EntityKeyMetadata getRowKeyEntityKeyMetadata() {
-		return rowKeyEntityKeyMetadata;
-	}
-
-	/**
-	 * @return the column names of the association referring to the identifier of the target entity
-	 */
-	public String[] getRowKeyTargetAssociationKeyColumnNames() {
-		return rowKeyTargetAssociationKeyColumnNames;
+	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
+		return associatedEntityKeyMetadata;
 	}
 
 	/**
