@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.RowKey;
 
 /**
@@ -21,7 +20,6 @@ public class RowKeyBuilder {
 	private final List<String> indexColumnNames = new ArrayList<String>( 3 );
 	private String tableName;
 	private Tuple tuple;
-	private EntityKey entityKey;
 
 	public RowKeyBuilder addColumns(String... columns) {
 		for ( String columnName : columns ) {
@@ -43,11 +41,6 @@ public class RowKeyBuilder {
 		return this;
 	}
 
-	public RowKeyBuilder entityKey(EntityKey entityKey) {
-		this.entityKey = entityKey;
-		return this;
-	}
-
 	public RowKey build() {
 		final String[] columnNamesArray = columnNames.toArray( new String[columnNames.size()] );
 		final int length = columnNamesArray.length;
@@ -57,7 +50,7 @@ public class RowKeyBuilder {
 			columnValuesArray[index] = tuple.get( columnNamesArray[index] );
 		}
 
-		return new RowKey( tableName, columnNamesArray, columnValuesArray, entityKey );
+		return new RowKey( tableName, columnNamesArray, columnValuesArray );
 	}
 
 	public RowKeyBuilder values(Tuple tuple) {
