@@ -11,6 +11,7 @@ import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -208,8 +209,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata
-		associationKeyMetadataPerPropertyName = new HashMap<String,AssociationKeyMetadata>();
-		initAssociationKeyMetadata();
+		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata() );
 		initCustomSQLStrings();
 	}
 
@@ -220,7 +220,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		customSQLDelete = new String[TABLE_SPAN];
 	}
 
-	private void initAssociationKeyMetadata() {
+	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata() {
+		Map<String, AssociationKeyMetadata> associationKeyMetadata = new HashMap<String, AssociationKeyMetadata>();
+
 		for (int index = 0 ; index < getPropertySpan() ; index++) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
@@ -238,9 +240,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						),
 						true
 				);
-				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
+				associationKeyMetadata.put( getPropertyNames()[index], metadata );
 			}
 		}
+
+		return associationKeyMetadata;
 	}
 
 	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
