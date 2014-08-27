@@ -41,6 +41,10 @@ import org.hibernate.type.Type;
  * Implements the logic for updating associations. Configured in a fluent manner, followed by a call to
  * {@link #flushToCache()} which invokes the given {@link GridDialect} to apply the changes to the datastore.
  *
+ * Unlike ORM style persisters, this class is tied to a specific association instance with specific ids.
+ * In other words, instances cannot be shared by {@link org.hibernate.SessionFactory} level objects
+ * like {@link org.hibernate.persister.entity.EntityPersister}.
+ *
  * @author Emmanuel Bernard
  * @author Gunnar Morling
  */
