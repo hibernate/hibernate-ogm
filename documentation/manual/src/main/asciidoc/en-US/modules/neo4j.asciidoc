@@ -381,6 +381,7 @@ If required, you can set the initial value of a sequence and the increment size 
 +@TableGenerator#initialValue()+ and +@TableGenerator#allocationSize()+, respectively.
 The options +@TableGenerator#catalog()+, +@TableGenerator#schema()+, +@TableGenerator#uniqueConstraints()+ and +@TableGenerator#indexes()+  are not supported.
 
+[[ogm-neo4j-transactions]]
 ==== Transactions
 
 Neo4j operations can be executed only inside a transaction.

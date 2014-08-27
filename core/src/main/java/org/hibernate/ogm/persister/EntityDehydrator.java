@@ -182,6 +182,7 @@ class EntityDehydrator {
 				tableName,
 				propertyColumnNames,
 				rowKeyColumnNames,
+				// Because it is an association to one entity it should not need an index column
 				EMPTY_STRING_ARRAY,
 				targetEntityKeyMetadata,
 				targetEntityKeyMetadata.getColumnNames()
@@ -245,6 +246,7 @@ class EntityDehydrator {
 				tableName,
 				propertyColumnNames,
 				rowKeyColumnNames,
+				// Because it is an association to one entity it should not need an index column
 				EMPTY_STRING_ARRAY,
 				targetEntityKeyMetadata,
 				targetEntityKeyMetadata.getColumnNames()
