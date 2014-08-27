@@ -30,17 +30,17 @@ public class BidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
 
-		salesForce = new SalesForce();
+		salesForce = new SalesForce( "red_hat" );
 		salesForce.setCorporation( "Red Hat" );
 		em.persist( salesForce );
 
-		eric = new SalesGuy();
+		eric = new SalesGuy( "eric" );
 		eric.setName( "Eric" );
 		eric.setSalesForce( salesForce );
 		salesForce.getSalesGuys().add( eric );
 		em.persist( eric );
 
-		simon = new SalesGuy();
+		simon = new SalesGuy( "simon" );
 		simon.setName( "Simon" );
 		simon.setSalesForce( salesForce );
 		salesForce.getSalesGuys().add( simon );

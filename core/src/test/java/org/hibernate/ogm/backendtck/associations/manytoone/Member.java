@@ -8,11 +8,8 @@ package org.hibernate.ogm.backendtck.associations.manytoone;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Emmanuel Bernard
@@ -23,9 +20,14 @@ public class Member {
 	private String name;
 	private JUG memberOf;
 
+	public Member() {
+	}
+
+	public Member(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	@Column(name = "member_id")
 	public String getId() {
 		return id;

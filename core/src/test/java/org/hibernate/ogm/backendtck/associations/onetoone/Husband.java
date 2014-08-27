@@ -6,11 +6,8 @@
  */
 package org.hibernate.ogm.backendtck.associations.onetoone;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -24,9 +21,14 @@ public class Husband {
 	private String name;
 	private Wife wife;
 
+	public Husband() {
+	}
+
+	public Husband(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}

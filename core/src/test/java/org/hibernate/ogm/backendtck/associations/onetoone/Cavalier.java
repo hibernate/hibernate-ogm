@@ -7,12 +7,9 @@
 package org.hibernate.ogm.backendtck.associations.onetoone;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Emmanuel Bernard
@@ -23,9 +20,15 @@ public class Cavalier {
 	private String name;
 	private Horse horse;
 
+	public Cavalier() {
+
+	}
+
+	public Cavalier(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}

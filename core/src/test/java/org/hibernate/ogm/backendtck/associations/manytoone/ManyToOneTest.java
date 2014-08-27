@@ -29,13 +29,13 @@ public class ManyToOneTest extends OgmTestCase {
 	public void testUnidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		JUG jug = new JUG();
+		JUG jug = new JUG( "summer_camp" );
 		jug.setName( "JUG Summer Camp" );
 		session.persist( jug );
-		Member emmanuel = new Member();
+		Member emmanuel = new Member( "emmanuel" );
 		emmanuel.setName( "Emmanuel Bernard" );
 		emmanuel.setMemberOf( jug );
-		Member jerome = new Member();
+		Member jerome = new Member( "jerome" );
 		jerome.setName( "Jerome" );
 		jerome.setMemberOf( jug );
 		session.persist( emmanuel );
@@ -77,15 +77,15 @@ public class ManyToOneTest extends OgmTestCase {
 	public void testBidirectionalManyToOneRegular() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		SalesForce force = new SalesForce();
+		SalesForce force = new SalesForce( "sales_force" );
 		force.setCorporation( "Red Hat" );
 		session.save( force );
-		SalesGuy eric = new SalesGuy();
+		SalesGuy eric = new SalesGuy( "eric" );
 		eric.setName( "Eric" );
 		eric.setSalesForce( force );
 		force.getSalesGuys().add( eric );
 		session.save( eric );
-		SalesGuy simon = new SalesGuy();
+		SalesGuy simon = new SalesGuy( "simon" );
 		simon.setName( "Simon" );
 		simon.setSalesForce( force );
 		force.getSalesGuys().add( simon );
@@ -121,15 +121,15 @@ public class ManyToOneTest extends OgmTestCase {
 	public void testBidirectionalManyToOneRemoval() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		SalesForce force = new SalesForce();
+		SalesForce force = new SalesForce( "red_hat" );
 		force.setCorporation( "Red Hat" );
 		session.save( force );
-		SalesGuy eric = new SalesGuy();
+		SalesGuy eric = new SalesGuy( "eric" );
 		eric.setName( "Eric" );
 		eric.setSalesForce( force );
 		force.getSalesGuys().add( eric );
 		session.save( eric );
-		SalesGuy simon = new SalesGuy();
+		SalesGuy simon = new SalesGuy( "simon" );
 		simon.setName( "Simon" );
 		simon.setSalesForce( force );
 		force.getSalesGuys().add( simon );

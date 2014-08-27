@@ -29,10 +29,10 @@ public class BidirectionalOneToOneTest extends Neo4jJpaTestCase {
 		getTransactionManager().begin();
 		EntityManager em = getFactory().createEntityManager();
 
-		husband = new Husband();
+		husband = new Husband( "frederic" );
 		husband.setName( "Frederic Joliot-Curie" );
 
-		wife = new Wife();
+		wife = new Wife( "wife" );
 		wife.setName( "Irene Joliot-Curie" );
 		wife.setHusband( husband );
 		husband.setWife( wife );

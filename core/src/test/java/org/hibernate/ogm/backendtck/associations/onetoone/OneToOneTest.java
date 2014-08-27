@@ -23,9 +23,9 @@ public class OneToOneTest extends OgmTestCase {
 	public void testUnidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		Horse horse = new Horse();
+		Horse horse = new Horse( "palefrenier" );
 		horse.setName( "Palefrenier" );
-		Cavalier cavalier = new Cavalier();
+		Cavalier cavalier = new Cavalier( "caroline" );
 		cavalier.setName( "Caroline" );
 		cavalier.setHorse( horse );
 		session.persist( horse );
@@ -71,9 +71,9 @@ public class OneToOneTest extends OgmTestCase {
 	public void testBidirectionalManyToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
-		Husband husband = new Husband();
+		Husband husband = new Husband( "alex" );
 		husband.setName( "Alex" );
-		Wife wife = new Wife();
+		Wife wife = new Wife( "bea" );
 		wife.setName( "Bea" );
 		husband.setWife( wife );
 		wife.setHusband( husband );
@@ -91,7 +91,7 @@ public class OneToOneTest extends OgmTestCase {
 		assertNotNull( wife );
 		husband = wife.getHusband();
 		assertNotNull( husband );
-		Wife bea2 = new Wife();
+		Wife bea2 = new Wife( "still_bea" );
 		session.persist( bea2 );
 		bea2.setName( "Still Bea" );
 		husband.setWife( bea2 );

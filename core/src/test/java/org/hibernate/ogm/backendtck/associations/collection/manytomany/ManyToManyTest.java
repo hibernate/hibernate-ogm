@@ -27,9 +27,9 @@ public class ManyToManyTest extends OgmTestCase {
 	public void testManyToMany() {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();
-		AccountOwner owner = new AccountOwner();
+		AccountOwner owner = new AccountOwner( "owner_1" );
 		owner.setSSN( "0123456" );
-		BankAccount soge = new BankAccount();
+		BankAccount soge = new BankAccount( "account_1" );
 		soge.setAccountNumber( "X2345000" );
 		owner.getBankAccounts().add( soge );
 		soge.getOwners().add( owner );
@@ -54,7 +54,7 @@ public class ManyToManyTest extends OgmTestCase {
 		owner = get( session, AccountOwner.class, owner.getId() );
 		assertThat( owner.getBankAccounts() ).hasSize( 1 );
 		assertThat( owner.getBankAccounts() ).onProperty( "id" ).contains( soge.getId() );
-		BankAccount barclays = new BankAccount();
+		BankAccount barclays = new BankAccount( "account_2" );
 		barclays.setAccountNumber( "ZZZ-009" );
 		barclays.getOwners().add( owner );
 		soge = owner.getBankAccounts().iterator().next();

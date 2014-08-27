@@ -30,15 +30,15 @@ public class UnidirectionalManyToOneTest extends Neo4jJpaTestCase {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 
-		jug = new JUG();
+		jug = new JUG( "summer_camp" );
 		jug.setName( "JUG Summer Camp" );
 		em.persist( jug );
 
-		emmanuel = new Member();
+		emmanuel = new Member( "emmanuel" );
 		emmanuel.setName( "Emmanuel Bernard" );
 		emmanuel.setMemberOf( jug );
 
-		jerome = new Member();
+		jerome = new Member( "jerome" );
 		jerome.setName( "Jerome" );
 		jerome.setMemberOf( jug );
 

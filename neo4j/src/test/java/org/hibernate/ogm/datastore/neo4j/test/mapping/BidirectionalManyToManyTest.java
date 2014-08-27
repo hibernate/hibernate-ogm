@@ -30,15 +30,15 @@ public class BidirectionalManyToManyTest extends Neo4jJpaTestCase {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 
-		owner = new AccountOwner();
+		owner = new AccountOwner( "owner_1" );
 		owner.setSSN( "0123456" );
 
-		soge = new BankAccount();
+		soge = new BankAccount( "account_1" );
 		soge.setAccountNumber( "X2345000" );
 		soge.getOwners().add( owner );
 		owner.getBankAccounts().add( soge );
 
-		barclays = new BankAccount();
+		barclays = new BankAccount( "account_2" );
 		barclays.setAccountNumber( "ZZZ-009" );
 		barclays.getOwners().add( owner );
 		owner.getBankAccounts().add( barclays );

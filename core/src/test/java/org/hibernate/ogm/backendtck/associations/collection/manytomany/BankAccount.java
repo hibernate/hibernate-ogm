@@ -8,12 +8,10 @@ package org.hibernate.ogm.backendtck.associations.collection.manytomany;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -24,9 +22,15 @@ public class BankAccount {
 	private String accountNumber;
 	private Set<AccountOwner> owners = new HashSet<AccountOwner>();
 
+	public BankAccount() {
+
+	}
+
+	public BankAccount(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}

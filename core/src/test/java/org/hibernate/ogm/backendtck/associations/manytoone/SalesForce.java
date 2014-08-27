@@ -8,12 +8,10 @@ package org.hibernate.ogm.backendtck.associations.manytoone;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Emmanuel Bernard
@@ -24,9 +22,14 @@ public class SalesForce {
 	private String corporation;
 	private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
 
+	public SalesForce() {
+	}
+
+	public SalesForce(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}

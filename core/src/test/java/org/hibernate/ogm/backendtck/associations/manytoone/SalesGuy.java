@@ -7,11 +7,8 @@
 package org.hibernate.ogm.backendtck.associations.manytoone;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
-import org.hibernate.annotations.GenericGenerator;
 
 /**
  * @author Emmanuel Bernard
@@ -22,9 +19,14 @@ public class SalesGuy {
 	private String name;
 	private SalesForce salesForce;
 
+	public SalesGuy() {
+	}
+
+	public SalesGuy(String id) {
+		this.id = id;
+	}
+
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	public String getId() {
 		return id;
 	}
