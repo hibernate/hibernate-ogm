@@ -236,8 +236,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 							entityKeyMetadata.getColumnNames(),
 							entityKeyMetadata
 						),
-						true,
-						getPropertyNames()[index]
+						true
 				);
 				associationKeyMetadataPerPropertyName.put( getPropertyNames()[index], metadata );
 			}
@@ -482,7 +481,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				//does not set .collectionPersister as it does not make sense here for an entity
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
-				.propertyType( getPropertyTypes()[propertyIndex] );
+				.propertyType( getPropertyTypes()[propertyIndex] )
+				.roleOnMainSide( getPropertyNames()[propertyIndex] )
+				.inverse();
 		final Association ids = associationPersister.getAssociationOrNull();
 
 		if (ids == null || ids.size() == 0 ) {

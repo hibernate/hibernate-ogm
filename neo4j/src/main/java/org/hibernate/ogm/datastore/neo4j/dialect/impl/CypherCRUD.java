@@ -275,7 +275,7 @@ public class CypherCRUD {
 		StringBuilder relationshipBuilder = new StringBuilder("[r");
 		if (associationKey != null) {
 			relationshipBuilder.append( ":" );
-			identifier( relationshipBuilder, relationshipType( associationKey ).name() );
+			identifier( relationshipBuilder, relationshipType( associationKey.getCollectionRole() ).name() );
 		}
 		appendRelationshipProperties( parameters, indexColumnNames, indexColumnValues, table, relationshipBuilder );
 		relationshipBuilder.append( "]" );
@@ -304,18 +304,8 @@ public class CypherCRUD {
 		}
 	}
 
-	/**
-	 * Converts the association key into the type of the relationship.
-	 *
-	 * @param associationKey the identifier of the association
-	 * @return the corresponding {@link RelationshipType}
-	 */
-	public static RelationshipType relationshipType(AssociationKey associationKey) {
-		return relationshipType( associationKey.getMetadata().isInverse() ? associationKey.getMetadata().getRoleOnMainSide() : associationKey.getCollectionRole() );
-	}
-
-	public static RelationshipType relationshipType(String role) {
-		return DynamicRelationshipType.withName( role );
+	public static RelationshipType relationshipType(String relationshipType) {
+		return DynamicRelationshipType.withName( relationshipType );
 	}
 
 	/**
@@ -338,7 +328,7 @@ public class CypherCRUD {
 		query.append( ") - " );
 		query.append( "[r" );
 		query.append( ":" );
-		query.append( relationshipType( associationKey ).name() );
+		query.append( relationshipType( associationKey.getCollectionRole() ).name() );
 		query.append( "]" );
 		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			query.append( " - (x:" );

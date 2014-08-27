@@ -26,7 +26,7 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 	private final Map<String, Object> properties;
 
 	public Neo4jTupleAssociationSnapshot(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		properties = collectProperties( relationship, associationKey, associatedEntityKeyMetadata);
+		properties = collectProperties( relationship, associationKey, associatedEntityKeyMetadata );
 	}
 
 	private static Map<String, Object> collectProperties(Relationship relationship, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {

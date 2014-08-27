@@ -28,8 +28,8 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 
 	private final Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
-	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		for ( Relationship relationship : relationships( ownerNode, associationKey ) ) {
+	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String relationshipType) {
+		for ( Relationship relationship : relationships( ownerNode, associationKey, relationshipType ) ) {
 			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );
 			tuples.put( rowKey, new Tuple( snapshot ) );
@@ -57,8 +57,8 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 		return tuples.keySet();
 	}
 
-	private Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey) {
-		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( associationKey ) );
+	private static Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey, String relationshipType) {
+		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( relationshipType ) );
 	}
 
 	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {

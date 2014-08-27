@@ -21,18 +21,20 @@ public class AssociationContext implements GridDialectOperationContext {
 	private final OptionsContext optionsContext;
 	private final OperationsQueue operationsQueue;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
+	private final String roleOnMainSide;
 
-	public AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		this( optionsContext, associatedEntityKeyMetadata, null );
+	public AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
+		this( optionsContext, associatedEntityKeyMetadata, roleOnMainSide, null );
 	}
 
 	public AssociationContext(AssociationContext original, OperationsQueue operationsQueue) {
-		this( original.optionsContext, original.associatedEntityKeyMetadata, operationsQueue );
+		this( original.optionsContext, original.associatedEntityKeyMetadata, original.roleOnMainSide, operationsQueue );
 	}
 
-	private AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, OperationsQueue operationsQueue) {
+	private AssociationContext(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide, OperationsQueue operationsQueue) {
 		this.optionsContext = optionsContext;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
+		this.roleOnMainSide = roleOnMainSide;
 		this.operationsQueue = operationsQueue;
 	}
 
@@ -52,6 +54,18 @@ public class AssociationContext implements GridDialectOperationContext {
 	 */
 	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
 		return associatedEntityKeyMetadata;
+	}
+
+	/**
+	 * The role of the represented association on the main side in case the current operation is invoked for the inverse
+	 * side of a bi-directional association.
+	 *
+	 * @return The role of the represented association on the main side or {@code null} in case this operation is not
+	 * invoked for the inverse side of a bi-directional association (i.e. it either is invoked for an uni-directional
+	 * association or the main-side of a bi-directional association).
+	 */
+	public String getRoleOnMainSide() {
+		return roleOnMainSide;
 	}
 
 	@Override

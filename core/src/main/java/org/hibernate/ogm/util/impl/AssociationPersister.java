@@ -58,6 +58,7 @@ public class AssociationPersister {
 	private OgmCollectionPersister collectionPersister;
 	private boolean inverse;
 	private Type propertyType;
+	private String roleOnMainSide;
 	private AssociationContext associationContext;
 
 	/*
@@ -120,13 +121,22 @@ public class AssociationPersister {
 		return this;
 	}
 
+	// TODO Parts of the logic in this class work under the assumption that the given persister always represents
+	// the main side in case of bi-di assocations; That's not always true atm. though, some callers pass inverse
+	// persisters
 	public AssociationPersister collectionPersister(OgmCollectionPersister collectionPersister) {
 		this.collectionPersister = collectionPersister;
 		return this;
 	}
 
+	// Either this or collectionPersister is to be invoked
 	public AssociationPersister propertyType(Type type) {
 		this.propertyType = type;
+		return this;
+	}
+
+	public AssociationPersister roleOnMainSide(String roleOnMainSide) {
+		this.roleOnMainSide = roleOnMainSide;
 		return this;
 	}
 
@@ -220,7 +230,7 @@ public class AssociationPersister {
 			}
 			//we look for associations that are to-one
 			else if ( type.isAssociationType() && ! type.isCollectionType() ) { //isCollectionType redundant but kept for readability
-				matching = isToOneMatching( associatedPersister, index, type );
+				matching = isToOneMatching( associatedPersister, index );
 			}
 			if ( matching ) {
 				otherSidePropertyName = associatedPersister.getPropertyNames()[index];
@@ -245,9 +255,9 @@ public class AssociationPersister {
 	 * Otherwise use the table name
 	 */
 	//TODO we could cache such knowledge in a service if that turns out to be costly
-	private String buildCollectionRole(OgmCollectionPersister collectionPersister) {
+	private String buildCollectionRole(OgmCollectionPersister mainSidePersister) {
 		String otherSidePropertyName = null;
-		Loadable elementPersister = (Loadable) collectionPersister.getElementPersister();
+		Loadable elementPersister = (Loadable) mainSidePersister.getElementPersister();
 		Type[] propertyTypes = elementPersister.getPropertyTypes();
 
 		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
@@ -256,12 +266,12 @@ public class AssociationPersister {
 			if ( type.isAssociationType() ) {
 				boolean matching = false;
 				//if the main side collection is a one-to-many, the reverse side should be a to-one is not a collection
-				if ( collectionPersister.isOneToMany() && ! type.isCollectionType() ) {
-					matching = isToOneMatching( elementPersister, index, type );
+				if ( mainSidePersister.isOneToMany() && ! type.isCollectionType() ) {
+					matching = isToOneMatching( elementPersister, index );
 				}
 				//if the main side collection is not a one-to-many, the reverse side should be a collection
-				else if ( ! collectionPersister.isOneToMany() && type.isCollectionType() ) {
-					matching = isCollectionMatching( (CollectionType) type, collectionPersister.getTableName() );
+				else if ( ! mainSidePersister.isOneToMany() && type.isCollectionType() ) {
+					matching = isCollectionMatching( (CollectionType) type, mainSidePersister.getTableName() );
 				}
 				if ( matching ) {
 					otherSidePropertyName = elementPersister.getPropertyNames()[index];
@@ -272,7 +282,9 @@ public class AssociationPersister {
 		return processOtherSidePropertyName( otherSidePropertyName );
 	}
 
-	private boolean isToOneMatching(Loadable elementPersister, int index, Type type) {
+	private boolean isToOneMatching(Loadable elementPersister, int index) {
+		Type type = elementPersister.getPropertyTypes()[index];
+
 		if ( ( (EntityType) type ).isOneToOne() ) {
 			// If that's a OneToOne check the associated property name and see if it matches where we come from
 			// we need to do that as OneToOne don't define columns
@@ -426,12 +438,65 @@ public class AssociationPersister {
 					.getService( OptionsService.class )
 					.context();
 
+			String roleOnMainSide = null;
+
+			if ( associationKeyMetadata.isInverse() ) {
+				if ( collectionPersister != null ) {
+					roleOnMainSide = collectionPersister.isInverse() ? determineMainSideRole( collectionPersister ) : buildCollectionRole( collectionPersister );
+				}
+				else {
+					roleOnMainSide = this.roleOnMainSide;
+				}
+			}
+
 			associationContext = new AssociationContext(
 					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ),
-					associationKeyMetadata.getAssociatedEntityKeyMetadata()
+					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
+					roleOnMainSide
 			);
 		}
 
 		return associationContext;
+	}
+
+	/**
+	 * Returns the property name on the main side, if the given collection represents the inverse (non-main) side of a
+	 * bi-directional association.
+	 */
+	private String determineMainSideRole(OgmCollectionPersister inverseSidePersister) {
+		String mainSidePropertyName = null;
+		Loadable elementPersister = (Loadable) inverseSidePersister.getElementPersister();
+		Type[] propertyTypes = elementPersister.getPropertyTypes();
+
+		for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
+			Type type = propertyTypes[index];
+
+			// we try and restrict type search as much as possible
+			if ( type.isAssociationType() ) {
+				boolean matching = false;
+
+				// the main side is a many-to-one
+				if ( type.isEntityType() ) {
+					matching = isToOneMatching( elementPersister, index );
+				}
+				// the main side is a many-to-many
+				else if ( type.isCollectionType() ) {
+					String roleOnMainSide = ( (CollectionType) type ).getRole();
+					CollectionPhysicalModel mainSidePersister = (CollectionPhysicalModel) session.getFactory().getCollectionPersister( roleOnMainSide );
+					matching = isCollectionMatching( inverseSidePersister.getCollectionType(), mainSidePersister.getTableName() );
+				}
+				// Should never happen
+				else {
+					throw new HibernateException( "Unexpected type:" + type );
+				}
+
+				if ( matching ) {
+					mainSidePropertyName = elementPersister.getPropertyNames()[index];
+					break;
+				}
+			}
+		}
+
+		return mainSidePropertyName;
 	}
 }
