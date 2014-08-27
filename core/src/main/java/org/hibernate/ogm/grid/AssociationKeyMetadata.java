@@ -28,16 +28,14 @@ public class AssociationKeyMetadata {
 	private final String[] rowKeyColumnNames;
 	private final String[] rowKeyIndexColumnNames;
 	private final boolean isInverse;
-	private final String roleOnMainSide;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String roleOnMainSide) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 		this.isInverse = isInverse;
-		this.roleOnMainSide = roleOnMainSide;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 
 		// table hashing should be specific enough
@@ -150,18 +148,6 @@ public class AssociationKeyMetadata {
 	 */
 	public boolean isInverse() {
 		return isInverse;
-	}
-
-	/**
-	 * The role of the represented association on the main side in case this key meta-data represents the inverse side
-	 * of a bi-directional association.
-	 *
-	 * @return The role of the represented association on the main side or {@code null} in case this key meta-data does
-	 * not represent the inverse side of a bi-directional association (i.e. it either represents an uni-directional
-	 * association or the main-side of a bi-directional association).
-	 */
-	public String getRoleOnMainSide() {
-		return roleOnMainSide;
 	}
 
 	@Override

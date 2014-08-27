@@ -127,8 +127,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						new String[] { "module_id" },
 						new EntityKeyMetadata( "Module", new String[] { "id" } )
 				),
-				false,
-				null
+				false
 		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
@@ -147,7 +146,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						Project.class,
 						"modules"
 				),
-				new AssociatedEntityKeyMetadata( null, null )
+				new AssociatedEntityKeyMetadata( null, null ),
+				null
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );

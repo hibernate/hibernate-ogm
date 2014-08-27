@@ -183,7 +183,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
 		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
-		Relationship relationship = ownerNode.createRelationshipTo( targetNode, relationshipType( associationKey ) );
+		Relationship relationship = ownerNode.createRelationshipTo( targetNode, relationshipType( associationKey.getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
@@ -195,7 +195,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( entityNode == null ) {
 			return null;
 		}
-		return new Association( new Neo4jAssociationSnapshot( entityNode, associationKey, associationContext.getAssociatedEntityKeyMetadata() ) );
+		return new Association(
+				new Neo4jAssociationSnapshot(
+						entityNode,
+						associationKey,
+						associationContext.getAssociatedEntityKeyMetadata(),
+						associationKey.getMetadata().isInverse() ? associationContext.getRoleOnMainSide() : associationKey.getCollectionRole()
+				)
+		);
 	}
 
 	@Override
