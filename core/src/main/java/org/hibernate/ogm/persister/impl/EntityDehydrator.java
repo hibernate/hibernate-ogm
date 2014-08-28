@@ -135,7 +135,7 @@ class EntityDehydrator {
 
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
-						doRemovePropertyMetadata(
+						removeNavigationalInformationFromReverseSide(
 								tableIndex,
 								propertyIndex,
 								oldColumnValues);
@@ -161,7 +161,7 @@ class EntityDehydrator {
 					);
 					//don't index null columns, this means no association
 					if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
-						doAddPropertyMetadata(
+						addNavigationalInformationForReverseSide(
 								tableIndex,
 								propertyIndex,
 								newColumnValues);
@@ -171,7 +171,7 @@ class EntityDehydrator {
 		}
 	}
 
-	private void doAddPropertyMetadata(int tableIndex, int propertyIndex, Object[] newColumnValue) {
+	private void addNavigationalInformationForReverseSide(int tableIndex, int propertyIndex, Object[] newColumnValue) {
 
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
 		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
@@ -240,7 +240,7 @@ class EntityDehydrator {
 		return rowKeyColumnNames;
 	}
 
-	private void doRemovePropertyMetadata(int tableIndex,
+	private void removeNavigationalInformationFromReverseSide(int tableIndex,
 										int propertyIndex,
 										Object[] oldColumnValue) {
 		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );

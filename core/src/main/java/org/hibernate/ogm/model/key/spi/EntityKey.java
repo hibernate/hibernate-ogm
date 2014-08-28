@@ -57,12 +57,18 @@ public final class EntityKey {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "EntityKey" );
-		sb.append( "{table='" ).append( keyMetadata.getTable() ).append( '\'' );
-		String[] columnNames = keyMetadata.getColumnNames();
-		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
-		sb.append( '}' );
+		sb.append( "EntityKey(" );
+		sb.append( getTable() );
+		sb.append( ") [" );
+		int i = 0;
+		for ( String column : keyMetadata.getColumnNames() ) {
+			sb.append( column ).append( "=" ).append( columnValues[i] );
+			i++;
+			if ( i < keyMetadata.getColumnNames().length ) {
+				sb.append( ", " );
+			}
+		}
+		sb.append( "]" );
 		return sb.toString();
 	}
 

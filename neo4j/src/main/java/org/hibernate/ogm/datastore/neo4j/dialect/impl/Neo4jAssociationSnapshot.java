@@ -15,6 +15,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.Contracts;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -29,6 +30,8 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	private final Map<RowKey, Tuple> tuples = new HashMap<RowKey, Tuple>();
 
 	public Neo4jAssociationSnapshot(Node ownerNode, AssociationKey associationKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String relationshipType) {
+		Contracts.assertParameterNotNull( relationshipType, "relationshipType" );
+
 		for ( Relationship relationship : relationships( ownerNode, associationKey, relationshipType ) ) {
 			Neo4jTupleAssociationSnapshot snapshot = new Neo4jTupleAssociationSnapshot( relationship, associationKey, associatedEntityKeyMetadata );
 			RowKey rowKey = convert( associationKey, snapshot );

@@ -134,12 +134,18 @@ public final class AssociationKey {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder();
-		sb.append( "AssociationKey" );
-		sb.append( "{table='" ).append( metadata.getTable() ).append( '\'' );
-		String[] columnNames = metadata.getColumnNames();
-		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( ", columnValues=" ).append( columnValues == null ? "null" : Arrays.asList( columnValues ).toString() );
-		sb.append( '}' );
+		sb.append( "AssociationKey(" );
+		sb.append( getTable() );
+		sb.append( ") [" );
+		int i = 0;
+		for ( String column : metadata.getColumnNames() ) {
+			sb.append( column ).append( "=" ).append( columnValues[i] );
+			i++;
+			if ( i < metadata.getColumnNames().length ) {
+				sb.append( ", " );
+			}
+		}
+		sb.append( "]" );
 		return sb.toString();
 	}
 
