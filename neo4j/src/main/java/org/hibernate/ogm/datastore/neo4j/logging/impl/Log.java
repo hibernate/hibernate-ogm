@@ -32,4 +32,16 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1404, value = "Error during transaction recovery")
 	HibernateException errorDuringRecovery(@Cause Exception t);
+
+	@Message(id = 1405, value = "Error reading transaction state")
+	HibernateException errorReadingTransactionState(@Cause Exception e);
+
+	@Message(id = 1406, value = "Error adding unique constraint")
+	HibernateException errorAddingUniqueConstraint(@Cause Exception e);
+
+	@Message(id = 1407, value = "Error adding sequence")
+	HibernateException errorAddingSequence(@Cause Exception e);
+
+	@Message(id = 1408, value = "Error incrementing sequence value")
+	HibernateException errorIncrementingSequenceValue(@Cause Exception e);
 }

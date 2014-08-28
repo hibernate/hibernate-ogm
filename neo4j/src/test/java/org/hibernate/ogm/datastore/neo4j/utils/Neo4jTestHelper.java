@@ -14,6 +14,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.fest.util.Files;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -36,7 +39,9 @@ import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.utils.TestableGridDialect;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.kernel.GraphDatabaseAPI;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -53,25 +58,76 @@ public class Neo4jTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ExecutionResult result = engine.execute( ENTITY_COUNT_QUERY );
-		ResourceIterator<Map<String, Object>> iterator = result.iterator();
-		if ( iterator.hasNext() ) {
-			Map<String, Object> next = iterator.next();
-			return ( (Long) next.get( "COUNT(n)" ) ).longValue();
+		GraphDatabaseService neo4jDb = getProvider( sessionFactory ).getDataBase();
+		TransactionManager txManager = transactionManager( neo4jDb );
+		Transaction suspend = null;
+		try {
+			suspend = txManager.suspend();
+			if ( suspend == null ) {
+				txManager.begin();
+			}
+			else {
+				txManager.resume( suspend );
+			}
+			ExecutionEngine engine = new ExecutionEngine( neo4jDb );
+			ExecutionResult result = engine.execute( ENTITY_COUNT_QUERY );
+			ResourceIterator<Map<String, Object>> iterator = result.iterator();
+			try {
+				if (suspend == null) {
+					txManager.commit();
+				}
+			}
+			catch (Exception e) {
+				throw new RuntimeException( e );
+			}
+			if ( iterator.hasNext() ) {
+				Map<String, Object> next = iterator.next();
+				return ( (Long) next.get( "COUNT(n)" ) ).longValue();
+			}
+			return 0;
 		}
-		return 0;
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private TransactionManager transactionManager(GraphDatabaseService neo4jDb) {
+		return ( (GraphDatabaseAPI) neo4jDb ).getDependencyResolver().resolveDependency( TransactionManager.class );
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		String query = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r))";
-		ExecutionEngine engine = new ExecutionEngine( getProvider( sessionFactory ).getDataBase() );
-		ExecutionResult result = engine.execute( query.toString() );
-		ResourceIterator<Long> columnAs = result.columnAs( "COUNT(DISTINCT type(r))" );
-		Long next = columnAs.next();
-		columnAs.close();
-		return next.longValue();
+		GraphDatabaseService neo4jDb = getProvider( sessionFactory ).getDataBase();
+		TransactionManager txManager = transactionManager( neo4jDb );
+		Transaction suspend = null;
+		try {
+			suspend = txManager.suspend();
+			if ( suspend == null ) {
+				txManager.begin();
+			}
+			else {
+				txManager.resume( suspend );
+			}
+			String query = "MATCH (n) - [r] -> () RETURN COUNT(DISTINCT type(r))";
+			ExecutionEngine engine = new ExecutionEngine( neo4jDb );
+			ExecutionResult result = engine.execute( query.toString() );
+			ResourceIterator<Long> columnAs = result.columnAs( "COUNT(DISTINCT type(r))" );
+			Long next = columnAs.next();
+			columnAs.close();
+			try {
+				if (suspend == null) {
+					txManager.commit();
+				}
+			}
+			catch (Exception e) {
+				throw new RuntimeException( e );
+			}
+			return next.longValue();
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
 	}
 
 	@Override

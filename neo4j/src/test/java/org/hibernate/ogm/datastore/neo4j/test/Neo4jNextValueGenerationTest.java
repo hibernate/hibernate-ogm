@@ -84,7 +84,7 @@ public class Neo4jNextValueGenerationTest {
 		provider.injectServices( serviceRegistry );
 		provider.configure( configuration() );
 		provider.start();
-		provider.getSequenceGenerator().createSequences( sequences );
+		provider.getSequenceGenerator().createSequences( sequences, jtaPlatform.getTransactionManager() );
 		dialect = new Neo4jDialect( provider );
 	}
 
