@@ -7,8 +7,10 @@
 package org.hibernate.ogm.datastore.neo4j.logging.impl;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;
 import org.jboss.logging.Message;
@@ -26,4 +28,11 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@LogMessage(level = DEBUG)
 	@Message(id = 1402, value = "An error occured while generating the sequence %s")
 	void errorGeneratingSequence(String sequenceName, @Cause Exception e);
+
+	@Message(id = 1403, value = "Constraint violation: %s")
+	HibernateException constraintViolation(TupleOperation operation, @Cause Exception cause);
+
+	@LogMessage(level = WARN)
+	@Message(id = 1404, value = "Neo4j does not support constraints spanning multiple columns. Unique key %1$s for %2$s on columns %3$s cannot be created")
+	void constraintSpanningMultipleColumns(String name, String tableName, String columns);
 }

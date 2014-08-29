@@ -44,6 +44,12 @@ hibernate.ogm.neo4j.database_path::
 The absolute path representing the location of the Neo4j database. Example: +C:\neo4jdb\mydb+
 hibernate.ogm.neo4j.configuration_resource_name (optional)::
 Location of the Neo4j embedded properties file. It can be an URL, name of a classpath resource or file system path.
+hibernate.schema_update.unique_constraint_strategy (optional)::
+If set to +SKIP+, Hibernate OGM won't create any unique constraints on the nodes representing the entities.
+This property won't affect the unique constraints generated for sequences.
+Other possible values are +DROP_RECREATE_QUIETLY+ and +RECREATE_QUIETLY+ but the effect will be
+the same (since Neo4j constraints don't have a name): keep the existing constraints and create the missing one.
+Default value is +DROP_RECREATE_QUIETLY+.
 
 [WARNING]
 ====
@@ -157,6 +163,17 @@ public class Address {
 ====
 
 Currently an embeddable element is stored saving the values on the node that represents the entity.
+
+Hibernate OGM will create unique constraints for the identifier of entities and for the properties defined
+as unique using:
+
+* @NaturalId
+* @Column(unique = true)
+* @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "column_name" }
+
+  Neo4j does not support constraints on more than one property.
+  For this reason, Hibernate OGM will create a unique constraint only when
+  defined on a single column and it will ignore the ones defined on multiple columns.
 
 ===== Associations
 

@@ -33,6 +33,8 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
 import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
@@ -59,6 +61,7 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -75,6 +78,8 @@ import org.neo4j.graphdb.ResourceIterator;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private final CypherCRUD neo4jCRUD;
 
@@ -334,7 +339,12 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private void putTupleOperation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
-			node.setProperty( operation.getColumn(), operation.getValue() );
+			try {
+				node.setProperty( operation.getColumn(), operation.getValue() );
+			}
+			catch (ConstraintViolationException e) {
+				throw log.constraintViolation( operation, e );
+			}
 		}
 		// the column represents a to-one association, map it as relationship
 		else {
