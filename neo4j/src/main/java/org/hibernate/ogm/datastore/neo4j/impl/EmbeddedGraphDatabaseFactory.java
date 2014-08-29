@@ -16,6 +16,7 @@ import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyRead
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 
 /**
  * Contains methods to create an {@link org.neo4j.kernel.EmbeddedGraphDatabase}.
@@ -47,7 +48,9 @@ public class EmbeddedGraphDatabaseFactory implements GraphDatabaseServiceFactory
 
 	@Override
 	public GraphDatabaseService create() {
-		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation );
+		GraphDatabaseBuilder builder = new GraphDatabaseFactory().newEmbeddedDatabaseBuilder( dbLocation )
+				.setConfig( GraphDatabaseSettings.tx_manager_impl, Neo4jExternalTransactionManager.Provider.NAME )
+				;
 		setConfigurationFromLocation( builder, configurationLocation );
 		setConfigurationFromProperties( builder, configuration );
 		return builder.newGraphDatabase();

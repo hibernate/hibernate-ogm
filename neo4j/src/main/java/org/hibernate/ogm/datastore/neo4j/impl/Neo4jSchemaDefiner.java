@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
@@ -28,6 +29,7 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
 		Set<PersistentNoSqlIdentifierGenerator> sequences = getPersistentGenerators( sessionFactoryImplementor );
-		provider.getSequenceGenerator().createSequences( sequences );
+		JtaPlatform jtaPlatform = registry.getService( JtaPlatform.class );
+		provider.getSequenceGenerator().createSequences( sequences, jtaPlatform.retrieveTransactionManager() );
 	}
 }

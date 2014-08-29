@@ -15,16 +15,21 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.transaction.TransactionManager;
+
 import org.fest.util.Files;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.DefaultNamingStrategy;
 import org.hibernate.cfg.NamingStrategy;
 import org.hibernate.cfg.ObjectNameNormalizer;
+import org.hibernate.engine.transaction.jta.platform.internal.AbstractJtaPlatform;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jJtaPlatform;
 import org.hibernate.ogm.datastore.neo4j.utils.Neo4jTestHelper;
 import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.grid.IdSourceKey;
@@ -37,6 +42,7 @@ import org.hibernate.type.LongType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.kernel.GraphDatabaseAPI;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -62,22 +68,41 @@ public class Neo4jNextValueGenerationTest {
 	@Before
 	public void setUp() {
 		dbLocation = Neo4jTestHelper.dbLocation();
-		Properties configurationValues = new Properties();
-		configurationValues.put( Neo4jProperties.DATABASE_PATH, dbLocation );
-		provider = new Neo4jDatastoreProvider();
+		AbstractJtaPlatform jtaPlatform = jtaPlatform();
 
 		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
-		provider.injectServices( serviceRegistry );
+		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
+
+		jtaPlatform.injectServices( serviceRegistry );
 
 		Set<PersistentNoSqlIdentifierGenerator> sequences = new HashSet<PersistentNoSqlIdentifierGenerator>();
 		sequences.add( identifierGenerator( INITIAL_VALUE_SEQUENCE, INITIAL_VALUE_FIRST_VALUE_TEST ) );
 		sequences.add( identifierGenerator( THREAD_SAFETY_SEQUENCE, INITIAL_VALUE_THREAD_SAFETY_TEST ) );
 
-		provider.configure( configurationValues );
+		provider = new Neo4jDatastoreProvider();
+		provider.injectServices( serviceRegistry );
+		provider.configure( configuration() );
 		provider.start();
-		provider.getSequenceGenerator().createSequences( sequences );
+		provider.getSequenceGenerator().createSequences( sequences, jtaPlatform.getTransactionManager() );
 		dialect = new Neo4jDialect( provider );
+	}
+
+	private Properties configuration() {
+		Properties configurationValues = new Properties();
+		configurationValues.put( Neo4jProperties.DATABASE_PATH, dbLocation );
+		return configurationValues;
+	}
+
+	@SuppressWarnings("deprecation")
+	private AbstractJtaPlatform jtaPlatform() {
+		AbstractJtaPlatform jtaPlatform = new Neo4jJtaPlatform() {
+
+			public javax.transaction.TransactionManager retrieveTransactionManager() {
+				return ( (GraphDatabaseAPI) provider.getDataBase() ).getDependencyResolver().resolveDependency( TransactionManager.class );
+			};
+		};
+		return jtaPlatform;
 	}
 
 	private PersistentNoSqlIdentifierGenerator identifierGenerator(String sequenceName, int initialValue) {

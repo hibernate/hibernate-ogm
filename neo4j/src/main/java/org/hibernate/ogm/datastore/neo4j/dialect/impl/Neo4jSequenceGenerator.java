@@ -12,8 +12,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata.IdSourceType;
@@ -29,9 +34,9 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Lock;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.schema.ConstraintDefinition;
 import org.neo4j.graphdb.schema.ConstraintType;
+import org.neo4j.kernel.GraphDatabaseAPI;
 
 /**
  * Generates the next value of an id sequence as represented by {@link IdSourceKey}.
@@ -59,6 +64,8 @@ import org.neo4j.graphdb.schema.ConstraintType;
  * @author Gunnar Morling
  */
 public class Neo4jSequenceGenerator {
+
+	private static final Log log = LoggerFactory.getLogger();
 
 	private static final String INITIAL_VALUE_QUERY_PARAM = "initialValue";
 	private static final String SEQUENCE_NAME_QUERY_PARAM = "sequenceName";
@@ -102,24 +109,45 @@ public class Neo4jSequenceGenerator {
 	 * <p>
 	 * All nodes are created inside the same transaction
 	 *
-	 * @param identifierGenerators the generators representing the sequences
+	 * @param sequences the generators representing the sequences
+	 * @param registry
 	 */
-	public void createSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
-		addUniqueConstraints( identifierGenerators );
-		addSequences( identifierGenerators );
+	public void createSequences(Set<PersistentNoSqlIdentifierGenerator> sequences, TransactionManager txManager) {
+		addUniqueConstraints( sequences, txManager );
+		addSequences( sequences, txManager );
 	}
 
-	private void addUniqueConstraints(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
-		Transaction tx = null;
+	private void addUniqueConstraints(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators, TransactionManager txManager) {
 		try {
-			tx = neo4jDb.beginTx();
+			Transaction suspend = txManager.suspend();
+			txManager.begin();
 			for ( IdentifierGenerator identifierGenerator : identifierGenerators ) {
 				addUniqueConstraint( identifierGenerator );
 			}
-			tx.success();
+			txManager.commit();
+			if (suspend != null) {
+				txManager.resume( suspend );
+			}
 		}
-		finally {
-			tx.close();
+		catch (Exception e) {
+			throw log.errorAddingUniqueConstraint( e );
+		}
+	}
+
+	private void addSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators, TransactionManager txManager) {
+		try {
+			Transaction suspend = txManager.suspend();
+			txManager.begin();
+			for ( IdentifierGenerator generator : identifierGenerators ) {
+				addSequence( generator );
+			}
+			txManager.commit();
+			if (suspend != null) {
+				txManager.resume( suspend );
+			}
+		}
+		catch (Exception e) {
+			throw log.errorAddingSequence( e );
 		}
 	}
 
@@ -153,20 +181,6 @@ public class Neo4jSequenceGenerator {
 			}
 		}
 		return true;
-	}
-
-	private void addSequences(Set<PersistentNoSqlIdentifierGenerator> identifierGenerators) {
-		Transaction tx = null;
-		try {
-			tx = neo4jDb.beginTx();
-			for ( IdentifierGenerator generator : identifierGenerators ) {
-				addSequence( generator );
-			}
-			tx.success();
-		}
-		finally {
-			tx.close();
-		}
 	}
 
 	private void addSequence(IdentifierGenerator identifierGenerator) {
@@ -218,19 +232,30 @@ public class Neo4jSequenceGenerator {
 	 * @return the next value in a sequence
 	 */
 	public int nextValue(IdSourceKey idSourceKey, int increment) {
-		Transaction tx = neo4jDb.beginTx();
+		TransactionManager txManager = transactionManager();
 		Lock lock = null;
+		org.neo4j.graphdb.Transaction tx = null;
 		try {
+			Transaction suspend = txManager.suspend();
+			tx = neo4jDb.beginTx();
 			Node sequence = getSequence( idSourceKey );
 			lock = tx.acquireWriteLock( sequence );
 			int nextValue = updateSequenceValue( idSourceKey, sequence, increment );
-			tx.success();
 			lock.release();
+			txManager.commit();
+			if ( suspend != null ) {
+				txManager.resume( suspend );
+			}
 			return nextValue;
 		}
-		finally {
-			tx.close();
+		catch (Exception e) {
+			throw log.errorIncrementingSequenceValue( e );
 		}
+	}
+
+	@SuppressWarnings("deprecation") // Only way to obtain the txManager form neo4j
+	private TransactionManager transactionManager() {
+		return ( (GraphDatabaseAPI) neo4jDb ).getDependencyResolver().resolveDependency( TransactionManager.class );
 	}
 
 	/**
