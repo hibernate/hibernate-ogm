@@ -185,10 +185,7 @@ class EntityDehydrator {
 				.associationKeyMetadata(  associationKeyMetadata )
 				.keyColumnValues( newColumnValue )
 				.session( session )
-				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.propertyType( persister.getPropertyTypes()[propertyIndex] )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] )
-				.inverse();
+				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
 
 		Tuple tuple = new Tuple();
 		//add the id column
@@ -246,10 +243,8 @@ class EntityDehydrator {
 				.associationKeyMetadata( associationKeyMetadata )
 				.keyColumnValues( oldColumnValue )
 				.session( session )
-				//does not set .collectionPersister as it does not make sense here for a ToOne or a unique key
-				.propertyType( persister.getPropertyTypes()[propertyIndex] )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] )
-				.inverse();
+				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
+
 		//add fk column value in TupleKey
 		Tuple tupleKey = new Tuple();
 		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {

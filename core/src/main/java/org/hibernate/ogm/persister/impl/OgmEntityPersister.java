@@ -518,18 +518,19 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( associationKeyMetadata == null ) {
 			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
 		}
+
+		OgmEntityPersister inversePersister = (OgmEntityPersister) ((EntityType) getPropertyTypes()[propertyIndex]).getAssociatedJoinable( session.getFactory() );
+
 		AssociationPersister associationPersister = new AssociationPersister(
-					getMappedClass()
+				inversePersister.getMappedClass()
 				)
 				.gridDialect( gridDialect )
 				.key( uniqueKey )
 				.keyGridType( gridUniqueKeyType )
-				//does not set .collectionPersister as it does not make sense here for an entity
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
-				.propertyType( getPropertyTypes()[propertyIndex] )
-				.roleOnMainSide( getPropertyNames()[propertyIndex] )
-				.inverse();
+				.roleOnMainSide( getPropertyNames()[propertyIndex] );
+
 		final Association ids = associationPersister.getAssociationOrNull();
 
 		if (ids == null || ids.size() == 0 ) {

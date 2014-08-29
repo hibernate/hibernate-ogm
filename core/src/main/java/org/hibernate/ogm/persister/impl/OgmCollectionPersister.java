@@ -51,8 +51,10 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
+import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
@@ -83,7 +85,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 * a bi-directional many-to-many association. Determined lazily, as all the collection persisters need to have been
 	 * set up before.
 	 */
-	private volatile OptionalAssociationKeyMetadata inverseAssociationKeymetadata;
+	private volatile Optional<AssociationKeyMetadata> inverseAssociationKeymetadata;
+
+	/**
+	 * The name of the main side property in case this is the inverse side of a one-to-many or many-to-many association.
+	 * Determined lazily, as all the collection persisters need to have been set up before.
+	 */
+	private volatile Optional<String> mainSidePropertyName;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -290,7 +298,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( key )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.collectionPersister( this )
+				.roleOnMainSide( getUnqualifiedRole() )
 				.session( session );
 
 		while ( entries.hasNext() ) {
@@ -455,7 +463,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.gridDialect( gridDialect )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.collectionPersister( this );
+				.roleOnMainSide( getMainSidePropertyName() );
 
 		final Association collectionMetadata = associationPersister.getAssociationOrNull();
 		return collectionMetadata == null ? 0 : collectionMetadata.size();
@@ -486,7 +494,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.collectionPersister( this )
+				.roleOnMainSide( getUnqualifiedRole() )
 				.session( session );
 
 			// delete all the deleted entries
@@ -538,7 +546,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.collectionPersister( this )
+				.roleOnMainSide( getUnqualifiedRole() )
 				.session( session );
 
 			// insert all the new entries
@@ -585,7 +593,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.key( id )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.collectionPersister( this )
+				.roleOnMainSide( getUnqualifiedRole() )
 				.session( session );
 
 			// create all the new entries
@@ -673,9 +681,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.keyColumnValues( elementColumnValues )
 					.session( session )
 					.associationKeyMetadata( associationKeyMetadataFromElement )
-					.collectionPersister( this )
-					.key( entityId )
-					.inverse();
+					.roleOnMainSide( getUnqualifiedRole() )
+					.key( entityId );
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
@@ -740,7 +747,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.key( id )
 					.keyGridType( getKeyGridType() )
 					.associationKeyMetadata( associationKeyMetadata )
-					.collectionPersister( this )
+					.roleOnMainSide( getUnqualifiedRole() )
 					.session( session );
 
 			Association association = associationPersister.getAssociationOrNull();
@@ -843,10 +850,63 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return null;
 	}
 
+	/**
+	 * Returns the property name on the main side, if this collection represents the inverse (non-main) side of a
+	 * bi-directional association, this association's own property name otherwise.
+	 */
+	public String getMainSidePropertyName() {
+		if ( !isInverse ) {
+			return getUnqualifiedRole();
+		}
+		else if ( mainSidePropertyName == null ) {
+			Loadable elementPersister = (Loadable) getElementPersister();
+			Type[] propertyTypes = elementPersister.getPropertyTypes();
+
+			for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
+				Type type = propertyTypes[index];
+
+				// we try and restrict type search as much as possible
+				if ( type.isAssociationType() ) {
+					boolean matching = false;
+
+					// the main side is a many-to-one
+					if ( type.isEntityType() ) {
+						matching = isToOneMatching( elementPersister, index );
+					}
+					// the main side is a many-to-many
+					else if ( type.isCollectionType() ) {
+						String roleOnMainSide = ( (CollectionType) type ).getRole();
+						CollectionPhysicalModel mainSidePersister = (CollectionPhysicalModel) getFactory().getCollectionPersister( roleOnMainSide );
+						matching = isCollectionMatching( mainSidePersister );
+					}
+					// Should never happen
+					else {
+						throw new HibernateException( "Unexpected type:" + type );
+					}
+
+					if ( matching ) {
+						mainSidePropertyName = new Optional<String>( elementPersister.getPropertyNames()[index] );
+						break;
+					}
+				}
+			}
+		}
+
+		return mainSidePropertyName.get();
+	}
+
+	private boolean isToOneMatching(Loadable elementPersister, int index) {
+		return Arrays.equals( getKeyColumnNames(), elementPersister.getPropertyColumnNames( index ) );
+	}
+
+	private boolean isCollectionMatching(CollectionPhysicalModel mainSidePersister) {
+		boolean isSameTable = getTableName().equals( mainSidePersister.getTableName() );
+		return isSameTable && Arrays.equals( getElementColumnNames(), mainSidePersister.getKeyColumnNames() );
+	}
 
 	private AssociationKeyMetadata getInverseAssociationKeyMetadata(SessionFactoryImplementor factory) {
 		if ( inverseAssociationKeymetadata == null ) {
-			inverseAssociationKeymetadata = new OptionalAssociationKeyMetadata(
+			inverseAssociationKeymetadata = new Optional<AssociationKeyMetadata>(
 					new BiDirectionalAssociationHelper( factory )
 						.getInverseAssociationKeyMetadata( this )
 			);
@@ -855,16 +915,16 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return inverseAssociationKeymetadata.get();
 	}
 
-	private static class OptionalAssociationKeyMetadata {
+	private static class Optional<T> {
 
-		private final AssociationKeyMetadata metadata;
+		private final T value;
 
-		public OptionalAssociationKeyMetadata(AssociationKeyMetadata metadata) {
-			this.metadata = metadata;
+		public Optional(T value) {
+			this.value = value;
 		}
 
-		public AssociationKeyMetadata get() {
-			return metadata;
+		public T get() {
+			return value;
 		}
 	}
 }
