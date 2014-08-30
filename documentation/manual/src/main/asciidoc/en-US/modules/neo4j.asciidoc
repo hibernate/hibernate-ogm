@@ -178,12 +178,14 @@ as unique using:
 
 ===== Associations
 
-An association, bidirectional or unidirectional, is always mapped using one relationship.
+An association, bidirectional or unidirectional, is always mapped using one relationship,
+beginning at the owning side of the association.
 This is possible because in Neo4j relationships can be navigated in both directions.
 
-The type of the relationships depends on the type of the association, but in general, it is the corresponding name of the table
-containing the association. The only property stored on the relationship is going to be the index of the association when required,
-for example, when the association is annotated with +@OrderColumn+ or when a +java.util.Map+ is used.
+The type of the relationships depends on the type of the association,
+but in general it is the role of the association on the main side.
+The only property stored on the relationship is going to be the index of the association when required,
+for example when the association is annotated with +@OrderColumn+ or when a +java.util.Map+ is used.
 
 .Example of bidirectional @ManyToMany
 ====
@@ -214,7 +216,7 @@ class BankAccount {
 
 [subs="verbatim,attributes"]
 ----
-(:AccountOwner:ENTITY {...}) - [:AccountOwner_BankAccount] - (:BankAccount:ENTITY {...})
+(:AccountOwner:ENTITY {...}) - [:bankAccounts] -> (:BankAccount:ENTITY {...})
 ----
 
 ====
@@ -229,7 +231,6 @@ class Father {
     String name;
 
     @OneToMany
-    @JoinTable(name = "Father_child")
     @OrderColumn(name = "birthorder")
     List<Child> children = new ArrayList<Child>();
 }
@@ -244,8 +245,8 @@ class Child {
 
 [subs="verbatim,attributes"]
 ----
-(:Father:ENTITY {...}) - [:Father_child { birthorder: 0 }] - (:Child:ENTITY {...})
-(:Father:ENTITY {...}) - [:Father_child { birthorder: 1 }] - (:Child:ENTITY {...})
+(:Father:ENTITY {...}) - [:children { birthorder: 0 }] -> (:Child:ENTITY {...})
+(:Father:ENTITY {...}) - [:children { birthorder: 1 }] -> (:Child:ENTITY {...})
 ----
 
 ====
@@ -303,7 +304,7 @@ class Wife {
 
 [subs="verbatim,attributes"]
 ----
-(:Wife:ENTITY { id: 1, name: "Karen" }) - [:Husband] - (:Husband:ENTITY {id: 2, name: "Mark"})
+(:Wife:ENTITY { id: 1, name: "Karen" }) <- [:wife] - (:Husband:ENTITY {id: 2, name: "Mark"})
 ----
 
 ====
@@ -349,12 +350,12 @@ public class Address {
 
 [subs="verbatim,attributes"]
 ----
-(:MultiAddressAccount:ENTITY{login: '...', password: '...' }) - [:MultiAddressAccount_addresses] - (:MultiAddressAccount_addresses:EMBEDDED {street1: '...', city: '...', country: '...', postal_code: '...'})
+(:MultiAddressAccount:ENTITY{login: '...', password: '...' }) - [:addresses] -> (:MultiAddressAccount_addresses:EMBEDDED {street1: '...', city: '...', country: '...', postal_code: '...'})
 ----
 
 ====
 
-===== Auto Generated Values
+===== Auto-generated Values
 
 Hibernate OGM supports the table generation strategy as well as the sequence generation strategy with Neo4j.
 It is generally recommended to work with the latter,

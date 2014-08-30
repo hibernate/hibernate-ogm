@@ -363,7 +363,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				}
 
 				// create a new relationship
-				Node targetNode = neo4jCRUD.findNode( targetKey , ENTITY );
+				Node targetNode = neo4jCRUD.findNode( targetKey, ENTITY );
 				node.createRelationshipTo( targetNode, relationshipType( associationRole ) );
 			}
 		}

@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import java.util.Arrays;
+
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
 import org.hibernate.ogm.grid.RowKey;
@@ -56,11 +58,11 @@ public class AssociatedEntityKeyMetadata {
 	 * Returns the entity key on the other side of association row represented by the given row key.
 	 * <p>
 	 * <b>Note:</b> May only be invoked if the row key actually contains all the columns making up that entity key.
-	 * Specifically, it may <b>not</b> invoked if the association has index columns (maps, ordered collections), as the
-	 * entity key columns will not be part of the row key in this case.
+	 * Specifically, it may <b>not</b> be invoked if the association has index columns (maps, ordered collections), as
+	 * the entity key columns will not be part of the row key in this case.
 	 */
 	public EntityKey getEntityKey(RowKey rowKey) {
-		Object[] columnValues = new Object[ associationKeyColumns.length];
+		Object[] columnValues = new Object[associationKeyColumns.length];
 		int i = 0;
 
 		for ( String associationKeyColumn : associationKeyColumns ) {
@@ -94,9 +96,16 @@ public class AssociatedEntityKeyMetadata {
 	}
 
 	/**
-	 * Returns the names of those columns of a tuple or association row which make up the represented association.
+	 * Returns the names of those columns of a tuple or association row which make up the represented association, i.e.
+	 * the columns referring to the entity key on the other side.
 	 */
 	public String[] getAssociationKeyColumns() {
 		return associationKeyColumns;
+	}
+
+	@Override
+	public String toString() {
+		return "AssociatedEntityKeyMetadata [associationKeyColumns=" + Arrays.toString( associationKeyColumns ) + ", entityKeyMetadata=" + entityKeyMetadata
+				+ "]";
 	}
 }
