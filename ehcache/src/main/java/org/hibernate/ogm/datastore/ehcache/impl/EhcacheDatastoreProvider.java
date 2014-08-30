@@ -20,7 +20,9 @@ import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
@@ -39,9 +41,9 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
-	private Cache<SerializableKey> entityCache;
-	private Cache<SerializableKey> associationCache;
-	private Cache<SerializableKey> identifierCache;
+	private Cache<SerializableEntityKey> entityCache;
+	private Cache<SerializableAssociationKey> associationCache;
+	private Cache<SerializableIdSourceKey> identifierCache;
 
 	private final EhcacheConfiguration config = new EhcacheConfiguration();
 
@@ -71,9 +73,9 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 		cacheManager = CacheManager.create( config.getUrl() );
 
-		entityCache = new Cache<SerializableKey>( cacheManager.getCache( DefaultDatastoreNames.ENTITY_STORE ) );
-		associationCache = new Cache<SerializableKey>( cacheManager.getCache( DefaultDatastoreNames.ASSOCIATION_STORE ) );
-		identifierCache = new Cache<SerializableKey>( cacheManager.getCache( DefaultDatastoreNames.IDENTIFIER_STORE ) );
+		entityCache = new Cache<SerializableEntityKey>( cacheManager.getCache( DefaultDatastoreNames.ENTITY_STORE ) );
+		associationCache = new Cache<SerializableAssociationKey>( cacheManager.getCache( DefaultDatastoreNames.ASSOCIATION_STORE ) );
+		identifierCache = new Cache<SerializableIdSourceKey>( cacheManager.getCache( DefaultDatastoreNames.IDENTIFIER_STORE ) );
 	}
 
 	@Override
@@ -81,15 +83,15 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 		cacheManager.shutdown();
 	}
 
-	public Cache<SerializableKey> getEntityCache() {
+	public Cache<SerializableEntityKey> getEntityCache() {
 		return entityCache;
 	}
 
-	public Cache<SerializableKey> getAssociationCache() {
+	public Cache<SerializableAssociationKey> getAssociationCache() {
 		return associationCache;
 	}
 
-	public Cache<SerializableKey> getIdentifierCache() {
+	public Cache<SerializableIdSourceKey> getIdentifierCache() {
 		return identifierCache;
 	}
 

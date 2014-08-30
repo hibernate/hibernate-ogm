@@ -24,21 +24,21 @@ import org.hibernate.ogm.grid.RowKey;
  */
 public final class SerializableMapAssociationSnapshot implements AssociationSnapshot {
 
-	private final Map<SerializableKey, Map<String, Object>> associationMap;
+	private final Map<SerializableRowKey, Map<String, Object>> associationMap;
 
-	public SerializableMapAssociationSnapshot(Map<SerializableKey, Map<String, Object>> associationMap) {
+	public SerializableMapAssociationSnapshot(Map<SerializableRowKey, Map<String, Object>> associationMap) {
 		this.associationMap = associationMap;
 	}
 
 	@Override
 	public Tuple get(RowKey column) {
-		Map<String, Object> rawResult = associationMap.get( new SerializableKey( column ) );
+		Map<String, Object> rawResult = associationMap.get( new SerializableRowKey( column ) );
 		return rawResult != null ? new Tuple( new MapTupleSnapshot( rawResult ) ) : null;
 	}
 
 	@Override
 	public boolean containsKey(RowKey column) {
-		return associationMap.containsKey( new SerializableKey( column ) );
+		return associationMap.containsKey( new SerializableRowKey( column ) );
 	}
 
 	@Override
@@ -50,14 +50,14 @@ public final class SerializableMapAssociationSnapshot implements AssociationSnap
 	public Set<RowKey> getRowKeys() {
 		Set<RowKey> rowKeys = new HashSet<RowKey>( associationMap.size() );
 
-		for ( SerializableKey key : associationMap.keySet() ) {
-			rowKeys.add( new RowKey( key.getTable(), key.getColumnNames(), key.getColumnValues() ) );
+		for ( SerializableRowKey key : associationMap.keySet() ) {
+			rowKeys.add( new RowKey( key.getColumnNames(), key.getColumnValues() ) );
 		}
 
 		return rowKeys;
 	}
 
-	public Map<SerializableKey, Map<String, Object>> getUnderlyingMap() {
+	public Map<SerializableRowKey, Map<String, Object>> getUnderlyingMap() {
 		return associationMap;
 	}
 }

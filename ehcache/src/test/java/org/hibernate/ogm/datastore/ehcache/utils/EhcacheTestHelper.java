@@ -13,7 +13,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.ehcache.Ehcache;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.grid.EntityKey;
@@ -40,7 +40,7 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		@SuppressWarnings("unchecked")
 		Map<String, Object> tuple = (Map<String, Object>) getProvider( sessionFactory )
 				.getEntityCache()
-				.get( new SerializableKey( key ) )
+				.get( new SerializableEntityKey( key ) )
 				.getObjectValue();
 
 		return tuple;

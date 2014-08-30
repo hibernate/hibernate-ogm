@@ -373,7 +373,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	// Centralize the RowKey column setting logic as the values settings are slightly different between insert / update and delete
 	public RowKeyBuilder initializeRowKeyBuilder() {
-		RowKeyBuilder builder = new RowKeyBuilder().tableName( getTableName() );
+		RowKeyBuilder builder = new RowKeyBuilder();
 		if ( hasIdentifier ) {
 			builder.addColumns( getIdentifierColumnName() );
 		}
@@ -704,7 +704,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	private RowKey updateRowKeyEntityKey(RowKey rowKey, AssociationPersister associationPersister) {
-		return new RowKey( rowKey.getTable(), rowKey.getColumnNames(), rowKey.getColumnValues() );
+		return new RowKey( rowKey.getColumnNames(), rowKey.getColumnValues() );
 	}
 
 	private static enum Action {

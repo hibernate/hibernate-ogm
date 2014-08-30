@@ -47,7 +47,6 @@ public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 	@Override
 	public void writeObject(ObjectOutput output, RowKey key) throws IOException {
 		output.writeInt( VERSION );
-		output.writeUTF( key.getTable() );
 		output.writeObject( key.getColumnNames() );
 		output.writeObject( key.getColumnValues() );
 	}
@@ -57,11 +56,10 @@ public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 		// version
 		input.readInt();
 
-		String tableName = input.readUTF();
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		return new RowKey( tableName, columnNames, values );
+		return new RowKey( columnNames, values );
 	}
 
 	@Override

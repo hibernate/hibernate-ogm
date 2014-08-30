@@ -60,7 +60,7 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 	}
 
 	private static Node ownerNode(AssociationKey associationKey, Relationship relationship) {
-		if ( relationship.getStartNode().hasLabel( nodeLabel( associationKey.getEntityKey() ) ) ) {
+		if ( relationship.getStartNode().hasLabel( nodeLabel( associationKey.getEntityKey().getTable() ) ) ) {
 			return relationship.getStartNode();
 		}
 		else {
