@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.IdSourceKeyMetadata;
-import org.hibernate.ogm.grid.Key;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,10 +38,9 @@ public class IdSourceKeyExternalizerTest {
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );
-		Key unmarshalledKey = externalizerHelper.unmarshall( bytes );
+		IdSourceKey unmarshalledKey = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( IdSourceKey.class );
 		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );

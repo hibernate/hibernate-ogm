@@ -25,7 +25,9 @@ public final class EntityKey implements Key {
 		this.hashCode = generateHashCode();
 	}
 
-	@Override
+	/**
+	 * Returns the table name of this key.
+	 */
 	public String getTable() {
 		return keyMetadata.getTable();
 	}

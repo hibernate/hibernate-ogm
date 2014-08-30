@@ -16,8 +16,11 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableMapAssociationSnapshot;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableRowKey;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -70,8 +73,8 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
-		final Element element = entityCache.get( new SerializableKey( key ) );
+		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
+		final Element element = entityCache.get( new SerializableEntityKey( key ) );
 		if ( element != null ) {
 			return createTuple( element );
 		}
@@ -87,9 +90,9 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
+		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
 		final HashMap<String, Object> tuple = new HashMap<String, Object>();
-		entityCache.put( new Element( new SerializableKey( key ), tuple ) );
+		entityCache.put( new Element( new SerializableEntityKey( key ), tuple ) );
 
 		return new Tuple( new MapTupleSnapshot( tuple ) );
 	}
@@ -99,41 +102,41 @@ public class EhcacheDialect extends BaseGridDialect {
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 
-		final Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
-		entityCache.put( new Element( new SerializableKey( key ), entityRecord ) );
+		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
+		entityCache.put( new Element( new SerializableEntityKey( key ), entityRecord ) );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		datastoreProvider.getEntityCache().remove( new SerializableKey( key ) );
+		datastoreProvider.getEntityCache().remove( new SerializableEntityKey( key ) );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache<SerializableKey> associationCache = datastoreProvider.getAssociationCache();
-		final Element element = associationCache.get( new SerializableKey( key ) );
+		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
+		final Element element = associationCache.get( new SerializableAssociationKey( key ) );
 
 		if ( element == null ) {
 			return null;
 		}
 		else {
 			@SuppressWarnings("unchecked")
-			Map<SerializableKey, Map<String, Object>> associationRows = (Map<SerializableKey, Map<String, Object>>) element.getObjectValue();
+			Map<SerializableRowKey, Map<String, Object>> associationRows = (Map<SerializableRowKey, Map<String, Object>>) element.getObjectValue();
 			return new Association( new SerializableMapAssociationSnapshot( associationRows ) );
 		}
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache<SerializableKey> associationCache = datastoreProvider.getAssociationCache();
-		Map<SerializableKey, Map<String, Object>> association = new HashMap<SerializableKey, Map<String, Object>>();
-		associationCache.put( new Element( new SerializableKey( key ), association ) );
+		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
+		Map<SerializableRowKey, Map<String, Object>> association = new HashMap<SerializableRowKey, Map<String, Object>>();
+		associationCache.put( new Element( new SerializableAssociationKey( key ), association ) );
 		return new Association( new SerializableMapAssociationSnapshot( association ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
-		Map<SerializableKey, Map<String, Object>> associationRows = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
+		Map<SerializableRowKey, Map<String, Object>> associationRows = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 
 		for ( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
@@ -141,21 +144,21 @@ public class EhcacheDialect extends BaseGridDialect {
 					associationRows.clear();
 				case PUT_NULL:
 				case PUT:
-					associationRows.put( new SerializableKey( action.getKey() ), MapHelpers.tupleToMap( action.getValue() ) );
+					associationRows.put( new SerializableRowKey( action.getKey() ), MapHelpers.tupleToMap( action.getValue() ) );
 					break;
 				case REMOVE:
-					associationRows.remove( new SerializableKey( action.getKey() ) );
+					associationRows.remove( new SerializableRowKey( action.getKey() ) );
 					break;
 			}
 		}
 
-		final Cache<SerializableKey> associationCache = datastoreProvider.getAssociationCache();
-		associationCache.put( new Element( new SerializableKey( key ), associationRows ) );
+		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
+		associationCache.put( new Element( new SerializableAssociationKey( key ), associationRows ) );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		datastoreProvider.getAssociationCache().remove( new SerializableKey( key ) );
+		datastoreProvider.getAssociationCache().remove( new SerializableAssociationKey( key ) );
 	}
 
 	@Override
@@ -165,8 +168,8 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		final Cache<SerializableKey> cache = datastoreProvider.getIdentifierCache();
-		SerializableKey key = new SerializableKey( request.getKey() );
+		final Cache<SerializableIdSourceKey> cache = datastoreProvider.getIdentifierCache();
+		SerializableIdSourceKey key = new SerializableIdSourceKey( request.getKey() );
 
 		Element previousValue = cache.get( key );
 		if ( previousValue == null ) {
@@ -196,8 +199,8 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Cache<SerializableKey> entityCache = datastoreProvider.getEntityCache();
-		for ( SerializableKey key : entityCache.getKeys() ) {
+		Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
+		for ( SerializableEntityKey key : entityCache.getKeys() ) {
 			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 				// Check if there is a way to load keys applying a filter
 				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {

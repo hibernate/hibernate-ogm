@@ -17,11 +17,6 @@ package org.hibernate.ogm.grid;
 public interface Key {
 
 	/**
-	 * Returns the table name of this key.
-	 */
-	String getTable();
-
-	/**
 	 * Returns the column names of this key.
 	 */
 	String[] getColumnNames();

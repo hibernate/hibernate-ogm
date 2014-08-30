@@ -42,7 +42,6 @@ public class IdSourceKey implements Key {
 	/**
 	 * Returns the table name if this is a table-based generator, the sequence name otherwise.
 	 */
-	@Override
 	public String getTable() {
 		return metadata.getName();
 	}

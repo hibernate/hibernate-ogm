@@ -9,53 +9,23 @@ package org.hibernate.ogm.datastore.ehcache.dialect.impl;
 import java.io.Serializable;
 import java.util.Arrays;
 
-import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.IdSourceKey;
-import org.hibernate.ogm.grid.Key;
-import org.hibernate.ogm.grid.RowKey;
 
 /**
- * Used to serialize {@link Key} objects in Ehcache.
+ * Used to serialize {@link EntityKey} objects in Ehcache.
  *
  * @author Gunnar Morling
  */
-public class SerializableKey implements Serializable {
-
-	private static final int ENTITY_KEY = 1;
-	private static final int ASSOCIATION_KEY = 2;
-	private static final int ROW_KEY = 3;
-	private static final int ID_GENERATOR_KEY = 4;
+public class SerializableEntityKey implements Serializable {
 
 	private final String table;
 	private final String[] columnNames;
 	private final Object[] columnValues;
 
-	/**
-	 * Indicates the specific {@link Key} sub-type.
-	 */
-	private final int type;
-
-	public SerializableKey(Key key) {
-		table = key.getTable();
+	public SerializableEntityKey(EntityKey key) {
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
-
-		if ( key instanceof EntityKey ) {
-			type = ENTITY_KEY;
-		}
-		else if ( key instanceof AssociationKey ) {
-			type = ASSOCIATION_KEY;
-		}
-		else if ( key instanceof RowKey ) {
-			type = ROW_KEY;
-		}
-		else if ( key instanceof IdSourceKey ) {
-			type = ID_GENERATOR_KEY;
-		}
-		else {
-			throw new IllegalArgumentException( "Unsupported key type: " + key );
-		}
+		table = key.getTable();
 	}
 
 	public String getTable() {
@@ -77,7 +47,6 @@ public class SerializableKey implements Serializable {
 		result = prime * result + Arrays.hashCode( columnNames );
 		result = prime * result + Arrays.hashCode( columnValues );
 		result = prime * result + ( ( table == null ) ? 0 : table.hashCode() );
-		result = prime * result + type;
 		return result;
 	}
 
@@ -92,7 +61,7 @@ public class SerializableKey implements Serializable {
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		SerializableKey other = (SerializableKey) obj;
+		SerializableEntityKey other = (SerializableEntityKey) obj;
 		if ( !Arrays.equals( columnNames, other.columnNames ) ) {
 			return false;
 		}
@@ -107,15 +76,12 @@ public class SerializableKey implements Serializable {
 		else if ( !table.equals( other.table ) ) {
 			return false;
 		}
-		if ( type != other.type ) {
-			return false;
-		}
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "SerializableKey [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues=" + Arrays.toString( columnValues )
-				+ ", type=" + type + "]";
+		return "SerializableEntityKey [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues="
+				+ Arrays.toString( columnValues ) + "]";
 	}
 }

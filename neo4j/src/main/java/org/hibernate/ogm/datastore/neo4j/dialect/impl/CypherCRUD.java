@@ -17,7 +17,6 @@ import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.AssociationKind;
 import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.Key;
 import org.hibernate.ogm.grid.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
@@ -101,7 +100,7 @@ public class CypherCRUD {
 	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null
 	 */
-	public Node findNode(Key key, NodeLabel... labels) {
+	public Node findNode(EntityKey key, NodeLabel... labels) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
 		appendNodePattern( key, parameters, query, labels );
@@ -157,7 +156,7 @@ public class CypherCRUD {
 	 * @param key identify the type of the relationship
 	 * @return the resulting node
 	 */
-	public Node createNodeUnlessExists(Key key, NodeLabel label) {
+	public Node createNodeUnlessExists(EntityKey key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MERGE" );
 		appendNodePattern( key, parameters, query, label );
@@ -172,7 +171,7 @@ public class CypherCRUD {
 		return node;
 	}
 
-	public Node createNode(Key key, NodeLabel label) {
+	public Node createNode(EntityKey key, NodeLabel label) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "CREATE" );
 		appendNodePattern( key, parameters, query, label );
@@ -199,17 +198,17 @@ public class CypherCRUD {
 	 * @param query where the resulting pattern will be appended
 	 * @param labels a label to be attached
 	 */
-	private void appendNodePattern(Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
+	private void appendNodePattern(EntityKey key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
 		appendNodePattern( "n", key, parameters, query, labels );
 	}
 
-	private void appendNodePattern(String alias, Key key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
+	private void appendNodePattern(String alias, EntityKey key, Map<String, Object> parameters, StringBuilder query, NodeLabel... labels) {
 		query.append( "(" );
 		identifier( query, alias );
 
 		if ( key != null ) {
 			query.append( ":" );
-			identifier( query, nodeLabel( key ).name() );
+			identifier( query, nodeLabel( key.getTable() ).name() );
 		}
 
 		if ( labels != null ) {
@@ -241,10 +240,6 @@ public class CypherCRUD {
 		query.append( ")" );
 	}
 
-	public static Label nodeLabel(Key key) {
-		return DynamicLabel.label( key.getTable() );
-	}
-
 	public static Label nodeLabel(String table) {
 		return DynamicLabel.label( table );
 	}
@@ -271,7 +266,7 @@ public class CypherCRUD {
 				}
 			}
 		}
-		String table = rowKey.getTable();
+		String table = associationKey.getTable();
 		StringBuilder relationshipBuilder = new StringBuilder("[r");
 		if (associationKey != null) {
 			relationshipBuilder.append( ":" );
@@ -324,7 +319,7 @@ public class CypherCRUD {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		StringBuilder query = new StringBuilder();
 		query.append( "MATCH (n:" );
-		query.append( nodeLabel( associationKey.getEntityKey() ).name() );
+		query.append( nodeLabel( associationKey.getEntityKey().getTable() ).name() );
 		query.append( ") - " );
 		query.append( "[r" );
 		query.append( ":" );

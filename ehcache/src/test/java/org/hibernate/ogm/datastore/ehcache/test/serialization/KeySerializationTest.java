@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableKey;
+import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableRowKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.junit.Test;
 
@@ -33,15 +33,14 @@ public class KeySerializationTest {
 		Object[] values = { 123, "Hello", 456L };
 
 		// given
-		SerializableKey key = new SerializableKey( new RowKey( "Foobar", columnNames, values ) );
+		SerializableRowKey key = new SerializableRowKey( new RowKey( columnNames, values ) );
 
 		// when
 		byte[] bytes = marshall( key );
-		SerializableKey unmarshalledKey = unmarshall( bytes );
+		SerializableRowKey unmarshalledKey = unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledKey.getClass() ).isEqualTo( SerializableKey.class );
-		assertThat( unmarshalledKey.getTable() ).isEqualTo( key.getTable() );
+		assertThat( unmarshalledKey.getClass() ).isEqualTo( SerializableRowKey.class );
 		assertThat( unmarshalledKey.getColumnNames() ).isEqualTo( key.getColumnNames() );
 		assertThat( unmarshalledKey.getColumnValues() ).isEqualTo( key.getColumnValues() );
 
@@ -50,7 +49,7 @@ public class KeySerializationTest {
 		assertThat( unmarshalledKey.hashCode() ).isEqualTo( key.hashCode() );
 	}
 
-	private byte[] marshall(SerializableKey object) throws Exception {
+	private byte[] marshall(SerializableRowKey object) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream oos = new ObjectOutputStream( baos );
 
@@ -69,11 +68,11 @@ public class KeySerializationTest {
 		return baos.toByteArray();
 	}
 
-	SerializableKey unmarshall(byte[] bytes) throws Exception {
+	SerializableRowKey unmarshall(byte[] bytes) throws Exception {
 		InputStream is = new ByteArrayInputStream( bytes );
 		ObjectInputStream ois = new ObjectInputStream( is );
 		try {
-			SerializableKey object = (SerializableKey) ois.readObject();
+			SerializableRowKey object = (SerializableRowKey) ois.readObject();
 			return object;
 		}
 		finally {

@@ -47,7 +47,9 @@ public final class AssociationKey implements Key {
 		return metadata;
 	}
 
-	@Override
+	/**
+	 * Returns the table name of this key.
+	 */
 	public String getTable() {
 		return metadata.getTable();
 	}
