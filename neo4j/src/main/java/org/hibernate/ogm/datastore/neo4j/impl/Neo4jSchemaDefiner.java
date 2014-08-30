@@ -62,12 +62,17 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		SessionFactoryImplementor sessionFactoryImplementor = factory;
 		ServiceRegistryImplementor registry = sessionFactoryImplementor.getServiceRegistry();
 		Neo4jDatastoreProvider provider = (Neo4jDatastoreProvider) registry.getService( DatastoreProvider.class );
-		Set<PersistentNoSqlIdentifierGenerator> sequences = getPersistentGenerators( sessionFactoryImplementor );
-		provider.getSequenceGenerator().createSequences( sequences );
+
+		createSequences( sessionFactoryImplementor, provider );
 		createEntityConstraints( provider.getDataBase(), configuration );
 	}
 
-	public void createEntityConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
+	private void createSequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
+		Set<PersistentNoSqlIdentifierGenerator> sequences = getPersistentGenerators( sessionFactoryImplementor );
+		provider.getSequenceGenerator().createSequences( sequences );
+	}
+
+	private void createEntityConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
 		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( configuration.getProperties().get(
 				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
 		log.debugf( "%1$s property set to %2$s" , Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY );
@@ -91,7 +96,7 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 	private void addUniqueConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
 		Iterator<Table> tableMappings = configuration.getTableMappings();
 		while ( tableMappings.hasNext() ) {
-			Table table = (Table) tableMappings.next();
+			Table table = tableMappings.next();
 			if ( table.isPhysicalTable() ) {
 				Label label = CypherCRUD.nodeLabel( table.getName() );
 				PrimaryKey primaryKey = table.getPrimaryKey();

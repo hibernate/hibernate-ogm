@@ -52,7 +52,7 @@ public class UniqueConstraintTest extends Neo4jJpaTestCase {
 		@Column(unique = true)
 		private long uniqueColumn;
 
-		@NaturalId
+		@NaturalId // causes the creation of a unique constraint
 		private String naturalId;
 
 		private String tableConstraint;

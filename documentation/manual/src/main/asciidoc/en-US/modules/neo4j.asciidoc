@@ -47,8 +47,9 @@ Location of the Neo4j embedded properties file. It can be an URL, name of a clas
 hibernate.schema_update.unique_constraint_strategy (optional)::
 If set to +SKIP+, Hibernate OGM won't create any unique constraints on the nodes representing the entities.
 This property won't affect the unique constraints generated for sequences.
-Other possible values are +DROP_RECREATE_QUIETLY+ and +RECREATE_QUIETLY+ but the effect will be
-the same (since Neo4j constraints don't have a name): keep the existing constraints and create the missing one.
+Other possible values (defined on the +org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy+ enum) are +DROP_RECREATE_QUIETLY+ and +RECREATE_QUIETLY+
+but the effect will be the same (since Neo4j constraints don't have a name):
+keep the existing constraints and create the missing one.
 Default value is +DROP_RECREATE_QUIETLY+.
 
 [WARNING]
