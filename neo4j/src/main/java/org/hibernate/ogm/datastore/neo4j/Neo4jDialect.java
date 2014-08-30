@@ -130,7 +130,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 		Node node = snapshot.getNode();
-		applyTupleOperations( tuple, node, tuple.getOperations(), tupleContext );
+		applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 		GraphLogger.log( "Updated node: %1$s", node );
 	}
 
@@ -295,18 +295,18 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		neo4jCRUD.remove( associationKey, action.getKey(), associatedEntityKeyMetadata );
 	}
 
-	private void applyTupleOperations(Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
+	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
 		Set<String> processedAssociationRoles = new HashSet<String>();
 
 		for ( TupleOperation operation : operations ) {
-			applyOperation( tuple, node, operation, tupleContext, processedAssociationRoles );
+			applyOperation( entityKey, tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
 	}
 
-	private void applyOperation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+	private void applyOperation(EntityKey entityKey, Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		switch ( operation.getType() ) {
 		case PUT:
-			putTupleOperation( tuple, node, operation, tupleContext, processedAssociationRoles );
+			putTupleOperation( entityKey, tuple, node, operation, tupleContext, processedAssociationRoles );
 			break;
 		case PUT_NULL:
 			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
@@ -337,13 +337,13 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		}
 	}
 
-	private void putTupleOperation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
 			try {
 				node.setProperty( operation.getColumn(), operation.getValue() );
 			}
 			catch (ConstraintViolationException e) {
-				throw log.constraintViolation( operation, e );
+				throw log.constraintViolation( entityKey, operation, e );
 			}
 		}
 		// the column represents a to-one association, map it as relationship
