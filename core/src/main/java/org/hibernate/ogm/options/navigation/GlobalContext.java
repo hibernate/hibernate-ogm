@@ -6,13 +6,15 @@
  */
 package org.hibernate.ogm.options.navigation;
 
+import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+
 /**
  * Entry point to the options navigation API. Let's you define global level options as well as navigate to a specific
  * entity level.
  * <p>
- * Implementations must declare a constructor with a single parameter of type
- * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
- * {@link org.hibernate.ogm.options.navigation.impl.BaseGlobalContext}.
+ * Implementations must declare a constructor with a single parameter of type {@link ConfigurationContext} and should
+ * preferably be derived from {@link BaseEntityContext}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @param <G> the type of a provider-specific global context definition, following the self-referential generic type

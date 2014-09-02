@@ -6,10 +6,9 @@
  */
 package org.hibernate.ogm.cfg;
 
-
 /**
  * A callback invoked at bootstrap time to apply configuration options. Can be passed via the option
- * {@link org.hibernate.ogm.cfg.OgmProperties#OPTION_CONFIGURATOR}.
+ * {@link OgmProperties#OPTION_CONFIGURATOR}.
  *
  * @author Gunnar Morling
  */

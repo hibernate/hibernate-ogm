@@ -13,7 +13,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Identify annotations that can be used as {@link org.hibernate.ogm.options.spi.Option}
+ * Identify annotations that can be used as {@link Option}
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 public @interface MappingOption {
 
 	/**
-	 * @return the converter class to use to convert the annotation into an {@link org.hibernate.ogm.options.spi.Option}
+	 * @return the converter class to use to convert the annotation into an {@link Option}
 	 */
 	Class<? extends AnnotationConverter<?>> value();
 

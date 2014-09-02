@@ -8,7 +8,7 @@ package org.hibernate.ogm.cfg;
 
 /**
  * Common properties for configuring NoSql datastores via {@code persistence.xml} or
- * {@link org.hibernate.ogm.cfg.OgmConfiguration}.
+ * {@link OgmConfiguration}.
  * <p>
  * Note that not all properties are supported by all datastores; refer to the documentation of the specific dialect to
  * find out the supported configuration properties.
@@ -20,8 +20,8 @@ package org.hibernate.ogm.cfg;
 public interface OgmProperties {
 
 	/**
-	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.OptionConfigurator} when
-	 * bootstrapping Hibernate OGM. Supported value types are:
+	 * Name of the configuration option for specifying an {@link OptionConfigurator} when bootstrapping Hibernate OGM.
+	 * Supported value types are:
 	 * <ul>
 	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurator} type</li>
 	 * <li>{@link Class}: the class object representing an {@code OptionConfigurator} type</li>

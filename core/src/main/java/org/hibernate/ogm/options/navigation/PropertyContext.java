@@ -8,13 +8,15 @@ package org.hibernate.ogm.options.navigation;
 
 import java.lang.annotation.ElementType;
 
+import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+
 /**
  * Property level to the options navigation API. Let's you define property level options as well as navigate to a
  * another property level of the current entity or to another entity.
  * <p>
- * Implementations must declare a constructor with a single parameter of type
- * {@link org.hibernate.ogm.options.navigation.impl.ConfigurationContext} and should preferably be derived from
- * {@link org.hibernate.ogm.options.navigation.impl.BasePropertyContext}.
+ * Implementations must declare a constructor with a single parameter of type {@link ConfigurationContext} and should
+ * preferably be derived from {@link BaseEntityContext}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @param <E> the type of provider-specific entity context definition, associated with the specific property context

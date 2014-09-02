@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
+import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
 
@@ -16,7 +17,7 @@ import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
  *
  * @author Gunnar Morling
  * @param <G> the type of {@link GlobalContext} supported by the represented datastore
- * @see org.hibernate.ogm.cfg.Configurable#configureOptionsFor(Class)
+ * @see Configurable#configureOptionsFor(Class)
  */
 public interface DatastoreConfiguration<G extends GlobalContext<?, ?>> {
 
