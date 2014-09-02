@@ -9,7 +9,7 @@ package org.hibernate.ogm.test.options.mapping.model;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.cfg.Configurable;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
+import org.hibernate.ogm.cfg.OptionConfigurator;
 
 /**
  * @author Gunnar Morling

@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 /**
- * Test for specifying the name of an {@link org.hibernate.ogm.cfg.spi.OptionConfigurator} type in persistence.xml.
+ * Test for specifying the name of an {@link org.hibernate.ogm.cfg.OptionConfigurator} type in persistence.xml.
  *
  * @author Gunnar Morling
  */

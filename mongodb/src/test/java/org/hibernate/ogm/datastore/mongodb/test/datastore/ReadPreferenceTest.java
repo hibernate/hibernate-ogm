@@ -15,7 +15,7 @@ import java.util.Map;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
+import org.hibernate.ogm.cfg.OptionConfigurator;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;

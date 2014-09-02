@@ -10,9 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.cfg.OptionConfigurator;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;

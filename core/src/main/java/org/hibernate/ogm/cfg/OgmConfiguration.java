@@ -20,7 +20,6 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
-import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
@@ -119,8 +118,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 
 	/**
 	 * Applies configuration options to the bootstrapped session factory. Use either this method or pass a
-	 * {@link OptionConfigurator} via {@link OgmProperties#OPTION_CONFIGURATOR} but don't use
-	 * both at the same time.
+	 * {@link OptionConfigurator} via {@link OgmProperties#OPTION_CONFIGURATOR} but don't use both at the same time.
 	 *
 	 * @param datastoreType represents the datastore to be configured; it is the responsibility of the caller to make
 	 * sure that this matches the underlying datastore provider.

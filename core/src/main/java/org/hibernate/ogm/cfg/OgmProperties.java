@@ -20,7 +20,7 @@ package org.hibernate.ogm.cfg;
 public interface OgmProperties {
 
 	/**
-	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.spi.OptionConfigurator} when
+	 * Name of the configuration option for specifying an {@link org.hibernate.ogm.cfg.OptionConfigurator} when
 	 * bootstrapping Hibernate OGM. Supported value types are:
 	 * <ul>
 	 * <li>{@link String}: the fully qualified name of an {@code OptionConfigurator} type</li>
