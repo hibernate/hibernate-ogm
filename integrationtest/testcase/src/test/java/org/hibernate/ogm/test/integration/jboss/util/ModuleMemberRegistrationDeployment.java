@@ -67,7 +67,7 @@ public class ModuleMemberRegistrationDeployment {
 
 		public WebArchive createDeployment() {
 			if (resourceLocal) {
-				archive.addClasses( MemberRegistrationWithResourceLocal.class, ResourceLocalResources.class );
+				archive.addClasses( MemberRegistrationWithResourceLocal.class );
 			}
 			else {
 				archive.addClasses( MemberRegistrationWithJta.class, JtaResources.class );
