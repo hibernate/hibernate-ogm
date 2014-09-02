@@ -10,13 +10,13 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.dom4j.Node;
-
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.util.Experimental;
 import org.hibernate.type.ForeignKeyDirection;
 
 /**
@@ -35,6 +35,7 @@ import org.hibernate.type.ForeignKeyDirection;
  * @author Steve Ebersole
  * @author Emmanuel Bernard
  */
+@Experimental( "Custom types including the GridType contract will be re-visited after OGM 4.1.0.Final." )
 public interface GridType extends Serializable {
 	/**
 	 * Return true if the implementation is castable to {@link org.hibernate.type.AssociationType}. This does not necessarily imply that

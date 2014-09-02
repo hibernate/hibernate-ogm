@@ -19,6 +19,7 @@ import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.util.Experimental;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;
@@ -105,13 +106,12 @@ public interface GridDialect extends Service {
 	boolean supportsSequences();
 
 	/**
-	 * Let the dialect override types if required to customize them to the datastore.
-	 * Returns the GridType instance to use to bind the given {@code type} or null if not overridden.
-	 *
+	 * Let the dialect override types if required to customize them to the datastore. Returns the GridType instance to
+	 * use to bind the given {@code type} or null if not overridden.
+	 * <p>
 	 * Most types should not be overridden and thus return null
-	 *
-	 * Experimental: this API might change in the future
 	 */
+	@Experimental( "Custom types including the GridType contract will be re-visited after OGM 4.1.0.Final." )
 	GridType overrideType(Type type);
 
 	/**
