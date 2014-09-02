@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
 import org.hibernate.ogm.test.integration.jboss.model.Address;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
+import org.junit.After;
 import org.junit.Test;
 
 /**
@@ -27,6 +28,11 @@ public abstract class ModuleMemberRegistrationScenario {
 
 	@Inject
 	MemberRegistration memberRegistration;
+
+	@After
+	public void closeEntityManager() {
+		memberRegistration.close();
+	}
 
 	@Test
 	public void shouldGenerateAnId() throws Exception {
