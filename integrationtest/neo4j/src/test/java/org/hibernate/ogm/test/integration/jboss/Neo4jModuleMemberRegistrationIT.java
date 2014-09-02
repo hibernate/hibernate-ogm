@@ -7,68 +7,51 @@
 package org.hibernate.ogm.test.integration.jboss;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.InputStream;
 
-import javax.inject.Inject;
-
-import org.fest.util.Files;
-import org.fest.util.FilesException;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
+import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.EmptyAsset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
-import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnit;
+import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceUnitTransactionType;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.Properties;
-import org.jboss.shrinkwrap.descriptor.api.spec.se.manifest.ManifestDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Test for the Hibernate OGM module using Neo4j
  *
+ * @author Davide D'Alto
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 @RunWith(Arquillian.class)
-public class Neo4jModuleMemberRegistrationIT {
-
-	@Inject
-	HelloWorldBean bean;
+public class Neo4jModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
 
 	@Deployment
 	public static Archive<?> createTestArchive() throws Exception {
-		return ShrinkWrap
-				.create( WebArchive.class, Neo4jModuleMemberRegistrationIT.class.getSimpleName() + ".war" )
-				.addClasses( Neo4jModuleMemberRegistrationIT.class, HelloWorldBean.class, Files.class, FilesException.class )
-				.addAsWebInfResource( EmptyAsset.INSTANCE, "beans.xml" )
-				.add( manifest(), "META-INF/MANIFEST.MF" )
-				.addAsResource( persistenceXml(), "META-INF/persistence.xml" )
-				;
+		return new ModuleMemberRegistrationDeployment
+				.Builder( Neo4jModuleMemberRegistrationIT.class )
+				.persistenceXml( persistenceXml() )
+				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.neo4j services" )
+				.createDeployment();
 	}
 
-	private static Asset manifest() {
-		String manifest = Descriptors.create( ManifestDescriptor.class )
-				.attribute( "Dependencies", "org.hibernate:ogm services, org.hibernate.ogm.neo4j services" )
-				.exportAsString();
-		return new StringAsset( manifest );
-	}
-
-	private static StringAsset persistenceXml() throws Exception {
+	private static PersistenceDescriptor persistenceXml() throws Exception {
 		Properties<PersistenceUnit<PersistenceDescriptor>> propertiesContext = Descriptors.create( PersistenceDescriptor.class )
 				.version( "2.0" )
 				.createPersistenceUnit()
 				.name( "primary" )
+				.transactionType( PersistenceUnitTransactionType._RESOURCE_LOCAL )
 				.provider( HibernateOgmPersistence.class.getName() )
 				.clazz( Member.class.getName() )
 				.getOrCreateProperties();
@@ -80,7 +63,7 @@ public class Neo4jModuleMemberRegistrationIT {
 				.up()
 				.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
-		return new StringAsset( persistenceDescriptor.exportAsString() );
+		return persistenceDescriptor;
 	}
 
 	private static String neo4jFolder() throws Exception {
@@ -91,11 +74,16 @@ public class Neo4jModuleMemberRegistrationIT {
 		return buildDirectory + File.separator + "NEO4J-DB" + File.separator + System.currentTimeMillis();
 	}
 
-	// TODO OGM-373 Provide an actual test with some queries etc.; For now we just ensure that the module definitions
-	// are not broken and the application can be deployed/started
 	@Test
-	public void shouldBeStarted() throws Exception {
-		assertEquals( "Container should be started", HelloWorldBean.HELLO, bean.hello() );
-	}
+	public void shouldFindPersistedMemberByIdWithNativeQuery() throws Exception {
+		Member newMember = memberRegistration.getNewMember();
+		newMember.setName( "Giovanni Doe" );
+		memberRegistration.register();
 
+		String nativeQuery = "MATCH (n:Member {id: " + newMember.getId() + "}) RETURN n";
+		Member found = memberRegistration.findWithNativeQuery( nativeQuery );
+
+		assertNotNull( "Expected at least one result using a native query", found );
+		assertEquals( "Native query hasn't found a new member", newMember.getName(), found.getName() );
+	}
 }

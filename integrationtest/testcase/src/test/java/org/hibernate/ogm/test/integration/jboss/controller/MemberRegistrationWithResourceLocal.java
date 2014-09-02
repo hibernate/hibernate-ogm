@@ -7,10 +7,10 @@
 package org.hibernate.ogm.test.integration.jboss.controller;
 
 import javax.annotation.PostConstruct;
-
 import javax.ejb.Stateful;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceUnit;
 
 import org.hibernate.ogm.test.integration.jboss.model.Member;
 
@@ -23,7 +23,9 @@ import org.hibernate.ogm.test.integration.jboss.model.Member;
 @Stateful
 public class MemberRegistrationWithResourceLocal implements MemberRegistration {
 
-	@Inject
+	@PersistenceUnit
+	private EntityManagerFactory factory;
+
 	private EntityManager em;
 
 	private Member newMember;
@@ -85,6 +87,7 @@ public class MemberRegistrationWithResourceLocal implements MemberRegistration {
 	@PostConstruct
 	public void initNewMember() {
 		newMember = new Member();
+		em = factory.createEntityManager();
 	}
 
 	@Override
