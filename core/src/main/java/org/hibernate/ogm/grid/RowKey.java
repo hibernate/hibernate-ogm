@@ -13,7 +13,7 @@ import java.util.Arrays;
  *
  * @author Emmanuel Bernard
  */
-public final class RowKey implements Key {
+public final class RowKey {
 
 	private final String[] columnNames;
 	//column value types do have to be serializable so RowKey can be serializable
@@ -32,7 +32,6 @@ public final class RowKey implements Key {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
-	@Override
 	public String[] getColumnNames() {
 		return columnNames;
 	}
@@ -42,7 +41,6 @@ public final class RowKey implements Key {
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
 	 */
-	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}

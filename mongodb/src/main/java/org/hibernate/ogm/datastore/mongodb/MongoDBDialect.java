@@ -62,7 +62,7 @@ import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.grid.AssociationKey;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.Key;
+import org.hibernate.ogm.grid.IdSourceKey;
 import org.hibernate.ogm.grid.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.batchindexing.Consumer;
@@ -214,7 +214,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 *
 	 * @return the DBObject which represents the id field
 	 */
-	private BasicDBObject prepareIdObject(Key key) {
+	private BasicDBObject prepareIdObject(EntityKey key) {
+		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
+	}
+
+	private BasicDBObject prepareIdObject(IdSourceKey key) {
 		return this.prepareIdObject( key.getColumnNames(), key.getColumnValues() );
 	}
 
