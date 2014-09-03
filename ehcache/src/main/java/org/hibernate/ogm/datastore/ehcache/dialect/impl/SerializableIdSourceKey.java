@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.datastore.ehcache.dialect.impl;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.Arrays;
 
 import org.hibernate.ogm.grid.IdSourceKey;
@@ -16,11 +19,26 @@ import org.hibernate.ogm.grid.IdSourceKey;
  *
  * @author Gunnar Morling
  */
-public class SerializableIdSourceKey implements Serializable {
+public class SerializableIdSourceKey implements Externalizable {
 
-	private final String table;
-	private final String[] columnNames;
-	private final Object[] columnValues;
+	/**
+	 * NEVER change this, as otherwise serialized representations cannot be read back after an update
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * To be incremented when the structure of this type changes. Based on the version of a serialized representation,
+	 * specific handling can be implemented in {@link #readExternal(ObjectInput)}.
+	 */
+	private static final int VERSION = 1;
+
+	private String table;
+	private String[] columnNames;
+	private Object[] columnValues;
+
+	// required by Externalizable
+	public SerializableIdSourceKey() {
+	}
 
 	public SerializableIdSourceKey(IdSourceKey key) {
 		columnNames = key.getColumnNames();
@@ -83,5 +101,23 @@ public class SerializableIdSourceKey implements Serializable {
 	public String toString() {
 		return "SerializableIdSourceKey [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues="
 				+ Arrays.toString( columnValues ) + "]";
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeInt( VERSION );
+		out.writeUTF( table );
+		out.writeObject( columnNames );
+		out.writeObject( columnValues );
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+		// version
+		in.readInt();
+
+		table = in.readUTF();
+		columnNames = (String[]) in.readObject();
+		columnValues = (Object[]) in.readObject();
 	}
 }
