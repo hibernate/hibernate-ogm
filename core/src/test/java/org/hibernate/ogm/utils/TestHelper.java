@@ -21,7 +21,6 @@ import javax.persistence.EntityManagerFactory;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
@@ -191,9 +190,6 @@ public class TestHelper {
 	 */
 	public static OgmConfiguration getDefaultTestConfiguration(Class<?>... entityTypes) {
 		OgmConfiguration configuration = new OgmConfiguration();
-
-		// by default use the new id generator scheme...
-		configuration.setProperty( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 
 		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 			configuration.setProperty( entry.getKey(), entry.getValue() );

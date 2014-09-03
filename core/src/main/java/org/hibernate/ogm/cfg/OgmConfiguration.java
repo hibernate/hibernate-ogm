@@ -50,6 +50,9 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
 		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
 
+		// by default use the new id generator scheme...
+		setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
+
 		setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 	}
 
@@ -104,6 +107,9 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		}
 		if ( ! properties.containsKey(  "hibernate.search.massindexer.factoryclass" ) ) {
 			setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+		}
+		if ( ! properties.containsKey( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS ) ) {
+			setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );
 		}
 		if ( !properties.containsKey( AvailableSettings.QUERY_TRANSLATOR ) ) {
 			setProperty( AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
