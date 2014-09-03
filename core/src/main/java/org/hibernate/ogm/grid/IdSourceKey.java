@@ -13,7 +13,7 @@ import java.util.Arrays;
  *
  * @author Gunnar Morling
  */
-public class IdSourceKey implements Key {
+public class IdSourceKey {
 
 	private final IdSourceKeyMetadata metadata;
 	private final String[] columnNames;
@@ -49,7 +49,6 @@ public class IdSourceKey implements Key {
 	/**
 	 * Returns the segment column name if this is a table-based generator, {@code null} otherwise.
 	 */
-	@Override
 	public String[] getColumnNames() {
 		return columnNames;
 	}
@@ -57,7 +56,6 @@ public class IdSourceKey implements Key {
 	/**
 	 * Returns the segment name if this is a table-based generator, {@code null} otherwise.
 	 */
-	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}

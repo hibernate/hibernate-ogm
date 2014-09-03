@@ -17,7 +17,7 @@ import org.hibernate.annotations.common.AssertionFailure;
  * @author Sanne Grinovero
  * @author Gunnar Morling
  */
-public final class AssociationKey implements Key {
+public final class AssociationKey {
 
 	//column value types do have to be serializable so AssociationKey is serializable
 	//should it be a Serializable[] type? It seems to be more pain than anything else
@@ -69,12 +69,10 @@ public final class AssociationKey implements Key {
 	 * AssociationKey{table='AccountOwner_BankAccount', columnNames=[owners_id], columnValues=[...]},
 	 * </pre>
 	 */
-	@Override
 	public String[] getColumnNames() {
 		return metadata.getColumnNames();
 	}
 
-	@Override
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
