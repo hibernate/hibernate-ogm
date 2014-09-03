@@ -20,6 +20,7 @@ import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.impl.ConfigurableImpl;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
+import org.hibernate.ogm.cfg.spi.OptionConfigurator;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.jpa.impl.OgmMutableIdentifierGeneratorFactory;
@@ -44,6 +45,8 @@ public class OgmConfiguration extends Configuration implements Configurable {
 	}
 
 	private void resetOgm() {
+		//NOTE: When performing changes here, be sure to do the same in setProperties() below
+
 		super.setNamingStrategy( OgmNamingStrategy.INSTANCE );
 		setProperty( InternalProperties.OGM_ON, "true" );
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
@@ -102,9 +105,6 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		if ( ! properties.containsKey( InternalProperties.OGM_ON ) ) {
 			setProperty( InternalProperties.OGM_ON, "true" );
 		}
-		if ( ! properties.containsKey(  AvailableSettings.QUERY_STARTUP_CHECKING ) ) {
-			setProperty( AvailableSettings.QUERY_STARTUP_CHECKING, "false" );
-		}
 		if ( ! properties.containsKey(  "hibernate.search.massindexer.factoryclass" ) ) {
 			setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
 		}
@@ -119,7 +119,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 
 	/**
 	 * Applies configuration options to the bootstrapped session factory. Use either this method or pass a
-	 * {@link org.hibernate.ogm.cfg.spi.OptionConfigurator} via {@link OgmProperties#OPTION_CONFIGURATOR} but don't use
+	 * {@link OptionConfigurator} via {@link OgmProperties#OPTION_CONFIGURATOR} but don't use
 	 * both at the same time.
 	 *
 	 * @param datastoreType represents the datastore to be configured; it is the responsibility of the caller to make
