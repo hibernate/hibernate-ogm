@@ -100,10 +100,10 @@ public class CypherCRUD {
 	 * @param key representing the node
 	 * @return the corresponding {@link Node} or null
 	 */
-	public Node findNode(EntityKey key, NodeLabel... labels) {
+	public Node findEntity(EntityKey key) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MATCH" );
-		appendNodePattern( key, parameters, query, labels );
+		appendNodePattern( key, parameters, query, ENTITY );
 		query.append( " RETURN n" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -156,10 +156,10 @@ public class CypherCRUD {
 	 * @param key identify the type of the relationship
 	 * @return the resulting node
 	 */
-	public Node createNodeUnlessExists(EntityKey key, NodeLabel label) {
+	public Node findOrCreateEntity(EntityKey key) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "MERGE" );
-		appendNodePattern( key, parameters, query, label );
+		appendNodePattern( key, parameters, query, ENTITY );
 		query.append( " RETURN n" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -171,10 +171,10 @@ public class CypherCRUD {
 		return node;
 	}
 
-	public Node createNode(EntityKey key, NodeLabel label) {
+	public Node createEmbeddedNode(EntityKey key) {
 		Map<String, Object> parameters = new HashMap<String, Object>( key.getColumnNames().length );
 		StringBuilder query = new StringBuilder( "CREATE" );
-		appendNodePattern( key, parameters, query, label );
+		appendNodePattern( key, parameters, query, EMBEDDED );
 		query.append( " RETURN n" );
 		ExecutionResult result = engine.execute( query.toString(), parameters );
 		ResourceIterator<Node> column = result.columnAs( "n" );
@@ -217,7 +217,7 @@ public class CypherCRUD {
 				identifier( query, label.name() );
 			}
 		}
-		if ( key != null && key.getColumnNames().length > 0 ) {
+		if ( key != null && key.getColumnValues().length > 0 ) {
 			query.append( " {" );
 			int counter = parameters.size();
 			int columnsLength = key.getColumnNames().length;
