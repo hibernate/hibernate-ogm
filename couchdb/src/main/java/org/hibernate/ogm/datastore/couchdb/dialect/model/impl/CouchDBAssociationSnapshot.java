@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
-import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
 
 /**
  * {@link AssociationSnapshot} implementation based on a {@link CouchDBAssociation} (which in turn wraps an association

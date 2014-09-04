@@ -8,9 +8,9 @@ package org.hibernate.ogm.datastore.spi;
 
 import java.util.Arrays;
 
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.grid.spi.RowKey;
 
 /**
  * Provides meta-data about a one-to-one/many-to-one association represented by one or more columns contained within a

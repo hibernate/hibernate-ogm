@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.StringHelper;
 

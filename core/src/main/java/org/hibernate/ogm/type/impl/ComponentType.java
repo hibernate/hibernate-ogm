@@ -12,8 +12,8 @@ import org.hibernate.EntityMode;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.type.Type;
 

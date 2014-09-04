@@ -19,8 +19,8 @@ import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.persister.impl;
 
-import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
 
 /**

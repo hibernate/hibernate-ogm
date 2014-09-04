@@ -16,7 +16,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;

@@ -13,14 +13,14 @@ import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.massindex.batchindexing.Consumer;
+import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.persister.entity.Lockable;
 
 /**

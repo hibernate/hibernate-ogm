@@ -12,7 +12,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.type.AbstractStandardBasicType;
 import org.hibernate.type.Type;
 

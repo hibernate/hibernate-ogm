@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 
 /**
  * Represents an Association (think of it as a set of rows, each representing a specific link).

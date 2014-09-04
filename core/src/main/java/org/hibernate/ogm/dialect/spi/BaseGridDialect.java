@@ -6,8 +6,7 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
 /**

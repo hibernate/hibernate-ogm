@@ -9,7 +9,7 @@ package org.hibernate.ogm.util.impl;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.spi.GridType;
 
 /**
  * Helper methods to convert an object value into its column values

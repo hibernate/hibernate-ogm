@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 
 /**
  * Operation applied to the association.

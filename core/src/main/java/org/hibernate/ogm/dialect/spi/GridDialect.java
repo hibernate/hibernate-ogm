@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.dialect;
+package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
@@ -12,14 +12,13 @@ import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.massindex.batchindexing.Consumer;
-import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.massindex.spi.Consumer;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.Service;
 import org.hibernate.type.Type;

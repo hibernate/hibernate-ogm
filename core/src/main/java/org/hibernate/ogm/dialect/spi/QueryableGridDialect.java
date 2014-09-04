@@ -10,10 +10,8 @@ import java.io.Serializable;
 
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.GridDialect;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.util.ClosableIterator;
 
 /**
  * A facet for {@link GridDialect} implementations which support the execution of native queries.

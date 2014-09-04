@@ -22,7 +22,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.search.backend.AddLuceneWork;
 import org.hibernate.search.backend.impl.batch.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;

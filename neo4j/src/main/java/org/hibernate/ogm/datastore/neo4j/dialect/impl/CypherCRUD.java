@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.AssociationKind;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.grid.spi.AssociationKind;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;

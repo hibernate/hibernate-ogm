@@ -21,8 +21,8 @@ import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.EntityKeyMetadata;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.OgmTestCase;

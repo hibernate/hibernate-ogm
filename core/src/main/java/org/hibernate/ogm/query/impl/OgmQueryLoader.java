@@ -22,14 +22,14 @@ import org.hibernate.hql.internal.ast.QueryTranslatorImpl;
 import org.hibernate.hql.internal.ast.tree.SelectClause;
 import org.hibernate.loader.hql.QueryLoader;
 import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.dialect.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
-import org.hibernate.ogm.persister.OgmEntityPersister;
+import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.ogm.util.ClosableIterator;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.type.Type;
 
 /**

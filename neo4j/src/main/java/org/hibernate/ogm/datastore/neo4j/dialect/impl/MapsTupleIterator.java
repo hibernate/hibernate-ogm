@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.util.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.ClosableIterator;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 

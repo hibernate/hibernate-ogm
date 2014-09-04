@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.document.association.spi;
 
-import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
 
 /**
  * Contract for factories creating {@link AssociationRow} objects.

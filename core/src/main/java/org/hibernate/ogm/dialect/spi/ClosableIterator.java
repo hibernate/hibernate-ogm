@@ -4,17 +4,19 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.massindex.batchindexing;
+package org.hibernate.ogm.dialect.spi;
 
-import org.hibernate.ogm.datastore.spi.Tuple;
+import java.io.Closeable;
+import java.util.Iterator;
 
 /**
- * Represents an object that can consume a {@link Tuple}.
+ * An iterator that has to be closed.
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public interface Consumer {
+public interface ClosableIterator<T> extends Iterator<T>, Closeable {
 
-	void consume(Tuple tuple);
+	@Override
+	void close();
 
 }

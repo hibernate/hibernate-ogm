@@ -9,9 +9,9 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.impl.StringDateTypeDescriptor;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 

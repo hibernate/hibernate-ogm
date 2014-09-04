@@ -16,7 +16,7 @@ import org.hibernate.internal.util.MarkerObject;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
-import org.hibernate.ogm.persister.EntityDiscriminator;
+import org.hibernate.ogm.persister.spi.EntityDiscriminator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.sql.InFragment;

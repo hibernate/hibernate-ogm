@@ -9,7 +9,7 @@ package org.hibernate.ogm.massindex.impl;
 import java.util.Properties;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;
 import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;

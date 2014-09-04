@@ -11,9 +11,9 @@ import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 import java.util.Collections;
 import java.util.Map;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.AbstractStandardBasicType;

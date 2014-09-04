@@ -14,10 +14,10 @@ import java.util.Set;
 
 import org.hibernate.id.IdentifierGenerator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.grid.IdSourceKey;
-import org.hibernate.ogm.grid.IdSourceKeyMetadata;
-import org.hibernate.ogm.grid.IdSourceKeyMetadata.IdSourceType;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.IdSourceKey;
+import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata.IdSourceType;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;

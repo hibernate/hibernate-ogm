@@ -15,9 +15,9 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.map.MapDatastore;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**

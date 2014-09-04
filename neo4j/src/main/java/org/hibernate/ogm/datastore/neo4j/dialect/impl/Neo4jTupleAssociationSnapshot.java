@@ -14,7 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.grid.AssociationKey;
+import org.hibernate.ogm.grid.spi.AssociationKey;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 

@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.datastore.spi;
 
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.batch.OperationsQueue;
+import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**

@@ -11,7 +11,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;

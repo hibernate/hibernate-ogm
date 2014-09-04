@@ -15,8 +15,8 @@ import org.hibernate.engine.internal.ForeignKeys;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.TypeTranslator;
+import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
 

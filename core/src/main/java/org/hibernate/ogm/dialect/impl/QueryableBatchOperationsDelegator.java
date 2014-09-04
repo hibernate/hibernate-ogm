@@ -10,12 +10,12 @@ import java.io.Serializable;
 
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.dialect.BatchableGridDialect;
-import org.hibernate.ogm.dialect.GridDialect;
+import org.hibernate.ogm.dialect.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.util.ClosableIterator;
 
 /**
  * Batch delegator to be used for {@link GridDialect}s which support the execution of native queries.

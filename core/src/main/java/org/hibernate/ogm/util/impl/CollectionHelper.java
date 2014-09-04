@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.hibernate.ogm.util.ClosableIterator;
+import org.hibernate.ogm.dialect.spi.ClosableIterator;
 
 /**
  * Provides commonly used functionality around collections.

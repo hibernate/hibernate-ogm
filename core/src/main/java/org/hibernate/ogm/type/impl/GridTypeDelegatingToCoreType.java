@@ -15,7 +15,7 @@ import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.type.GridType;
+import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.ForeignKeyDirection;
 import org.hibernate.type.Type;
 

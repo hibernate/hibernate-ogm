@@ -22,11 +22,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.persistence.PessimisticLockException;
 
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
-import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.grid.AssociationKey;
-import org.hibernate.ogm.grid.EntityKey;
-import org.hibernate.ogm.grid.IdSourceKey;
-import org.hibernate.ogm.grid.RowKey;
+import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.grid.spi.IdSourceKey;
+import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Startable;
