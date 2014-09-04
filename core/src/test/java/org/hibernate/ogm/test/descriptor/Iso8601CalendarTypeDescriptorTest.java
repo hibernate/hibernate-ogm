@@ -11,7 +11,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.hibernate.ogm.type.descriptor.Iso8601CalendarTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.Iso8601CalendarTypeDescriptor;
 import org.junit.Test;
 
 /**

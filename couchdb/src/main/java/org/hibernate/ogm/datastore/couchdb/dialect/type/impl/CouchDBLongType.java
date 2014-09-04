@@ -8,8 +8,8 @@ package org.hibernate.ogm.datastore.couchdb.dialect.type.impl;
 
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.Mapping;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
-import org.hibernate.ogm.type.descriptor.StringMappedGridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.StringMappedGridTypeDescriptor;
+import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 
 /**

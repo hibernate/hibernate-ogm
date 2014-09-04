@@ -16,8 +16,8 @@ import org.hibernate.mapping.UnionSubclass;
 import org.hibernate.metamodel.binding.EntityBinding;
 import org.hibernate.metamodel.binding.InheritanceType;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolver;
-import org.hibernate.ogm.persister.SingleTableOgmEntityPersister;
-import org.hibernate.ogm.persister.UnionSubclassOgmEntityPersister;
+import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
+import org.hibernate.ogm.persister.impl.UnionSubclassOgmEntityPersister;
 import org.junit.Test;
 
 public class OgmPersisterClassResolverTest {

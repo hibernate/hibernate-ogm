@@ -51,7 +51,7 @@ public class OgmConfiguration extends Configuration implements Configurable {
 		setProperty( InternalProperties.OGM_ON, "true" );
 		// This property binds the OgmMassIndexer with Hibernate Search. An application could use OGM without Hibernate
 		// Search therefore we set property value and key using a String in case the dependency is not on the classpath.
-		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+		setProperty( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
 
 		// by default use the new id generator scheme...
 		setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "true" );

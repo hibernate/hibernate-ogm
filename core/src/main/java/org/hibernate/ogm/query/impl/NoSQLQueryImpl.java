@@ -37,7 +37,6 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.internal.AbstractQueryImpl;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.ogm.query.NoSQLQuery;
-import org.hibernate.ogm.query.spi.NativeNoSqlQuerySpecification;
 import org.hibernate.type.Type;
 
 /**

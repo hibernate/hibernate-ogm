@@ -8,7 +8,7 @@ package org.hibernate.ogm.test.descriptor;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import org.hibernate.ogm.type.StringDateTypeDescriptor;
+import org.hibernate.ogm.type.impl.StringDateTypeDescriptor;
 import org.junit.Test;
 
 /**

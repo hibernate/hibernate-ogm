@@ -8,9 +8,9 @@ package org.hibernate.ogm.jpa.impl;
 
 import org.hibernate.mapping.Collection;
 import org.hibernate.metamodel.binding.PluralAttributeBinding;
-import org.hibernate.ogm.persister.OgmCollectionPersister;
-import org.hibernate.ogm.persister.SingleTableOgmEntityPersister;
-import org.hibernate.ogm.persister.UnionSubclassOgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.SingleTableOgmEntityPersister;
+import org.hibernate.ogm.persister.impl.UnionSubclassOgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.internal.StandardPersisterClassResolver;

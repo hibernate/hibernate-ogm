@@ -7,8 +7,8 @@
 package org.hibernate.ogm.service.impl;
 
 import org.hibernate.event.spi.AbstractEvent;
-import org.hibernate.ogm.dialect.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.BatchableGridDialect;
+import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

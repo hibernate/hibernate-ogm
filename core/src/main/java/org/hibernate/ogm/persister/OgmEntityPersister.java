@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.persister;
 
-import static org.hibernate.ogm.persister.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
@@ -52,8 +51,10 @@ import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.grid.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.EntityKey;
 import org.hibernate.ogm.grid.EntityKeyMetadata;
-import org.hibernate.ogm.loader.OgmLoader;
+import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.persister.impl.EntityDehydrator;
+import org.hibernate.ogm.persister.impl.EntityKeyBuilder;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.ogm.type.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -109,7 +110,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private TupleContext tupleContext;
 
-	OgmEntityPersister(
+	protected OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
@@ -227,7 +228,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
 				String[] propertyColumnNames = getPropertyColumnNames( index );
-				String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
+				String[] rowKeyColumnNames = EntityDehydrator.buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 				String tableName = getTableName();
 				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
 						tableName,
@@ -1160,7 +1161,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	protected String getTableName(int j) {
+	public String getTableName(int j) {
 		return tableName;
 	}
 
@@ -1170,7 +1171,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	protected boolean isPropertyOfTable(int property, int j) {
+	public boolean isPropertyOfTable(int property, int j) {
 		return true;
 	}
 

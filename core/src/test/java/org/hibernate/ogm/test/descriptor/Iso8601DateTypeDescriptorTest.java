@@ -12,7 +12,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.hibernate.ogm.type.descriptor.Iso8601DateTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.Iso8601DateTypeDescriptor;
 import org.junit.Test;
 
 /**

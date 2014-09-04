@@ -8,8 +8,8 @@ package org.hibernate.ogm.test.type;
 
 import java.util.UUID;
 
-import org.hibernate.ogm.datastore.map.MapDialect;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
+import org.hibernate.ogm.datastore.map.impl.MapDialect;
 import org.hibernate.ogm.type.GridType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;

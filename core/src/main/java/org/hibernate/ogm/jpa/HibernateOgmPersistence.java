@@ -90,7 +90,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( InternalProperties.OGM_ON, "true" );
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
 		//set the OGM specific mass indexer in case we use Hibernate Search
-		map.put( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.OgmMassIndexerFactory" );
+		map.put( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
 	}
 
 	@Override

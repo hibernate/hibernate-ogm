@@ -70,7 +70,7 @@ import org.hibernate.ogm.query.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.StringCalendarDateType;
+import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.util.ClosableIterator;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.persister.entity.Lockable;

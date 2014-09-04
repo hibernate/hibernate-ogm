@@ -47,7 +47,7 @@ import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.exception.NotSupportedException;
-import org.hibernate.ogm.loader.nativeloader.BackendCustomQuery;
+import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.query.impl.NoSQLQueryImpl;

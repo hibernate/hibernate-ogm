@@ -13,7 +13,7 @@ import org.hibernate.type.Type;
  *
  * @author "Davide D'Alto" &lt;davide@hibernate.org&gt;
  */
-interface EntityDiscriminator {
+public interface EntityDiscriminator {
 
 	String provideClassByValue(Object value);
 

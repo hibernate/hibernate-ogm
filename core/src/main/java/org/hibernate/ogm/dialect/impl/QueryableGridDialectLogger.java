@@ -11,7 +11,6 @@ import java.io.Serializable;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.dialect.GridDialectLogger;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;

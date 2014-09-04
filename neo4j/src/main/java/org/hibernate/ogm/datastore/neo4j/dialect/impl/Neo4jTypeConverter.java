@@ -10,8 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.StringCalendarDateType;
-import org.hibernate.ogm.type.StringDateTypeDescriptor;
+import org.hibernate.ogm.type.impl.StringCalendarDateType;
+import org.hibernate.ogm.type.impl.StringDateTypeDescriptor;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 

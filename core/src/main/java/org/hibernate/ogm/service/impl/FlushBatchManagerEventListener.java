@@ -10,7 +10,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.event.service.spi.DuplicationStrategy;
 import org.hibernate.event.spi.FlushEvent;
 import org.hibernate.event.spi.FlushEventListener;
-import org.hibernate.ogm.dialect.BatchOperationsDelegator;
+import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 
 /**
  * Prepares and executes batched operations when a {@link FlushEvent} is caught

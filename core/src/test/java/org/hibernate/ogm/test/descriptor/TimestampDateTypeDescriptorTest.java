@@ -11,7 +11,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.hibernate.ogm.type.descriptor.TimestampDateTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.TimestampDateTypeDescriptor;
 import org.junit.Test;
 
 /**

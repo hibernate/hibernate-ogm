@@ -12,29 +12,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.hibernate.ogm.dialect.GridDialect;
-import org.hibernate.ogm.type.BigDecimalType;
-import org.hibernate.ogm.type.BigIntegerType;
-import org.hibernate.ogm.type.BooleanType;
-import org.hibernate.ogm.type.ByteType;
-import org.hibernate.ogm.type.CalendarDateType;
-import org.hibernate.ogm.type.CalendarType;
-import org.hibernate.ogm.type.ClassType;
-import org.hibernate.ogm.type.CollectionType;
-import org.hibernate.ogm.type.ComponentType;
-import org.hibernate.ogm.type.DateType;
-import org.hibernate.ogm.type.DoubleType;
 import org.hibernate.ogm.type.GridType;
-import org.hibernate.ogm.type.IntegerType;
-import org.hibernate.ogm.type.LongType;
-import org.hibernate.ogm.type.ManyToOneType;
-import org.hibernate.ogm.type.OneToOneType;
-import org.hibernate.ogm.type.PrimitiveByteArrayType;
-import org.hibernate.ogm.type.StringType;
-import org.hibernate.ogm.type.TimeType;
-import org.hibernate.ogm.type.TimestampType;
 import org.hibernate.ogm.type.TypeTranslator;
-import org.hibernate.ogm.type.UUIDType;
-import org.hibernate.ogm.type.UrlType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.AbstractStandardBasicType;
@@ -122,7 +101,7 @@ public class TypeTranslatorImpl implements TypeTranslator {
 			if ( userType instanceof EnumType ) {
 				EnumType enumType = (EnumType) userType;
 				//should we cache that (the key must be enumClass / isOrdinal
-				return new org.hibernate.ogm.type.EnumType( cType, enumType );
+				return new org.hibernate.ogm.type.impl.EnumType( cType, enumType );
 			}
 			//let it go it will eventually fail
 		}

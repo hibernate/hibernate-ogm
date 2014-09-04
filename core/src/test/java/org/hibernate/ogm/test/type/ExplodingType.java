@@ -9,10 +9,10 @@ package org.hibernate.ogm.test.type;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.type.AbstractGenericBasicType;
-import org.hibernate.ogm.type.descriptor.GridTypeDescriptor;
-import org.hibernate.ogm.type.descriptor.GridValueBinder;
-import org.hibernate.ogm.type.descriptor.GridValueExtractor;
+import org.hibernate.ogm.type.descriptor.impl.GridTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.GridValueBinder;
+import org.hibernate.ogm.type.descriptor.impl.GridValueExtractor;
+import org.hibernate.ogm.type.impl.AbstractGenericBasicType;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 

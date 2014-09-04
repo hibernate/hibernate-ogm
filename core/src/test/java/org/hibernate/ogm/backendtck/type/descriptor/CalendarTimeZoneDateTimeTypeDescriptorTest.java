@@ -14,7 +14,7 @@ import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.hibernate.ogm.type.descriptor.CalendarTimeZoneDateTimeTypeDescriptor;
+import org.hibernate.ogm.type.descriptor.impl.CalendarTimeZoneDateTimeTypeDescriptor;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
