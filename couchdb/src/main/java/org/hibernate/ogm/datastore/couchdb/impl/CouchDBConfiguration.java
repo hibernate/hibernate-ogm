@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.impl;
 
-import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**

@@ -8,7 +8,7 @@ package org.hibernate.ogm.options.navigation;
 
 import java.lang.annotation.ElementType;
 
-import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.spi.BaseEntityContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**

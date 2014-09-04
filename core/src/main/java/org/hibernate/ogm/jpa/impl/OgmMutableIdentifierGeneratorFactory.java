@@ -8,8 +8,8 @@ package org.hibernate.ogm.jpa.impl;
 
 import org.hibernate.id.factory.internal.DefaultIdentifierGeneratorFactory;
 import org.hibernate.id.factory.spi.MutableIdentifierGeneratorFactory;
-import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
-import org.hibernate.ogm.id.impl.OgmTableGenerator;
+import org.hibernate.ogm.id.spi.OgmSequenceGenerator;
+import org.hibernate.ogm.id.spi.OgmTableGenerator;
 
 /**
  * Register OGM strategies for identifier generations

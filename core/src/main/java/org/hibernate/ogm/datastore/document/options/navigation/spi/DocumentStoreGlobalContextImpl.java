@@ -4,13 +4,13 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.document.options.navigation.impl;
+package org.hibernate.ogm.datastore.document.options.navigation.spi;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOption;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
+import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
+import org.hibernate.ogm.options.navigation.spi.BaseGlobalContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**

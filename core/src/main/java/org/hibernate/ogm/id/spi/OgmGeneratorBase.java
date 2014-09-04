@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.id.impl;
+package org.hibernate.ogm.id.spi;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -28,8 +28,6 @@ import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.grid.spi.IdSourceKey;
-import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.type.Type;
 
 /**

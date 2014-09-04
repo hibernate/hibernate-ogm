@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.impl.configuration;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;

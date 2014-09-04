@@ -13,7 +13,7 @@ import java.util.Map;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
+import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Rule;

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
-import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStorePropertyContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.spi.DocumentStorePropertyContextImpl;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;

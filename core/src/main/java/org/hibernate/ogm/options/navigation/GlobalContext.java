@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.options.navigation;
 
-import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
+import org.hibernate.ogm.options.navigation.spi.BaseEntityContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**

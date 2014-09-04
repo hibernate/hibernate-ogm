@@ -9,8 +9,8 @@ package org.hibernate.ogm.datastore.ehcache;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.GenericOptionModel;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.GenericOptionModel;
 
 /**
  * Allows to configure options specific to the Ehcache data store.

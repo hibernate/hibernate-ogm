@@ -13,7 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.SequenceGenerator;
 
 /**
- * Test entity for {@link org.hibernate.ogm.id.impl.OgmSequenceGenerator OGM Sequence Generator}
+ * Test entity for {@link org.hibernate.ogm.id.spi.OgmSequenceGenerator OGM Sequence Generator}
  *
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */

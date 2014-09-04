@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.options.navigation.impl;
 
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBEntityContext;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBPropertyContext;
-import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStorePropertyContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.spi.DocumentStorePropertyContextImpl;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**

@@ -14,7 +14,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageConverter;
+import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageConverter;
 import org.hibernate.ogm.options.spi.MappingOption;
 
 /**
