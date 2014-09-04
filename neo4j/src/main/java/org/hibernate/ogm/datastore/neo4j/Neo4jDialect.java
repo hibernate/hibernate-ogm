@@ -265,8 +265,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			putAssociationOperation( association, key, operation, associationContext.getAssociatedEntityKeyMetadata() );
 			break;
 		case PUT_NULL:
-			removeAssociationOperation( association, key, operation, associationContext.getAssociatedEntityKeyMetadata() );
-			break;
 		case REMOVE:
 			removeAssociationOperation( association, key, operation, associationContext.getAssociatedEntityKeyMetadata() );
 			break;
@@ -307,8 +305,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			putTupleOperation( entityKey, tuple, node, operation, tupleContext, processedAssociationRoles );
 			break;
 		case PUT_NULL:
-			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
-			break;
 		case REMOVE:
 			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
 			break;
