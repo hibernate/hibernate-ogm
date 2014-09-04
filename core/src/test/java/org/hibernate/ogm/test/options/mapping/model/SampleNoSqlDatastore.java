@@ -7,7 +7,7 @@
 package org.hibernate.ogm.test.options.mapping.model;
 
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.test.options.mapping.model.SampleOptionModel.SampleGlobalContext;
 
 /**

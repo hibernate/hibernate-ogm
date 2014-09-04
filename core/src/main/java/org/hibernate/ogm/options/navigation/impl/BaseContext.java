@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.options.navigation.impl;
 
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.options.spi.Option;
 
 /**

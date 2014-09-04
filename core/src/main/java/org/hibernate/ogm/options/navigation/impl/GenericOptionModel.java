@@ -9,6 +9,7 @@ package org.hibernate.ogm.options.navigation.impl;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * A generic option model that provides no store-specific options.

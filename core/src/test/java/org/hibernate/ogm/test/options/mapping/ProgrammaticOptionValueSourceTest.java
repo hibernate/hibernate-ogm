@@ -15,7 +15,7 @@ import java.util.Map;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
@@ -41,7 +41,7 @@ public class ProgrammaticOptionValueSourceTest {
 	@Before
 	public void setupContexts() {
 		configurationContext = new AppendableConfigurationContext();
-		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContext( configurationContext ) );
+		configuration = SampleOptionModel.createGlobalContext( new ConfigurationContextImpl( configurationContext ) );
 	}
 
 	@Test

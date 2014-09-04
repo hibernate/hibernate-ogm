@@ -23,7 +23,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfigurati
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.ConfigurationOptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
@@ -54,7 +54,7 @@ public class WriteConcernTest {
 		cfg.put( OgmProperties.DATABASE, "database" );
 
 		context = new AppendableConfigurationContext();
-		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContext( context ) );
+		configuration = new MongoDB().getConfigurationBuilder( new ConfigurationContextImpl( context ) );
 
 		reader = new ConfigurationPropertyReader( cfg, new ClassLoaderServiceImpl() );
 	}

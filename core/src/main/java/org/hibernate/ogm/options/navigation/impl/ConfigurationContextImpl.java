@@ -16,6 +16,7 @@ import javassist.util.proxy.ProxyFactory;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -30,7 +31,7 @@ import org.hibernate.ogm.util.impl.ReflectionHelper;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class ConfigurationContext {
+public class ConfigurationContextImpl implements ConfigurationContext {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -42,18 +43,21 @@ public class ConfigurationContext {
 	private Class<?> currentEntityType;
 	private String currentPropertyName;
 
-	public ConfigurationContext(AppendableConfigurationContext appendableContext) {
+	public ConfigurationContextImpl(AppendableConfigurationContext appendableContext) {
 		this.allOptions = appendableContext;
 	}
 
+	@Override
 	public <V> void addGlobalOption(Option<?, V> option, V value) {
 		allOptions.addGlobalOption( option, value );
 	}
 
+	@Override
 	public <V> void addEntityOption(Option<?, V> option, V value) {
 		allOptions.addEntityOption( currentEntityType, option, value );
 	}
 
+	@Override
 	public <V> void addPropertyOption(Option<?, V> option, V value) {
 		allOptions.addPropertyOption( currentEntityType, currentPropertyName, option, value );
 	}
@@ -90,6 +94,7 @@ public class ConfigurationContext {
 	 * @param propertyContextImplType the provider-specific property context implementation type
 	 * @return a new {@link GlobalContext} object based on the given context implementation types
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <G extends GlobalContext<?, ?>> G createGlobalContext(Class<? extends G> globalContextImplType,
 			final Class<? extends EntityContext<?, ?>> entityContextImplType, Class<? extends PropertyContext<?, ?>> propertyContextImplType) {

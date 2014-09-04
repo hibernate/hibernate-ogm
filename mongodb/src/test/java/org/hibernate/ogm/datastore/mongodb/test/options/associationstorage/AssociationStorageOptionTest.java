@@ -15,8 +15,9 @@ import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOptio
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.junit.Test;
 
 /**
@@ -29,7 +30,7 @@ public class AssociationStorageOptionTest {
 	@Test
 	public void testAssociationStorageMappingOption() throws Exception {
 		AppendableConfigurationContext context = new AppendableConfigurationContext();
-		ConfigurationContext configurationContext = new ConfigurationContext( context );
+		ConfigurationContext configurationContext = new ConfigurationContextImpl( context );
 
 		new MongoDB().getConfigurationBuilder( configurationContext )
 			.entity( ExampleForMongoDBMapping.class )

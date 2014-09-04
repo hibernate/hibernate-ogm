@@ -7,7 +7,7 @@
 package org.hibernate.ogm.options.navigation;
 
 import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Entry point to the options navigation API. Let's you define global level options as well as navigate to a specific

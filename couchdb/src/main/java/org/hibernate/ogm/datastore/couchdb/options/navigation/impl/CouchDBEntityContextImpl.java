@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.couchdb.options.navigation.impl;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBEntityContext;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBPropertyContext;
 import org.hibernate.ogm.datastore.document.options.navigation.impl.DocumentStoreEntityContextImpl;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Converts CouchDB entity-level options.

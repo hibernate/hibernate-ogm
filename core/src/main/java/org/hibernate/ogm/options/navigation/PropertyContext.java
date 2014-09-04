@@ -9,7 +9,7 @@ package org.hibernate.ogm.options.navigation;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Property level to the options navigation API. Let's you define property level options as well as navigate to a

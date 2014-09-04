@@ -16,7 +16,7 @@ import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.ProgrammaticOptionValueSource;
 import org.junit.Before;
@@ -37,7 +37,7 @@ public class ReadPreferenceConfiguredProgrammaticallyTest {
 	@Before
 	public void setupBuilder() {
 		context = new AppendableConfigurationContext();
-		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContext( context ) );
+		mongoOptions = new MongoDB().getConfigurationBuilder( new ConfigurationContextImpl( context ) );
 	}
 
 	@Test

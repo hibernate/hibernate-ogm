@@ -12,7 +12,7 @@ import org.hibernate.ogm.options.navigation.PropertyContext;
 import org.hibernate.ogm.options.navigation.impl.BaseEntityContext;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.BasePropertyContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.test.options.examples.EmbedExampleOption;
 import org.hibernate.ogm.test.options.examples.ForceExampleOption;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;

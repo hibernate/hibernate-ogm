@@ -11,7 +11,7 @@ import org.hibernate.ogm.datastore.document.options.impl.AssociationStorageOptio
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreGlobalContext;
 import org.hibernate.ogm.options.navigation.impl.BaseGlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Converts global document store options.

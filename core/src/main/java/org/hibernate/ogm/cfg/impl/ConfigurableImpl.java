@@ -10,7 +10,7 @@ import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.impl.ConfigurationContextImpl;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -31,7 +31,7 @@ public class ConfigurableImpl implements Configurable {
 	@Override
 	public <D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Class<D> datastoreType) {
 		D configuration = newInstance( datastoreType );
-		return configuration.getConfigurationBuilder( new ConfigurationContext( context ) );
+		return configuration.getConfigurationBuilder( new ConfigurationContextImpl( context ) );
 	}
 
 	public AppendableConfigurationContext getContext() {

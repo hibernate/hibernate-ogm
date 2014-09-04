@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.cfg.Configurable;
 import org.hibernate.ogm.options.navigation.GlobalContext;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Implementations represent a specific datastore to the user and allow to apply store-specific configuration settings.

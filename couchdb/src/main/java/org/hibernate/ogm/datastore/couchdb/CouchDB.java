@@ -12,7 +12,7 @@ import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBEntity
 import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBGlobalContextImpl;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.impl.CouchDBPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.impl.ConfigurationContext;
+import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
  * Allows to configure options specific to the CouchDB document data store.
