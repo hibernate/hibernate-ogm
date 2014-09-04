@@ -7,8 +7,6 @@
 package org.hibernate.ogm.datastore.neo4j;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 
@@ -104,7 +102,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext context) {
-		Node entityNode = neo4jCRUD.findNode( key, ENTITY );
+		Node entityNode = neo4jCRUD.findEntity( key );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -113,7 +111,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Node node = neo4jCRUD.createNodeUnlessExists( key, ENTITY );
+		Node node = neo4jCRUD.findOrCreateEntity( key );
 		GraphLogger.log( "Created node: %1$s", node );
 		return createTuple( node, tupleContext );
 	}
@@ -163,14 +161,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node embeddedNode = neo4jCRUD.createNode( getEntityKey( associationRow, associatedEntityKeyMetadata ), EMBEDDED );
+		Node embeddedNode = neo4jCRUD.createEmbeddedNode( getEntityKey( associationRow, associatedEntityKeyMetadata ) );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationRow, embeddedNode );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node targetNode = neo4jCRUD.findNode( getEntityKey( associationRow, associatedEntityKeyMetadata ), ENTITY );
+		Node targetNode = neo4jCRUD.findEntity( getEntityKey( associationRow, associatedEntityKeyMetadata ) );
 		return createRelationshipWithTargetNode( associationKey, associationRow, targetNode );
 	}
 
@@ -187,7 +185,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
-		Node ownerNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
+		Node ownerNode = neo4jCRUD.findEntity( associationKey.getEntityKey() );
 		Relationship relationship = ownerNode.createRelationshipTo( targetNode, relationshipType( associationKey.getMetadata().getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
@@ -195,7 +193,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		Node entityNode = neo4jCRUD.findNode( associationKey.getEntityKey(), ENTITY );
+		Node entityNode = neo4jCRUD.findEntity( associationKey.getEntityKey() );
 		GraphLogger.log( "Found owner node: %1$s", entityNode );
 		if ( entityNode == null ) {
 			return null;
@@ -363,7 +361,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				}
 
 				// create a new relationship
-				Node targetNode = neo4jCRUD.findNode( targetKey, ENTITY );
+				Node targetNode = neo4jCRUD.findEntity( targetKey );
 				node.createRelationshipTo( targetNode, relationshipType( associationRole ) );
 			}
 		}
