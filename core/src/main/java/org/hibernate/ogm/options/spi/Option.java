@@ -6,7 +6,8 @@
  */
 package org.hibernate.ogm.options.spi;
 
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * A configuration option describing a generic or datastore-specific setting for which a (set of) value is attached. A
@@ -66,6 +67,14 @@ public abstract class Option<I, V> {
 		return result;
 	}
 
+	/**
+	 * May be overridden by specific option types to retrieve a default value based on the configuration properties used
+	 * to bootstrap Hibernate OGM.
+	 *
+	 * @param propertyReader Provides access to the configuration properties used to bootstrap Hibernate OGM, e.g. given
+	 * in {@code persistence.xml} or set on {@link OgmConfiguration}.
+	 * @return A default value for a specific option type or {@code null} if no default exists.
+	 */
 	public V getDefaultValue(ConfigurationPropertyReader propertyReader) {
 		return null;
 	}

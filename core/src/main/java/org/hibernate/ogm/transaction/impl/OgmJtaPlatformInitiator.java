@@ -20,7 +20,7 @@ import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

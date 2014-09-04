@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Creates an instance of {@link GraphDatabaseServiceFactory} using the implementation selected in the properties.

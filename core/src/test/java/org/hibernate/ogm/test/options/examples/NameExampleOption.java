@@ -7,7 +7,7 @@
 package org.hibernate.ogm.test.options.examples;
 
 import org.hibernate.ogm.options.spi.UniqueOption;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * An option that can be used to set the name of something.

@@ -9,7 +9,7 @@ package org.hibernate.ogm.service.impl;
 import java.util.Map;
 
 import org.hibernate.ogm.cfg.impl.InternalProperties;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.Service;
 
 /**

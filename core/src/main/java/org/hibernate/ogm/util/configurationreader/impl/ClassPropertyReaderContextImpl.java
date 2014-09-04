@@ -10,6 +10,11 @@ import java.util.List;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.boot.registry.classloading.spi.ClassLoadingException;
+import org.hibernate.ogm.util.configurationreader.spi.ClassPropertyReaderContext;
+import org.hibernate.ogm.util.configurationreader.spi.Instantiator;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyReaderContext;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
+import org.hibernate.ogm.util.configurationreader.spi.ShortNameResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -20,7 +25,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * @author Gunnar Morling
  * @param <T>
  */
-public class ClassPropertyReaderContext<T> extends PropertyReaderContext<T> {
+public class ClassPropertyReaderContextImpl<T> extends PropertyReaderContextBase<T> implements ClassPropertyReaderContext<T> {
 
 	private static final Log log = LoggerFactory.make();
 
@@ -30,40 +35,32 @@ public class ClassPropertyReaderContext<T> extends PropertyReaderContext<T> {
 	private Instantiator<T> instantiator;
 	private ShortNameResolver shortNameResolver;
 
-	ClassPropertyReaderContext(ClassLoaderService classLoaderService, Object value, String propertyName, Class<T> clazz, T defaultValue, boolean isRequired, List<PropertyValidator<T>> validators) {
+	ClassPropertyReaderContextImpl(ClassLoaderService classLoaderService, Object value, String propertyName, Class<T> clazz, T defaultValue, boolean isRequired, List<PropertyValidator<T>> validators) {
 		super( classLoaderService, value, propertyName, clazz, defaultValue, isRequired, validators );
 		this.classLoaderService = classLoaderService;
 	}
 
-	/**
-	 * Sets the default implementation type for the property in case no value is found.
-	 */
+	@Override
 	public ClassPropertyReaderContext<T> withDefaultImplementation(Class<? extends T> defaultImplementation) {
 		this.defaultImplementation = defaultImplementation;
 		this.defaultImplementationName = null;
 		return this;
 	}
 
-	/**
-	 * Sets the name of default implementation type for the property in case no value is found.
-	 */
+	@Override
 	public ClassPropertyReaderContext<T> withDefaultImplementation(String defaultImplementationName) {
 		this.defaultImplementationName = defaultImplementationName;
 		this.defaultImplementation = null;
 		return this;
 	}
 
-	/**
-	 * Sets an instantiator to be used to create an instance of the property
-	 */
+	@Override
 	public ClassPropertyReaderContext<T> withInstantiator(Instantiator<T> instantiator) {
 		this.instantiator = instantiator;
 		return this;
 	}
 
-	/**
-	 * Sets a short name resolver to be applied in case the property is given as string
-	 */
+	@Override
 	public ClassPropertyReaderContext<T> withShortNameResolver(ShortNameResolver shortNameResolver) {
 		this.shortNameResolver = shortNameResolver;
 		return this;

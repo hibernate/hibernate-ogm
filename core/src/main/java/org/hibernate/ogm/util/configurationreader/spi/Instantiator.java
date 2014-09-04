@@ -4,16 +4,15 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.util.configurationreader.impl;
+package org.hibernate.ogm.util.configurationreader.spi;
 
 /**
- * Implementations map short names into fully-qualified class names.
+ * Implementations instantiate given classes. By default an implementation invoking the no-args constructor of the
+ * given type is used.
  *
  * @author Gunnar Morling
  */
-public interface ShortNameResolver {
+public interface Instantiator<T> {
 
-	boolean isShortName(String name);
-
-	String resolve(String shortName);
+	T newInstance(Class<? extends T> clazz);
 }

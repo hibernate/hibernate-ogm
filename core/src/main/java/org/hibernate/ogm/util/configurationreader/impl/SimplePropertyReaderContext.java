@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyReaderContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.StringHelper;
@@ -25,11 +26,11 @@ import org.hibernate.ogm.util.impl.StringHelper;
  * @author Gunnar Morling
  * @param <T> The type of the property to retrieve
  */
-class SimplePropertyReaderContext<T> extends PropertyReaderContext<T> {
+public class SimplePropertyReaderContext<T> extends PropertyReaderContextBase<T> {
 
 	private static final Log log = LoggerFactory.make();
 
-	SimplePropertyReaderContext(ClassLoaderService classLoaderService, Map<?, ?> configurationValues, String propertyName, Class<T> clazz) {
+	public SimplePropertyReaderContext(ClassLoaderService classLoaderService, Map<?, ?> configurationValues, String propertyName, Class<T> clazz) {
 		super( classLoaderService, configurationValues.get( propertyName ), propertyName, clazz );
 	}
 

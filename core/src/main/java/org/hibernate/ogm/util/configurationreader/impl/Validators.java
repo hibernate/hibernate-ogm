@@ -7,6 +7,7 @@
 package org.hibernate.ogm.util.configurationreader.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

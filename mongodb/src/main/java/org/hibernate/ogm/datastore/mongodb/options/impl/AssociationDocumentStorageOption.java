@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.options.impl;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.options.spi.UniqueOption;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Specifies whether association documents should be stored in a separate collection per association type or in one

@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Configuration for {@link org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider}.

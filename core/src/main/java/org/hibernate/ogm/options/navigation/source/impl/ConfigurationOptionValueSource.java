@@ -12,7 +12,7 @@ import java.util.Map;
 import org.hibernate.ogm.options.container.impl.OptionsContainer;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.options.spi.UniqueOption;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

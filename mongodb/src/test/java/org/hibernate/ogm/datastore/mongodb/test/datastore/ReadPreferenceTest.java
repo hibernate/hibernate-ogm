@@ -23,7 +23,7 @@ import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.OptionsContext;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Test;
 

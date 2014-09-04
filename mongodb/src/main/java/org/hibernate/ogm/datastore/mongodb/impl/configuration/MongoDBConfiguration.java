@@ -15,8 +15,8 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContext;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.impl.PropertyValidator;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 
 import com.mongodb.MongoClientOptions;
 import com.mongodb.ReadPreference;

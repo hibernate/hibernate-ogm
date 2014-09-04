@@ -42,7 +42,7 @@ import org.hibernate.ogm.grid.spi.EntityKey;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;

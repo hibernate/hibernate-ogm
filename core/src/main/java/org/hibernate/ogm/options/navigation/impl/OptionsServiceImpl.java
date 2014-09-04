@@ -17,7 +17,7 @@ import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;

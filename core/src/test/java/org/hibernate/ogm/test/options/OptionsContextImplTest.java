@@ -23,7 +23,7 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.test.options.examples.NameExampleOption;
 import org.hibernate.ogm.test.options.examples.PermissionOption;
 import org.hibernate.ogm.test.options.examples.annotations.NameExample;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.junit.Before;
 import org.junit.Test;
 

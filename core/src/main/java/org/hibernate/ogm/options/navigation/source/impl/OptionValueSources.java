@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.impl.AppendableConfigurationContext;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 

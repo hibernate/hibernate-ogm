@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.document.options.impl;
 import org.hibernate.ogm.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.options.spi.UniqueOption;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Represents the type of association storage as configured via the API or annotations for a given element.

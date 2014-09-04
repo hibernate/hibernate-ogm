@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.couchdb.impl;
 
 import org.hibernate.ogm.cfg.impl.DocumentStoreConfiguration;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Provides utility methods to access the CouchDB configuration value

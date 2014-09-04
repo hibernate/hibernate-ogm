@@ -7,8 +7,8 @@
 package org.hibernate.ogm.cfg.impl;
 
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
  * Provides access to properties common to different document datastores.

@@ -19,10 +19,10 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
-import org.hibernate.ogm.util.configurationreader.impl.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
-import org.hibernate.ogm.util.configurationreader.impl.ShortNameResolver;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
+import org.hibernate.ogm.util.configurationreader.spi.Instantiator;
+import org.hibernate.ogm.util.configurationreader.spi.ShortNameResolver;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
