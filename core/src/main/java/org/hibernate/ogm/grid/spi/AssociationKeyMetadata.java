@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
-
 /**
  * Stores metadata information common to all keys related
   * to a given association

@@ -11,11 +11,11 @@ import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.grid.impl.RowKeyBuilder;
+import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.RowKey;

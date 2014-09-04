@@ -4,13 +4,11 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.grid.spi;
 
 import java.util.Arrays;
 
-import org.hibernate.ogm.grid.spi.EntityKey;
-import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
-import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**
  * Provides meta-data about a one-to-one/many-to-one association represented by one or more columns contained within a

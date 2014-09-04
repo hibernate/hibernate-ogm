@@ -11,11 +11,11 @@ import java.util.Collections;
 
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.EntityKey;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;

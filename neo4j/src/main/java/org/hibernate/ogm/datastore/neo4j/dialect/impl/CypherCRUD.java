@@ -13,7 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.AssociationKey;
 import org.hibernate.ogm.grid.spi.AssociationKind;
 import org.hibernate.ogm.grid.spi.EntityKey;
