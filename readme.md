@@ -60,10 +60,14 @@ The distribution bundle is built by default as part of the project build. You ca
 Integration tests can be run from the integrationtest module and the default behaviour is to download the WildFly application server,
 unpack the modules in it and run the tests using Arquillian.
 
-There is an additional profile that can be used to run the test on JBoss EAP 6 instead. You need an existing installation
-of EAP to run the tests:
+There are two additional profiles that can be used to run the test on EAP 6.x instead.
+If you have an existing installation you can run the command:
 
    mvn clean install -Deap.home=/home/user/eap_home -s settings-example.xml
+
+alternativly, you can let the build dowload EAP 6.x (instead of WildFly) from the red hat early access repository with:
+
+   mvn clean install -Peap -s settings-example.xml
 
 [WARNING]
 ====
