@@ -207,7 +207,7 @@
 
                 mvn install -Deap.home=/home/user/jbossas/jboss-eap-6.2
             -->
-            <id>eap</id>
+            <id>eap-custom</id>
             <activation>
                 <property>
                     <name>eap.home</name>
@@ -255,6 +255,57 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>eap</id>
+            <properties>
+                    <version.arquillian.jbossas>7.2.0.Final</version.arquillian.jbossas>
+                    <version.jbossas>7.4.0.Final-redhat-4</version.jbossas>
+                    <jboss.home>${project.build.directory}/jboss-eap-6.3</jboss.home>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                    <version>${version.arquillian.jbossas}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>unpack</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>unpack</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.as</groupId>
+                                            <artifactId>jboss-as-dist</artifactId>
+                                            <version>${version.jbossas}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${project.build.directory}</outputDirectory>
+                                        </artifactItem>
+                                        <artifactItem>
+                                            <groupId>org.hibernate.ogm</groupId>
+                                            <artifactId>hibernate-ogm-modules-eap6</artifactId>
+                                            <version>${project.version}</version>
+                                            <type>zip</type>
+                                            <overWrite>false</overWrite>
+                                            <outputDirectory>${jboss.home}/modules</outputDirectory>
+                                        </artifactItem>
+                                    </artifactItems>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
-
 </project>
