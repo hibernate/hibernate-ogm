@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.persister.impl;
 
+import static org.hibernate.ogm.persister.impl.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
@@ -72,8 +73,8 @@ import org.hibernate.tuple.ValueGeneration;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
+import org.hibernate.type.OneToOneType;
 import org.hibernate.type.Type;
-
 /**
  * Basic functionality for persisting an entity using OGM.
  * TODO most of the non persister code SIC comes from {@link org.hibernate.persister.entity.UnionSubclassEntityPersister}
@@ -103,7 +104,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	//service references
 	private final GridDialect gridDialect;
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final Map<String,AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
+	private final Map<String, AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
 
 	private final OptionsService optionsService;
 
@@ -209,7 +210,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 		//load unique key association key metadata
-		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata() );
+		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata( factory ) );
 		initCustomSQLStrings();
 	}
 
@@ -220,28 +221,65 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		customSQLDelete = new String[TABLE_SPAN];
 	}
 
-	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata() {
+	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata(SessionFactoryImplementor factory) {
 		Map<String, AssociationKeyMetadata> associationKeyMetadata = new HashMap<String, AssociationKeyMetadata>();
 
 		for (int index = 0 ; index < getPropertySpan() ; index++) {
 			final Type uniqueKeyType = getPropertyTypes()[index];
 			if ( uniqueKeyType.isEntityType() ) {
-				String[] propertyColumnNames = getPropertyColumnNames( index );
-				String[] rowKeyColumnNames = EntityDehydrator.buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
-				String tableName = getTableName();
-				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-						tableName,
-						propertyColumnNames,
-						rowKeyColumnNames,
-						// Because it is an association to one entity it should not need an index column
-						ArrayHelper.EMPTY_STRING_ARRAY,
-						new AssociatedEntityKeyMetadata(
-							entityKeyMetadata.getColumnNames(),
-							entityKeyMetadata
-						),
-						true
-				);
-				associationKeyMetadata.put( getPropertyNames()[index], metadata );
+				if ( ( (EntityType) uniqueKeyType ).isOneToOne() ) {
+					// If that's a OneToOne check the associated property name and see if it matches where we come from
+					// we need to do that as OneToOne don't define columns
+					OneToOneType oneToOneType = (OneToOneType) uniqueKeyType;
+					String associatedProperty = oneToOneType.getRHSUniqueKeyPropertyName();
+					if ( associatedProperty != null ) {
+						OgmEntityPersister mainSidePersister = (OgmEntityPersister) oneToOneType.getAssociatedJoinable( factory );
+						try {
+							int propertyIndex = mainSidePersister.getPropertyIndex( associatedProperty );
+//							return mainSidePersister.getPropertyTypes()[propertyIndex] == uniqueKeyType;
+
+							String[] propertyColumnNames = mainSidePersister.getPropertyColumnNames( propertyIndex );
+							String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( mainSidePersister, propertyColumnNames );
+							String tableName = mainSidePersister.getTableName();
+							AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+									tableName,
+									propertyColumnNames,
+									rowKeyColumnNames,
+									ArrayHelper.EMPTY_STRING_ARRAY,
+									new AssociatedEntityKeyMetadata(
+											entityKeyMetadata.getColumnNames(),
+											entityKeyMetadata
+									),
+									true,
+									mainSidePersister.getPropertyNames()[index]
+							)
+							;
+							associationKeyMetadata.put( getPropertyNames()[index], metadata );
+						}
+						catch ( HibernateException e ) {
+							//not the right property
+							//probably should not happen
+						}
+					}
+				}
+				else {
+					String[] propertyColumnNames = getPropertyColumnNames( index );
+					String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
+					String tableName = getTableName();
+					AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+							tableName,
+							propertyColumnNames,
+							rowKeyColumnNames,
+							ArrayHelper.EMPTY_STRING_ARRAY,
+							new AssociatedEntityKeyMetadata(
+									entityKeyMetadata.getColumnNames(),
+									entityKeyMetadata
+							),
+							true,
+							getPropertyNames()[index]
+					);
+					associationKeyMetadata.put( getPropertyNames()[index], metadata );
+				}
 			}
 		}
 
@@ -1263,6 +1301,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throw new AssertionFailure("no update-generated properties");
 		}
 		processGeneratedProperties( id, entity, state, session, GenerationTiming.ALWAYS );
+	}
+
+	public AssociationKeyMetadata getAssociationKeyMetadata(String propertyName) {
+		return associationKeyMetadataPerPropertyName.get( propertyName );
 	}
 
 	/**

@@ -73,9 +73,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final AssociationType associationType;
 	private final GridDialect gridDialect;
 	private final AssociationKeyMetadata associationKeyMetadata;
-	private final AssociationKeyMetadata associationKeyMetadataFromElement;
 
 	private final String nodeName;
+
+	/**
+	 * The {@link AssociationKeyMetadata} from the other side of this association in case it represents the main side of
+	 * a bi-directional many-to-many association. Determined lazily, as all the collection persisters need to have been
+	 * set up before.
+	 */
+	private volatile OptionalAssociationKeyMetadata inverseAssociationKeymetadata;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -124,22 +130,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					getElementColumnNames(),
 					targetEntityKeyMetadata( false )
 				),
-				isInverse
-		);
-
-		associationKeyMetadataFromElement = new AssociationKeyMetadata(
-				getTableName(),
-				getElementColumnNames(),
-				rowKeyColumnNames,
-				rowKeyIndexColumnNames,
-				new AssociatedEntityKeyMetadata(
-					getKeyColumnNames(),
-					targetEntityKeyMetadata( true )
-				),
-				!isInverse
+				isInverse,
+				getUnqualifiedRole()
 		);
 
 		nodeName = collection.getNodeName();
+	}
+
+	private String getUnqualifiedRole() {
+		String entity = getOwnerEntityPersister().getEntityName();
+		String role = getRole();
+		return role.substring( entity.length() + 1 );
 	}
 
 	private EntityKeyMetadata targetEntityKeyMetadata( boolean inverse ) {
@@ -166,10 +167,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	public AssociationKeyMetadata getAssociationKeyMetadata() {
 		return associationKeyMetadata;
-	}
-
-	public AssociationKeyMetadata getAssociationKeyMetadataFromElement() {
-		return associationKeyMetadataFromElement;
 	}
 
 	/** represents the type of associations at stake */
@@ -660,6 +657,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
 
+			AssociationKeyMetadata associationKeyMetadataFromElement = getInverseAssociationKeyMetadata( session.getFactory() );
+
+			if ( associationKeyMetadataFromElement == null ) {
+				return;
+			}
+
 			AssociationPersister associationPersister = new AssociationPersister(
 						getElementPersister().getMappedClass()
 					)
@@ -673,7 +676,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
-				RowKey inverseRowKey = updateRowKeyEntityKey( rowKey, associationPersister );
+				RowKey inverseRowKey = getInverseRowKey( associationKeyMetadataFromElement, tuple );
 				Tuple assocTuple = associationPersister.createAndPutAssociationTuple( inverseRowKey );
 				for ( String columnName : tuple.getColumnNames() ) {
 					assocTuple.put( columnName, tuple.get( columnName ) );
@@ -687,7 +690,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 							+ getTableName() + "} key column names {" + Arrays.toString( elementColumnNames )
 							+ "} key column values {" + Arrays.toString( elementColumnValues ) + "}" );
 				}
-				RowKey inverseRowKey = updateRowKeyEntityKey( rowKey, associationPersister );
+				RowKey inverseRowKey = getInverseRowKey( associationKeyMetadataFromElement, tuple );
 				associationPersister.getAssociation().remove( inverseRowKey );
 			}
 			else {
@@ -704,8 +707,13 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private RowKey updateRowKeyEntityKey(RowKey rowKey, AssociationPersister associationPersister) {
-		return new RowKey( rowKey.getColumnNames(), rowKey.getColumnValues() );
+	private RowKey getInverseRowKey(AssociationKeyMetadata associationKeyMetadata, Tuple associationRow) {
+		Object[] columnValues = new Object[associationKeyMetadata.getRowKeyColumnNames().length];
+
+		for ( int i = 0; i < associationKeyMetadata.getRowKeyColumnNames().length; i++ ) {
+			columnValues[i] = associationRow.get( associationKeyMetadata.getRowKeyColumnNames()[i] );
+		}
+		return new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
 	}
 
 	private static enum Action {
@@ -830,5 +838,30 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	@Override
 	public String fromJoinFragment(String alias, boolean innerJoin, boolean includeSubclasses, Set<String> treatAsDeclarations) {
 		return null;
+	}
+
+
+	private AssociationKeyMetadata getInverseAssociationKeyMetadata(SessionFactoryImplementor factory) {
+		if ( inverseAssociationKeymetadata == null ) {
+			inverseAssociationKeymetadata = new OptionalAssociationKeyMetadata(
+					new BiDirectionalAssociationHelper( factory )
+						.getInverseAssociationKeyMetadata( this )
+			);
+		}
+
+		return inverseAssociationKeymetadata.get();
+	}
+
+	private static class OptionalAssociationKeyMetadata {
+
+		private final AssociationKeyMetadata metadata;
+
+		public OptionalAssociationKeyMetadata(AssociationKeyMetadata metadata) {
+			this.metadata = metadata;
+		}
+
+		public AssociationKeyMetadata get() {
+			return metadata;
+		}
 	}
 }

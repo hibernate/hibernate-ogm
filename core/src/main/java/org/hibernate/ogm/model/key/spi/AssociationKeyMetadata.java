@@ -27,14 +27,16 @@ public class AssociationKeyMetadata {
 	private final String[] rowKeyIndexColumnNames;
 	private final boolean isInverse;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
+	private final String collectionRole;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String collectionRole) {
 		this.table = table;
 		this.columnNames = columnNames;
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 		this.isInverse = isInverse;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
+		this.collectionRole = collectionRole;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -146,6 +148,13 @@ public class AssociationKeyMetadata {
 	 */
 	public boolean isInverse() {
 		return isInverse;
+	}
+
+	/**
+	 * Returns the association role.
+	 */
+	public String getCollectionRole() {
+		return collectionRole;
 	}
 
 	@Override

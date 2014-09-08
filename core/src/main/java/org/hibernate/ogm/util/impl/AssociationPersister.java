@@ -204,7 +204,7 @@ public class AssociationPersister {
 				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
 
-			associationKey = new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, associationKind );
+			associationKey = new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey, associationKind );
 		}
 
 		return associationKey;
@@ -450,7 +450,7 @@ public class AssociationPersister {
 			}
 
 			associationContext = new AssociationContext(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getCollectionRole() ),
+					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getMetadata().getCollectionRole() ),
 					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 					roleOnMainSide
 			);

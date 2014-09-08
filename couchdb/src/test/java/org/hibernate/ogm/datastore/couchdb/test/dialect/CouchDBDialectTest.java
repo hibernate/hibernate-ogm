@@ -160,10 +160,10 @@ public class CouchDBDialectTest {
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
 		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ), false
+				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ), false, collectionRole
 		);
 
-		return new AssociationKey( associationKeyMetadata, columnValues, collectionRole, ownerEntityKey, AssociationKind.ASSOCIATION );
+		return new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey, AssociationKind.ASSOCIATION );
 	}
 
 	private void createDataStoreProvider() throws Exception {

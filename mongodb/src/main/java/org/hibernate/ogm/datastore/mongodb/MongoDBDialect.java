@@ -361,7 +361,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private DBObject getProjection(AssociationKey key, boolean embedded) {
 		if ( embedded ) {
-			return getProjection( Collections.singletonList( key.getCollectionRole() ) );
+			return getProjection( Collections.singletonList( key.getMetadata().getCollectionRole() ) );
 		}
 		else {
 			return getProjection( ROWS_FIELDNAME_LIST );
@@ -394,7 +394,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private DBObject getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = DOT_SEPARATOR_PATTERN.split( key.getCollectionRole() );
+		String[] path = DOT_SEPARATOR_PATTERN.split( key.getMetadata().getCollectionRole() );
 		DBObject field = entity;
 		for ( String node : path ) {
 			field = field != null ? (DBObject) field.get( node ) : null;
@@ -424,7 +424,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else {
 					BasicDBObject updater = new BasicDBObject();
-					this.addSubQuery( "$set", updater, key.getCollectionRole(),  Collections.EMPTY_LIST );
+					this.addSubQuery( "$set", updater, key.getMetadata().getCollectionRole(),  Collections.EMPTY_LIST );
 					//TODO use entity filter with only the ids
 					this.getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 					//adding assoc after update because the query takes the whole object today
@@ -497,7 +497,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
-			associationField = key.getCollectionRole();
+			associationField = key.getMetadata().getCollectionRole();
 		}
 		else {
 			collection = getAssociationCollection( key, storageStrategy );
@@ -521,7 +521,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			DBObject entity = this.prepareIdObject( key.getEntityKey() );
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
-				addSubQuery( "$unset", updater, key.getCollectionRole(), Integer.valueOf( 1 ) );
+				addSubQuery( "$unset", updater, key.getMetadata().getCollectionRole(), Integer.valueOf( 1 ) );
 				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
 		}

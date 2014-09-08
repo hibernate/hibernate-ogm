@@ -22,7 +22,7 @@ public class MongoHelpers {
 
 	//only for embedded
 	public static Collection<DBObject> getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = key.getCollectionRole().split( "\\." );
+		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
 		Object field = entity;
 		for (String node : path) {
 			field = field != null ? ( (DBObject) field).get( node ) : null;
@@ -31,7 +31,7 @@ public class MongoHelpers {
 	}
 
 	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
-		String[] path = key.getCollectionRole().split( "\\." );
+		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
 		Object field = entity;
 		int size = path.length;
 		for (int index = 0 ; index < size ; index++) {

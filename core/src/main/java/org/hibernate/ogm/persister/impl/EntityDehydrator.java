@@ -6,19 +6,16 @@
  */
 package org.hibernate.ogm.persister.impl;
 
-import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
-
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.RowKeyBuilder;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.persister.BiDirectionalAssociationHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
@@ -172,24 +169,13 @@ class EntityDehydrator {
 	}
 
 	private void addNavigationalInformationForReverseSide(int tableIndex, int propertyIndex, Object[] newColumnValue) {
+		AssociationKeyMetadata associationKeyMetadata = new BiDirectionalAssociationHelper( session.getFactory() )
+			.getInverseAssociationKeyMetadata( persister, propertyIndex );
 
-		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
-		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		String tableName = persister.getTableName( tableIndex );
-		EntityKeyMetadata targetEntityKeyMetadata = persister.getEntityKeyMetadata();
-
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName,
-				propertyColumnNames,
-				rowKeyColumnNames,
-				// Because it is an association to one entity it should not need an index column
-				EMPTY_STRING_ARRAY,
-				new AssociatedEntityKeyMetadata(
-					targetEntityKeyMetadata.getColumnNames(),
-					targetEntityKeyMetadata
-				),
-				true
-		);
+		// there is no inverse association for the given property
+		if ( associationKeyMetadata == null ) {
+			return;
+		}
 
 		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
@@ -212,13 +198,13 @@ class EntityDehydrator {
 		gridPropertyTypes[propertyIndex].nullSafeSet(
 							tuple,
 							fields[propertyIndex],
-							propertyColumnNames,
+							associationKeyMetadata.getColumnNames(),
 							includeColumns[propertyIndex],
 							session
 					);
 
-		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, rowKeyColumnNames );
-		final RowKey rowKey = new RowKey( rowKeyColumnNames, columnValues );
+		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, associationKeyMetadata.getRowKeyColumnNames() );
+		final RowKey rowKey = new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
 
 		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
 		for ( String column : tuple.getColumnNames() ) {
@@ -243,23 +229,14 @@ class EntityDehydrator {
 	private void removeNavigationalInformationFromReverseSide(int tableIndex,
 										int propertyIndex,
 										Object[] oldColumnValue) {
-		String[] propertyColumnNames = persister.getPropertyColumnNames( propertyIndex );
-		String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames );
-		String tableName = persister.getTableName( tableIndex );
-		EntityKeyMetadata targetEntityKeyMetadata = persister.getEntityKeyMetadata();
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName,
-				propertyColumnNames,
-				rowKeyColumnNames,
-				// Because it is an association to one entity it should not need an index column
-				EMPTY_STRING_ARRAY,
-				new AssociatedEntityKeyMetadata(
-					targetEntityKeyMetadata.getColumnNames(),
-					targetEntityKeyMetadata
-				),
-				true
-		);
+		AssociationKeyMetadata associationKeyMetadata = new BiDirectionalAssociationHelper( session.getFactory() )
+			.getInverseAssociationKeyMetadata( persister, propertyIndex );
+
+		// there is no inverse association for the given property
+		if ( associationKeyMetadata == null ) {
+			return;
+		}
 
 		AssociationPersister associationPersister = new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
@@ -275,8 +252,8 @@ class EntityDehydrator {
 				.inverse();
 		//add fk column value in TupleKey
 		Tuple tupleKey = new Tuple();
-		for (int index = 0 ; index < propertyColumnNames.length ; index++) {
-			tupleKey.put( propertyColumnNames[index], oldColumnValue[index] );
+		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {
+			tupleKey.put( associationKeyMetadata.getColumnNames()[index], oldColumnValue[index] );
 		}
 		//add id value in TupleKey
 		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
@@ -286,7 +263,7 @@ class EntityDehydrator {
 			//Map's equals operation delegates to all it's key and value, should be fine for now
 			//this is a StarToOne case ie the FK is on the owning entity
 			final RowKey matchingTuple = new RowKeyBuilder()
-					.addColumns( buildRowKeyColumnNamesForStarToOne( persister, propertyColumnNames ) )
+					.addColumns( associationKeyMetadata.getRowKeyColumnNames() )
 					.values( tupleKey )
 					.build();
 			//TODO what should we do if that's null?

@@ -110,8 +110,8 @@ public class CouchDBDialect extends BaseGridDialect {
 
 		if ( isStoredInEntityStructure( key, associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
-			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getCollectionRole() ) ) {
-				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getMetadata().getCollectionRole() ) ) {
+				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata().getCollectionRole() );
 			}
 		}
 		else {
@@ -134,7 +134,7 @@ public class CouchDBDialect extends BaseGridDialect {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
 			}
 
-			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getCollectionRole() );
+			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata().getCollectionRole() );
 		}
 		else {
 			AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
@@ -185,7 +185,7 @@ public class CouchDBDialect extends BaseGridDialect {
 		if ( isStoredInEntityStructure( key, associationContext ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {
-				owningEntity.removeAssociation( key.getCollectionRole() );
+				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
 				getDataStore().saveDocument( owningEntity );
 			}
 		}

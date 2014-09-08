@@ -32,11 +32,11 @@ public class AssociationKeyExternalizerTest {
 	@Test
 	public void shouldSerializeAndDeserializeAssociationKey() throws Exception {
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, null, false );
+		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, null, false, null );
 		Object[] values = { 123, "Hello", 456L };
 
 		// given
-		AssociationKey key = new AssociationKey( keyMetadata, values, null, null, null );
+		AssociationKey key = new AssociationKey( keyMetadata, values, null, null );
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( key );

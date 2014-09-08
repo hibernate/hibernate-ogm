@@ -270,7 +270,7 @@ public class CypherCRUD {
 		StringBuilder relationshipBuilder = new StringBuilder("[r");
 		if (associationKey != null) {
 			relationshipBuilder.append( ":" );
-			identifier( relationshipBuilder, relationshipType( associationKey.getCollectionRole() ).name() );
+			identifier( relationshipBuilder, relationshipType( associationKey.getMetadata().getCollectionRole() ).name() );
 		}
 		appendRelationshipProperties( parameters, indexColumnNames, indexColumnValues, table, relationshipBuilder );
 		relationshipBuilder.append( "]" );
@@ -323,7 +323,7 @@ public class CypherCRUD {
 		query.append( ") - " );
 		query.append( "[r" );
 		query.append( ":" );
-		query.append( relationshipType( associationKey.getCollectionRole() ).name() );
+		query.append( relationshipType( associationKey.getMetadata().getCollectionRole() ).name() );
 		query.append( "]" );
 		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			query.append( " - (x:" );
