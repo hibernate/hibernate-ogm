@@ -8,6 +8,7 @@ package org.hibernate.ogm.util.impl;
 
 import java.io.Serializable;
 
+import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -26,11 +27,10 @@ import org.hibernate.persister.entity.EntityPersister;
 
 /**
  * Implements the logic for updating associations. Configured in a fluent manner, followed by a call to
- * {@link #flushToCache()} which invokes the given {@link GridDialect} to apply the changes to the datastore.
- *
- * Unlike ORM style persisters, this class is tied to a specific association instance with specific ids.
- * In other words, instances cannot be shared by {@link org.hibernate.SessionFactory} level objects
- * like {@link org.hibernate.persister.entity.EntityPersister}.
+ * {@link #flushToDatastore()} which invokes the given {@link GridDialect} to apply the changes to the datastore.
+ * <p>
+ * Unlike ORM style persisters, this class is tied to a specific association instance with specific ids. In other words,
+ * instances cannot be shared by {@link SessionFactory} level objects like {@link EntityPersister}.
  *
  * @author Emmanuel Bernard
  * @author Gunnar Morling
@@ -168,7 +168,10 @@ public class AssociationPersister {
 		return association;
 	}
 
-	public void flushToCache() {
+	/**
+	 * Writes out the changes gathered in the {@link Association} managed by this persister to the datastore.
+	 */
+	public void flushToDatastore() {
 		if ( getAssociation().isEmpty() ) {
 			gridDialect.removeAssociation( getAssociationKey(), getAssociationContext() );
 			association = null;
@@ -223,7 +226,11 @@ public class AssociationPersister {
 		return hostingEntityPersister;
 	}
 
-	public AssociationContext getAssociationContext() {
+	/**
+	 * Returns an {@link AssociationContext} to be passed to {@link GridDialect} operations targeting the association
+	 * managed by this persister.
+	 */
+	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
 			OptionsServiceContext serviceContext = session.getFactory()
 					.getServiceRegistry()

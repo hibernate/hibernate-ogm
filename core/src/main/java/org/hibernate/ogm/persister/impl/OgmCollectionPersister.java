@@ -327,7 +327,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 
 		// need to put the data back in the cache
-		associationPersister.flushToCache();
+		associationPersister.flushToDatastore();
 
 		return count;
 	}
@@ -511,7 +511,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					count++;
 				}
 
-				associationPersister.flushToCache();
+				associationPersister.flushToDatastore();
 
 				if ( log.isDebugEnabled() ) {
 					log.debug( "done deleting collection rows: " + count + " deleted" );
@@ -562,7 +562,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				i++;
 			}
 
-			associationPersister.flushToCache();
+			associationPersister.flushToDatastore();
 
 			if ( log.isDebugEnabled() ) {
 				log.debug( "done inserting rows: " + count + " inserted" );
@@ -610,7 +610,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					i++;
 				}
 
-				associationPersister.flushToCache();
+				associationPersister.flushToDatastore();
 
 				if ( log.isDebugEnabled() ) {
 					log.debug( "done inserting collection: " + count + " rows inserted" );
@@ -708,7 +708,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			associationPersister.hostingEntity( entity );
 
-			associationPersister.flushToCache();
+			associationPersister.flushToDatastore();
 		}
 	}
 
@@ -770,7 +770,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					associationPersister.hostingEntity( owner );
 				}
 
-				associationPersister.flushToCache();
+				associationPersister.flushToDatastore();
 			}
 
 			if ( log.isDebugEnabled() ) {

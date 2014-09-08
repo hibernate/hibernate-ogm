@@ -199,11 +199,9 @@ public class AssociationKeyMetadata {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append( "AssociationKeyMetadata" );
-		sb.append( "{table='" ).append( table ).append( '\'' );
-		sb.append( ", columnNames=" ).append( columnNames == null ? "null" : Arrays.asList( columnNames ).toString() );
-		sb.append( '}' );
-		return sb.toString();
+		return "AssociationKeyMetadata [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", isInverse=" + isInverse + ", collectionRole="
+				+ collectionRole + ", associationKind=" + associationKind + ", rowKeyColumnNames=" + Arrays.toString( rowKeyColumnNames )
+				+ ", rowKeyIndexColumnNames=" + Arrays.toString( rowKeyIndexColumnNames ) + ", associatedEntityKeyMetadata=" + associatedEntityKeyMetadata
+				+ "]";
 	}
 }

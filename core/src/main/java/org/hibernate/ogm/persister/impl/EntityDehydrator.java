@@ -206,7 +206,7 @@ class EntityDehydrator {
 			assocEntryTuple.put( column, tuple.get( column ) );
 		}
 
-		associationPersister.flushToCache();
+		associationPersister.flushToDatastore();
 	}
 
 	// Here the RowKey is made of the foreign key columns pointing to the associated entity
@@ -261,7 +261,7 @@ class EntityDehydrator {
 			//TODO what should we do if that's null?
 			associationPersister.getAssociation().remove( matchingTuple );
 
-			associationPersister.flushToCache();
+			associationPersister.flushToDatastore();
 		}
 	}
 
