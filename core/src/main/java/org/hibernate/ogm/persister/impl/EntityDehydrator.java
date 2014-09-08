@@ -15,7 +15,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.persister.BiDirectionalAssociationHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
@@ -169,8 +168,7 @@ class EntityDehydrator {
 	}
 
 	private void addNavigationalInformationForReverseSide(int tableIndex, int propertyIndex, Object[] newColumnValue) {
-		AssociationKeyMetadata associationKeyMetadata = new BiDirectionalAssociationHelper( session.getFactory() )
-			.getInverseAssociationKeyMetadata( persister, propertyIndex );
+		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
 
 		// there is no inverse association for the given property
 		if ( associationKeyMetadata == null ) {
@@ -227,8 +225,7 @@ class EntityDehydrator {
 										int propertyIndex,
 										Object[] oldColumnValue) {
 
-		AssociationKeyMetadata associationKeyMetadata = new BiDirectionalAssociationHelper( session.getFactory() )
-			.getInverseAssociationKeyMetadata( persister, propertyIndex );
+		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
 
 		// there is no inverse association for the given property
 		if ( associationKeyMetadata == null ) {

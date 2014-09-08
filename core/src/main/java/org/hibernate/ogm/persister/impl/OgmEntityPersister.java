@@ -105,7 +105,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	//service references
 	private final GridDialect gridDialect;
 	private final EntityKeyMetadata entityKeyMetadata;
-	private final Map<String, AssociationKeyMetadata> associationKeyMetadataPerPropertyName;
+
+	/**
+	 * One-to-one associations are represented by a collection on the inverse side. This is the meta-data for these
+	 * virtual collections, keyed by property name from the <b>main side</b>.
+	 */
+	private Map<String, AssociationKeyMetadata> inverseOneToOneAssociationKeyMetadata;
 
 	private final OptionsService optionsService;
 
@@ -210,8 +215,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
-		//load unique key association key metadata
-		associationKeyMetadataPerPropertyName = Collections.unmodifiableMap( initAssociationKeyMetadata( factory ) );
+
 		initCustomSQLStrings();
 	}
 
@@ -222,71 +226,65 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		customSQLDelete = new String[TABLE_SPAN];
 	}
 
-	private Map<String,AssociationKeyMetadata> initAssociationKeyMetadata(SessionFactoryImplementor factory) {
+	private Map<String, AssociationKeyMetadata> initInverseOneToOneAssociationKeyMetadata() {
 		Map<String, AssociationKeyMetadata> associationKeyMetadata = new HashMap<String, AssociationKeyMetadata>();
+		for ( String property : getPropertyNames() ) {
+			Type propertyType = getPropertyType( property );
+			if ( !propertyType.isEntityType() ) {
+				continue;
+			}
 
-		for (int index = 0 ; index < getPropertySpan() ; index++) {
-			final Type uniqueKeyType = getPropertyTypes()[index];
-			if ( uniqueKeyType.isEntityType() ) {
-				if ( ( (EntityType) uniqueKeyType ).isOneToOne() ) {
-					// If that's a OneToOne check the associated property name and see if it matches where we come from
-					// we need to do that as OneToOne don't define columns
-					OneToOneType oneToOneType = (OneToOneType) uniqueKeyType;
-					String associatedProperty = oneToOneType.getRHSUniqueKeyPropertyName();
-					if ( associatedProperty != null ) {
-						OgmEntityPersister mainSidePersister = (OgmEntityPersister) oneToOneType.getAssociatedJoinable( factory );
-						try {
-							int propertyIndex = mainSidePersister.getPropertyIndex( associatedProperty );
-//							return mainSidePersister.getPropertyTypes()[propertyIndex] == uniqueKeyType;
+			String[] propertyColumnNames = getPropertyColumnNames( getPropertyIndex( property ) );
+			String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
 
-							String[] propertyColumnNames = mainSidePersister.getPropertyColumnNames( propertyIndex );
-							String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( mainSidePersister, propertyColumnNames );
-							String tableName = mainSidePersister.getTableName();
-							AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-									tableName,
-									propertyColumnNames,
-									rowKeyColumnNames,
-									ArrayHelper.EMPTY_STRING_ARRAY,
-									new AssociatedEntityKeyMetadata(
-											entityKeyMetadata.getColumnNames(),
-											entityKeyMetadata
-									),
-									true,
-									mainSidePersister.getPropertyNames()[index],
-									uniqueKeyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
-							)
-							;
-							associationKeyMetadata.put( getPropertyNames()[index], metadata );
-						}
-						catch ( HibernateException e ) {
-							//not the right property
-							//probably should not happen
-						}
-					}
-				}
-				else {
-					String[] propertyColumnNames = getPropertyColumnNames( index );
-					String[] rowKeyColumnNames = buildRowKeyColumnNamesForStarToOne( this, propertyColumnNames );
-					String tableName = getTableName();
-					AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-							tableName,
-							propertyColumnNames,
-							rowKeyColumnNames,
-							ArrayHelper.EMPTY_STRING_ARRAY,
-							new AssociatedEntityKeyMetadata(
-									entityKeyMetadata.getColumnNames(),
-									entityKeyMetadata
-							),
-							true,
-							getPropertyNames()[index],
-							uniqueKeyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
-					);
-					associationKeyMetadata.put( getPropertyNames()[index], metadata );
-				}
+			OgmEntityPersister otherSidePersister = (OgmEntityPersister) ( (EntityType) propertyType).getAssociatedJoinable( getFactory() );
+			String inverseOneToOneProperty = getInverseOneToOneProperty( property, otherSidePersister );
+
+			if ( inverseOneToOneProperty != null ) {
+				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
+						getTableName(),
+						propertyColumnNames,
+						rowKeyColumnNames,
+						// Because it is an association to one entity it should not need an index column
+						ArrayHelper.EMPTY_STRING_ARRAY,
+						new AssociatedEntityKeyMetadata(
+								entityKeyMetadata.getColumnNames(),
+								entityKeyMetadata
+						),
+						true,
+						inverseOneToOneProperty,
+						AssociationKind.ASSOCIATION
+				);
+
+				associationKeyMetadata.put( property, metadata );
 			}
 		}
 
 		return associationKeyMetadata;
+	}
+
+	/**
+	 * Returns the name from the inverse side if the given property de-notes a one-to-one association.
+	 */
+	private String getInverseOneToOneProperty(String property, OgmEntityPersister otherSidePersister) {
+		for ( String candidate : otherSidePersister.getPropertyNames() ) {
+			Type candidateType = otherSidePersister.getPropertyType( candidate );
+			if ( candidateType.isEntityType()
+					&& ( ( (EntityType) candidateType ).isOneToOne()
+					&& isOneToOneMatching( this, property, (OneToOneType) candidateType ) ) ) {
+				return candidate;
+			}
+		}
+
+		return null;
+	}
+
+	private static boolean isOneToOneMatching(OgmEntityPersister mainSidePersister, String mainSideProperty, OneToOneType inversePropertyType) {
+		SessionFactoryImplementor factory = mainSidePersister.getFactory();
+		String associatedProperty = inversePropertyType.getRHSUniqueKeyPropertyName();
+
+		// If that's a OneToOne check the associated property name and see if it matches where we come from
+		return mainSidePersister == inversePropertyType.getAssociatedJoinable( factory ) && mainSideProperty.equals( associatedProperty );
 	}
 
 	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
@@ -311,6 +309,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	@Override
 	protected void doPostInstantiate() {
 		this.tupleContext = createTupleContext();
+		inverseOneToOneAssociationKeyMetadata = Collections.unmodifiableMap( initInverseOneToOneAssociationKeyMetadata() );
 	}
 
 	private TupleContext createTupleContext() {
@@ -514,7 +513,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		final GridType gridUniqueKeyType = getUniqueKeyTypeFromAssociatedEntity( propertyIndex, propertyName );
 		//get the associated property index (to get its column names)
 		//find the ids per unique property name
-		AssociationKeyMetadata associationKeyMetadata = associationKeyMetadataPerPropertyName.get( propertyName );
+		AssociationKeyMetadata associationKeyMetadata = inverseOneToOneAssociationKeyMetadata.get( propertyName );
 		if ( associationKeyMetadata == null ) {
 			throw new AssertionFailure( "loadByUniqueKey on a non EntityType:" + propertyName );
 		}
@@ -1307,8 +1306,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		processGeneratedProperties( id, entity, state, session, GenerationTiming.ALWAYS );
 	}
 
-	public AssociationKeyMetadata getAssociationKeyMetadata(String propertyName) {
-		return associationKeyMetadataPerPropertyName.get( propertyName );
+	public AssociationKeyMetadata getInverseOneToOneAssociationKeyMetadata(String propertyName) {
+		return inverseOneToOneAssociationKeyMetadata.get( propertyName );
 	}
 
 	/**

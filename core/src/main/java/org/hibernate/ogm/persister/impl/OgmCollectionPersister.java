@@ -42,7 +42,6 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.persister.BiDirectionalAssociationHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;
@@ -51,10 +50,8 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Joinable;
-import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.service.ServiceRegistry;
-import org.hibernate.type.CollectionType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.Type;
 
@@ -82,16 +79,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	/**
 	 * The {@link AssociationKeyMetadata} from the other side of this association in case it represents the main side of
-	 * a bi-directional many-to-many association. Determined lazily, as all the collection persisters need to have been
-	 * set up before.
+	 * a bi-directional many-to-many association, {@code null} otherwise.
 	 */
-	private volatile Optional<AssociationKeyMetadata> inverseAssociationKeymetadata;
+	private volatile AssociationKeyMetadata inverseAssociationKeymetadata;
 
 	/**
 	 * The name of the main side property in case this is the inverse side of a one-to-many or many-to-many association.
-	 * Determined lazily, as all the collection persisters need to have been set up before.
 	 */
-	private volatile Optional<String> mainSidePropertyName;
+	private volatile String mainSidePropertyName;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -148,7 +143,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		nodeName = collection.getNodeName();
 	}
 
-	private String getUnqualifiedRole() {
+	public String getUnqualifiedRole() {
 		String entity = getOwnerEntityPersister().getEntityName();
 		String role = getRole();
 		return role.substring( entity.length() + 1 );
@@ -463,7 +458,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				.gridDialect( gridDialect )
 				.keyGridType( getKeyGridType() )
 				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( getMainSidePropertyName() );
+				.roleOnMainSide( mainSidePropertyName );
 
 		final Association collectionMetadata = associationPersister.getAssociationOrNull();
 		return collectionMetadata == null ? 0 : collectionMetadata.size();
@@ -668,9 +663,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
 
-			AssociationKeyMetadata associationKeyMetadataFromElement = getInverseAssociationKeyMetadata( session.getFactory() );
-
-			if ( associationKeyMetadataFromElement == null ) {
+			if ( inverseAssociationKeymetadata == null ) {
 				return;
 			}
 
@@ -680,13 +673,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.gridDialect( gridDialect )
 					.keyColumnValues( elementColumnValues )
 					.session( session )
-					.associationKeyMetadata( associationKeyMetadataFromElement )
+					.associationKeyMetadata( inverseAssociationKeymetadata )
 					.roleOnMainSide( getUnqualifiedRole() )
 					.key( entityId );
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
-				RowKey inverseRowKey = getInverseRowKey( associationKeyMetadataFromElement, tuple );
+				RowKey inverseRowKey = getInverseRowKey( tuple );
+
 				Tuple assocTuple = associationPersister.createAndPutAssociationTuple( inverseRowKey );
 				for ( String columnName : tuple.getColumnNames() ) {
 					assocTuple.put( columnName, tuple.get( columnName ) );
@@ -700,7 +694,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 							+ getTableName() + "} key column names {" + Arrays.toString( elementColumnNames )
 							+ "} key column values {" + Arrays.toString( elementColumnValues ) + "}" );
 				}
-				RowKey inverseRowKey = getInverseRowKey( associationKeyMetadataFromElement, tuple );
+
+				RowKey inverseRowKey = getInverseRowKey( tuple );
 				associationPersister.getAssociation().remove( inverseRowKey );
 			}
 			else {
@@ -717,13 +712,15 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private RowKey getInverseRowKey(AssociationKeyMetadata associationKeyMetadata, Tuple associationRow) {
-		Object[] columnValues = new Object[associationKeyMetadata.getRowKeyColumnNames().length];
+	private RowKey getInverseRowKey(Tuple associationRow) {
+		String[] inverseRowKeyColumnNames = inverseAssociationKeymetadata.getRowKeyColumnNames();
+		Object[] columnValues = new Object[inverseRowKeyColumnNames.length];
 
-		for ( int i = 0; i < associationKeyMetadata.getRowKeyColumnNames().length; i++ ) {
-			columnValues[i] = associationRow.get( associationKeyMetadata.getRowKeyColumnNames()[i] );
+		for ( int i = 0; i < inverseRowKeyColumnNames.length; i++ ) {
+			columnValues[i] = associationRow.get( inverseRowKeyColumnNames[i] );
 		}
-		return new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
+
+		return new RowKey( inverseRowKeyColumnNames, columnValues );
 	}
 
 	private static enum Action {
@@ -816,7 +813,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public void postInstantiate() throws MappingException {
-		// we don't have custom query loader, nothing to do
+		if ( isInverse ) {
+			mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( this );
+			inverseAssociationKeymetadata = null;
+		}
+		else {
+			mainSidePropertyName = getUnqualifiedRole();
+			inverseAssociationKeymetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( this );
+		}
 	}
 
 	@Override
@@ -855,76 +859,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 * bi-directional association, this association's own property name otherwise.
 	 */
 	public String getMainSidePropertyName() {
-		if ( !isInverse ) {
-			return getUnqualifiedRole();
-		}
-		else if ( mainSidePropertyName == null ) {
-			Loadable elementPersister = (Loadable) getElementPersister();
-			Type[] propertyTypes = elementPersister.getPropertyTypes();
-
-			for ( int index = 0 ; index <  propertyTypes.length ; index++ ) {
-				Type type = propertyTypes[index];
-
-				// we try and restrict type search as much as possible
-				if ( type.isAssociationType() ) {
-					boolean matching = false;
-
-					// the main side is a many-to-one
-					if ( type.isEntityType() ) {
-						matching = isToOneMatching( elementPersister, index );
-					}
-					// the main side is a many-to-many
-					else if ( type.isCollectionType() ) {
-						String roleOnMainSide = ( (CollectionType) type ).getRole();
-						CollectionPhysicalModel mainSidePersister = (CollectionPhysicalModel) getFactory().getCollectionPersister( roleOnMainSide );
-						matching = isCollectionMatching( mainSidePersister );
-					}
-					// Should never happen
-					else {
-						throw new HibernateException( "Unexpected type:" + type );
-					}
-
-					if ( matching ) {
-						mainSidePropertyName = new Optional<String>( elementPersister.getPropertyNames()[index] );
-						break;
-					}
-				}
-			}
-		}
-
-		return mainSidePropertyName.get();
-	}
-
-	private boolean isToOneMatching(Loadable elementPersister, int index) {
-		return Arrays.equals( getKeyColumnNames(), elementPersister.getPropertyColumnNames( index ) );
-	}
-
-	private boolean isCollectionMatching(CollectionPhysicalModel mainSidePersister) {
-		boolean isSameTable = getTableName().equals( mainSidePersister.getTableName() );
-		return isSameTable && Arrays.equals( getElementColumnNames(), mainSidePersister.getKeyColumnNames() );
-	}
-
-	private AssociationKeyMetadata getInverseAssociationKeyMetadata(SessionFactoryImplementor factory) {
-		if ( inverseAssociationKeymetadata == null ) {
-			inverseAssociationKeymetadata = new Optional<AssociationKeyMetadata>(
-					new BiDirectionalAssociationHelper( factory )
-						.getInverseAssociationKeyMetadata( this )
-			);
-		}
-
-		return inverseAssociationKeymetadata.get();
-	}
-
-	private static class Optional<T> {
-
-		private final T value;
-
-		public Optional(T value) {
-			this.value = value;
-		}
-
-		public T get() {
-			return value;
-		}
+		return mainSidePropertyName;
 	}
 }
