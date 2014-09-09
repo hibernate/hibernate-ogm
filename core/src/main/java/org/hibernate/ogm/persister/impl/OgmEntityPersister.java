@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.persister.spi;
+package org.hibernate.ogm.persister.impl;
 
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
@@ -53,8 +53,6 @@ import org.hibernate.ogm.grid.spi.EntityKey;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.persister.impl.EntityDehydrator;
-import org.hibernate.ogm.persister.impl.EntityKeyBuilder;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;

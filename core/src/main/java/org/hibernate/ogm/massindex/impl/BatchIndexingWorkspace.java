@@ -12,7 +12,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.search.backend.impl.batch.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.engine.spi.SearchFactoryImplementor;

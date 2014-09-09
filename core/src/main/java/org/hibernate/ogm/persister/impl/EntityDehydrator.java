@@ -19,7 +19,6 @@ import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.RowKey;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;

@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Subclass;
-import org.hibernate.ogm.persister.spi.EntityDiscriminator;
 import org.hibernate.type.Type;
 
 /**

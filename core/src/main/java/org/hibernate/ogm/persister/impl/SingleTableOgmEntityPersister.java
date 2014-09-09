@@ -17,8 +17,6 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Selectable;
 import org.hibernate.mapping.Value;
-import org.hibernate.ogm.persister.spi.EntityDiscriminator;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 
 /**
  * Use single table strategy.

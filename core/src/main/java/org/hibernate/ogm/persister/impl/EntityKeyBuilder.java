@@ -11,7 +11,6 @@ import java.io.Serializable;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.grid.spi.EntityKey;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 

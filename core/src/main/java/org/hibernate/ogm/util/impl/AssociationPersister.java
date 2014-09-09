@@ -26,7 +26,7 @@ import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.impl.CollectionPhysicalModel;
 import org.hibernate.ogm.persister.impl.EntityKeyBuilder;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;

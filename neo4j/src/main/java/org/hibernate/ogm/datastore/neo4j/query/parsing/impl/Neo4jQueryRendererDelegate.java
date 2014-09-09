@@ -22,7 +22,7 @@ import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 
 /**
  * Parser delegate which creates Neo4j queries in form of {@link StringBuilder}s.

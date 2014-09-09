@@ -12,7 +12,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.PropertyHelper;
 import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.type.AbstractStandardBasicType;

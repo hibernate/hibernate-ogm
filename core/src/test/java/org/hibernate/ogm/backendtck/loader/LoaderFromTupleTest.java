@@ -24,7 +24,7 @@ import org.hibernate.ogm.grid.spi.EntityKey;
 import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.persister.entity.EntityPersister;
 import org.junit.Test;

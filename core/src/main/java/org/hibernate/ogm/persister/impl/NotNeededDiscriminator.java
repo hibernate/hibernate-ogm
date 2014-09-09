@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.persister.impl;
 
-import org.hibernate.ogm.persister.spi.EntityDiscriminator;
 import org.hibernate.type.Type;
 
 /**

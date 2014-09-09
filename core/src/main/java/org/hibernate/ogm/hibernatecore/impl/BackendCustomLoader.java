@@ -29,7 +29,7 @@ import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;

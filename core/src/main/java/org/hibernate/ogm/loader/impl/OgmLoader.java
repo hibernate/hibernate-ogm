@@ -38,7 +38,7 @@ import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.persister.impl.EntityKeyBuilder;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;

@@ -40,7 +40,6 @@ import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
 import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;

@@ -14,7 +14,6 @@ import org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy;
 import org.hibernate.engine.spi.Mapping;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.PersistentClass;
-import org.hibernate.ogm.persister.spi.OgmEntityPersister;
 
 /**
  * Use table per class strategy.
