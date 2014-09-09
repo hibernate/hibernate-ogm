@@ -205,7 +205,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 						entityNode,
 						associationKey,
 						associationContext.getAssociatedEntityKeyMetadata(),
-						associationKey.getMetadata().isInverse() ? associationContext.getRoleOnMainSide() : associationKey.getMetadata().getCollectionRole()
+						associationContext.getRoleOnMainSide()
 				)
 		);
 	}

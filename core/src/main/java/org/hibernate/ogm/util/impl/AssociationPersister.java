@@ -230,12 +230,6 @@ public class AssociationPersister {
 					.getService( OptionsService.class )
 					.context();
 
-			String roleOnMainSide = null;
-
-			if ( associationKeyMetadata.isInverse() ) {
-				roleOnMainSide = this.roleOnMainSide;
-			}
-
 			associationContext = new AssociationContext(
 					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getMetadata().getCollectionRole() ),
 					associationKeyMetadata.getAssociatedEntityKeyMetadata(),

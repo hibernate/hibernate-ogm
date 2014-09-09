@@ -58,12 +58,12 @@ public class AssociationContext implements GridDialectOperationContext {
 	}
 
 	/**
-	 * The role of the represented association on the main side in case the current operation is invoked for the inverse
-	 * side of a bi-directional association.
+	 * Provides the role of the represented association on the main side in case the current operation is invoked for
+	 * the inverse side of a bi-directional association.
 	 *
-	 * @return The role of the represented association on the main side or {@code null} in case this operation is not
-	 * invoked for the inverse side of a bi-directional association (i.e. it either is invoked for an uni-directional
-	 * association or the main-side of a bi-directional association).
+	 * @return The role of the represented association on the main side. The association's own role will be returned in
+	 * case this operation is invoked for an uni-directional association or the main-side of a bi-directional
+	 * association.
 	 */
 	public String getRoleOnMainSide() {
 		return roleOnMainSide;
