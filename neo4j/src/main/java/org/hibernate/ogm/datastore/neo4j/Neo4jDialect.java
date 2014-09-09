@@ -235,7 +235,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		return neo4jSequenceGenerator.nextValue( request.getKey(), request.getIncrement() );
+		return neo4jSequenceGenerator.nextValue( request.getKey(), request.getIncrement(), request.getInitialValue() );
 	}
 
 	@Override

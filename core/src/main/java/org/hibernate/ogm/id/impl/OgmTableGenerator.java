@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.id.spi;
+package org.hibernate.ogm.id.impl;
 
 import java.util.Properties;
 
@@ -146,17 +146,6 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	 */
 	public final String getSegmentColumnName() {
 		return segmentColumnName;
-	}
-
-	/**
-	 * The value in {@link #getSegmentColumnName segment column} which
-	 * corresponding to this generator instance.  In other words this value
-	 * indicates the row in which this generator instance will store values.
-	 *
-	 * @return The segment value for this generator instance.
-	 */
-	public final String getSegmentValue() {
-		return segmentValue;
 	}
 
 	@Override

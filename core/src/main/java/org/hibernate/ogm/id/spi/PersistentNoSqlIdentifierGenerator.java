@@ -24,4 +24,11 @@ public interface PersistentNoSqlIdentifierGenerator extends IdentifierGenerator 
 	 * @return An identifier representing the persistent structure which this generator is based upon
 	 */
 	IdSourceKeyMetadata getGeneratorKeyMetadata();
+
+	/**
+	 * Returns the initial value of this generator.
+	 *
+	 * @return the initial value of this generator
+	 */
+	int getInitialValue();
 }
