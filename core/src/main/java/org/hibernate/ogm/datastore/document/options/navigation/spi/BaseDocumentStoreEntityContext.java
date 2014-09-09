@@ -18,10 +18,10 @@ import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
  *
  * @author Gunnar Morling
  */
-public abstract class DocumentStoreEntityContextImpl<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends
+public abstract class BaseDocumentStoreEntityContext<E extends DocumentStoreEntityContext<E, P>, P extends DocumentStorePropertyContext<E, P>> extends
 		BaseEntityContext<E, P> implements DocumentStoreEntityContext<E, P> {
 
-	public DocumentStoreEntityContextImpl(ConfigurationContext context) {
+	public BaseDocumentStoreEntityContext(ConfigurationContext context) {
 		super( context );
 	}
 

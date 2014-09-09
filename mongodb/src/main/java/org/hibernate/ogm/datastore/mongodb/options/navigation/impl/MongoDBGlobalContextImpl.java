@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
-import org.hibernate.ogm.datastore.document.options.navigation.spi.DocumentStoreGlobalContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStoreGlobalContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
@@ -26,7 +26,7 @@ import com.mongodb.WriteConcern;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public abstract class MongoDBGlobalContextImpl extends DocumentStoreGlobalContextImpl<MongoDBGlobalContext, MongoDBEntityContext> implements
+public abstract class MongoDBGlobalContextImpl extends BaseDocumentStoreGlobalContext<MongoDBGlobalContext, MongoDBEntityContext> implements
 		MongoDBGlobalContext {
 
 	public MongoDBGlobalContextImpl(ConfigurationContext context) {

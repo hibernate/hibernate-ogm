@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.options.navigation.impl;
 
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBEntityContext;
 import org.hibernate.ogm.datastore.couchdb.options.navigation.CouchDBPropertyContext;
-import org.hibernate.ogm.datastore.document.options.navigation.spi.DocumentStorePropertyContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStorePropertyContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
 /**
@@ -16,7 +16,7 @@ import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
  *
  * @author Gunnar Morling
  */
-public abstract class CouchDBPropertyContextImpl extends DocumentStorePropertyContextImpl<CouchDBEntityContext, CouchDBPropertyContext> implements CouchDBPropertyContext {
+public abstract class CouchDBPropertyContextImpl extends BaseDocumentStorePropertyContext<CouchDBEntityContext, CouchDBPropertyContext> implements CouchDBPropertyContext {
 
 	public CouchDBPropertyContextImpl(ConfigurationContext context) {
 		super( context );

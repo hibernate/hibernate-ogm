@@ -18,10 +18,10 @@ import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
  *
  * @author Gunnar Morling
  */
-public abstract class DocumentStoreGlobalContextImpl<G extends DocumentStoreGlobalContext<G, E>, E extends DocumentStoreEntityContext<E, ?>> extends
+public abstract class BaseDocumentStoreGlobalContext<G extends DocumentStoreGlobalContext<G, E>, E extends DocumentStoreEntityContext<E, ?>> extends
 		BaseGlobalContext<G, E> implements DocumentStoreGlobalContext<G, E> {
 
-	public DocumentStoreGlobalContextImpl(ConfigurationContext context) {
+	public BaseDocumentStoreGlobalContext(ConfigurationContext context) {
 		super( context );
 	}
 

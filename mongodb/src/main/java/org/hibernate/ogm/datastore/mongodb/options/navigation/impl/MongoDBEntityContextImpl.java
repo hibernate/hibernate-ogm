@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
-import org.hibernate.ogm.datastore.document.options.navigation.spi.DocumentStoreEntityContextImpl;
+import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStoreEntityContext;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
@@ -26,7 +26,7 @@ import com.mongodb.WriteConcern;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public abstract class MongoDBEntityContextImpl extends DocumentStoreEntityContextImpl<MongoDBEntityContext, MongoDBPropertyContext> implements
+public abstract class MongoDBEntityContextImpl extends BaseDocumentStoreEntityContext<MongoDBEntityContext, MongoDBPropertyContext> implements
 		MongoDBEntityContext {
 
 	public MongoDBEntityContextImpl(ConfigurationContext context) {
