@@ -26,11 +26,6 @@ public interface ClassPropertyReaderContext<T> extends PropertyReaderContext<T> 
 	ClassPropertyReaderContext<T> withDefaultImplementation(String defaultImplementationName);
 
 	/**
-	 * Sets an instantiator to be used to create an instance of the property
-	 */
-	ClassPropertyReaderContext<T> withInstantiator(Instantiator<T> instantiator);
-
-	/**
 	 * Sets a short name resolver to be applied in case the property is given as string
 	 */
 	ClassPropertyReaderContext<T> withShortNameResolver(ShortNameResolver shortNameResolver);

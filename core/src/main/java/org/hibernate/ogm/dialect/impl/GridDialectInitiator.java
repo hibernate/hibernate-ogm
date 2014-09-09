@@ -16,8 +16,9 @@ import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
+import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
+import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.spi.Instantiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -49,8 +50,8 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
-		return propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
-				.instantiate()
+		return ( (DefaultClassPropertyReaderContext<GridDialect>) propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
+				.instantiate() )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
 				.withInstantiator( new GridDialectInstantiator( datastore, registry ) )
 				.getValue();

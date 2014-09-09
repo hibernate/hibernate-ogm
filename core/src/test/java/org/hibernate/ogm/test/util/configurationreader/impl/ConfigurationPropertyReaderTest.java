@@ -19,9 +19,10 @@ import java.util.Properties;
 
 import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
+import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
+import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.configurationreader.impl.Validators;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.configurationreader.spi.Instantiator;
 import org.hibernate.ogm.util.configurationreader.spi.ShortNameResolver;
 import org.junit.Rule;
 import org.junit.Test;
@@ -121,8 +122,8 @@ public class ConfigurationPropertyReaderTest {
 		Map<String, Object> properties = new HashMap<String, Object>();
 
 		ConfigurationPropertyReader reader = new ConfigurationPropertyReader( properties, new ClassLoaderServiceImpl() );
-		MyService value = reader.property( "service", MyService.class )
-				.instantiate()
+		MyService value = ( (DefaultClassPropertyReaderContext<MyService>) reader.property( "service", MyService.class )
+				.instantiate() )
 				.withDefaultImplementation( MyYetAnotherServiceImpl.class )
 				.withInstantiator( new MyInstantiator() )
 				.getValue();

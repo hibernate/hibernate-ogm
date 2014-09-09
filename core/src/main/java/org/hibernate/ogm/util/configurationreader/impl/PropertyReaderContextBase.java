@@ -78,7 +78,7 @@ abstract class PropertyReaderContextBase<T> implements PropertyReaderContext<T> 
 	@Override
 	public ClassPropertyReaderContext<T> instantiate() {
 		Contracts.assertNotNull( classLoaderService, "classLoaderService" );
-		return new ClassPropertyReaderContextImpl<T>( classLoaderService, configuredValue, propertyName, targetType, defaultValue, isRequired, validators );
+		return new DefaultClassPropertyReaderContext<T>( classLoaderService, configuredValue, propertyName, targetType, defaultValue, isRequired, validators );
 	}
 
 	@Override
