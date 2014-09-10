@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
-import org.hibernate.ogm.id.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.junit.Before;

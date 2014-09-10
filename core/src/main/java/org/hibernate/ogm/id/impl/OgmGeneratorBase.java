@@ -27,7 +27,7 @@ import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.jdbc.AbstractReturningWork;
 import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.id.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.type.Type;

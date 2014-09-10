@@ -8,8 +8,6 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
