@@ -17,7 +17,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.key.spi.EntityKey;
 import org.hibernate.ogm.persister.impl.EntityKeyBuilder;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;

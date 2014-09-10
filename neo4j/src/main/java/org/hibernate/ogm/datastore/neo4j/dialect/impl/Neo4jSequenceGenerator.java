@@ -14,12 +14,12 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
-import org.hibernate.ogm.grid.spi.IdSourceKey;
-import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata.IdSourceType;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
+import org.hibernate.ogm.key.spi.IdSourceKey;
+import org.hibernate.ogm.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.key.spi.IdSourceKeyMetadata.IdSourceType;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;

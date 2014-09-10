@@ -9,8 +9,8 @@ package org.hibernate.ogm.persister.impl;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.grid.spi.EntityKey;
-import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 

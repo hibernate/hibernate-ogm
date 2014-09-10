@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.key.spi.EntityKeyMetadata;
 
 import com.mongodb.DBObject;
 

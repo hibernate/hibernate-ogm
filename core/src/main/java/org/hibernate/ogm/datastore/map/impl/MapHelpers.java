@@ -15,8 +15,8 @@ import org.hibernate.ogm.datastore.spi.AssociationOperation;
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.grid.spi.AssociationKey;
-import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.key.spi.AssociationKey;
+import org.hibernate.ogm.key.spi.RowKey;
 
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.

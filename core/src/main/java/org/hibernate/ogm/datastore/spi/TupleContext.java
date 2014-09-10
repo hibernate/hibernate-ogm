@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
-import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.options.spi.OptionsContext;
 import org.hibernate.ogm.util.impl.StringHelper;
 

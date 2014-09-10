@@ -7,7 +7,7 @@
 package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.grid.spi.AssociationKey;
+import org.hibernate.ogm.key.spi.AssociationKey;
 
 /**
  * An operation representing the removal of an association

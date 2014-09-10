@@ -8,7 +8,7 @@ package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.key.spi.EntityKey;
 
 /**
  * Contains the data required to update a tuple

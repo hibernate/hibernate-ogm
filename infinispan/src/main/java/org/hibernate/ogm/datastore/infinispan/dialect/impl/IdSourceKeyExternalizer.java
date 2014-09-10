@@ -14,8 +14,8 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.grid.spi.IdSourceKey;
-import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.key.spi.IdSourceKey;
+import org.hibernate.ogm.key.spi.IdSourceKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**

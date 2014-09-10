@@ -13,11 +13,11 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.grid.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.grid.spi.AssociationKey;
-import org.hibernate.ogm.grid.spi.AssociationKind;
-import org.hibernate.ogm.grid.spi.EntityKey;
-import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.key.spi.AssociationKey;
+import org.hibernate.ogm.key.spi.AssociationKind;
+import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.key.spi.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;

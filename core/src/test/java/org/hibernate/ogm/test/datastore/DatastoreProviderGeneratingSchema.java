@@ -23,11 +23,11 @@ import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.SchemaDefiner;
-import org.hibernate.ogm.grid.spi.AssociationKey;
-import org.hibernate.ogm.grid.spi.EntityKey;
-import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
-import org.hibernate.ogm.grid.spi.RowKey;
 import org.hibernate.ogm.id.spi.NextValueRequest;
+import org.hibernate.ogm.key.spi.AssociationKey;
+import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.key.spi.RowKey;
 import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.persister.entity.Lockable;
 

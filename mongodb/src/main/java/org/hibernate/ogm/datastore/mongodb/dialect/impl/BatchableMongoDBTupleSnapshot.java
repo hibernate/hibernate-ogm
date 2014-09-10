@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import org.hibernate.ogm.grid.spi.EntityKey;
+import org.hibernate.ogm.key.spi.EntityKey;
 
 import com.mongodb.DBObject;
 

@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.grid.spi.AssociationKey;
-import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.key.spi.AssociationKey;
+import org.hibernate.ogm.key.spi.RowKey;
 
 /**
  * A {@link TupleSnapshot} which represents one row of an association.

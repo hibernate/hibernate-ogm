@@ -10,7 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
-import org.hibernate.ogm.grid.spi.RowKey;
+import org.hibernate.ogm.key.spi.RowKey;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -10,8 +10,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
-import org.hibernate.ogm.grid.spi.IdSourceKey;
-import org.hibernate.ogm.grid.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.key.spi.IdSourceKey;
+import org.hibernate.ogm.key.spi.IdSourceKeyMetadata;
 import org.junit.Before;
 import org.junit.Test;
 

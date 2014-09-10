@@ -7,7 +7,7 @@
 package org.hibernate.ogm.query.spi;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.grid.spi.EntityKeyMetadata;
+import org.hibernate.ogm.key.spi.EntityKeyMetadata;
 
 /**
  * Represents a NoSQL query as to be executed via
