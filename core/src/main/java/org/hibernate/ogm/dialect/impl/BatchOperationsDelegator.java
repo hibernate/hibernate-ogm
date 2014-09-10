@@ -8,15 +8,15 @@ package org.hibernate.ogm.dialect.impl;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.ogm.model.spi.Association;

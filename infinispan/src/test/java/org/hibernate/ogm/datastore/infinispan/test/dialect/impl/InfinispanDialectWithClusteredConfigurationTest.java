@@ -21,7 +21,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;

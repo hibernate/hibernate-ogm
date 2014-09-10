@@ -8,8 +8,6 @@ package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.ogm.model.spi.Association;

@@ -24,9 +24,9 @@ import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapsh
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.massindex.spi.Consumer;
 import org.hibernate.ogm.model.spi.Association;

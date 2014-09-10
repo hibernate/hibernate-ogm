@@ -4,10 +4,9 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.dialect.spi;
 
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
-import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.options.spi.OptionsContext;

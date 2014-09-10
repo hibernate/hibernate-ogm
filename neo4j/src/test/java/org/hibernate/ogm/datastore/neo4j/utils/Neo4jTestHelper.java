@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.datastore.spi.TupleContext;
+import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;

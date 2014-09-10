@@ -12,7 +12,7 @@ import java.util.Arrays;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.spi.Association;
