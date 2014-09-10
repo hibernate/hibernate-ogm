@@ -7,7 +7,6 @@
 package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
 import org.hibernate.ogm.query.spi.QueryParserService;
 import org.hibernate.service.Service;
 

@@ -15,8 +15,8 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.designdocument.i
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.dialect.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 

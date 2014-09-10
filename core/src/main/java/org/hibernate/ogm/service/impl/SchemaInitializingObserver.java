@@ -10,7 +10,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.dialect.spi.SchemaDefiner;
+import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
