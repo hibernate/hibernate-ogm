@@ -10,7 +10,7 @@ import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.jboss.logging.Cause;
 import org.jboss.logging.LogMessage;

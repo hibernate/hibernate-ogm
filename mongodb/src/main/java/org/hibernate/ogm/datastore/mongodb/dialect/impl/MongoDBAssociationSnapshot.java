@@ -12,7 +12,7 @@ import java.util.Collection;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
-import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

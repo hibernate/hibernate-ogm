@@ -7,7 +7,7 @@
 package org.hibernate.ogm.dialect.batch.spi;
 
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * Contains the data required to remove a tuple

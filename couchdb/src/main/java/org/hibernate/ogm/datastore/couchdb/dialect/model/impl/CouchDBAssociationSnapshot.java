@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
-import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
 
 /**

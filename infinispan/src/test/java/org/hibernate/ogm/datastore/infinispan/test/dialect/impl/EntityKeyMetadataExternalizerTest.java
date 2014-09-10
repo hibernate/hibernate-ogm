@@ -10,7 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
-import org.hibernate.ogm.model.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Before;
 import org.junit.Test;
 

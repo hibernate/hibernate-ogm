@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.id.spi;
 
-import org.hibernate.ogm.model.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
 
 /**
  * Represents a request for obtaining the next value from a given id source.

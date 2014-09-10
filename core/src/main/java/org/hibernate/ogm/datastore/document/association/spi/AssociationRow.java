@@ -10,8 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hibernate.ogm.model.spi.AssociationKey;
-import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**

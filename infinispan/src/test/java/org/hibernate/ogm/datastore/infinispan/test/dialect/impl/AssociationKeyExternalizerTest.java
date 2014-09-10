@@ -10,8 +10,8 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
-import org.hibernate.ogm.model.spi.AssociationKey;
-import org.hibernate.ogm.model.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.junit.Before;
 import org.junit.Test;
 

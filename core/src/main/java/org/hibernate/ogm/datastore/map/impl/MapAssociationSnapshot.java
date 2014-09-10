@@ -9,8 +9,8 @@ package org.hibernate.ogm.datastore.map.impl;
 import java.util.Map;
 import java.util.Set;
 
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
-import org.hibernate.ogm.model.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**

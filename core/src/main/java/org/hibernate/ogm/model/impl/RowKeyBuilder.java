@@ -9,7 +9,7 @@ package org.hibernate.ogm.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**

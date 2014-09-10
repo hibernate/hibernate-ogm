@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.model.spi;
 
+import org.hibernate.ogm.model.key.spi.RowKey;
+
 
 /**
  * Operation applied to the association.

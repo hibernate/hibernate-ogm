@@ -23,8 +23,8 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.SequenceDoc
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
-import org.hibernate.ogm.model.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.jboss.resteasy.client.exception.ResteasyClientException;
 import org.jboss.resteasy.client.jaxrs.BasicAuthentication;

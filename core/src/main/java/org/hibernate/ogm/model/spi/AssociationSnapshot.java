@@ -8,6 +8,8 @@ package org.hibernate.ogm.model.spi;
 
 import java.util.Set;
 
+import org.hibernate.ogm.model.key.spi.RowKey;
+
 /**
  * Represents the Association snapshot as loaded by the datastore.
  * Interface implemented by the datastore dialect to avoid data

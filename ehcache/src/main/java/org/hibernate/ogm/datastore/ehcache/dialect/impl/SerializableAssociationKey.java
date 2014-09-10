@@ -12,7 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 
 /**
  * Used to serialize {@link AssociationKey} objects in Ehcache.

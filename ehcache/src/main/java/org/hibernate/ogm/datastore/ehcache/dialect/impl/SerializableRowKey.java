@@ -12,7 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 
 /**
  * Used to serialize {@link RowKey} objects in Ehcache.

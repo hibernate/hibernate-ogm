@@ -8,8 +8,8 @@ package org.hibernate.ogm.datastore.couchdb.util.impl;
 
 import java.util.regex.Pattern;
 
-import org.hibernate.ogm.model.spi.AssociationKey;
-import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * Generates the ids used to create the {@link org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document}

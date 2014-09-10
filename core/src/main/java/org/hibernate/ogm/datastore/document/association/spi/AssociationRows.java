@@ -12,9 +12,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.AssociationSnapshot;
-import org.hibernate.ogm.model.spi.RowKey;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**

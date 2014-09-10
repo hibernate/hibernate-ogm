@@ -14,7 +14,7 @@ import org.hibernate.StaleObjectStateException;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
-import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.entity.Lockable;
 

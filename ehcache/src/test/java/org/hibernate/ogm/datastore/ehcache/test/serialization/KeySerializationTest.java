@@ -17,7 +17,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableRowKey;
-import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.junit.Test;
 
 /**

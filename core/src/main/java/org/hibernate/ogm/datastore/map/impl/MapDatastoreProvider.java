@@ -23,10 +23,10 @@ import javax.persistence.PessimisticLockException;
 
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.spi.AssociationKey;
-import org.hibernate.ogm.model.spi.EntityKey;
-import org.hibernate.ogm.model.spi.IdSourceKey;
-import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Startable;
