@@ -10,13 +10,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.spi.Association;
-import org.hibernate.ogm.datastore.spi.AssociationOperation;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.datastore.spi.TupleOperation;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.

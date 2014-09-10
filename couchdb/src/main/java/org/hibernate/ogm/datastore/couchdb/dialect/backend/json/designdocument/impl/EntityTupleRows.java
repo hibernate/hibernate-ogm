@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

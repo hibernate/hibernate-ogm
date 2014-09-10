@@ -30,7 +30,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Implements JDBC's ResultSet interface but is essentially a wrapper for

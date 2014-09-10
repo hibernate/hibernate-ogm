@@ -4,12 +4,12 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.model.spi;
 
 import java.util.Set;
 
 /**
- * Represents the Tuple snapshot as loaded by the datastore.
+ * Represents the Association snapshot as loaded by the datastore.
  * Interface implemented by the datastore dialect to avoid data
  * duplication in memory (if possible).
  *
@@ -17,13 +17,16 @@ import java.util.Set;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public interface TupleSnapshot {
+public interface AssociationSnapshot {
+
 	/**
-	 * Returns the value set in a column or null if not set
+	 * Returns the row with the specified key from this association, if present.
 	 */
-	Object get(String column);
+	Tuple get(RowKey rowKey);
 
-	boolean isEmpty();
+	boolean containsKey(RowKey rowKey);
 
-	Set<String> getColumnNames();
+	int size();
+
+	Set<RowKey> getRowKeys();
 }

@@ -13,11 +13,11 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.AssociationKind;
-import org.hibernate.ogm.key.spi.EntityKey;
-import org.hibernate.ogm.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationKind;
+import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.spi.RowKey;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.DynamicLabel;
@@ -70,7 +70,7 @@ public class CypherCRUD {
 		// no index columns, i.e. the relationship has no properties identifying it; we need the node
 		// on the other side to uniquely identify it
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
-			targetKey = associatedEntityKeyMetadata.getEntityKey( rowKey );
+			targetKey = getEntityKey( rowKey, associatedEntityKeyMetadata );
 		}
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -355,7 +355,7 @@ public class CypherCRUD {
 		// no index columns, i.e. the relationship has no properties identifying it; we need the node
 		// on the other side to uniquely identify it
 		if ( associationKey.getMetadata().getRowKeyIndexColumnNames().length == 0 ) {
-			targetKey = associatedEntityKeyMetadata.getEntityKey( rowKey );
+			targetKey = getEntityKey( rowKey, associatedEntityKeyMetadata );
 		}
 
 		Map<String, Object> parameters = new HashMap<String, Object>();
@@ -378,5 +378,24 @@ public class CypherCRUD {
 
 	public ExecutionResult executeQuery( String query, Map<String, Object> parameters ) {
 		return engine.execute( query, parameters );
+	}
+
+	/**
+	 * Returns the entity key on the other side of association row represented by the given row key.
+	 * <p>
+	 * <b>Note:</b> May only be invoked if the row key actually contains all the columns making up that entity key.
+	 * Specifically, it may <b>not</b> be invoked if the association has index columns (maps, ordered collections), as
+	 * the entity key columns will not be part of the row key in this case.
+	 */
+	private EntityKey getEntityKey(RowKey rowKey, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		Object[] columnValues = new Object[associatedEntityKeyMetadata.getAssociationKeyColumns().length];
+		int i = 0;
+
+		for ( String associationKeyColumn : associatedEntityKeyMetadata.getAssociationKeyColumns() ) {
+			columnValues[i] = rowKey.getColumnValue( associationKeyColumn );
+			i++;
+		}
+
+		return new EntityKey( associatedEntityKeyMetadata.getEntityKeyMetadata(), columnValues );
 	}
 }

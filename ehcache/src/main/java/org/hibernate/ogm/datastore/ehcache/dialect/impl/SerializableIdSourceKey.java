@@ -12,7 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.hibernate.ogm.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.spi.IdSourceKey;
 
 /**
  * Used to serialize {@link IdSourceKey} objects in Ehcache.

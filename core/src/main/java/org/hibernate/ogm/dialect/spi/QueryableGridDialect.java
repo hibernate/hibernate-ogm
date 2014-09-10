@@ -9,7 +9,7 @@ package org.hibernate.ogm.dialect.spi;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 

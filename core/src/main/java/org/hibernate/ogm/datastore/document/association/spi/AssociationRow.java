@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
  * A {@link TupleSnapshot} which represents one row of an association.

@@ -11,7 +11,7 @@ import java.sql.Types;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.NotYetImplementedException;
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.type.CustomType;

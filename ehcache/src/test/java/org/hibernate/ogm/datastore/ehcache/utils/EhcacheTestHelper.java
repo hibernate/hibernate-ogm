@@ -16,7 +16,7 @@ import org.hibernate.ogm.datastore.ehcache.Ehcache;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
 

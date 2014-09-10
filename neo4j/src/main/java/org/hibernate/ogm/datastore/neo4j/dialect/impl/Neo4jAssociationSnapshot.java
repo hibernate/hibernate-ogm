@@ -10,11 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationSnapshot;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;

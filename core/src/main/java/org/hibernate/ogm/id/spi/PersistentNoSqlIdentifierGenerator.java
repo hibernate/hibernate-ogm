@@ -7,7 +7,7 @@
 package org.hibernate.ogm.id.spi;
 
 import org.hibernate.id.IdentifierGenerator;
-import org.hibernate.ogm.key.spi.IdSourceKeyMetadata;
+import org.hibernate.ogm.model.spi.IdSourceKeyMetadata;
 
 /**
  * A {@link IdentifierGenerator} based on a persistent structure in a NoSQL store, such as a table, collection or

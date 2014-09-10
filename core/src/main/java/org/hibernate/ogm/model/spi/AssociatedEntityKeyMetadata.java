@@ -4,11 +4,9 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.key.spi;
+package org.hibernate.ogm.model.spi;
 
 import java.util.Arrays;
-
-import org.hibernate.ogm.datastore.spi.Tuple;
 
 /**
  * Provides meta-data about a one-to-one/many-to-one association represented by one or more columns contained within a
@@ -32,43 +30,6 @@ public class AssociatedEntityKeyMetadata {
 	 */
 	public EntityKeyMetadata getEntityKeyMetadata() {
 		return entityKeyMetadata;
-	}
-
-	/**
-	 * Returns the key of the entity targeted by the represented association, retrieved from the given tuple.
-	 *
-	 * @param tuple the tuple from which to retrieve the referenced entity key
-	 * @return the key of the entity targeted by the represented association
-	 */
-	public EntityKey getEntityKey(Tuple tuple) {
-		Object[] columnValues = new Object[ associationKeyColumns.length];
-		int i = 0;
-
-		for ( String associationKeyColumn : associationKeyColumns ) {
-			columnValues[i] = tuple.get( associationKeyColumn );
-			i++;
-		}
-
-		return new EntityKey( entityKeyMetadata, columnValues );
-	}
-
-	/**
-	 * Returns the entity key on the other side of association row represented by the given row key.
-	 * <p>
-	 * <b>Note:</b> May only be invoked if the row key actually contains all the columns making up that entity key.
-	 * Specifically, it may <b>not</b> be invoked if the association has index columns (maps, ordered collections), as
-	 * the entity key columns will not be part of the row key in this case.
-	 */
-	public EntityKey getEntityKey(RowKey rowKey) {
-		Object[] columnValues = new Object[associationKeyColumns.length];
-		int i = 0;
-
-		for ( String associationKeyColumn : associationKeyColumns ) {
-			columnValues[i] = rowKey.getColumnValue( associationKeyColumn );
-			i++;
-		}
-
-		return new EntityKey( entityKeyMetadata, columnValues );
 	}
 
 	/**

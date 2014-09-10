@@ -12,8 +12,8 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
  * A {@link TupleSnapshot} based on the properties of a CouchDB {@link EntityDocument}.

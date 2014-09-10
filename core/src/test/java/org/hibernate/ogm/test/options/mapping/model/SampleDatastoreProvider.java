@@ -8,19 +8,19 @@ package org.hibernate.ogm.test.options.mapping.model;
 
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
-import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.EntityKey;
-import org.hibernate.ogm.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.key.spi.RowKey;
 import org.hibernate.ogm.massindex.spi.Consumer;
+import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.persister.entity.Lockable;
 
 /**

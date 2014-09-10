@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.hibernate.ogm.key.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

@@ -7,7 +7,7 @@
 package org.hibernate.ogm.massindex.impl;
 
 import org.hibernate.Session;
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;

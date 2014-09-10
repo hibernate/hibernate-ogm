@@ -14,8 +14,8 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.spi.Tuple;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

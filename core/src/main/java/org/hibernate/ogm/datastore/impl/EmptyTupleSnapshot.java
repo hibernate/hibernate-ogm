@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;

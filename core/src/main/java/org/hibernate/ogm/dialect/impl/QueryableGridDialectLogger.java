@@ -9,10 +9,10 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.QueryParameters;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.util.impl.CoreLogCategories;

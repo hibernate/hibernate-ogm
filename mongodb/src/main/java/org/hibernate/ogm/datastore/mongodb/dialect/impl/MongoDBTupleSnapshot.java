@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
-import org.hibernate.ogm.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 
 import com.mongodb.DBObject;
 

@@ -29,7 +29,7 @@ import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.id.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
-import org.hibernate.ogm.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.spi.IdSourceKey;
 import org.hibernate.type.Type;
 
 /**

@@ -36,22 +36,22 @@ import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
-import org.hibernate.ogm.datastore.spi.Association;
 import org.hibernate.ogm.datastore.spi.AssociationContext;
-import org.hibernate.ogm.datastore.spi.AssociationOperation;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.datastore.spi.TupleContext;
-import org.hibernate.ogm.datastore.spi.TupleOperation;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.ogm.id.spi.NextValueRequest;
-import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
-import org.hibernate.ogm.key.spi.AssociationKey;
-import org.hibernate.ogm.key.spi.EntityKey;
-import org.hibernate.ogm.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.key.spi.RowKey;
 import org.hibernate.ogm.massindex.spi.Consumer;
+import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKey;
+import org.hibernate.ogm.model.spi.AssociationOperation;
+import org.hibernate.ogm.model.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.query.spi.BackendQuery;
 import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.type.spi.GridType;
@@ -163,14 +163,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node embeddedNode = neo4jCRUD.createNode( associatedEntityKeyMetadata.getEntityKey( associationRow ), EMBEDDED );
+		Node embeddedNode = neo4jCRUD.createNode( getEntityKey( associationRow, associatedEntityKeyMetadata ), EMBEDDED );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationRow, embeddedNode );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node targetNode = neo4jCRUD.findNode( associatedEntityKeyMetadata.getEntityKey( associationRow ), ENTITY );
+		Node targetNode = neo4jCRUD.findNode( getEntityKey( associationRow, associatedEntityKeyMetadata ), ENTITY );
 		return createRelationshipWithTargetNode( associationKey, associationRow, targetNode );
 	}
 
@@ -353,7 +353,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 				processedAssociationRoles.add( associationRole );
 
-				EntityKey targetKey = tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ).getEntityKey( tuple );
+				EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
 
 				// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
 				// properties, so the type is uniquely identifying it
@@ -447,5 +447,23 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public ParameterMetadataBuilder getParameterMetadataBuilder() {
 		return new Neo4jParameterMetadataBuilder();
+	}
+
+	/**
+	 * Returns the key of the entity targeted by the represented association, retrieved from the given tuple.
+	 *
+	 * @param tuple the tuple from which to retrieve the referenced entity key
+	 * @return the key of the entity targeted by the represented association
+	 */
+	private EntityKey getEntityKey(Tuple tuple, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+		Object[] columnValues = new Object[ associatedEntityKeyMetadata.getAssociationKeyColumns().length];
+		int i = 0;
+
+		for ( String associationKeyColumn : associatedEntityKeyMetadata.getAssociationKeyColumns() ) {
+			columnValues[i] = tuple.get( associationKeyColumn );
+			i++;
+		}
+
+		return new EntityKey( associatedEntityKeyMetadata.getEntityKeyMetadata(), columnValues );
 	}
 }

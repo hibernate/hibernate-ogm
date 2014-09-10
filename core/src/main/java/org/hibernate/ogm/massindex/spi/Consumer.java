@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.massindex.spi;
 
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Represents an object that can consume a {@link Tuple}.

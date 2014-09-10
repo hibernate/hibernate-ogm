@@ -35,7 +35,7 @@ import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.Ass
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
 import org.jboss.resteasy.client.exception.ResteasyClientException;

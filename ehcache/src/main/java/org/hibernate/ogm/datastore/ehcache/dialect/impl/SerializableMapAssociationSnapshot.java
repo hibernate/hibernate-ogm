@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-import org.hibernate.ogm.datastore.spi.AssociationSnapshot;
-import org.hibernate.ogm.datastore.spi.Tuple;
-import org.hibernate.ogm.key.spi.RowKey;
+import org.hibernate.ogm.model.spi.AssociationSnapshot;
+import org.hibernate.ogm.model.spi.RowKey;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * An {@link AssociationSnapshot} based on a serializable map.

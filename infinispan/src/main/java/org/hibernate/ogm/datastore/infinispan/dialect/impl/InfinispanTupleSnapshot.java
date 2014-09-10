@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.infinispan.dialect.impl;
 
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.spi.TupleSnapshot;
+import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 
 /**

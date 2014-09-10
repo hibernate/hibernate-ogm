@@ -8,7 +8,8 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**

@@ -8,7 +8,7 @@ package org.hibernate.ogm.util.impl;
 
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
 
 /**

@@ -9,8 +9,8 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 import java.util.Map;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-import org.hibernate.ogm.datastore.spi.Tuple;
 import org.hibernate.ogm.dialect.spi.ClosableIterator;
+import org.hibernate.ogm.model.spi.Tuple;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ResourceIterator;
 

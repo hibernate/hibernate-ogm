@@ -4,11 +4,11 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.spi;
+package org.hibernate.ogm.model.spi;
 
-import static org.hibernate.ogm.datastore.spi.AssociationOperationType.PUT;
-import static org.hibernate.ogm.datastore.spi.AssociationOperationType.PUT_NULL;
-import static org.hibernate.ogm.datastore.spi.AssociationOperationType.REMOVE;
+import static org.hibernate.ogm.model.spi.AssociationOperationType.PUT;
+import static org.hibernate.ogm.model.spi.AssociationOperationType.PUT_NULL;
+import static org.hibernate.ogm.model.spi.AssociationOperationType.REMOVE;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,6 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.key.spi.RowKey;
 
 /**
  * Represents an association (think of it as a set of rows, each representing a specific link).

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.type.descriptor.impl;
 
-import org.hibernate.ogm.datastore.spi.Tuple;
+import org.hibernate.ogm.model.spi.Tuple;
 
 /**
  * Extract value from the result set
