@@ -4,9 +4,9 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.dialect.spi;
+package org.hibernate.ogm.dialect.batch.spi;
 
-import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 
 /**
  * A {@link GridDialect} that can batch operations and execute them using the mechanism provided by the underlying database.

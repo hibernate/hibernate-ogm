@@ -9,8 +9,8 @@ package org.hibernate.ogm.dialect.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.spi.QueryableGridDialect;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**

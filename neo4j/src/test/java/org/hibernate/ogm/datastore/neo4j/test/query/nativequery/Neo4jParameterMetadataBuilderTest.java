@@ -10,7 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.ogm.datastore.neo4j.query.impl.Neo4jParameterMetadataBuilder;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
 import org.junit.Test;
 
 /**

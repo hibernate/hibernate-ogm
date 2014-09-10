@@ -4,14 +4,13 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.dialect.spi;
+package org.hibernate.ogm.dialect.queryable.spi;
 
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.query.spi.BackendQuery;
-import org.hibernate.ogm.query.spi.ParameterMetadataBuilder;
 
 /**
  * A facet for {@link GridDialect} implementations which support the execution of native queries.
