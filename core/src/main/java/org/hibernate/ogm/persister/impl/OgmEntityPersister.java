@@ -109,7 +109,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private TupleContext tupleContext;
 
-	protected OgmEntityPersister(
+	OgmEntityPersister(
 			final PersistentClass persistentClass,
 			final EntityRegionAccessStrategy cacheAccessStrategy,
 			final NaturalIdRegionAccessStrategy naturalIdRegionAccessStrategy,
@@ -1160,7 +1160,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	public String getTableName(int j) {
+	protected String getTableName(int j) {
 		return tableName;
 	}
 
@@ -1170,7 +1170,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	}
 
 	@Override
-	public boolean isPropertyOfTable(int property, int j) {
+	protected boolean isPropertyOfTable(int property, int j) {
 		return true;
 	}
 

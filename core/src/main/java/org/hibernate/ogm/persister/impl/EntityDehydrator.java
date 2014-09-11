@@ -29,7 +29,7 @@ import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
 import org.hibernate.type.Type;
 
-public class EntityDehydrator {
+class EntityDehydrator {
 
 	private static final Log log = LoggerFactory.make();
 
