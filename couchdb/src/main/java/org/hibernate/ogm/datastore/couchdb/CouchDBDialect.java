@@ -29,7 +29,7 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.Consumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -252,13 +252,13 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			forTuple( consumer, entityKeyMetadata );
 		}
 	}
 
-	private void forTuple(Consumer consumer, EntityKeyMetadata entityKeyMetadata) {
+	private void forTuple(ModelConsumer consumer, EntityKeyMetadata entityKeyMetadata) {
 		List<Tuple> tuples = getTuples( entityKeyMetadata );
 		for ( Tuple tuple : tuples ) {
 			consumer.consume( tuple );

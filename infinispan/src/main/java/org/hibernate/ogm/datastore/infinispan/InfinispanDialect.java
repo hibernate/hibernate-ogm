@@ -26,7 +26,7 @@ import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.Consumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -193,7 +193,7 @@ public class InfinispanDialect extends BaseGridDialect {
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );
 		Map<EntityKey, Map<String, Object>> queryResult = retrieveKeys( cache, entityKeyMetadatas );
 		for ( Entry<EntityKey, Map<String, Object>> entry : queryResult.entrySet() ) {

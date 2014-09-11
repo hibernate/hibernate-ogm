@@ -16,7 +16,7 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.Consumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -134,7 +134,7 @@ public class MapDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void forEachTuple(Consumer consumer, EntityKeyMetadata... metadatas) {
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... metadatas) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		for ( EntityKey key : entityMap.keySet() ) {
 			for ( EntityKeyMetadata metadata : metadatas ) {

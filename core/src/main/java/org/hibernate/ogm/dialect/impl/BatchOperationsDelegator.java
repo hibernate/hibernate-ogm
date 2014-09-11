@@ -15,7 +15,7 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.Consumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -168,7 +168,7 @@ public class BatchOperationsDelegator implements GridDialect {
 	}
 
 	@Override
-	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		dialect.forEachTuple( consumer, entityKeyMetadatas );
 	}
 

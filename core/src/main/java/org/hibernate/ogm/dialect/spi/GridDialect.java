@@ -118,5 +118,5 @@ public interface GridDialect extends Service {
 	 * @param entityKeyMetadatas
 	 *            the key metadata of the tables for which we want to apply the costumer
 	 */
-	void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas);
+	void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas);
 }

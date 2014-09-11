@@ -58,7 +58,7 @@ import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.Consumer;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -598,7 +598,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void forEachTuple(Consumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
+	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		DB db = provider.getDatabase();
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );

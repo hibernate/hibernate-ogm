@@ -9,12 +9,17 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
- * Represents an object that can consume a {@link Tuple}.
+ * Represents an object that can consume a model element (only {@link Tuple}s atm.).
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public interface Consumer {
+public interface ModelConsumer {
 
+	/**
+	 * Processes the given tuple.
+	 *
+	 * @param tuple the tuple to process
+	 */
 	void consume(Tuple tuple);
 
 }
