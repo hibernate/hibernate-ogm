@@ -205,7 +205,7 @@ public class CouchDBDialect extends BaseGridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		return associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
+		return associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 

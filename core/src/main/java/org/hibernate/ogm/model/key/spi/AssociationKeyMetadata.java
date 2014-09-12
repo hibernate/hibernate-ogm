@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hibernate.ogm.model.spi.AssociationKind;
+
 /**
  * Stores metadata information common to all keys related
   * to a given association
@@ -28,15 +30,18 @@ public class AssociationKeyMetadata {
 	private final boolean isInverse;
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String collectionRole;
+	private final AssociationKind associationKind;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String collectionRole) {
+	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String collectionRole, AssociationKind associationKind) {
 		this.table = table;
 		this.columnNames = columnNames;
+
 		this.rowKeyColumnNames = rowKeyColumnNames;
 		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
 		this.isInverse = isInverse;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.collectionRole = collectionRole;
+		this.associationKind = associationKind;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
@@ -155,6 +160,13 @@ public class AssociationKeyMetadata {
 	 */
 	public String getCollectionRole() {
 		return collectionRole;
+	}
+
+	/**
+	 * Returns the type of association
+	 */
+	public AssociationKind getAssociationKind() {
+		return associationKind;
 	}
 
 	@Override

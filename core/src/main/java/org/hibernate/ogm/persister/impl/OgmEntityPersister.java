@@ -53,6 +53,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.type.spi.GridType;
@@ -251,7 +252,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 											entityKeyMetadata
 									),
 									true,
-									mainSidePersister.getPropertyNames()[index]
+									mainSidePersister.getPropertyNames()[index],
+									uniqueKeyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
 							)
 							;
 							associationKeyMetadata.put( getPropertyNames()[index], metadata );
@@ -276,7 +278,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 									entityKeyMetadata
 							),
 							true,
-							getPropertyNames()[index]
+							getPropertyNames()[index],
+							uniqueKeyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
 					);
 					associationKeyMetadata.put( getPropertyNames()[index], metadata );
 				}

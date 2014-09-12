@@ -40,7 +40,9 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.persister.BiDirectionalAssociationHelper;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;
@@ -131,7 +133,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					targetEntityKeyMetadata( false )
 				),
 				isInverse,
-				getUnqualifiedRole()
+				getUnqualifiedRole(),
+				getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
 		);
 
 		nodeName = collection.getNodeName();

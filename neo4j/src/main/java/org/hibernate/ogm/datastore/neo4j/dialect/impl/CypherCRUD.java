@@ -325,7 +325,7 @@ public class CypherCRUD {
 		query.append( ":" );
 		query.append( relationshipType( associationKey.getMetadata().getCollectionRole() ).name() );
 		query.append( "]" );
-		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
+		if ( associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			query.append( " - (x:" );
 			query.append( EMBEDDED.name() );
 			query.append( ") DELETE r, x" );
@@ -364,7 +364,7 @@ public class CypherCRUD {
 		query.append( " - ");
 		query.append( relationshipCypher( associationKey, rowKey, parameters ) );
 		query.append( " - ");
-		if ( associationKey.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
+		if ( associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			appendNodePattern( "x", targetKey, parameters, query, EMBEDDED );
 			query.append( " DELETE r, x" );
 		}

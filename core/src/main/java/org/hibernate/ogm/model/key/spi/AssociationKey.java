@@ -9,7 +9,6 @@ package org.hibernate.ogm.model.key.spi;
 import java.util.Arrays;
 
 import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.ogm.model.spi.AssociationKind;
 
 /**
  * Represents the key used to link a property value and the id of it's owning entity
@@ -28,16 +27,14 @@ public final class AssociationKey {
 
 	//role and entity key are not part of the object identity
 	private final EntityKey entityKey;
-	private final AssociationKind associationKind;
 
-	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, EntityKey entityKey, AssociationKind associationKind) {
+	public AssociationKey(AssociationKeyMetadata metadata, Object[] columnValues, EntityKey entityKey) {
 		this.metadata = metadata;
 		if ( metadata.getColumnNames().length != columnValues.length ) {
 			throw new AssertionFailure( "Column names do not match column values" );
 		}
 		this.columnValues = columnValues;
 		this.entityKey = entityKey;
-		this.associationKind = associationKind;
 
 		this.hashCode = metadata.hashCode() * 31 + Arrays.hashCode( columnValues );
 	}
@@ -81,13 +78,6 @@ public final class AssociationKey {
 	 */
 	public EntityKey getEntityKey() {
 		return entityKey;
-	}
-
-	/**
-	 * Returns the type of association
-	 */
-	public AssociationKind getAssociationKind() {
-		return associationKind;
 	}
 
 	@Override

@@ -724,7 +724,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		return AssociationStorageStrategy.getInstance( key.getAssociationKind(), associationStorage, associationDocumentType );
+		return AssociationStorageStrategy.getInstance( key.getMetadata().getAssociationKind(), associationStorage, associationDocumentType );
 	}
 
 	/**

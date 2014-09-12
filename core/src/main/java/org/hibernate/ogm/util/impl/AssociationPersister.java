@@ -20,7 +20,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
@@ -152,7 +151,6 @@ public class AssociationPersister {
 			final Object[] columnValues = getKeyColumnValues();
 			String collectionRole = null;
 			EntityKey ownerEntityKey = null;
-			AssociationKind associationKind = null;
 
 			// We have a collection on the main side
 			if (collectionPersister != null) {
@@ -180,12 +178,9 @@ public class AssociationPersister {
 				ownerEntityKey = entityKey;
 				//TODO add information on the collection type, set, map, bag, list etc
 
-				AssociationKind type = collectionPersister.getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION;
-				associationKind = type;
 			}
 			// We have a to-one on the main side
 			else if ( propertyType != null ) {
-				associationKind = propertyType.isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION;
 				if ( propertyType instanceof EntityType ) {
 					EntityType entityType = (EntityType) propertyType;
 					OgmEntityPersister associatedPersister = (OgmEntityPersister) entityType.getAssociatedJoinable( session.getFactory() );
@@ -204,7 +199,7 @@ public class AssociationPersister {
 				throw new AssertionFailure( "Cannot detect associated entity metadata: collectionPersister and propertyType are both null" );
 			}
 
-			associationKey = new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey, associationKind );
+			associationKey = new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey );
 		}
 
 		return associationKey;

@@ -152,13 +152,13 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * @param associatedEntityKeyMetadata
 	 */
 	private Relationship createRelationship(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		switch ( associationKey.getAssociationKind() ) {
+		switch ( associationKey.getMetadata().getAssociationKind() ) {
 			case EMBEDDED_COLLECTION:
 				return createRelationshipWithEmbeddedNode( associationKey, associationRow, associatedEntityKeyMetadata );
 			case ASSOCIATION:
 				return findOrCreateRelationshipWithEntityNode( associationKey, associationRow, associatedEntityKeyMetadata );
 			default:
-				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getAssociationKind() );
+				throw new AssertionFailure( "Unrecognized associationKind: " + associationKey.getMetadata().getAssociationKind() );
 		}
 	}
 

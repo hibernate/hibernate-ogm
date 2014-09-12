@@ -128,7 +128,8 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 						new EntityKeyMetadata( "Module", new String[] { "id" } )
 				),
 				false,
-				"modules"
+				"modules",
+				AssociationKind.ASSOCIATION
 		);
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
@@ -136,8 +137,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new EntityKey(
 						new EntityKeyMetadata( "Project", new String[] { "id" } ),
 						new String[] { "projectID" }
-				),
-				AssociationKind.ASSOCIATION
+				)
 		);
 
 		AssociationContext associationContext = new AssociationContext(

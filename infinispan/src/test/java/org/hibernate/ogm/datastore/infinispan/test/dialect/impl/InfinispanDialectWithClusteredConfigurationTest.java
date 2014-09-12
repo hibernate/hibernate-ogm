@@ -111,10 +111,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadAssociationInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, new AssociatedEntityKeyMetadata( null, null ), false, null );
+		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, new AssociatedEntityKeyMetadata( null, null ), false, null, null );
 		Object[] values = { 123, "Hello", 456L };
 
-		AssociationKey key = new AssociationKey( keyMetadata, values, null, null );
+		AssociationKey key = new AssociationKey( keyMetadata, values, null );
 
 		RowKey rowKey = new RowKey( columnNames, values );
 		Tuple tuple = new Tuple();
