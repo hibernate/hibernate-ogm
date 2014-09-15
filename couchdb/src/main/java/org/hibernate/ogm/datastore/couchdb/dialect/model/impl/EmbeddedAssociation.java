@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
@@ -33,7 +36,15 @@ class EmbeddedAssociation extends CouchDBAssociation {
 
 	@Override
 	public void setRows(List<Object> rows) {
-		entity.setAssociation( name, rows );
+		if ( EntityDocument.isEmbeddedProperty( name ) ) {
+			Map<String, Object> root = new HashMap<String, Object>();
+			EntityDocument.putEmbeddedProperty( root, name, rows );
+			Entry<String, Object> entry = root.entrySet().iterator().next();
+			entity.set( entry.getKey(), entry.getValue() );
+		}
+		else {
+			entity.set( name, rows );
+		}
 	}
 
 	@Override

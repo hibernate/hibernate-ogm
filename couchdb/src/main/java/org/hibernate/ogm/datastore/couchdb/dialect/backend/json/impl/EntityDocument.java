@@ -162,7 +162,7 @@ public class EntityDocument extends Document {
 	 * @param name the dot-separated path denoting the property to add
 	 * @param value the value of the property
 	 */
-	private void putEmbeddedProperty(Map<String, Object> root, String name, Object value) {
+	public static void putEmbeddedProperty(Map<String, Object> root, String name, Object value) {
 		String[] pathElements = PATH_SPLIT_PATTERN.split( name );
 
 		Map<String, Object> owner = root;
@@ -183,7 +183,7 @@ public class EntityDocument extends Document {
 		owner.put( pathElements[pathElements.length - 1], value );
 	}
 
-	private boolean isEmbeddedProperty(String columnName) {
+	public static boolean isEmbeddedProperty(String columnName) {
 		return columnName.contains( PATH_SEPARATOR );
 	}
 
