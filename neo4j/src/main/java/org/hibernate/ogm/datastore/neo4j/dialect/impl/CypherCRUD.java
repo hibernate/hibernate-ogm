@@ -323,7 +323,7 @@ public class CypherCRUD {
 		query.append( ") - " );
 		query.append( "[r" );
 		query.append( ":" );
-		query.append( relationshipType( associationKey.getMetadata().getCollectionRole() ).name() );
+		identifier( query, associationKey.getMetadata().getCollectionRole() );
 		query.append( "]" );
 		if ( associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ) {
 			query.append( " - (x:" );
