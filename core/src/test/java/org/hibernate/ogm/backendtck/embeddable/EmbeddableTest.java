@@ -8,6 +8,9 @@ package org.hibernate.ogm.backendtck.embeddable;
 
 import static org.fest.assertions.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -188,8 +191,38 @@ public class EmbeddableTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testPersistWithEmbeddedList() throws Exception {
+		final Session session = openSession();
+
+		Transaction transaction = session.beginTransaction();
+		List<String> alternativePhones = Arrays.asList( "+1-222-555-0222", "+1-202-555-0333" );
+		AccountWithPhone account = new AccountWithPhone( "2", "Mobile account 2" );
+		account.setPhoneNumber( new PhoneNumber( "+1-222-555-0111", alternativePhones ) );
+
+		session.persist( account );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		AccountWithPhone loadedUser = (AccountWithPhone) session.get( AccountWithPhone.class, account.getId() );
+		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedUser.getPhoneNumber() ).isNotNull();
+		assertThat( loadedUser.getPhoneNumber().getMain() ).isEqualTo( account.getPhoneNumber().getMain() );
+		assertThat( loadedUser.getPhoneNumber().getAlternatives() ).containsOnly( alternativePhones.toArray( new Object[alternativePhones.size()] ) );
+
+		session.delete( loadedUser );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertThat( session.get( AccountWithPhone.class, account.getId() ) ).isNull();
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class, MultiAddressAccount.class };
+		return new Class<?>[] { Account.class, MultiAddressAccount.class, AccountWithPhone.class };
 	}
 }
