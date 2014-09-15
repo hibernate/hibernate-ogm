@@ -409,11 +409,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = getEmbeddingEntity( key, associationContext );
+			DBObject entityId = prepareIdObject( key.getEntityKey() );
 
 			boolean insert = false;
 			if ( entity == null ) {
 				insert = true;
-				entity = this.prepareIdObject( key.getEntityKey() );
 			}
 
 			if ( getAssociationFieldOrNull( key, entity ) == null ) {
@@ -426,7 +426,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					BasicDBObject updater = new BasicDBObject();
 					this.addSubQuery( "$set", updater, key.getMetadata().getCollectionRole(),  Collections.EMPTY_LIST );
 					//TODO use entity filter with only the ids
-					this.getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
+					this.getCollection( key.getEntityKey() ).update( entityId, updater, true, false, writeConcern );
 					//adding assoc after update because the query takes the whole object today
 					addEmptyAssociationField( key, entity );
 				}
