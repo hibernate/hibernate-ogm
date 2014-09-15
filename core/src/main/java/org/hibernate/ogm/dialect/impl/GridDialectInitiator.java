@@ -14,14 +14,12 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -53,18 +51,16 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 		return ( (DefaultClassPropertyReaderContext<GridDialect>) propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.instantiate() )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
-				.withInstantiator( new GridDialectInstantiator( datastore, registry ) )
+				.withInstantiator( new GridDialectInstantiator( datastore ) )
 				.getValue();
 	}
 
 	private static class GridDialectInstantiator implements Instantiator<GridDialect> {
 
 		private final DatastoreProvider datastore;
-		private final ServiceRegistryImplementor registry;
 
-		public GridDialectInstantiator(DatastoreProvider datastore, ServiceRegistryImplementor registry) {
+		public GridDialectInstantiator(DatastoreProvider datastore) {
 			this.datastore = datastore;
-			this.registry = registry;
 		}
 
 		@Override
@@ -85,20 +81,15 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					log.gridDialectHasNoProperConstructor( clazz );
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
-				boolean supportsQueries = gridDialect instanceof QueryableGridDialect;
-
-				if ( gridDialect instanceof ServiceRegistryAwareService ) {
-					( (ServiceRegistryAwareService) gridDialect ).injectServices( registry );
-				}
 
 				if ( gridDialect instanceof BatchableGridDialect ) {
 					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
-					gridDialect = supportsQueries ? new QueryableBatchOperationsDelegator( batchable ) : new BatchOperationsDelegator( batchable );
+					gridDialect = new BatchOperationsDelegator( batchable );
 				}
 
 				log.useGridDialect( gridDialect.getClass().getName() );
 				if ( GridDialectLogger.activationNeeded() ) {
-					gridDialect = supportsQueries ? new QueryableGridDialectLogger( (QueryableGridDialect) gridDialect ) : new GridDialectLogger( gridDialect );
+					gridDialect = new GridDialectLogger( gridDialect );
 					log.info( "Grid dialect logs are active" );
 				}
 				else {

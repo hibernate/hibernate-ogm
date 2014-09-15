@@ -17,8 +17,8 @@ import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.cfg.impl.Version;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
+import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
-import org.hibernate.ogm.dialect.impl.GridDialectLogger;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -95,11 +95,15 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {
-		if ( gridDialect instanceof GridDialectLogger ) {
-			gridDialect = ( (GridDialectLogger) gridDialect ).getGridDialect();
+		while ( gridDialect instanceof ForwardingGridDialect ) {
+			if ( gridDialect instanceof BatchOperationsDelegator ) {
+				return (BatchOperationsDelegator) gridDialect;
+			}
+
+			gridDialect = ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect();
 		}
 
-		return (BatchOperationsDelegator) ( gridDialect instanceof BatchOperationsDelegator ? gridDialect : null );
+		return null;
 	}
 
 	private void addListeners(EventListenerRegistry eventListenerRegistry, BatchOperationsDelegator gridDialect) {

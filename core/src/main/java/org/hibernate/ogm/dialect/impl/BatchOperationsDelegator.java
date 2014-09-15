@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
+import java.io.Serializable;
+
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
@@ -15,19 +15,11 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.ModelConsumer;
-import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.persister.entity.Lockable;
-import org.hibernate.type.Type;
 
 /**
  * Wraps a {@link BatchableGridDialect} intercepting the operation and populating the queue that the delegate
@@ -39,16 +31,14 @@ import org.hibernate.type.Type;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class BatchOperationsDelegator implements GridDialect {
+public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable> {
 
 	// The threadlocal is properly set and cleaned in a try / catch by {@link org.hibernate.ogm.service.impl.BatchManagerEventListener}
 	// if used elsewhere, apply the same pattern
 	private final ThreadLocal<OperationsQueue> operationQueueLocal = new ThreadLocal<OperationsQueue>();
 
-	private final BatchableGridDialect dialect;
-
 	public BatchOperationsDelegator(BatchableGridDialect dialect) {
-		this.dialect = dialect;
+		super( dialect );
 	}
 
 	public void prepareBatch() {
@@ -74,13 +64,9 @@ public class BatchOperationsDelegator implements GridDialect {
 	}
 
 	public void executeBatch() {
-		dialect.executeBatch( getOperationQueue() );
+		super.executeBatch( getOperationQueue() );
 	}
 
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		return dialect.getLockingStrategy( lockable, lockMode );
-	}
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
@@ -89,18 +75,13 @@ public class BatchOperationsDelegator implements GridDialect {
 				getOperationQueue()
 		);
 
-		return dialect.getTuple( key, contextWithQueue );
-	}
-
-	@Override
-	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		return dialect.createTuple( key, tupleContext );
+		return super.getTuple( key, contextWithQueue );
 	}
 
 	@Override
 	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			dialect.updateTuple( tuple, key, tupleContext );
+			super.updateTuple( tuple, key, tupleContext );
 		}
 		else {
 			getOperationQueue().add( new UpdateTupleOperation( tuple, key, tupleContext ) );
@@ -110,7 +91,7 @@ public class BatchOperationsDelegator implements GridDialect {
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			dialect.removeTuple( key, tupleContext );
+			super.removeTuple( key, tupleContext );
 		}
 		else {
 			getOperationQueue().add( new RemoveTupleOperation( key, tupleContext ) );
@@ -119,18 +100,18 @@ public class BatchOperationsDelegator implements GridDialect {
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		return dialect.getAssociation( key, withQueue( associationContext ) );
+		return super.getAssociation( key, withQueue( associationContext ) );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		return dialect.createAssociation( key, withQueue( associationContext ) );
+		return super.createAssociation( key, withQueue( associationContext ) );
 	}
 
 	@Override
 	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
 		if ( isBatchDisabled() ) {
-			dialect.updateAssociation( association, key, withQueue( associationContext ) );
+			super.updateAssociation( association, key, withQueue( associationContext ) );
 		}
 		else {
 			getOperationQueue().add( new UpdateAssociationOperation( association, key, withQueue( associationContext ) ) );
@@ -140,41 +121,11 @@ public class BatchOperationsDelegator implements GridDialect {
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		if ( isBatchDisabled() ) {
-			dialect.removeAssociation( key, withQueue( associationContext ) );
+			super.removeAssociation( key, withQueue( associationContext ) );
 		}
 		else {
 			getOperationQueue().add( new RemoveAssociationOperation( key, withQueue( associationContext ) ) );
 		}
-	}
-
-	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return dialect.createTupleAssociation( associationKey, rowKey );
-	}
-
-	@Override
-	public Number nextValue(NextValueRequest request) {
-		return dialect.nextValue( request );
-	}
-
-	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
-	public GridType overrideType(Type type) {
-		return dialect.overrideType( type );
-	}
-
-	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		dialect.forEachTuple( consumer, entityKeyMetadatas );
-	}
-
-	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		return dialect.isStoredInEntityStructure( associationKey, associationContext );
 	}
 
 	private AssociationContext withQueue(AssociationContext associationContext) {

@@ -6,30 +6,23 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import java.util.Map;
+import java.io.Serializable;
 
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
+import org.hibernate.ogm.dialect.queryable.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
 import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.persister.entity.Lockable;
-import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.ServiceRegistryAwareService;
-import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.type.Type;
 import org.jboss.logging.Logger;
 
 /**
@@ -41,15 +34,12 @@ import org.jboss.logging.Logger;
  *
  * @see GridDialectInitiator
  */
-public class GridDialectLogger implements GridDialect, Configurable, ServiceRegistryAwareService {
+public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 
 	private static final Log log = Logger.getMessageLogger( Log.class, CoreLogCategories.DATASTORE_ACCESS.toString() );
 
-	private final GridDialect gridDialect; // the real wrapped grid dialect
-
 	public GridDialectLogger(GridDialect gridDialect) {
-		Contracts.assertParameterNotNull( gridDialect, "gridDialect" );
-		this.gridDialect = gridDialect;
+		super( gridDialect );
 	}
 
 	/**
@@ -62,20 +52,15 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 	}
 
 	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		return gridDialect.getLockingStrategy( lockable, lockMode );
-	}
-
-	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext );
-		return gridDialect.getTuple( key, tupleContext );
+		return super.getTuple( key, tupleContext );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Build Tuple object with key %1$s (does not trigger access to the datastore)", key );
-		return gridDialect.createTuple( key, tupleContext );
+		return super.createTuple( key, tupleContext );
 	}
 
 	@Override
@@ -86,25 +71,25 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 		else {
 			log.tracef( "Updating Tuple with key %1$s in datastore", key );
 		}
-		gridDialect.updateTuple( tuple, key, tupleContext );
+		super.updateTuple( tuple, key, tupleContext );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
 		log.tracef( "Removing Tuple with key %1$s from datastore", key );
-		gridDialect.removeTuple( key, tupleContext );
+		super.removeTuple( key, tupleContext );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Reading association with key %1$s from datastore and context %2$s", key, associationContext );
-		return gridDialect.getAssociation( key, associationContext );
+		return super.getAssociation( key, associationContext );
 	}
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Build association object with key %1$s (does not trigger access to the datastore)", key );
-		return gridDialect.createAssociation( key, associationContext );
+		return super.createAssociation( key, associationContext );
 	}
 
 	@Override
@@ -115,13 +100,13 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 		else {
 			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
-		gridDialect.updateAssociation( association, key, associationContext );
+		super.updateAssociation( association, key, associationContext );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Removing association with key %1$s from datastore", key );
-		gridDialect.removeAssociation( key, associationContext );
+		super.removeAssociation( key, associationContext );
 	}
 
 	@Override
@@ -131,53 +116,30 @@ public class GridDialectLogger implements GridDialect, Configurable, ServiceRegi
 				rowKey,
 				associationKey
 		);
-		return gridDialect.createTupleAssociation( associationKey, rowKey );
+		return super.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
 		log.tracef( "Extracting next value from key %1$s", request.getKey() );
-		return gridDialect.nextValue( request );
-	}
-
-	@Override
-	public boolean supportsSequences() {
-		return gridDialect.supportsSequences();
-	}
-
-	@Override
-	public GridType overrideType(Type type) {
-		return gridDialect.overrideType( type );
-	}
-
-	@Override
-	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+		return super.nextValue( request );
 	}
 
 	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKey );
-		return gridDialect.isStoredInEntityStructure( associationKey, associationContext );
+		return super.isStoredInEntityStructure( associationKey, associationContext );
 	}
 
 	@Override
-	public void configure(Map configurationValues) {
-		if ( gridDialect instanceof Configurable ) {
-			log.tracef( "Configuring service with properties: %1$s", configurationValues );
-			( (Configurable) gridDialect ).configure( configurationValues );
-		}
+	public void executeBatch(OperationsQueue queue) {
+		log.tracef( "Executing batch with %1$s items", queue.size() );
+		super.executeBatch( queue );
 	}
 
 	@Override
-	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-		if ( gridDialect instanceof ServiceRegistryAwareService ) {
-			log.tracef( "Injecting service registry" );
-			( (ServiceRegistryAwareService) gridDialect ).injectServices( serviceRegistry );
-		}
-	}
-
-	public GridDialect getGridDialect() {
-		return gridDialect;
+	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<Serializable> query, QueryParameters queryParameters) {
+		log.tracef( "Executing backend query: %1$s", query.getQuery() );
+		return super.executeBackendQuery( query, queryParameters );
 	}
 }
