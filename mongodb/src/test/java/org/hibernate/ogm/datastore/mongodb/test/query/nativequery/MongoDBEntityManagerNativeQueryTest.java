@@ -38,11 +38,12 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 5 );
+	private final User wombatSoftware = new User("1", "Wombat Software");
 
 	@Before
 	public void init() throws Exception {
 		begin();
-		EntityManager em = persist( portia, athanasia );
+		EntityManager em = persist( portia, athanasia, wombatSoftware);
 		commit();
 		close( em );
 	}
@@ -58,7 +59,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@After
 	public void tearDown() throws Exception {
 		begin();
-		EntityManager em = delete( portia, athanasia );
+		EntityManager em = delete( portia, athanasia, wombatSoftware);
 		commit();
 		close( em );
 	}
@@ -74,6 +75,38 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertAreEquals( portia, poem );
 
 		commit();
+		close( em );
+	}
+
+	@Test
+	@Ignore
+	public void testSingleResultQueryWithEmbeddedList() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		String nativeQuery = "{ name : 'Wombat Software' }";
+		User user = (User) em.createNativeQuery( nativeQuery, User.class ).getSingleResult();
+
+		assertAreEquals( wombatSoftware, user );
+
+		commit();
+		close( em );
+	}
+
+	@Test
+	public void testPersistUserWithEmbeddedList() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		User wombatSoftware2 = new User( "2", "Wombat Software 2" );
+		wombatSoftware2.setList( new EmbeddedList( "New List", Arrays.asList( "1", "2" )));
+
+		em.persist( wombatSoftware2 );
+
+		commit();
+
+		em.remove(wombatSoftware2);
+
 		close( em );
 	}
 
@@ -262,9 +295,15 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		assertThat( poem.getAuthor() ).as( "Wrong Author" ).isEqualTo( expectedPoem.getAuthor() );
 	}
 
+	private void assertAreEquals(User expectedUser, User user) {
+		assertThat( user ).isNotNull();
+		assertThat( user.getId() ).as( "Wrong Id" ).isEqualTo( expectedUser.getId() );
+		assertThat( user.getName() ).as( "Wrong Name" ).isEqualTo( expectedUser.getName() );
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[] { OscarWildePoem.class, User.class, EmbeddedList.class };
 	}
 
 	private void close(EntityManager em) {
