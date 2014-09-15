@@ -664,6 +664,20 @@
                     <artifactId>maven-external-dependency-plugin</artifactId>
                     <version>0.5</version>
                 </plugin>
+                <plugin>
+                    <!-- Creates a report by running "mvn clirr:clirr" -->
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>clirr-maven-plugin</artifactId>
+                    <version>2.6.1</version>
+                    <configuration>
+                        <comparisonVersion>4.1.0.Beta6</comparisonVersion>
+                        <excludes>
+                            <exclude>org/hibernate/ogm/**/impl/**</exclude>
+                        </excludes>
+                        <logResults>true</logResults>
+                        <minSeverity>info</minSeverity>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>

@@ -99,7 +99,10 @@ This parameterized job automates step 5 from this section as well as steps 1 and
 1. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
    You can't create symlinks on the server so you either create it locally then rsync it up, or make a copy of the documentation in that URL.
 
-1. Update the [community pages](http://community.jboss.org/en/hibernate/ogm). In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
+1. Update the [community pages](http://community.jboss.org/en/hibernate/ogm).
+In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
+When doing the latter, create an API change report by running `mvn clirr:clirr -pl core`.
+The report created at _core/target/site/clirr-report.html_ provides an overview of all changed API/SPI types.
 
 ### Announce
 
