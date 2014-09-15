@@ -207,7 +207,7 @@
 
                 mvn install -Deap.home=/home/user/jbossas/jboss-eap-6.2
             -->
-            <id>eap-custom</id>
+            <id>eap-installed</id>
             <activation>
                 <property>
                     <name>eap.home</name>
