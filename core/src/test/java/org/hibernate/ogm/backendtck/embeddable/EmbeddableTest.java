@@ -192,6 +192,37 @@ public class EmbeddableTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testPersistEmbeddedWithNullEmbeddedList() throws Exception {
+		final Session session = openSession();
+
+		Transaction transaction = session.beginTransaction();
+
+		AccountWithPhone wombatSoftware = new AccountWithPhone( "1", "Mobile account 1" );
+		wombatSoftware.setPhoneNumber( null );
+
+		session.persist( wombatSoftware );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		AccountWithPhone loadedUser = (AccountWithPhone) session.get( AccountWithPhone.class, wombatSoftware.getId() );
+		assertThat( loadedUser ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		// It is not null because of the list of elements
+		assertThat( loadedUser.getPhoneNumber() ).isNotNull();
+		assertThat( loadedUser.getPhoneNumber().getMain() ).isNull();
+		assertThat( loadedUser.getPhoneNumber().getAlternatives() ).isEmpty();
+
+		session.delete( loadedUser );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertThat( session.get( AccountWithPhone.class, wombatSoftware.getId() ) ).isNull();
+		transaction.commit();
+		session.close();
+	}
+
+	@Test
 	public void testPersistWithEmbeddedList() throws Exception {
 		final Session session = openSession();
 
