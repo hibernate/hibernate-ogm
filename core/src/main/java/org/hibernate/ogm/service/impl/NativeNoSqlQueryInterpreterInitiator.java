@@ -11,7 +11,6 @@ import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
 import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
-import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;
@@ -49,10 +48,10 @@ public class NativeNoSqlQueryInterpreterInitiator implements SessionFactoryServi
 	}
 
 	private NativeQueryInterpreter getParameterMetadataRecognizer(ServiceRegistryImplementor registry) {
-		GridDialect gridDialect = registry.getService( GridDialect.class );
+		QueryableGridDialect<?> queryableGridDialect = registry.getService( QueryableGridDialect.class );
 
-		if ( gridDialect instanceof QueryableGridDialect ) {
-			return new NativeNoSqlQueryInterpreter( (QueryableGridDialect) gridDialect );
+		if ( queryableGridDialect != null ) {
+			return new NativeNoSqlQueryInterpreter( queryableGridDialect );
 		}
 		else {
 			return null;

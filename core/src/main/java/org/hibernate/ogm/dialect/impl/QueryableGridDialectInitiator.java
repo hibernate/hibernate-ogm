@@ -31,8 +31,20 @@ public class QueryableGridDialectInitiator implements StandardServiceInitiator<Q
 	}
 
 	@Override
-	public QueryableGridDialect initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		GridDialect gridDialect = registry.getService( GridDialect.class );
-		return gridDialect instanceof QueryableGridDialect ? (QueryableGridDialect) gridDialect : null;
+	public QueryableGridDialect<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
+		return asQueryableGridDialectOrNull( registry.getService( GridDialect.class ) );
+	}
+
+	private QueryableGridDialect<?> asQueryableGridDialectOrNull(GridDialect gridDialect) {
+		if ( gridDialect instanceof ForwardingGridDialect ) {
+			if ( ( (ForwardingGridDialect<?>) gridDialect ).isQueryable() ) {
+				return (QueryableGridDialect<?>) gridDialect;
+			}
+		}
+		else if ( gridDialect instanceof QueryableGridDialect ) {
+			return (QueryableGridDialect<?>) gridDialect;
+		}
+
+		return null;
 	}
 }
