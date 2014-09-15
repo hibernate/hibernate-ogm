@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.util.impl;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 
 /**
@@ -48,5 +49,17 @@ public class ArrayHelper {
 
 	public static boolean contains(Object[] array, Object element) {
 		return indexOf( array, element ) != -1;
+	}
+
+	public static <T> T[] concat(T[] first, T[] second) {
+		int firstLength = first.length;
+		int secondLength = second.length;
+
+		@SuppressWarnings("unchecked")
+		T[] result = (T[]) Array.newInstance( first.getClass().getComponentType(), firstLength + secondLength );
+		System.arraycopy( first, 0, result, 0, firstLength );
+		System.arraycopy( second, 0, result, firstLength, secondLength );
+
+		return result;
 	}
 }
