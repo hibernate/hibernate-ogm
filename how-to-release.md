@@ -103,6 +103,7 @@ This parameterized job automates step 5 from this section as well as steps 1 and
 In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
 When doing the latter, create an API change report by running `mvn clirr:clirr -pl core`.
 The report created at _core/target/site/clirr-report.html_ provides an overview of all changed API/SPI types.
+After you have created the change log, don't forget to update the _comparisonVersion_ in the configuration of the Maven Clirr plug-in in _pom.xml_.
 
 ### Announce
 
