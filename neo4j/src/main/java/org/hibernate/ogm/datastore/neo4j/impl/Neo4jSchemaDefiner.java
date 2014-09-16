@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.neo4j.impl;
 
+import static org.neo4j.graphdb.DynamicLabel.label;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -20,7 +22,6 @@ import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
@@ -120,7 +121,7 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 		while ( tableMappings.hasNext() ) {
 			Table table = tableMappings.next();
 			if ( table.isPhysicalTable() ) {
-				Label label = CypherCRUD.nodeLabel( table.getName() );
+				Label label = label( table.getName() );
 				PrimaryKey primaryKey = table.getPrimaryKey();
 				createConstraint( neo4jDb, table, label, primaryKey );
 				@SuppressWarnings("unchecked")
