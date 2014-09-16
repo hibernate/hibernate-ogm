@@ -21,9 +21,11 @@ import org.hibernate.service.Service;
 import org.hibernate.type.Type;
 
 /**
- * Dialect abstracting Hibernate OGM from the grid implementation
+ * Dialect abstracting Hibernate OGM from the grid implementation.
  * <p>
- * Rather than implementing this interface directly, it is recommend to extend {@link BaseGridDialect}.
+ * Specific grid dialects may implement one or more <i>facet interfaces</i>, in order to provide additional
+ * functionality such as querying or batching support. Rather than implementing this interface directly, it is recommend
+ * to extend {@link BaseGridDialect}.
  *
  * @author Emmanuel Bernard
  * @author Gunnar Morling
