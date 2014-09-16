@@ -58,48 +58,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		Contracts.assertParameterNotNull( gridDialect, "gridDialect" );
 
 		this.gridDialect = gridDialect;
-		this.batchableGridDialect = asBatchableGridDialectOrNull( gridDialect );
-		this.queryableGridDialect = (QueryableGridDialect<T>) asQueryableGridDialectOrNull( gridDialect );
-	}
-
-	private static QueryableGridDialect<?> asQueryableGridDialectOrNull(GridDialect gridDialect) {
-		if ( gridDialect instanceof ForwardingGridDialect ) {
-			if ( ( (ForwardingGridDialect<?>) gridDialect ).isQueryable() ) {
-				return (QueryableGridDialect<?>) gridDialect;
-			}
-		}
-		else if ( gridDialect instanceof QueryableGridDialect ) {
-			return (QueryableGridDialect<?>) gridDialect;
-		}
-
-		return null;
-	}
-
-	private static BatchableGridDialect asBatchableGridDialectOrNull(GridDialect gridDialect) {
-		if ( gridDialect instanceof ForwardingGridDialect ) {
-			if ( ( (ForwardingGridDialect<?>) gridDialect ).isBatchable() ) {
-				return (BatchableGridDialect) gridDialect;
-			}
-		}
-		else if ( gridDialect instanceof BatchableGridDialect ) {
-			return (BatchableGridDialect) gridDialect;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Whether the wrapped dialect implementation implements the {@link QueryableGridDialect} facet or not.
-	 */
-	public boolean isQueryable() {
-		return queryableGridDialect != null;
-	}
-
-	/**
-	 * Whether the wrapped dialect implementation implements the {@link BatchableGridDialect} facet or not.
-	 */
-	public boolean isBatchable() {
-		return batchableGridDialect != null;
+		this.batchableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, BatchableGridDialect.class );
+		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
 	}
 
 	/**
@@ -241,8 +201,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		}
 
 		sb.append( delegate.getClass().getSimpleName() );
-		sb.append( " [isQueryable=" ).append( isQueryable() );
-		sb.append( ", isBatchable=" ).append( isBatchable() ).append( "]" );
+		sb.append( "]" );
 
 		return sb.toString();
 	}

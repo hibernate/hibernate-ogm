@@ -18,6 +18,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  *
  * @author Gunnar Morling
  */
+@SuppressWarnings("rawtypes")
 public class QueryableGridDialectInitiator implements StandardServiceInitiator<QueryableGridDialect> {
 
 	public static final QueryableGridDialectInitiator INSTANCE = new QueryableGridDialectInitiator();
@@ -32,19 +33,6 @@ public class QueryableGridDialectInitiator implements StandardServiceInitiator<Q
 
 	@Override
 	public QueryableGridDialect<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return asQueryableGridDialectOrNull( registry.getService( GridDialect.class ) );
-	}
-
-	private QueryableGridDialect<?> asQueryableGridDialectOrNull(GridDialect gridDialect) {
-		if ( gridDialect instanceof ForwardingGridDialect ) {
-			if ( ( (ForwardingGridDialect<?>) gridDialect ).isQueryable() ) {
-				return (QueryableGridDialect<?>) gridDialect;
-			}
-		}
-		else if ( gridDialect instanceof QueryableGridDialect ) {
-			return (QueryableGridDialect<?>) gridDialect;
-		}
-
-		return null;
+		return GridDialects.getDialectFacetOrNull( registry.getService( GridDialect.class ), QueryableGridDialect.class );
 	}
 }
