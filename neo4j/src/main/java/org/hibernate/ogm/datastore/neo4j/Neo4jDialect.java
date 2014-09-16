@@ -6,9 +6,9 @@
  */
 package org.hibernate.ogm.datastore.neo4j;
 
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
+import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,7 +24,6 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jQueries;
@@ -89,8 +88,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private final CypherCRUD neo4jCRUD;
-
 	private final Neo4jSequenceGenerator neo4jSequenceGenerator;
 
 	private ServiceRegistryImplementor serviceRegistry;
@@ -101,7 +98,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
 		this.executionEngine = new ExecutionEngine( provider.getDataBase(), StringLogger.SYSTEM_DEBUG );
-		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
 	}
 
@@ -244,7 +240,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
 		EntityKey entityKey = associationKey.getEntityKey();
 		Node ownerNode = queries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
-		Relationship relationship = ownerNode.createRelationshipTo( targetNode, relationshipType( associationKey.getMetadata().getCollectionRole() ) );
+		Relationship relationship = ownerNode.createRelationshipTo( targetNode, withName( associationKey.getMetadata().getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
@@ -331,7 +327,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Relationship relationship = neo4jCRUD.findRelationship( associationKey, action.getKey(), associatedEntityKeyMetadata );
+		Relationship relationship = queries.get( associationKey.getMetadata() ).findRelationship( executionEngine, associationKey, action.getKey() );
 
 		if (relationship != null) {
 			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
@@ -381,7 +377,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			String associationRole = tupleContext.getRole( operation.getColumn() );
 			if ( !processedAssociationRoles.contains( associationRole ) ) {
 
-				Iterator<Relationship> relationships = node.getRelationships( relationshipType( associationRole ) ).iterator();
+				Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
 
 				if ( relationships.hasNext() ) {
 					relationships.next().delete();
@@ -410,14 +406,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 				// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
 				// properties, so the type is uniquely identifying it
-				Iterator<Relationship> relationships = node.getRelationships( relationshipType( associationRole ) ).iterator();
+				Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
 				if ( relationships.hasNext() ) {
 					relationships.next().delete();
 				}
 
 				// create a new relationship
 				Node targetNode = queries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
-				node.createRelationshipTo( targetNode, relationshipType( associationRole ) );
+				node.createRelationshipTo( targetNode, withName( associationRole ) );
 			}
 		}
 	}
@@ -443,7 +439,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<String> backendQuery, QueryParameters queryParameters) {
 		Map<String, Object> parameters = getNamedParameterValuesConvertedByGridType( queryParameters );
 		String nativeQuery = buildNativeQuery( backendQuery, queryParameters );
-		ExecutionResult result = neo4jCRUD.executeQuery( nativeQuery, parameters );
+		ExecutionResult result = executionEngine.execute( nativeQuery, parameters );
 
 		if ( backendQuery.getSingleEntityKeyMetadataOrNull() != null ) {
 			return new NodesTupleIterator( result );
