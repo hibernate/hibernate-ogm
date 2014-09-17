@@ -10,7 +10,6 @@ import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.pretty.MessageHelper;
@@ -25,27 +24,19 @@ class EntityDehydrator {
 
 	private static final Log log = LoggerFactory.make();
 
+	private final OgmEntityPersister persister;
 	private Tuple resultset;
 	private Object[] fields;
 	private boolean[] includeProperties;
-	private boolean[][] includeColumns;
 	private int tableIndex;
 	private Serializable id;
 	private SessionImplementor session;
-	private GridType[] gridPropertyTypes;
-	private OgmEntityPersister persister;
+
+	public EntityDehydrator(OgmEntityPersister persister) {
+		this.persister = persister;
+	}
 
 	// fluent methods populating data
-
-	public EntityDehydrator persister(OgmEntityPersister persister) {
-		this.persister = persister;
-		return this;
-	}
-
-	public EntityDehydrator gridPropertyTypes(GridType[] gridPropertyTypes) {
-		this.gridPropertyTypes = gridPropertyTypes;
-		return this;
-	}
 
 	public EntityDehydrator resultset(Tuple resultset) {
 		this.resultset = resultset;
@@ -59,11 +50,6 @@ class EntityDehydrator {
 
 	public EntityDehydrator includeProperties(boolean[] includeProperties) {
 		this.includeProperties = includeProperties;
-		return this;
-	}
-
-	public EntityDehydrator includeColumns(boolean[][] includeColumns) {
-		this.includeColumns = includeColumns;
 		return this;
 	}
 
@@ -91,14 +77,12 @@ class EntityDehydrator {
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-
 				if ( includeProperties[propertyIndex] ) {
-					//dehydrate
-					gridPropertyTypes[propertyIndex].nullSafeSet(
+					persister.getGridPropertyTypes()[propertyIndex].nullSafeSet(
 							resultset,
 							fields[propertyIndex],
 							persister.getPropertyColumnNames( propertyIndex ),
-							includeColumns[propertyIndex],
+							persister.getPropertyColumnInsertable()[propertyIndex],
 							session
 					);
 				}
