@@ -10,6 +10,8 @@ import static org.fest.assertions.Assertions.assertThat;
 
 import org.bson.types.ObjectId;
 import org.hibernate.Transaction;
+import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
@@ -221,8 +223,38 @@ public class ObjectIdTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void canUseGenerationTypeAutoWithObjectId() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		Singer gloria = new Singer( "Gloria" );
+
+		// when
+		session.persist( gloria );
+		assertThat( gloria.getId() ).isNotNull();
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		Singer singerLoaded = (Singer) session.load( Singer.class, gloria.getId() );
+
+		// then
+		assertThat( singerLoaded.getName() ).isEqualTo( "Gloria" );
+
+		tx.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class };
+		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class, Singer.class };
+	}
+
+	@Override
+	protected void configure(Configuration cfg) {
+		cfg.setProperty( AvailableSettings.USE_NEW_ID_GENERATOR_MAPPINGS, "false" );
 	}
 }
