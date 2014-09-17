@@ -38,12 +38,13 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
 
 /**
- * A {@link GridDialect} which delegates all the operations to another dialect implementation. Useful as base class in
- * case only a few methods of the {@code GridDialect} contract should be overridden, while delegating all the others.
+ * A {@link GridDialect} which delegates all the operations to another dialect implementation. Useful as base class for
+ * dialect wrappers which wish to override only a few methods of the {@code GridDialect}, while delegating all the
+ * others.
  * <p>
  * <b>Note:</b> This class implements all the dialect facet interfaces such as {@link QueryableGridDialect}, one
  * therefore must not use {@code instanceof} to determine the capabilities of a dialect, but rather
- * {@link #isQueryable()} etc. should be used.
+ * {@link GridDialects#getDialectFacetOrNull(GridDialect, Class)} should be used.
  *
  * @author Gunnar Morling
  */
