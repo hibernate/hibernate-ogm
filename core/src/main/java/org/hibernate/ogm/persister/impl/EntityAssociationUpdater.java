@@ -24,7 +24,6 @@ import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
-import org.hibernate.type.Type;
 
 /**
  * Updates the inverse side of bi-directional many-to-one/one-to-one associations, managed by the entity on the main
@@ -44,6 +43,8 @@ class EntityAssociationUpdater {
 	private int tableIndex;
 	private Serializable id;
 	private SessionImplementor session;
+
+	private boolean[] propertyInverseAssociationManagementMayBeRequired;
 
 	EntityAssociationUpdater(OgmEntityPersister persister) {
 		this.persister = persister;
@@ -80,6 +81,11 @@ class EntityAssociationUpdater {
 		return this;
 	}
 
+	public EntityAssociationUpdater propertyInverseAssociationManagementMayBeRequired(boolean[] propertyInverseAssociationManagementMayBeRequired) {
+		this.propertyInverseAssociationManagementMayBeRequired = propertyInverseAssociationManagementMayBeRequired;
+		return this;
+	}
+
 	//action methods
 
 	/**
@@ -90,15 +96,9 @@ class EntityAssociationUpdater {
 			log.trace( "Adding inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
-		final boolean[] uniqueness = persister.getPropertyUniqueness();
-		final Type[] propertyTypes = persister.getPropertyTypes();
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				final Type propertyType = propertyTypes[propertyIndex];
-				boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
-				final boolean createMetadata = isStarToOne || uniqueness[propertyIndex];
-
-				if ( createMetadata ) {
+				if ( propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
 					//add to property cache
 					Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
 							resultset,
@@ -123,14 +123,9 @@ class EntityAssociationUpdater {
 			log.trace( "Removing inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
-		final boolean[] uniqueness = persister.getPropertyUniqueness();
-		final Type[] propertyTypes = persister.getPropertyTypes();
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				final Type propertyType = propertyTypes[propertyIndex];
-				boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
-				final boolean createMetadata = isStarToOne || uniqueness[propertyIndex];
-				if ( createMetadata ) {
+				if ( propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
 					//remove from property cache
 					Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
 							resultset,
