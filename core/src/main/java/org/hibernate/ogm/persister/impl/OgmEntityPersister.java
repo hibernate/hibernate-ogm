@@ -947,13 +947,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
-		new EntityDehydrator()
+
+		new EntityDehydrator( this )
 				.fields( fields )
-				.gridPropertyTypes( gridPropertyTypes )
 				.id( id )
-				.includeColumns( includeColumns )
 				.includeProperties( includeProperties )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
@@ -971,17 +969,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
-		new EntityAssociationUpdater()
+		new EntityAssociationUpdater( this )
 				.fields( fields )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
 				.id( id )
-				.includeColumns( includeColumns )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridDialect( gridDialect )
 				.removeNavigationalInformationFromReverseSide();
 	}
 
@@ -996,17 +989,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
-		new EntityAssociationUpdater()
+		new EntityAssociationUpdater( this )
 				.fields( fields )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
 				.id( id )
-				.includeColumns( includeColumns )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridDialect( gridDialect )
 				.addNavigationalInformationForReverseSide();
 	}
 
@@ -1202,12 +1190,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
-			new EntityAssociationUpdater()
-				.gridDialect( gridDialect )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
+			new EntityAssociationUpdater( this )
 				.id( id )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( j )
@@ -1318,6 +1302,18 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 //		return hasWhere() ?
 //			" and " + getSQLWhereString(alias) :
 //			"";
+	}
+
+	/**
+	 * Overridden in order to make it visible to other classes in this package.
+	 */
+	@Override
+	protected boolean[][] getPropertyColumnInsertable() {
+		return super.getPropertyColumnInsertable();
+	}
+
+	protected GridType[] getGridPropertyTypes() {
+		return gridPropertyTypes;
 	}
 
 	@Override

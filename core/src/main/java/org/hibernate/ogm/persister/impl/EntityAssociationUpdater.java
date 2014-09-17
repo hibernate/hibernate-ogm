@@ -37,33 +37,20 @@ class EntityAssociationUpdater {
 
 	private static final Log log = LoggerFactory.make();
 
+	private final OgmEntityPersister persister;
+	private final GridDialect gridDialect;
 	private Tuple resultset;
 	private Object[] fields;
-	private boolean[][] includeColumns;
 	private int tableIndex;
 	private Serializable id;
 	private SessionImplementor session;
-	private GridType[] gridPropertyTypes;
-	private OgmEntityPersister persister;
-	private GridType gridIdentifierType;
-	private GridDialect gridDialect;
+
+	EntityAssociationUpdater(OgmEntityPersister persister) {
+		this.persister = persister;
+		this.gridDialect = persister.getFactory().getServiceRegistry().getService( GridDialect.class );
+	}
 
 	// fluent methods populating data
-
-	public EntityAssociationUpdater persister(OgmEntityPersister persister) {
-		this.persister = persister;
-		return this;
-	}
-
-	public EntityAssociationUpdater gridPropertyTypes(GridType[] gridPropertyTypes) {
-		this.gridPropertyTypes = gridPropertyTypes;
-		return this;
-	}
-
-	public EntityAssociationUpdater gridIdentifierType(GridType gridIdentifierType) {
-		this.gridIdentifierType = gridIdentifierType;
-		return this;
-	}
 
 	/**
 	 * Sets the tuple representing the entity whose inverse associations should be updated.
@@ -75,11 +62,6 @@ class EntityAssociationUpdater {
 
 	public EntityAssociationUpdater fields(Object[] fields) {
 		this.fields = fields;
-		return this;
-	}
-
-	public EntityAssociationUpdater includeColumns(boolean[][] includeColumns) {
-		this.includeColumns = includeColumns;
 		return this;
 	}
 
@@ -95,11 +77,6 @@ class EntityAssociationUpdater {
 
 	public EntityAssociationUpdater session(SessionImplementor session) {
 		this.session = session;
-		return this;
-	}
-
-	public EntityAssociationUpdater gridDialect(GridDialect gridDialect) {
-		this.gridDialect = gridDialect;
 		return this;
 	}
 
@@ -192,13 +169,13 @@ class EntityAssociationUpdater {
 		Tuple tuple = new Tuple();
 		//add the id column
 		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
-		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
+		persister.getGridIdentifierType().nullSafeSet( tuple, id, identifierColumnNames, session );
 		//add the fk column
-		gridPropertyTypes[propertyIndex].nullSafeSet(
+		persister.getGridPropertyTypes()[propertyIndex].nullSafeSet(
 							tuple,
 							fields[propertyIndex],
 							associationKeyMetadata.getColumnNames(),
-							includeColumns[propertyIndex],
+							persister.getPropertyColumnInsertable()[propertyIndex],
 							session
 					);
 
@@ -234,7 +211,7 @@ class EntityAssociationUpdater {
 			tupleKey.put( associationKeyMetadata.getColumnNames()[index], oldColumnValue[index] );
 		}
 		//add id value in TupleKey
-		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
+		persister.getGridIdentifierType().nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
 
 		Association propertyValues = associationPersister.getAssociation();
 		if ( propertyValues != null ) {
@@ -255,7 +232,8 @@ class EntityAssociationUpdater {
 	 * Returns the object referenced by the specified property (which represents an association).
 	 */
 	private Object getReferencedEntity(int propertyIndex) {
-		GridType propertyType = gridPropertyTypes[propertyIndex];
+		GridType propertyType = persister.getGridPropertyTypes()[propertyIndex];
+
 		Serializable id = (Serializable) propertyType.hydrate(
 				resultset, persister.getPropertyColumnNames( propertyIndex ), session, null
 		);
