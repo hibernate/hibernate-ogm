@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.persister.impl;
 
-import static org.hibernate.ogm.persister.impl.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
@@ -1460,5 +1459,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private boolean timingsMatch(GenerationTiming timing, GenerationTiming matchTiming) {
 		return ( matchTiming == GenerationTiming.INSERT && timing.includesInsert() ) ||
 				( matchTiming == GenerationTiming.ALWAYS && timing.includesUpdate() );
+	}
+
+	// Here the RowKey is made of the foreign key columns pointing to the associated entity
+	// and the identifier columns of the owner's entity
+	// We use the same order as the collection: id column names, foreign key column names
+	private String[] buildRowKeyColumnNamesForStarToOne(OgmEntityPersister persister, String[] keyColumnNames) {
+		String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		int length = identifierColumnNames.length + keyColumnNames.length;
+		String[] rowKeyColumnNames = new String[length];
+		System.arraycopy( identifierColumnNames, 0, rowKeyColumnNames, 0, identifierColumnNames.length );
+		System.arraycopy( keyColumnNames, 0, rowKeyColumnNames, identifierColumnNames.length, keyColumnNames.length );
+		return rowKeyColumnNames;
 	}
 }
