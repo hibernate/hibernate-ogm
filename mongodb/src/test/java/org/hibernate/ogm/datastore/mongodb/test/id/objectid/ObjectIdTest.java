@@ -13,6 +13,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
@@ -248,9 +249,43 @@ public class ObjectIdTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void stringUsedAsIdIsMappedToObjectId() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		Comedian monty = new Comedian( "Monty" );
+
+		// when
+		session.persist( monty );
+		assertThat( monty.getId() ).isNotNull();
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		// then
+		assertCountQueryResult( session, "db.Comedian.count({ \"_id\" : { \"$oid\" : \"" + monty.getId() + "\" }, \"name\" : \"Monty\" })", 1L);
+
+		Comedian montyLoaded = (Comedian) session.load( Comedian.class, monty.getId() );
+		assertThat( ObjectId.isValid( montyLoaded.getId() ) ).isTrue();
+		assertThat( montyLoaded.getName() ).isEqualTo( "Monty" );
+
+		tx.commit();
+		session.close();
+	}
+
+	private void assertCountQueryResult(OgmSession session, String queryString, long expectedCount) {
+		NoSQLQuery query = session.createNativeQuery( queryString );
+		query.addScalar( "n" );
+		long actualCount = (Long) query.list().iterator().next();
+		assertThat( actualCount ).describedAs( "Count query didn't yield expected result" ).isEqualTo( expectedCount );
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class, Singer.class };
+		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class, Singer.class, Comedian.class };
 	}
 
 	@Override

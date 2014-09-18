@@ -46,6 +46,8 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoD
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
@@ -608,6 +610,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type.getReturnedClass() == ObjectId.class ) {
 			return ObjectIdGridType.INSTANCE;
+		}
+		else if ( type instanceof StringAsObjectIdType ) {
+			return StringAsObjectIdGridType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
