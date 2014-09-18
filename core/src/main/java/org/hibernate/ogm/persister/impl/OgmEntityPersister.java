@@ -901,8 +901,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 
 				//dehydrate
+				removeFromInverseAssociations( resultset, fields, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
 				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+				addToInverseAssociations( resultset, fields, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 			}
 		}
 	}
@@ -948,7 +950,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		new EntityDehydrator()
 				.fields( fields )
 				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
 				.id( id )
 				.includeColumns( includeColumns )
 				.includeProperties( includeProperties )
@@ -956,8 +957,57 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridDialect( gridDialect )
 				.dehydrate();
+	}
+
+	/**
+	 * Removes the given entity from the inverse associations it manages.
+	 */
+	private void removeFromInverseAssociations(
+			Tuple resultset,
+			final Object[] fields,
+			boolean[] includeProperties,
+			boolean[][] includeColumns,
+			int tableIndex,
+			Serializable id,
+			SessionImplementor session) {
+		new EntityAssociationUpdater()
+				.fields( fields )
+				.gridPropertyTypes( gridPropertyTypes )
+				.gridIdentifierType( gridIdentifierType )
+				.id( id )
+				.includeColumns( includeColumns )
+				.persister( this )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.gridDialect( gridDialect )
+				.removeNavigationalInformationFromReverseSide();
+	}
+
+	/**
+	 * Adds the given entity to the inverse associations it manages.
+	 */
+	private void addToInverseAssociations(
+			Tuple resultset,
+			final Object[] fields,
+			boolean[] includeProperties,
+			boolean[][] includeColumns,
+			int tableIndex,
+			Serializable id,
+			SessionImplementor session) {
+		new EntityAssociationUpdater()
+				.fields( fields )
+				.gridPropertyTypes( gridPropertyTypes )
+				.gridIdentifierType( gridIdentifierType )
+				.id( id )
+				.includeColumns( includeColumns )
+				.persister( this )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.gridDialect( gridDialect )
+				.addNavigationalInformationForReverseSide();
 	}
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
@@ -988,8 +1038,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		// dehydrate
 		dehydrate( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, null, session );
 		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, getTupleContext() );
-
 		Serializable id = (Serializable) getGridIdentifierType().hydrate( tuple, getIdentifierColumnNames(), session, object );
+		addToInverseAssociations( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
 
 		if ( id == null ) {
 			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
@@ -1042,9 +1092,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
 
-			//dehydrate
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
 			gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+			addToInverseAssociations( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
 		}
 	}
 
@@ -1152,7 +1202,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
-			new EntityDehydrator()
+			new EntityAssociationUpdater()
 				.gridDialect( gridDialect )
 				.gridPropertyTypes( gridPropertyTypes )
 				.gridIdentifierType( gridIdentifierType )
@@ -1161,8 +1211,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( j )
-				.onlyRemovePropertyMetadata()
-				.dehydrate();
+				.removeNavigationalInformationFromReverseSide();
 
 			gridDialect.removeTuple( key, getTupleContext() );
 		}

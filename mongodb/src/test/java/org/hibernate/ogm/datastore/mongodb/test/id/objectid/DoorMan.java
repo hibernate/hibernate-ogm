@@ -6,16 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.test.id.objectid;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import org.bson.types.ObjectId;
 
@@ -23,17 +17,15 @@ import org.bson.types.ObjectId;
  * @author Gunnar Morling
  */
 @Entity
-public class Bar {
+public class DoorMan {
 
 	private ObjectId id;
 	private String name;
-	private MusicGenre musicGenre;
-	private Set<DoorMan> doorMen = new HashSet<DoorMan>();
 
-	Bar() {
+	DoorMan() {
 	}
 
-	Bar(String name) {
+	DoorMan(String name) {
 		this.name = name;
 	}
 
@@ -53,23 +45,5 @@ public class Bar {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	@ManyToOne
-	public MusicGenre getMusicGenre() {
-		return musicGenre;
-	}
-
-	public void setMusicGenre(MusicGenre musicGenre) {
-		this.musicGenre = musicGenre;
-	}
-
-	@OneToMany(cascade = CascadeType.ALL)
-	public Set<DoorMan> getDoorMen() {
-		return doorMen;
-	}
-
-	public void setDoorMen(Set<DoorMan> doorMen) {
-		this.doorMen = doorMen;
 	}
 }

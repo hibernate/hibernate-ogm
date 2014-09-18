@@ -101,8 +101,128 @@ public class ObjectIdTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void canUseObjectIdAssignedUponInsertInAssociation() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		MusicGenre classicRock = new MusicGenre( "Classic Rock" );
+
+		Bar goldFishBar = new Bar( "Goldfisch Bar" );
+		goldFishBar.setMusicGenre( classicRock );
+		classicRock.getPlayedIn().add( goldFishBar );
+
+		Bar sharkStation = new Bar( "Shark Station" );
+		sharkStation.setMusicGenre( classicRock );
+		classicRock.getPlayedIn().add( sharkStation );
+
+		// when
+		session.persist( classicRock );
+		session.persist( goldFishBar );
+		session.persist( sharkStation );
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		// then
+		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+
+		assertThat( barLoaded.getName() ).isEqualTo( "Goldfisch Bar" );
+		assertThat( barLoaded.getMusicGenre() ).isNotNull();
+		assertThat( barLoaded.getMusicGenre().getName() ).isEqualTo( "Classic Rock" );
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		MusicGenre genreLoaded = (MusicGenre) session.load( MusicGenre.class, goldFishBar.getMusicGenre().getId() );
+		assertThat( genreLoaded.getPlayedIn() ).onProperty( "name" ).containsOnly( "Goldfisch Bar", "Shark Station" );
+
+		tx.commit();
+		session.close();
+	}
+
+	@Test
+	public void canUseObjectIdAssignedUponInsertInOneToManyAssociation() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		Bar goldFishBar = new Bar( "Goldfisch Bar" );
+		goldFishBar.getDoorMen().add( new DoorMan( "Bruce" ) );
+		goldFishBar.getDoorMen().add( new DoorMan( "Dwain" ) );
+
+		// when
+		session.persist( goldFishBar );
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		// then
+		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+		assertThat( barLoaded.getDoorMen() ).onProperty( "name" ).containsOnly( "Bruce", "Dwain" );
+
+		tx.commit();
+		session.close();
+	}
+
+	@Test
+	public void canUseObjectIdAssignedUponInsertInManyToManyAssociation() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		Snack nachos = new Snack( "nachos" );
+		Snack frozenYogurt = new Snack( "frozen yogurt" );
+		Ingredient milk = new Ingredient( "milk" );
+		Ingredient salt = new Ingredient( "salt" );
+
+		nachos.getIngredients().add( salt );
+		salt.getContainedIn().add( nachos );
+
+		frozenYogurt.getIngredients().add( milk );
+		milk.getContainedIn().add( frozenYogurt );
+
+		frozenYogurt.getIngredients().add( salt );
+		salt.getContainedIn().add( frozenYogurt );
+
+		// when
+		session.persist( nachos );
+		session.persist( frozenYogurt );
+		session.persist( milk );
+		session.persist( salt );
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		// then
+		Snack frozenYogurtLoaded = (Snack) session.load( Snack.class, frozenYogurt.getId() );
+
+		assertThat( frozenYogurtLoaded.getName() ).isEqualTo( "frozen yogurt" );
+		assertThat( frozenYogurtLoaded.getIngredients() ).onProperty( "name" ).containsOnly( "salt", "milk" );
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		Ingredient milkLoaded = (Ingredient) session.load( Ingredient.class, milk.getId() );
+		assertThat( milkLoaded.getName() ).isEqualTo( "milk" );
+		assertThat( milkLoaded.getContainedIn() ).onProperty( "name" ).containsOnly( "frozen yogurt" );
+
+		Ingredient saltLoaded = (Ingredient) session.load( Ingredient.class, salt.getId() );
+		assertThat( saltLoaded.getName() ).isEqualTo( "salt" );
+		assertThat( saltLoaded.getContainedIn() ).onProperty( "name" ).containsOnly( "nachos", "frozen yogurt" );
+
+		tx.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class };
+		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class, MusicGenre.class, DoorMan.class, Snack.class, Ingredient.class };
 	}
 }
