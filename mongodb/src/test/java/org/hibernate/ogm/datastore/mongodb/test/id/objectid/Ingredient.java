@@ -9,13 +9,11 @@ package org.hibernate.ogm.datastore.mongodb.test.id.objectid;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 
 import org.bson.types.ObjectId;
 
@@ -23,17 +21,16 @@ import org.bson.types.ObjectId;
  * @author Gunnar Morling
  */
 @Entity
-public class Bar {
+public class Ingredient {
 
 	private ObjectId id;
 	private String name;
-	private MusicGenre musicGenre;
-	private Set<DoorMan> doorMen = new HashSet<DoorMan>();
+	private Set<Snack> containedIn = new HashSet<Snack>();
 
-	Bar() {
+	Ingredient() {
 	}
 
-	Bar(String name) {
+	Ingredient(String name) {
 		this.name = name;
 	}
 
@@ -55,21 +52,12 @@ public class Bar {
 		this.name = name;
 	}
 
-	@ManyToOne
-	public MusicGenre getMusicGenre() {
-		return musicGenre;
+	@ManyToMany(mappedBy = "ingredients")
+	public Set<Snack> getContainedIn() {
+		return containedIn;
 	}
 
-	public void setMusicGenre(MusicGenre musicGenre) {
-		this.musicGenre = musicGenre;
-	}
-
-	@OneToMany(cascade = CascadeType.ALL)
-	public Set<DoorMan> getDoorMen() {
-		return doorMen;
-	}
-
-	public void setDoorMen(Set<DoorMan> doorMen) {
-		this.doorMen = doorMen;
+	public void setContainedIn(Set<Snack> containedIn) {
+		this.containedIn = containedIn;
 	}
 }

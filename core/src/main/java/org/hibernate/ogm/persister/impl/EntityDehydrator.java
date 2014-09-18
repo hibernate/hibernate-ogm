@@ -9,22 +9,18 @@ package org.hibernate.ogm.persister.impl;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.impl.RowKeyBuilder;
-import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
-import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
-import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
-import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.tuple.entity.EntityMetamodel;
-import org.hibernate.type.Type;
 
+/**
+ * Dehydrates the properties of a given entity, populating a {@link Tuple} with the converted column values.
+ *
+ * @author Emmanuel Bernard
+ */
 class EntityDehydrator {
 
 	private static final Log log = LoggerFactory.make();
@@ -38,11 +34,6 @@ class EntityDehydrator {
 	private SessionImplementor session;
 	private GridType[] gridPropertyTypes;
 	private OgmEntityPersister persister;
-	private boolean addPropertyMetadata = true;
-	private boolean dehydrate = true;
-	private boolean removePropertyMetadata = true;
-	private GridType gridIdentifierType;
-	private GridDialect gridDialect;
 
 	// fluent methods populating data
 
@@ -53,11 +44,6 @@ class EntityDehydrator {
 
 	public EntityDehydrator gridPropertyTypes(GridType[] gridPropertyTypes) {
 		this.gridPropertyTypes = gridPropertyTypes;
-		return this;
-	}
-
-	public EntityDehydrator gridIdentifierType(GridType gridIdentifierType) {
-		this.gridIdentifierType = gridIdentifierType;
 		return this;
 	}
 
@@ -96,49 +82,17 @@ class EntityDehydrator {
 		return this;
 	}
 
-	public EntityDehydrator gridDialect(GridDialect gridDialect) {
-		this.gridDialect = gridDialect;
-		return this;
-	}
-
 	//action methods
-
-	public EntityDehydrator onlyRemovePropertyMetadata() {
-		this.addPropertyMetadata = false;
-		this.dehydrate = false;
-		this.removePropertyMetadata = true;
-		return this;
-	}
 
 	public void dehydrate() {
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Dehydrating entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
 		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
-		final boolean[] uniqueness = persister.getPropertyUniqueness();
-		final Type[] propertyTypes = persister.getPropertyTypes();
 		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				final Type propertyType = propertyTypes[propertyIndex];
-				boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
-				final boolean createMetadata = isStarToOne || uniqueness[propertyIndex];
-				if ( removePropertyMetadata && createMetadata ) {
-					//remove from property cache
-					Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-							resultset,
-							persister.getPropertyColumnNames( propertyIndex )
-					);
 
-					//don't index null columns, this means no association
-					if ( ! isEmptyOrAllColumnsNull( oldColumnValues ) ) {
-						removeNavigationalInformationFromReverseSide(
-								tableIndex,
-								propertyIndex,
-								oldColumnValues);
-					}
-				}
-
-				if ( dehydrate && includeProperties[propertyIndex] ) {
+				if ( includeProperties[propertyIndex] ) {
 					//dehydrate
 					gridPropertyTypes[propertyIndex].nullSafeSet(
 							resultset,
@@ -148,65 +102,8 @@ class EntityDehydrator {
 							session
 					);
 				}
-
-				if ( addPropertyMetadata && createMetadata ) {
-					//add to property cache
-					Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-							resultset,
-							persister.getPropertyColumnNames( propertyIndex )
-					);
-					//don't index null columns, this means no association
-					if ( ! isEmptyOrAllColumnsNull( newColumnValues ) ) {
-						addNavigationalInformationForReverseSide(
-								tableIndex,
-								propertyIndex,
-								newColumnValues);
-					}
-				}
 			}
 		}
-	}
-
-	private void addNavigationalInformationForReverseSide(int tableIndex, int propertyIndex, Object[] newColumnValue) {
-		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
-
-		// there is no inverse association for the given property
-		if ( associationKeyMetadata == null ) {
-			return;
-		}
-
-		AssociationPersister associationPersister = new AssociationPersister(
-					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
-				)
-				.hostingEntity( getReferencedEntity( propertyIndex ) )
-				.gridDialect( gridDialect )
-				.associationKeyMetadata(  associationKeyMetadata )
-				.keyColumnValues( newColumnValue )
-				.session( session )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
-
-		Tuple tuple = new Tuple();
-		//add the id column
-		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
-		gridIdentifierType.nullSafeSet( tuple, id, identifierColumnNames, session );
-		//add the fk column
-		gridPropertyTypes[propertyIndex].nullSafeSet(
-							tuple,
-							fields[propertyIndex],
-							associationKeyMetadata.getColumnNames(),
-							includeColumns[propertyIndex],
-							session
-					);
-
-		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, associationKeyMetadata.getRowKeyColumnNames() );
-		final RowKey rowKey = new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
-
-		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
-		for ( String column : tuple.getColumnNames() ) {
-			assocEntryTuple.put( column, tuple.get( column ) );
-		}
-
-		associationPersister.flushToDatastore();
 	}
 
 	// Here the RowKey is made of the foreign key columns pointing to the associated entity
@@ -219,77 +116,5 @@ class EntityDehydrator {
 		System.arraycopy( identifierColumnNames, 0, rowKeyColumnNames, 0, identifierColumnNames.length );
 		System.arraycopy( keyColumnNames, 0, rowKeyColumnNames, identifierColumnNames.length, keyColumnNames.length );
 		return rowKeyColumnNames;
-	}
-
-	private void removeNavigationalInformationFromReverseSide(int tableIndex,
-										int propertyIndex,
-										Object[] oldColumnValue) {
-
-		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
-
-		// there is no inverse association for the given property
-		if ( associationKeyMetadata == null ) {
-			return;
-		}
-
-		AssociationPersister associationPersister = new AssociationPersister(
-					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
-				)
-				.hostingEntity( getReferencedEntity( propertyIndex ) )
-				.gridDialect( gridDialect )
-				.associationKeyMetadata( associationKeyMetadata )
-				.keyColumnValues( oldColumnValue )
-				.session( session )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
-
-		//add fk column value in TupleKey
-		Tuple tupleKey = new Tuple();
-		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {
-			tupleKey.put( associationKeyMetadata.getColumnNames()[index], oldColumnValue[index] );
-		}
-		//add id value in TupleKey
-		gridIdentifierType.nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
-
-		Association propertyValues = associationPersister.getAssociation();
-		if ( propertyValues != null ) {
-			//Map's equals operation delegates to all it's key and value, should be fine for now
-			//this is a StarToOne case ie the FK is on the owning entity
-			final RowKey matchingTuple = new RowKeyBuilder()
-					.addColumns( associationKeyMetadata.getRowKeyColumnNames() )
-					.values( tupleKey )
-					.build();
-			//TODO what should we do if that's null?
-			associationPersister.getAssociation().remove( matchingTuple );
-
-			associationPersister.flushToDatastore();
-		}
-	}
-
-	private Object getReferencedEntity(int propertyIndex) {
-		GridType propertyType = gridPropertyTypes[propertyIndex];
-		Serializable id = (Serializable) propertyType.hydrate(
-				resultset, persister.getPropertyColumnNames( propertyIndex ), session, null
-		);
-
-		if ( id != null ) {
-			EntityPersister hostingEntityPersister = session.getFactory().getEntityPersister(
-					propertyType.getReturnedClass().getName()
-			);
-
-			return session.getPersistenceContext().getEntity(
-					session.generateEntityKey( id, hostingEntityPersister )
-			);
-		}
-
-		return null;
-	}
-
-	private boolean isEmptyOrAllColumnsNull(Object[] objects) {
-		for ( Object object : objects ) {
-			if ( object != null ) {
-				return false;
-			}
-		}
-		return true;
 	}
 }
