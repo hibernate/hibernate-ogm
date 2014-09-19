@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
@@ -44,6 +45,7 @@ import org.hibernate.ogm.datastore.mongodb.query.impl.MongoDBQueryDescriptor;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.MongoDBQueryDescriptorBuilder;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.nativequery.impl.NativeQueryParser;
 import org.hibernate.ogm.datastore.mongodb.type.impl.ByteStringType;
+import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
@@ -583,6 +585,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
+		}
+		else if ( type.getReturnedClass() == ObjectId.class ) {
+			return ObjectIdGridType.INSTANCE;
 		}
 		return null; // all other types handled as in hibernate-ogm-core
 	}
