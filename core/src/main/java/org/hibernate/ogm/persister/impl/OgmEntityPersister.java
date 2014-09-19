@@ -930,10 +930,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 
 				//dehydrate
-				removeFromInverseAssociations( resultset, fields, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
+				removeFromInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
 				gridDialect.updateTuple( resultset, key, getTupleContext() );
-				addToInverseAssociations( resultset, fields, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
+				addToInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 			}
 		}
 	}
@@ -992,14 +992,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private void removeFromInverseAssociations(
 			Tuple resultset,
-			final Object[] fields,
 			boolean[] includeProperties,
 			boolean[][] includeColumns,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
 		new EntityAssociationUpdater( this )
-				.fields( fields )
 				.id( id )
 				.resultset( resultset )
 				.session( session )
@@ -1013,14 +1011,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private void addToInverseAssociations(
 			Tuple resultset,
-			final Object[] fields,
 			boolean[] includeProperties,
 			boolean[][] includeColumns,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
 		new EntityAssociationUpdater( this )
-				.fields( fields )
 				.id( id )
 				.resultset( resultset )
 				.session( session )
@@ -1058,7 +1054,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		dehydrate( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, null, session );
 		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, getTupleContext() );
 		Serializable id = (Serializable) getGridIdentifierType().hydrate( tuple, getIdentifierColumnNames(), session, object );
-		addToInverseAssociations( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
+		addToInverseAssociations( tuple, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
 
 		if ( id == null ) {
 			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
@@ -1114,7 +1110,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			//dehydrate
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
 			gridDialect.updateTuple( resultset, key, getTupleContext() );
-			addToInverseAssociations( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
+			addToInverseAssociations( resultset, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
 		}
 	}
 
