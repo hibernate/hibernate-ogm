@@ -10,6 +10,7 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relation
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.limit;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.skip;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,10 +22,12 @@ import org.hibernate.AssertionFailure;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
@@ -45,6 +48,7 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -52,17 +56,23 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
+import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -85,7 +95,12 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private ServiceRegistryImplementor serviceRegistry;
 
+	private Map<Object, Neo4jQueries> queries;
+
+	private final ExecutionEngine executionEngine;
+
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
+		this.executionEngine = new ExecutionEngine( provider.getDataBase(), StringLogger.SYSTEM_DEBUG );
 		this.neo4jCRUD = new CypherCRUD( provider.getDataBase() );
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
 	}
@@ -95,6 +110,46 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		this.serviceRegistry = serviceRegistry;
 	}
 
+	/**
+	 * Initializes the parameterized queries used by dialect to interact with the datastore.
+	 * <p>
+	 * Parameters depend on {@link EntityKeyMetadata} and {@link AssociatedEntityKeyMetadata} obtained from the
+	 * persisters.
+	 */
+	public void initializeQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		final Map<Object, Neo4jQueries> neo4jQueries = new HashMap<Object, Neo4jQueries>();
+		initializeEntityQueries( sessionFactoryImplementor, neo4jQueries );
+		initializeAssociationQueries( sessionFactoryImplementor, neo4jQueries );
+		queries = neo4jQueries;
+	}
+
+	private void initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor, final Map<Object, Neo4jQueries> queryMap) {
+		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
+		for ( EntityPersister entityPersister : entityPersisters ) {
+			if (entityPersister instanceof OgmEntityPersister ) {
+				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
+				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new Neo4jQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
+			}
+		}
+	}
+
+	private void initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor, final Map<Object, Neo4jQueries> queryMap) {
+		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
+		for ( CollectionPersister collectionPersister : collectionPersisters ) {
+			if ( collectionPersister instanceof OgmCollectionPersister ) {
+				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
+				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
+				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
+				EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
+				if ( !queryMap.containsKey( entityKeyMetadata ) ) {
+					// Embeddables metadata
+					queryMap.put( entityKeyMetadata, new Neo4jQueries( entityKeyMetadata ) );
+				}
+				queryMap.put( associationKeyMetadata, new Neo4jQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
+			}
+		}
+	}
+
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
 		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Neo4j GridDialect" );
@@ -102,7 +157,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext context) {
-		Node entityNode = neo4jCRUD.findEntity( key );
+		Node entityNode = queries.get( key.getMetadata() ).findEntity( executionEngine, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -111,7 +166,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Node node = neo4jCRUD.findOrCreateEntity( key );
+		Node node = queries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
 		GraphLogger.log( "Created node: %1$s", node );
 		return createTuple( node, tupleContext );
 	}
@@ -134,7 +189,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		neo4jCRUD.remove( key );
+		queries.get( key.getMetadata() ).removeEntity( executionEngine, key.getColumnValues() );
 	}
 
 	@Override
@@ -161,14 +216,16 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node embeddedNode = neo4jCRUD.createEmbeddedNode( getEntityKey( associationRow, associatedEntityKeyMetadata ) );
+		EntityKey entityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
+		Node embeddedNode = queries.get( entityKey.getMetadata() ).createEmbedded( executionEngine, entityKey.getColumnValues() );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationRow, embeddedNode );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
 	}
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Node targetNode = neo4jCRUD.findEntity( getEntityKey( associationRow, associatedEntityKeyMetadata ) );
+		EntityKey targetEntityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
+		Node targetNode = queries.get( targetEntityKey.getMetadata() ).findEntity( executionEngine, targetEntityKey.getColumnValues() );
 		return createRelationshipWithTargetNode( associationKey, associationRow, targetNode );
 	}
 
@@ -185,7 +242,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
-		Node ownerNode = neo4jCRUD.findEntity( associationKey.getEntityKey() );
+		EntityKey entityKey = associationKey.getEntityKey();
+		Node ownerNode = queries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
 		Relationship relationship = ownerNode.createRelationshipTo( targetNode, relationshipType( associationKey.getMetadata().getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
@@ -193,7 +251,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
-		Node entityNode = neo4jCRUD.findEntity( associationKey.getEntityKey() );
+		EntityKey entityKey = associationKey.getEntityKey();
+		Node entityNode = queries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
 		GraphLogger.log( "Found owner node: %1$s", entityNode );
 		if ( entityNode == null ) {
 			return null;
@@ -253,7 +312,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			return;
 		}
 
-		neo4jCRUD.remove( key );
+		queries.get( key.getMetadata() ).removeAssociation( executionEngine, key );
 	}
 
 	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
@@ -288,7 +347,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		neo4jCRUD.remove( associationKey, action.getKey(), associatedEntityKeyMetadata );
+		queries.get( associationKey.getMetadata() ).removeAssociationRow( executionEngine, associationKey, action.getKey() );
 	}
 
 	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
@@ -357,7 +416,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				}
 
 				// create a new relationship
-				Node targetNode = neo4jCRUD.findEntity( targetKey );
+				Node targetNode = queries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
 				node.createRelationshipTo( targetNode, relationshipType( associationRole ) );
 			}
 		}
@@ -366,7 +425,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			ResourceIterator<Node> queryNodes = neo4jCRUD.findNodes( entityKeyMetadata.getTable() );
+			ResourceIterator<Node> queryNodes = queries.get( entityKeyMetadata ).findEntities( executionEngine );
 			try {
 				while ( queryNodes.hasNext() ) {
 					Node next = queryNodes.next();
