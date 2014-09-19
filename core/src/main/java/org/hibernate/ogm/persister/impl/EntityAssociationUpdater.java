@@ -23,11 +23,12 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.pretty.MessageHelper;
-import org.hibernate.tuple.entity.EntityMetamodel;
 
 /**
  * Updates the inverse side of bi-directional many-to-one/one-to-one associations, managed by the entity on the main
  * side.
+ * <p>
+ * Tied to one specific entity on the main side, so instances of this class must not be cached or re-used.
  *
  * @author Gunnar Morling
  * @author Emmanuel Bernard
@@ -39,7 +40,6 @@ class EntityAssociationUpdater {
 	private final OgmEntityPersister persister;
 	private final GridDialect gridDialect;
 	private Tuple resultset;
-	private Object[] fields;
 	private int tableIndex;
 	private Serializable id;
 	private SessionImplementor session;
@@ -58,11 +58,6 @@ class EntityAssociationUpdater {
 	 */
 	public EntityAssociationUpdater resultset(Tuple resultset) {
 		this.resultset = resultset;
-		return this;
-	}
-
-	public EntityAssociationUpdater fields(Object[] fields) {
-		this.fields = fields;
 		return this;
 	}
 
@@ -95,21 +90,24 @@ class EntityAssociationUpdater {
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Adding inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
-		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
-		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
+
+		for ( int propertyIndex = 0; propertyIndex < persister.getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
 			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				if ( propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
-					//add to property cache
-					Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-							resultset,
-							persister.getPropertyColumnNames( propertyIndex )
-					);
-					//don't index null columns, this means no association
-					if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( ( newColumnValues  ) ) ) {
-						addNavigationalInformationForReverseSide(
-								propertyIndex,
-								newColumnValues);
-					}
+				AssociationKeyMetadata associationKeyMetadata = getInverseAssociationKeyMetadata( propertyIndex );
+
+				// there is no inverse association for the given property
+				if ( associationKeyMetadata == null ) {
+					continue;
+				}
+
+				Object[] newColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
+						resultset,
+						persister.getPropertyColumnNames( propertyIndex )
+				);
+
+				//don't index null columns, this means no association
+				if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( ( newColumnValues ) ) ) {
+					addNavigationalInformationForReverseSide( propertyIndex, associationKeyMetadata, newColumnValues );
 				}
 			}
 		}
@@ -122,105 +120,65 @@ class EntityAssociationUpdater {
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Removing inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
-		final EntityMetamodel entityMetamodel = persister.getEntityMetamodel();
-		for ( int propertyIndex = 0; propertyIndex < entityMetamodel.getPropertySpan(); propertyIndex++ ) {
-			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
-				if ( propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
-					//remove from property cache
-					Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
-							resultset,
-							persister.getPropertyColumnNames( propertyIndex )
-					);
 
-					//don't index null columns, this means no association
-					if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( oldColumnValues ) ) {
-						removeNavigationalInformationFromReverseSide(
-								propertyIndex,
-								oldColumnValues);
-					}
+		for ( int propertyIndex = 0; propertyIndex < persister.getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
+			if ( persister.isPropertyOfTable( propertyIndex, tableIndex ) ) {
+				AssociationKeyMetadata associationKeyMetadata = getInverseAssociationKeyMetadata( propertyIndex );
+
+				// there is no inverse association for the given property
+				if ( associationKeyMetadata == null ) {
+					continue;
+				}
+
+				Object[] oldColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset(
+						resultset,
+						persister.getPropertyColumnNames( propertyIndex )
+				);
+
+				//don't index null columns, this means no association
+				if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( oldColumnValues ) ) {
+					removeNavigationalInformationFromReverseSide( propertyIndex, associationKeyMetadata, oldColumnValues );
 				}
 			}
 		}
 	}
 
-	private void addNavigationalInformationForReverseSide(int propertyIndex, Object[] newColumnValue) {
-		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
+	private void addNavigationalInformationForReverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] newColumnValue) {
+		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, newColumnValue );
 
-		// there is no inverse association for the given property
-		if ( associationKeyMetadata == null ) {
-			return;
+		RowKey rowKey = getInverseRowKey( associationKeyMetadata, newColumnValue );
+
+		Tuple associationRow = new Tuple();
+		for ( String column : rowKey.getColumnNames() ) {
+			associationRow.put( column, rowKey.getColumnValue( column ) );
 		}
+		associationPersister.getAssociation().put( rowKey, associationRow );
 
-		AssociationPersister associationPersister = new AssociationPersister(
+		associationPersister.flushToDatastore();
+	}
+
+	private void removeNavigationalInformationFromReverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] oldColumnValue) {
+		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, oldColumnValue );
+
+		Association association = associationPersister.getAssociation();
+
+		if ( association != null ) {
+			RowKey rowKey = getInverseRowKey( associationKeyMetadata, oldColumnValue );
+			association.remove( rowKey );
+			associationPersister.flushToDatastore();
+		}
+	}
+
+	private AssociationPersister createAssociationPersister(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] keyColumnValues) {
+		return new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
 				.hostingEntity( getReferencedEntity( propertyIndex ) )
 				.gridDialect( gridDialect )
 				.associationKeyMetadata(  associationKeyMetadata )
-				.keyColumnValues( newColumnValue )
+				.keyColumnValues( keyColumnValues )
 				.session( session )
 				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
-
-		Tuple tuple = new Tuple();
-		//add the id column
-		final String[] identifierColumnNames = persister.getIdentifierColumnNames();
-		persister.getGridIdentifierType().nullSafeSet( tuple, id, identifierColumnNames, session );
-		//add the fk column
-		persister.getGridPropertyTypes()[propertyIndex].nullSafeSet(
-							tuple,
-							fields[propertyIndex],
-							associationKeyMetadata.getColumnNames(),
-							persister.getPropertyColumnInsertable()[propertyIndex],
-							session
-					);
-
-		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, associationKeyMetadata.getRowKeyColumnNames() );
-		final RowKey rowKey = new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
-
-		associationPersister.getAssociation().put( rowKey, tuple );
-
-		associationPersister.flushToDatastore();
-	}
-
-	private void removeNavigationalInformationFromReverseSide(int propertyIndex, Object[] oldColumnValue) {
-		AssociationKeyMetadata associationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
-
-		// there is no inverse association for the given property
-		if ( associationKeyMetadata == null ) {
-			return;
-		}
-
-		AssociationPersister associationPersister = new AssociationPersister(
-					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
-				)
-				.hostingEntity( getReferencedEntity( propertyIndex ) )
-				.gridDialect( gridDialect )
-				.associationKeyMetadata( associationKeyMetadata )
-				.keyColumnValues( oldColumnValue )
-				.session( session )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
-
-		//add fk column value in TupleKey
-		Tuple tupleKey = new Tuple();
-		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {
-			tupleKey.put( associationKeyMetadata.getColumnNames()[index], oldColumnValue[index] );
-		}
-		//add id value in TupleKey
-		persister.getGridIdentifierType().nullSafeSet( tupleKey, id, persister.getIdentifierColumnNames(), session );
-
-		Association propertyValues = associationPersister.getAssociation();
-		if ( propertyValues != null ) {
-			//Map's equals operation delegates to all it's key and value, should be fine for now
-			//this is a StarToOne case ie the FK is on the owning entity
-			final RowKey matchingTuple = new RowKeyBuilder()
-					.addColumns( associationKeyMetadata.getRowKeyColumnNames() )
-					.values( tupleKey )
-					.build();
-			//TODO what should we do if that's null?
-			associationPersister.getAssociation().remove( matchingTuple );
-
-			associationPersister.flushToDatastore();
-		}
 	}
 
 	/**
@@ -244,5 +202,39 @@ class EntityAssociationUpdater {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets the row key of the inverse association represented by the given meta-data, pointing the entity with current
+	 * {@link EntityAssociationUpdater#id}
+	 *
+	 * @param associationKeyMetadata meta-data for the inverse association of interest
+	 * @param associationColumnValues the column values identifying the entity on the inverse side of the association
+	 * @return the row key of the inverse association
+	 */
+	private RowKey getInverseRowKey(AssociationKeyMetadata associationKeyMetadata, Object[] associationColumnValues) {
+		Tuple rowKeyValues = new Tuple();
+
+		// add the fk column
+		for (int index = 0 ; index < associationKeyMetadata.getColumnNames().length ; index++) {
+			rowKeyValues.put( associationKeyMetadata.getColumnNames()[index], associationColumnValues[index] );
+		}
+
+		// add the id column
+		persister.getGridIdentifierType().nullSafeSet( rowKeyValues, id, persister.getIdentifierColumnNames(), session );
+
+		return new RowKeyBuilder()
+			.addColumns( associationKeyMetadata.getRowKeyColumnNames() )
+			.values( rowKeyValues )
+			.build();
+	}
+
+	private AssociationKeyMetadata getInverseAssociationKeyMetadata(int propertyIndex) {
+		// a quick test for excluding properties which for sure don't manage an inverse association
+		if ( !propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
+			return null;
+		}
+
+		return BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister, propertyIndex );
 	}
 }
