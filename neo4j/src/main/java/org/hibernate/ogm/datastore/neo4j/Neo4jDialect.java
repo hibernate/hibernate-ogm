@@ -92,7 +92,9 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private ServiceRegistryImplementor serviceRegistry;
 
-	private Map<Object, Neo4jQueries> queries;
+	private Map<EntityKeyMetadata, Neo4jQueries> entityQueries;
+
+	private Map<AssociationKeyMetadata, Neo4jQueries> associationQueries;
 
 	private final ExecutionEngine executionEngine;
 
@@ -113,13 +115,25 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	 * persisters.
 	 */
 	public void initializeQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		final Map<Object, Neo4jQueries> neo4jQueries = new HashMap<Object, Neo4jQueries>();
-		initializeEntityQueries( sessionFactoryImplementor, neo4jQueries );
-		initializeAssociationQueries( sessionFactoryImplementor, neo4jQueries );
-		queries = neo4jQueries;
+		this.associationQueries = initializeAssociationQueries( sessionFactoryImplementor );
+		this.entityQueries = initializeEntityQueries( sessionFactoryImplementor, associationQueries );
 	}
 
-	private void initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor, final Map<Object, Neo4jQueries> queryMap) {
+	private Map<EntityKeyMetadata, Neo4jQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
+			Map<AssociationKeyMetadata, Neo4jQueries> associationQueries) {
+		Map<EntityKeyMetadata, Neo4jQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
+			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
+			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
+				// Embeddables metadata
+				entityQueries.put( entityKeyMetadata, new Neo4jQueries( entityKeyMetadata ) );
+			}
+		}
+		return entityQueries;
+	}
+
+	private Map<EntityKeyMetadata, Neo4jQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, Neo4jQueries> queryMap = new HashMap<EntityKeyMetadata, Neo4jQueries>();
 		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if (entityPersister instanceof OgmEntityPersister ) {
@@ -127,23 +141,21 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new Neo4jQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
 			}
 		}
+		return queryMap;
 	}
 
-	private void initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor, final Map<Object, Neo4jQueries> queryMap) {
+	private Map<AssociationKeyMetadata, Neo4jQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, Neo4jQueries> queryMap = new HashMap<AssociationKeyMetadata, Neo4jQueries>();
 		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
 		for ( CollectionPersister collectionPersister : collectionPersisters ) {
 			if ( collectionPersister instanceof OgmCollectionPersister ) {
 				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
 				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
 				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
-				EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
-				if ( !queryMap.containsKey( entityKeyMetadata ) ) {
-					// Embeddables metadata
-					queryMap.put( entityKeyMetadata, new Neo4jQueries( entityKeyMetadata ) );
-				}
 				queryMap.put( associationKeyMetadata, new Neo4jQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
 			}
 		}
+		return queryMap;
 	}
 
 	@Override
@@ -153,7 +165,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext context) {
-		Node entityNode = queries.get( key.getMetadata() ).findEntity( executionEngine, key.getColumnValues() );
+		Node entityNode = entityQueries.get( key.getMetadata() ).findEntity( executionEngine, key.getColumnValues() );
 		if ( entityNode == null ) {
 			return null;
 		}
@@ -162,7 +174,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Node node = queries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
+		Node node = entityQueries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
 		GraphLogger.log( "Created node: %1$s", node );
 		return createTuple( node, tupleContext );
 	}
@@ -185,7 +197,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		queries.get( key.getMetadata() ).removeEntity( executionEngine, key.getColumnValues() );
+		entityQueries.get( key.getMetadata() ).removeEntity( executionEngine, key.getColumnValues() );
 	}
 
 	@Override
@@ -213,7 +225,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private Relationship createRelationshipWithEmbeddedNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		EntityKey entityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
-		Node embeddedNode = queries.get( entityKey.getMetadata() ).createEmbedded( executionEngine, entityKey.getColumnValues() );
+		Node embeddedNode = entityQueries.get( entityKey.getMetadata() ).createEmbedded( executionEngine, entityKey.getColumnValues() );
 		Relationship relationship = createRelationshipWithTargetNode( associationKey, associationRow, embeddedNode );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
@@ -221,7 +233,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private Relationship findOrCreateRelationshipWithEntityNode(AssociationKey associationKey, Tuple associationRow, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
 		EntityKey targetEntityKey = getEntityKey( associationRow, associatedEntityKeyMetadata );
-		Node targetNode = queries.get( targetEntityKey.getMetadata() ).findEntity( executionEngine, targetEntityKey.getColumnValues() );
+		Node targetNode = entityQueries.get( targetEntityKey.getMetadata() ).findEntity( executionEngine, targetEntityKey.getColumnValues() );
 		return createRelationshipWithTargetNode( associationKey, associationRow, targetNode );
 	}
 
@@ -239,7 +251,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private Relationship createRelationshipWithTargetNode(AssociationKey associationKey, Tuple associationRow, Node targetNode) {
 		EntityKey entityKey = associationKey.getEntityKey();
-		Node ownerNode = queries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
+		Node ownerNode = entityQueries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
 		Relationship relationship = ownerNode.createRelationshipTo( targetNode, withName( associationKey.getMetadata().getCollectionRole() ) );
 		applyProperties( associationKey, associationRow, relationship );
 		return relationship;
@@ -248,7 +260,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public Association getAssociation(AssociationKey associationKey, AssociationContext associationContext) {
 		EntityKey entityKey = associationKey.getEntityKey();
-		Node entityNode = queries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
+		Node entityNode = entityQueries.get( entityKey.getMetadata() ).findEntity( executionEngine, entityKey.getColumnValues() );
 		GraphLogger.log( "Found owner node: %1$s", entityNode );
 		if ( entityNode == null ) {
 			return null;
@@ -308,7 +320,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			return;
 		}
 
-		queries.get( key.getMetadata() ).removeAssociation( executionEngine, key );
+		associationQueries.get( key.getMetadata() ).removeAssociation( executionEngine, key );
 	}
 
 	private void applyAssociationOperation(Association association, AssociationKey key, AssociationOperation operation, AssociationContext associationContext) {
@@ -327,7 +339,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void putAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		Relationship relationship = queries.get( associationKey.getMetadata() ).findRelationship( executionEngine, associationKey, action.getKey() );
+		Relationship relationship = associationQueries.get( associationKey.getMetadata() ).findRelationship( executionEngine, associationKey, action.getKey() );
 
 		if (relationship != null) {
 			for ( String relationshipProperty : associationKey.getMetadata().getRowKeyIndexColumnNames() ) {
@@ -343,7 +355,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void removeAssociationOperation(Association association, AssociationKey associationKey, AssociationOperation action, AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
-		queries.get( associationKey.getMetadata() ).removeAssociationRow( executionEngine, associationKey, action.getKey() );
+		associationQueries.get( associationKey.getMetadata() ).removeAssociationRow( executionEngine, associationKey, action.getKey() );
 	}
 
 	private void applyTupleOperations(EntityKey entityKey, Tuple tuple, Node node, Set<TupleOperation> operations, TupleContext tupleContext) {
@@ -412,7 +424,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				}
 
 				// create a new relationship
-				Node targetNode = queries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
+				Node targetNode = entityQueries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
 				node.createRelationshipTo( targetNode, withName( associationRole ) );
 			}
 		}
@@ -421,7 +433,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			ResourceIterator<Node> queryNodes = queries.get( entityKeyMetadata ).findEntities( executionEngine );
+			ResourceIterator<Node> queryNodes = entityQueries.get( entityKeyMetadata ).findEntities( executionEngine );
 			try {
 				while ( queryNodes.hasNext() ) {
 					Node next = queryNodes.next();
