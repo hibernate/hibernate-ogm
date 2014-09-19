@@ -8,6 +8,7 @@ package org.hibernate.ogm.jpa.impl;
 
 import org.hibernate.id.factory.internal.DefaultIdentifierGeneratorFactory;
 import org.hibernate.id.factory.spi.MutableIdentifierGeneratorFactory;
+import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.id.impl.OgmSequenceGenerator;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 
@@ -15,14 +16,13 @@ import org.hibernate.ogm.id.impl.OgmTableGenerator;
  * Register OGM strategies for identifier generations
  *
  * @author Davide D'Alto
+ * @author Gunnar Morling
  */
 public class OgmMutableIdentifierGeneratorFactory extends DefaultIdentifierGeneratorFactory implements MutableIdentifierGeneratorFactory {
 
 	public OgmMutableIdentifierGeneratorFactory() {
 		register( org.hibernate.id.enhanced.TableGenerator.class.getName(), OgmTableGenerator.class );
 		register( org.hibernate.id.enhanced.SequenceStyleGenerator.class.getName(), OgmSequenceGenerator.class );
-		// TODO We are using OgmTableGenerator as a fall-back until we have a better solution (see OGM-436/OGM-550)
-		register( "identity", OgmTableGenerator.class );
+		register( "identity", OgmIdentityGenerator.class );
 	}
-
 }

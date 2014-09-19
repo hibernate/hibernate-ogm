@@ -53,6 +53,7 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
 import org.hibernate.ogm.dialect.queryable.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.queryable.spi.NoOpParameterMetadataBuilder;
@@ -116,7 +117,7 @@ import com.mongodb.WriteConcern;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -146,11 +147,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		if ( found != null ) {
-			return new Tuple( new BatchableMongoDBTupleSnapshot( found, key, UPDATE ) );
+			return new Tuple( new BatchableMongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
 		else if ( isInTheQueue( key, tupleContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
-			return new Tuple( new BatchableMongoDBTupleSnapshot( prepareIdObject( key ), key, INSERT ) );
+			return new Tuple( new BatchableMongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
 		}
 		else {
 			return null;
@@ -163,9 +164,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+		return new Tuple( new BatchableMongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
+	}
+
+	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject toSave = this.prepareIdObject( key );
-		return new Tuple( new BatchableMongoDBTupleSnapshot( toSave, key, SnapshotType.INSERT ) );
+		return new Tuple( new BatchableMongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
 	}
 
 	/**
@@ -259,6 +265,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return getCollection( key.getTable() );
 	}
 
+	private DBCollection getCollection(EntityKeyMetadata entityKeyMetadata) {
+		return getCollection( entityKeyMetadata.getTable() );
+	}
+
 	private DBCollection getAssociationCollection(AssociationKey key, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.GLOBAL_COLLECTION ) {
 			return getCollection( MongoDBConfiguration.DEFAULT_ASSOCIATION_STORE );
@@ -284,6 +294,16 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
+	}
+
+	@Override
+	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
+		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
+		WriteConcern writeConcern = getWriteConcern( tupleContext );
+
+		getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
+
+		tuple.put( entityKeyMetadata.getColumnNames()[0], dbObject.get( ID_FIELDNAME ) );
 	}
 
 	/**

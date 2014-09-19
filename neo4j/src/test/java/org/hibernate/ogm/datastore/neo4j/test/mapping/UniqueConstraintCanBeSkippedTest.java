@@ -17,9 +17,7 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /**
  * Test that the creation of unique constraints is skipped when
@@ -29,9 +27,6 @@ import org.junit.rules.ExpectedException;
  * @author Davide D'Alto
  */
 public class UniqueConstraintCanBeSkippedTest extends Neo4jJpaTestCase {
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 
 	private EntityWithConstraints entityWithConstraints;
 
