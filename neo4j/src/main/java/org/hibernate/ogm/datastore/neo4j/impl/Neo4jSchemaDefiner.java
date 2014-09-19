@@ -19,11 +19,14 @@ import org.hibernate.mapping.ForeignKey;
 import org.hibernate.mapping.PrimaryKey;
 import org.hibernate.mapping.Table;
 import org.hibernate.mapping.UniqueKey;
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.tool.hbm2ddl.UniqueConstraintSchemaUpdateStrategy;
@@ -65,6 +68,25 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 
 		createSequences( sessionFactoryImplementor, provider );
 		createEntityConstraints( provider.getDataBase(), configuration );
+		initializeQueries( sessionFactoryImplementor, registry );
+	}
+
+	private void initializeQueries(SessionFactoryImplementor sessionFactoryImplementor, ServiceRegistryImplementor registry) {
+		GridDialect gridDialect = registry.getService( GridDialect.class );
+		Neo4jDialect neo4jDialect = asNeo4jDialectOrNull( gridDialect );
+		neo4jDialect.initializeQueries( sessionFactoryImplementor );
+	}
+
+	private Neo4jDialect asNeo4jDialectOrNull(GridDialect gridDialect) {
+		while ( gridDialect instanceof ForwardingGridDialect ) {
+			gridDialect = ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect();
+		}
+
+		if ( gridDialect instanceof Neo4jDialect ) {
+			return (Neo4jDialect) gridDialect;
+		}
+
+		return null;
 	}
 
 	private void createSequences(SessionFactoryImplementor sessionFactoryImplementor, Neo4jDatastoreProvider provider) {
