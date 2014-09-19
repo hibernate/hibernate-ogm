@@ -76,8 +76,33 @@ public class ObjectIdTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void canUseObjectIdAssignedUponInsert() {
+		OgmSession session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		// given
+		Bar goldFishBar = new Bar( "Goldfisch Bar" );
+
+		// when
+		session.persist( goldFishBar );
+		assertThat( goldFishBar.getId() ).isNotNull();
+
+		tx.commit();
+		session.clear();
+		tx = session.beginTransaction();
+
+		Bar barLoaded = (Bar) session.load( Bar.class, goldFishBar.getId() );
+
+		// then
+		assertThat( barLoaded.getName() ).isEqualTo( "Goldfisch Bar" );
+
+		tx.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { BarKeeper.class, Drink.class };
+		return new Class<?>[] { BarKeeper.class, Drink.class, Bar.class };
 	}
 }

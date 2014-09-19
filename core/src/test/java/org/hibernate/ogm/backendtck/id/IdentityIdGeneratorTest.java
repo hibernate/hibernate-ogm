@@ -7,19 +7,47 @@
 package org.hibernate.ogm.backendtck.id;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import javax.persistence.EntityManager;
 
+import org.hibernate.HibernateException;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
+import org.hibernate.ogm.utils.Throwables;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /**
  * @author Nabeel Ali Memon &lt;nabeel@nabeelalimemon.com&gt;
  */
 public class IdentityIdGeneratorTest extends JpaTestCase {
 
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
+
+
+	@Override
+	@Before
+	public void createFactory() throws Throwable {
+		thrown.expect( HibernateException.class );
+		thrown.expectMessage( "OGM000065" );
+		try {
+			super.createFactory();
+			fail( "Expected session factory set-up to fail as IDENTITY columns are not supported" );
+		}
+		catch (Exception e) {
+			throw Throwables.getRootCause( e );
+		}
+	}
+
 	@Test
+	@SkipByGridDialect(value = GridDialectType.MONGODB, comment = "MongoDB supports IDENTITY columns, but not of type Long.")
 	public void testIdentityGenerator() throws Exception {
+
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 		Animal jungleKing = new Animal();

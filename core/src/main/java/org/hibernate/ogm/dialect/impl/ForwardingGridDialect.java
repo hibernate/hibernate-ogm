@@ -15,6 +15,7 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
+import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
 import org.hibernate.ogm.dialect.queryable.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
@@ -50,12 +51,13 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, QueryableGridDialect<T>, Configurable, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, Configurable, ServiceRegistryAwareService {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
 	private final QueryableGridDialect<T> queryableGridDialect;
 	private final SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect;
+	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
 
 	@SuppressWarnings("unchecked")
 	public ForwardingGridDialect(GridDialect gridDialect) {
@@ -65,6 +67,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		this.batchableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, BatchableGridDialect.class );
 		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
 		this.sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
+		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
 	}
 
 	/**
@@ -182,6 +185,29 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	/*
+	 * @see org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect
+	 */
+
+	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		sessionFactoryAwareDialect.sessionFactoryCreated( sessionFactoryImplementor );
+	}
+
+	/*
+	 * @see org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect
+	 */
+
+	@Override
+	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
+		return identityColumnAwareGridDialect.createTuple( entityKeyMetadata, tupleContext );
+	}
+
+	@Override
+	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
+		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, tupleContext );
+	}
+
+	/*
 	 * @see org.hibernate.service.spi.ServiceRegistryAwareService
 	 */
 
@@ -201,15 +227,6 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		if ( gridDialect instanceof Configurable ) {
 			( (Configurable) gridDialect ).configure( configurationValues );
 		}
-	}
-
-	/*
-	 * @see org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect
-	 */
-
-	@Override
-	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
-		sessionFactoryAwareDialect.sessionFactoryCreated( sessionFactoryImplementor );
 	}
 
 	@Override

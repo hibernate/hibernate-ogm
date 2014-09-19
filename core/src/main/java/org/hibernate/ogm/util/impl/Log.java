@@ -201,4 +201,7 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = WARN)
 	@Message(id = 64, value = "The option '@SequenceGenerator#schema()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
 	void schemaOptionNotSupportedForSequenceGenerator(String schemaName);
+
+	@Message(id = 65, value = "Id generation strategy IDENTITY configured for entity %1$s is not supported by the current grid dialect.")
+	HibernateException getIdentityGenerationStrategyNotSupportedException(String entityName);
 }

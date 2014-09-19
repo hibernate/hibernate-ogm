@@ -19,6 +19,7 @@ import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.dialect.impl.BatchOperationsDelegator;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
+import org.hibernate.ogm.dialect.impl.IdentityColumnAwareGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
@@ -94,6 +95,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( TypeTranslatorInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( GridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
+		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 	}
 
 	private BatchOperationsDelegator asBatchDelegatorOrNull(GridDialect gridDialect) {
