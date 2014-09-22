@@ -13,7 +13,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
  *
  * @author Davide D'Alto
  */
-public interface SessionFactoryAwareDialect extends GridDialect {
+public interface SessionFactoryLifecycleAwareDialect extends GridDialect {
 
 	/**
 	 * Injection point for the dialect to receive the session factory.
