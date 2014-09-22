@@ -38,13 +38,13 @@ class EntityAssociationUpdater {
 	private static final Log log = LoggerFactory.make();
 
 	private final OgmEntityPersister persister;
+
 	private final GridDialect gridDialect;
 	private Tuple resultset;
 	private int tableIndex;
 	private Serializable id;
 	private SessionImplementor session;
-
-	private boolean[] propertyInverseAssociationManagementMayBeRequired;
+	private boolean[] propertyMightRequireInverseAssociationManagement;
 
 	EntityAssociationUpdater(OgmEntityPersister persister) {
 		this.persister = persister;
@@ -76,8 +76,8 @@ class EntityAssociationUpdater {
 		return this;
 	}
 
-	public EntityAssociationUpdater propertyInverseAssociationManagementMayBeRequired(boolean[] propertyInverseAssociationManagementMayBeRequired) {
-		this.propertyInverseAssociationManagementMayBeRequired = propertyInverseAssociationManagementMayBeRequired;
+	public EntityAssociationUpdater propertyMightRequireInverseAssociationManagement(boolean[] propertyInverseAssociationManagementMayBeRequired) {
+		this.propertyMightRequireInverseAssociationManagement = propertyInverseAssociationManagementMayBeRequired;
 		return this;
 	}
 
@@ -86,7 +86,7 @@ class EntityAssociationUpdater {
 	/**
 	 * Updates all inverse associations managed by a given entity.
 	 */
-	public void addNavigationalInformationForReverseSide() {
+	public void addNavigationalInformationForInverseSide() {
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Adding inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
@@ -107,7 +107,7 @@ class EntityAssociationUpdater {
 
 				//don't index null columns, this means no association
 				if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( ( newColumnValues ) ) ) {
-					addNavigationalInformationForReverseSide( propertyIndex, associationKeyMetadata, newColumnValues );
+					addNavigationalInformationForInverseSide( propertyIndex, associationKeyMetadata, newColumnValues );
 				}
 			}
 		}
@@ -116,7 +116,7 @@ class EntityAssociationUpdater {
 	/**
 	 * Removes all inverse associations managed by a given entity.
 	 */
-	public void removeNavigationalInformationFromReverseSide() {
+	public void removeNavigationalInformationFromInverseSide() {
 		if ( log.isTraceEnabled() ) {
 			log.trace( "Removing inverse navigational information for entity: " + MessageHelper.infoString( persister, id, persister.getFactory() ) );
 		}
@@ -137,13 +137,13 @@ class EntityAssociationUpdater {
 
 				//don't index null columns, this means no association
 				if ( ! CollectionHelper.isEmptyOrContainsOnlyNull( oldColumnValues ) ) {
-					removeNavigationalInformationFromReverseSide( propertyIndex, associationKeyMetadata, oldColumnValues );
+					removeNavigationalInformationFromInverseSide( propertyIndex, associationKeyMetadata, oldColumnValues );
 				}
 			}
 		}
 	}
 
-	private void addNavigationalInformationForReverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] newColumnValue) {
+	private void addNavigationalInformationForInverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] newColumnValue) {
 		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, newColumnValue );
 
 		RowKey rowKey = getInverseRowKey( associationKeyMetadata, newColumnValue );
@@ -156,7 +156,7 @@ class EntityAssociationUpdater {
 		associationPersister.flushToDatastore();
 	}
 
-	private void removeNavigationalInformationFromReverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] oldColumnValue) {
+	private void removeNavigationalInformationFromInverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] oldColumnValue) {
 		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, oldColumnValue );
 
 		Association association = associationPersister.getAssociation();
@@ -230,7 +230,7 @@ class EntityAssociationUpdater {
 
 	private AssociationKeyMetadata getInverseAssociationKeyMetadata(int propertyIndex) {
 		// a quick test for excluding properties which for sure don't manage an inverse association
-		if ( !propertyInverseAssociationManagementMayBeRequired[propertyIndex] ) {
+		if ( !propertyMightRequireInverseAssociationManagement[propertyIndex] ) {
 			return null;
 		}
 
