@@ -10,21 +10,21 @@ import org.hibernate.SessionFactory;
 import org.hibernate.SessionFactoryObserver;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.dialect.spi.SessionFactoryAwareDialect;
+import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 
 /**
  * Passes a successfully created session factory to a {@link GridDialect} if it implements the
- * {@link SessionFactoryAwareDialect} interface.
+ * {@link SessionFactoryLifecycleAwareDialect} interface.
  *
  * @author Davide D'Alto
  */
-public class SessionFactoryAwareInitializer implements SessionFactoryObserver {
+public class SessionFactoryLifecycleAwareDialectInitializer implements SessionFactoryObserver {
 
 	@Override
 	public void sessionFactoryCreated(SessionFactory factory) {
 		SessionFactoryImplementor factoryImplementor = (SessionFactoryImplementor) factory;
 		GridDialect gridDialect = factoryImplementor.getServiceRegistry().getService( GridDialect.class );
-		SessionFactoryAwareDialect sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryAwareDialect.class );
+		SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
 		if ( sessionFactoryAwareDialect != null ) {
 			sessionFactoryAwareDialect.sessionFactoryCreated( factoryImplementor );
 		}

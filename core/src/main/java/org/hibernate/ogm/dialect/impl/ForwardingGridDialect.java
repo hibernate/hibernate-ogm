@@ -12,6 +12,7 @@ import java.util.Map;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
@@ -22,6 +23,7 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -48,11 +50,12 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, QueryableGridDialect<T>, Configurable, ServiceRegistryAwareService {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, QueryableGridDialect<T>, Configurable, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
 	private final QueryableGridDialect<T> queryableGridDialect;
+	private final SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect;
 
 	@SuppressWarnings("unchecked")
 	public ForwardingGridDialect(GridDialect gridDialect) {
@@ -61,6 +64,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		this.gridDialect = gridDialect;
 		this.batchableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, BatchableGridDialect.class );
 		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
+		this.sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
 	}
 
 	/**
@@ -189,6 +193,13 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		}
 	}
 
+	// SessionFactoryLifecycleAwareDialect
+
+	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
+		sessionFactoryAwareDialect.sessionFactoryCreated( sessionFactoryImplementor );
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder( getClass().getSimpleName() );
@@ -206,4 +217,5 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
+
 }

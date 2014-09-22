@@ -44,6 +44,7 @@ import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -84,7 +85,7 @@ import org.neo4j.kernel.impl.util.StringLogger;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService {
+public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -108,13 +109,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		this.serviceRegistry = serviceRegistry;
 	}
 
-	/**
-	 * Initializes the parameterized queries used by dialect to interact with the datastore.
-	 * <p>
-	 * Parameters depend on {@link EntityKeyMetadata} and {@link AssociatedEntityKeyMetadata} obtained from the
-	 * persisters.
-	 */
-	public void initializeQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+	@Override
+	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
 		this.associationQueries = initializeAssociationQueries( sessionFactoryImplementor );
 		this.entityQueries = initializeEntityQueries( sessionFactoryImplementor, associationQueries );
 	}
