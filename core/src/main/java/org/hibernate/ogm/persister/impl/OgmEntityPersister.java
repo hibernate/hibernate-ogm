@@ -129,7 +129,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 * persisters to be set up). So this is used to exclude some properties, whereas the final decision is done during
 	 * updates via {@link BiDirectionalAssociationHelper}.
 	 */
-	private final boolean[] propertyInverseAssociationManagementMayBeRequired;
+	private final boolean[] propertyMightRequireInverseAssociationManagement;
 
 	private TupleContext tupleContext;
 
@@ -241,7 +241,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		initCustomSQLStrings();
 
-		propertyInverseAssociationManagementMayBeRequired = getPropertyInverseAssociationManagementMayBeRequired();
+		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -326,17 +326,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return columnNames;
 	}
 
-	private boolean[] getPropertyInverseAssociationManagementMayBeRequired() {
-		boolean[] propertyInverseAssociationManagementMayBeRequired = new boolean[getEntityMetamodel().getPropertySpan()];
+	private boolean[] getPropertyMightRequireInverseAssociationManagement() {
+		boolean[] propertyMightRequireInverseAssociationManagement = new boolean[getEntityMetamodel().getPropertySpan()];
 
 		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
 			Type propertyType = getPropertyTypes()[propertyIndex];
 			boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
 
-			propertyInverseAssociationManagementMayBeRequired[propertyIndex] = isStarToOne || getPropertyUniqueness()[propertyIndex];
+			propertyMightRequireInverseAssociationManagement[propertyIndex] = isStarToOne || getPropertyUniqueness()[propertyIndex];
 		}
 
-		return propertyInverseAssociationManagementMayBeRequired;
+		return propertyMightRequireInverseAssociationManagement;
 	}
 
 	@Override
@@ -1001,8 +1001,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.propertyInverseAssociationManagementMayBeRequired( propertyInverseAssociationManagementMayBeRequired )
-				.removeNavigationalInformationFromReverseSide();
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.removeNavigationalInformationFromInverseSide();
 	}
 
 	/**
@@ -1020,8 +1020,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.propertyInverseAssociationManagementMayBeRequired( propertyInverseAssociationManagementMayBeRequired )
-				.addNavigationalInformationForReverseSide();
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.addNavigationalInformationForInverseSide();
 	}
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
@@ -1221,8 +1221,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( j )
-				.propertyInverseAssociationManagementMayBeRequired( propertyInverseAssociationManagementMayBeRequired )
-				.removeNavigationalInformationFromReverseSide();
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.removeNavigationalInformationFromInverseSide();
 
 			gridDialect.removeTuple( key, getTupleContext() );
 		}
