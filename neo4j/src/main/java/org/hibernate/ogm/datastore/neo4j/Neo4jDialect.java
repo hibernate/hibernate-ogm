@@ -11,6 +11,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,8 +112,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
-		this.associationQueries = initializeAssociationQueries( sessionFactoryImplementor );
-		this.entityQueries = initializeEntityQueries( sessionFactoryImplementor, associationQueries );
+		this.associationQueries = Collections.unmodifiableMap( initializeAssociationQueries( sessionFactoryImplementor ) );
+		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
 	}
 
 	private Map<EntityKeyMetadata, Neo4jQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
