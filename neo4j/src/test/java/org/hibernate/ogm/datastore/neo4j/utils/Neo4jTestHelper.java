@@ -20,11 +20,11 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -77,7 +77,7 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
 		Map<String, Object> tuple = new HashMap<String, Object>();
-		Neo4jDialect dialect = new Neo4jDialect( getProvider( sessionFactory ) );
+		GridDialect dialect = getDialect( sessionFactory );
 		TupleSnapshot snapshot = dialect.getTuple( key, getEmptyTupleContext() ).getSnapshot();
 		for ( String column : snapshot.getColumnNames() ) {
 			tuple.put( column, snapshot.get( column ) );
@@ -128,6 +128,11 @@ public class Neo4jTestHelper implements TestableGridDialect {
 			throw new RuntimeException( "Not testing with Neo4jDB, cannot extract underlying provider" );
 		}
 		return Neo4jDatastoreProvider.class.cast( provider );
+	}
+
+	private static GridDialect getDialect(SessionFactory sessionFactory) {
+		GridDialect dialect = ( (SessionFactoryImplementor) sessionFactory ).getServiceRegistry().getService( GridDialect.class );
+		return dialect;
 	}
 
 	@Override

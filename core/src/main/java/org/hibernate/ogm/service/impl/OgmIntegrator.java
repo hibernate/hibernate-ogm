@@ -21,6 +21,7 @@ import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.impl.GridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.OgmDialectFactoryInitiator;
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
+import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
@@ -57,6 +58,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		Version.touch();
 
 		sessionFactory.addObserver( new SchemaInitializingObserver( configuration ) );
+		sessionFactory.addObserver( new SessionFactoryLifecycleAwareDialectInitializer() );
 		attachBatchListenersIfRequired( serviceRegistry );
 	}
 

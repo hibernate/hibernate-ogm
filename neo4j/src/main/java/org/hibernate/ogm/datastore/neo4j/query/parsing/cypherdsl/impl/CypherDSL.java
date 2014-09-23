@@ -25,7 +25,7 @@ public class CypherDSL {
 	 * characters (a-z, 0-9), but must always start with a letter. If other characters are needed, you can quote the
 	 * identifier using backquote (`) signs. The same rules apply to property names.
 	 */
-	private static final Pattern SIMPLE_NAME = Pattern.compile( "\\p{Alpha}\\w*" );
+	private static final Pattern SIMPLE_NAME = Pattern.compile( "\\p{Alpha}[\\p{Alpha}\\d]*" );
 
 	public static void identifier(StringBuilder builder, String identifier) {
 		escapeIdentifier( builder, identifier );

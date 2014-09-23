@@ -42,7 +42,6 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 		return DatastoreProvider.class;
 	}
 
-
 	@Override
 	public DatastoreProvider initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );

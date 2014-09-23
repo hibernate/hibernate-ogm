@@ -6,6 +6,8 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
+import static org.neo4j.graphdb.DynamicRelationshipType.withName;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +63,7 @@ public final class Neo4jAssociationSnapshot implements AssociationSnapshot {
 	}
 
 	private static Iterable<Relationship> relationships(Node ownerNode, AssociationKey associationKey, String relationshipType) {
-		return ownerNode.getRelationships( Direction.BOTH, CypherCRUD.relationshipType( relationshipType ) );
+		return ownerNode.getRelationships( Direction.BOTH, withName( relationshipType ) );
 	}
 
 	private RowKey convert(AssociationKey associationKey, Neo4jTupleAssociationSnapshot snapshot) {

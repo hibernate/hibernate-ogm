@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.relationshipType;
+import static org.neo4j.graphdb.DynamicRelationshipType.withName;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -54,7 +54,7 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 	}
 
 	private Object readPropertyOnOtherNode(String column) {
-		Iterator<Relationship> relationships = node.getRelationships( Direction.OUTGOING, relationshipType( rolesByColumn.get( column ) ) ).iterator();
+		Iterator<Relationship> relationships = node.getRelationships( Direction.OUTGOING, withName( rolesByColumn.get( column ) ) ).iterator();
 
 		if ( relationships.hasNext() ) {
 			Node otherNode = relationships.next().getEndNode();

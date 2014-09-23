@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
-import static org.hibernate.ogm.datastore.neo4j.dialect.impl.CypherCRUD.nodeLabel;
+import static org.neo4j.graphdb.DynamicLabel.label;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +60,7 @@ public class Neo4jTupleAssociationSnapshot implements TupleSnapshot {
 	}
 
 	private static Node ownerNode(AssociationKey associationKey, Relationship relationship) {
-		if ( relationship.getStartNode().hasLabel( nodeLabel( associationKey.getEntityKey().getTable() ) ) ) {
+		if ( relationship.getStartNode().hasLabel( label( associationKey.getEntityKey().getTable() ) ) ) {
 			return relationship.getStartNode();
 		}
 		else {
