@@ -74,7 +74,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		return gridDialect;
 	}
 
-	// GridDialect
+	/*
+	 * @see org.hibernate.ogm.dialect.spi.GridDialect
+	 */
 
 	@Override
 	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
@@ -151,14 +153,18 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
 	}
 
-	// BatchableGridDialect
+	/*
+	 * @see org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect
+	 */
 
 	@Override
 	public void executeBatch(OperationsQueue queue) {
 		batchableGridDialect.executeBatch( queue );
 	}
 
-	// QueryableGridDialect
+	/*
+	 * @see org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect
+	 */
 
 	@Override
 	public ClosableIterator<Tuple> executeBackendQuery(BackendQuery<T> query, QueryParameters queryParameters) {
@@ -175,7 +181,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		return queryableGridDialect.parseNativeQuery( nativeQuery );
 	}
 
-	// ServiceRegistryAwareService
+	/*
+	 * @see org.hibernate.service.spi.ServiceRegistryAwareService
+	 */
 
 	@Override
 	public void injectServices(ServiceRegistryImplementor serviceRegistry) {
@@ -184,7 +192,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		}
 	}
 
-	// Configurable
+	/*
+	 * @see org.hibernate.service.spi.Configurable
+	 */
 
 	@Override
 	public void configure(Map configurationValues) {
@@ -193,7 +203,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		}
 	}
 
-	// SessionFactoryLifecycleAwareDialect
+	/*
+	 * @see org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect
+	 */
 
 	@Override
 	public void sessionFactoryCreated(SessionFactoryImplementor sessionFactoryImplementor) {
