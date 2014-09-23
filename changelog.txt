@@ -35,6 +35,9 @@ Hibernate OGM Changelog
 4.1.0.Beta5 (09-07-2014)
 -------------------------
 
+** Sub-task
+    * [OGM-489] - Create a Neo4j query parser
+
 ** Bug
     * [OGM-264] - Should sequence and nextValue use the ORM column names instead of ad-hoc names
     * [OGM-552] - Update links in the how-to-release.md file
@@ -44,6 +47,7 @@ Hibernate OGM Changelog
     * [OGM-568] - Make Animal Sniffer and JavaDoc work with Java 8
 
 ** Improvement
+    * [OGM-445] - Ensure that StartStoppable implementations get passed a completely set up session factory
     * [OGM-481] - Use more concise format for representing element collections of basic types
     * [OGM-563] - Improve cleanup of MapDatastoreProvider and explain lock shortcomings
     * [OGM-567] - Inject version number in Version from Maven plugin
@@ -52,7 +56,6 @@ Hibernate OGM Changelog
     * [OGM-518] - Integrate SORT operator for the Neo4j query parser backend
 
 ** Task
-    * [OGM-489] - Create a Neo4j query parser
     * [OGM-372] - Support Neo4j queries
     * [OGM-572] - Remove dependency to CypherDSL
 
