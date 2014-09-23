@@ -69,7 +69,7 @@ To ease migration between stores, it is recommended to reference these constants
 Hibernate OGM allows to configure store-specific options via Java annotations.
 When working with the CouchDB backend, you can specify how associations should be stored
 using the +AssociationStorage+ annotation
-(refer to <<ogm-couchdb-storage-prinicples>> to learn more about association storage strategies in general).
+(refer to <<ogm-couchdb-storage-principles>> to learn more about association storage strategies in general).
 
 The following shows an example:
 
@@ -159,7 +159,7 @@ To register an option configurator, specify its class name using the +hibernate.
 When bootstrapping a session factory or entity manager factory programmatically,
 you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
 
-[[ogm-couchdb-storage-prinicples]]
+[[ogm-couchdb-storage-principles]]
 ==== Storage principles
 
 Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible

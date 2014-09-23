@@ -87,7 +87,7 @@ When working with the MongoDB backend, you can specify the following settings:
 * the write concern for entities and associations using the +@WriteConcern+ annotation
 * the read preference for entities and associations using the +@ReadPreference+ annotation
 * a strategy for storing associations using the +@AssociationStorage+ and +@AssociationDocumentStorage+ annotations
-(refer to <<ogm-mongodb-storage-prinicples>> to learn more about these options).
+(refer to <<ogm-mongodb-storage-principles>> to learn more about these options).
 
 The following shows an example:
 
@@ -194,7 +194,7 @@ When bootstrapping a session factory or entity manager factory programmatically,
 you also can pass in an +OptionConfigurator+ instance or the class object representing the configurator type.
 
 
-[[ogm-mongodb-storage-prinicples]]
+[[ogm-mongodb-storage-principles]]
 ==== Storage principles
 
 Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
