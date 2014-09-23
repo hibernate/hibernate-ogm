@@ -26,8 +26,9 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
-import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jQueries;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jEntityQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
@@ -94,9 +95,9 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	private ServiceRegistryImplementor serviceRegistry;
 
-	private Map<EntityKeyMetadata, Neo4jQueries> entityQueries;
+	private Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries;
 
-	private Map<AssociationKeyMetadata, Neo4jQueries> associationQueries;
+	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries;
 
 	private final ExecutionEngine executionEngine;
 
@@ -116,40 +117,40 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		this.entityQueries = Collections.unmodifiableMap( initializeEntityQueries( sessionFactoryImplementor, associationQueries ) );
 	}
 
-	private Map<EntityKeyMetadata, Neo4jQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
-			Map<AssociationKeyMetadata, Neo4jQueries> associationQueries) {
-		Map<EntityKeyMetadata, Neo4jQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
+	private Map<EntityKeyMetadata, Neo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor,
+			Map<AssociationKeyMetadata, Neo4jAssociationQueries> associationQueries) {
+		Map<EntityKeyMetadata, Neo4jEntityQueries> entityQueries = initializeEntityQueries( sessionFactoryImplementor );
 		for ( AssociationKeyMetadata associationKeyMetadata : associationQueries.keySet() ) {
 			EntityKeyMetadata entityKeyMetadata = associationKeyMetadata.getAssociatedEntityKeyMetadata().getEntityKeyMetadata();
 			if ( !entityQueries.containsKey( entityKeyMetadata ) ) {
 				// Embeddables metadata
-				entityQueries.put( entityKeyMetadata, new Neo4jQueries( entityKeyMetadata ) );
+				entityQueries.put( entityKeyMetadata, new Neo4jEntityQueries( entityKeyMetadata ) );
 			}
 		}
 		return entityQueries;
 	}
 
-	private Map<EntityKeyMetadata, Neo4jQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<EntityKeyMetadata, Neo4jQueries> queryMap = new HashMap<EntityKeyMetadata, Neo4jQueries>();
+	private Map<EntityKeyMetadata, Neo4jEntityQueries> initializeEntityQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<EntityKeyMetadata, Neo4jEntityQueries> queryMap = new HashMap<EntityKeyMetadata, Neo4jEntityQueries>();
 		Collection<EntityPersister> entityPersisters = sessionFactoryImplementor.getEntityPersisters().values();
 		for ( EntityPersister entityPersister : entityPersisters ) {
 			if (entityPersister instanceof OgmEntityPersister ) {
 				OgmEntityPersister ogmEntityPersister = (OgmEntityPersister) entityPersister;
-				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new Neo4jQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
+				queryMap.put( ogmEntityPersister.getEntityKeyMetadata(), new Neo4jEntityQueries( ogmEntityPersister.getEntityKeyMetadata() ) );
 			}
 		}
 		return queryMap;
 	}
 
-	private Map<AssociationKeyMetadata, Neo4jQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
-		Map<AssociationKeyMetadata, Neo4jQueries> queryMap = new HashMap<AssociationKeyMetadata, Neo4jQueries>();
+	private Map<AssociationKeyMetadata, Neo4jAssociationQueries> initializeAssociationQueries(SessionFactoryImplementor sessionFactoryImplementor) {
+		Map<AssociationKeyMetadata, Neo4jAssociationQueries> queryMap = new HashMap<AssociationKeyMetadata, Neo4jAssociationQueries>();
 		Collection<CollectionPersister> collectionPersisters = sessionFactoryImplementor.getCollectionPersisters().values();
 		for ( CollectionPersister collectionPersister : collectionPersisters ) {
 			if ( collectionPersister instanceof OgmCollectionPersister ) {
 				OgmCollectionPersister ogmCollectionPersister = (OgmCollectionPersister) collectionPersister;
 				EntityKeyMetadata ownerEntityKeyMetadata = ( (OgmEntityPersister) ( ogmCollectionPersister.getOwnerEntityPersister() ) ).getEntityKeyMetadata();
 				AssociationKeyMetadata associationKeyMetadata = ogmCollectionPersister.getAssociationKeyMetadata();
-				queryMap.put( associationKeyMetadata, new Neo4jQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
+				queryMap.put( associationKeyMetadata, new Neo4jAssociationQueries( ownerEntityKeyMetadata, associationKeyMetadata ) );
 			}
 		}
 		return queryMap;
