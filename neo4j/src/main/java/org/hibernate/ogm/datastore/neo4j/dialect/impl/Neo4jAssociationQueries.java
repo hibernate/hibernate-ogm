@@ -13,6 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -22,139 +23,24 @@ import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 
 /**
- * This class will store parameterized queries used by {@link org.hibernate.ogm.datastore.neo4j.Neo4jDialect} for a single entity
- * or a single association end provides the methods to execute them.
+ * The {@link Neo4jDialect} will use this queries to update the associations on Neo4j
  *
  * @author Davide D'Alto
  */
-public class Neo4jQueries {
+public class Neo4jAssociationQueries {
 
-	private final String createEmbeddedNodeQuery;
-	private final String findEntityQuery;
-	private final String findEntitiesQuery;
-	private final String findOrCreateEntityQuery;
 	private final String findRelationshipQuery;
 	private final String removeAssociationQuery;
 	private final String removeAssociationRowQuery;
-	private final String removeEntityQuery;
 
-	public Neo4jQueries(EntityKeyMetadata entityKeyMetadata) {
-		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
-		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata );
-		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
-		this.findOrCreateEntityQuery = initFindOrCreateEntityQuery( entityKeyMetadata );
-		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
-
-		this.removeAssociationQuery = null;
-		this.findRelationshipQuery = null;
-		this.removeAssociationRowQuery = null;
-	}
-
-	public Neo4jQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
-		this.createEmbeddedNodeQuery = null;
-		this.findEntityQuery = null;
-		this.findEntitiesQuery = null;
-		this.findOrCreateEntityQuery = null;
-		this.removeEntityQuery = null;
-
+	public Neo4jAssociationQueries(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		this.removeAssociationQuery = initRemoveAssociationQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.removeAssociationRowQuery = initRemoveAssociationRowQuery( ownerEntityKeyMetadata, associationKeyMetadata );
 		this.findRelationshipQuery = initFindRelationshipQuery( ownerEntityKeyMetadata, associationKeyMetadata );
-	}
-
-	/*
-	 * Example:
-	 *
-	 * CREATE (n:EMBEDDED:table {id: {0}})
-	 * RETURN n
-	 */
-	private String initCreateEmbeddedNodeQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "CREATE " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( EMBEDDED );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN n" );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}})
-	 * RETURN n
-	 */
-	private String initFindEntityQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN n" );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MATCH (n:ENTITY:table )
-	 * RETURN n
-	 */
-	private String initFindEntitiesQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ") RETURN n" );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MERGE (n:ENTITY:table {id: {0}})
-	 * RETURN n
-	 */
-	private String initFindOrCreateEntityQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MERGE " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN n" );
-		return queryBuilder.toString();
-	}
-
-	/*
-	 * Example:
-	 *
-	 * MATCH (n:ENTITY:table {id: {0}})
-	 * OPTIONAL MATCH (n) - [r] - ()
-	 * DELETE n, r
-	 */
-	private String initRemoveEntityQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
-		queryBuilder.append( "(n:" );
-		queryBuilder.append( ENTITY );
-		queryBuilder.append( ":" );
-		appendLabel( entityKeyMetadata, queryBuilder );
-		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
-		queryBuilder.append( " OPTIONAL MATCH (n) - [r] - ()" );
-		queryBuilder.append( " DELETE n, r" );
-		return queryBuilder.toString();
 	}
 
 	/*
@@ -277,66 +163,6 @@ public class Neo4jQueries {
 	}
 
 	/**
-	 * Create a single node representing an embedded element.
-	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @param columnValues the values in {@link EntityKey#getColumnValues()}
-	 * @return the corresponding node;
-	 */
-	public Node createEmbedded(ExecutionEngine executionEngine, Object[] columnValues) {
-		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( createEmbeddedNodeQuery, params );
-		return singleResult( result );
-	}
-
-	/**
-	 * Find the node corresponding to an entity.
-	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @param columnValues the values in {@link EntityKey#getColumnValues()}
-	 * @return the corresponding node
-	 */
-	public Node findEntity(ExecutionEngine executionEngine, Object[] columnValues) {
-		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( findEntityQuery, params );
-		return singleResult( result );
-	}
-
-	/**
-	 * Find the node corresponding to an entity or create it if it does not exist.
-	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @param columnValues the values in {@link EntityKey#getColumnValues()}
-	 * @return the corresponding node
-	 */
-	public Node findOrCreateEntity(ExecutionEngine executionEngine, Object[] columnValues) {
-		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( findOrCreateEntityQuery, params );
-		return singleResult( result );
-	}
-
-	/**
-	 * Find all the node representing the entity.
-	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @return
-	 */
-	public ResourceIterator<Node> findEntities(ExecutionEngine executionEngine) {
-		ExecutionResult result = executionEngine.execute( findEntitiesQuery );
-		return result.columnAs( "n" );
-	}
-
-	/**
-	 * Remove the nodes representing the entity.
-	 *
-	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 */
-	public void removeEntity(ExecutionEngine executionEngine, Object[] columnValues) {
-		Map<String, Object> params = params( columnValues );
-		executionEngine.execute( removeEntityQuery, params );
-	}
-
-	/**
 	 * Removes the relationship(s) representing the given association. If the association refers to an embedded entity
 	 * (collection), the referenced entities are removed as well.
 	 *
@@ -428,7 +254,7 @@ public class Neo4jQueries {
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
 	 * @param associationKey represents the association
-	 * @param rowKey represents a row in an association	 * @param executionEngine
+	 * @param rowKey represents a row in an association
 	 */
 	public void removeAssociationRow(ExecutionEngine executionEngine, AssociationKey associationKey, RowKey rowKey) {
 		Object[] relationshipValues;
