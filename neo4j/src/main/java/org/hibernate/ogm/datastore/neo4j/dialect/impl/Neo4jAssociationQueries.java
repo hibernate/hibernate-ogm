@@ -10,10 +10,6 @@ import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -24,14 +20,15 @@ import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
 
 /**
- * The {@link Neo4jDialect} will use this queries to update the associations on Neo4j
+ * Container for the queries related to one association family in Neo4j. Unfortunately, we cannot use the same queries
+ * for all associations, as Neo4j does not allow to parameterize on node labels which would be required, as the
+ * association table is stored as a label.
  *
  * @author Davide D'Alto
  */
-public class Neo4jAssociationQueries {
+public class Neo4jAssociationQueries extends QueriesBase {
 
 	private final String findRelationshipQuery;
 	private final String removeAssociationQuery;
@@ -54,7 +51,7 @@ public class Neo4jAssociationQueries {
 	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role {index: {1}}] -  (t)
 	 * RETURN r
 	 */
-	private String initFindRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	private static String initFindRelationshipQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		int offset = 0;
 		StringBuilder queryBuilder = new StringBuilder("MATCH ");
 		queryBuilder.append( "(n:" );
@@ -91,7 +88,7 @@ public class Neo4jAssociationQueries {
 	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role] - (e:EMBEDDED)
 	 * DELETE r, e
 	 */
-	private String initRemoveAssociationQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	private static String initRemoveAssociationQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder("MATCH ");
 		queryBuilder.append( "(n:" );
 		queryBuilder.append( ENTITY );
@@ -130,7 +127,7 @@ public class Neo4jAssociationQueries {
 	 * MATCH (n:ENTITY:table {id: {0}}) -[r:role {index: {1}}] - (e)
 	 * DELETE r
 	 */
-	private String initRemoveAssociationRowQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
+	private static String initRemoveAssociationRowQuery(EntityKeyMetadata ownerEntityKeyMetadata, AssociationKeyMetadata associationKeyMetadata) {
 		StringBuilder queryBuilder = new StringBuilder("MATCH ");
 		queryBuilder.append( "(n:" );
 		queryBuilder.append( ENTITY );
@@ -171,52 +168,6 @@ public class Neo4jAssociationQueries {
 	 */
 	public void removeAssociation(ExecutionEngine executionEngine, AssociationKey associationKey) {
 		executionEngine.execute( removeAssociationQuery, params( associationKey.getEntityKey().getColumnValues() ) );
-	}
-
-	private void appendProperties(EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		appendProperties( queryBuilder, entityKeyMetadata.getColumnNames(), 0 );
-	}
-
-	private void appendProperties(StringBuilder queryBuilder, String[] columnNames, int offset) {
-		if ( columnNames.length > 0 ) {
-			queryBuilder.append( " {" );
-			for ( int i = 0; i < columnNames.length; i++ ) {
-				escapeIdentifier( queryBuilder, columnNames[i] );
-				queryBuilder.append( ": {" );
-				queryBuilder.append( offset + i );
-				queryBuilder.append( "}" );
-				if ( i < columnNames.length - 1 ) {
-					queryBuilder.append( ", " );
-				}
-			}
-			queryBuilder.append( "}" );
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> T singleResult(ExecutionResult result) {
-		ResourceIterator<Map<String, Object>> iterator = result.iterator();
-		try {
-			if ( iterator.hasNext() ) {
-				return (T) iterator.next().values().iterator().next();
-			}
-			return null;
-		}
-		finally {
-			iterator.close();
-		}
-	}
-
-	private Map<String, Object> params(Object[] columnValues) {
-		return params( columnValues, 0 );
-	}
-
-	private Map<String, Object> params(Object[] columnValues, int offset) {
-		Map<String, Object> params = new HashMap<String, Object>( columnValues.length );
-		for ( int i = 0; i < columnValues.length; i++ ) {
-			params.put( String.valueOf( offset + i ), columnValues[i] );
-		}
-		return params;
 	}
 
 	/**
@@ -298,11 +249,7 @@ public class Neo4jAssociationQueries {
 		return new EntityKey( entityKeyMetadata, columnValues );
 	}
 
-	private void appendLabel(EntityKeyMetadata entityKeyMetadata, StringBuilder queryBuilder) {
-		escapeIdentifier( queryBuilder, entityKeyMetadata.getTable() );
-	}
-
-	private void appendRelationshipType(StringBuilder queryBuilder, AssociationKeyMetadata associationKeyMetadata) {
+	private static void appendRelationshipType(StringBuilder queryBuilder, AssociationKeyMetadata associationKeyMetadata) {
 		escapeIdentifier( queryBuilder, associationKeyMetadata.getCollectionRole() );
 	}
 }
