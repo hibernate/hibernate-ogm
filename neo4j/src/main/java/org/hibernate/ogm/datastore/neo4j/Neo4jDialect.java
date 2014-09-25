@@ -198,11 +198,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		entityQueries.get( key.getMetadata() ).removeEntity( executionEngine, key.getColumnValues() );
 	}
 
-	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple();
-	}
-
 	/**
 	 * When dealing with some scenarios like, for example, a bidirectional association, OGM calls this method twice:
 	 * <p>

@@ -535,11 +535,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple();
-	}
-
-	@Override
 	public Number nextValue(NextValueRequest request) {
 		DBCollection currentCollection = getCollection( request.getKey().getTable() );
 		DBObject query = this.prepareIdObject( request.getKey() );

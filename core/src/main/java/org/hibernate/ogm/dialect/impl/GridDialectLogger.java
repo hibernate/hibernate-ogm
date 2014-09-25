@@ -18,7 +18,6 @@ import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.util.impl.CoreLogCategories;
@@ -107,16 +106,6 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		log.tracef( "Removing association with key %1$s from datastore", key );
 		super.removeAssociation( key, associationContext );
-	}
-
-	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		log.tracef(
-				"Build Tuple object for row key entry %1$s in association %2$s (does not trigger access to the datastore)",
-				rowKey,
-				associationKey
-		);
-		return super.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override

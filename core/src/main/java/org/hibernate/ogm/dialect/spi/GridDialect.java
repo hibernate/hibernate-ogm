@@ -11,7 +11,6 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
@@ -75,8 +74,6 @@ public interface GridDialect extends Service {
 	 * Remove the list of tuples corresponding to a given association
 	 */
 	void removeAssociation(AssociationKey key, AssociationContext associationContext);
-
-	Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey);
 
 	/**
 	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may

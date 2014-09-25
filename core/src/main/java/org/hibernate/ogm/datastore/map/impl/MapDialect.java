@@ -114,11 +114,6 @@ public class MapDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return new Tuple();
-	}
-
-	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		return false;
 	}

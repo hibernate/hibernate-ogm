@@ -28,7 +28,6 @@ import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.spi.GridType;
@@ -121,11 +120,6 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
 		gridDialect.removeAssociation( key, associationContext );
-	}
-
-	@Override
-	public Tuple createTupleAssociation(AssociationKey associationKey, RowKey rowKey) {
-		return gridDialect.createTupleAssociation( associationKey, rowKey );
 	}
 
 	@Override
