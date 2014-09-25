@@ -200,11 +200,7 @@ class EntityDehydrator {
 
 		Object[] columnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, associationKeyMetadata.getRowKeyColumnNames() );
 		final RowKey rowKey = new RowKey( associationKeyMetadata.getRowKeyColumnNames(), columnValues );
-
-		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( rowKey );
-		for ( String column : tuple.getColumnNames() ) {
-			assocEntryTuple.put( column, tuple.get( column ) );
-		}
+		associationPersister.getAssociation().put( rowKey, tuple );
 
 		associationPersister.flushToDatastore();
 	}

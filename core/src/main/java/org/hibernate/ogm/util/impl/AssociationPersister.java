@@ -16,9 +16,7 @@ import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -136,12 +134,6 @@ public class AssociationPersister {
 			);
 		}
 		return columnValues;
-	}
-
-	public Tuple createAndPutAssociationTuple(RowKey rowKey) {
-		Tuple associationTuple = new Tuple();
-		getAssociation().put( rowKey, associationTuple );
-		return associationTuple;
 	}
 
 	/*

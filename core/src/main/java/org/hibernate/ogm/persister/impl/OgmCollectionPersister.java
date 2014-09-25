@@ -361,12 +361,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 		RowKeyAndTuple result = new RowKeyAndTuple();
 		result.key = rowKeyBuilder.values( tuple ).build();
+		result.tuple = tuple;
+		associationPersister.getAssociation().put( result.key, result.tuple );
 
-		Tuple assocEntryTuple = associationPersister.createAndPutAssociationTuple( result.key );
-		for ( String column : tuple.getColumnNames() ) {
-			assocEntryTuple.put( column, tuple.get( column ) );
-		}
-		result.tuple = assocEntryTuple;
 		return result;
 	}
 
@@ -681,11 +678,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			if ( action == Action.ADD ) {
 				RowKey inverseRowKey = getInverseRowKey( tuple );
 
-				Tuple assocTuple = associationPersister.createAndPutAssociationTuple( inverseRowKey );
+				Tuple inverseAssociationRow = new Tuple();
+				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
 				for ( String columnName : tuple.getColumnNames() ) {
-					assocTuple.put( columnName, tuple.get( columnName ) );
+					inverseAssociationRow.put( columnName, tuple.get( columnName ) );
 				}
-				associationPersister.getAssociation().put( inverseRowKey, assocTuple );
+				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
 			}
 			else if ( action == Action.REMOVE ) {
 				// we try and match the whole tuple as it should be on both sides of the navigation
