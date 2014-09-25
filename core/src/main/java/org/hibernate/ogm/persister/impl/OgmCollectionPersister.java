@@ -332,36 +332,37 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return count;
 	}
 
-	private void completeTuple(RowKeyAndTuple keyAndTuple, PersistentCollection collection, SessionImplementor session, Object entry) {
-		final Object element = collection.getElement( entry );
-		getElementGridType().nullSafeSet( keyAndTuple.tuple, element, getElementColumnNames(), session );
-	}
-
-	private RowKeyAndTuple createAndPutTupleforInsert(Serializable key, PersistentCollection collection,
+	/**
+	 * Creates an association row representing the given entry and adds it to the association managed by the given
+	 * persister.
+	 */
+	private RowKeyAndTuple createAndPutAssociationRowForInsert(Serializable key, PersistentCollection collection,
 			AssociationPersister associationPersister, SessionImplementor session, int i, Object entry) {
 		RowKeyBuilder rowKeyBuilder = initializeRowKeyBuilder();
-		Tuple tuple = new Tuple();
+		Tuple associationRow = new Tuple();
+
+		// the collection has a surrogate key (see @CollectionId)
 		if ( hasIdentifier ) {
 			final Object identifier = collection.getIdentifier( entry, i );
 			String[] names = { getIdentifierColumnName() };
-			identifierGridType.nullSafeSet( tuple, identifier, names, session );
+			identifierGridType.nullSafeSet( associationRow, identifier, names, session );
 		}
-		getKeyGridType().nullSafeSet( tuple, key, getKeyColumnNames(), session );
+
+		getKeyGridType().nullSafeSet( associationRow, key, getKeyColumnNames(), session );
 		// No need to write to where as we don't do where clauses in OGM :)
 		if ( hasIndex ) {
 			Object index = collection.getIndex( entry, i, this );
-			indexGridType.nullSafeSet( tuple, incrementIndexByBase( index ), getIndexColumnNames(), session );
+			indexGridType.nullSafeSet( associationRow, incrementIndexByBase( index ), getIndexColumnNames(), session );
 		}
-		else {
-			// use element as tuple key
-			final Object element = collection.getElement( entry );
-			getElementGridType().nullSafeSet( tuple, element, getElementColumnNames(), session );
 
-		}
+		// columns of referenced key
+		final Object element = collection.getElement( entry );
+		getElementGridType().nullSafeSet( associationRow, element, getElementColumnNames(), session );
 
 		RowKeyAndTuple result = new RowKeyAndTuple();
-		result.key = rowKeyBuilder.values( tuple ).build();
-		result.tuple = tuple;
+		result.key = rowKeyBuilder.values( associationRow ).build();
+		result.tuple = associationRow;
+
 		associationPersister.getAssociation().put( result.key, result.tuple );
 
 		return result;
@@ -550,9 +551,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				Object entry = entries.next();
 				if ( collection.needsInserting( entry, i, elementType ) ) {
 					// TODO: copy/paste from recreate()
-					RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
-					completeTuple( keyAndTuple, collection, session, entry );
-					updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+					RowKeyAndTuple associationRow = createAndPutAssociationRowForInsert( id, collection, associationPersister, session, i, entry );
+					updateInverseSideOfAssociationNavigation( session, entry, associationRow.tuple, Action.ADD, associationRow.key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -598,8 +598,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					final Object entry = entries.next();
 					if ( collection.entryExists( entry, i ) ) {
 						// TODO: copy/paste from insertRows()
-						RowKeyAndTuple keyAndTuple = createAndPutTupleforInsert( id, collection, associationPersister, session, i, entry );
-						completeTuple( keyAndTuple, collection, session, entry );
+						RowKeyAndTuple keyAndTuple = createAndPutAssociationRowForInsert( id, collection, associationPersister, session, i, entry );
 						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
@@ -622,10 +621,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple tuple, Action action, RowKey rowKey) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple associationRow, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
-			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
 			OgmEntityPersister persister = (OgmEntityPersister) getElementPersister();
 			final EntityKey entityKey = EntityKeyBuilder.fromPersister( persister, entityId, session );
 
@@ -636,8 +635,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 			if ( action == Action.ADD ) {
 				// copy all collection tuple entries in the entity tuple as this is the same table essentially
-				for ( String columnName : tuple.getColumnNames() ) {
-					entityTuple.put( columnName, tuple.get( columnName ) );
+				for ( String columnName : associationRow.getColumnNames() ) {
+					entityTuple.put( columnName, associationRow.get( columnName ) );
 				}
 			}
 			else if ( action == Action.REMOVE ) {
@@ -657,8 +656,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
-			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( tuple, elementColumnNames );
-			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( tuple, getElementColumnNames(), session, null );
+			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( associationRow, elementColumnNames );
+			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
 
 			if ( inverseAssociationKeymetadata == null ) {
 				return;
@@ -676,12 +675,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
-				RowKey inverseRowKey = getInverseRowKey( tuple );
+				RowKey inverseRowKey = getInverseRowKey( associationRow );
 
 				Tuple inverseAssociationRow = new Tuple();
 				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
-				for ( String columnName : tuple.getColumnNames() ) {
-					inverseAssociationRow.put( columnName, tuple.get( columnName ) );
+				for ( String columnName : associationRow.getColumnNames() ) {
+					inverseAssociationRow.put( columnName, associationRow.get( columnName ) );
 				}
 				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
 			}
@@ -693,7 +692,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 							+ "} key column values {" + Arrays.toString( elementColumnValues ) + "}" );
 				}
 
-				RowKey inverseRowKey = getInverseRowKey( tuple );
+				RowKey inverseRowKey = getInverseRowKey( associationRow );
 				associationPersister.getAssociation().remove( inverseRowKey );
 			}
 			else {
