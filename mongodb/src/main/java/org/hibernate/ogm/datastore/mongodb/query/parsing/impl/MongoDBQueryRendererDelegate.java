@@ -60,8 +60,13 @@ public class MongoDBQueryRendererDelegate extends SingleEntityQueryRendererDeleg
 					|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() ) ) {
 				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
 			}
-			else if ( propertyPath.getNodes().size() != 1 ) {
-				throw new UnsupportedOperationException( "Selecting nested/associated properties not yet implemented." );
+			else if ( propertyPath.getNodes().size() > 2 && propertyPath.getNodes().get( 0 ).isAlias() ) {
+				if ( propertyHelper.isEmbedddedProperty( targetTypeName, propertyPath ) ) {
+					projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
+				}
+				else {
+					throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );
+				}
 			}
 		}
 		else {
