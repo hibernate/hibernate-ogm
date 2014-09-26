@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 
 import com.mongodb.DBObject;
 
@@ -27,8 +27,8 @@ public class BatchableMongoDBTupleSnapshot extends MongoDBTupleSnapshot {
 
 	private final SnapshotType operationType;
 
-	public BatchableMongoDBTupleSnapshot(DBObject dbObject, EntityKey key, SnapshotType operationType) {
-		super( dbObject, key.getMetadata() );
+	public BatchableMongoDBTupleSnapshot(DBObject dbObject, EntityKeyMetadata entityKeyMetadata, SnapshotType operationType) {
+		super( dbObject, entityKeyMetadata );
 		this.operationType = operationType;
 	}
 

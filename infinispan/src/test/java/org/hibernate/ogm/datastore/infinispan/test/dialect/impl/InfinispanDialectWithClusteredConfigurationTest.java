@@ -7,10 +7,10 @@
 package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,7 +22,6 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -33,7 +32,6 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -83,9 +81,9 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		EntityKey key = new EntityKey( keyMetadata, values );
 
 		// when
-		Tuple tuple = dialect1.createTuple( key, getEmptyTupleContext() );
+		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.updateTuple( tuple, key, getEmptyTupleContext() );
+		dialect1.updateTuple( tuple, key, emptyTupleContext() );
 
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
@@ -154,14 +152,5 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
 
 		return serviceRegistry;
-	}
-
-	private TupleContext getEmptyTupleContext() {
-		return new TupleContext(
-				Collections.<String>emptyList(),
-				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
-				Collections.<String, String>emptyMap(),
-				EmptyOptionsContext.INSTANCE
-		);
 	}
 }

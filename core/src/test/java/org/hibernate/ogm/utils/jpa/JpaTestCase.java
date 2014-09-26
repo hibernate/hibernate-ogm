@@ -9,7 +9,6 @@ package org.hibernate.ogm.utils.jpa;
 import static org.hibernate.ogm.utils.TestHelper.dropSchemaAndDatabase;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +55,7 @@ public abstract class JpaTestCase {
 	}
 
 	@Before
-	public void createFactory() throws MalformedURLException {
+	public void createFactory() throws Throwable {
 		GetterPersistenceUnitInfo info = new GetterPersistenceUnitInfo();
 		info.setClassLoader( Thread.currentThread().getContextClassLoader() );
 		// we explicitly list them to avoid scanning

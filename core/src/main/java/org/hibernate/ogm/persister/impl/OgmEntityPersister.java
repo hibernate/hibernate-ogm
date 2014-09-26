@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.persister.impl;
 
-import static org.hibernate.ogm.persister.impl.EntityDehydrator.buildRowKeyColumnNamesForStarToOne;
 import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.io.Serializable;
@@ -43,9 +42,11 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
+import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.exception.NotSupportedException;
+import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
@@ -104,6 +105,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	//service references
 	private final GridDialect gridDialect;
+	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
+	private final OptionsService optionsService;
+
 	private final EntityKeyMetadata entityKeyMetadata;
 
 	/**
@@ -112,7 +116,20 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private Map<String, AssociationKeyMetadata> inverseOneToOneAssociationKeyMetadata;
 
-	private final OptionsService optionsService;
+	/**
+	 * Stores for each property whether it potentially represents the main side of a bi-directional association whose
+	 * other side needs to be managed by this persister.
+	 * <p>
+	 * If {@code true} is stored for a given property, it still may be the case that it actually is not the main-side of
+	 * such an association, but if {@code false} is stored, it is sure that it is not the main-side of such an
+	 * association.
+	 * <p>
+	 * Note: Ideally we'd keep this information by storing all the inverse association key meta-data for the concerned
+	 * properties. Atm. this cannot be built up during initialization, though (as it requires all entity and collection
+	 * persisters to be set up). So this is used to exclude some properties, whereas the final decision is done during
+	 * updates via {@link BiDirectionalAssociationHelper}.
+	 */
+	private final boolean[] propertyMightRequireInverseAssociationManagement;
 
 	private TupleContext tupleContext;
 
@@ -127,9 +144,15 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( log.isTraceEnabled() ) {
 			log.tracef( "Creating OgmEntityPersister for %s", persistentClass.getClassName() );
 		}
+
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		this.gridDialect = serviceRegistry.getService( GridDialect.class );
+		this.identityColumnAwareGridDialect = serviceRegistry.getService( IdentityColumnAwareGridDialect.class );
 		this.optionsService = serviceRegistry.getService( OptionsService.class );
+
+		if ( factory.getIdentifierGenerator( getEntityName() ) instanceof OgmIdentityGenerator && identityColumnAwareGridDialect == null ) {
+			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
+		}
 
 		tableName = persistentClass.getTable().getQualifiedName(
 				factory.getDialect(),
@@ -184,7 +207,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					);
 					tableNames.add( tableName );
 					String[] key = new String[idColumnSpan];
-					@SuppressWarnings( "unchecked" )
+
 					Iterator<Column> citer = tab.getPrimaryKey().getColumnIterator();
 					for ( int k = 0; k < idColumnSpan; k++ ) {
 						key[k] = citer.next().getQuotedName( factory.getDialect() );
@@ -217,6 +240,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 
 		initCustomSQLStrings();
+
+		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -299,6 +324,19 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			columnNames.add( discriminator.getColumnName() );
 		}
 		return columnNames;
+	}
+
+	private boolean[] getPropertyMightRequireInverseAssociationManagement() {
+		boolean[] propertyMightRequireInverseAssociationManagement = new boolean[getEntityMetamodel().getPropertySpan()];
+
+		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
+			Type propertyType = getPropertyTypes()[propertyIndex];
+			boolean isStarToOne = propertyType.isAssociationType() && ! propertyType.isCollectionType();
+
+			propertyMightRequireInverseAssociationManagement[propertyIndex] = isStarToOne || getPropertyUniqueness()[propertyIndex];
+		}
+
+		return propertyMightRequireInverseAssociationManagement;
 	}
 
 	@Override
@@ -892,8 +930,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 
 				//dehydrate
+				removeFromInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
 				gridDialect.updateTuple( resultset, key, getTupleContext() );
+				addToInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 			}
 		}
 	}
@@ -936,19 +976,53 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
-		new EntityDehydrator()
+
+		new EntityDehydrator( this )
 				.fields( fields )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
 				.id( id )
-				.includeColumns( includeColumns )
 				.includeProperties( includeProperties )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( tableIndex )
-				.gridDialect( gridDialect )
 				.dehydrate();
+	}
+
+	/**
+	 * Removes the given entity from the inverse associations it manages.
+	 */
+	private void removeFromInverseAssociations(
+			Tuple resultset,
+			boolean[] includeProperties,
+			boolean[][] includeColumns,
+			int tableIndex,
+			Serializable id,
+			SessionImplementor session) {
+		new EntityAssociationUpdater( this )
+				.id( id )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.removeNavigationalInformationFromInverseSide();
+	}
+
+	/**
+	 * Adds the given entity to the inverse associations it manages.
+	 */
+	private void addToInverseAssociations(
+			Tuple resultset,
+			boolean[] includeProperties,
+			boolean[][] includeColumns,
+			int tableIndex,
+			Serializable id,
+			SessionImplementor session) {
+		new EntityAssociationUpdater( this )
+				.id( id )
+				.resultset( resultset )
+				.session( session )
+				.tableIndex( tableIndex )
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.addNavigationalInformationForInverseSide();
 	}
 
 	//TODO copy of AbstractEntityPersister#checkVersion due to visibility
@@ -965,14 +1039,37 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	@Override
 	public Serializable insert(Object[] fields, Object object, SessionImplementor session)
 			throws HibernateException {
-		throw new HibernateException( "Identifier values generated by the database are not supported in Hibernate OGM" );
+
+		//insert operations are always dynamic in OGM
+		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
+
+		Tuple tuple = identityColumnAwareGridDialect.createTuple( entityKeyMetadata, getTupleContext() );
+
+		// add the discriminator
+		if ( discriminator.isNeeded() ) {
+			tuple.put( getDiscriminatorColumnName(), getDiscriminatorValue() );
+		}
+
+		// dehydrate
+		dehydrate( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, null, session );
+		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, getTupleContext() );
+		Serializable id = (Serializable) getGridIdentifierType().hydrate( tuple, getIdentifierColumnNames(), session, object );
+		addToInverseAssociations( tuple, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
+
+		if ( id == null ) {
+			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
+		}
+
+		return id;
 	}
 
 	@Override
 	public void insert(Serializable id, Object[] fields, Object object, SessionImplementor session)
 			throws HibernateException {
 
+		// TODO: Atm. the table span is always 1, i.e. mappings to several tables (@SecondaryTable) are not supported
 		final int span = getTableSpan();
+
 		//insert operations are always dynamic in OGM
 		boolean[] propertiesToInsert = getPropertiesToInsert( fields );
 		for ( int j = 0; j < span; j++ ) {
@@ -1013,6 +1110,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			//dehydrate
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
 			gridDialect.updateTuple( resultset, key, getTupleContext() );
+			addToInverseAssociations( resultset, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
 		}
 	}
 
@@ -1120,17 +1218,13 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			//delete association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
-			new EntityDehydrator()
-				.gridDialect( gridDialect )
-				.gridPropertyTypes( gridPropertyTypes )
-				.gridIdentifierType( gridIdentifierType )
+			new EntityAssociationUpdater( this )
 				.id( id )
-				.persister( this )
 				.resultset( resultset )
 				.session( session )
 				.tableIndex( j )
-				.onlyRemovePropertyMetadata()
-				.dehydrate();
+				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+				.removeNavigationalInformationFromInverseSide();
 
 			gridDialect.removeTuple( key, getTupleContext() );
 		}
@@ -1237,6 +1331,18 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 //		return hasWhere() ?
 //			" and " + getSQLWhereString(alias) :
 //			"";
+	}
+
+	/**
+	 * Overridden in order to make it visible to other classes in this package.
+	 */
+	@Override
+	protected boolean[][] getPropertyColumnInsertable() {
+		return super.getPropertyColumnInsertable();
+	}
+
+	protected GridType[] getGridPropertyTypes() {
+		return gridPropertyTypes;
 	}
 
 	@Override
@@ -1349,5 +1455,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private boolean timingsMatch(GenerationTiming timing, GenerationTiming matchTiming) {
 		return ( matchTiming == GenerationTiming.INSERT && timing.includesInsert() ) ||
 				( matchTiming == GenerationTiming.ALWAYS && timing.includesUpdate() );
+	}
+
+	// Here the RowKey is made of the foreign key columns pointing to the associated entity
+	// and the identifier columns of the owner's entity
+	// We use the same order as the collection: id column names, foreign key column names
+	private String[] buildRowKeyColumnNamesForStarToOne(OgmEntityPersister persister, String[] keyColumnNames) {
+		String[] identifierColumnNames = persister.getIdentifierColumnNames();
+		int length = identifierColumnNames.length + keyColumnNames.length;
+		String[] rowKeyColumnNames = new String[length];
+		System.arraycopy( identifierColumnNames, 0, rowKeyColumnNames, 0, identifierColumnNames.length );
+		System.arraycopy( keyColumnNames, 0, rowKeyColumnNames, identifierColumnNames.length, keyColumnNames.length );
+		return rowKeyColumnNames;
 	}
 }

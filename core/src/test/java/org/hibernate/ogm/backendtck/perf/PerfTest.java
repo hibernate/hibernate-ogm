@@ -36,7 +36,7 @@ public class PerfTest extends JpaTestCase {
 			perfTest.testCollectionAssociations();
 			perfTest.closeFactory();
 		}
-		catch ( Exception e ) {
+		catch ( Throwable e ) {
 			e.printStackTrace();
 		}
 

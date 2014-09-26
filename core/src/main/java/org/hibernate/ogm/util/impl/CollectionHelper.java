@@ -75,6 +75,15 @@ public class CollectionHelper {
 		return new ClosableIteratorWrapper<T>( iterable.iterator() );
 	}
 
+	public static boolean isEmptyOrContainsOnlyNull(Object[] objects) {
+		for ( Object object : objects ) {
+			if ( object != null ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private static class ClosableIteratorWrapper<T> implements ClosableIterator<T> {
 
 		private final Iterator<T> iterator;
