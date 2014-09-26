@@ -652,7 +652,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.updateTuple( entityTuple, entityKey, persister.getTupleContext() ); // update cache
+			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext() ); // update cache
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();

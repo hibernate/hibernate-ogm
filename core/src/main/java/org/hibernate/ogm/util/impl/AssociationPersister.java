@@ -169,7 +169,7 @@ public class AssociationPersister {
 			association = null;
 		}
 		else {
-			gridDialect.updateAssociation( getAssociation(), getAssociationKey(), getAssociationContext() );
+			gridDialect.insertOrUpdateAssociation( getAssociationKey(), getAssociation(), getAssociationContext() );
 		}
 
 		updateHostingEntityIfRequired();

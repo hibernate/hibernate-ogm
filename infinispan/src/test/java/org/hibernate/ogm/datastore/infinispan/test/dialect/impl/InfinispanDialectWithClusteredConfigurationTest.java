@@ -85,7 +85,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Tuple tuple = dialect1.createTuple( key, getEmptyTupleContext() );
 		tuple.put( "foo", "bar" );
-		dialect1.updateTuple( tuple, key, getEmptyTupleContext() );
+		dialect1.insertOrUpdateTuple( key, tuple, getEmptyTupleContext() );
 
 		// then
 		Tuple readTuple = dialect2.getTuple( key, null );
@@ -123,7 +123,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		// when
 		Association association = dialect1.createAssociation( key, null );
 		association.put( rowKey, tuple );
-		dialect1.updateAssociation( association, key, null );
+		dialect1.insertOrUpdateAssociation( key, association, null );
 
 		// then
 		Association readAssociation = dialect2.getAssociation( key, null );

@@ -53,7 +53,7 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+		public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		}
 
 		@Override
@@ -71,7 +71,7 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+		public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		}
 
 		@Override

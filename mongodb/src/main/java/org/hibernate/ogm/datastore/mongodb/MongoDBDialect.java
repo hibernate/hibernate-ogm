@@ -276,7 +276,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 		DBObject updater = objectForUpdate( tuple, key, idObject );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
@@ -482,7 +482,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		DBCollection collection;
 		DBObject query;
 		MongoDBAssociationSnapshot assocSnapshot = (MongoDBAssociationSnapshot) association.getSnapshot();
@@ -755,7 +755,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else if ( operation instanceof UpdateAssociationOperation ) {
 					UpdateAssociationOperation update = (UpdateAssociationOperation) operation;
-					updateAssociation( update.getAssociation(), update.getAssociationKey(), update.getContext() );
+					insertOrUpdateAssociation( update.getAssociationKey(), update.getAssociation(), update.getContext() );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
@@ -795,7 +795,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else {
 			// Object already exists in the db or has invalid fields:
-			updateTuple( tuple, entityKey, tupleOperation.getTupleContext() );
+			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext() );
 		}
 	}
 

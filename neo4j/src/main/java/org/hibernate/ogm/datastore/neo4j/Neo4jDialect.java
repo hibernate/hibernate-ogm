@@ -186,7 +186,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
 		Node node = snapshot.getNode();
 		applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
@@ -274,7 +274,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		// If this is the inverse side of a bi-directional association, we don't create a relationship for this; this
 		// will happen when updating the main side
 		if ( key.getMetadata().isInverse() ) {

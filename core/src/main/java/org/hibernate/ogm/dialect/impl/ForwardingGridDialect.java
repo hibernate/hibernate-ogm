@@ -93,8 +93,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
-		gridDialect.updateTuple( tuple, key, tupleContext );
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
+		gridDialect.insertOrUpdateTuple( key, tuple, tupleContext );
 	}
 
 	@Override
@@ -113,8 +113,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
-		gridDialect.updateAssociation( association, key, associationContext );
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
+		gridDialect.insertOrUpdateAssociation( key, association, associationContext );
 	}
 
 	@Override

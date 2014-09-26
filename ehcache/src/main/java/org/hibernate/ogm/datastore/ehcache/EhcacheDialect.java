@@ -97,7 +97,7 @@ public class EhcacheDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
 
@@ -134,7 +134,7 @@ public class EhcacheDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		Map<SerializableRowKey, Map<String, Object>> associationRows = ( (SerializableMapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 
 		for ( AssociationOperation action : association.getOperations() ) {

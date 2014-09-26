@@ -39,15 +39,23 @@ public interface GridDialect extends Service {
 	Tuple getTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
-	 * Return a new tuple for a given key
-	 * Only used if the tuple is not present
+	 * Creates a new tuple for the given entity key.
+	 * <p>
+	 * Only invoked if no tuple is present yet for the given key. Implementations should not perform a round-trip to the
+	 * datastore but rather return a transient instance. The OGM engine will invoke
+	 * {@link #insertOrUpdateTuple(EntityKey, Tuple, TupleContext)} subsequently.
+	 * <p>
+	 * Columns in the tuple may represent properties of the corresponding entity as well as *-to-one associations to
+	 * other entities. Implementations may choose to persist the latter e.g. in form of fields or as actual
+	 * links/relationships to the element representing the associated entity. In case of multi-column keys, the
+	 * corresponding association role for a given column can be obtained from the passed tuple context.
 	 */
 	Tuple createTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
-	 * Update the tuple for a given key or null if not present
+	 * Inserts or updates the tuple corresponding to the given entity key.
 	 */
-	void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext);
+	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext);
 
 	/**
 	 * Remove the tuple for a given key
@@ -60,15 +68,18 @@ public interface GridDialect extends Service {
 	Association getAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
-	 * Create an empty container for the list of tuples corresponding to a given association
-	 * Only used if the association data is not present
+	 * Creates a new (empty) association for storing the tuples representing the rows corresponding to the given key.
+	 * <p>
+	 * Only invoked if the association does not yet exist in the datastore. Implementations should not perform a
+	 * round-trip to the datastore but rather return a transient instance. The OGM engine will invoke
+	 * {@link #insertOrUpdateAssociation(AssociationKey, Association, AssociationContext)} subsequently.
 	 */
 	Association createAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
-	 * Update a given list of tuples corresponding to a given association
+	 * Inserts or updates the given association in the datastore.
 	 */
-	void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext);
+	void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association

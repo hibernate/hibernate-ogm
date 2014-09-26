@@ -84,7 +84,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		CouchDBTupleSnapshot snapshot = (CouchDBTupleSnapshot) tuple.getSnapshot();
 
 		String revision = (String) snapshot.get( Document.REVISION_FIELD_NAME );
@@ -145,7 +145,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey associationKey, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey associationKey, Association association, AssociationContext associationContext) {
 		List<Object> rows = getAssociationRows( association, associationKey );
 
 		CouchDBAssociation couchDBAssociation = ( (CouchDBAssociationSnapshot) association.getSnapshot() ).getCouchDbAssociation();

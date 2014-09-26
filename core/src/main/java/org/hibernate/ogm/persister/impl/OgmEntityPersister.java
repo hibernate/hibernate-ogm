@@ -493,7 +493,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		final Tuple resultset = gridDialect.getTuple( key, getTupleContext() );
 		checkVersionAndRaiseSOSE( id, currentVersion, session, resultset );
 		gridVersionType.nullSafeSet( resultset, nextVersion, new String[] { getVersionColumnName() }, session );
-		gridDialect.updateTuple( resultset, key, getTupleContext() );
+		gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 		return nextVersion;
 	}
 
@@ -893,7 +893,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 				//dehydrate
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				gridDialect.updateTuple( resultset, key, getTupleContext() );
+				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 			}
 		}
 	}
@@ -1012,7 +1012,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			//dehydrate
 			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
-			gridDialect.updateTuple( resultset, key, getTupleContext() );
+			gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 		}
 	}
 

@@ -79,9 +79,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		if ( isBatchDisabled() ) {
-			super.updateTuple( tuple, key, tupleContext );
+			super.insertOrUpdateTuple( key, tuple, tupleContext );
 		}
 		else {
 			getOperationQueue().add( new UpdateTupleOperation( tuple, key, tupleContext ) );
@@ -109,9 +109,9 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		if ( isBatchDisabled() ) {
-			super.updateAssociation( association, key, withQueue( associationContext ) );
+			super.insertOrUpdateAssociation( key, association, withQueue( associationContext ) );
 		}
 		else {
 			getOperationQueue().add( new UpdateAssociationOperation( association, key, withQueue( associationContext ) ) );

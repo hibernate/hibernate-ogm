@@ -63,14 +63,14 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		if ( tuple.getSnapshot().isEmpty() ) {
 			log.tracef( "Creating Tuple with key %1$s in datastore", key );
 		}
 		else {
 			log.tracef( "Updating Tuple with key %1$s in datastore", key );
 		}
-		super.updateTuple( tuple, key, tupleContext );
+		super.insertOrUpdateTuple( key, tuple, tupleContext );
 	}
 
 	@Override
@@ -92,14 +92,14 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		if ( association.getSnapshot().size() == 0 ) {
 			log.tracef( "Creating association with key %1$s in datastore", key );
 		}
 		else {
 			log.tracef( "Updating association with key %1$s in datastore", key );
 		}
-		super.updateAssociation( association, key, associationContext );
+		super.insertOrUpdateAssociation( key, association, associationContext );
 	}
 
 	@Override

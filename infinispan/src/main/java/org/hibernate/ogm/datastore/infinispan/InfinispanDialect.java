@@ -111,7 +111,7 @@ public class InfinispanDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateTuple(Tuple tuple, EntityKey key, TupleContext tupleContext) {
+	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		Map<String,Object> atomicMap = ( (InfinispanTupleSnapshot) tuple.getSnapshot() ).getAtomicMap();
 		MapHelpers.applyTupleOpsOnMap( tuple, atomicMap );
 	}
@@ -139,7 +139,7 @@ public class InfinispanDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public void updateAssociation(Association association, AssociationKey key, AssociationContext associationContext) {
+	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
 		MapHelpers.updateAssociation( association, key );
 	}
 
