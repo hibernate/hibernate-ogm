@@ -104,8 +104,8 @@ public interface GridDialect extends Service {
 	Number nextValue(NextValueRequest request);
 
 	/**
-	 * Whether this dialect supports sequences for id generation or not. If not, a table-based strategy is expected to
-	 * be used as fall-back.
+	 * Whether this dialect supports sequences for id generation or not. If not, a table-based strategy will be used as
+	 * fall-back.
 	 *
 	 * @return {@code true} if this dialect supports sequences, {@code false} otherwise.
 	 */

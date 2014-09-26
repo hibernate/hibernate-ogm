@@ -149,11 +149,6 @@ public class BatchExecutionTest extends OgmTestCase {
 		}
 
 		@Override
-		public boolean supportsSequences() {
-			return false;
-		}
-
-		@Override
 		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
 

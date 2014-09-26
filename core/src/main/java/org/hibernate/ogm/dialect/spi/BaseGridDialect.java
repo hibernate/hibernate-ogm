@@ -20,4 +20,9 @@ public abstract class BaseGridDialect implements GridDialect {
 	public GridType overrideType(Type type) {
 		return null;
 	}
+
+	@Override
+	public boolean supportsSequences() {
+		return false;
+	}
 }

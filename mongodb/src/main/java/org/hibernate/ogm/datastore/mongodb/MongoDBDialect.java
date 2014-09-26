@@ -58,8 +58,8 @@ import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -568,11 +568,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			throw new HibernateException( "Cannot increment a non numeric field" );
 		}
-	}
-
-	@Override
-	public boolean supportsSequences() {
-		return false;
 	}
 
 	@Override

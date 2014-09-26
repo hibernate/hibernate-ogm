@@ -129,11 +129,6 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 		}
 
 		@Override
-		public boolean supportsSequences() {
-			return false;
-		}
-
-		@Override
 		public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		}
 	}

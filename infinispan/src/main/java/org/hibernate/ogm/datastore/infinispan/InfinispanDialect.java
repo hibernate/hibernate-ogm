@@ -182,11 +182,6 @@ public class InfinispanDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
 	@SuppressWarnings("unchecked")
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		Cache<EntityKey, Map<String, Object>> cache = provider.getCache( ENTITY_STORE );

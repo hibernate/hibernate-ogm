@@ -124,11 +124,6 @@ public class MapDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... metadatas) {
 		Map<EntityKey, Map<String, Object>> entityMap = provider.getEntityMap();
 		for ( EntityKey key : entityMap.keySet() ) {

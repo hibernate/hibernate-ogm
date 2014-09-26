@@ -182,11 +182,6 @@ public class EhcacheDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
 	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
 		return false;
 	}

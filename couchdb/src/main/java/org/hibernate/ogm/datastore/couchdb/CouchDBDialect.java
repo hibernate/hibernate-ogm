@@ -210,11 +210,6 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public boolean supportsSequences() {
-		return false;
-	}
-
-	@Override
 	public GridType overrideType(Type type) {
 		if ( type == StandardBasicTypes.MATERIALIZED_BLOB ) {
 			return CouchDBBlobType.INSTANCE;
