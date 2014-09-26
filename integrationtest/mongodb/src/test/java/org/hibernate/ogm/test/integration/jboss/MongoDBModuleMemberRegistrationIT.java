@@ -9,9 +9,13 @@ package org.hibernate.ogm.test.integration.jboss;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import javax.inject.Inject;
+
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDB;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
+import org.hibernate.ogm.test.integration.jboss.model.PhoneNumber;
+import org.hibernate.ogm.test.integration.jboss.service.PhoneNumberService;
 import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -31,10 +35,14 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationScenario {
 
+	@Inject
+	private PhoneNumberService phoneNumberService;
+
 	@Deployment
 	public static Archive<?> createTestArchive() {
 		return new ModuleMemberRegistrationDeployment
 				.Builder( MongoDBModuleMemberRegistrationIT.class )
+				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
 				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.mongodb services" )
 				.createDeployment();
@@ -52,6 +60,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.name( "primary" )
 				.provider( "org.hibernate.ogm.jpa.HibernateOgmPersistence" )
 				.clazz( Member.class.getName() )
+				.clazz( PhoneNumber.class.getName() )
 				.getOrCreateProperties();
 		if ( isNotNull( host ) ) {
 			propertiesContext.createProperty().name( OgmProperties.HOST ).value( host );
@@ -89,4 +98,11 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		assertEquals( "Native query hasn't found a new member", newMember.getName(), found.getName() );
 	}
 
+	@Test
+	public void shouldPersistAndFindEntityUsingObjectId() {
+		phoneNumberService.createPhoneNumber( "Bob", "123-456" );
+		phoneNumberService.createPhoneNumber( "Mortimer", "789-123" );
+
+		assertEquals( "789-123", phoneNumberService.getPhoneNumber( "Mortimer" ).getValue() );
+	}
 }
