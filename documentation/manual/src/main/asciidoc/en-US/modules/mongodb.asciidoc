@@ -256,9 +256,54 @@ public class NewsPaper {
 
 The +_id+ field of a MongoDB document is directly used
 to store the identifier columns mapped in the entities.
-That means you can use simple identifiers (no matter the Java type used)
-as well as Embedded identifiers.
-Embedded identifiers are stored as embedded document into the +_id+ field.
+You can use simple identifiers (e.g. of type +long+ with a table-based id generator or of type +String+ with a GUID generator)
+as well as embedded identifiers.
+
+Generally, it is recommended though to work with MongoDB's object id data type.
+This will facilitate the integration with other applications possibly expecting that common MongoDB id type.
+To do so, you have two options:
+
+* Define your id property as +String+ and annotate it with +@Type(type="objectid")+
+* Define your id property as +org.bson.types.ObjectId+
+
+In both cases the id will be stored as native +ObjectId+ in the datastore.
+
+You can assign id values yourself or (preferably) take advantage of the +IDENTITY+ generation strategy
+which will automatically assign an id during insert. The following shows an example:
+
+.Mapping id as object id in MongoDB
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Type(type = "objectid")
+    private String id;
+    private String title;
+
+    //getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id" : ObjectId("5425448830048b67064d40b1"),
+    "title" : "Exciting News"
+}
+----
+====
+
+[NOTE]
+====
+You also can use +GenerationType.AUTO+ to store ids as object id in MongoDB.
+This requires though the property +hibernate.id.new_generator_mappings+ to be set to +false+.
+====
+
+Embedded identifiers are stored as embedded document within the +_id+ field.
 Hibernate OGM will convert the +@Id+ property into a +_id+ document field
 so you can name the entity id like you want it will always be stored into +_id+
 (the recommended approach in MongoDB).
