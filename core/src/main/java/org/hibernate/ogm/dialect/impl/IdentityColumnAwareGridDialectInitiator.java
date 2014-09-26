@@ -33,10 +33,6 @@ public class IdentityColumnAwareGridDialectInitiator implements StandardServiceI
 
 	@Override
 	public IdentityColumnAwareGridDialect initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		return asQueryableGridDialectOrNull( registry.getService( GridDialect.class ) );
-	}
-
-	private IdentityColumnAwareGridDialect asQueryableGridDialectOrNull(GridDialect gridDialect) {
-		return GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
+		return GridDialects.getDialectFacetOrNull( registry.getService( GridDialect.class ), IdentityColumnAwareGridDialect.class );
 	}
 }
