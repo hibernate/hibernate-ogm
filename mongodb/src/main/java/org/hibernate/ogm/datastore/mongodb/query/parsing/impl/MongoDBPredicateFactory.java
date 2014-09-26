@@ -52,8 +52,20 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public ComparisonPredicate<DBObject> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
-		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		String columnName = propertyHelper.getColumnName( entityType, join( propertyPath ) );
 		return new MongoDBComparisonPredicate( columnName, comparisonType, value );
+	}
+
+	private static String join(List<String> propertyPath) {
+		if ( propertyPath == null || propertyPath.isEmpty() ) {
+			return null;
+		}
+		StringBuilder builder = new StringBuilder();
+		for ( String property : propertyPath ) {
+			builder.append( "." );
+			builder.append( property );
+		}
+		return builder.substring( 1 );
 	}
 
 	@Override
