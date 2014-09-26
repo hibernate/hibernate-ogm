@@ -7,9 +7,9 @@
 package org.hibernate.ogm.test.integration.jboss.util;
 
 import org.hibernate.ogm.test.integration.jboss.ModuleMemberRegistrationScenario;
+import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistrationWithJta;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistrationWithResourceLocal;
-import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
 import org.hibernate.ogm.test.integration.jboss.controller.RegistrationExecutor;
 import org.hibernate.ogm.test.integration.jboss.model.Address;
 import org.hibernate.ogm.test.integration.jboss.model.Member;
@@ -57,6 +57,14 @@ public class ModuleMemberRegistrationDeployment {
 
 		public Builder manifestDependencies(String dependencies) {
 			archive.add( manifest( dependencies ), "META-INF/MANIFEST.MF" );
+			return this;
+		}
+
+		public Builder addClasses(Class<?> clazz, Class<?>...furtherClasses) {
+			archive.addClass( clazz );
+			if ( furtherClasses != null ) {
+				archive.addClasses( furtherClasses );
+			}
 			return this;
 		}
 
