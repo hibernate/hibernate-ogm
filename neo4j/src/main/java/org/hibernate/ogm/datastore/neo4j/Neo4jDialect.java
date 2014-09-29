@@ -172,13 +172,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		Node node = entityQueries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
-		GraphLogger.log( "Created node: %1$s", node );
-		return createTuple( node, tupleContext );
-	}
-
-	private static Tuple createTuple(Node entityNode) {
-		return new Tuple( new Neo4jTupleSnapshot( entityNode ) );
+		return new Tuple();
 	}
 
 	private static Tuple createTuple(Node entityNode, TupleContext tupleContext) {
@@ -187,10 +181,9 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Neo4jTupleSnapshot snapshot = (Neo4jTupleSnapshot) tuple.getSnapshot();
-		Node node = snapshot.getNode();
+		Node node = entityQueries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
 		applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
-		GraphLogger.log( "Updated node: %1$s", node );
+		GraphLogger.log( "Inserted/Updated node: %1$s", node );
 	}
 
 	@Override
@@ -430,7 +423,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			try {
 				while ( queryNodes.hasNext() ) {
 					Node next = queryNodes.next();
-					Tuple tuple = createTuple( next );
+					Tuple tuple = new Tuple( new Neo4jTupleSnapshot( next ) );
 					consumer.consume( tuple );
 				}
 			}
