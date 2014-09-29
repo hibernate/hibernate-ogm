@@ -115,15 +115,15 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
-	public void testSelectingAttributeFromEmbeddedEntityInProjectionQuery() throws Exception {
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
+	public void testSelectingAttributeFromIndexedEmbeddedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.name from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "alfred" ) );
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
-	public void testSelectingAttributeFromNestedEmbeddedEntityInProjectionQuery() throws Exception {
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
+	public void testSelectingAttributeFromNestedIndexedEmbeddedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.address.street from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "Main Street" ) );
 	}
@@ -140,7 +140,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
-	public void testSelectingCompleteEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
+	public void testSelectingCompleteIndexedEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
 		thrown.expectMessage( "HQLLUCN000005" );
 
@@ -178,7 +178,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
 	public void testQueryWithEmbeddedPropertyInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
