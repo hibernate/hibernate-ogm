@@ -185,6 +185,20 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
+	@SkipByGridDialect(value = { NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
+	public void testQueryWithEmbeddableInWhereClause() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString = 'string 1'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	@SkipByGridDialect(value = { NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
+	public void testQueryWithEmbeddablePropertyInSelectClause() throws Exception {
+		List<ProjectionResult> result = asProjectionResults( "select e.id, e.anEmbeddable.embeddedString from WithEmbedded e" );
+		assertThat( result ).containsOnly( new ProjectionResult( 1L, "string 1" ) );
+	}
+
+	@Test
 	public void testConstantNumericQuery() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.id = 13" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "13" );

@@ -8,8 +8,15 @@ package org.hibernate.ogm.backendtck.queries;
 
 import javax.persistence.Embeddable;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Store;
+
 @Embeddable
 public class AnEmbeddable {
+	// Store.YES for filtering in query
+	// Analyze.NO for projection in query
+	@Field(store = Store.YES, analyze = Analyze.NO)
 	String embeddedString;
 
 	public AnEmbeddable() {
@@ -23,4 +30,7 @@ public class AnEmbeddable {
 		return embeddedString;
 	}
 
+	public void setEmbeddedString(String embeddedString) {
+		this.embeddedString = embeddedString;
+	}
 }
