@@ -116,14 +116,14 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
-	public void testSelectingAttributeFromIndexedEmbeddedEntityInProjectionQuery() throws Exception {
+	public void testSelectingAttributeFromAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.name from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "alfred" ) );
 	}
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
-	public void testSelectingAttributeFromNestedIndexedEmbeddedEntityInProjectionQuery() throws Exception {
+	public void testSelectingAttributeFromIndirectlyAssociatedEntityInProjectionQuery() throws Exception {
 		List<ProjectionResult> projectionResult = asProjectionResults( "select h.author.address.street from Hypothesis h where h.id = 16" );
 		assertThat( projectionResult ).containsOnly( new ProjectionResult( "Main Street" ) );
 	}
@@ -179,7 +179,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associations is not yet implemented.")
-	public void testQueryWithEmbeddedPropertyInWhereClause() throws Exception {
+	public void testQueryWithPropertyFromAssociatedEntityInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
 	}
@@ -307,8 +307,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
-	public void testInQueryOnEmbeddedEntity() throws Exception {
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Selecting from associated entities is not yet implemented.")
+	public void testInQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IN ('alma', 'alfred')" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16" );
 	}
@@ -332,7 +332,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on embedded entities is not yet implemented.")
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
 	public void testLikeQueryWithSingleCharacterWildCard() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name LIKE 'al_red'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
@@ -388,8 +388,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on embedded entities is not yet implemented.")
-	public void testIsNullQueryOnPropertyEmbeddedEntity() throws Exception {
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
+	public void testIsNullQueryOnPropertyOfAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name IS null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "19" );
 	}
@@ -401,8 +401,8 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on embedded entities is not yet implemented.")
-	public void testIsNotNullQueryOnEmbeddedEntity() throws Exception {
+	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Querying on associated entities is not yet implemented.")
+	public void testIsNotNullQueryOnAssociatedEntity() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author IS NOT null" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "14", "16", "19" );
 	}
