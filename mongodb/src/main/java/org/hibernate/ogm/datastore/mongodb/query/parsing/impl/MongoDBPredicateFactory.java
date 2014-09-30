@@ -28,6 +28,7 @@ import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBL
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBNegationPredicate;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRangePredicate;
 import org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBRootPredicate;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 import com.mongodb.DBObject;
 
@@ -52,20 +53,8 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public ComparisonPredicate<DBObject> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
-		String columnName = propertyHelper.getColumnName( entityType, join( propertyPath ) );
+		String columnName = propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
 		return new MongoDBComparisonPredicate( columnName, comparisonType, value );
-	}
-
-	private static String join(List<String> propertyPath) {
-		if ( propertyPath == null || propertyPath.isEmpty() ) {
-			return null;
-		}
-		StringBuilder builder = new StringBuilder();
-		for ( String property : propertyPath ) {
-			builder.append( "." );
-			builder.append( property );
-		}
-		return builder.substring( 1 );
 	}
 
 	@Override
