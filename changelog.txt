@@ -1,6 +1,36 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Beta7 (30-09-2014)
+-------------------------
+
+** Sub-task
+    * [OGM-324] - Convert JP-QL queries on properties of @Embeddable objects to MongoDB queries
+
+** Bug
+    * [OGM-587] - Saving an entity with an embedded document containing a list fails in mongodb with com.mongodb.MongoException$DuplicateKey error
+
+** Improvement
+    * [OGM-521] - Investigate more natural @OneToOne association mappings for Neo4j
+    * [OGM-522] - Cache and re-use queries for CRUD operations in Neo4j
+    * [OGM-547] - Ensure uniqueness of id per entity type on Neo4j
+    * [OGM-592] - Move some constant data from AssociationKey to AssociationKeyMetadata
+    * [OGM-600] - Avoid exponential growth of required grid dialect delegator classes when adding further facet interfaces
+    * [OGM-602] - Configure Maven Clirr plug-in for tracking API/SPI changes
+    * [OGM-607] - Remove GridDialect#createTupleAssociation()
+    * [OGM-611] - Neo4jDialect#createTuple() should not touch the DB
+
+** New Feature
+    * [OGM-454] - Reorganize OGM packages into proper APIs, SPIs and impls
+    * [OGM-526] - Add support for ObjectId in MongoDB
+
+** Task
+    * [OGM-373] - Add integration test case module for Neo4j
+    * [OGM-458] - Automate the release process
+    * [OGM-595] - Set USE_NEW_ID_GENERATOR_MAPPINGS in OgmConfiguration
+    * [OGM-610] - Rename GridDialect#update* methods
+
+
 4.1.0.Beta6 (08-08-2014)
 -------------------------
 
