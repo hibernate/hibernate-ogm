@@ -193,6 +193,13 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	@SkipByGridDialect(value = { NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
+	public void testQueryWithNestedEmbeddableInWhereClause() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	@SkipByGridDialect(value = { NEO4J }, comment = "Selecting from embedded entities is not yet implemented.")
 	public void testQueryWithEmbeddablePropertyInSelectClause() throws Exception {
 		List<ProjectionResult> result = asProjectionResults( "select e.id, e.anEmbeddable.embeddedString from WithEmbedded e" );
 		assertThat( result ).containsOnly( new ProjectionResult( 1L, "string 1" ) );
@@ -492,6 +499,12 @@ public class SimpleQueriesTest extends OgmTestCase {
 			.onProperty( "anEmbeddable" )
 			.onProperty( "embeddedString" )
 			.containsExactly( "string 1" );
+
+		assertThat( list )
+			.onProperty( "anEmbeddable" )
+			.onProperty( "anotherEmbeddable" )
+			.onProperty( "embeddedString" )
+			.containsExactly( "string 2" );
 	}
 
 	@Test
@@ -686,7 +699,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 		fool.setDate( calendar.getTime() );
 		session.persist( fool );
 
-		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1" ) );
+		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1", new AnotherEmbeddable( "string 2" ) ) );
 		session.persist( with );
 
 		transaction.commit();
