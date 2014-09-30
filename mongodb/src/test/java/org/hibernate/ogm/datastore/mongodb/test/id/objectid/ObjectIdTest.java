@@ -89,9 +89,9 @@ public class ObjectIdTest extends OgmTestCase {
 
 		// when
 		session.persist( goldFishBar );
-		assertThat( goldFishBar.getId() ).isNotNull();
 
 		tx.commit();
+		assertThat( goldFishBar.getId() ).isNotNull();
 		session.clear();
 		tx = session.beginTransaction();
 
@@ -234,9 +234,9 @@ public class ObjectIdTest extends OgmTestCase {
 
 		// when
 		session.persist( gloria );
-		assertThat( gloria.getId() ).isNotNull();
 
 		tx.commit();
+		assertThat( gloria.getId() ).isNotNull();
 		session.clear();
 		tx = session.beginTransaction();
 
@@ -259,9 +259,9 @@ public class ObjectIdTest extends OgmTestCase {
 
 		// when
 		session.persist( monty );
-		assertThat( monty.getId() ).isNotNull();
 
 		tx.commit();
+		assertThat( monty.getId() ).isNotNull();
 		session.clear();
 		tx = session.beginTransaction();
 
