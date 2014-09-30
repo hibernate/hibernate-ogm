@@ -14,6 +14,7 @@ Hibernate OGM Changelog
     * [OGM-521] - Investigate more natural @OneToOne association mappings for Neo4j
     * [OGM-522] - Cache and re-use queries for CRUD operations in Neo4j
     * [OGM-547] - Ensure uniqueness of id per entity type on Neo4j
+    * [OGM-582] - Update "Getting started" section to fit for Neo4j
     * [OGM-592] - Move some constant data from AssociationKey to AssociationKeyMetadata
     * [OGM-600] - Avoid exponential growth of required grid dialect delegator classes when adding further facet interfaces
     * [OGM-602] - Configure Maven Clirr plug-in for tracking API/SPI changes
