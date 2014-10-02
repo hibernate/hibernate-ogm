@@ -300,12 +300,28 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
-		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		DBObject objectWithId = insertDBObject( entityKeyMetadata, tuple, writeConcern );
+		String idColumnName = entityKeyMetadata.getColumnNames()[0];
+		tuple.put( idColumnName, objectWithId.get( ID_FIELDNAME ) );
+	}
 
-		getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
-
-		tuple.put( entityKeyMetadata.getColumnNames()[0], dbObject.get( ID_FIELDNAME ) );
+	/*
+	 * Insert the tuple and return an object containing the id in the field ID_FIELDNAME
+	 */
+	private DBObject insertDBObject(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
+		if ( columnNamesAllowBatchInsert( tuple.getColumnNames() ) ) {
+			DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
+			getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
+			return dbObject;
+		}
+		else {
+			BasicDBObject idObject = new BasicDBObject();
+			getCollection( entityKeyMetadata ).insert( idObject, writeConcern );
+			DBObject updater = objectForUpdate( tuple, idObject );
+			getCollection( entityKeyMetadata ).update( idObject, updater, true, false, writeConcern );
+			return idObject;
+		}
 	}
 
 	/**
@@ -756,6 +772,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 */
 	private boolean columnNamesAllowBatchInsert(UpdateTupleOperation tupleOperation) {
 		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
+		return columnNamesAllowBatchInsert( columnNames );
+	}
+
+	private boolean columnNamesAllowBatchInsert(Set<String> columnNames) {
 		for ( String column : columnNames ) {
 			if ( column.contains( "." ) || column.contains( "$" ) ) {
 				return false;
