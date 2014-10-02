@@ -292,7 +292,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
-		DBObject updater = objectForUpdate( tuple, key, idObject );
+		DBObject updater = objectForUpdate( tuple, idObject );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
@@ -330,7 +330,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return dbObject;
 	}
 
-	private DBObject objectForUpdate(Tuple tuple, EntityKey key, DBObject idObject) {
+	private DBObject objectForUpdate(Tuple tuple, DBObject idObject) {
 		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
