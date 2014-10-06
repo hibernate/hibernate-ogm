@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 
@@ -20,6 +21,8 @@ import com.mongodb.DBObject;
  */
 public class MongoHelpers {
 
+	public static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
+
 	//only for embedded
 	public static Collection<DBObject> getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
 		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
@@ -31,7 +34,13 @@ public class MongoHelpers {
 	}
 
 	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
-		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
+		String column = key.getMetadata().getCollectionRole();
+		Object value = Collections.EMPTY_LIST;
+		setValue( entity, column, value );
+	}
+
+	public static void setValue(DBObject entity, String column, Object value) {
+		String[] path = DOT_SEPARATOR_PATTERN.split( column );
 		Object field = entity;
 		int size = path.length;
 		for (int index = 0 ; index < size ; index++) {
@@ -40,7 +49,7 @@ public class MongoHelpers {
 			field = parent.get( node );
 			if ( field == null ) {
 				if ( index == size - 1 ) {
-					field = Collections.EMPTY_LIST;
+					field = value;
 				}
 				else {
 					field = new BasicDBObject();
@@ -48,15 +57,5 @@ public class MongoHelpers {
 				parent.put( node, field );
 			}
 		}
-	}
-
-	// Return null if the column is not present
-	public static Object getValueFromColumns(String column, String[] columns, Object[] values) {
-		for ( int index = 0 ; index < columns.length ; index++ ) {
-			if ( columns[index].equals( column ) ) {
-				return values[index];
-			}
-		}
-		return null;
 	}
 }

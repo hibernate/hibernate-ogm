@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.DOT_SEPARATOR_PATTERN;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
 import java.util.ArrayList;
@@ -15,8 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
@@ -129,7 +128,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
 	private final MongoDBDatastoreProvider provider;
@@ -292,7 +290,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
-		DBObject updater = objectForUpdate( tuple, key, idObject );
+		DBObject updater = objectForUpdate( tuple, idObject );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
@@ -300,12 +298,19 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public void insertTuple(EntityKeyMetadata entityKeyMetadata, Tuple tuple, TupleContext tupleContext) {
-		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
+		DBObject objectWithId = insertDBObject( entityKeyMetadata, tuple, writeConcern );
+		String idColumnName = entityKeyMetadata.getColumnNames()[0];
+		tuple.put( idColumnName, objectWithId.get( ID_FIELDNAME ) );
+	}
 
+	/*
+	 * Insert the tuple and return an object containing the id in the field ID_FIELDNAME
+	 */
+	private DBObject insertDBObject(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
+		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
 		getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
-
-		tuple.put( entityKeyMetadata.getColumnNames()[0], dbObject.get( ID_FIELDNAME ) );
+		return dbObject;
 	}
 
 	/**
@@ -319,7 +324,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				switch ( operation.getType() ) {
 					case PUT_NULL:
 					case PUT:
-						dbObject.put( column, operation.getValue() );
+						MongoHelpers.setValue( dbObject, column, operation.getValue() );
 						break;
 					case REMOVE:
 						dbObject.removeField( column );
@@ -330,7 +335,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return dbObject;
 	}
 
-	private DBObject objectForUpdate(Tuple tuple, EntityKey key, DBObject idObject) {
+	private DBObject objectForUpdate(Tuple tuple, DBObject idObject) {
 		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
@@ -747,23 +752,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return AssociationStorageStrategy.getInstance( key.getMetadata().getAssociationKind(), associationStorage, associationDocumentType );
 	}
 
-	/**
-	 * When creating documents in batch, MongoDB doesn't allow the name of the fields to contain
-	 * the characters '$' or '.'
-	 *
-	 * @return false if the {@link UpdateTupleOperation} affects fields containing invalid characters for the execution
-	 * of operations in batch, true otherwise.
-	 */
-	private boolean columnNamesAllowBatchInsert(UpdateTupleOperation tupleOperation) {
-		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
-		for ( String column : columnNames ) {
-			if ( column.contains( "." ) || column.contains( "$" ) ) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	@Override
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
@@ -815,7 +803,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
 		WriteConcern writeConcern = getWriteConcern( tupleOperation.getTupleContext() );
 
-		if ( INSERT == snapshot.getOperationType() && columnNamesAllowBatchInsert( tupleOperation ) ) {
+		if ( INSERT == snapshot.getOperationType() ) {
 			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
 		}
 		else {
