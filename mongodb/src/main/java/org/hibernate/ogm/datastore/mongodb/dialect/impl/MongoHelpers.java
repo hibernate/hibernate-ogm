@@ -58,14 +58,4 @@ public class MongoHelpers {
 			}
 		}
 	}
-
-	// Return null if the column is not present
-	public static Object getValueFromColumns(String column, String[] columns, Object[] values) {
-		for ( int index = 0 ; index < columns.length ; index++ ) {
-			if ( columns[index].equals( column ) ) {
-				return values[index];
-			}
-		}
-		return null;
-	}
 }
