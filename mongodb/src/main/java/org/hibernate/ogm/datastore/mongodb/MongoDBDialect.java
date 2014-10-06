@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.DOT_SEPARATOR_PATTERN;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
@@ -128,7 +128,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static final Log log = LoggerFactory.getLogger();
 
-	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 	private static final List<String> ROWS_FIELDNAME_LIST = Collections.singletonList( ROWS_FIELDNAME );
 
 	private final MongoDBDatastoreProvider provider;
