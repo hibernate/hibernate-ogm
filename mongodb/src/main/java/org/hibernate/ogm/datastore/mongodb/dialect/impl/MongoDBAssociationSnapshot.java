@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
@@ -40,7 +41,11 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 
 	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			return getEmbeddedAssociationFieldOrNull( associationKey, document );
+			Collection<?> rows = getEmbeddedAssociationFieldOrNull( associationKey, document );
+			if ( rows == null ) {
+				return Collections.emptyList();
+			}
+			return rows;
 		}
 		else {
 			return (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );

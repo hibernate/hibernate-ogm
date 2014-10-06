@@ -6,12 +6,16 @@
  */
 package org.hibernate.ogm.dialect.batch.spi;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -41,6 +45,8 @@ public class OperationsQueue {
 	private final Queue<Operation> operations = new LinkedList<Operation>();
 
 	private final Set<EntityKey> entityKeys = new HashSet<EntityKey>();
+
+	private final Map<EntityKey, Map<AssociationKey, Association>> associations = new HashMap<EntityKey, Map<AssociationKey, Association>>();
 
 	private boolean closed = false;
 
@@ -72,6 +78,7 @@ public class OperationsQueue {
 		if (operation instanceof UpdateTupleOperation ) {
 			UpdateTupleOperation update = (UpdateTupleOperation) operation;
 			entityKeys.remove( update.getEntityKey() );
+			associations.remove( update.getEntityKey() );
 		}
 		return operation;
 	}
@@ -101,4 +108,43 @@ public class OperationsQueue {
 		return operations.size();
 	}
 
+	/**
+	 * Check if the queue contains an association for the given {@link EntityKey} and {@link AssociationKey}
+	 *
+	 * @param entityKey the key of the entity storing the association
+	 * @param associationKey the key identifying the association
+	 * @return true if there is an association in the queue, false otherwise
+	 */
+	public boolean containsAssociation(EntityKey entityKey, AssociationKey associationKey) {
+		return ( associations.containsKey( entityKey ) && associations.get( entityKey ).containsKey( associationKey ) );
+	}
+
+	/**
+	 * Return the {@link Association} in the queue corresponding to the given {@link EntityKey} and {@link AssociationKey}.
+	 * <p>
+	 * The association won't be removed from the queue
+	 *
+	 * @param entityKey the key of the entity storing the association
+	 * @param associationKey the key identifying the association
+	 * @return the queued {@link Association}
+	 */
+	public Association getAssociation(EntityKey entityKey, AssociationKey associationKey) {
+		return associations.get( entityKey ).get( associationKey );
+	}
+
+	/**
+	 * Put an {@link Association} in the queue for the given {@link EntityKey} and {@link AssociationKey}.
+	 * <p>
+	 * If an {@link Association} already exists for the given parameters, the new association will override the old one.
+	 *
+	 * @param entityKey the key of the entity storing the association
+	 * @param associationKey the key identifying the association
+	 * @param association the {@link Association} to add to the queue
+	 */
+	public void putAssociation(EntityKey entityKey, AssociationKey associationKey, Association association) {
+		if ( !associations.containsKey( entityKey ) ) {
+			associations.put( entityKey, new HashMap<AssociationKey, Association>() );
+		}
+		associations.get( entityKey ).put( associationKey, association );
+	}
 }

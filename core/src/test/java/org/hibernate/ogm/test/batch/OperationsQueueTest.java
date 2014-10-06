@@ -13,8 +13,11 @@ import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.spi.Association;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -97,6 +100,33 @@ public class OperationsQueueTest {
 	}
 
 	@Test
+	public void testAddAssociationToQueue() {
+		EntityKey entityKey = entityKey();
+		AssociationKey associationKey = associationKey();
+		Association association = new Association();
+		UpdateTupleOperation expected = new UpdateTupleOperation( null, entityKey, emptyTupleContext() );
+		queue.add( expected );
+		queue.putAssociation( entityKey, associationKey, association );
+
+		Assertions.assertThat( queue.containsAssociation( entityKey, associationKey ) ).isTrue();
+		Assertions.assertThat( queue.getAssociation( entityKey, associationKey ) ).isEqualTo( association );
+		Assertions.assertThat( queue.containsAssociation( entityKey, associationKey ) ).isTrue();
+	}
+
+	@Test
+	public void testDeletionOfAssociationsWithUpdateTupleOperation() throws Exception {
+		EntityKey entityKey = entityKey();
+		AssociationKey associationKey = associationKey();
+		UpdateTupleOperation expected = new UpdateTupleOperation( null, entityKey, emptyTupleContext() );
+		queue.add( expected );
+		queue.putAssociation( entityKey, associationKey, new Association() );
+		queue.poll();
+
+		Assertions.assertThat( queue.contains( entityKey ) ).isFalse();
+		Assertions.assertThat( queue.containsAssociation( entityKey, associationKey ) ).isFalse();
+	}
+
+	@Test
 	public void testEmptyQueueSize() throws Exception {
 		Assertions.assertThat( 0 ).isEqualTo( queue.size() );
 	}
@@ -118,6 +148,12 @@ public class OperationsQueueTest {
 	private EntityKey entityKey() {
 		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "MetadataTable", new String[] {} );
 		EntityKey key = new EntityKey( keyMetadata, new Object[] {} );
+		return key;
+	}
+
+	private AssociationKey associationKey() {
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata( "AssociationKeyMetadataTable", new String[0], new String[0], new String[0], null, false, null, null );
+		AssociationKey key = new AssociationKey( associationKeyMetadata, new Object[0], entityKey() );
 		return key;
 	}
 }
