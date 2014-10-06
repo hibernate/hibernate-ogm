@@ -31,7 +31,13 @@ public class MongoHelpers {
 	}
 
 	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
-		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
+		String column = key.getMetadata().getCollectionRole();
+		Object value = Collections.EMPTY_LIST;
+		setValue( entity, column, value );
+	}
+
+	public static void setValue(DBObject entity, String column, Object value) {
+		String[] path = column.split( "\\." );
 		Object field = entity;
 		int size = path.length;
 		for (int index = 0 ; index < size ; index++) {
@@ -40,7 +46,7 @@ public class MongoHelpers {
 			field = parent.get( node );
 			if ( field == null ) {
 				if ( index == size - 1 ) {
-					field = Collections.EMPTY_LIST;
+					field = value;
 				}
 				else {
 					field = new BasicDBObject();
