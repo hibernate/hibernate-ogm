@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
@@ -310,18 +309,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Insert the tuple and return an object containing the id in the field ID_FIELDNAME
 	 */
 	private DBObject insertDBObject(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
-		if ( columnNamesAllowBatchInsert( tuple.getColumnNames() ) ) {
-			DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
-			getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
-			return dbObject;
-		}
-		else {
-			BasicDBObject idObject = new BasicDBObject();
-			getCollection( entityKeyMetadata ).insert( idObject, writeConcern );
-			DBObject updater = objectForUpdate( tuple, idObject );
-			getCollection( entityKeyMetadata ).update( idObject, updater, true, false, writeConcern );
-			return idObject;
-		}
+		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
+		getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
+		return dbObject;
 	}
 
 	/**
@@ -335,7 +325,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				switch ( operation.getType() ) {
 					case PUT_NULL:
 					case PUT:
-						dbObject.put( column, operation.getValue() );
+						MongoHelpers.setValue( dbObject, column, operation.getValue() );
 						break;
 					case REMOVE:
 						dbObject.removeField( column );
@@ -763,27 +753,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return AssociationStorageStrategy.getInstance( key.getMetadata().getAssociationKind(), associationStorage, associationDocumentType );
 	}
 
-	/**
-	 * When creating documents in batch, MongoDB doesn't allow the name of the fields to contain
-	 * the characters '$' or '.'
-	 *
-	 * @return false if the {@link UpdateTupleOperation} affects fields containing invalid characters for the execution
-	 * of operations in batch, true otherwise.
-	 */
-	private boolean columnNamesAllowBatchInsert(UpdateTupleOperation tupleOperation) {
-		Set<String> columnNames = tupleOperation.getTuple().getColumnNames();
-		return columnNamesAllowBatchInsert( columnNames );
-	}
-
-	private boolean columnNamesAllowBatchInsert(Set<String> columnNames) {
-		for ( String column : columnNames ) {
-			if ( column.contains( "." ) || column.contains( "$" ) ) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	@Override
 	public void executeBatch(OperationsQueue queue) {
 		if ( !queue.isClosed() ) {
@@ -835,7 +804,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
 		WriteConcern writeConcern = getWriteConcern( tupleOperation.getTupleContext() );
 
-		if ( INSERT == snapshot.getOperationType() && columnNamesAllowBatchInsert( tupleOperation ) ) {
+		if ( INSERT == snapshot.getOperationType() ) {
 			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
 		}
 		else {
