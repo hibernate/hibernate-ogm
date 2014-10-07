@@ -6,7 +6,6 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 
@@ -23,16 +22,6 @@ public class MongoHelpers {
 
 	public static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 
-	//only for embedded
-	public static Collection<DBObject> getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = key.getMetadata().getCollectionRole().split( "\\." );
-		Object field = entity;
-		for (String node : path) {
-			field = field != null ? ( (DBObject) field).get( node ) : null;
-		}
-		return (Collection<DBObject>) field;
-	}
-
 	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
 		String column = key.getMetadata().getCollectionRole();
 		Object value = Collections.EMPTY_LIST;
@@ -40,21 +29,27 @@ public class MongoHelpers {
 	}
 
 	public static void setValue(DBObject entity, String column, Object value) {
-		String[] path = DOT_SEPARATOR_PATTERN.split( column );
-		Object field = entity;
-		int size = path.length;
-		for (int index = 0 ; index < size ; index++) {
-			String node = path[index];
-			DBObject parent = (DBObject) field;
-			field = parent.get( node );
-			if ( field == null ) {
-				if ( index == size - 1 ) {
-					field = value;
+		// fast path for non-embedded case
+		if ( !column.contains( "." ) ) {
+			entity.put( column, value );
+		}
+		else {
+			String[] path = DOT_SEPARATOR_PATTERN.split( column );
+			Object field = entity;
+			int size = path.length;
+			for (int index = 0 ; index < size ; index++) {
+				String node = path[index];
+				DBObject parent = (DBObject) field;
+				field = parent.get( node );
+				if ( field == null ) {
+					if ( index == size - 1 ) {
+						field = value;
+					}
+					else {
+						field = new BasicDBObject();
+					}
+					parent.put( node, field );
 				}
-				else {
-					field = new BasicDBObject();
-				}
-				parent.put( node, field );
 			}
 		}
 	}
