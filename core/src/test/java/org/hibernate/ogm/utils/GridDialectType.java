@@ -17,7 +17,7 @@ package org.hibernate.ogm.utils;
 public enum GridDialectType {
 
 	HASHMAP( "org.hibernate.ogm.utils.HashMapTestHelper", false, false ) {
-		@Override public Class<?> loadTestableGridDialectClass() {
+		@Override public Class<TestableGridDialect> loadTestableGridDialectClass() {
 			return null; //this one is special, we want it only as fallback when all others fail
 		}
 	},
@@ -42,10 +42,11 @@ public enum GridDialectType {
 		this.supportsQueries = supportsQueries;
 	}
 
-	public Class<?> loadTestableGridDialectClass() {
-		Class<?> classForName = null;
+	@SuppressWarnings("unchecked")
+	public Class<TestableGridDialect> loadTestableGridDialectClass() {
+		Class<TestableGridDialect> classForName = null;
 		try {
-			classForName = Class.forName( testHelperClassName );
+			classForName = (Class<TestableGridDialect>) Class.forName( testHelperClassName );
 		}
 		catch (ClassNotFoundException e) {
 			//ignore this: might not be available

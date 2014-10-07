@@ -45,7 +45,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		return (Map) getEntityCache( sessionFactory ).get( key );
 	}
 
-	private static Cache getEntityCache(SessionFactory sessionFactory) {
+	private static Cache<?, ?> getEntityCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCache( ENTITY_STORE );
 	}
@@ -58,7 +58,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		return InfinispanDatastoreProvider.class.cast( provider );
 	}
 
-	private static Cache getAssociationCache(SessionFactory sessionFactory) {
+	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCache( ASSOCIATION_STORE );
 	}
