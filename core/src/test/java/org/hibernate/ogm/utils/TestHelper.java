@@ -57,10 +57,10 @@ public class TestHelper {
 
 	private static TestableGridDialect createStoreSpecificHelper() {
 		for ( GridDialectType gridType : GridDialectType.values() ) {
-			Class<?> classForName = gridType.loadTestableGridDialectClass();
+			Class<TestableGridDialect> classForName = gridType.loadTestableGridDialectClass();
 			if ( classForName != null ) {
 				try {
-					TestableGridDialect attempt = (TestableGridDialect) classForName.newInstance();
+					TestableGridDialect attempt = classForName.newInstance();
 					log.debugf( "Using TestGridDialect %s", classForName );
 					return attempt;
 				}
