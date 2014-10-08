@@ -6,8 +6,7 @@
  */
 package org.hibernate.ogm.datastore.neo4j.test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
@@ -47,7 +46,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		Neo4jGraphDatabaseServiceFactoryProvider graphService = new Neo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
-		assertThat( db, is( EmbeddedGraphDatabase.class ) );
+		assertThat( db.getClass() ). isEqualTo( EmbeddedGraphDatabase.class );
 	}
 
 	@Test
@@ -58,7 +57,7 @@ public class Neo4jGraphDatabaseServiceLoaderTest {
 		Neo4jGraphDatabaseServiceFactoryProvider graphService = new Neo4jGraphDatabaseServiceFactoryProvider();
 		GraphDatabaseService db = graphService.load( properties, new ClassLoaderServiceImpl() ).create();
 		db.shutdown();
-		assertThat( db, is( MockGraphDatabaseService.class ) );
+		assertThat( db.getClass() ). isEqualTo( MockGraphDatabaseService.class );
 	}
 
 	@Test
