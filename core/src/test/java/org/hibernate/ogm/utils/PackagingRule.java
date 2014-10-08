@@ -34,10 +34,13 @@ public class PackagingRule extends TemporaryFolder {
 	private final File testPackage;
 
 	public PackagingRule(String persistenceConfResource, Class<?>... entities) {
-		archive = ShrinkWrap.create( JavaArchive.class, "jtastandalone.jar" );
-		archive.addClasses( entities );
-		archive.addAsManifestResource( persistenceConfResource, persistencePath );
 		try {
+			create();
+
+			archive = ShrinkWrap.create( JavaArchive.class, "jtastandalone.jar" );
+			archive.addClasses( entities );
+			archive.addAsManifestResource( persistenceConfResource, persistencePath );
+
 			testPackage = newFile();
 		}
 		catch ( IOException e ) {

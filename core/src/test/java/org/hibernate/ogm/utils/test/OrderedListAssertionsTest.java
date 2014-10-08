@@ -7,6 +7,8 @@
 package org.hibernate.ogm.utils.test;
 
 import static java.util.Arrays.asList;
+import static org.fest.assertions.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.utils.OgmAssertions;
 import org.hibernate.ogm.utils.OrderedListAssert;
@@ -43,40 +45,54 @@ public class OrderedListAssertionsTest {
 
 	@Test
 	public void shouldConsiderNullInTheMiddleForExpectedValue() {
-		thrown.expect( ComparisonFailure.class );
+		try {
+			OgmAssertions.assertThat( asList(
+					Competitor.GOLD,    // 1
+					Competitor.SILVER,  // 2
+					Competitor.OTHER,   // null
+					Competitor.BRONZE   // 3
+					) )
+				.onProperty( "order" )
+					.ignoreNullOrder()
+					.containsExactly( 1, null, 2, 3  );
 
-		OgmAssertions.assertThat( asList(
-				Competitor.GOLD,    // 1
-				Competitor.SILVER,  // 2
-				Competitor.OTHER,   // null
-				Competitor.BRONZE   // 3
-				) )
-			.onProperty( "order" )
-				.ignoreNullOrder()
-				.containsExactly( 1, null, 2, 3  );
+			fail( "Expected failure wasn't raised" );
+		}
+		catch (ComparisonFailure cf) {
+			// success
+			assertThat( cf.getMessage() ).isEqualTo( "expected:<[1, [null, 2], 3]> but was:<[1, [2, null], 3]>" );
+		}
 	}
 
 	@Test
-	public void shoudlThrowExceptionIfSizeDoesNotMatch() {
-		thrown.expect( AssertionError.class );
-		thrown.expectMessage( "expected size:" );
+	public void shouldThrowExceptionIfSizeDoesNotMatch() {
+		try {
+			OgmAssertions.assertThat( asList( Competitor.OTHER, Competitor.OTHER, Competitor.GOLD, Competitor.SILVER ) )
+				.onProperty( "order" )
+					.ignoreNullOrder()
+					.containsExactly( 1, 2 );
 
-		OgmAssertions.assertThat( asList( Competitor.OTHER, Competitor.OTHER, Competitor.GOLD, Competitor.SILVER ) )
-			.onProperty( "order" )
-				.ignoreNullOrder()
-				.containsExactly( 1, 2 );
-
+			fail( "Expected error wasn't raised" );
+		}
+		catch (AssertionError ae) {
+			// success
+			assertThat( ae.getMessage() ).isEqualTo( "expected size:<2> but was:<4> for <[null, null, 1, 2]>" );
+		}
 	}
 
 	@Test
-	public void shoudlThrowExceptionIfNullsAreAtTheBeginningAndAtTheEnd() {
-		thrown.expect( AssertionError.class );
-		thrown.expectMessage( "Null order should be consistent" );
-
-		OgmAssertions.assertThat( asList( Competitor.OTHER, Competitor.GOLD, Competitor.SILVER, Competitor.OTHER ) )
-			.onProperty( "order" )
-				.ignoreNullOrder()
-				.containsExactly( null, null, 1, 2 );
+	public void shouldThrowExceptionIfNullsAreAtTheBeginningAndAtTheEnd() {
+		try {
+			OgmAssertions.assertThat( asList( Competitor.OTHER, Competitor.GOLD, Competitor.SILVER, Competitor.OTHER ) )
+				.onProperty( "order" )
+					.ignoreNullOrder()
+					.containsExactly( null, null, 1, 2 );
+			fail( "Expected error wasn't raised" );
+		}
+		catch (AssertionError ae) {
+			// success
+			assertThat( ae.getMessage() ).isEqualTo( "Null order should be consistent: [null, 1, 2, null]" );
+		}
 	}
 
 	public static class Competitor {
