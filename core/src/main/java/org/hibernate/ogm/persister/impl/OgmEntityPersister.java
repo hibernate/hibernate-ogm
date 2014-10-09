@@ -921,19 +921,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 							final Object snapshotValue = type.nullSafeGet(
 									resultset, getPropertyColumnNames( i ), session, object
 							);
-							comparePropertyAndRaiseSOSE(
-									id,
-									oldFields[i],
-									factory,
-									!type.isEqual( oldFields, snapshotValue, factory )
-							);
 
+							if ( !type.isEqual( oldFields, snapshotValue, factory ) ) {
+								raiseStaleObjectStateException( id );
+							}
 						}
 					}
 				}
 
-				removeFromInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
-				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
+				removeFromInverseAssociations( resultset, j, id, session );
+				dehydrate( resultset, fields, propsToUpdate, j, id, session );
 
 				if ( isVersioned() && optimisticLockingAwareGridDialect != null ) {
 					Tuple oldVersionTuple = new Tuple();
@@ -942,17 +939,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					boolean success = optimisticLockingAwareGridDialect.updateTuple( key, oldVersionTuple, resultset, getTupleContext() );
 
 					if ( !success ) {
-						if ( factory.getStatistics().isStatisticsEnabled() ) {
-							factory.getStatisticsImplementor().optimisticFailure( getEntityName() );
-						}
-						throw new StaleObjectStateException( getEntityName(), id );
+						raiseStaleObjectStateException( id );
 					}
 				}
 				else {
 					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 				}
 
-				addToInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
+				addToInverseAssociations( resultset, j, id, session );
 			}
 		}
 	}
@@ -964,26 +958,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				|| entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL;
 	}
 
-	private void comparePropertyAndRaiseSOSE(Serializable id, Object oldField, SessionFactoryImplementor factory, boolean b) {
-		//TODO support other entity modes
-		if ( b ) {
-			if ( factory.getStatistics().isStatisticsEnabled() ) {
-				factory.getStatisticsImplementor()
-						.optimisticFailure( getEntityName() );
-			}
-			throw new StaleObjectStateException( getEntityName(), id );
-		}
-	}
-
 	public void checkVersionAndRaiseSOSE(Serializable id, Object oldVersion, SessionImplementor session, Tuple resultset) {
 		final Object resultSetVersion = gridVersionType.nullSafeGet( resultset, getVersionColumnName(), session, null );
-		final SessionFactoryImplementor factory = getFactory();
-		if ( ! gridVersionType.isEqual( oldVersion, resultSetVersion, factory ) ) {
-			if ( factory.getStatistics().isStatisticsEnabled() ) {
-				factory.getStatisticsImplementor()
-						.optimisticFailure( getEntityName() );
-			}
-			throw new StaleObjectStateException( getEntityName(), id );
+
+		if ( !gridVersionType.isEqual( oldVersion, resultSetVersion, getFactory() ) ) {
+			raiseStaleObjectStateException( id );
 		}
 	}
 
@@ -991,7 +970,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			Tuple resultset,
 			final Object[] fields,
 			boolean[] includeProperties,
-			boolean[][] includeColumns,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
@@ -1011,8 +989,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private void removeFromInverseAssociations(
 			Tuple resultset,
-			boolean[] includeProperties,
-			boolean[][] includeColumns,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
@@ -1030,8 +1006,6 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private void addToInverseAssociations(
 			Tuple resultset,
-			boolean[] includeProperties,
-			boolean[][] includeColumns,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
@@ -1070,10 +1044,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		// dehydrate
-		dehydrate( tuple, fields, propertiesToInsert, getPropertyColumnInsertable(), 0, null, session );
+		dehydrate( tuple, fields, propertiesToInsert, 0, null, session );
 		identityColumnAwareGridDialect.insertTuple( entityKeyMetadata, tuple, getTupleContext() );
 		Serializable id = (Serializable) getGridIdentifierType().hydrate( tuple, getIdentifierColumnNames(), session, object );
-		addToInverseAssociations( tuple, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
+		addToInverseAssociations( tuple, 0, id, session );
 
 		if ( id == null ) {
 			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
@@ -1126,9 +1100,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
 
-			dehydrate( resultset, fields, propertiesToInsert, getPropertyColumnInsertable(), j, id, session );
+			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
 			gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
-			addToInverseAssociations( resultset, propertiesToInsert, getPropertyColumnInsertable(), 0, id, session );
+			addToInverseAssociations( resultset, 0, id, session );
 		}
 	}
 
@@ -1207,11 +1181,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						);
 						//TODO support other entity modes
 						if ( ! type.isEqual( loadedState[i], snapshotValue, factory ) ) {
-							if ( factory.getStatistics().isStatisticsEnabled() ) {
-								factory.getStatisticsImplementor()
-										.optimisticFailure( getEntityName() );
-							}
-							throw new StaleObjectStateException( getEntityName(), id );
+							raiseStaleObjectStateException( id );
 						}
 					}
 				}
@@ -1485,5 +1455,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		System.arraycopy( identifierColumnNames, 0, rowKeyColumnNames, 0, identifierColumnNames.length );
 		System.arraycopy( keyColumnNames, 0, rowKeyColumnNames, identifierColumnNames.length, keyColumnNames.length );
 		return rowKeyColumnNames;
+	}
+
+
+	private void raiseStaleObjectStateException(Serializable id) {
+		SessionFactoryImplementor factory = getFactory();
+
+		if ( factory.getStatistics().isStatisticsEnabled() ) {
+			factory.getStatisticsImplementor().optimisticFailure( getEntityName() );
+		}
+
+		throw new StaleObjectStateException( getEntityName(), id );
 	}
 }
