@@ -25,6 +25,8 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
@@ -73,6 +75,10 @@ public class TestHelper {
 
 	public static GridDialectType getCurrentDialectType() {
 		return GridDialectType.valueFromHelperClass( helper.getClass() );
+	}
+
+	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
+		return helper.getGridDialect( datastoreProvider );
 	}
 
 	public static long getNumberOfEntities( Session session) {

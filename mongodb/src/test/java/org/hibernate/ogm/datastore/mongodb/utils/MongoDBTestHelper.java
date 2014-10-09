@@ -26,6 +26,7 @@ import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.mongodb.options.navigation.MongoDBGlobalContext;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
 
@@ -253,5 +254,10 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public MongoDBGlobalContext configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( MongoDB.class );
+	}
+
+	@Override
+	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return new MongoDBDialect( (MongoDBDatastoreProvider) datastoreProvider );
 	}
 }

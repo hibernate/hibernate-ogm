@@ -18,6 +18,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.neo4j.Neo4j;
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
@@ -137,5 +138,10 @@ public class Neo4jTestHelper implements TestableGridDialect {
 	@Override
 	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( Neo4j.class );
+	}
+
+	@Override
+	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return new Neo4jDialect( (Neo4jDatastoreProvider) datastoreProvider );
 	}
 }

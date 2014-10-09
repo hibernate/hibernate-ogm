@@ -14,7 +14,9 @@ import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.map.MapDatastore;
 import org.hibernate.ogm.datastore.map.impl.MapDatastoreProvider;
+import org.hibernate.ogm.datastore.map.impl.MapDialect;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -81,5 +83,10 @@ public class HashMapTestHelper implements TestableGridDialect {
 	@Override
 	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( MapDatastore.class );
+	}
+
+	@Override
+	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return new MapDialect( (MapDatastoreProvider) datastoreProvider );
 	}
 }
