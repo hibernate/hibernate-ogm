@@ -11,6 +11,8 @@ import java.util.Map;
 import org.hibernate.SessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 
@@ -86,4 +88,6 @@ public interface TestableGridDialect {
 	 * @return the store-specific {@link GlobalContext}
 	 */
 	GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration);
+
+	GridDialect getGridDialect(DatastoreProvider datastoreProvider);
 }

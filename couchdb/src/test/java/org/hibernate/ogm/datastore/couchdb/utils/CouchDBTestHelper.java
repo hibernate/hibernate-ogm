@@ -20,6 +20,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.couchdb.CouchDB;
+import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.GenericResponse;
@@ -35,6 +36,7 @@ import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.Ass
 import org.hibernate.ogm.datastore.couchdb.utils.backend.json.designdocument.EntitiesDesignDocument;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.utils.TestableGridDialect;
@@ -230,5 +232,10 @@ public class CouchDBTestHelper implements TestableGridDialect {
 	@Override
 	public GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return configuration.configureOptionsFor( CouchDB.class );
+	}
+
+	@Override
+	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
+		return new CouchDBDialect( (CouchDBDatastoreProvider) datastoreProvider );
 	}
 }

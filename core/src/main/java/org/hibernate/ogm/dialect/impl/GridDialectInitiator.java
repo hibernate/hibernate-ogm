@@ -82,7 +82,7 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
 
-				if ( gridDialect instanceof BatchableGridDialect ) {
+				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
 					gridDialect = new BatchOperationsDelegator( batchable );
 				}
