@@ -64,6 +64,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 	@After
 	public void cleanUp() {
 		removePlanet();
+		removePulsar();
 	}
 
 	/**
@@ -158,6 +159,56 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 		future2.get();
 		future1.get();
+	}
+
+	/**
+	 * This tests the "emulated" optimistic locking by means of re-reading the entity prior to updating it and comparing
+	 * its version.
+	 */
+	@Test
+	public void updatingEntityUsingOldEntityStateCausesException() throws Throwable {
+		thrown.expect( StaleObjectStateException.class );
+
+		persistPulsar();
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// load the entity and update it
+		Pulsar entity = (Pulsar) session.get( Pulsar.class, "pulsar-1" );
+		entity.setName( "PSR J0537-6910" );
+
+		// update the entity in parallel...
+		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12" );
+		future1.get();
+
+		// ... which will be detected by the re-read prior to the update
+		commitTransactionAndPropagateExceptions( session, transaction );
+	}
+
+	/**
+	 * This tests the "emulated" optimistic locking by means of re-reading the entity prior to deleting it and comparing
+	 * its version.
+	 */
+	@Test
+	public void deletingEntityUsingOldEntityStateCausesException() throws Throwable {
+		thrown.expect( StaleObjectStateException.class );
+
+		persistPulsar();
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// load the entity and delete it
+		Pulsar entity = (Pulsar) session.get( Pulsar.class, "pulsar-1" );
+		session.delete( entity );
+
+		// update the entity in parallel...
+		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12" );
+		future1.get();
+
+		// ... which will be detected by the re-read prior to the removal
+		commitTransactionAndPropagateExceptions( session, transaction );
 	}
 
 	@Test
@@ -274,6 +325,32 @@ public class OptimisticLockingTest extends OgmTestCase {
 		return milkyWay;
 	}
 
+	private Pulsar persistPulsar() {
+		Session session = openSession();
+
+		session.beginTransaction();
+
+		Pulsar pulsar = new Pulsar( "pulsar-1", "PSR 1919+21", 1.33 );
+		session.persist( pulsar );
+
+		session.getTransaction().commit();
+		session.close();
+
+		return pulsar;
+	}
+
+	public void removePulsar() {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		Pulsar entity = (Pulsar) session.get( Pulsar.class, "pulsar-1" );
+		if ( entity != null ) {
+			session.delete( entity );
+		}
+
+		transaction.commit();
+	}
+
 	private void commitTransactionAndPropagateExceptions(Session session, Transaction transaction) throws Exception {
 		try {
 			transaction.commit();
@@ -304,7 +381,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Planet.class, Galaxy.class };
+		return new Class<?>[] { Planet.class, Galaxy.class, Pulsar.class };
 	}
 
 	@SuppressWarnings("serial")
