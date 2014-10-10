@@ -922,7 +922,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 									resultset, getPropertyColumnNames( i ), session, object
 							);
 
-							if ( !type.isEqual( oldFields, snapshotValue, factory ) ) {
+							if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
 								raiseStaleObjectStateException( id );
 							}
 						}
