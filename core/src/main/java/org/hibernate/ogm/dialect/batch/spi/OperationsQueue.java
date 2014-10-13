@@ -69,7 +69,10 @@ public class OperationsQueue {
 	public Operation poll() {
 		validate();
 		Operation operation = operations.poll();
-		entityKeys.remove( operation );
+		if (operation instanceof UpdateTupleOperation ) {
+			UpdateTupleOperation update = (UpdateTupleOperation) operation;
+			entityKeys.remove( update.getEntityKey() );
+		}
 		return operation;
 	}
 

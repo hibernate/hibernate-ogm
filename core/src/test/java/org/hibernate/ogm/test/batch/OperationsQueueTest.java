@@ -87,6 +87,16 @@ public class OperationsQueueTest {
 	}
 
 	@Test
+	public void testDeletionOfEntityKeysWithUpdateTupleOperation() throws Exception {
+		EntityKey key = entityKey();
+		UpdateTupleOperation expected = new UpdateTupleOperation( null, key, emptyTupleContext() );
+		queue.add( expected );
+		queue.poll();
+
+		Assertions.assertThat( queue.contains( key ) ).isFalse();
+	}
+
+	@Test
 	public void testEmptyQueueSize() throws Exception {
 		Assertions.assertThat( 0 ).isEqualTo( queue.size() );
 	}
