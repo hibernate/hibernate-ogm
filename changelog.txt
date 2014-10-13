@@ -16,6 +16,7 @@ Hibernate OGM Changelog
     * [OGM-547] - Ensure uniqueness of id per entity type on Neo4j
     * [OGM-582] - Update "Getting started" section to fit for Neo4j
     * [OGM-592] - Move some constant data from AssociationKey to AssociationKeyMetadata
+    * [OGM-596] - Integration test should download EAP from a repository
     * [OGM-600] - Avoid exponential growth of required grid dialect delegator classes when adding further facet interfaces
     * [OGM-602] - Configure Maven Clirr plug-in for tracking API/SPI changes
     * [OGM-607] - Remove GridDialect#createTupleAssociation()
