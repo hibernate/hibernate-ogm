@@ -966,22 +966,34 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 	}
 
+	/**
+	 * Dehydrates the properties of a given entity, populating a {@link Tuple} with the converted column values.
+	 */
 	private void dehydrate(
-			Tuple resultset,
+			Tuple tuple,
 			final Object[] fields,
 			boolean[] includeProperties,
 			int tableIndex,
 			Serializable id,
 			SessionImplementor session) {
 
-		new EntityDehydrator( this )
-				.fields( fields )
-				.id( id )
-				.includeProperties( includeProperties )
-				.resultset( resultset )
-				.session( session )
-				.tableIndex( tableIndex )
-				.dehydrate();
+		if ( log.isTraceEnabled() ) {
+			log.trace( "Dehydrating entity: " + MessageHelper.infoString( this, id, getFactory() ) );
+		}
+
+		for ( int propertyIndex = 0; propertyIndex < getEntityMetamodel().getPropertySpan(); propertyIndex++ ) {
+			if ( isPropertyOfTable( propertyIndex, tableIndex ) ) {
+				if ( includeProperties[propertyIndex] ) {
+					getGridPropertyTypes()[propertyIndex].nullSafeSet(
+							tuple,
+							fields[propertyIndex],
+							getPropertyColumnNames( propertyIndex ),
+							getPropertyColumnInsertable()[propertyIndex],
+							session
+					);
+				}
+			}
+		}
 	}
 
 	/**
