@@ -190,6 +190,11 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		return optimisticLockingAwareGridDialect.updateTuple( entityKey, oldVersion, tuple, tupleContext );
 	}
 
+	@Override
+	public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
+		return optimisticLockingAwareGridDialect.removeTuple( entityKey, oldVersion, tupleContext );
+	}
+
 	/*
 	 * @see org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect
 	 */

@@ -159,10 +159,10 @@
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
     </properties>
 
+    <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are
+         managed in the BOM -->
     <dependencyManagement>
         <dependencies>
-
-            <!-- Tests -->
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
@@ -221,6 +221,12 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-core</artifactId>
                 <version>1.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>18.0</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
