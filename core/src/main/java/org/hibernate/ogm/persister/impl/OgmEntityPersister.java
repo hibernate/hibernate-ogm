@@ -1163,6 +1163,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
+
+		// apparently the record has already been deleted in parallel; Nothing further to do in this case
+		if ( resultset == null ) {
+			return;
+		}
+
 		final SessionFactoryImplementor factory = getFactory();
 		if ( isImpliedOptimisticLocking && loadedState != null ) {
 			// we need to utilize dynamic delete statements
