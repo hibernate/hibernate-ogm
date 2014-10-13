@@ -45,6 +45,7 @@ import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
@@ -106,6 +107,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	//service references
 	private final GridDialect gridDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
+	private final OptimisticLockingAwareGridDialect optimisticLockingAwareGridDialect;
 	private final OptionsService optionsService;
 
 	private final EntityKeyMetadata entityKeyMetadata;
@@ -148,6 +150,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
 		this.gridDialect = serviceRegistry.getService( GridDialect.class );
 		this.identityColumnAwareGridDialect = serviceRegistry.getService( IdentityColumnAwareGridDialect.class );
+		this.optimisticLockingAwareGridDialect = serviceRegistry.getService( OptimisticLockingAwareGridDialect.class );
 		this.optionsService = serviceRegistry.getService( OptionsService.class );
 
 		if ( factory.getIdentifierGenerator( getEntityName() ) instanceof OgmIdentityGenerator && identityColumnAwareGridDialect == null ) {
@@ -931,7 +934,24 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 				removeFromInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 				dehydrate( resultset, fields, propsToUpdate, getPropertyColumnUpdateable(), j, id, session );
-				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+
+				if ( isVersioned() && optimisticLockingAwareGridDialect != null ) {
+					Tuple oldVersionTuple = new Tuple();
+					oldVersionTuple.put( getVersionColumnName(), oldVersion );
+
+					boolean success = optimisticLockingAwareGridDialect.updateTuple( key, oldVersionTuple, resultset, getTupleContext() );
+
+					if ( !success ) {
+						if ( factory.getStatistics().isStatisticsEnabled() ) {
+							factory.getStatisticsImplementor().optimisticFailure( getEntityName() );
+						}
+						throw new StaleObjectStateException( getEntityName(), id );
+					}
+				}
+				else {
+					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+				}
+
 				addToInverseAssociations( resultset, propsToUpdate, getPropertyColumnInsertable(), j, id, session );
 			}
 		}

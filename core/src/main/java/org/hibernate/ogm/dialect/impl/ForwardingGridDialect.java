@@ -26,6 +26,7 @@ import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -50,13 +51,14 @@ import org.hibernate.type.Type;
  *
  * @author Gunnar Morling
  */
-public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, Configurable, ServiceRegistryAwareService {
+public class ForwardingGridDialect<T extends Serializable> implements GridDialect, BatchableGridDialect, SessionFactoryLifecycleAwareDialect, IdentityColumnAwareGridDialect, QueryableGridDialect<T>, OptimisticLockingAwareGridDialect, Configurable, ServiceRegistryAwareService {
 
 	private final GridDialect gridDialect;
 	private final BatchableGridDialect batchableGridDialect;
 	private final QueryableGridDialect<T> queryableGridDialect;
 	private final SessionFactoryLifecycleAwareDialect sessionFactoryAwareDialect;
 	private final IdentityColumnAwareGridDialect identityColumnAwareGridDialect;
+	private final OptimisticLockingAwareGridDialect optimisticLockingAwareGridDialect;
 
 	@SuppressWarnings("unchecked")
 	public ForwardingGridDialect(GridDialect gridDialect) {
@@ -67,6 +69,7 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 		this.queryableGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, QueryableGridDialect.class );
 		this.sessionFactoryAwareDialect = GridDialects.getDialectFacetOrNull( gridDialect, SessionFactoryLifecycleAwareDialect.class );
 		this.identityColumnAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, IdentityColumnAwareGridDialect.class );
+		this.optimisticLockingAwareGridDialect = GridDialects.getDialectFacetOrNull( gridDialect, OptimisticLockingAwareGridDialect.class );
 	}
 
 	/**
@@ -179,6 +182,15 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	/*
+	 * @see org.hibernate.ogm.dialect.versioncolumnaware.VersionColumnAwareGridDialect
+	 */
+
+	@Override
+	public boolean updateTuple(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
+		return optimisticLockingAwareGridDialect.updateTuple( entityKey, oldVersion, tuple, tupleContext );
+	}
+
+	/*
 	 * @see org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect
 	 */
 
@@ -240,5 +252,4 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
-
 }
