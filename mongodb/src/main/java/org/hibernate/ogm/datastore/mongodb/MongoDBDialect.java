@@ -66,6 +66,7 @@ import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -118,7 +119,7 @@ import com.mongodb.WriteConcern;
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect {
+public class MongoDBDialect extends BaseGridDialect implements QueryableGridDialect<MongoDBQueryDescriptor>, BatchableGridDialect, IdentityColumnAwareGridDialect, OptimisticLockingAwareGridDialect {
 
 	public static final String ID_FIELDNAME = "_id";
 	public static final String PROPERTY_SEPARATOR = ".";
@@ -290,10 +291,25 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
+
 		DBObject updater = objectForUpdate( tuple, idObject );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		getCollection( key ).update( idObject, updater, true, false, writeConcern );
+	}
+
+	@Override
+	public boolean updateTuple(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
+		BasicDBObject idObject = this.prepareIdObject( entityKey );
+
+		for ( String versionColumn : oldVersion.getColumnNames() ) {
+			idObject.put( versionColumn, oldVersion.get( versionColumn ) );
+		}
+
+		DBObject updater = objectForUpdate( tuple, idObject );
+		DBObject doc = getCollection( entityKey ).findAndModify( idObject, updater );
+
+		return doc != null;
 	}
 
 	@Override
