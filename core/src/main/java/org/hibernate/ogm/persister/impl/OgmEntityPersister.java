@@ -1214,7 +1214,19 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
 				.removeNavigationalInformationFromInverseSide();
 
-			gridDialect.removeTuple( key, getTupleContext() );
+			if ( optimisticLockingAwareGridDialect != null && isVersioned() ) {
+				Tuple versionTuple = new Tuple();
+				versionTuple.put( getVersionColumnName(), version );
+
+				boolean success = optimisticLockingAwareGridDialect.removeTuple( key, versionTuple, getTupleContext() );
+
+				if ( !success ) {
+					raiseStaleObjectStateException( id );
+				}
+			}
+			else {
+				gridDialect.removeTuple( key, getTupleContext() );
+			}
 		}
 	}
 

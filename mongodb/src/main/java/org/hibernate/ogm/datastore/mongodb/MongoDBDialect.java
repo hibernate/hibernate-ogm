@@ -396,6 +396,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		collection.remove( toDelete, writeConcern );
 	}
 
+	@Override
+	public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
+		DBObject toDelete = prepareIdObject( entityKey );
+
+		for ( String versionColumn : oldVersion.getColumnNames() ) {
+			toDelete.put( versionColumn, oldVersion.get( versionColumn ) );
+		}
+
+		DBCollection collection = getCollection( entityKey );
+		DBObject deleted = collection.findAndRemove( toDelete );
+
+		return deleted != null;
+	}
+
 	//not for embedded
 	private DBObject findAssociation(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
 		ReadPreference readPreference = getReadPreference( associationContext );

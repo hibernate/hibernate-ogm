@@ -15,8 +15,10 @@ import static org.hibernate.ogm.utils.GridDialectType.INFINISPAN;
 import static org.hibernate.ogm.utils.GridDialectType.NEO4J;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 import org.hibernate.Session;
 import org.hibernate.StaleObjectStateException;
@@ -31,9 +33,12 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
  * Test for detecting concurrent updates by dialects which support atomic find/update semantics or have their own
@@ -45,6 +50,15 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
+
+	private ThreadFactory threadFactory;
+
+	private final CountDownLatch deleteLatch = new CountDownLatch( 2 );
+
+	@Before
+	public void setupThreadFactory() {
+		threadFactory = new ThreadFactoryBuilder().setNameFormat( "ogm-test-thread-%d" ).build();
+	}
 
 	@Test
 	@SkipByGridDialect(
@@ -68,6 +82,25 @@ public class OptimisticLockingTest extends OgmTestCase {
 		finally {
 			removePlanet();
 		}
+	}
+
+	@Test
+	@SkipByGridDialect(
+			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB },
+			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
+	)
+	public void deletingEntityUsingOldVersionCausesException() throws Throwable {
+		thrown.expectCause( isA( StaleObjectStateException.class ) );
+
+		persistPlanet();
+
+		// for the delete, the test dialect waits a bit between read and delete, so the update will take place in
+		// between, causing the exception
+		Future<?> future1 = removePlanetInSeparateThread();
+		Future<?> future2 = updatePlanetInSeparateThread( "Uranus", true );
+
+		future2.get();
+		future1.get();
 	}
 
 	@Test
@@ -95,6 +128,10 @@ public class OptimisticLockingTest extends OgmTestCase {
 	}
 
 	private Future<?> updatePlanetInSeparateThread(final String newName) throws Exception {
+		return updatePlanetInSeparateThread( newName, false );
+	}
+
+	private Future<?> updatePlanetInSeparateThread(final String newName, final boolean awaitLatch) throws Exception {
 		return Executors.newSingleThreadExecutor().submit( new Runnable() {
 
 			@Override
@@ -105,6 +142,34 @@ public class OptimisticLockingTest extends OgmTestCase {
 				// load the entity and update it
 				Planet entity = (Planet) session.get( Planet.class, "planet-1" );
 				entity.setName( newName );
+
+				if ( awaitLatch ) {
+					countDownAndAwaitLatch();
+				}
+
+				transaction.commit();
+				session.close();
+			}
+		} );
+	}
+
+	private Future<?> removePlanetInSeparateThread() throws Exception {
+		return Executors.newSingleThreadExecutor( threadFactory ).submit( new Runnable() {
+
+			@Override
+			public void run() {
+				Session session = openSession();
+				Transaction transaction = session.beginTransaction();
+
+				Planet entity;
+
+				// load the entity and remove it
+				entity = (Planet) session.get( Planet.class, "planet-1" );
+
+				// the latch makes sure we have loaded the entity in both of the sessions before we're going to delete it
+				countDownAndAwaitLatch();
+
+				session.delete( entity );
 
 				transaction.commit();
 				session.close();
@@ -150,6 +215,16 @@ public class OptimisticLockingTest extends OgmTestCase {
 		transaction.commit();
 	}
 
+	private void countDownAndAwaitLatch() {
+		deleteLatch.countDown();
+		try {
+			deleteLatch.await();
+		}
+		catch (InterruptedException e) {
+			throw new RuntimeException( e );
+		}
+	}
+
 	@Override
 	protected void configure(Configuration cfg) {
 		cfg.getProperties().put( OgmProperties.GRID_DIALECT, TestDialect.class );
@@ -173,6 +248,15 @@ public class OptimisticLockingTest extends OgmTestCase {
 			}
 
 			return super.updateTuple( entityKey, oldVersion, tuple, tupleContext );
+		}
+
+		@Override
+		public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
+			if ( Thread.currentThread().getName().equals( "ogm-test-thread-0" ) ) {
+				waitALittleBit();
+			}
+
+			return super.removeTuple( entityKey, oldVersion, tupleContext );
 		}
 
 		private void waitALittleBit() {
