@@ -46,6 +46,7 @@ import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
@@ -911,51 +912,71 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
+
 		for ( int j = 0; j < span; j++ ) {
 			// Now update only the tables with dirty properties (and the table with the version number)
 			if ( tableUpdateNeeded[j] ) {
 				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-				Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
+				Tuple resultset = null;
+
+				if ( mightRequireInverseAssociationManagement || usesEmulatedOptimisticLocking ) {
+					resultset = gridDialect.getTuple( key, getTupleContext() );
+				}
+				else {
+					OgmEntityEntryState extraState = entry.getExtraState( OgmEntityEntryState.class );
+					if ( extraState != null ) {
+						resultset = extraState.getTuple();
+					}
+					if ( resultset == null ) {
+						resultset = gridDialect.getTuple( key, getTupleContext() );
+					}
+				}
+
 				final boolean useVersion = j == 0 && isVersioned();
 
 				resultset = createNewResultSetIfNull( key, resultset, id, session );
 
 				final EntityMetamodel entityMetamodel = getEntityMetamodel();
 
-				// Write any appropriate versioning conditional parameters
-				if ( useVersion && entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.VERSION ) {
-					if ( checkVersion( propsToUpdate ) ) {
-						checkVersionAndRaiseSOSE( id, oldVersion, session, resultset );
-					}
-				}
-				else if ( isAllOrDirtyOptLocking() && oldFields != null ) {
-					boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
-					boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
-							? getPropertyUpdateability()
-							: propsToUpdate;
-					//TODO do a diff on the properties value from resultset and the dirty value
-					GridType[] types = gridPropertyTypes;
-
-					for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
-						boolean include = includeOldField[i] &&
-								isPropertyOfTable( i, j ) &&
-								versionability[i]; //TODO: is this really necessary????
-						if ( include ) {
-							final GridType type = types[i];
-							//FIXME what do do with settable?
-							boolean[] settable = type.toColumnNullness( oldFields[i], factory );
-							final Object snapshotValue = type.nullSafeGet(
-									resultset, getPropertyColumnNames( i ), session, object
-							);
-
-							if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
-								raiseStaleObjectStateException( id );
-							}
+				if ( usesEmulatedOptimisticLocking ) {
+					// Write any appropriate versioning conditional parameters
+					if ( useVersion && entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.VERSION ) {
+						if ( checkVersion( propsToUpdate ) ) {
+							checkVersionAndRaiseSOSE( id, oldVersion, session, resultset );
 						}
 					}
+					else if ( isAllOrDirtyOptLocking() && oldFields != null ) {
+						boolean[] versionability = getPropertyVersionability(); //TODO: is this really necessary????
+						boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
+								? getPropertyUpdateability()
+										: propsToUpdate;
+								//TODO do a diff on the properties value from resultset and the dirty value
+								GridType[] types = gridPropertyTypes;
+
+								for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+									boolean include = includeOldField[i] &&
+											isPropertyOfTable( i, j ) &&
+											versionability[i]; //TODO: is this really necessary????
+									if ( include ) {
+										final GridType type = types[i];
+										//FIXME what do do with settable?
+										boolean[] settable = type.toColumnNullness( oldFields[i], factory );
+										final Object snapshotValue = type.nullSafeGet(
+												resultset, getPropertyColumnNames( i ), session, object
+												);
+
+										if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
+											raiseStaleObjectStateException( id );
+										}
+									}
+								}
+					}
 				}
 
-				removeFromInverseAssociations( resultset, j, id, session );
+
+				if ( mightRequireInverseAssociationManagement ) {
+					removeFromInverseAssociations( resultset, j, id, session );
+				}
 				dehydrate( resultset, fields, propsToUpdate, j, id, session );
 
 				if ( isVersioned() && optimisticLockingAwareGridDialect != null ) {
@@ -972,7 +993,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 				}
 
-				addToInverseAssociations( resultset, j, id, session );
+				if ( mightRequireInverseAssociationManagement ) {
+					addToInverseAssociations( resultset, j, id, session );
+				}
 			}
 		}
 	}
