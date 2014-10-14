@@ -1164,6 +1164,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
 			gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
 			addToInverseAssociations( resultset, 0, id, session );
+
+			OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
 		}
 	}
 
