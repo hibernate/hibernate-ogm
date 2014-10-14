@@ -14,7 +14,7 @@ import javax.persistence.Version;
  * @author Gunnar Morling
  */
 @Entity
-public class Planet {
+public class Planet implements Nameable {
 
 	private String id;
 	private String name;
@@ -37,10 +37,12 @@ public class Planet {
 		this.id = id;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
