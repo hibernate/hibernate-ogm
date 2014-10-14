@@ -31,6 +31,7 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.CollectionAliases;
 import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -1047,6 +1048,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				session
 			);
 
+		OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );
 	}
 
 	/**
