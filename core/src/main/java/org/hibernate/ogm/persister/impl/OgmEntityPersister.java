@@ -133,6 +133,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private final boolean[] propertyMightRequireInverseAssociationManagement;
 
+	/**
+	 * Whether there is at least one property which might represent the main side of a bi-directional association or not.
+	 */
+	private final boolean mightRequireInverseAssociationManagement;
+
+	/**
+	 * Whether this persister uses an "emulated" optimistic locking or not.
+	 */
+	private final boolean usesEmulatedOptimisticLocking;
+
 	private TupleContext tupleContext;
 
 	OgmEntityPersister(
@@ -245,6 +255,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		initCustomSQLStrings();
 
 		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
+		mightRequireInverseAssociationManagement = initMayManageInverseAssociations();
+		usesEmulatedOptimisticLocking = initUsesEmulatedOptimisticLocking();
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -340,6 +352,20 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		}
 
 		return propertyMightRequireInverseAssociationManagement;
+	}
+
+	private boolean initMayManageInverseAssociations() {
+		for ( boolean mightManageReverseAssociation : propertyMightRequireInverseAssociationManagement ) {
+			if ( mightManageReverseAssociation ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean initUsesEmulatedOptimisticLocking() {
+		return ( optimisticLockingAwareGridDialect == null && isVersioned() ) || isAllOrDirtyOptLocking();
 	}
 
 	@Override
@@ -1157,58 +1183,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( span > 1 ) {
 			throw new HibernateException( "Hibernate OGM does not yet support entities spanning multiple tables");
 		}
-		final EntityMetamodel entityMetamodel = getEntityMetamodel();
-		boolean isImpliedOptimisticLocking = !entityMetamodel.isVersioned() && isAllOrDirtyOptLocking();
-		Object[] loadedState = null;
-		if ( isImpliedOptimisticLocking ) {
-			// need to treat this as if it where optimistic-lock="all" (dirty does *not* make sense);
-			// first we need to locate the "loaded" state
-			//
-			// Note, it potentially could be a proxy, so doAfterTransactionCompletion the location the safe way...
-			org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( id, this );
-			Object entity = session.getPersistenceContext().getEntity( key );
-			if ( entity != null ) {
-				EntityEntry entry = session.getPersistenceContext().getEntry( entity );
-				loadedState = entry.getLoadedState();
-			}
-		}
 
 		final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-		final Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
+		Object[] loadedState = getLoadedState( id, session );
+		Tuple currentState = null;
 
-		// apparently the record has already been deleted in parallel; Nothing further to do in this case
-		if ( resultset == null ) {
-			return;
+		if ( mightRequireInverseAssociationManagement || usesEmulatedOptimisticLocking ) {
+			currentState = gridDialect.getTuple( key, getTupleContext() );
 		}
 
-		final SessionFactoryImplementor factory = getFactory();
-		if ( isImpliedOptimisticLocking && loadedState != null ) {
-			// we need to utilize dynamic delete statements
-			for ( int j = span - 1; j >= 0; j-- ) {
-				boolean[] versionability = getPropertyVersionability();
-
-				//TODO do a diff on the properties value from resultset
-				GridType[] types = gridPropertyTypes;
-
-				for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
-					boolean include = isPropertyOfTable( i, j ) && versionability[i];
-					if ( include ) {
-						final GridType type = types[i];
-						final Object snapshotValue = type.nullSafeGet(
-								resultset, getPropertyColumnNames( i ), session, object
-						);
-						//TODO support other entity modes
-						if ( ! type.isEqual( loadedState[i], snapshotValue, factory ) ) {
-							raiseStaleObjectStateException( id );
-						}
-					}
-				}
-			}
-		}
-		else {
-			if ( entityMetamodel.isVersioned() ) {
-				checkVersionAndRaiseSOSE( id, version, session, resultset );
-			}
+		if ( usesEmulatedOptimisticLocking ) {
+			checkOptimisticLockingState( id, key, object, loadedState, version, session, currentState );
 		}
 
 		for ( int j = span - 1; j >= 0; j-- ) {
@@ -1216,21 +1201,23 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				return;
 			}
 			if ( log.isTraceEnabled() ) {
-				log.trace( "Deleting entity: " + MessageHelper.infoString( this, id, factory ) );
+				log.trace( "Deleting entity: " + MessageHelper.infoString( this, id, getFactory() ) );
 				if ( j == 0 && isVersioned() ) {
 					log.trace( "Version: " + version );
 				}
 			}
 
-			//delete association information
+			//delete inverse association information
 			//needs to be executed before the tuple removal because the AtomicMap in ISPN is cleared upon removal
-			new EntityAssociationUpdater( this )
-				.id( id )
-				.resultset( resultset )
-				.session( session )
-				.tableIndex( j )
-				.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
-				.removeNavigationalInformationFromInverseSide();
+			if ( mightRequireInverseAssociationManagement ) {
+				new EntityAssociationUpdater( this )
+					.id( id )
+					.resultset( currentState )
+					.session( session )
+					.tableIndex( j )
+					.propertyMightRequireInverseAssociationManagement( propertyMightRequireInverseAssociationManagement )
+					.removeNavigationalInformationFromInverseSide();
+			}
 
 			if ( optimisticLockingAwareGridDialect != null && isVersioned() ) {
 				Tuple versionTuple = new Tuple();
@@ -1245,6 +1232,61 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			else {
 				gridDialect.removeTuple( key, getTupleContext() );
 			}
+		}
+	}
+
+	private Object[] getLoadedState(Serializable id, SessionImplementor session) {
+		org.hibernate.engine.spi.EntityKey key = session.generateEntityKey( id, this );
+
+		Object entity = session.getPersistenceContext().getEntity( key );
+		if ( entity != null ) {
+			EntityEntry entry = session.getPersistenceContext().getEntry( entity );
+			return entry.getLoadedState();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Performs an explicit check of the optimistic locking columns in case the current datastore does not support
+	 * atomic find-and-update/find-and-delete semantics.
+	 * <p>
+	 * <b>Note:</b> Naturally, that approach is not completely fail-safe, it only minimizes the time window for
+	 * undiscovered concurrent updates.
+	 */
+	private void checkOptimisticLockingState(Serializable id, EntityKey key, Object object, Object[] loadedState, Object version, SessionImplementor session, Tuple resultset) {
+		int tableSpan = getTableSpan();
+		EntityMetamodel entityMetamodel = getEntityMetamodel();
+
+		boolean isImpliedOptimisticLocking = !entityMetamodel.isVersioned() && isAllOrDirtyOptLocking();
+
+		// Compare all the columns against their current state in the datastore
+		if ( isImpliedOptimisticLocking && loadedState != null ) {
+			// we need to utilize dynamic delete statements
+			for ( int j = tableSpan - 1; j >= 0; j-- ) {
+				boolean[] versionability = getPropertyVersionability();
+
+				//TODO do a diff on the properties value from resultset
+				GridType[] types = gridPropertyTypes;
+
+				for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+					boolean include = isPropertyOfTable( i, j ) && versionability[i];
+					if ( include ) {
+						final GridType type = types[i];
+						final Object snapshotValue = type.nullSafeGet(
+								resultset, getPropertyColumnNames( i ), session, object
+						);
+						//TODO support other entity modes
+						if ( ! type.isEqual( loadedState[i], snapshotValue, getFactory() ) ) {
+							raiseStaleObjectStateException( id );
+						}
+					}
+				}
+			}
+		}
+		// compare the version column only
+		else if ( entityMetamodel.isVersioned() ) {
+			checkVersionAndRaiseSOSE( id, version, session, resultset );
 		}
 	}
 
