@@ -235,6 +235,36 @@ public class OptimisticLockingTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void mergingEntityUsingOldVersionCausesException() throws Throwable {
+		thrown.expect( StaleObjectStateException.class );
+
+		persistPlanet();
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// load the entity
+		Planet entity = (Planet) session.get( Planet.class, "planet-1" );
+
+		commitTransactionAndPropagateExceptions( session, transaction );
+
+		// update the entity in parallel...
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		future1.get();
+
+		session = openSession();
+		transaction = session.beginTransaction();
+
+		// merging back the previously loaded version will cause an exception
+		try {
+			entity = (Planet) session.merge( entity );
+		}
+		finally {
+			commitTransactionAndPropagateExceptions( session, transaction );
+		}
+	}
+
 	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName) throws Exception {
 		return updateInSeparateThread( type, id, newName, false );
 	}
