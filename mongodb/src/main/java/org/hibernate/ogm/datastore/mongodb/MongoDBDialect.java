@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.DOT_SEPARATOR_PATTERN;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
@@ -27,10 +27,9 @@ import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.impl.configuration.MongoDBConfiguration;
@@ -148,11 +147,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		if ( found != null ) {
-			return new Tuple( new BatchableMongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
+			return new Tuple( new MongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
 		else if ( isInTheQueue( key, tupleContext ) ) {
 			// The key has not been inserted in the db but it is in the queue
-			return new Tuple( new BatchableMongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
+			return new Tuple( new MongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
 		}
 		else {
 			return null;
@@ -166,13 +165,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	@Override
 	public Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext) {
-		return new Tuple( new BatchableMongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
+		return new Tuple( new MongoDBTupleSnapshot( new BasicDBObject(), entityKeyMetadata, SnapshotType.INSERT ) );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject toSave = this.prepareIdObject( key );
-		return new Tuple( new BatchableMongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
+		return new Tuple( new MongoDBTupleSnapshot( toSave, key.getMetadata(), SnapshotType.INSERT ) );
 	}
 
 	/**
@@ -333,7 +332,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Creates a dbObject that can be pass to the mongoDB batch insert function
 	 */
 	private DBObject objectForInsert(Tuple tuple, DBObject dbObject) {
-		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tuple.getSnapshot();
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 		for ( TupleOperation operation : tuple.getOperations() ) {
 			String column = operation.getColumn();
 			if ( notInIdField( snapshot, column ) ) {
@@ -352,7 +351,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	private DBObject objectForUpdate(Tuple tuple, DBObject idObject) {
-		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tuple.getSnapshot();
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
 
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
@@ -383,7 +382,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return updater;
 	}
 
-	private boolean notInIdField(BatchableMongoDBTupleSnapshot snapshot, String column) {
+	private boolean notInIdField(MongoDBTupleSnapshot snapshot, String column) {
 		return !column.equals( ID_FIELDNAME ) && !column.endsWith( PROPERTY_SEPARATOR + ID_FIELDNAME ) && !snapshot.isKeyColumn( column );
 	}
 
@@ -658,7 +657,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			DBCollection collection = db.getCollection( entityKeyMetadata.getTable() );
 			for ( DBObject dbObject : collection.find() ) {
-				consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata) ) );
+				consumer.consume( new Tuple( new MongoDBTupleSnapshot( dbObject, entityKeyMetadata, UPDATE ) ) );
 			}
 		}
 	}
@@ -830,10 +829,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, UpdateTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
 		Tuple tuple = tupleOperation.getTuple();
-		BatchableMongoDBTupleSnapshot snapshot = (BatchableMongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
+		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();
 		WriteConcern writeConcern = getWriteConcern( tupleOperation.getTupleContext() );
 
-		if ( INSERT == snapshot.getOperationType() ) {
+		if ( INSERT == snapshot.getSnapshotType() ) {
 			prepareForInsert( inserts, snapshot, entityKey, tuple, writeConcern );
 		}
 		else {
@@ -847,7 +846,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return NoOpParameterMetadataBuilder.INSTANCE;
 	}
 
-	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, BatchableMongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
+	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
 		DBCollection collection = getCollection( entityKey );
 		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
 		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
@@ -855,7 +854,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		inserts.get( collection ).put( entityKey, newDocument );
 	}
 
-	private DBObject getCurrentDocument(BatchableMongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
+	private DBObject getCurrentDocument(MongoDBTupleSnapshot snapshot, BatchInsertionTask batchInsert, EntityKey entityKey) {
 		DBObject fromBatchInsertion = batchInsert.get( entityKey );
 		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
 	}
@@ -905,7 +904,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		@Override
 		public Tuple next() {
 			DBObject dbObject = cursor.next();
-			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata ) );
+			return new Tuple( new MongoDBTupleSnapshot( dbObject, metadata, UPDATE ) );
 		}
 
 		@Override
