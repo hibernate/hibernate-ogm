@@ -33,6 +33,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.TestHelper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,36 +61,92 @@ public class OptimisticLockingTest extends OgmTestCase {
 		threadFactory = new ThreadFactoryBuilder().setNameFormat( "ogm-test-thread-%d" ).build();
 	}
 
+	@After
+	public void cleanUp() {
+		removePlanet();
+	}
+
+	/**
+	 * This tests the "emulated" optimistic locking by means of re-reading the entity prior to updating it and comparing
+	 * its version.
+	 */
+	@Test
+	public void updatingEntityUsingOldVersionCausesException() throws Throwable {
+		thrown.expect( StaleObjectStateException.class );
+
+		persistPlanet();
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// load the entity and update it
+		Planet entity = (Planet) session.get( Planet.class, "planet-1" );
+		entity.setName( "Uranus" );
+
+		// update the entity in parallel...
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		future1.get();
+
+		// ... which will be detected by the re-read prior to the update
+		commitTransactionAndPropagateExceptions( session, transaction );
+	}
+
+	/**
+	 * This tests "real" optimistic locking by means of atomic find-and-modify semantics if supported by the datastore.
+	 */
 	@Test
 	@SkipByGridDialect(
 			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
-	public void updatingEntityUsingOldVersionCausesException() throws Throwable {
+	public void updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate() throws Throwable {
 		thrown.expectCause( isA( StaleObjectStateException.class ) );
 
 		persistPlanet();
 
 		// for the first update, the test dialect waits a bit between read and write, so the second update will take
 		// place in between, causing the exception
-		Future<?> future1 = updatePlanetInSeparateThread( "Mars" );
-		Future<?> future2 = updatePlanetInSeparateThread( "Uranus" );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus" );
 
-		try {
-			future2.get();
-			future1.get();
-		}
-		finally {
-			removePlanet();
-		}
+		future2.get();
+		future1.get();
 	}
 
+	/**
+	 * This tests the "emulated" optimistic locking by means of re-reading the entity prior to removing it and comparing
+	 * its version.
+	 */
+	@Test
+	public void deletingEntityUsingOldVersionCausesException() throws Throwable {
+		thrown.expect( StaleObjectStateException.class );
+
+		persistPlanet();
+
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// load the entity and delete it
+		Planet entity = (Planet) session.get( Planet.class, "planet-1" );
+		session.delete( entity );
+
+		// update the entity in parallel...
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		future1.get();
+
+		// ... which will be detected by the re-read prior to the removal
+		commitTransactionAndPropagateExceptions( session, transaction );
+	}
+
+	/**
+	 * This tests "real" optimistic locking by means of atomic find-and-delete semantics if supported by the datastore.
+	 */
 	@Test
 	@SkipByGridDialect(
 			value = { HASHMAP, INFINISPAN, EHCACHE, NEO4J, COUCHDB },
 			comment = "Note that CouchDB has its own optimistic locking scheme, handled by the dialect itself."
 	)
-	public void deletingEntityUsingOldVersionCausesException() throws Throwable {
+	public void deletingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndDelete() throws Throwable {
 		thrown.expectCause( isA( StaleObjectStateException.class ) );
 
 		persistPlanet();
@@ -97,7 +154,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		// for the delete, the test dialect waits a bit between read and delete, so the update will take place in
 		// between, causing the exception
 		Future<?> future1 = removePlanetInSeparateThread();
-		Future<?> future2 = updatePlanetInSeparateThread( "Uranus", true );
+		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", true );
 
 		future2.get();
 		future1.get();
@@ -124,14 +181,14 @@ public class OptimisticLockingTest extends OgmTestCase {
 		assertThat( entity.getStars() ).hasSize( 3 );
 
 		transaction.commit();
-		session.clear();
+		session.close();
 	}
 
-	private Future<?> updatePlanetInSeparateThread(final String newName) throws Exception {
-		return updatePlanetInSeparateThread( newName, false );
+	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName) throws Exception {
+		return updateInSeparateThread( type, id, newName, false );
 	}
 
-	private Future<?> updatePlanetInSeparateThread(final String newName, final boolean awaitLatch) throws Exception {
+	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName, final boolean awaitLatch) throws Exception {
 		return Executors.newSingleThreadExecutor().submit( new Runnable() {
 
 			@Override
@@ -140,7 +197,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 				Transaction transaction = session.beginTransaction();
 
 				// load the entity and update it
-				Planet entity = (Planet) session.get( Planet.class, "planet-1" );
+				Nameable entity = (Nameable) session.get( type, id );
 				entity.setName( newName );
 
 				if ( awaitLatch ) {
@@ -191,6 +248,18 @@ public class OptimisticLockingTest extends OgmTestCase {
 		return planet;
 	}
 
+	public void removePlanet() {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		Planet entity = (Planet) session.get( Planet.class, "planet-1" );
+		if ( entity != null ) {
+			session.delete( entity );
+		}
+
+		transaction.commit();
+	}
+
 	private Galaxy persistGalaxy() {
 		Session session = openSession();
 
@@ -205,14 +274,17 @@ public class OptimisticLockingTest extends OgmTestCase {
 		return milkyWay;
 	}
 
-	public void removePlanet() {
-		Session session = openSession();
-		Transaction transaction = session.beginTransaction();
-
-		Planet entity = (Planet) session.get( Planet.class, "planet-1" );
-		session.delete( entity );
-
-		transaction.commit();
+	private void commitTransactionAndPropagateExceptions(Session session, Transaction transaction) throws Exception {
+		try {
+			transaction.commit();
+		}
+		catch (Exception e) {
+			transaction.rollback();
+			throw e;
+		}
+		finally {
+			session.close();
+		}
 	}
 
 	private void countDownAndAwaitLatch() {
@@ -235,6 +307,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		return new Class<?>[] { Planet.class, Galaxy.class };
 	}
 
+	@SuppressWarnings("serial")
 	public static class TestDialect extends ForwardingGridDialect<Serializable> {
 
 		public TestDialect(DatastoreProvider provider) {
