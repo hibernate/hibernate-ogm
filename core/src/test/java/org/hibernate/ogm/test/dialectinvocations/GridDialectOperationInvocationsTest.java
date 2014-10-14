@@ -75,7 +75,6 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 				"getTuple",
 				"insertOrUpdateTuple",
 				"getTuple",
-				"getTuple",
 				"removeTuple"
 		);
 	}
