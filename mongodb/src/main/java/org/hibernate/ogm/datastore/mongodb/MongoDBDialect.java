@@ -786,10 +786,17 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( !queue.isClosed() ) {
 			Operation operation = queue.poll();
 			Map<DBCollection, BatchInsertionTask> inserts = new HashMap<DBCollection, BatchInsertionTask>();
+
+			List<MongoDBTupleSnapshot> insertSnapshots = new ArrayList<MongoDBTupleSnapshot>();
+
 			while ( operation != null ) {
 				if ( operation instanceof UpdateTupleOperation ) {
 					UpdateTupleOperation update = (UpdateTupleOperation) operation;
 					executeBatchUpdate( inserts, update );
+					MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) update.getTuple().getSnapshot();
+					if ( snapshot.getSnapshotType() == INSERT ) {
+						insertSnapshots.add( snapshot );
+					}
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
 					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
@@ -809,6 +816,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				operation = queue.poll();
 			}
 			flushInserts( inserts );
+
+			for ( MongoDBTupleSnapshot insertSnapshot : insertSnapshots ) {
+				insertSnapshot.setSnapshotType( UPDATE );
+			}
 			queue.close();
 		}
 	}
