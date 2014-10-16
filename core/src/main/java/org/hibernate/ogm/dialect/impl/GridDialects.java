@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.dialect.impl;
 
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 
 /**

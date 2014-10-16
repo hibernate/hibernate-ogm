@@ -15,18 +15,18 @@ import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
-import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
-import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
-import org.hibernate.ogm.dialect.queryable.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -182,17 +182,17 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	/*
-	 * @see org.hibernate.ogm.dialect.versioncolumnaware.VersionColumnAwareGridDialect
+	 * @see org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect
 	 */
 
 	@Override
-	public boolean updateTuple(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
-		return optimisticLockingAwareGridDialect.updateTuple( entityKey, oldVersion, tuple, tupleContext );
+	public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
+		return optimisticLockingAwareGridDialect.updateTupleWithOptimisticLock( entityKey, oldLockState, tuple, tupleContext );
 	}
 
 	@Override
-	public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
-		return optimisticLockingAwareGridDialect.removeTuple( entityKey, oldVersion, tupleContext );
+	public boolean removeTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, TupleContext tupleContext) {
+		return optimisticLockingAwareGridDialect.removeTupleWithOptimisticLock( entityKey, oldLockState, tupleContext );
 	}
 
 	/*

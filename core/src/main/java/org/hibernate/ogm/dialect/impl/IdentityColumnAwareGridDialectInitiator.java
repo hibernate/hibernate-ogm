@@ -9,7 +9,7 @@ package org.hibernate.ogm.dialect.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
-import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 

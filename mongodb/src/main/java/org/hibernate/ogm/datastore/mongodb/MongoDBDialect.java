@@ -54,19 +54,19 @@ import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
-import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
-import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
-import org.hibernate.ogm.dialect.queryable.spi.ClosableIterator;
-import org.hibernate.ogm.dialect.queryable.spi.NoOpParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
+import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
+import org.hibernate.ogm.dialect.query.spi.NoOpParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -299,11 +299,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public boolean updateTuple(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
+	public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( entityKey );
 
-		for ( String versionColumn : oldVersion.getColumnNames() ) {
-			idObject.put( versionColumn, oldVersion.get( versionColumn ) );
+		for ( String versionColumn : oldLockState.getColumnNames() ) {
+			idObject.put( versionColumn, oldLockState.get( versionColumn ) );
 		}
 
 		DBObject updater = objectForUpdate( tuple, idObject );
@@ -397,11 +397,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
+	public boolean removeTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, TupleContext tupleContext) {
 		DBObject toDelete = prepareIdObject( entityKey );
 
-		for ( String versionColumn : oldVersion.getColumnNames() ) {
-			toDelete.put( versionColumn, oldVersion.get( versionColumn ) );
+		for ( String versionColumn : oldLockState.getColumnNames() ) {
+			toDelete.put( versionColumn, oldLockState.get( versionColumn ) );
 		}
 
 		DBCollection collection = getCollection( entityKey );

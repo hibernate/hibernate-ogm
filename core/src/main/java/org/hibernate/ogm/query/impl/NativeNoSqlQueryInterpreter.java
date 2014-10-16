@@ -15,8 +15,8 @@ import org.hibernate.engine.query.spi.ParameterMetadata;
 import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.loader.custom.CustomQuery;
-import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.loader.nativeloader.impl.BackendCustomQuery;
 
 /**
