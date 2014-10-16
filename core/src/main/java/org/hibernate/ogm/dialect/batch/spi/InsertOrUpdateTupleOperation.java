@@ -15,13 +15,13 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class UpdateTupleOperation implements Operation {
+public class InsertOrUpdateTupleOperation implements Operation {
 
 	private final Tuple tuple;
 	private final EntityKey entityKey;
 	private final TupleContext tupleContext;
 
-	public UpdateTupleOperation(Tuple tuple, EntityKey entityKey, TupleContext tupleContext) {
+	public InsertOrUpdateTupleOperation(Tuple tuple, EntityKey entityKey, TupleContext tupleContext) {
 		this.tuple = tuple;
 		this.entityKey = entityKey;
 		this.tupleContext = tupleContext;

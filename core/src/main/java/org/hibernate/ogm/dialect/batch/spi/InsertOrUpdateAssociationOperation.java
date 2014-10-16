@@ -15,13 +15,13 @@ import org.hibernate.ogm.model.spi.Association;
  *
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class UpdateAssociationOperation implements Operation {
+public class InsertOrUpdateAssociationOperation implements Operation {
 
 	private final Association association;
 	private final AssociationKey associationKey;
 	private final AssociationContext context;
 
-	public UpdateAssociationOperation(Association association, AssociationKey associationKey, AssociationContext context) {
+	public InsertOrUpdateAssociationOperation(Association association, AssociationKey associationKey, AssociationContext context) {
 		this.association = association;
 		this.associationKey = associationKey;
 		this.context = context;
