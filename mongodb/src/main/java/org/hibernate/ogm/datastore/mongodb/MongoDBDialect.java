@@ -51,8 +51,8 @@ import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -790,8 +790,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			List<MongoDBTupleSnapshot> insertSnapshots = new ArrayList<MongoDBTupleSnapshot>();
 
 			while ( operation != null ) {
-				if ( operation instanceof UpdateTupleOperation ) {
-					UpdateTupleOperation update = (UpdateTupleOperation) operation;
+				if ( operation instanceof InsertOrUpdateTupleOperation ) {
+					InsertOrUpdateTupleOperation update = (InsertOrUpdateTupleOperation) operation;
 					executeBatchUpdate( inserts, update );
 					MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) update.getTuple().getSnapshot();
 					if ( snapshot.getSnapshotType() == INSERT ) {
@@ -802,8 +802,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					RemoveTupleOperation tupleOp = (RemoveTupleOperation) operation;
 					executeBatchRemove( inserts, tupleOp );
 				}
-				else if ( operation instanceof UpdateAssociationOperation ) {
-					UpdateAssociationOperation update = (UpdateAssociationOperation) operation;
+				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+					InsertOrUpdateAssociationOperation update = (InsertOrUpdateAssociationOperation) operation;
 					insertOrUpdateAssociation( update.getAssociationKey(), update.getAssociation(), update.getContext() );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
@@ -837,7 +837,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, UpdateTupleOperation tupleOperation) {
+	private void executeBatchUpdate(Map<DBCollection, BatchInsertionTask> inserts, InsertOrUpdateTupleOperation tupleOperation) {
 		EntityKey entityKey = tupleOperation.getEntityKey();
 		Tuple tuple = tupleOperation.getTuple();
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tupleOperation.getTuple().getSnapshot();

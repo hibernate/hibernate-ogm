@@ -22,8 +22,8 @@ import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.UpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -169,14 +169,14 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			while ( operation != null ) {
 				newQueue.add( operation );
 
-				if ( operation instanceof UpdateTupleOperation ) {
-					sb.append( "InsertOrUpdateTuple(" ).append( ( (UpdateTupleOperation) operation ).getEntityKey() ).append( " )" );
+				if ( operation instanceof InsertOrUpdateTupleOperation ) {
+					sb.append( "InsertOrUpdateTuple(" ).append( ( (InsertOrUpdateTupleOperation) operation ).getEntityKey() ).append( " )" );
 				}
 				else if ( operation instanceof RemoveTupleOperation ) {
 					sb.append( "RemoveTuple(" ).append( ( (RemoveTupleOperation) operation ).getEntityKey() ).append( " )" );
 				}
-				else if ( operation instanceof UpdateAssociationOperation ) {
-					sb.append( "InsertOrUpdateAssociation(" ).append( ( (UpdateAssociationOperation) operation ).getAssociationKey() ).append( " )" );
+				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
+					sb.append( "InsertOrUpdateAssociation(" ).append( ( (InsertOrUpdateAssociationOperation) operation ).getAssociationKey() ).append( " )" );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					sb.append( "RemoveAssociation(" ).append( ( (RemoveAssociationOperation) operation ).getAssociationKey() ).append( " )" );

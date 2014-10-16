@@ -18,7 +18,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 /**
  * A queue for {@link Operation}.
  * <p>
- * It keeps track of the element that are going to be affected by an {@link UpdateTupleOperation}.
+ * It keeps track of the element that are going to be affected by an {@link InsertOrUpdateTupleOperation}.
  * The queue can be closed, in that case it will throw an exception when trying to add or poll an operation.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -44,7 +44,7 @@ public class OperationsQueue {
 
 	private boolean closed = false;
 
-	public void add(UpdateTupleOperation operation) {
+	public void add(InsertOrUpdateTupleOperation operation) {
 		validate();
 		entityKeys.add( operation.getEntityKey() );
 		addOperation( operation );
@@ -85,7 +85,7 @@ public class OperationsQueue {
 
 	/**
 	 * @param key the {@link EntityKey} that identify the element
-	 * @return true if an {@link UpdateTupleOperation} is bound to the key, false otherwise
+	 * @return true if an {@link InsertOrUpdateTupleOperation} is bound to the key, false otherwise
 	 */
 	public boolean contains(EntityKey key) {
 		return entityKeys.contains( key );

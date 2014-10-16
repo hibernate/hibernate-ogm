@@ -12,7 +12,7 @@ import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.UpdateTupleOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Before;
@@ -41,7 +41,7 @@ public class OperationsQueueTest {
 	@Test(expected = HibernateException.class)
 	public void testAddUpdateTupleCauseExceptionWhenQueueIsClosed() throws Exception {
 		queue.close();
-		queue.add( new UpdateTupleOperation( null, null, emptyTupleContext() ) );
+		queue.add( new InsertOrUpdateTupleOperation( null, null, emptyTupleContext() ) );
 	}
 
 	@Test(expected = HibernateException.class)
@@ -53,7 +53,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testContainsKeyWhenAddingUpdateTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		UpdateTupleOperation expected = new UpdateTupleOperation( null, key, emptyTupleContext() );
+		InsertOrUpdateTupleOperation expected = new InsertOrUpdateTupleOperation( null, key, emptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( queue.contains( key ) ).isTrue();
@@ -80,7 +80,7 @@ public class OperationsQueueTest {
 	@Test
 	public void testAddUpdateTupleOperation() throws Exception {
 		EntityKey key = entityKey();
-		UpdateTupleOperation expected = new UpdateTupleOperation( null, key, emptyTupleContext() );
+		InsertOrUpdateTupleOperation expected = new InsertOrUpdateTupleOperation( null, key, emptyTupleContext() );
 		queue.add( expected );
 
 		Assertions.assertThat( expected ).isEqualTo( queue.poll() );
@@ -93,7 +93,7 @@ public class OperationsQueueTest {
 
 	@Test
 	public void testQueueSizeWhenAddingUpdateTupleOperation() throws Exception {
-		queue.add( new UpdateTupleOperation( null, entityKey(), emptyTupleContext() ) );
+		queue.add( new InsertOrUpdateTupleOperation( null, entityKey(), emptyTupleContext() ) );
 
 		Assertions.assertThat( 1 ).isEqualTo( queue.size() );
 	}
