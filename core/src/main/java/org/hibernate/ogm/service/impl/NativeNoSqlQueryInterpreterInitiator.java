@@ -10,7 +10,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.query.spi.NativeQueryInterpreter;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.metamodel.source.MetadataImplementor;
-import org.hibernate.ogm.dialect.queryable.spi.QueryableGridDialect;
+import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.query.impl.NativeNoSqlQueryInterpreter;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceInitiator;

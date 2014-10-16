@@ -31,7 +31,7 @@ import org.hibernate.hql.internal.ast.util.NodeTraverser;
 import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.loader.hql.QueryLoader;
-import org.hibernate.ogm.dialect.queryable.spi.BackendQuery;
+import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.query.spi.QueryParserService;

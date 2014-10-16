@@ -7,8 +7,8 @@
 package org.hibernate.ogm.datastore.neo4j.query.impl;
 
 import org.hibernate.engine.query.spi.ParameterParser.Recognizer;
-import org.hibernate.ogm.dialect.queryable.spi.ParameterMetadataBuilder;
-import org.hibernate.ogm.dialect.queryable.spi.RecognizerBasedParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
+import org.hibernate.ogm.dialect.query.spi.RecognizerBasedParameterMetadataBuilder;
 import org.parboiled.Parboiled;
 import org.parboiled.parserunners.RecoveringParseRunner;
 

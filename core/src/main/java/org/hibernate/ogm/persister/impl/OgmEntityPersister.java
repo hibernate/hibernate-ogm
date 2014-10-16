@@ -42,10 +42,10 @@ import org.hibernate.loader.entity.UniqueEntityLoader;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
-import org.hibernate.ogm.dialect.identitycolumnaware.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
-import org.hibernate.ogm.dialect.versioncolumnaware.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
@@ -936,7 +936,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 					Tuple oldVersionTuple = new Tuple();
 					oldVersionTuple.put( getVersionColumnName(), oldVersion );
 
-					boolean success = optimisticLockingAwareGridDialect.updateTuple( key, oldVersionTuple, resultset, getTupleContext() );
+					boolean success = optimisticLockingAwareGridDialect.updateTupleWithOptimisticLock( key, oldVersionTuple, resultset, getTupleContext() );
 
 					if ( !success ) {
 						raiseStaleObjectStateException( id );
@@ -1224,7 +1224,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				Tuple versionTuple = new Tuple();
 				versionTuple.put( getVersionColumnName(), version );
 
-				boolean success = optimisticLockingAwareGridDialect.removeTuple( key, versionTuple, getTupleContext() );
+				boolean success = optimisticLockingAwareGridDialect.removeTupleWithOptimisticLock( key, versionTuple, getTupleContext() );
 
 				if ( !success ) {
 					raiseStaleObjectStateException( id );

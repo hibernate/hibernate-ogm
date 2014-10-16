@@ -422,21 +422,21 @@ public class OptimisticLockingTest extends OgmTestCase {
 		}
 
 		@Override
-		public boolean updateTuple(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
+		public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldVersion, Tuple tuple, TupleContext tupleContext) {
 			if ( Thread.currentThread().getName().equals( "ogm-test-thread-0" ) ) {
 				waitALittleBit();
 			}
 
-			return super.updateTuple( entityKey, oldVersion, tuple, tupleContext );
+			return super.updateTupleWithOptimisticLock( entityKey, oldVersion, tuple, tupleContext );
 		}
 
 		@Override
-		public boolean removeTuple(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
+		public boolean removeTupleWithOptimisticLock(EntityKey entityKey, Tuple oldVersion, TupleContext tupleContext) {
 			if ( Thread.currentThread().getName().equals( "ogm-test-thread-0" ) ) {
 				waitALittleBit();
 			}
 
-			return super.removeTuple( entityKey, oldVersion, tupleContext );
+			return super.removeTupleWithOptimisticLock( entityKey, oldVersion, tupleContext );
 		}
 
 		private void waitALittleBit() {
