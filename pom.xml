@@ -119,6 +119,7 @@
     </mailingLists>
 
     <properties>
+        <!-- compile/runtime dependency versions, managed in the BOM -->
         <classmateVersion>1.0.0</classmateVersion>
         <ehcacheVersion>2.6.6</ehcacheVersion>
         <infinispanVersion>6.0.0.Final</infinispanVersion>
@@ -129,16 +130,19 @@
         <hibernateParserVersion>1.0.0.CR1</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
-        <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <jbossLoggingVersion>3.1.4.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
         <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
-        <shrinkwrapVersion>1.1.1</shrinkwrapVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.6.Final</resteasyVersion>
         <jacksonVersion>2.2.1</jacksonVersion>
         <parboiledVersion>1.1.6</parboiledVersion>
         <asmVersion>4.1</asmVersion>
+
+        <!-- test dependency versions, managed below -->
+        <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
+        <shrinkwrapVersion>1.1.2</shrinkwrapVersion>
+        <arquillianVersion>1.1.5.Final</arquillianVersion>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -195,21 +199,10 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-impl-base</artifactId>
+                <artifactId>shrinkwrap-bom</artifactId>
                 <version>${shrinkwrapVersion}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-api</artifactId>
-                <version>${shrinkwrapVersion}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-spi</artifactId>
-                <version>${shrinkwrapVersion}</version>
-                <scope>test</scope>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>

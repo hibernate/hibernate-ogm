@@ -12,8 +12,6 @@
     <description>Hibernate OGM integration and performance tests</description>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <version.arquillian>1.1.3.Final</version.arquillian>
         <!-- Skipping enforcer plug-in as AS/Arquillian cause several dependency
             convergence issues -->
         <enforcer.skip>true</enforcer.skip>
@@ -25,7 +23,7 @@
             <dependency>
                 <groupId>org.jboss.arquillian</groupId>
                 <artifactId>arquillian-bom</artifactId>
-                <version>${version.arquillian}</version>
+                <version>${arquillianVersion}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
