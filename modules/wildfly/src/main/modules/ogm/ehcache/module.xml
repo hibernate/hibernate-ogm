@@ -8,7 +8,7 @@
 <module xmlns="urn:jboss:module:1.1" name="org.hibernate.ogm.ehcache" slot="${hibernate.ogm.ehcache.module.slot}">
     <resources>
         <resource-root path="hibernate-ogm-ehcache-${project.version}.jar" />
-        <resource-root path="ehcache-core-2.6.6.jar" />
+        <resource-root path="ehcache-core-${ehcacheVersion}.jar" />
     </resources>
     <dependencies>
         <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
