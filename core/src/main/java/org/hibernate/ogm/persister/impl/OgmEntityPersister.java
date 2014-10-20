@@ -141,6 +141,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	/**
 	 * Whether this persister uses an "emulated" optimistic locking or not.
+	 * <p>
+	 * {@code true} if this entity uses optimistic locking and the current dialect has no atomic find-and-update
+	 * facility.
+	 *
+	 * @see OptimisticLockingAwareGridDialect
 	 */
 	private final boolean usesEmulatedOptimisticLocking;
 
@@ -950,35 +955,36 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						boolean[] includeOldField = entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.ALL
 								? getPropertyUpdateability()
 										: propsToUpdate;
-								//TODO do a diff on the properties value from resultset and the dirty value
-								GridType[] types = gridPropertyTypes;
 
-								for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
-									boolean include = includeOldField[i] &&
-											isPropertyOfTable( i, j ) &&
-											versionability[i]; //TODO: is this really necessary????
-									if ( include ) {
-										final GridType type = types[i];
-										//FIXME what do do with settable?
-										boolean[] settable = type.toColumnNullness( oldFields[i], factory );
-										final Object snapshotValue = type.nullSafeGet(
-												resultset, getPropertyColumnNames( i ), session, object
-												);
+						//TODO do a diff on the properties value from resultset and the dirty value
+						GridType[] types = gridPropertyTypes;
 
-										if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
-											raiseStaleObjectStateException( id );
-										}
-									}
+						for ( int i = 0; i < entityMetamodel.getPropertySpan(); i++ ) {
+							boolean include = includeOldField[i] &&
+									isPropertyOfTable( i, j ) &&
+									versionability[i]; //TODO: is this really necessary????
+							if ( include ) {
+								final GridType type = types[i];
+								//FIXME what do do with settable?
+								boolean[] settable = type.toColumnNullness( oldFields[i], factory );
+								final Object snapshotValue = type.nullSafeGet(
+										resultset, getPropertyColumnNames( i ), session, object
+										);
+
+								if ( !type.isEqual( oldFields[i], snapshotValue, factory ) ) {
+									raiseStaleObjectStateException( id );
 								}
+							}
+						}
 					}
 				}
-
 
 				if ( mightRequireInverseAssociationManagement ) {
 					removeFromInverseAssociations( resultset, j, id, session );
 				}
 				dehydrate( resultset, fields, propsToUpdate, j, id, session );
 
+				// TODO OGM-616 Also use this facet for "all columns" optimistic locking strategy
 				if ( isVersioned() && optimisticLockingAwareGridDialect != null ) {
 					Tuple oldVersionTuple = new Tuple();
 					oldVersionTuple.put( getVersionColumnName(), oldVersion );
