@@ -803,24 +803,39 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
+	/*
+	 * If the association strategy is IN_ENTITY we check if the document involved it has been batched. If the document
+	 * is in the list of documents that are going to be created, we update it with the association rows. 
+	 * In all the other cases we store the association immediately.
+	 */
 	private void executeBatchUpdateAssociation(Map<DBCollection, BatchInsertionTask> inserts, UpdateAssociationOperation updateOp) {
 		AssociationKey associationKey = updateOp.getAssociationKey();
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, updateOp.getContext() );
+
 		if ( AssociationStorageStrategy.IN_ENTITY == storageStrategy ) {
 			DBCollection collection = getCollection( associationKey.getEntityKey() );
 			if ( inserts.containsKey( collection ) ) {
 				BatchInsertionTask insertionTask = inserts.get( collection );
 				if ( insertionTask.containsKey( associationKey.getEntityKey() ) ) {
-					WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
-					BatchInsertionTask batchInsertionTask = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
-					DBObject currentDocument = batchInsertionTask.get( associationKey.getEntityKey() );
-					List<?> rows = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
-					MongoHelpers.setValue( currentDocument, associationKey.getMetadata().getCollectionRole(), rows );
+					updateDocumentWithAssociationRows( inserts, updateOp, associationKey, collection );
 					return;
 				}
 			}
 		}
+
+		// The document already exists in the db or the association is not stored in the document
 		insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+	}
+
+	/*
+	 * Set the association rows in the document that it is going to be created
+	 */
+	private void updateDocumentWithAssociationRows(Map<DBCollection, BatchInsertionTask> inserts, UpdateAssociationOperation updateOp, AssociationKey associationKey, DBCollection collection) {
+		WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
+		BatchInsertionTask batchInsertionTask = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
+		DBObject currentDocument = batchInsertionTask.get( associationKey.getEntityKey() );
+		List<?> rows = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
+		MongoHelpers.setValue( currentDocument, associationKey.getMetadata().getCollectionRole(), rows );
 	}
 
 	@Override
