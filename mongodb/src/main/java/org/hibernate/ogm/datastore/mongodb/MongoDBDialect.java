@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.mongodb;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.BatchableMongoDBTupleSnapshot.SnapshotType.UPDATE;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.DOT_SEPARATOR_PATTERN;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -150,7 +149,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( found != null ) {
 			return new Tuple( new BatchableMongoDBTupleSnapshot( found, key.getMetadata(), UPDATE ) );
 		}
-		else if ( isInTheQueue( key, tupleContext ) ) {
+		else if ( isInTheQueue( key, tupleContext.getOperationsQueue() ) ) {
 			// The key has not been inserted in the db but it is in the queue
 			return new Tuple( new BatchableMongoDBTupleSnapshot( prepareIdObject( key ), key.getMetadata(), INSERT ) );
 		}
@@ -159,8 +158,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
-	private boolean isInTheQueue(EntityKey key, TupleContext tupleContext) {
-		OperationsQueue queue = tupleContext.getOperationsQueue();
+	private boolean isInTheQueue(EntityKey key, OperationsQueue queue) {
 		return queue != null && queue.contains( key );
 	}
 
@@ -430,6 +428,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY && isInTheQueue( key.getEntityKey(), associationContext.getOperationsQueue() ) ) {
+			return getAssociationFromTheQueue( key, associationContext, storageStrategy );
+		}
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
@@ -452,6 +453,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
+	private Association getAssociationFromTheQueue(AssociationKey key, AssociationContext associationContext, AssociationStorageStrategy storageStrategy) {
+		OperationsQueue queue = associationContext.getOperationsQueue();
+		if ( queue.containsAssociation( key.getEntityKey(), key ) ) {
+			return queue.getAssociation( key.getEntityKey(), key );
+		}
+		else {
+			Association association = new Association( new MongoDBAssociationSnapshot( prepareIdObject( key.getEntityKey() ), key, storageStrategy ) );
+			queue.putAssociation( key.getEntityKey(), key, association );
+			return association;
+		}
+	}
+
 	private DBObject getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
 		String[] path = DOT_SEPARATOR_PATTERN.split( key.getMetadata().getCollectionRole() );
 		DBObject field = entity;
@@ -467,30 +480,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			DBObject entity = getEmbeddingEntity( key, associationContext );
 			DBObject entityId = prepareIdObject( key.getEntityKey() );
-
-			boolean insert = false;
-			if ( entity == null ) {
-				insert = true;
-			}
-
-			if ( getAssociationFieldOrNull( key, entity ) == null ) {
-				if ( insert ) {
-					//adding assoc before insert
-					addEmptyAssociationField( key, entity );
-					getCollection( key.getEntityKey() ).insert( entity, writeConcern );
-				}
-				else {
-					BasicDBObject updater = new BasicDBObject();
-					this.addSubQuery( "$set", updater, key.getMetadata().getCollectionRole(),  Collections.EMPTY_LIST );
-					//TODO use entity filter with only the ids
-					this.getCollection( key.getEntityKey() ).update( entityId, updater, true, false, writeConcern );
-					//adding assoc after update because the query takes the whole object today
-					addEmptyAssociationField( key, entity );
-				}
-			}
-			return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
+			return new Association( new MongoDBAssociationSnapshot( entityId, key, storageStrategy ) );
 		}
 		DBCollection associations = getAssociationCollection( key, storageStrategy );
 		DBObject assoc = associationKeyToObject( key, storageStrategy );
@@ -798,7 +789,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else if ( operation instanceof UpdateAssociationOperation ) {
 					UpdateAssociationOperation update = (UpdateAssociationOperation) operation;
-					insertOrUpdateAssociation( update.getAssociationKey(), update.getAssociation(), update.getContext() );
+					executeBatchUpdateAssociation( inserts, update );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
@@ -840,6 +831,41 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			// Object already exists in the db or has invalid fields:
 			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext() );
 		}
+	}
+
+	/*
+	 * If the association strategy is IN_ENTITY we check if the document involved it has been batched. If the document
+	 * is in the list of documents that are going to be created, we update it with the association rows. 
+	 * In all the other cases we store the association immediately.
+	 */
+	private void executeBatchUpdateAssociation(Map<DBCollection, BatchInsertionTask> inserts, UpdateAssociationOperation updateOp) {
+		AssociationKey associationKey = updateOp.getAssociationKey();
+		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( associationKey, updateOp.getContext() );
+
+		if ( AssociationStorageStrategy.IN_ENTITY == storageStrategy ) {
+			DBCollection collection = getCollection( associationKey.getEntityKey() );
+			if ( inserts.containsKey( collection ) ) {
+				BatchInsertionTask insertionTask = inserts.get( collection );
+				if ( insertionTask.containsKey( associationKey.getEntityKey() ) ) {
+					updateDocumentWithAssociationRows( inserts, updateOp, associationKey, collection );
+					return;
+				}
+			}
+		}
+
+		// The document already exists in the db or the association is not stored in the document
+		insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+	}
+
+	/*
+	 * Set the association rows in the document that it is going to be created
+	 */
+	private void updateDocumentWithAssociationRows(Map<DBCollection, BatchInsertionTask> inserts, UpdateAssociationOperation updateOp, AssociationKey associationKey, DBCollection collection) {
+		WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
+		BatchInsertionTask batchInsertionTask = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
+		DBObject currentDocument = batchInsertionTask.get( associationKey.getEntityKey() );
+		List<?> rows = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
+		MongoHelpers.setValue( currentDocument, associationKey.getMetadata().getCollectionRole(), rows );
 	}
 
 	@Override

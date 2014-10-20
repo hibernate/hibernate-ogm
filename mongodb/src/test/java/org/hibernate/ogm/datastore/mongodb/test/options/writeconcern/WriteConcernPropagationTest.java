@@ -141,7 +141,7 @@ public class WriteConcernPropagationTest {
 
 		// then expect two updates using the configured write concern (one for creating the association, one for adding
 		// the row )
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 2)  ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 1 )  ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test
