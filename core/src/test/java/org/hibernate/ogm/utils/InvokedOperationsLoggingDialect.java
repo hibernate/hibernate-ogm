@@ -18,12 +18,12 @@ import java.util.List;
 
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.impl.ForwardingGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
@@ -44,7 +44,10 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Serializable> {
 
-	private static final String PATH = "./invocations.log";
+	/**
+	 * Path for the logging file to be created, relative to the current working directory.
+	 */
+	private static final String PATH = "invocations.log";
 
 	/**
 	 * Set to {@code true} if a log with all the ops and their parameters should be written into the file specified
