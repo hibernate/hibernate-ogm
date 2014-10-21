@@ -9,11 +9,11 @@ package org.hibernate.ogm.dialect.impl;
 import java.io.Serializable;
 
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -70,8 +70,8 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		TupleContext contextWithQueue = new TupleContext(
-				tupleContext,
+		TupleContext contextWithQueue = new TupleContextImpl(
+				(TupleContextImpl) tupleContext,
 				getOperationQueue()
 		);
 
@@ -129,6 +129,6 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	private AssociationContext withQueue(AssociationContext associationContext) {
-		return new AssociationContext( associationContext, getOperationQueue() );
+		return new AssociationContextImpl( (AssociationContextImpl) associationContext, getOperationQueue() );
 	}
 }

@@ -12,10 +12,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.environmentProperties;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
 import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
+import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyAssociationContext;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
 import static org.junit.Assert.assertThat;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -24,7 +24,6 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -34,8 +33,6 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
-import org.hibernate.ogm.options.navigation.source.impl.OptionValueSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -171,13 +168,5 @@ public class CouchDBDialectTest {
 		properties.load( CouchDBDialectTest.class.getClassLoader().getResourceAsStream( "hibernate.properties" ) );
 		datastoreProvider.configure( properties );
 		datastoreProvider.start();
-	}
-
-	private AssociationContext emptyAssociationContext() {
-		return new AssociationContext(
-				OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ),
-				null,
-				null
-		);
 	}
 }

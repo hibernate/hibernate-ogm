@@ -43,6 +43,7 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -408,7 +409,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 		}
 
-		return new TupleContext(
+		return new TupleContextImpl(
 				selectableColumnNames( discriminator ),
 				associatedEntityKeyMetadata,
 				roles,

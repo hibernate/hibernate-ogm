@@ -10,6 +10,7 @@ import java.io.Serializable;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
@@ -229,7 +230,7 @@ public class AssociationPersister {
 					.getService( OptionsService.class )
 					.context();
 
-			associationContext = new AssociationContext(
+			associationContext = new AssociationContextImpl(
 					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getMetadata().getCollectionRole() ),
 					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 					roleOnMainSide

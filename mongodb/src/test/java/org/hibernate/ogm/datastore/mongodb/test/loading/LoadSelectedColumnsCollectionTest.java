@@ -29,6 +29,8 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapsh
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
@@ -140,7 +142,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				)
 		);
 
-		AssociationContext associationContext = new AssociationContext(
+		AssociationContext associationContext = new AssociationContextImpl(
 				OptionsContextImpl.forProperty(
 						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
 						Project.class,
@@ -166,7 +168,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				new EntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
 				new Object[] { id }
 		);
-		TupleContext tupleContext = new TupleContext(
+		TupleContext tupleContext = new TupleContextImpl(
 				selectedColumns,
 				Collections.<String, AssociatedEntityKeyMetadata>emptyMap(),
 				Collections.<String, String>emptyMap(),
