@@ -28,11 +28,13 @@ import org.hibernate.ogm.datastore.couchdb.util.impl.Identifier;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
@@ -108,7 +110,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getMetadata().getCollectionRole() ) ) {
 				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata().getCollectionRole() );
@@ -128,7 +130,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		CouchDBAssociation couchDBAssociation = null;
 
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity == null ) {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
@@ -182,7 +184,7 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		if ( isStoredInEntityStructure( key, associationContext ) ) {
+		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null ) {
 				owningEntity.removeAssociation( key.getMetadata().getCollectionRole() );
@@ -195,12 +197,12 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		AssociationStorageType associationStorage = associationContext
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext) {
+		AssociationStorageType associationStorage = associationTypeContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		return associationKey.getMetadata().getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
+		return associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 

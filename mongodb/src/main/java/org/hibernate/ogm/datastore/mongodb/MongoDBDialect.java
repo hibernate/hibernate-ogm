@@ -61,12 +61,13 @@ import org.hibernate.ogm.dialect.query.spi.NoOpParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
-import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -621,8 +622,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		return getAssociationStorageStrategy( associationKey, associationContext ) == AssociationStorageStrategy.IN_ENTITY;
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext) {
+		return getAssociationStorageStrategy( associationKeyMetadata, associationTypeContext ) == AssociationStorageStrategy.IN_ENTITY;
 	}
 
 	@Override
@@ -756,21 +757,25 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return idObject;
 	}
 
+	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKey key, AssociationContext associationContext) {
+		return getAssociationStorageStrategy( key.getMetadata(), associationContext.getAssociationTypeContext() );
+	}
+
 	/**
 	 * Returns the {@link AssociationStorageStrategy} effectively applying for the given association. If a setting is
 	 * given via the option mechanism, that one will be taken, otherwise the default value as given via the
 	 * corresponding configuration property is applied.
 	 */
-	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKey key, AssociationContext associationContext) {
-		AssociationStorageType associationStorage = associationContext
+	private AssociationStorageStrategy getAssociationStorageStrategy(AssociationKeyMetadata keyMetadata, AssociationTypeContext associationTypeContext) {
+		AssociationStorageType associationStorage = associationTypeContext
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		AssociationDocumentType associationDocumentType = associationContext
+		AssociationDocumentType associationDocumentType = associationTypeContext
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		return AssociationStorageStrategy.getInstance( key.getMetadata().getAssociationKind(), associationStorage, associationDocumentType );
+		return AssociationStorageStrategy.getInstance( keyMetadata.getAssociationKind(), associationStorage, associationDocumentType );
 	}
 
 	@Override
@@ -881,12 +886,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		inserts.clear();
 	}
 
-	private WriteConcern getWriteConcern(GridDialectOperationContext operationContext) {
-		return operationContext.getOptionsContext().getUnique( WriteConcernOption.class );
+	private WriteConcern getWriteConcern(TupleContext tupleContext) {
+		return tupleContext.getOptionsContext().getUnique( WriteConcernOption.class );
 	}
 
-	private ReadPreference getReadPreference(GridDialectOperationContext operationContext) {
-		return operationContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+	private WriteConcern getWriteConcern(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( WriteConcernOption.class );
+	}
+
+	private ReadPreference getReadPreference(TupleContext tupleContext) {
+		return tupleContext.getOptionsContext().getUnique( ReadPreferenceOption.class );
+	}
+
+	private ReadPreference getReadPreference(AssociationContext associationContext) {
+		return associationContext.getAssociationTypeContext().getOptionsContext().getUnique( ReadPreferenceOption.class );
 	}
 
 	private static class MongoDBResultsCursor implements ClosableIterator<Tuple> {

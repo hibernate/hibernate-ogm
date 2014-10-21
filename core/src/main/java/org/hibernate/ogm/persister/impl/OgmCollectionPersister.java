@@ -29,6 +29,8 @@ import org.hibernate.internal.StaticFilterAliasGenerator;
 import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
@@ -42,6 +44,8 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;
@@ -803,6 +807,21 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 */
 	public String getMainSidePropertyName() {
 		return mainSidePropertyName;
+	}
+
+	public AssociationTypeContext getAssociationTypeContext() {
+		OptionsServiceContext serviceContext = getFactory()
+				.getServiceRegistry()
+				.getService( OptionsService.class )
+				.context();
+
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
+				serviceContext.getPropertyOptions( getOwnerEntityPersister().getMappedClass(), associationKeyMetadata.getCollectionRole() ),
+				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
+				getMainSidePropertyName()
+				);
+
+		return associationTypeContext;
 	}
 
 	private AssociationPersister getAssociationPersister(Object collectionOwner, Serializable id, SessionImplementor session) {

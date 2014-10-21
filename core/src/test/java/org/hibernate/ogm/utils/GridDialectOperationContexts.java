@@ -9,9 +9,9 @@ package org.hibernate.ogm.utils;
 import java.util.Collections;
 
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
-import org.hibernate.ogm.dialect.spi.GridDialectOperationContext;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
@@ -38,9 +38,11 @@ public class GridDialectOperationContexts {
 
 	public static AssociationContext emptyAssociationContext() {
 		return new AssociationContextImpl(
-				OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ),
-				null,
-				null
+				new AssociationTypeContextImpl(
+						OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ),
+						null,
+						null
+				)
 		);
 	}
 }

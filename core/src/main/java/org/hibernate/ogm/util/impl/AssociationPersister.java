@@ -11,7 +11,9 @@ import java.io.Serializable;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -44,7 +46,7 @@ public class AssociationPersister {
 	private GridDialect gridDialect;
 	private String roleOnMainSide;
 	private AssociationContext associationContext;
-
+	private AssociationTypeContext associationTypeContext;
 	private AssociationKeyMetadata associationKeyMetadata;
 
 	/**
@@ -200,7 +202,7 @@ public class AssociationPersister {
 	 */
 	public boolean hostingEntityRequiresReadAfterUpdate() {
 		if ( hostingEntityRequiresReadAfterUpdate == null ) {
-			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( getAssociationKey(), getAssociationContext() );
+			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( associationKeyMetadata, getAssociationTypeContext() );
 			boolean hasUpdateGeneratedProperties = getHostingEntityPersister().hasUpdateGeneratedProperties();
 
 			hostingEntityRequiresReadAfterUpdate = storedInEntityStructure && hasUpdateGeneratedProperties;
@@ -223,18 +225,28 @@ public class AssociationPersister {
 	 */
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
+			associationContext = new AssociationContextImpl(
+					getAssociationTypeContext()
+			);
+		}
+
+		return associationContext;
+	}
+
+	private AssociationTypeContext getAssociationTypeContext() {
+		if ( associationContext == null ) {
 			OptionsServiceContext serviceContext = session.getFactory()
 					.getServiceRegistry()
 					.getService( OptionsService.class )
 					.context();
 
-			associationContext = new AssociationContextImpl(
+			associationTypeContext = new AssociationTypeContextImpl(
 					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getMetadata().getCollectionRole() ),
 					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
 					roleOnMainSide
 			);
 		}
 
-		return associationContext;
+		return associationTypeContext;
 	}
 }

@@ -9,6 +9,7 @@ package org.hibernate.ogm.dialect.spi;
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
@@ -87,14 +88,16 @@ public interface GridDialect extends Service {
 	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
-	 * Whether the given association is stored within an entity structure or not. E.g. dialects for document stores may
-	 * support storing associations within entity documents and would have to return {@code true} if this is the case
-	 * for a given association.
+	 * Whether the specified association is stored within an entity structure or not. E.g. dialects for document stores
+	 * may support storing associations within entity documents and would have to return {@code true} if this is the
+	 * case for a given association.
 	 *
-	 * @param associationKey identifies the association of interest
+	 * @param associationKeyMetadata identifies the association of interest
+	 * @param associationTypeContext provides additional contextual information about the represented association type,
+	 * such as the options effectively applying for it
 	 * @return {@code true} if the specified association is stored within an entity structure, {@code false} otherwise.
 	 */
-	boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext);
+	boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext);
 
 	/**
 	 * Returns the next value from the specified id generator with the specified increment.

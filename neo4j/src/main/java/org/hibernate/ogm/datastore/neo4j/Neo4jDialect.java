@@ -43,6 +43,7 @@ import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -256,8 +257,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				new Neo4jAssociationSnapshot(
 						entityNode,
 						associationKey,
-						associationContext.getAssociatedEntityKeyMetadata(),
-						associationContext.getRoleOnMainSide()
+						associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata(),
+						associationContext.getAssociationTypeContext().getRoleOnMainSide()
 				)
 		);
 	}
@@ -281,7 +282,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext) {
 		return false;
 	}
 
@@ -316,11 +317,11 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			removeAssociation( key, associationContext );
 			break;
 		case PUT:
-			putAssociationOperation( association, key, operation, associationContext.getAssociatedEntityKeyMetadata() );
+			putAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
 			break;
 		case PUT_NULL:
 		case REMOVE:
-			removeAssociationOperation( association, key, operation, associationContext.getAssociatedEntityKeyMetadata() );
+			removeAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
 			break;
 		}
 	}

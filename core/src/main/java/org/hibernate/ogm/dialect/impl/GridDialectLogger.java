@@ -13,10 +13,12 @@ import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
 import org.hibernate.ogm.dialect.query.spi.ClosableIterator;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -115,9 +117,9 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 	}
 
 	@Override
-	public boolean isStoredInEntityStructure(AssociationKey associationKey, AssociationContext associationContext) {
-		log.tracef( "Determining whether assocication %1$s is stored in an entity structure", associationKey );
-		return super.isStoredInEntityStructure( associationKey, associationContext );
+	public boolean isStoredInEntityStructure(AssociationKeyMetadata associationKeyMetadata, AssociationTypeContext associationTypeContext) {
+		log.tracef( "Determining whether association %1$s is stored in an entity structure", associationKeyMetadata );
+		return super.isStoredInEntityStructure( associationKeyMetadata, associationTypeContext );
 	}
 
 	@Override

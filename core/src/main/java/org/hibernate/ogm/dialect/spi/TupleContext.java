@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
  * Represents all information used to load an entity with some specific characteristics like a projection
@@ -18,7 +19,12 @@ import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling
  */
-public interface TupleContext extends GridDialectOperationContext {
+public interface TupleContext {
+
+	/**
+	 * Returns a context object providing access to the options effectively applying for a given entity or property.
+	 */
+	OptionsContext getOptionsContext();
 
 	/**
 	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of

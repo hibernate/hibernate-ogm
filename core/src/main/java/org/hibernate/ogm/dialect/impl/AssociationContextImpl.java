@@ -8,10 +8,9 @@ package org.hibernate.ogm.dialect.impl;
 
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
  * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
@@ -21,24 +20,25 @@ import org.hibernate.ogm.options.spi.OptionsContext;
  */
 public class AssociationContextImpl implements AssociationContext {
 
-	private final OptionsContext optionsContext;
+	private final AssociationTypeContext associationTypeContext;
 	private final OperationsQueue operationsQueue;
-	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
-	private final String roleOnMainSide;
 
-	public AssociationContextImpl(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide) {
-		this( optionsContext, associatedEntityKeyMetadata, roleOnMainSide, null );
+	public AssociationContextImpl(AssociationTypeContext associationTypeContext) {
+		this(associationTypeContext, null );
 	}
 
 	public AssociationContextImpl(AssociationContextImpl original, OperationsQueue operationsQueue) {
-		this( original.optionsContext, original.associatedEntityKeyMetadata, original.roleOnMainSide, operationsQueue );
+		this( original.associationTypeContext, operationsQueue );
 	}
 
-	private AssociationContextImpl(OptionsContext optionsContext, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, String roleOnMainSide, OperationsQueue operationsQueue) {
-		this.optionsContext = optionsContext;
-		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
-		this.roleOnMainSide = roleOnMainSide;
+	private AssociationContextImpl(AssociationTypeContext associationTypeContext, OperationsQueue operationsQueue) {
+		this.associationTypeContext = associationTypeContext;
 		this.operationsQueue = operationsQueue;
+	}
+
+	@Override
+	public AssociationTypeContext getAssociationTypeContext() {
+		return associationTypeContext;
 	}
 
 	@Override
@@ -47,35 +47,7 @@ public class AssociationContextImpl implements AssociationContext {
 	}
 
 	@Override
-	public OptionsContext getOptionsContext() {
-		return optionsContext;
-	}
-
-	/**
-	 * Provides meta-data about the entity key on the other side of this association.
-	 *
-	 * @return A meta-data object providing information about the entity key on the other side of this information.
-	 */
-	@Override
-	public AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata() {
-		return associatedEntityKeyMetadata;
-	}
-
-	/**
-	 * Provides the role of the represented association on the main side in case the current operation is invoked for
-	 * the inverse side of a bi-directional association.
-	 *
-	 * @return The role of the represented association on the main side. The association's own role will be returned in
-	 * case this operation is invoked for an uni-directional association or the main-side of a bi-directional
-	 * association.
-	 */
-	@Override
-	public String getRoleOnMainSide() {
-		return roleOnMainSide;
-	}
-
-	@Override
 	public String toString() {
-		return "AssociationContext [optionsContext=" + optionsContext + "]";
+		return "AssociationContextImpl [associationTypeContext=" + associationTypeContext + ", operationsQueue=" + operationsQueue + "]";
 	}
 }

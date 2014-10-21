@@ -30,6 +30,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -143,13 +144,15 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 
 		AssociationContext associationContext = new AssociationContextImpl(
-				OptionsContextImpl.forProperty(
-						OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
-						Project.class,
-						"modules"
-				),
-				new AssociatedEntityKeyMetadata( null, null ),
-				null
+				new AssociationTypeContextImpl(
+						OptionsContextImpl.forProperty(
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
+								Project.class,
+								"modules"
+						),
+						new AssociatedEntityKeyMetadata( null, null ),
+						null
+				)
 		);
 
 		final Association association = getService( GridDialect.class ).getAssociation( associationKey, associationContext );
