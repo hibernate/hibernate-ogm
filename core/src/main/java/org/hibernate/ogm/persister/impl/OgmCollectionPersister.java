@@ -285,16 +285,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		int count = 0;
 		int i = 0;
 		Iterator<?> entries = collection.entries( this );
-		AssociationPersister associationPersister = new AssociationPersister(
-					getOwnerEntityPersister().getMappedClass()
-				)
-				.hostingEntity( collection.getOwner() )
-				.gridDialect( gridDialect )
-				.key( key )
-				.keyGridType( getKeyGridType() )
-				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( getUnqualifiedRole() )
-				.session( session );
+		AssociationPersister associationPersister = getAssociationPersister( collection.getOwner(), key, session );
 
 		while ( entries.hasNext() ) {
 			Object entry = entries.next();
@@ -448,17 +439,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
-		AssociationPersister associationPersister = new AssociationPersister(
-					getOwnerEntityPersister().getMappedClass()
-				)
-				.key( key )
-				.session( session )
-				.gridDialect( gridDialect )
-				.keyGridType( getKeyGridType() )
-				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( mainSidePropertyName );
-
+		AssociationPersister associationPersister = getAssociationPersister( null, key, session );
 		final Association collectionMetadata = associationPersister.getAssociationOrNull();
+
 		return collectionMetadata == null ? 0 : collectionMetadata.size();
 	}
 
@@ -479,16 +462,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 			boolean deleteByIndex = !isOneToMany() && hasIndex && !indexContainsFormula;
 
-			AssociationPersister associationPersister = new AssociationPersister(
-					getOwnerEntityPersister().getMappedClass()
-				)
-				.hostingEntity( collection.getOwner() )
-				.gridDialect( gridDialect )
-				.key( id )
-				.keyGridType( getKeyGridType() )
-				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( getUnqualifiedRole() )
-				.session( session );
+			AssociationPersister associationPersister = getAssociationPersister( collection.getOwner(), id, session );
 
 			// delete all the deleted entries
 			Iterator<?> deletes = collection.getDeletes( this, !deleteByIndex );
@@ -531,16 +505,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting rows of collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			AssociationPersister associationPersister = new AssociationPersister(
-					getOwnerEntityPersister().getMappedClass()
-				)
-				.hostingEntity( collection.getOwner() )
-				.gridDialect( gridDialect )
-				.key( id )
-				.keyGridType( getKeyGridType() )
-				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( getUnqualifiedRole() )
-				.session( session );
+			AssociationPersister associationPersister = getAssociationPersister( collection.getOwner(), id, session );
 
 			// insert all the new entries
 			collection.preInsert( this );
@@ -577,16 +542,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Inserting collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
-			AssociationPersister associationPersister = new AssociationPersister(
-					getOwnerEntityPersister().getMappedClass()
-				)
-				.hostingEntity( collection.getOwner() )
-				.gridDialect( gridDialect )
-				.key( id )
-				.keyGridType( getKeyGridType() )
-				.associationKeyMetadata( associationKeyMetadata )
-				.roleOnMainSide( getUnqualifiedRole() )
-				.session( session );
+			AssociationPersister associationPersister = getAssociationPersister( collection.getOwner(), id, session );
 
 			// create all the new entries
 			Iterator<?> entries = collection.entries( this );
@@ -670,8 +626,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					.keyColumnValues( elementColumnValues )
 					.session( session )
 					.associationKeyMetadata( inverseAssociationKeymetadata )
-					.roleOnMainSide( getUnqualifiedRole() )
-					.key( entityId );
+					.roleOnMainSide( getUnqualifiedRole() );
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
@@ -734,16 +689,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			}
 
 			// Remove all the old entries
-			AssociationPersister associationPersister = new AssociationPersister(
-						getOwnerEntityPersister().getMappedClass()
-					)
-					.gridDialect( gridDialect )
-					.key( id )
-					.keyGridType( getKeyGridType() )
-					.associationKeyMetadata( associationKeyMetadata )
-					.roleOnMainSide( getUnqualifiedRole() )
-					.session( session );
-
+			AssociationPersister associationPersister = getAssociationPersister( null, id, session );
 			Association association = associationPersister.getAssociationOrNull();
 
 			if ( association != null ) {
@@ -857,5 +803,18 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 */
 	public String getMainSidePropertyName() {
 		return mainSidePropertyName;
+	}
+
+	private AssociationPersister getAssociationPersister(Object collectionOwner, Serializable id, SessionImplementor session) {
+		return new AssociationPersister(
+				getOwnerEntityPersister().getMappedClass()
+			)
+			.hostingEntity( collectionOwner )
+			.gridDialect( gridDialect )
+			.key( id )
+			.keyGridType( getKeyGridType() )
+			.associationKeyMetadata( associationKeyMetadata )
+			.roleOnMainSide( mainSidePropertyName )
+			.session( session );
 	}
 }
