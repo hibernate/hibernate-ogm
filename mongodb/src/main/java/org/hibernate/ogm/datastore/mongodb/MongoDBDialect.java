@@ -178,13 +178,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Returns a {@link DBObject} representing the entity which embeds the specified association.
 	 */
 	private DBObject getEmbeddingEntity(AssociationKey key, AssociationContext associationContext) {
-		ReadPreference readPreference = getReadPreference( associationContext );
+		DBObject embeddingEntityDocument = associationContext.getEntityTuple() != null ? ( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject() : null;
 
-		DBCollection collection = getCollection( key.getEntityKey() );
-		DBObject searchObject = prepareIdObject( key.getEntityKey() );
-		DBObject projection = getProjection( key, true );
+		if ( embeddingEntityDocument != null ) {
+			return embeddingEntityDocument;
+		}
+		// TODO Log a warning
+		else {
+			ReadPreference readPreference = getReadPreference( associationContext );
 
-		return collection.findOne( searchObject, projection, readPreference );
+			DBCollection collection = getCollection( key.getEntityKey() );
+			DBObject searchObject = prepareIdObject( key.getEntityKey() );
+			DBObject projection = getProjection( key, true );
+
+			return collection.findOne( searchObject, projection, readPreference );
+		}
 	}
 
 	private DBObject getObject(EntityKey key, TupleContext tupleContext) {
@@ -323,7 +331,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * Insert the tuple and return an object containing the id in the field ID_FIELDNAME
 	 */
 	private DBObject insertDBObject(EntityKeyMetadata entityKeyMetadata, Tuple tuple, WriteConcern writeConcern) {
-		DBObject dbObject = objectForInsert( tuple, new BasicDBObject( tuple.getColumnNames().size() ) );
+		DBObject dbObject = objectForInsert( tuple, ( (MongoDBTupleSnapshot) tuple.getSnapshot() ).getDbObject() );
 		getCollection( entityKeyMetadata ).insert( dbObject, writeConcern );
 		return dbObject;
 	}
@@ -511,6 +519,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
+		List<?> rows = getAssociationRows( association, key );
+
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
 		executeBatch( associationContext.getOperationsQueue() );
@@ -518,14 +528,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getMetadata().getCollectionRole();
+
+			( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().put( key.getMetadata().getCollectionRole(), rows );
 		}
 		else {
 			collection = getAssociationCollection( key, storageStrategy );
 			query = assocSnapshot.getQueryObject();
 			associationField = ROWS_FIELDNAME;
 		}
-
-		List<?> rows = getAssociationRows( association, key );
 
 		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, rows ) );
 
@@ -542,6 +552,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
 				addSubQuery( "$unset", updater, key.getMetadata().getCollectionRole(), Integer.valueOf( 1 ) );
+				( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().removeField( key.getMetadata().getCollectionRole() );
 				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
 			}
 		}

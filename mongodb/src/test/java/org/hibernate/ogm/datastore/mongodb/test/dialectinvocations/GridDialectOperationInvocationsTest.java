@@ -80,6 +80,59 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 	}
 
 	@Test
+	public void insertGetOfEntityAndElementCollectionAndDelete() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		// insert
+		Product product = new Product(
+				"product-1",
+				"Hybrid 25°",
+				new Vendor( "Leaveland", 10 ), new Vendor( "Headaway", 9 )
+		);
+		session.persist( product );
+
+		transaction.commit();
+		session.clear();
+		transaction = session.beginTransaction();
+
+		// load and update
+		Product loadedProduct = (Product) session.get( Product.class, "product-1" );
+		assertNotNull( "Cannot load persisted object", loadedProduct );
+		assertThat( loadedProduct.getVendors() ).onProperty( "name" ).containsOnly( "Leaveland", "Headaway" );
+
+		transaction.commit();
+		session.clear();
+		transaction = session.beginTransaction();
+
+		// delete
+		loadedProduct = (Product) session.get( Product.class, "product-1" );
+		assertNotNull( "Cannot load persisted object", loadedProduct );
+		session.delete( loadedProduct );
+
+		transaction.commit();
+		session.clear();
+		session.close();
+
+		assertThat( getOperations() ).containsExactly(
+				"getTuple",
+				"createTuple",
+				"getAssociation",
+				"createAssociation",
+				"insertOrUpdateAssociation",
+				"executeBatch",
+				"getTuple",
+				"getAssociation",
+				"executeBatch",
+				"getTuple",
+				"getAssociation",
+				"removeAssociation",
+				"removeTuple",
+				"executeBatch"
+				);
+	}
+
+	@Test
 	public void insertAndUpdateInSameTransaction() throws Exception {
 		Session session = openSession();
 		Transaction transaction = session.beginTransaction();
@@ -163,7 +216,7 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { StockItem.class };
+		return new Class<?>[] { StockItem.class, Product.class };
 	}
 
 	@Override
