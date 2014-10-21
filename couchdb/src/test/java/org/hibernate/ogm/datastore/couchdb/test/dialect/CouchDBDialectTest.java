@@ -7,14 +7,11 @@
 package org.hibernate.ogm.datastore.couchdb.test.dialect;
 
 import static org.fest.assertions.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.environmentProperties;
 import static org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper.initEnvironmentProperties;
 import static org.hibernate.ogm.util.impl.ArrayHelper.EMPTY_STRING_ARRAY;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyAssociationContext;
 import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleContext;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,7 +65,7 @@ public class CouchDBDialectTest {
 		Tuple createdTuple = dialect.createTuple( key, emptyTupleContext() );
 
 		int actualIdValue = (Integer) createdTuple.get( "age" );
-		assertThat( actualIdValue, is( 36 ) );
+		assertThat( actualIdValue ).isEqualTo( 36 );
 	}
 
 	@Test
@@ -80,7 +77,7 @@ public class CouchDBDialectTest {
 
 		Tuple actualTuple = dialect.getTuple( key, emptyTupleContext() );
 
-		assertThat( actualTuple.get( "id" ), is( createdTuple.get( "id" ) ) );
+		assertThat( actualTuple.get( "id" ) ).isEqualTo( createdTuple.get( "id" ) );
 	}
 
 	@Test
@@ -103,7 +100,7 @@ public class CouchDBDialectTest {
 		dialect.insertOrUpdateTuple( key, createdTuple, emptyTupleContext() );
 
 		Tuple tuple = dialect.getTuple( key, emptyTupleContext() );
-		assertThat( (String) tuple.get( "name" ), is( "and" ) );
+		assertThat( (String) tuple.get( "name" ) ).isEqualTo( "and" );
 	}
 
 	@Test
@@ -119,8 +116,8 @@ public class CouchDBDialectTest {
 
 		Association createAssociation = dialect.createAssociation( key, emptyAssociationContext() );
 
-		assertThat( createAssociation.getSnapshot(), notNullValue() );
-		assertThat( createAssociation.getSnapshot().getRowKeys().isEmpty(), is( true ) );
+		assertThat( createAssociation.getSnapshot() ).isNotNull();
+		assertThat( createAssociation.getSnapshot().getRowKeys() ).isEmpty();
 	}
 
 	@Test
@@ -147,7 +144,7 @@ public class CouchDBDialectTest {
 		dialect.insertOrUpdateAssociation( key, createAssociation, emptyAssociationContext() );
 
 		Association actualAssociation = dialect.getAssociation( key, emptyAssociationContext() );
-		assertThat( actualAssociation.get( rowKey ).hashCode(), notNullValue() );
+		assertThat( actualAssociation.get( rowKey ).hashCode() ).isNotNull();
 	}
 
 	private EntityKey createEntityKey(String tableName, String[] columnNames, Object[] values) {
