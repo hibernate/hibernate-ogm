@@ -15,12 +15,15 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 /**
+ * Provides functionality for dealing with (nested) fields of MongoDB documents.
+ *
  * @author Alan Fitton &lt;alan at eth0.org.uk&gt;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Gunnar Morling
  */
 public class MongoHelpers {
 
-	public static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
+	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
 
 	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
 		String column = key.getMetadata().getCollectionRole();
@@ -52,5 +55,40 @@ public class MongoHelpers {
 				}
 			}
 		}
+	}
+
+	public static boolean hasField(DBObject entity, String dothPath) {
+		return getValueOrNull( entity, dothPath ) != null;
+	}
+
+	public static <T> T getValueOrNull(DBObject entity, String dothPath, Class<T> type) {
+		Object value = getValueOrNull( entity, dothPath );
+
+		if ( value != null && type.isInstance( value ) ) {
+			return type.cast( value );
+		}
+		else {
+			return null;
+		}
+	}
+
+	public static Object getValueOrNull(DBObject entity, String dotPath) {
+		// fast path for simple properties
+		if ( !dotPath.contains( "." ) ) {
+			return entity.get( dotPath );
+		}
+
+		String[] path = DOT_SEPARATOR_PATTERN.split( dotPath );
+		int size = path.length;
+
+		for (int index = 0 ; index < size - 1; index++) {
+			Object next = entity.get( path[index] );
+			if ( next == null || !( next instanceof DBObject ) ) {
+				return null;
+			}
+			entity = (DBObject) next;
+		}
+
+		return entity.get( path[size - 1] );
 	}
 }

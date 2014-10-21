@@ -8,8 +8,8 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.DOT_SEPARATOR_PATTERN;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,12 +47,12 @@ import org.hibernate.ogm.datastore.mongodb.type.impl.ObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdGridType;
 import org.hibernate.ogm.datastore.mongodb.type.impl.StringAsObjectIdType;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.Operation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateAssociationOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.query.spi.BackendQuery;
@@ -435,7 +435,8 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = getEmbeddingEntity( key, associationContext );
-			if ( getAssociationFieldOrNull( key, entity ) != null ) {
+
+			if ( hasField( entity, key.getMetadata().getCollectionRole() ) ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
 			}
 			else {
@@ -449,15 +450,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			return new Association( new MongoDBAssociationSnapshot( result, key, storageStrategy ) );
 		}
-	}
-
-	private DBObject getAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = DOT_SEPARATOR_PATTERN.split( key.getMetadata().getCollectionRole() );
-		DBObject field = entity;
-		for ( String node : path ) {
-			field = field != null ? (DBObject) field.get( node ) : null;
-		}
-		return field;
 	}
 
 	@Override
@@ -474,7 +466,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				insert = true;
 			}
 
-			if ( getAssociationFieldOrNull( key, entity ) == null ) {
+			if ( !hasField( entity, key.getMetadata().getCollectionRole() ) ) {
 				if ( insert ) {
 					//adding assoc before insert
 					addEmptyAssociationField( key, entity );

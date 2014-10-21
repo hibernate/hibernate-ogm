@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.getValueOrNull;
+
 import java.util.Collection;
+import java.util.Collections;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRows;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
@@ -40,20 +43,12 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 
 	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			return getEmbeddedAssociationFieldOrNull( associationKey, document );
+			Collection<?> embeddedAssociation = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
+			return embeddedAssociation != null ? embeddedAssociation : Collections.emptyList();
 		}
 		else {
 			return (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );
 		}
-	}
-
-	private static Collection<DBObject> getEmbeddedAssociationFieldOrNull(AssociationKey key, DBObject entity) {
-		String[] path = MongoHelpers.DOT_SEPARATOR_PATTERN.split( key.getMetadata().getCollectionRole() );
-		Object field = entity;
-		for (String node : path) {
-			field = field != null ? ( (DBObject) field).get( node ) : null;
-		}
-		return (Collection<DBObject>) field;
 	}
 
 	// TODO This only is used for tests; Can we get rid of it?
