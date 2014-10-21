@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.mongodb;
 
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.addEmptyAssociationField;
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.util.ArrayList;
@@ -456,42 +455,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
-		WriteConcern writeConcern = getWriteConcern( associationContext );
 
-		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			DBObject entity = getEmbeddingEntity( key, associationContext );
-			DBObject entityId = prepareIdObject( key.getEntityKey() );
+		DBObject document = storageStrategy == AssociationStorageStrategy.IN_ENTITY ?
+				getEmbeddingEntity( key, associationContext ) :
+				associationKeyToObject( key, storageStrategy );
 
-			boolean insert = false;
-			if ( entity == null ) {
-				insert = true;
-			}
-
-			if ( !hasField( entity, key.getMetadata().getCollectionRole() ) ) {
-				if ( insert ) {
-					//adding assoc before insert
-					addEmptyAssociationField( key, entity );
-					getCollection( key.getEntityKey() ).insert( entity, writeConcern );
-				}
-				else {
-					BasicDBObject updater = new BasicDBObject();
-					this.addSubQuery( "$set", updater, key.getMetadata().getCollectionRole(),  Collections.EMPTY_LIST );
-					//TODO use entity filter with only the ids
-					this.getCollection( key.getEntityKey() ).update( entityId, updater, true, false, writeConcern );
-					//adding assoc after update because the query takes the whole object today
-					addEmptyAssociationField( key, entity );
-				}
-			}
-			return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
-		}
-		DBCollection associations = getAssociationCollection( key, storageStrategy );
-		DBObject assoc = associationKeyToObject( key, storageStrategy );
-
-		assoc.put( ROWS_FIELDNAME, Collections.EMPTY_LIST );
-
-		associations.insert( assoc, writeConcern );
-
-		return new Association( new MongoDBAssociationSnapshot( assoc, key, storageStrategy ) );
+		return new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
 	}
 
 	/**

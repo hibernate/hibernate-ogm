@@ -42,13 +42,16 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 	}
 
 	private static Collection<?> getRows(DBObject document, AssociationKey associationKey, AssociationStorageStrategy storageStrategy) {
+		Collection<?> rows;
+
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			Collection<?> embeddedAssociation = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
-			return embeddedAssociation != null ? embeddedAssociation : Collections.emptyList();
+			rows = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
 		}
 		else {
-			return (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );
+			rows = (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );
 		}
+
+		return rows != null ? rows : Collections.emptyList();
 	}
 
 	// TODO This only is used for tests; Can we get rid of it?

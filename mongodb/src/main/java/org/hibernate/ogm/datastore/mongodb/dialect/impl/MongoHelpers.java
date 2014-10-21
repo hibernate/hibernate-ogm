@@ -6,10 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
-import java.util.Collections;
 import java.util.regex.Pattern;
-
-import org.hibernate.ogm.model.key.spi.AssociationKey;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -24,12 +21,6 @@ import com.mongodb.DBObject;
 public class MongoHelpers {
 
 	private static final Pattern DOT_SEPARATOR_PATTERN = Pattern.compile( "\\." );
-
-	public static void addEmptyAssociationField(AssociationKey key, DBObject entity) {
-		String column = key.getMetadata().getCollectionRole();
-		Object value = Collections.EMPTY_LIST;
-		setValue( entity, column, value );
-	}
 
 	public static void setValue(DBObject entity, String column, Object value) {
 		// fast path for non-embedded case

@@ -119,9 +119,6 @@ public class WriteConcernPropagationTest {
 	@Test
 	public void shouldApplyConfiguredWriteConcernForCreationOfEmbeddedAssociation() {
 		// given a persisted player and a golf course
-		BasicDBObject player = getPlayer();
-		player.put( "playedCourses", getPlayedCoursesAssociationEmbedded() );
-
 		MockMongoClient mockClient = mockClient()
 				.insert( "GolfPlayer", getPlayer() )
 				.insert( "GolfCourse", getGolfCourse() )
@@ -139,9 +136,8 @@ public class WriteConcernPropagationTest {
 		transaction.commit();
 		session.close();
 
-		// then expect two updates using the configured write concern (one for creating the association, one for adding
-		// the row )
-		verify( mockClient.getCollection( "GolfPlayer" ), times( 2)  ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
+		// then expect one update using the configured write concern for adding the row
+		verify( mockClient.getCollection( "GolfPlayer" ), times( 1 ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
 	@Test
@@ -161,7 +157,6 @@ public class WriteConcernPropagationTest {
 		session.close();
 
 		// then expect association operations using the configured write concern
-		verify( mockClient.getCollection( "Associations" ) ).insert( any( DBObject.class ), eq( WriteConcern.MAJORITY ) );
 		verify( mockClient.getCollection( "Associations" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.MAJORITY ) );
 	}
 
@@ -194,7 +189,6 @@ public class WriteConcernPropagationTest {
 
 		// then expect tuple and association operations using the configured write concerns
 		verify( mockClient.getCollection( "GolfPlayer" ) ).insert( any( List.class ), eq( WriteConcern.REPLICA_ACKNOWLEDGED ) );
-		verify( mockClient.getCollection( "Associations" ) ).insert( any( DBObject.class ), eq( WriteConcern.ACKNOWLEDGED ) );
 		verify( mockClient.getCollection( "Associations" ) ).update( any( DBObject.class ), any( DBObject.class ), anyBoolean(), anyBoolean(), eq( WriteConcern.ACKNOWLEDGED ) );
 	}
 
