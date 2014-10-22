@@ -189,6 +189,8 @@ public class EntityDocument extends Document {
 
 	/**
 	 * Invoked by Jackson for any non-static property.
+	 * <p>
+	 * A {@link Map} create an additional set a properties, one for each entry of the map.
 	 *
 	 * @param name the property name
 	 * @param value the property value
@@ -202,6 +204,10 @@ public class EntityDocument extends Document {
 		properties.put( name, value );
 	}
 
+	/*
+	 * Save each entry as a single property using the path separator.
+	 * For example { k1 = { k11 = v11 } } becomes k1.k11=v11
+	 */
 	private void setMapValue(String name, Map<String, Object> value) {
 		for ( Entry<String, Object> entry : value.entrySet() ) {
 			set( name + PATH_SEPARATOR + entry.getKey(), entry.getValue() );
