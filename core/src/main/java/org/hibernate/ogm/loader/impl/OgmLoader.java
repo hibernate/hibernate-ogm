@@ -472,8 +472,7 @@ public class OgmLoader implements UniqueEntityLoader {
 					persister.getOwnerEntityPersister().getMappedClass()
 				)
 				.gridDialect( gridDialect )
-				.key( id )
-				.keyGridType( persister.getKeyGridType() )
+				.key( id, persister.getKeyGridType() )
 				.associationKeyMetadata( persister.getAssociationKeyMetadata() )
 				// we can be on the main or on the inverse side, so we cannot simply use the unqualified role
 				.roleOnMainSide( persister.getMainSidePropertyName() )

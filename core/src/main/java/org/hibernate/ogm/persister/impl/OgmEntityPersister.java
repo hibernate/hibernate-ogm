@@ -604,8 +604,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				inversePersister.getMappedClass()
 				)
 				.gridDialect( gridDialect )
-				.key( uniqueKey )
-				.keyGridType( gridUniqueKeyType )
+				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
 				.roleOnMainSide( getPropertyNames()[propertyIndex] );

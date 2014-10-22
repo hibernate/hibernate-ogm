@@ -811,8 +811,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			)
 			.hostingEntity( collectionOwner )
 			.gridDialect( gridDialect )
-			.key( id )
-			.keyGridType( getKeyGridType() )
+			.key( id, getKeyGridType() )
 			.associationKeyMetadata( associationKeyMetadata )
 			.roleOnMainSide( mainSidePropertyName )
 			.session( session );

@@ -67,18 +67,16 @@ public class AssociationPersister {
 		return this;
 	}
 
-	public AssociationPersister keyGridType(GridType keyGridType) {
-		this.keyGridType = keyGridType;
-		return this;
-	}
-
 	public AssociationPersister session(SessionImplementor session) {
 		this.session = session;
 		return this;
 	}
 
-	public AssociationPersister key(Object key) {
+	// one of the following two methods is to be invoked, not both
+
+	public AssociationPersister key(Object key, GridType keyGridType) {
 		this.key = key;
+		this.keyGridType = keyGridType;
 		return this;
 	}
 
