@@ -164,7 +164,7 @@ class EntityAssociationUpdater {
 	private void removeNavigationalInformationFromInverseSide(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] oldColumnValue) {
 		AssociationPersister associationPersister = createAssociationPersister( propertyIndex, associationKeyMetadata, oldColumnValue );
 
-		Association association = associationPersister.getAssociation();
+		Association association = associationPersister.getAssociationOrNull();
 
 		if ( association != null ) {
 			RowKey rowKey = getInverseRowKey( associationKeyMetadata, oldColumnValue );

@@ -10,6 +10,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 /**
  * @author Emmanuel Bernard
  */
@@ -44,6 +47,7 @@ public class SalesGuy {
 	}
 
 	@ManyToOne
+	@NotFound(action = NotFoundAction.IGNORE)
 	public SalesForce getSalesForce() {
 		return salesForce;
 	}

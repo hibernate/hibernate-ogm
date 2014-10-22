@@ -209,6 +209,52 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testRemovalOfTransientEntityWithAssociation() throws Exception {
+		final Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+
+		SalesForce force = new SalesForce( "red_hat" );
+		force.setCorporation( "Red Hat" );
+		session.save( force );
+
+		SalesGuy eric = new SalesGuy( "eric" );
+		eric.setName( "Eric" );
+		eric.setSalesForce( force );
+		force.getSalesGuys().add( eric );
+		session.save( eric );
+
+		SalesGuy simon = new SalesGuy( "simon" );
+		simon.setName( "Simon" );
+		simon.setSalesForce( force );
+		force.getSalesGuys().add( simon );
+		session.save( simon );
+
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+
+		// The classic API allows to delete transient instances;
+		// Intentionally not deleting the referencing sales guys
+		session.delete( force );
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+
+		SalesGuy salesGuy = (SalesGuy) session.get( SalesGuy.class, "eric" );
+		assertThat( salesGuy.getSalesForce() ).describedAs( "Stale association should be exposed as null" ).isNull();
+		session.delete( salesGuy );
+
+		salesGuy = (SalesGuy) session.get( SalesGuy.class, "simon" );
+		assertThat( salesGuy.getSalesForce() ).describedAs( "Stale association should be exposed as null" ).isNull();
+		session.delete( salesGuy );
+
+		transaction.commit();
+		session.close();
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { JUG.class, Member.class, SalesForce.class, SalesGuy.class, Beer.class, Brewery.class };
