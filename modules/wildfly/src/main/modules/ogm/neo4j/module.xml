@@ -11,8 +11,8 @@
         <resource-root path="neo4j-${neo4jVersion}.jar" />
         <resource-root path="neo4j-cypher-${neo4jVersion}.jar" />
         <resource-root path="neo4j-cypher-commons-${neo4jVersion}.jar" />
-        <resource-root path="neo4j-cypher-compiler-1.9-2.0.3.jar" />
-        <resource-root path="neo4j-cypher-compiler-2.0-2.0.3.jar" />
+        <resource-root path="neo4j-cypher-compiler-1.9-${neo4jCypherCompilerOlderVersion}.jar" />
+        <resource-root path="neo4j-cypher-compiler-2.0-${neo4jCypherCompilerOlderVersion}.jar" />
         <resource-root path="neo4j-cypher-compiler-2.1-${neo4jVersion}.jar" />
         <resource-root path="neo4j-lucene-index-${neo4jVersion}.jar" />
         <resource-root path="neo4j-kernel-${neo4jVersion}.jar" />
@@ -20,10 +20,10 @@
         <resource-root path="neo4j-graph-algo-${neo4jVersion}.jar" />
         <resource-root path="neo4j-graph-matching-${neo4jVersion}.jar" />
         <resource-root path="neo4j-jmx-${neo4jVersion}.jar" />
-        <resource-root path="parboiled-scala_2.10-1.1.6.jar" />
-        <resource-root path="scala-library-2.10.4.jar" />
+        <resource-root path="parboiled-scala_2.10-${parboiledVersion}.jar" />
+        <resource-root path="scala-library-${scalaLibraryVersion}.jar" />
         <resource-root path="neo4j-primitive-collections-${neo4jVersion}.jar" />
-        <resource-root path="concurrentlinkedhashmap-lru-1.3.1.jar" />
+        <resource-root path="concurrentlinkedhashmap-lru-${concurrentlinkedhashmapVersion}.jar" />
     </resources>
     <dependencies>
         <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
