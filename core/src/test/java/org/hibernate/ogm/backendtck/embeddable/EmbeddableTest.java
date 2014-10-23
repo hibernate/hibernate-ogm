@@ -252,8 +252,45 @@ public class EmbeddableTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testPersistWithListEmbeddedInNestedComponent() throws Exception {
+		final Session session = openSession();
+
+		Transaction transaction = session.beginTransaction();
+
+		Order order = new Order(
+				"order-1",
+				"Telescope",
+				new ShippingAddress(
+						new PhoneNumber(  "+1-222-555-0111", Arrays.asList( "+1-222-555-0222", "+1-202-555-0333" ) ),
+						"Planet road 68"
+				)
+		);
+
+		session.persist( order );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		Order loadedOrder = (Order) session.get( Order.class, "order-1" );
+		assertThat( loadedOrder ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedOrder.getShippingAddress() ).isNotNull();
+		assertThat( loadedOrder.getShippingAddress().getPhone() ).isNotNull();
+		assertThat( loadedOrder.getShippingAddress().getPhone().getMain() ).isEqualTo( "+1-222-555-0111" );
+		assertThat( loadedOrder.getShippingAddress().getPhone().getAlternatives() ).containsOnly( "+1-222-555-0222", "+1-202-555-0333" );
+
+		session.delete( loadedOrder );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertThat( session.get( Order.class, "order-1" ) ).isNull();
+		transaction.commit();
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Account.class, MultiAddressAccount.class, AccountWithPhone.class };
+		return new Class<?>[] { Account.class, MultiAddressAccount.class, AccountWithPhone.class, Order.class };
 	}
 }

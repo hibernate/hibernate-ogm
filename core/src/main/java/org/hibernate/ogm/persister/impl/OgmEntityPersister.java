@@ -394,21 +394,25 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				}
 			}
 			// for embeddables check whether they contain element collections
-			// TODO: follow up recursively
 			else if ( propertyType.isComponentType() ) {
-				ComponentType componentType = (ComponentType) propertyType;
-
-				for ( String propertyName : componentType.getPropertyNames() ) {
-					Type type = componentType.getSubtypes()[componentType.getPropertyIndex( propertyName )];
-
-					if ( type.isCollectionType() ) {
-						embeddedCollections.add( property + "." + propertyName );
-					}
-				}
+				collectEmbeddedCollectionColumns( (ComponentType) propertyType, property, embeddedCollections );
 			}
 		}
 
 		return embeddedCollections;
+	}
+
+	private void collectEmbeddedCollectionColumns(ComponentType componentType, String dotName, List<String> embeddedCollections) {
+		for ( String propertyName : componentType.getPropertyNames() ) {
+			Type type = componentType.getSubtypes()[componentType.getPropertyIndex( propertyName )];
+
+			if ( type.isCollectionType() ) {
+				embeddedCollections.add( dotName + "." + propertyName );
+			}
+			else if ( type.isComponentType() ) {
+				collectEmbeddedCollectionColumns( (ComponentType) type, dotName + "." + propertyName, embeddedCollections );
+			}
+		}
 	}
 
 	private boolean[] getPropertyMightRequireInverseAssociationManagement() {
