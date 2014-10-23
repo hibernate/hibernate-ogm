@@ -42,7 +42,8 @@ public class GridDialectOperationContexts {
 						OptionsContextImpl.forProperty( Collections.<OptionValueSource>emptyList(), Object.class, "" ),
 						null,
 						null
-				)
+				),
+				null
 		);
 	}
 }

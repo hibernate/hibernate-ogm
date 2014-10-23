@@ -28,7 +28,8 @@ public interface TupleContext {
 
 	/**
 	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
-	 * the complete document/record.
+	 * the complete document/record. If the dialect supports the embedded storage of element collections and
+	 * associations, the respective columns will be part of the returned list as well.
 	 */
 	List<String> getSelectableColumns();
 

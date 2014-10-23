@@ -467,6 +467,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				throw new AssertionFailure( "Found an unexpected number of collection persisters: " + getCollectionPersisters().length );
 			}
 			final OgmCollectionPersister persister = (OgmCollectionPersister) getCollectionPersisters()[0];
+			Object owner = session.getPersistenceContext().getCollectionOwner( id, persister );
 
 			AssociationPersister associationPersister = new AssociationPersister(
 					persister.getOwnerEntityPersister().getMappedClass()
@@ -475,6 +476,7 @@ public class OgmLoader implements UniqueEntityLoader {
 				.key( id, persister.getKeyGridType() )
 				.associationKeyMetadata( persister.getAssociationKeyMetadata() )
 				.associationTypeContext( persister.getAssociationTypeContext() )
+				.hostingEntity( owner )
 				.session( session );
 
 			Association assoc = associationPersister.getAssociationOrNull();

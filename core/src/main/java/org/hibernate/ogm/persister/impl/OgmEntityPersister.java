@@ -71,6 +71,7 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.persister.entity.AbstractEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
+import org.hibernate.persister.entity.Joinable;
 import org.hibernate.persister.entity.Loadable;
 import org.hibernate.pretty.MessageHelper;
 import org.hibernate.property.BackrefPropertyAccessor;
@@ -79,6 +80,8 @@ import org.hibernate.tuple.GenerationTiming;
 import org.hibernate.tuple.NonIdentifierAttribute;
 import org.hibernate.tuple.ValueGeneration;
 import org.hibernate.tuple.entity.EntityMetamodel;
+import org.hibernate.type.AssociationType;
+import org.hibernate.type.ComponentType;
 import org.hibernate.type.EntityType;
 import org.hibernate.type.IntegerType;
 import org.hibernate.type.OneToOneType;
@@ -153,6 +156,10 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 */
 	private final boolean usesNonAtomicOptimisticLocking;
 
+	/**
+	 * A context with additional meta-data to be passed to grid dialect operations relating to the entity type
+	 * represented by this persister.
+	 */
 	private TupleContext tupleContext;
 
 	OgmEntityPersister(
@@ -280,6 +287,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Map<String, AssociationKeyMetadata> associationKeyMetadata = new HashMap<String, AssociationKeyMetadata>();
 		for ( String property : getPropertyNames() ) {
 			Type propertyType = getPropertyType( property );
+
 			if ( !propertyType.isEntityType() ) {
 				continue;
 			}
@@ -339,16 +347,68 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	private List<String> selectableColumnNames(final EntityDiscriminator discriminator) {
 		List<String> columnNames = new ArrayList<String>();
+
 		for ( int propertyCount = 0; propertyCount < this.getPropertySpan(); propertyCount++ ) {
 			String[] property = this.getPropertyColumnNames( propertyCount );
 			for ( int columnCount = 0; columnCount < property.length; columnCount++ ) {
 				columnNames.add( property[columnCount] );
 			}
 		}
+
 		if ( discriminator.getColumnName() != null ) {
 			columnNames.add( discriminator.getColumnName() );
 		}
+
+		columnNames.addAll( getEmbeddedCollectionColumns() );
+
 		return columnNames;
+	}
+
+	/**
+	 * Returns the names of all those columns which represent a collection to be stored within the owning entity
+	 * structure (element collections and/or *-to-many associations, depending on the dialect's capabilities).
+	 */
+	private List<String> getEmbeddedCollectionColumns() {
+		List<String> embeddedCollections = new ArrayList<String>();
+
+		for ( String property : getPropertyNames() ) {
+			Type propertyType = getPropertyType( property );
+
+			if ( propertyType.isAssociationType() ) {
+				Joinable associatedJoinable = ( (AssociationType) propertyType ).getAssociatedJoinable( getFactory() );
+
+				// *-to-many
+				if ( associatedJoinable.isCollection() ) {
+					OgmCollectionPersister inversePersister = (OgmCollectionPersister) associatedJoinable;
+
+					if ( gridDialect.isStoredInEntityStructure( inversePersister.getAssociationKeyMetadata(), inversePersister.getAssociationTypeContext( property ) ) ) {
+						embeddedCollections.add( property );
+					}
+				}
+				// *-to-one
+				else {
+					// TODO: For now I'm adding all *-to-one columns to the projection list; Actually we need to ask the
+					// dialect whether it's an embedded association, which we can't find out atm. though as we need all
+					// entity persisters to be set up for this
+					embeddedCollections.add( property );
+				}
+			}
+			// for embeddables check whether they contain element collections
+			// TODO: follow up recursively
+			else if ( propertyType.isComponentType() ) {
+				ComponentType componentType = (ComponentType) propertyType;
+
+				for ( String propertyName : componentType.getPropertyNames() ) {
+					Type type = componentType.getSubtypes()[componentType.getPropertyIndex( propertyName )];
+
+					if ( type.isCollectionType() ) {
+						embeddedCollections.add( property + "." + propertyName );
+					}
+				}
+			}
+		}
+
+		return embeddedCollections;
 	}
 
 	private boolean[] getPropertyMightRequireInverseAssociationManagement() {
@@ -391,8 +451,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected void doPostInstantiate() {
-		this.tupleContext = createTupleContext();
 		inverseOneToOneAssociationKeyMetadata = Collections.unmodifiableMap( initInverseOneToOneAssociationKeyMetadata() );
+		tupleContext = createTupleContext();
 	}
 
 	private TupleContext createTupleContext() {
@@ -621,7 +681,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
-				.associationTypeContext( associationTypeContext );
+				.associationTypeContext( associationTypeContext )
+				.hostingEntity( session.getPersistenceContext().getEntity( new org.hibernate.engine.spi.EntityKey( (Serializable) uniqueKey, inversePersister ) ) );
 
 		final Association ids = associationPersister.getAssociationOrNull();
 
@@ -1139,6 +1200,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		if ( id == null ) {
 			throw new HibernateException( "Dialect failed to generate id for entity type " + entityKeyMetadata );
 		}
+
+		OgmEntityEntryState.getStateFor( session, object ).setTuple( tuple );
 
 		return id;
 	}

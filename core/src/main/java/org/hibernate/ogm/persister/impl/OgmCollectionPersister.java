@@ -451,7 +451,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 	@Override
 	public int getSize(Serializable key, SessionImplementor session) {
-		AssociationPersister associationPersister = getAssociationPersister( null, key, session );
+		AssociationPersister associationPersister = getAssociationPersister( session.getPersistenceContext().getEntity( new org.hibernate.engine.spi.EntityKey( key, getOwnerEntityPersister() ) ), key, session );
 		final Association collectionMetadata = associationPersister.getAssociationOrNull();
 
 		return collectionMetadata == null ? 0 : collectionMetadata.size();
@@ -631,7 +631,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				return;
 			}
 
-			AssociationPersister associationPersister = inverseCollectionPersister.getAssociationPersister( null, elementColumnValues, session );
+			if ( entity == null ) {
+				entity = session.getPersistenceContext().getEntity( session.generateEntityKey( entityId, getElementPersister() ) );
+			}
+
+			AssociationPersister associationPersister = inverseCollectionPersister.getAssociationPersister( entity, elementColumnValues, session );
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
@@ -658,12 +662,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-
-			if ( associationPersister.hostingEntityRequiresReadAfterUpdate() && entity == null ) {
-				entity = session.getPersistenceContext().getEntity( session.generateEntityKey( entityId, getElementPersister() ) );
-			}
-
-			associationPersister.hostingEntity( entity );
 
 			associationPersister.flushToDatastore();
 		}
@@ -693,8 +691,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				log.debug( "Deleting collection: " + MessageHelper.collectionInfoString( this, id, getFactory() ) );
 			}
 
+			Object owner = session.getPersistenceContext().getCollectionOwner( id, this );
+
 			// Remove all the old entries
-			AssociationPersister associationPersister = getAssociationPersister( null, id, session );
+			AssociationPersister associationPersister = getAssociationPersister( owner, id, session );
 			Association association = associationPersister.getAssociationOrNull();
 
 			if ( association != null ) {
@@ -712,11 +712,6 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					}
 				}
 				association.clear();
-
-				if ( associationPersister.hostingEntityRequiresReadAfterUpdate() ) {
-					Object owner = session.getPersistenceContext().getCollectionOwner( id, this );
-					associationPersister.hostingEntity( owner );
-				}
 
 				associationPersister.flushToDatastore();
 			}

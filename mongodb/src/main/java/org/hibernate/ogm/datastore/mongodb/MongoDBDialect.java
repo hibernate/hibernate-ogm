@@ -436,7 +436,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			DBObject entity = getEmbeddingEntity( key, associationContext );
 
-			if ( hasField( entity, key.getMetadata().getCollectionRole() ) ) {
+			if ( entity != null && hasField( entity, key.getMetadata().getCollectionRole() ) ) {
 				return new Association( new MongoDBAssociationSnapshot( entity, key, storageStrategy ) );
 			}
 			else {

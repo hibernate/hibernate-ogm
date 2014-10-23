@@ -14,6 +14,7 @@ import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -221,7 +222,10 @@ public class AssociationPersister {
 	 */
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			associationContext = new AssociationContextImpl( associationTypeContext );
+			associationContext = new AssociationContextImpl(
+					associationTypeContext,
+					hostingEntity != null ? OgmEntityEntryState.getStateFor( session, hostingEntity ).getTuple() : null
+			);
 		}
 
 		return associationContext;
