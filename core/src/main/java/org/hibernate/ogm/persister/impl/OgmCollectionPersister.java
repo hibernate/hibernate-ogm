@@ -30,6 +30,7 @@ import org.hibernate.internal.util.collections.ArrayHelper;
 import org.hibernate.loader.collection.CollectionInitializer;
 import org.hibernate.mapping.Collection;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
+import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
@@ -49,6 +50,7 @@ import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.AssociationPersister;
+import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.util.impl.LogicalPhysicalConverterHelper;
@@ -82,15 +84,21 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	private final String nodeName;
 
 	/**
-	 * The {@link AssociationKeyMetadata} from the other side of this association in case it represents the main side of
+	 * The {@link OgmCollectionPersister} from the other side of this association in case it represents the main side of
 	 * a bi-directional many-to-many association, {@code null} otherwise.
 	 */
-	private volatile AssociationKeyMetadata inverseAssociationKeymetadata;
+	private OgmCollectionPersister inverseCollectionPersister;
 
 	/**
 	 * The name of the main side property in case this is the inverse side of a one-to-many or many-to-many association.
 	 */
-	private volatile String mainSidePropertyName;
+	private String mainSidePropertyName;
+
+	/**
+	 * A context to be passed (either directly or via {@link AssociationContext}) to grid dialect operations relating to
+	 * the association managed by this persister.
+	 */
+	private AssociationTypeContext associationTypeContext;
 
 	public OgmCollectionPersister(final Collection collection, final CollectionRegionAccessStrategy cacheAccessStrategy, final Configuration cfg, final SessionFactoryImplementor factory)
 			throws MappingException, CacheException {
@@ -369,7 +377,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	// Centralize the RowKey column setting logic as the values settings are slightly different between insert / update and delete
-	public RowKeyBuilder initializeRowKeyBuilder() {
+	private RowKeyBuilder initializeRowKeyBuilder() {
 		RowKeyBuilder builder = new RowKeyBuilder();
 		if ( hasIdentifier ) {
 			builder.addColumns( getIdentifierColumnName() );
@@ -619,18 +627,11 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			Object[] elementColumnValues = LogicalPhysicalConverterHelper.getColumnValuesFromResultset( associationRow, elementColumnNames );
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
 
-			if ( inverseAssociationKeymetadata == null ) {
+			if ( inverseCollectionPersister == null ) {
 				return;
 			}
 
-			AssociationPersister associationPersister = new AssociationPersister(
-						getElementPersister().getMappedClass()
-					)
-					.gridDialect( gridDialect )
-					.keyColumnValues( elementColumnValues )
-					.session( session )
-					.associationKeyMetadata( inverseAssociationKeymetadata )
-					.roleOnMainSide( getUnqualifiedRole() );
+			AssociationPersister associationPersister = inverseCollectionPersister.getAssociationPersister( null, elementColumnValues, session );
 
 			// TODO what happens when a row should be *updated* ?: I suspect ADD works OK as it's a put()
 			if ( action == Action.ADD ) {
@@ -669,7 +670,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	private RowKey getInverseRowKey(Tuple associationRow) {
-		String[] inverseRowKeyColumnNames = inverseAssociationKeymetadata.getRowKeyColumnNames();
+		String[] inverseRowKeyColumnNames = inverseCollectionPersister.getAssociationKeyMetadata().getRowKeyColumnNames();
 		Object[] columnValues = new Object[inverseRowKeyColumnNames.length];
 
 		for ( int i = 0; i < inverseRowKeyColumnNames.length; i++ ) {
@@ -762,12 +763,14 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	public void postInstantiate() throws MappingException {
 		if ( isInverse ) {
 			mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( this );
-			inverseAssociationKeymetadata = null;
+			inverseCollectionPersister = null;
 		}
 		else {
 			mainSidePropertyName = getUnqualifiedRole();
-			inverseAssociationKeymetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( this );
+			inverseCollectionPersister = BiDirectionalAssociationHelper.getInverseCollectionPersister( this );
 		}
+
+		associationTypeContext = getAssociationTypeContext( mainSidePropertyName );
 	}
 
 	@Override
@@ -809,7 +812,20 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		return mainSidePropertyName;
 	}
 
+	/**
+	 * Returns the association type context providing meta-data to be passed to grid dialects when working on this
+	 * association.
+	 * <p>
+	 * <b>Note:</b> Due to initialization order related constraints, this method may only be invoked after all
+	 * collection and entity persisters have been set up. Use {@link #getAssociationTypeContext(String)} when in need of
+	 * a context prior to that point.
+	 */
 	public AssociationTypeContext getAssociationTypeContext() {
+		Contracts.assertNotNull( associationTypeContext, "Association type context has not yet been initialized" );
+		return associationTypeContext;
+	}
+
+	public AssociationTypeContext getAssociationTypeContext(String mainSidePropertyName) {
 		OptionsServiceContext serviceContext = getFactory()
 				.getServiceRegistry()
 				.getService( OptionsService.class )
@@ -818,8 +834,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
 				serviceContext.getPropertyOptions( getOwnerEntityPersister().getMappedClass(), associationKeyMetadata.getCollectionRole() ),
 				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
-				getMainSidePropertyName()
-				);
+				mainSidePropertyName
+		);
 
 		return associationTypeContext;
 	}
@@ -832,7 +848,19 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			.gridDialect( gridDialect )
 			.key( id, getKeyGridType() )
 			.associationKeyMetadata( associationKeyMetadata )
-			.roleOnMainSide( mainSidePropertyName )
+			.associationTypeContext( associationTypeContext )
+			.session( session );
+	}
+
+	private AssociationPersister getAssociationPersister(Object collectionOwner, Object[] keyColumnValues, SessionImplementor session) {
+		return new AssociationPersister(
+				getOwnerEntityPersister().getMappedClass()
+			)
+			.hostingEntity( collectionOwner )
+			.gridDialect( gridDialect )
+			.keyColumnValues( keyColumnValues )
+			.associationKeyMetadata( associationKeyMetadata )
+			.associationTypeContext( associationTypeContext )
 			.session( session );
 	}
 }

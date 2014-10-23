@@ -9,12 +9,16 @@ package org.hibernate.ogm.persister.impl;
 import java.io.Serializable;
 
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.RowKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.AssociationPersister;
 import org.hibernate.ogm.util.impl.CollectionHelper;
@@ -170,6 +174,17 @@ class EntityAssociationUpdater {
 	}
 
 	private AssociationPersister createAssociationPersister(int propertyIndex, AssociationKeyMetadata associationKeyMetadata, Object[] keyColumnValues) {
+		OptionsServiceContext serviceContext = session.getFactory()
+				.getServiceRegistry()
+				.getService( OptionsService.class )
+				.context();
+
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
+				serviceContext.getPropertyOptions( persister.getPropertyTypes()[propertyIndex].getReturnedClass(), associationKeyMetadata.getCollectionRole() ),
+				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
+				persister.getPropertyNames()[propertyIndex]
+		);
+
 		return new AssociationPersister(
 					persister.getPropertyTypes()[propertyIndex].getReturnedClass()
 				)
@@ -178,7 +193,7 @@ class EntityAssociationUpdater {
 				.associationKeyMetadata(  associationKeyMetadata )
 				.keyColumnValues( keyColumnValues )
 				.session( session )
-				.roleOnMainSide( persister.getPropertyNames()[propertyIndex] );
+				.associationTypeContext( associationTypeContext );
 	}
 
 	/**

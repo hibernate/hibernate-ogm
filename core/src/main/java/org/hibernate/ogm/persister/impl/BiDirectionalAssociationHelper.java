@@ -86,14 +86,14 @@ public class BiDirectionalAssociationHelper {
 	}
 
 	/**
-	 * Returns the meta-data for the inverse side of the given collection persister in case it represents the main side
+	 * Returns the given collection persister for the inverse side in case the given persister represents the main side
 	 * of a bi-directional many-to-many association.
 	 *
 	 * @param mainSidePersister the collection persister on the main side of a bi-directional many-to-many association
-	 * @return the meta-data for the inverse side of the given collection persister or {@code null} in case it
+	 * @return the collection persister for the inverse side of the given persister or {@code null} in case it
 	 * represents the inverse side itself or the association is uni-directional
 	 */
-	public static AssociationKeyMetadata getInverseAssociationKeyMetadata(OgmCollectionPersister mainSidePersister) {
+	public static OgmCollectionPersister getInverseCollectionPersister(OgmCollectionPersister mainSidePersister) {
 		if ( mainSidePersister.isInverse() || !mainSidePersister.isManyToMany() || !mainSidePersister.getElementType().isEntityType() ) {
 			return null;
 		}
@@ -105,7 +105,7 @@ public class BiDirectionalAssociationHelper {
 			if ( type.isCollectionType() ) {
 				OgmCollectionPersister inverseCollectionPersister = getPersister( mainSidePersister.getFactory(), (CollectionType) type );
 				if ( isCollectionMatching( mainSidePersister, inverseCollectionPersister ) ) {
-					return inverseCollectionPersister.getAssociationKeyMetadata();
+					return inverseCollectionPersister;
 				}
 			}
 		}

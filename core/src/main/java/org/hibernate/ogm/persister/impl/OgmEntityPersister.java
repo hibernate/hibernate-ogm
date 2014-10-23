@@ -43,8 +43,10 @@ import org.hibernate.mapping.Column;
 import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
+import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
+import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
@@ -60,6 +62,7 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.ogm.util.impl.ArrayHelper;
@@ -600,6 +603,17 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		OgmEntityPersister inversePersister = (OgmEntityPersister) ((EntityType) getPropertyTypes()[propertyIndex]).getAssociatedJoinable( session.getFactory() );
 
+		OptionsServiceContext serviceContext = session.getFactory()
+				.getServiceRegistry()
+				.getService( OptionsService.class )
+				.context();
+
+		AssociationTypeContext associationTypeContext = new AssociationTypeContextImpl(
+				serviceContext.getPropertyOptions( inversePersister.getMappedClass(), associationKeyMetadata.getCollectionRole() ),
+				associationKeyMetadata.getAssociatedEntityKeyMetadata(),
+				getPropertyNames()[propertyIndex]
+		);
+
 		AssociationPersister associationPersister = new AssociationPersister(
 				inversePersister.getMappedClass()
 				)
@@ -607,7 +621,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				.key( uniqueKey, gridUniqueKeyType )
 				.associationKeyMetadata( associationKeyMetadata )
 				.session( session )
-				.roleOnMainSide( getPropertyNames()[propertyIndex] );
+				.associationTypeContext( associationTypeContext );
 
 		final Association ids = associationPersister.getAssociationOrNull();
 

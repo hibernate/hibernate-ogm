@@ -33,8 +33,8 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void inverseMetadataForUnidirectionalOneToManyShouldBeNull() {
 		OgmCollectionPersister persister = (OgmCollectionPersister) sessions.getCollectionPersister( Cloud.class.getName() + ".producedSnowFlakes" );
-		AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( persister );
-		assertThat( inverseAssociationKeyMetadata ).isNull();
+		OgmCollectionPersister inversePersister = BiDirectionalAssociationHelper.getInverseCollectionPersister( persister );
+		assertThat( inversePersister ).isNull();
 	}
 
 	@Test
@@ -47,10 +47,10 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getColumnNames() ).isEqualTo( new String[]{ "salesForce_id" } );
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "salesForce_id", "id" } );
 
-		// no collection on the main side
+		// no persister on the main side
 		OgmCollectionPersister collectionPersister = (OgmCollectionPersister) sessions.getCollectionPersister( SalesForce.class.getName() + ".salesGuys" );
-		inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( collectionPersister );
-		assertThat( inverseAssociationKeyMetadata ).isNull();
+		OgmCollectionPersister mainSidePersister = BiDirectionalAssociationHelper.getInverseCollectionPersister( collectionPersister );
+		assertThat( mainSidePersister ).isNull();
 	}
 
 	@Test

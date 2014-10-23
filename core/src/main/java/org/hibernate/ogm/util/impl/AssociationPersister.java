@@ -11,7 +11,6 @@ import java.io.Serializable;
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
-import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -20,8 +19,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
-import org.hibernate.ogm.options.spi.OptionsService;
-import org.hibernate.ogm.options.spi.OptionsService.OptionsServiceContext;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.persister.entity.EntityPersister;
@@ -44,7 +41,6 @@ public class AssociationPersister {
 	private Association association;
 	private Object[] columnValues;
 	private GridDialect gridDialect;
-	private String roleOnMainSide;
 	private AssociationContext associationContext;
 	private AssociationTypeContext associationTypeContext;
 	private AssociationKeyMetadata associationKeyMetadata;
@@ -92,8 +88,8 @@ public class AssociationPersister {
 		return this;
 	}
 
-	public AssociationPersister roleOnMainSide(String roleOnMainSide) {
-		this.roleOnMainSide = roleOnMainSide;
+	public AssociationPersister associationTypeContext(AssociationTypeContext associationTypeContext) {
+		this.associationTypeContext = associationTypeContext;
 		return this;
 	}
 
@@ -202,7 +198,7 @@ public class AssociationPersister {
 	 */
 	public boolean hostingEntityRequiresReadAfterUpdate() {
 		if ( hostingEntityRequiresReadAfterUpdate == null ) {
-			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( associationKeyMetadata, getAssociationTypeContext() );
+			boolean storedInEntityStructure = gridDialect.isStoredInEntityStructure( associationKeyMetadata, associationTypeContext );
 			boolean hasUpdateGeneratedProperties = getHostingEntityPersister().hasUpdateGeneratedProperties();
 
 			hostingEntityRequiresReadAfterUpdate = storedInEntityStructure && hasUpdateGeneratedProperties;
@@ -225,28 +221,9 @@ public class AssociationPersister {
 	 */
 	private AssociationContext getAssociationContext() {
 		if ( associationContext == null ) {
-			associationContext = new AssociationContextImpl(
-					getAssociationTypeContext()
-			);
+			associationContext = new AssociationContextImpl( associationTypeContext );
 		}
 
 		return associationContext;
-	}
-
-	private AssociationTypeContext getAssociationTypeContext() {
-		if ( associationContext == null ) {
-			OptionsServiceContext serviceContext = session.getFactory()
-					.getServiceRegistry()
-					.getService( OptionsService.class )
-					.context();
-
-			associationTypeContext = new AssociationTypeContextImpl(
-					serviceContext.getPropertyOptions( hostingEntityType, getAssociationKey().getMetadata().getCollectionRole() ),
-					associationKeyMetadata.getAssociatedEntityKeyMetadata(),
-					roleOnMainSide
-			);
-		}
-
-		return associationTypeContext;
 	}
 }
