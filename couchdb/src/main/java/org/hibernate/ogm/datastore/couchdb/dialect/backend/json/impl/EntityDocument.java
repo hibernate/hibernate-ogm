@@ -201,7 +201,9 @@ public class EntityDocument extends Document {
 		if ( value instanceof Map ) {
 			setMapValue( name, (Map<String, Object>) value );
 		}
-		properties.put( name, value );
+		else {
+			properties.put( name, value );
+		}
 	}
 
 	/**
