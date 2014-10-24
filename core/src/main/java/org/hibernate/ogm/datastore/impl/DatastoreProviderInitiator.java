@@ -17,15 +17,9 @@ import org.hibernate.ogm.util.configurationreader.spi.ShortNameResolver;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
-import org.hibernate.service.spi.SessionFactoryServiceInitiator;
 
 /**
  * Loads the appropriate {@link DatastoreProvider}. Driven by the {@link OgmProperties#DATASTORE_PROVIDER} property.
- * <p>
- * This is a {@link SessionFactoryServiceInitiator} because a {@code DatastoreProvider} can be a
- * {@link org.hibernate.ogm.datastore.spi.StartStoppable} service - the
- * {@link org.hibernate.service.spi.SessionFactoryServiceRegistry} calls {@code StartStoppable} and passes the
- * {@link org.hibernate.SessionFactory}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;

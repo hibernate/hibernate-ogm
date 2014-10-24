@@ -16,6 +16,7 @@ import javassist.util.proxy.ProxyFactory;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
+import org.hibernate.ogm.options.navigation.spi.BaseContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 import org.hibernate.ogm.options.spi.Option;
 import org.hibernate.ogm.util.impl.Log;

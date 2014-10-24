@@ -81,7 +81,8 @@ import org.neo4j.kernel.impl.util.StringLogger;
  * <p>
  * A {@link Tuple} is saved as a {@link Node} where the columns are converted into properties of the node.<br>
  * An {@link Association} is converted into a {@link Relationship} identified by the {@link AssociationKey} and the
- * {@link RowKey}. The type of the relationship is the value returned by {@link AssociationKey#getCollectionRole()}.
+ * {@link RowKey}. The type of the relationship is the value returned by
+ * {@link AssociationKeyMetadata#getCollectionRole()}.
  * <p>
  * If the value of a property is set to null the property will be removed (Neo4j does not allow to store null values).
  *
