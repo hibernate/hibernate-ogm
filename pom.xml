@@ -125,6 +125,12 @@
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
         <neo4jVersion>2.1.5</neo4jVersion>
+
+        <!--
+             Not all the Neo4j artifacts are available in the latest version; Some artifacts with the older
+             version need to be explicitly managed as they have transitive dependencies in different versions
+             than Neo4j core
+        -->
         <neo4jCypherCompilerOlderVersion>2.0.3</neo4jCypherCompilerOlderVersion>
         <hibernateVersion>4.3.6.Final</hibernateVersion>
         <hibernateSearchVersion>4.5.1.Final</hibernateSearchVersion>
@@ -149,7 +155,7 @@
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- 
+        <!--
              Following is the default jgroups mcast address.  If you find the testsuite runs very slowly, there
              may be problems with multicast on the interface JGroups uses by default on your machine. You can
              try to resolve setting 'jgroups.bind_addr' as a system-property to the jvm launching maven and
