@@ -140,14 +140,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final boolean mightRequireInverseAssociationManagement;
 
 	/**
-	 * Whether this persister uses an "emulated" optimistic locking or not.
+	 * Whether this persister uses an "emulated", i.e. non-atomic, optimistic locking or not.
 	 * <p>
 	 * {@code true} if this entity uses optimistic locking and the current dialect has no atomic find-and-update
 	 * facility.
 	 *
 	 * @see OptimisticLockingAwareGridDialect
 	 */
-	private final boolean usesEmulatedOptimisticLocking;
+	private final boolean usesNonAtomicOptimisticLocking;
 
 	private TupleContext tupleContext;
 
@@ -262,7 +262,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
 		mightRequireInverseAssociationManagement = initMayManageInverseAssociations();
-		usesEmulatedOptimisticLocking = initUsesEmulatedOptimisticLocking();
+		usesNonAtomicOptimisticLocking = initUsesNonAtomicOptimisticLocking();
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -370,8 +370,14 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		return false;
 	}
 
-	private boolean initUsesEmulatedOptimisticLocking() {
-		return ( optimisticLockingAwareGridDialect == null && isVersioned() ) || isAllOrDirtyOptLocking();
+	private boolean initUsesNonAtomicOptimisticLocking() {
+		boolean usesNonAtomicOptimisticLocking = ( optimisticLockingAwareGridDialect == null && isVersioned() ) || isAllOrDirtyOptLocking();
+
+		if ( usesNonAtomicOptimisticLocking ) {
+			log.usingNonAtomicOptimisticLocking( getEntityName() );
+		}
+
+		return usesNonAtomicOptimisticLocking;
 	}
 
 	@Override
@@ -924,7 +930,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 				final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
 				Tuple resultset = null;
 
-				if ( mightRequireInverseAssociationManagement || usesEmulatedOptimisticLocking ) {
+				if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
 					resultset = gridDialect.getTuple( key, getTupleContext() );
 				}
 				else {
@@ -943,7 +949,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 				final EntityMetamodel entityMetamodel = getEntityMetamodel();
 
-				if ( usesEmulatedOptimisticLocking ) {
+				if ( usesNonAtomicOptimisticLocking ) {
 					// Write any appropriate versioning conditional parameters
 					if ( useVersion && entityMetamodel.getOptimisticLockStyle() == OptimisticLockStyle.VERSION ) {
 						if ( checkVersion( propsToUpdate ) ) {
@@ -1219,11 +1225,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		Object[] loadedState = getLoadedState( id, session );
 		Tuple currentState = null;
 
-		if ( mightRequireInverseAssociationManagement || usesEmulatedOptimisticLocking ) {
+		if ( mightRequireInverseAssociationManagement || usesNonAtomicOptimisticLocking ) {
 			currentState = gridDialect.getTuple( key, getTupleContext() );
 		}
 
-		if ( usesEmulatedOptimisticLocking ) {
+		if ( usesNonAtomicOptimisticLocking ) {
 			checkOptimisticLockingState( id, key, object, loadedState, version, session, currentState );
 		}
 

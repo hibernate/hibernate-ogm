@@ -204,4 +204,9 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 65, value = "Id generation strategy IDENTITY configured for entity %1$s is not supported by the current grid dialect.")
 	HibernateException getIdentityGenerationStrategyNotSupportedException(String entityName);
+
+	@LogMessage(level = WARN)
+	@Message(id = 66, value = "Entity type %s uses an optimistic locking strategy which is not supported by the "
+			+ "current grid dialect in an atomic manner. There will be two datastore round-trips for version checking and updating the data.")
+	void usingNonAtomicOptimisticLocking(String entityName);
 }
