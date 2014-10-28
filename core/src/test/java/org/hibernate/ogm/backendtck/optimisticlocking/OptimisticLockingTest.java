@@ -107,8 +107,8 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 		// for the first update, the test dialect waits a bit between read and write, so the second update will take
 		// place in between, causing the exception
-		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
-		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus" );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", true );
+		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", true );
 
 		future2.get();
 		future1.get();
