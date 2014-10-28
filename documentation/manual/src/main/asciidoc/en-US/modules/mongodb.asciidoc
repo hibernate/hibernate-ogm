@@ -4,11 +4,12 @@
 
 http://www.mongodb.org[MongoDB] is a document oriented datastore
 written in C++ with strong emphasis on ease of use.
-
-==== Configuring MongoDB
+The nested nature of documents make it a particularly natural fit for most object representations.
 
 This implementation is based upon the MongoDB Java driver.
 The currently supported version is {mongodb-version}.
+
+==== Configuring MongoDB
 
 The following properties are available to configure MongoDB support:
 
@@ -112,7 +113,7 @@ public class Zoo {
     @AssociationStorage(AssociationStorageType.IN_ENTITY)
     private Set<Person> visitors;
 
-    //...
+    // getters, setters ...
 }
 ----
 ====
@@ -204,74 +205,326 @@ We worked particularly hard on the MongoDB model
 to offer various classic mappings between your object model
 and the MongoDB documents.
 
+[[mongodb-built-in-types]]
+===== Builtin types
+
+Hibernate OGM supports by default the following types:
+
+* [classname]+java.lang.String+
+
+[source, JSON]
+----
+  { "text" : "Hello world!" }
+----
+
+* [classname]+java.lang.Boolean+ (or boolean primitive)
+
+[source, JSON]
+----
+  { "favorite" : true }
+----
+
+* [classname]+java.lang.Byte+ (or byte primitive)
+
+[source, JSON]
+----
+  { "display_mask" : "70" }
+----
+
+* [classname]+java.lang.Long+ (or long primitive)
+
+[source, JSON]
+----
+  { "userId" : NumberLong("-6718902786625749549") }
+----
+
+* [classname]+java.lang.Integer+ (or integer primitive)
+
+[source, JSON]
+----
+  { "stockCount" : 12309 }
+----
+
+* [classname]+java.lang.Double+ (or double primitive)
+
+[source, JSON]
+----
+  { "tax_percentage" : 12.34 }
+----
+
+* [classname]+java.math.BigDecimal+
+
+[source, JSON]
+----
+  { "site_weight" : "21.77" }
+----
+
+* [classname]+java.math.BigInteger+
+
+[source, JSON]
+----
+  { "site_weight" : "444" }
+----
+
+* [classname]+java.util.Calendar+
+
+[source, JSON]
+----
+  { "creation" : "2014/11/03 16:19:49:283 +0000" }
+----
+
+* [classname]+java.util.Date+
+
+[source, JSON]
+----
+  { "last_update" : ISODate("2014-11-03T16:19:49.283Z") }
+----
+
+* [classname]+java.util.UUID+
+
+[source, JSON]
+----
+  { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
+----
+
+* [classname]+java.util.URL+
+
+[source, JSON]
+----
+  { "url" : "http://www.hibernate.org/" }
+----
+
+* [classname]+java.util.URL+
+
+[source, JSON]
+----
+  { "url" : "http://www.hibernate.org/" }
+----
+
+* [classname]+java.util.URL+
+
+[source, JSON]
+----
+  { "url" : "http://www.hibernate.org/" }
+----
+
+* [classname]+org.bson.types.ObjectId+
+
+[source, JSON]
+----
+  { "object_id" : ObjectId("547d9b40e62048750f25ef77") }
+----
+
 ===== Entities
 
-Entities are stored as MongoDB documents and not as BLOBs
-which means each entity property will be translated into a document field.
-You can use the name property of the [classname]+@Table+ and [classname]+@Column+ annotations
-to rename the collections and the document's fields if you need to.
+Entities are stored as MongoDB documents and not as BLOBs:
+each entity property will be translated into a document field.
+You can use [classname]+@Table+ and [classname]+@Column+ annotations
+to rename respectively the collection the document is stored in
+and the document's field a property is persisted in.
 
-Note that embedded objects are mapped as nested documents.
-
-.Example of an entity with an embedded object
+.Default JPA mapping for an entity
 ====
 [source, JAVA]
 ----
 @Entity
 public class News {
+
     @Id
     private String id;
     private String title;
-    @Column(name="desc")
-    private String description;
-    @Embedded
-    private NewsPaper paper;
 
-    //getters, setters ...
-}
-
-@Embeddable
-public class NewsPaper {
-    private String name;
-    private String owner;
-    //getters, setters ...
+    // getters, setters ...
 }
 ----
 
 [source, JSON]
 ----
+// Stored in the Collection "News"
 {
     "_id" : "1234-5678-0123-4567",
     "title": "On the merits of NoSQL",
-    "desc": "This paper discuss why NoSQL will save the world for good",
-    "paper": {
-        "name": "NoSQL journal of prophecies",
-        "owner": "Delphy"
-    }
+}
+----
+====
+
+.Rename field and collection using @Table and @Column
+====
+[source, JAVA]
+----
+@Entity
+// Overrides the collection name
+@Table(name = "News_Collection")
+public class News {
+
+    @Id
+    private String id;
+
+    // Overrides the field name
+    @Column(name = "headline")
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+// Stored in the Collection "News"
+{
+    "_id" : "1234-5678-0123-4567",
+    "headline": "On the merits of NoSQL",
 }
 ----
 ====
 
 ====== Identifiers
 
-The +_id+ field of a MongoDB document is directly used
-to store the identifier columns mapped in the entities.
-You can use simple identifiers (e.g. of type +long+ with a table-based id generator or of type +String+ with a GUID generator)
-as well as embedded identifiers.
+[NOTE]
+====
+Hibernate OGM always store identifiers using the +_id+ field of a MongoDB document ignoring
+the name of the property in the entity.
+====
+
+An identifier type may be one of the <<mongodb-built-in-types,built-in types>>
+or a more complex type represented by an embedded class.
+When you use a built-in type, the identifier is mapped like a regular property.
+When you use an embedded class, then the `_id` is representing a nested document
+containing the embedded class properties.
+
+.Define an identifier as a primitive type
+====
+[source, JAVA]
+----
+@Entity
+public class Bookmark {
+
+    @Id
+    private String id;
+
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id" : "bookmark_1" 
+  "title" : "Hibernate OGM documentation"
+}
+----
+====
+
+.Define an identifier using @EmbeddedId
+====
+[source, JAVA]
+----
+@Embeddable
+public class NewsID implements Serializable {
+
+    private String title;
+    private String author;
+
+    // getters, setters ...
+}
+
+@Entity
+public class News {
+
+    @EmbeddedId
+    private NewsID newsId;
+    private String content;
+
+    // getters, setters ...
+}
+----
+
+News collection as JSON in MongoDB
+
+[source, JSON]
+----
+
+{
+  "_id" : {
+      "author" : "Guillaume",
+      "title" : "How to use Hibernate OGM ?"
+  },
+  "content" : "Simple, just like ORM but with a NoSQL database"
+}
+
+----
+====
 
 Generally, it is recommended though to work with MongoDB's object id data type.
-This will facilitate the integration with other applications possibly expecting that common MongoDB id type.
+This will facilitate the integration with other applications expecting that common MongoDB id type.
 To do so, you have two options:
 
-* Define your id property as +String+ and annotate it with +@Type(type="objectid")+
 * Define your id property as +org.bson.types.ObjectId+
+* Define your id property as +String+ and annotate it with +@Type(type="objectid")+
 
 In both cases the id will be stored as native +ObjectId+ in the datastore.
 
-You can assign id values yourself or (preferably) take advantage of the +IDENTITY+ generation strategy
-which will automatically assign an id during insert. The following shows an example:
+.Define an id as ObjectId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
 
-.Mapping id as object id in MongoDB
+    @Id
+    private ObjectId id;
+
+    private String title;
+
+    // getters, setters ...
+}
+----
+====
+
+.Define an id of type String as ObjectId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    @Type(type = "objectid")
+    private String id;
+
+    private String title;
+
+    // getters, setters ...
+}
+----
+====
+
+====== Identifier generation strategies
+
+You can assign id values yourself or let Hibernate OGM generate the value using the
+[classname]+@GeneratedValue+ annotation.
+
+There are 4 different strategies:
+
+1. <<mongodb-identity-id-generation-strategy, IDENTITY>> (suggested)
+2. <<mongodb-table-id-generation-strategy, TABLE>>
+3. <<mongodb-sequence-id-generation-strategy, SEQUENCE>>
+4. <<mongodb-auto-id-generation-strategy, AUTO>>
+
+[[mongodb-identity-id-generation-strategy]]
+*1) IDENTITY generation strategy*
+
+The preferable strategy, Hibernate OGM will create the identifier upon insertion.
+To apply this strategy the id must be one of the following:
+
+* annotated with +@Type(type="objectid")+
+* [classname]+org.bson.types.ObjectId+ 
+
+like in the following examples:
+
+.Define an id of type String as ObjectId
 ====
 [source, JAVA]
 ----
@@ -282,9 +535,10 @@ public class News {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Type(type = "objectid")
     private String id;
+
     private String title;
 
-    //getters, setters ...
+    // getters, setters ...
 }
 ----
 
@@ -297,7 +551,201 @@ public class News {
 ----
 ====
 
-[NOTE]
+.Define an id as ObjectId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private ObjectId id;
+
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id" : ObjectId("5425448830048b67064d40b1"),
+    "title" : "Exciting News"
+}
+----
+====
+
+[[mongodb-table-id-generation-strategy]]
+*2) TABLE generation strategy*
+
+.Id generation strategy TABLE using default values
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private Long id;
+
+    private String name;
+
+    // getters, setters ...
+}
+
+----
+
+GuitarPlayer collection
+
+[source, JSON]
+----
+{
+    "_id" : NumberLong(1),
+    "name" : "Buck Cherry"
+}
+----
+
+hibernate_sequences collection
+
+[source, JSON]
+----
+{ 
+    "_id" : "GuitarPlayer",
+    "next_val" : 101
+}
+----
+====
+
+.Id generation strategy TABLE using a custom table
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "guitarGen")
+    @TableGenerator(
+        name = "guitarGen",
+        table = "GuitarPlayerSequence",
+        pkColumnValue = "guitarPlayer",
+        valueColumnName = "nextGuitarPlayerId"
+    )
+    private long id;
+
+    // getters, setters ...
+}
+
+----
+
+GuitarPlayer collection
+
+[source, JSON]
+----
+{
+    "_id" : NumberLong(1),
+    "name" : "Buck Cherry"
+}
+----
+
+GuitarPlayerSequence collection
+
+[source, JSON]
+----
+{
+    "_id" : "guitarPlayer",
+    "nextGuitarPlayerId" : 2
+}
+----
+====
+
+*3) SEQUENCE generation strategy*
+
+[[mongodb-sequence-id-generation-strategy]]
+.SEQUENCE id generation strategy using default values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+Song collection
+
+[source, JSON]
+----
+{
+  "_id" : NumberLong(2),
+  "title" : "Flower Duet"
+}
+----
+
+hibernate_sequences collection
+
+[source, JSON]
+----
+{ "_id" : "song_sequence_name", "next_val" : 21 } 
+----
+====
+
+[[mongodb-sequence-id-generation-strategy-custom]]
+.SEQUENCE id generation strategy using custom values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator")
+  @SequenceGenerator(
+      name = "songSequenceGenerator",
+      sequenceName = "song_seq",
+      initialValue = 2,
+      allocationSize = 20
+  )
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+Song collection
+
+[source, JSON]
+----
+{
+  "_id" : NumberLong(2),
+  "title" : "Flower Duet"
+}
+----
+
+hibernate_sequences collection
+
+[source, JSON]
+----
+{ "_id" : "song_seq", "next_val" : 42 } 
+----
+====
+
+[[mongodb-auto-id-generation-strategy]]
+*4) AUTO generation strategy*
+
+[WARNING]
 ====
 Care must be taken when using the +GenerationType.AUTO+ strategy.
 When the property +hibernate.id.new_generator_mappings+ is set to +false+ (default),
@@ -305,18 +753,77 @@ it will map to the +IDENTITY+ strategy.
 As described before, this requires your ids to be of type +ObjectId+ or @Type(type = "objectid") String.
 If +hibernate.id.new_generator_mappings+ is set to true, +AUTO+ will be mapped to the +TABLE+ strategy.
 This requires your id to be of a numeric type.
+
 We recommend to not use +AUTO+ but one of the explicit strategies (+IDENTITY+ or +TABLE+) to avoid
 potential misconfigurations.
+
+For more details you can check the issue https://hibernate.atlassian.net/browse/OGM-663[OGM-663].
 ====
 
-Embedded identifiers are stored as embedded document within the +_id+ field.
-Hibernate OGM will convert the +@Id+ property into a +_id+ document field
-so you can name the entity id like you want it will always be stored into +_id+
-(the recommended approach in MongoDB).
-That means in particular that MongoDB will automatically index your _id fields.
-Let's look at an example:
+If the property +hibernate.id.new_generator_mappings+  is set to +false+,
++AUTO+ will behave as the +IDENTITY+ strategy.
 
-.Example of an entity using Embedded id
+If the property +hibernate.id.new_generator_mappings+  is set to +true+,
++AUTO+ will behave as the +SEQUENCE+ strategy.
+
+.AUTO id generation strategy using default values
+====
+[source, JAVA]
+----
+@Entity
+public class DistributedRevisionControl {
+  
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
+
+  private String name;
+
+  // getters, setters ...
+}
+----
+
+DistributedRevisionControl collection
+
+[source, JSON]
+----
+{ "_id" : NumberLong(1), "name" : "Git" }
+----
+
+hibernate_sequences collection
+
+[source, JSON]
+----
+{ "_id" : "hibernate_sequence", "next_val" : 2 }
+----
+====
+
+.AUTO id generation strategy wih +hibernate.id.new_generator_mappings+ set to false and ObjectId
+====
+[source, JAVA]
+----
+@Entity
+public class Comedian {
+  
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private ObjectId id;
+
+  private String name;
+
+  // getters, setters ...
+}
+----
+
+Comedian collection
+
+[source, JSON]
+----
+{ "_id" : ObjectId("5458b11693f4add0f90519c5"), "name" : "Louis C.K." }
+----
+====
+
+.Entity with @EmbeddedId
 ====
 [source, JAVA]
 ----
@@ -325,7 +832,8 @@ public class News {
 
     @EmbeddedId
     private NewsID newsId;
-    //getters, setters ...
+
+    // getters, setters ...
 }
 
 @Embeddable
@@ -333,10 +841,12 @@ public class NewsID implements Serializable {
 
     private String title;
     private String author;
-    //getters, setters ...
+
+    // getters, setters ...
 }
 ----
 
+Rendered as JSON in MongoDB
 [source, JSON]
 ----
 {
@@ -348,30 +858,833 @@ public class NewsID implements Serializable {
 ----
 ====
 
+====== Embedded objects and collections
+
+Hibernate OGM stores elements annotated with [classname]+@Embedded+ or [classname]+@ElementCollection+ as nested documents of the owning entity.
+
+.Embedded object
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+    private String title;
+
+    @Embedded
+    private NewsPaper paper;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsPaper {
+
+    private String name;
+    private String owner;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id" : "1234-5678-0123-4567",
+    "title": "On the merits of NoSQL",
+    "paper": {
+        "name": "NoSQL journal of prophecies",
+        "owner": "Delphy"
+    }
+}
+----
+====
+
+.@ElementCollection with primitive types
+====
+[source, JAVA]
+----
+@Entity
+public class AccountWithPhone {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<String> mobileNumbers;
+
+    // getters, setters ...
+}
+----
+
+AccountWithPhone collection
+
+[source, JSON]
+----
+{
+    "_id" : "john_account",
+    "mobileNumbers" : [ "+1-222-555-0222", "+1-202-555-0333" ]
+}
+----
+====
+
+.@ElementCollection with one attribute
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id" : "df153180-c6b3-4a4c-a7da-d5de47cf6f00",
+    "grandChildren" : [ "Luke", "Leia" ]
+}
+----
+====
+
+The class [classname]+GrandChild+ has only one attribute +name+,
+this means that Hibernate OGM doesn't need to store the name of the attribute.
+
+If the nested document has two or more fields, like in the following example,
+Hibernate OGM will store the name of the fields as well.
+
+.@ElementCollection with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    @OrderColumn( name = "birth_order" )
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id" : "e3e1ed4e-c685-4c3f-9a67-a5aeec6ff3ba",
+    "grandChildren" :
+        [
+            {
+                "name" : "Luke",
+                "birth_order" : 0
+            },
+            {
+                "name" : "Leia",
+                "birthorder" : 1
+            }
+        ]
+}
+----
+====
+
 ===== Associations
 
 Hibernate OGM MongoDB proposes three strategies to store navigation information for associations.
-To switch between these strategies,
-either use the +@AssocationStorage+ and +@AssociationDocumentStorage+ annotations (see <<ogm-mongodb-annotation-configuration>>),
-the API for programmatic configuration (see <<ogm-mongodb-programmatic-configuration>>) or
-specify a default strategy via the +hibernate.ogm.datastore.document.association_storage+ and
-+hibernate.ogm.mongodb.association_document_storage+ configuration properties.
-
 The three possible strategies are:
 
-* IN_ENTITY (default)
-* ASSOCIATION_DOCUMENT, using a global collection for all associations
-* ASSOCIATION_DOCUMENT, using a dedicated collection for each association
+* <<mongodb-in-entity-strategy, IN_ENTITY>> (default)
+* <<mongodb-association-document-strategy, ASSOCIATION_DOCUMENT>>, using a global collection for all associations
+* <<mongodb-collection-per-association-strategy, COLLECTION_PER_ASSOCIATION>>, using a dedicated collection for each association
 
+To switch between these strategies, use of the three approaches to options:
+
+* annotate your entity with +@AssocationStorage+ and +@AssociationDocumentStorage+ annotations (see <<ogm-mongodb-annotation-configuration>>),
+* use the API for programmatic configuration (see <<ogm-mongodb-programmatic-configuration>>)
+* or specify a default strategy via the +hibernate.ogm.datastore.document.association_storage+ and
++hibernate.ogm.mongodb.association_document_storage+ configuration properties.
+
+[[mongodb-in-entity-strategy]]
 ====== In Entity strategy
 
-In this strategy, Hibernate OGM directly stores the id(s)
-of the other side of the association
-into a field or an embedded document
-depending if the mapping concerns a single object or a collection.
-The field that stores the relationship information is named like the entity property.
+* <<mongodb-in-entity-to-one-associations, *-to-one associations>>
+* <<mongodb-in-entity-to-many-associations, *-to-many associations>>
 
-.Java entity
+In this strategy, Hibernate OGM stores the id(s) of the associated entity(ies)
+into the entity document itself.
+This field stores the id value for to-one associations and an array of id values for to-many associations.
+An embedded id will be represented by a nested document.
+For indexed collections (i.e. `List` or `Map`), the index will be stored along the id.
+
+[NOTE]
+====
+When using this strategy the annotations +@JoinTable+ will be ignored because no collection is created
+for associations.
+
+You can use +@JoinColumn+ to change the name of the field that stores the foreign key (as an example, see
+<<mongodb-in-entity-one-to-one-join-column>>).
+====
+
+[[mongodb-in-entity-to-one-associations]]
+====== To-one associations
+
+.Unidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id" : "V_01",
+  "brand" : "Mercedes"
+}
+----
+
+Wheel collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "W001",
+  "diameter" : 0,
+  "vehicule_id" : "V_01"
+}
+----
+====
+
+[[mongodb-in-entity-one-to-one-join-column]]
+.Unidirectional one-to-one with @JoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @JoinColumn( name = "part_of" )
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id" : "V_01",
+  "brand" : "Mercedes"
+}
+----
+
+Wheel collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "W001",
+  "diameter" : 0,
+  "part_of" : "V_01"
+}
+----
+====
+
+In a true one-to-one association, it is possible to share the same id between the two entities
+and therefore a foreign key is not required. You can see how to map this type of association in
+the following example:
+
+.Unidirectional one-to-one with @MapsId and @PrimaryKeyJoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @PrimaryKeyJoinColumn
+    @MapsId
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+Vehicule collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "V_01",
+  "brand" : "Mercedes"
+}
+----
+
+Wheel collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "V_01",
+  "diameter" : 0,
+}
+----
+====
+
+.Bidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Husband {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Wife wife;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wife {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Husband husband;
+
+    // getters, setters ...
+}
+----
+
+Husband collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "alex",
+  "name" : "Alex",
+  "wife" : "bea"
+}
+----
+
+Wife collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "bea",
+  "name" : "Bea",
+  "husband" : "alex"
+}
+----
+====
+
+.Unidirectional many-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class JavaUserGroup {
+
+    @Id
+    private String jugId;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Member {
+
+    @Id
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private JavaUserGroup memberOf;
+
+    // getters, setters ...
+}
+----
+
+JavaUserGroup collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+    "_id" : "summer_camp",
+    "name" : "JUG Summer Camp"
+}
+----
+
+Member collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+    "_id" : "jerome",
+    "name" : "Jerome"
+    "memberOf_jugId" : "summer_camp"
+}
+{
+    "_id" : "emmanuel",
+    "name" : "Emmanuel Bernard"
+    "memberOf_jugId" : "summer_camp"
+}
+----
+====
+
+.Bidirectional many-to-one 
+====
+[source, JAVA]
+----
+@Entity
+public class SalesForce {
+
+    @Id
+    private String id;
+    private String corporation;
+
+    @OneToMany(mappedBy = "salesForce")
+    private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class SalesGuy {
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private SalesForce salesForce;
+
+    // getters, setters ...
+}
+----
+
+SalesForce collection
+
+[source, JSON]
+----
+{
+    "_id" : "red_hat",
+    "corporation" : "Red Hat",
+    "salesGuys" : [ "eric", "simon" ]
+}
+----
+
+SalesGuy collection
+
+[source, JSON]
+----
+{
+    "_id" : "eric",
+    "name" : "Eric"
+    "salesForce_id" : "red_hat",
+}
+{
+    "_id" : "simon",
+    "name" : "Simon",
+    "salesForce_id" : "red_hat"
+}
+----
+====
+
+[[mongodb-in-entity-to-many-associations]]
+====== To-many associations
+
+.Unidirectional one-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id" : "davide_basket",
+  "owner" : "Davide",
+  "products" : [ "Beer", "Pretzel" ]
+}
+----
+
+Product collection
+
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+====
+
+.Unidirectional one-to-many with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id" : "davide_basket",
+  "owner" : "Davide",
+  "products" : [
+    {
+      "products_name" : "Pretzel",
+      "products_ORDER" : 1
+    },
+    {
+      "products_name" : "Beer",
+      "products_ORDER" : 0
+    }
+  ]
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+====
+
+A map can be used to represents an association,
+in this case Hibernate OGM will store the key of the map
+and the associated id.
+
+.Unidirectional one-to-many using maps with defaults
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+User collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "user_001",
+  "addresses" : [
+    { 
+      "addresses_KEY" : "work",
+      "addresses_id" : "address_001"
+    },
+    {
+      "addresses_KEY" : "home",
+      "addresses_id" : "address_002"
+    }
+  ]
+}
+----
+
+Address collection as JSON in MongoDB
+
+[source, JSON]
+----
+{ "_id" : "address_001", "city" : "Rome" } 
+{ "_id" : "address_002", "city" : "Paris" } 
+----
+====
+
+You can use @MapKeyColumn to rename the column containing the key of the map.
+
+.Unidirectional one-to-many using maps with @MapKeyColumn
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    @MapKeyColumn(name = "addressType")
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+User collection as JSON in MongoDB
+
+[source, JSON]
+----
+{
+  "_id" : "user_001",
+  "addresses" : [
+    { 
+      "addressType" : "work",
+      "addresses_id" : "address_001"
+    },
+    {
+      "addressType" : "home",
+      "addresses_id" : "address_002"
+    }
+  ]
+}
+----
+
+Address collection as JSON in MongoDB
+
+[source, JSON]
+----
+{ "_id" : "address_001", "city" : "Rome" } 
+{ "_id" : "address_002", "city" : "Paris" } 
+----
+====
+
+.Unidirectional many-to-many using in entity strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+Student collection
+
+[source, JSON]
+----
+{
+  "_id" : "john",
+  "name" :"John Doe" }
+{
+  "_id" : "mario",
+  "name" : "Mario Rossi"
+}
+{
+  "_id" : "kate",
+  "name" : "Kate Doe"
+}
+----
+
+ClassRoom collection
+
+[source, JSON]
+----
+{
+  "_id" : NumberLong(1),
+  "lesson" : "Math"
+  "students" : [
+     "mario",
+     "john"
+  ]
+}
+{
+  "_id" : NumberLong(2),
+  "lesson" : "English"
+  "students" : [
+     "mario",
+     "kate"
+  ]
+}
+----
+====
+
+.Bidirectional many-to-many 
 ====
 [source, JAVA]
 ----
@@ -381,21 +1694,86 @@ public class AccountOwner {
     @Id
     private String id;
 
-    @ManyToMany
-    public Set<BankAccount> bankAccounts;
+    private String SSN;
 
-    //getters, setters, ...
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany( mappedBy = "bankAccounts" )
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+AccountOwner collection
+
+[source, JSON]
+----
+{
+    "_id" : "owner_1",
+    "SSN" : "0123456"
+    "bankAccounts" : [ "account_1" ]
+}
+----
+
+BankAccount collection
+
+[source, JSON]
+----
+{
+    "_id" : "account_1",
+    "accountNumber" : "X2345000"
+    "owners" : [ "owner_1", "owner2222" ]
 }
 ----
 ====
 
-.JSON representation
+[[mongodb-collection-per-association-strategy]]
+====== One collection per association strategy
+
+In this strategy, Hibernate OGM creates a MongoDB collection per association
+in which it will store all navigation information for that particular association.
+
+This is the strategy closest to the relational model.
+If an entity A is related to B and C, 2 collections will be created.
+The name of this collection is made of the association table concatenated with +associations_+.
+
+For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related,
+the collection used to store will be named +associations_Owner_BankAccount+. You can rename
+The prefix is useful to quickly identify the association collections from the entity collections.
+You can also decide to rename the collection representing the association using +@JoinTable+
+(see <<mongodb-one-collection-strategy-join-table, an example>>) 
+
+Each document of an association collection has the following structure:
+
+* +_id+ contains the id of the owner of relationship
+* +rows+ contains all the id of the related entities
+
+[NOTE]
+====
+The preferred approach is to use the <<mongodb-in-entity-strategy, in-entity strategy>>
+but this approach can alleviate the problem of having documents that are too big.
+====
+
+.Unidirectional relationship
 ====
 [source, JSON]
 ----
 {
-    "_id" : "owner0001",
-    "bankAccounts" : [
+    "_id" : { "owners_id" : "owner0001" },
+    "rows" : [
         "accountABC",
         "accountXYZ"
     ]
@@ -403,17 +1781,418 @@ public class AccountOwner {
 ----
 ====
 
+.Bidirectional relationship
+====
+[source, JSON]
+----
+{
+    "_id" : { "owners_id" : "owner0001" },
+    "rows" : [ "accountABC", "accountXYZ" ]
+}
+{
+    "_id" : { "bankAccounts_id" : "accountXYZ" },
+    "rows" : [ "owner0001" ]
+}
+----
+====
+
+[NOTE]
+====
+This strategy won't affect *-to-one associations or embedded collections.
+====
+
+.Unidirectional one-to-many using one collection per strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id" : "davide_basket",
+  "owner" : "Davide"
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+
+associations_Basket_Product collection
+[source, JSON]
+----
+{
+  "_id" : { "Basket_id" : "davide_basket" },
+  "rows" : [ "Beer", "Pretzel" ]
+}
+----
+====
+
+The order of the element in the list might be preserved using @OrderColumn.
+Hibernate OGM will store the order adding an additional fieldd to the document
+containing the association.
+
+.Unidirectional one-to-many using one collection per strategy with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    @OrderColumn
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id" : "davide_basket",
+  "owner" : "Davide"
+}
+----
+
+Product collection
+
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+
+associations_Basket_Product collection
+
+[source, JSON]
+----
+{
+  "_id" : { "Basket_id" : "davide_basket" },
+  "rows" : [
+    {
+      "products_name" : "Pretzel",
+      "products_ORDER" : 1
+    },
+    {
+      "products_name" : "Beer",
+      "products_ORDER" : 0
+    }
+  ]
+}
+----
+====
+
+.Unidirectional many-to-many using one collection per association strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+Student collection
+
+[source, JSON]
+----
+{
+  "_id" : "john",
+  "name" : "John Doe"
+}
+{
+  "_id" : "mario",
+  "name" : "Mario Rossi"
+}
+{
+  "_id" : "kate",
+  "name" : "Kate Doe"
+}
+----
+
+ClassRoom collection
+
+[source, JSON]
+----
+{
+  "_id" : NumberLong(1),
+  "lesson" : "Math"
+}
+{
+  "_id" : NumberLong(2),
+  "lesson" : "English"
+}
+----
+
+associations_ClassRoom_Student
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "ClassRoom_id" : NumberLong(1),
+  },
+  "rows" : [ "john", "mario" ]
+}
+{
+  "_id" : {
+    "ClassRoom_id" : NumberLong(2),
+  },
+  "rows" : [ "mario", "kate" ]
+}
+----
+====
+
+.Bidirectional many-to-many using one collection per association strategy
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany(mappedBy = "bankAccounts")
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+AccountOwner collection
+
+[source, JSON]
+----
+{
+  "_id" : "owner_1",
+  "SSN" : "0123456"
+}
+----
+
+BankAccount collection
+
+[source, JSON]
+----
+{
+  "_id" : "account_1",
+  "accountNumber" : "X2345000"
+}
+----
+
+associations_AccountOwner_BankAccount collection 
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "bankAccounts_id" : "account_1"
+  },
+  "rows" : [ "owner_1" ] 
+}
+{
+  "_id" : {
+    "owners_id" : "owner_1"
+  },
+  "rows" : [ "account_1" ]
+}
+----
+====
+
+[[mongodb-one-collection-strategy-join-table]]
+You can change the name of the collection containing the association using the +@JoinTable+ annotation.
+In the following example, the name of the collection containing the association is +OwnerBankAccounts+
+(instead of the default +associations_AccountOwner_BankAccount+)
+
+.Bidirectional many-to-many using one collection per association strategy and @JoinTable
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    @JoinTable( name = "OwnerBankAccounts" )
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany(mappedBy = "bankAccounts")
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+AccountOwner collection
+
+[source, JSON]
+----
+{
+  "_id" : "owner_1",
+  "SSN" : "0123456"
+}
+----
+
+BankAccount collection
+
+[source, JSON]
+----
+{
+  "_id" : "account_1",
+  "accountNumber" : "X2345000"
+}
+----
+
+OwnerBankAccount
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "bankAccounts_id" : "account_1"
+  },
+  "rows" : [ "owner_1" ] 
+}
+{
+  "_id" : {
+    "owners_id" : "owner_1"
+  },
+  "rows" : [ "account_1" ]
+}
+----
+====
+
+[[mongodb-association-document-strategy]]
 ====== Global collection strategy
 
-With this strategy, Hibernate OGM creates a single collection
+With this strategy, Hibernate OGM creates a single collection named +Associations+
 in which it will store all navigation information for all associations.
-Each document of this collection is structure in 2 parts.
+Each document of this collection is structured in 2 parts.
 The first is the +_id+ field which contains the identifier information
 of the association owner and the name of the association table.
 The second part is the +rows+ field which stores (into an embedded collection) all ids
 that the current instance is related to.
 
-.Unidirectional relationship
+[NOTE]
+====
+This strategy won't affect *-to-one associations or embedded collections.
+
+Generally, you should not make use of this strategy 
+unless embedding the association information proves to be too big for your document
+and you wish to separate them.
+====
+
+.Associations collection containing unidirecational association
 ====
 [source, JSON]
 ----
@@ -422,10 +2201,7 @@ that the current instance is related to.
         "owners_id": "owner0001",
         "table": "AccountOwner_BankAccount"
     },
-    "rows": [
-        "accountABC",
-        "accountXYZ"
-    ]
+    "rows": [ "accountABC", "accountXYZ" ]
 }
 ----
 ====
@@ -433,7 +2209,7 @@ that the current instance is related to.
 For a bidirectional relationship, another document is created where ids are reversed.
 Don't worry, Hibernate OGM takes care of keeping them in sync:
 
-.Bidirectional relationship
+.Associations collection containing a bidirectional association
 ====
 [source, JSON]
 ----
@@ -442,71 +2218,319 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
         "owners_id": "owner0001",
         "table": "AccountOwner_BankAccount"
     },
-    "rows": [
-        "accountABC",
-        "accountXYZ"
-        ]
+    "rows": [ "accountABC", "accountXYZ" ]
 }
 {
     "_id": {
         "bankAccounts_id": "accountXYZ",
         "table": "AccountOwner_BankAccount"
     },
-    "rows": [
-        "owner0001"
-    ]
+    "rows": [ "owner0001" ]
 }
 ----
 ====
 
-====== One collection per association strategy
-
-In this strategy, Hibernate OGM creates a MongoDB collection per association
-in which it will store all navigation information for that particular association.
-This is the strategy closest to the relational model.
-If an entity A is related to B and C, 2 collections will be created.
-The name of this collection is made of the association table concatenated with +associations_+.
-For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related,
-the collection used to store will be named +associations_Owner_BankAccount+.
-The prefix is useful to quickly identify the association collections from the entity collections.
-Each document of an association collection has the following structure:
-
-* +_id+ contains the id of the owner of relationship
-* +rows+ contains all the id of the related entities
-
-.Unidirectional relationship
+.Unidirectional one-to-many using global collection strategy
 ====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
 [source, JSON]
 ----
 {
-    "_id" : { "owners_id" : "owner0001" },
-    "rows" : [
-        "accountABC",
-        "accountXYZ"
-    ]
+  "_id" : "davide_basket",
+  "owner" : "Davide"
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+
+Associations collection
+[source, JSON]
+----
+{
+  "_id" : {
+    "Basket_id" : "davide_basket",
+    "table" : "Basket_Product"
+  },
+  "rows" : [
+    {
+      "products_name" : "Pretzel",
+      "products_ORDER" : 1
+    },
+    {
+      "products_name" : "Beer",
+    "products_ORDER" : 0
+    }
+  ]
 }
 ----
 ====
 
-.Bidirectional relationship
+.Unidirectional one-to-many using global collection strategy with +@JoinTable+
 ====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    // It will change the value stored in the field table in the Associations collection
+    @JoinTable( name = "BasketContent" )
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
 [source, JSON]
 ----
 {
-    "_id" : { "owners_id" : "owner0001" },
-    "rows" : [
-        "accountABC",
-        "accountXYZ"
-    ]
+  "_id" : "davide_basket",
+  "owner" : "Davide"
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
 }
 {
-    "_id" : { "bankAccounts_id" : "accountXYZ" },
-    "rows" : [
-        "owner0001"
-    ]
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+
+Associations collection
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "Basket_id" : "davide_basket",
+    "table" : "BasketContent"
+  },
+  "rows" : [ "Beer", "Pretzel" ]
 }
 ----
 ====
+
+.Unidirectional many-to-many using global collection strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+Student collection
+
+[source, JSON]
+----
+{
+  "_id" : "john",
+  "name" : "John Doe"
+}
+{
+  "_id" : "mario",
+  "name" : "Mario Rossi"
+}
+{
+  "_id" : "kate",
+  "name" : "Kate Doe"
+}
+----
+
+ClassRoom collection
+
+[source, JSON]
+----
+{
+  "_id" : NumberLong(1),
+  "lesson" : "Math"
+}
+{
+  "_id" : NumberLong(2),
+  "lesson" : "English"
+}
+----
+
+Associations collection
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "ClassRoom_id" : NumberLong(1),
+    "table" : "ClassRoom_Student"
+  },
+  "rows" : [ "john", "mario" ]
+}
+{
+  "_id" : {
+    "ClassRoom_id" : NumberLong(2),
+    "table" : "ClassRoom_Student"
+  },
+  "rows" : [ "mario", "kate" ]
+}
+----
+====
+
+.Bidirectional many-to-many using global collection strategy
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany(mappedBy = "bankAccounts")
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+AccountOwner collection
+
+[source, JSON]
+----
+{
+  "_id" : "owner0001",
+  "SSN" : "0123456"
+}
+----
+
+BankAccount collection
+
+[source, JSON]
+----
+{
+  "_id" : "account_1",
+  "accountNumber" : "X2345000"
+}
+----
+
+Associations collection
+
+[source, JSON]
+----
+{
+  "_id" : {
+    "bankAccounts_id" : "account_1",
+    "table" : "AccountOwner_BankAccount"
+    },
+
+  "rows" : [ "owner0001" ]
+}
+{
+  "_id" : {
+    "owners_id" : "owner0001",
+    "table" : "AccountOwner_BankAccount"
+  },
+
+  "rows" : [ "account_1" ]
+}
+----
+====
+
 
 ==== Transactions
 
@@ -605,7 +2629,6 @@ public class Poem {
     private String author;
 
    // getters, setters ...
-
 }
 
 ...
@@ -692,6 +2715,75 @@ Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
 Hibernate OGM stores data in a natural way so you can still execute queries using the
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
+
+===== Optimistic Locking
+
+MongoDB does not provide a built-in mechanism for detecting concurrent updates to the same document
+but it provides a way to execute atomic find and update operations. by exploiting this commands
+Hibernate OGM can detect concurrent modification to the same document.
+
+You can enable optimistic locking detection using the annotation [classname]+@Version+:
+
+.Optimistic locking detection via +@Version+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "version" : 0
+}
+----
+====
+
+The +@Version+ annotation define which attribute will keep track of the version of the document,
+Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
+are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
+
+You can use [classname]+@Column+ to change the name of the field created on MongoDB:
+
+.Optimistic locking detection via +@Version+ using +@Column+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    @Column(name="OPTLOCK")
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "OPTLOCK" : 0
+}
+----
+====
 
 ===== Hibernate Search
 
