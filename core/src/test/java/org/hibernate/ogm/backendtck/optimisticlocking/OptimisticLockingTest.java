@@ -49,6 +49,10 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class OptimisticLockingTest extends OgmTestCase {
 
+	private static enum LatchAction {
+		DECREASE_AND_WAIT, IGNORE
+	};
+
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -85,7 +89,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		entity.setName( "Uranus" );
 
 		// update the entity in parallel...
-		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", LatchAction.IGNORE );
 		future1.get();
 
 		// ... which will be detected by the re-read prior to the update
@@ -107,8 +111,8 @@ public class OptimisticLockingTest extends OgmTestCase {
 
 		// for the first update, the test dialect waits a bit between read and write, so the second update will take
 		// place in between, causing the exception
-		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", true );
-		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", true );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", LatchAction.DECREASE_AND_WAIT );
+		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", LatchAction.DECREASE_AND_WAIT );
 
 		future2.get();
 		future1.get();
@@ -132,7 +136,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		session.delete( entity );
 
 		// update the entity in parallel...
-		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", LatchAction.IGNORE );
 		future1.get();
 
 		// ... which will be detected by the re-read prior to the removal
@@ -155,7 +159,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		// for the delete, the test dialect waits a bit between read and delete, so the update will take place in
 		// between, causing the exception
 		Future<?> future1 = removePlanetInSeparateThread();
-		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", true );
+		Future<?> future2 = updateInSeparateThread( Planet.class, "planet-1", "Uranus", LatchAction.DECREASE_AND_WAIT );
 
 		future2.get();
 		future1.get();
@@ -179,7 +183,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		entity.setName( "PSR J0537-6910" );
 
 		// update the entity in parallel...
-		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12" );
+		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12", LatchAction.IGNORE );
 		future1.get();
 
 		// ... which will be detected by the re-read prior to the update
@@ -204,7 +208,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		session.delete( entity );
 
 		// update the entity in parallel...
-		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12" );
+		Future<?> future1 = updateInSeparateThread( Pulsar.class, "pulsar-1", "PSR B1257+12", LatchAction.IGNORE );
 		future1.get();
 
 		// ... which will be detected by the re-read prior to the removal
@@ -250,7 +254,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		commitTransactionAndPropagateExceptions( session, transaction );
 
 		// update the entity in parallel...
-		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars" );
+		Future<?> future1 = updateInSeparateThread( Planet.class, "planet-1", "Mars", LatchAction.IGNORE );
 		future1.get();
 
 		session = openSession();
@@ -265,11 +269,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 		}
 	}
 
-	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName) throws Exception {
-		return updateInSeparateThread( type, id, newName, false );
-	}
-
-	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName, final boolean awaitLatch) throws Exception {
+	private Future<?> updateInSeparateThread(final Class<? extends Nameable> type, final String id, final String newName, final LatchAction latchAction) throws Exception {
 		return Executors.newSingleThreadExecutor().submit( new Runnable() {
 
 			@Override
@@ -281,7 +281,7 @@ public class OptimisticLockingTest extends OgmTestCase {
 				Nameable entity = (Nameable) session.get( type, id );
 				entity.setName( newName );
 
-				if ( awaitLatch ) {
+				if ( latchAction == LatchAction.DECREASE_AND_WAIT ) {
 					countDownAndAwaitLatch();
 				}
 
