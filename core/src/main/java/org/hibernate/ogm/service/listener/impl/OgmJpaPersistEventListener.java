@@ -14,15 +14,23 @@ import org.hibernate.action.internal.EntityIdentityInsertAction;
 import org.hibernate.action.internal.EntityInsertAction;
 import org.hibernate.bytecode.instrumentation.spi.FieldInterceptor;
 import org.hibernate.engine.internal.Versioning;
+import org.hibernate.engine.spi.EntityEntry;
 import org.hibernate.engine.spi.EntityKey;
 import org.hibernate.engine.spi.Status;
+import org.hibernate.event.internal.DefaultPersistEventListener;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.event.internal.core.JpaPersistEventListener;
+import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.type.Type;
 import org.hibernate.type.TypeHelper;
 
 /**
+ * A almost 1:1 copy of ORM's {@link DefaultPersistEventListener}. Used as a temp. work-around until HHH-9451 is
+ * resolved. The only difference to the original class is that the extra entity state of temporary entity entries is
+ * propagated to the final entries in
+ * {@link #performSaveOrReplicate(Object, EntityKey, EntityPersister, boolean, Object, EventSource, boolean)}.
+ *
  * @author Emmanuel Bernard
  * @author Gunnar Morling
  */
@@ -62,7 +70,7 @@ public class OgmJpaPersistEventListener extends JpaPersistEventListener {
 		// Put a placeholder in entries, so we don't recurse back and try to save() the
 		// same object again. QUESTION: should this be done before onSave() is called?
 		// likewise, should it be done before onUpdate()?
-		source.getPersistenceContext().addEntry(
+		EntityEntry original = source.getPersistenceContext().addEntry(
 				entity,
 				Status.SAVING,
 				null,
@@ -119,6 +127,15 @@ public class OgmJpaPersistEventListener extends JpaPersistEventListener {
 		}
 
 		markInterceptorDirty( entity, persister, source );
+
+		EntityEntry newEntry = source.getPersistenceContext().getEntry( entity );
+
+		if ( newEntry != original ) {
+			OgmEntityEntryState ogmEntityState = newEntry.getExtraState( OgmEntityEntryState.class );
+			if ( ogmEntityState == null ) {
+				newEntry.addExtraState( original.getExtraState( OgmEntityEntryState.class ) );
+			}
+		}
 
 		return id;
 	}

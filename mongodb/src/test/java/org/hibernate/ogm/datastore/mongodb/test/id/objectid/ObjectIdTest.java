@@ -15,7 +15,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.query.NoSQLQuery;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -106,7 +105,6 @@ public class ObjectIdTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore
 	public void canUseObjectIdAssignedUponInsertInAssociation() {
 		OgmSession session = openSession();
 		Transaction tx = session.beginTransaction();
@@ -150,7 +148,6 @@ public class ObjectIdTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore
 	public void canUseObjectIdAssignedUponInsertInOneToManyAssociation() {
 		OgmSession session = openSession();
 		Transaction tx = session.beginTransaction();
@@ -176,7 +173,6 @@ public class ObjectIdTest extends OgmTestCase {
 	}
 
 	@Test
-	@Ignore
 	public void canUseObjectIdAssignedUponInsertInManyToManyAssociation() {
 		OgmSession session = openSession();
 		Transaction tx = session.beginTransaction();
