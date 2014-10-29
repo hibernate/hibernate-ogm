@@ -18,8 +18,19 @@ import org.hibernate.ogm.model.spi.Tuple;
  */
 public interface AssociationContext {
 
+	/**
+	 * Provides access to the operations queue of the current flush cycle if the active dialect supports the batched
+	 * execution of operations.
+	 *
+	 * @return the operations queue of the current flush or {@code null} if the active dialect does the batched
+	 * execution of operations
+	 */
 	OperationsQueue getOperationsQueue();
 
+	/**
+	 * Provides context information related to the given association's type.
+	 * @return Context information related to the given association's type
+	 */
 	AssociationTypeContext getAssociationTypeContext();
 
 	/**

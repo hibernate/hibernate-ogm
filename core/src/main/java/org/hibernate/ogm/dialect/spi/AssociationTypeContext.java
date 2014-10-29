@@ -11,7 +11,8 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.options.spi.OptionsContext;
 
 /**
- * Provides context information to {@link GridDialect}s when accessing {@link Association}s.
+ * Provides context information related to the association type to {@link GridDialect}s when accessing
+ * {@link Association}s.
  *
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  * @author Gunnar Morling

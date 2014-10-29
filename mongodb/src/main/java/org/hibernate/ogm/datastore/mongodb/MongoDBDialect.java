@@ -183,7 +183,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		if ( embeddingEntityDocument != null ) {
 			return embeddingEntityDocument;
 		}
-		// TODO Log a warning
 		else {
 			ReadPreference readPreference = getReadPreference( associationContext );
 
@@ -464,9 +463,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
 
-		DBObject document = storageStrategy == AssociationStorageStrategy.IN_ENTITY ?
-				getEmbeddingEntity( key, associationContext ) :
-				associationKeyToObject( key, storageStrategy );
+		DBObject document = storageStrategy == AssociationStorageStrategy.IN_ENTITY
+				? getEmbeddingEntity( key, associationContext )
+				: associationKeyToObject( key, storageStrategy );
 
 		return new Association( new MongoDBAssociationSnapshot( document, key, storageStrategy ) );
 	}

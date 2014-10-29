@@ -54,13 +54,7 @@ public class MongoHelpers {
 
 	public static <T> T getValueOrNull(DBObject entity, String dothPath, Class<T> type) {
 		Object value = getValueOrNull( entity, dothPath );
-
-		if ( value != null && type.isInstance( value ) ) {
-			return type.cast( value );
-		}
-		else {
-			return null;
-		}
+		return type.isInstance( value ) ? type.cast( value ) : null;
 	}
 
 	public static Object getValueOrNull(DBObject entity, String dotPath) {
