@@ -138,19 +138,17 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		String[] rowKeyColumnNames = rowKeyBuilder.getColumnNames();
 		String[] rowKeyIndexColumnNames = rowKeyBuilder.getIndexColumnNames();
 
-		associationKeyMetadata = new AssociationKeyMetadata(
-				getTableName(),
-				getKeyColumnNames(),
-				rowKeyColumnNames,
-				rowKeyIndexColumnNames,
-				new AssociatedEntityKeyMetadata(
-					getElementColumnNames(),
-					targetEntityKeyMetadata( false )
-				),
-				isInverse,
-				getUnqualifiedRole(),
-				getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION
-		);
+		associationKeyMetadata = new AssociationKeyMetadata.Builder()
+				.table( getTableName() )
+				.columnNames( getKeyColumnNames() )
+				.rowKeyColumnNames( rowKeyColumnNames )
+				.rowKeyIndexColumnNames( rowKeyIndexColumnNames )
+				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
+				.inverse( isInverse )
+				.collectionRole( getUnqualifiedRole() )
+				.associationKind( getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION )
+				.oneToOne( false )
+				.build();
 
 		nodeName = collection.getNodeName();
 	}

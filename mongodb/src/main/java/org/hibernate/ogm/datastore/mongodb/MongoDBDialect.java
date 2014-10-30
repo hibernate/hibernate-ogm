@@ -519,6 +519,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		WriteConcern writeConcern = getWriteConcern( associationContext );
 
 		List<?> rows = getAssociationRows( association, key );
+		Object toStore = key.getMetadata().isOneToOne() ? rows.get( 0 ) : rows;
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
@@ -528,7 +529,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getMetadata().getCollectionRole();
 
-			( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().put( key.getMetadata().getCollectionRole(), rows );
+			( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().put( key.getMetadata().getCollectionRole(), toStore );
 		}
 		else {
 			collection = getAssociationCollection( key, storageStrategy );
@@ -536,7 +537,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			associationField = ROWS_FIELDNAME;
 		}
 
-		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, rows ) );
+		DBObject update = new BasicDBObject( "$set", new BasicDBObject( associationField, toStore ) );
 
 		collection.update( query, update, true, false, writeConcern );
 	}
@@ -754,7 +755,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		return AssociationStorageStrategy.getInstance( keyMetadata.getAssociationKind(), associationStorage, associationDocumentType );
+		return AssociationStorageStrategy.getInstance( keyMetadata, associationStorage, associationDocumentType );
 	}
 
 	@Override

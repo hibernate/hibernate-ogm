@@ -7,6 +7,8 @@
 
 package org.hibernate.ogm.datastore.mongodb.utils;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
@@ -35,6 +38,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
 
 /**
  * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
@@ -259,5 +263,15 @@ public class MongoDBTestHelper implements TestableGridDialect {
 	@Override
 	public GridDialect getGridDialect(DatastoreProvider datastoreProvider) {
 		return new MongoDBDialect( (MongoDBDatastoreProvider) datastoreProvider );
+	}
+
+	public static void assertDbObject(OgmSessionFactory sessionFactory, String collection, String queryDbObject, String expectedDbObject) {
+		DBObject finder = (DBObject) JSON.parse( queryDbObject );
+		DBObject expected = (DBObject) JSON.parse( expectedDbObject );
+
+		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
+		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder );
+
+		assertThat( actual ).isEqualTo( expected );
 	}
 }

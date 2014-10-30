@@ -47,7 +47,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.options.navigation.impl.OptionsContextImpl;
 import org.hibernate.ogm.options.navigation.source.impl.OptionValueSources;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
-import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.ogm.utils.EmptyOptionsContext;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.service.Service;
@@ -122,19 +121,17 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-				"Project_Module",
-				new String[] { "Project_id" },
-				new String[] { "Project_id", "module_id" },
-				ArrayHelper.EMPTY_STRING_ARRAY,
-				new AssociatedEntityKeyMetadata(
-						new String[] { "module_id" },
-						new EntityKeyMetadata( "Module", new String[] { "id" } )
-				),
-				false,
-				"modules",
-				AssociationKind.ASSOCIATION
-		);
+		AssociationKeyMetadata metadata = new AssociationKeyMetadata.Builder()
+				.table( "Project_Module" )
+				.columnNames( new String[] { "Project_id" } )
+				.rowKeyColumnNames( new String[] { "Project_id", "module_id" } )
+				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( new String[] { "module_id" }, new EntityKeyMetadata( "Module", new String[] { "id" } ) ) )
+				.inverse( false )
+				.collectionRole( "modules" )
+				.associationKind( AssociationKind.ASSOCIATION )
+				.oneToOne( false )
+				.build();
+
 		AssociationKey associationKey = new AssociationKey(
 				metadata,
 				new Object[] { "projectID" },

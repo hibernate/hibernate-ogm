@@ -152,9 +152,16 @@ public class CouchDBDialectTest {
 	}
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata(
-				tableName, columnNames, rowKeyColumnNames, EMPTY_STRING_ARRAY, new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ), false, collectionRole, AssociationKind.ASSOCIATION
-		);
+		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata.Builder()
+			.table( tableName )
+			.columnNames( columnNames )
+			.rowKeyColumnNames( rowKeyColumnNames )
+			.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ) )
+			.inverse( false )
+			.collectionRole( collectionRole )
+			.associationKind( AssociationKind.ASSOCIATION )
+			.oneToOne( false )
+			.build();
 
 		return new AssociationKey( associationKeyMetadata, columnValues, ownerEntityKey );
 	}

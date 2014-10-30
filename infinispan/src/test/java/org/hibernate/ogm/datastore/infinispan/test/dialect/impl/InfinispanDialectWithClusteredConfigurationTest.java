@@ -109,7 +109,11 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadAssociationInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata( "Foobar", columnNames, null, null, new AssociatedEntityKeyMetadata( null, null ), false, null, null );
+		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata.Builder()
+				.table( "Foobar" )
+				.columnNames( columnNames )
+				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( null, null ) )
+				.build();
 		Object[] values = { 123, "Hello", 456L };
 
 		AssociationKey key = new AssociationKey( keyMetadata, values, null );

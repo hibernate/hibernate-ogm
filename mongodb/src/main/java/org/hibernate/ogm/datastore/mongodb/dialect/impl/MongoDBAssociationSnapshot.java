@@ -45,7 +45,13 @@ public class MongoDBAssociationSnapshot extends AssociationRows {
 		Collection<?> rows;
 
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
-			rows = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
+			if ( associationKey.getMetadata().isOneToOne() ) {
+				Object oneToOneValue = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Object.class );
+				rows = oneToOneValue != null ? Collections.singletonList( oneToOneValue ) : Collections.emptyList();
+			}
+			else {
+				rows = getValueOrNull( document, associationKey.getMetadata().getCollectionRole(), Collection.class );
+			}
 		}
 		else {
 			rows = (Collection<?>) document.get( MongoDBDialect.ROWS_FIELDNAME );

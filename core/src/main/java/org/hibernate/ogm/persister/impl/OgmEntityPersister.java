@@ -299,20 +299,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			String inverseOneToOneProperty = getInverseOneToOneProperty( property, otherSidePersister );
 
 			if ( inverseOneToOneProperty != null ) {
-				AssociationKeyMetadata metadata = new AssociationKeyMetadata(
-						getTableName(),
-						propertyColumnNames,
-						rowKeyColumnNames,
-						// Because it is an association to one entity it should not need an index column
-						ArrayHelper.EMPTY_STRING_ARRAY,
-						new AssociatedEntityKeyMetadata(
-								entityKeyMetadata.getColumnNames(),
-								entityKeyMetadata
-						),
-						true,
-						inverseOneToOneProperty,
-						AssociationKind.ASSOCIATION
-				);
+				AssociationKeyMetadata metadata = new AssociationKeyMetadata.Builder()
+						.table( getTableName() )
+						.columnNames( propertyColumnNames )
+						.rowKeyColumnNames( rowKeyColumnNames )
+						.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( entityKeyMetadata.getColumnNames(), entityKeyMetadata ) )
+						.inverse( true )
+						.collectionRole( inverseOneToOneProperty )
+						.associationKind( AssociationKind.ASSOCIATION )
+						.oneToOne( true )
+						.build();
 
 				associationKeyMetadata.put( property, metadata );
 			}

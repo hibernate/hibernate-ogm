@@ -30,4 +30,7 @@ public interface OgmSession extends Session {
 	@Override
 	@Deprecated
 	NoSQLQuery createSQLQuery(String queryString);
+
+	@Override
+	OgmSessionFactory getSessionFactory();
 }

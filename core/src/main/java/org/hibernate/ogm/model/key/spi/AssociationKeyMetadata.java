@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.ogm.model.spi.AssociationKind;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 
 /**
  * Stores metadata information common to all keys related
@@ -31,21 +32,87 @@ public class AssociationKeyMetadata {
 	private final AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
 	private final String collectionRole;
 	private final AssociationKind associationKind;
+	private final boolean isOneToOne;
 
-	public AssociationKeyMetadata(String table, String[] columnNames, String[] rowKeyColumnNames, String[] rowKeyIndexColumnNames, AssociatedEntityKeyMetadata associatedEntityKeyMetadata, boolean isInverse, String collectionRole, AssociationKind associationKind) {
-		this.table = table;
-		this.columnNames = columnNames;
+	private AssociationKeyMetadata(Builder builder) {
+		this.table = builder.table;
+		this.columnNames = builder.columnNames;
 
-		this.rowKeyColumnNames = rowKeyColumnNames;
-		this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
-		this.isInverse = isInverse;
-		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
-		this.collectionRole = collectionRole;
-		this.associationKind = associationKind;
+		this.rowKeyColumnNames = builder.rowKeyColumnNames;
+		this.rowKeyIndexColumnNames = builder.rowKeyIndexColumnNames;
+		this.isInverse = builder.isInverse;
+		this.associatedEntityKeyMetadata = builder.associatedEntityKeyMetadata;
+		this.collectionRole = builder.collectionRole;
+		this.associationKind = builder.associationKind;
+		this.isOneToOne = builder.isOneToOne;
 
 		// table hashing should be specific enough
 		this.hashCode = table.hashCode();
 	}
+
+	public static class Builder {
+
+		private String table;
+		private String[] columnNames;
+		private String[] rowKeyColumnNames;
+		private String[] rowKeyIndexColumnNames = ArrayHelper.EMPTY_STRING_ARRAY;
+		private boolean isInverse;
+		private AssociatedEntityKeyMetadata associatedEntityKeyMetadata;
+		private String collectionRole;
+		private AssociationKind associationKind;
+		private boolean isOneToOne;
+
+		public Builder table(String table) {
+			this.table = table;
+			return this;
+		}
+
+		public Builder columnNames(String[] columnNames) {
+			this.columnNames = columnNames;
+			return this;
+		}
+
+		public Builder rowKeyColumnNames(String[] rowKeyColumnNames) {
+			this.rowKeyColumnNames = rowKeyColumnNames;
+			return this;
+		}
+
+		public Builder rowKeyIndexColumnNames(String[] rowKeyIndexColumnNames) {
+			this.rowKeyIndexColumnNames = rowKeyIndexColumnNames;
+			return this;
+		}
+
+		public Builder inverse(boolean isInverse) {
+			this.isInverse = isInverse;
+			return this;
+		}
+
+		public Builder associatedEntityKeyMetadata(AssociatedEntityKeyMetadata associatedEntityKeyMetadata) {
+			this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
+			return this;
+		}
+
+		public Builder collectionRole(String collectionRole) {
+			this.collectionRole = collectionRole;
+			return this;
+		}
+
+		public Builder associationKind(AssociationKind associationKind) {
+			this.associationKind = associationKind;
+			return this;
+		}
+
+		public Builder oneToOne(boolean isOneToOne) {
+			this.isOneToOne = isOneToOne;
+			return this;
+		}
+
+		public AssociationKeyMetadata build() {
+			return new AssociationKeyMetadata( this );
+		}
+	}
+
+
 
 	public String getTable() {
 		return table;
@@ -167,6 +234,10 @@ public class AssociationKeyMetadata {
 	 */
 	public AssociationKind getAssociationKind() {
 		return associationKind;
+	}
+
+	public boolean isOneToOne() {
+		return isOneToOne;
 	}
 
 	@Override
