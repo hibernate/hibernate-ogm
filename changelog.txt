@@ -1,6 +1,28 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Beta8 (30-10-2014)
+-------------------------
+
+** Sub-task
+    * [OGM-615] - Avoid re-read prior to update/deletion if not required
+
+** Bug
+    * [OGM-612] - Error when entity has ObjectID and Embeddable in MongoDB
+    * [OGM-624] - EmbeddableTest fails with CouchDB and JDK 8
+    * [OGM-628] - Documentation build fails with JDK 8
+    * [OGM-629] - CouchDB dialect fails to persist element collections in nested embeddables
+    * [OGM-630] - The test is OptimisticLockingTest#updatingEntityUsingOldVersionCausesExceptionUsingAtomicFindAndUpdate fails on CI
+
+** Improvement
+    * [OGM-396] - Add test for optimistic locking
+    * [OGM-469] - Fetch embedded associations when getting the hosting tuple in MongoDB
+    * [OGM-536] - Provide a way to keep a reference to the store-specific representation of entities
+    * [OGM-591] - Persist OneToOne associations as singular attribute in MongoDB
+    * [OGM-619] - Update Arquillian and remove superfluous version configuration
+    * [OGM-625] - Avoid datastore access during association creation in MongoDB
+
+
 4.1.0.Beta7 (30-09-2014)
 -------------------------
 
@@ -11,6 +33,7 @@ Hibernate OGM Changelog
     * [OGM-587] - Saving an entity with an embedded document containing a list fails in mongodb with com.mongodb.MongoException$DuplicateKey error
 
 ** Improvement
+    * [OGM-436] - Use store-assigned ids for GenerationType IDENTITY in MongoDB
     * [OGM-521] - Investigate more natural @OneToOne association mappings for Neo4j
     * [OGM-522] - Cache and re-use queries for CRUD operations in Neo4j
     * [OGM-547] - Ensure uniqueness of id per entity type on Neo4j
