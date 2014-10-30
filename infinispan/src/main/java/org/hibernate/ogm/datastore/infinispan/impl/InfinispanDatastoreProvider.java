@@ -22,7 +22,6 @@ import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternaliz
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -96,9 +95,9 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 */
 	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
 		caches = new ConcurrentHashMap<String, Cache>( 3 );
-		putInLocalCache( cacheManager, DefaultDatastoreNames.ASSOCIATION_STORE );
-		putInLocalCache( cacheManager, DefaultDatastoreNames.ENTITY_STORE );
-		putInLocalCache( cacheManager, DefaultDatastoreNames.IDENTIFIER_STORE );
+		putInLocalCache( cacheManager, CacheNames.ASSOCIATION_CACHE );
+		putInLocalCache( cacheManager, CacheNames.ENTITY_CACHE );
+		putInLocalCache( cacheManager, CacheNames.IDENTIFIER_CACHE );
 	}
 
 	private void putInLocalCache(EmbeddedCacheManager cacheManager, String cacheName) {

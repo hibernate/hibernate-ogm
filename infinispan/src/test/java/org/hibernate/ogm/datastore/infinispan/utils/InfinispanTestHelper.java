@@ -6,8 +6,8 @@
  */
 package org.hibernate.ogm.datastore.infinispan.utils;
 
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ASSOCIATION_STORE;
-import static org.hibernate.ogm.datastore.spi.DefaultDatastoreNames.ENTITY_STORE;
+import static org.hibernate.ogm.datastore.infinispan.impl.CacheNames.ASSOCIATION_CACHE;
+import static org.hibernate.ogm.datastore.infinispan.impl.CacheNames.ENTITY_CACHE;
 
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	private static Cache<?, ?> getEntityCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCache( ENTITY_STORE );
+		return castProvider.getCache( ENTITY_CACHE );
 	}
 
 	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
@@ -60,7 +60,7 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCache( ASSOCIATION_STORE );
+		return castProvider.getCache( ASSOCIATION_CACHE );
 	}
 
 	@Override

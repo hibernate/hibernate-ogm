@@ -25,7 +25,6 @@ import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DefaultDatastoreNames;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -73,9 +72,9 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 		cacheManager = CacheManager.create( config.getUrl() );
 
-		entityCache = new Cache<SerializableEntityKey>( cacheManager.getCache( DefaultDatastoreNames.ENTITY_STORE ) );
-		associationCache = new Cache<SerializableAssociationKey>( cacheManager.getCache( DefaultDatastoreNames.ASSOCIATION_STORE ) );
-		identifierCache = new Cache<SerializableIdSourceKey>( cacheManager.getCache( DefaultDatastoreNames.IDENTIFIER_STORE ) );
+		entityCache = new Cache<SerializableEntityKey>( cacheManager.getCache( CacheNames.ENTITY_CACHE ) );
+		associationCache = new Cache<SerializableAssociationKey>( cacheManager.getCache( CacheNames.ASSOCIATION_CACHE ) );
+		identifierCache = new Cache<SerializableIdSourceKey>( cacheManager.getCache( CacheNames.IDENTIFIER_CACHE ) );
 	}
 
 	@Override
