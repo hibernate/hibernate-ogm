@@ -132,7 +132,7 @@
              than Neo4j core
         -->
         <neo4jCypherCompilerOlderVersion>2.0.3</neo4jCypherCompilerOlderVersion>
-        <hibernateVersion>4.3.6.Final</hibernateVersion>
+        <hibernateVersion>4.3.7.Final</hibernateVersion>
         <hibernateSearchVersion>4.5.1.Final</hibernateSearchVersion>
         <hibernateParserVersion>1.0.0.CR1</hibernateParserVersion>
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
