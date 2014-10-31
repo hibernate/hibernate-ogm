@@ -157,8 +157,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	private List<Object> getAssociationRows(Association association, AssociationKey associationKey) {
-
-		List<Object> rows = new ArrayList<Object>( association.getKeys().size() );
+		List<Object> rows = new ArrayList<Object>();
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );

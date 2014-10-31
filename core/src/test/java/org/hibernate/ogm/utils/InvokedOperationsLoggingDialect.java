@@ -14,6 +14,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.hibernate.engine.spi.QueryParameters;
@@ -222,12 +223,15 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 		}
 
 		StringBuilder sb = new StringBuilder( "Association[");
-		int i = 0;
-		for ( RowKey rowKey : association.getKeys() ) {
+
+		Iterator<RowKey> rowKeys = association.getKeys().iterator();
+
+		while ( rowKeys.hasNext() ) {
+			RowKey rowKey = rowKeys.next();
 			sb.append( toShortString( rowKey ) ).append( "=" ).append( toShortString( association.get( rowKey ) ) );
-			i++;
-			if ( i < association.getKeys().size() ) {
-				sb.append( "," );
+
+			if ( rowKeys.hasNext() ) {
+				sb.append( ",\n" );
 			}
 		}
 

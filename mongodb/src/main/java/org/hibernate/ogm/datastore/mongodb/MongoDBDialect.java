@@ -481,7 +481,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	 * </ul>
 	 */
 	private List<?> getAssociationRows(Association association, AssociationKey key) {
-		List<Object> rows = new ArrayList<Object>( association.getKeys().size() );
+		List<Object> rows = new ArrayList<Object>();
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			rows.add( getAssociationRow( association.get( rowKey ), key ) );
