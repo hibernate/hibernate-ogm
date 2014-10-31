@@ -383,8 +383,8 @@ https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly doc
 
 You can download the pre-packaged module ZIP from:
 
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
+* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}-experimental.zip[Sourceforge]
+* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6-experimental&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
 Unpack the archive into the +modules+ folder of your JBoss EAP 6 installation.
 The modules included are:
@@ -401,7 +401,9 @@ and re-packaged into the module ZIP of Hibernate OGM for your convinience
 
 [WARNING]
 ====
-The existing modules for _javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_ are going to be replaced with the version required by OGM. Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
+The pre-package module for EAP 6 is  *experimental*.
+The content of the existing modules for _javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_ in EAP 6 will be replaced with the versions required by OGM.
+Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
 ====
 
 There are two ways to include the dependencies in your project:
