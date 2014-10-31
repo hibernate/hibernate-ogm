@@ -22,7 +22,6 @@
     <properties>
         <luceneVersion>3.6.2</luceneVersion>
         <lucene.module.slot>main</lucene.module.slot>
-        <assembly.finalName>${project.artifactId}6-${project.version}</assembly.finalName>
         <classifier>experimental</classifier>
     </properties>
 
