@@ -293,6 +293,7 @@
                                             <groupId>org.hibernate.ogm</groupId>
                                             <artifactId>hibernate-ogm-modules-eap6</artifactId>
                                             <version>${project.version}</version>
+                                            <classifier>experimental</classifier>
                                             <type>zip</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${jboss.home}/modules</outputDirectory>
