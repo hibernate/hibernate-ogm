@@ -6,16 +6,13 @@
  */
 package org.hibernate.ogm.model.spi;
 
-import java.util.Set;
-
 import org.hibernate.ogm.model.key.spi.RowKey;
 
 /**
- * Represents the Association snapshot as loaded by the datastore.
- * Interface implemented by the datastore dialect to avoid data
- * duplication in memory (if possible).
- *
- * Note that this snapshot will not be modified by the Hibernate OGM engine
+ * Represents the association snapshot as loaded by the datastore.
+ * <p>
+ * Interface implemented by the datastore dialect to avoid data duplication in memory (if possible). Note that this
+ * snapshot will not be modified by the Hibernate OGM engine
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
@@ -26,9 +23,18 @@ public interface AssociationSnapshot {
 	 */
 	Tuple get(RowKey rowKey);
 
+	/**
+	 * Whether this snapshot contains the specified key or not.
+	 */
 	boolean containsKey(RowKey rowKey);
 
+	/**
+	 * Returns the number of rows contained in this snapshot.
+	 */
 	int size();
 
-	Set<RowKey> getRowKeys();
+	/**
+	 * Returns an iterable with the rows contained in this snapshot.
+	 */
+	Iterable<RowKey> getRowKeys();
 }

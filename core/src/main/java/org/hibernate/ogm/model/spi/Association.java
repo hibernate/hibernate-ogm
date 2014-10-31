@@ -13,6 +13,7 @@ import static org.hibernate.ogm.model.spi.AssociationOperationType.REMOVE;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,10 +124,12 @@ public class Association {
 		return size;
 	}
 
-	public Set<RowKey> getKeys() {
+	public Iterable<RowKey> getKeys() {
 		Set<RowKey> keys = new HashSet<RowKey>();
 		if (!cleared) {
-			keys.addAll( snapshot.getRowKeys() );
+			for ( RowKey rowKey : snapshot.getRowKeys() ) {
+				keys.add( rowKey );
+			}
 		}
 		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
 			switch ( op.getValue().getType() ) {
@@ -150,11 +153,14 @@ public class Association {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder( "Association[\n");
-		int i = 0;
-		for ( RowKey rowKey : getKeys() ) {
+
+		Iterator<RowKey> rowKeys = getKeys().iterator();
+
+		while ( rowKeys.hasNext() ) {
+			RowKey rowKey = rowKeys.next();
 			sb.append( "  " ).append( rowKey ).append( "=" ).append( get( rowKey ) );
-			i++;
-			if ( i < getKeys().size() ) {
+
+			if ( rowKeys.hasNext() ) {
 				sb.append( ",\n" );
 			}
 		}
