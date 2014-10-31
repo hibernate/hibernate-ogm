@@ -11,6 +11,7 @@ import static org.hibernate.ogm.model.spi.AssociationOperationType.PUT_NULL;
 import static org.hibernate.ogm.model.spi.AssociationOperationType.REMOVE;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -125,24 +126,33 @@ public class Association {
 	}
 
 	public Iterable<RowKey> getKeys() {
-		Set<RowKey> keys = new HashSet<RowKey>();
-		if (!cleared) {
+		if ( cleared ) {
+			return Collections.emptyList();
+		}
+		else if ( currentState.isEmpty() ) {
+			return snapshot.getRowKeys();
+		}
+		else {
+			// It may be a bit too large in case of removals, but that's fine for now
+			Set<RowKey> keys = new HashSet<RowKey>( snapshot.size() + currentState.size() );
 			for ( RowKey rowKey : snapshot.getRowKeys() ) {
 				keys.add( rowKey );
 			}
-		}
-		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
-			switch ( op.getValue().getType() ) {
-				case PUT:
-				case PUT_NULL:
-					keys.add( op.getKey() );
-					break;
-				case REMOVE:
-					keys.remove( op.getKey() );
-					break;
+
+			for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
+				switch ( op.getValue().getType() ) {
+					case PUT:
+					case PUT_NULL:
+						keys.add( op.getKey() );
+						break;
+					case REMOVE:
+						keys.remove( op.getKey() );
+						break;
+				}
 			}
+
+			return keys;
 		}
-		return keys;
 	}
 
 	public void clear() {
