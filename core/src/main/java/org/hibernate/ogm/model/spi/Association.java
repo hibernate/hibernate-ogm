@@ -22,6 +22,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * Represents an association (think of it as a set of rows, each representing a specific link).
@@ -51,6 +52,13 @@ public class Association {
 		this.snapshot = snapshot;
 	}
 
+	/**
+	 * Returns the association row with the given key.
+	 *
+	 * @param key the key of the row to return.
+	 * @return the association row with the given key or {@code null} if no row with that key is contained in this
+	 * association
+	 */
 	public Tuple get(RowKey key) {
 		AssociationOperation result = currentState.get( key );
 		if ( result == null ) {
@@ -62,25 +70,33 @@ public class Association {
 		return result.getValue();
 	}
 
+	/**
+	 * Adds the given row to this association, using the given row key.
+	 *
+	 * @param key the key to store the row under
+	 * @param value the association row to store
+	 */
 	public void put(RowKey key, Tuple value) {
-		if ( value == null ) {
-			currentState.put( key, new AssociationOperation( key, null, PUT_NULL )  );
-		}
-		currentState.put( key, new AssociationOperation( key, value, PUT ) );
+		currentState.put( key, new AssociationOperation( key, value, value == null ? PUT_NULL : PUT )  );
 	}
 
+	/**
+	 * Removes the row with the specified key from this association.
+	 *
+	 * @param key the key of the association row to remove
+	 */
 	public void remove(RowKey key) {
 		currentState.put( key, new AssociationOperation( key, null, REMOVE ) );
 	}
 
 	/**
-	 * Return the list of actions on the tuple.
-	 * Inherently deduplicate operations
-	 *
+	 * Return the list of actions on the tuple. Operations are inherently deduplicated, i.e. there will be at most one
+	 * operation for a specific row key.
+	 * <p>
 	 * Note that the global CLEAR operation is put at the top of the list.
 	 */
 	public List<AssociationOperation> getOperations() {
-		List<AssociationOperation> result = new ArrayList<AssociationOperation>(  );
+		List<AssociationOperation> result = new ArrayList<AssociationOperation>( currentState.size() + 1 );
 		if (cleared) {
 			result.add( new AssociationOperation( null, null, AssociationOperationType.CLEAR ) );
 		}
@@ -88,10 +104,21 @@ public class Association {
 		return result;
 	}
 
+	/**
+	 * Returns the snapshot upon which this association is based, i.e. its original state when loaded from the datastore
+	 * or newly created.
+	 *
+	 * @return the snapshot upon which this association is based
+	 */
 	public AssociationSnapshot getSnapshot() {
 		return snapshot;
 	}
 
+	/**
+	 * Whether this association contains no rows.
+	 *
+	 * @return {@code true} if this association contains no rows, {@code false} otherwise
+	 */
 	public boolean isEmpty() {
 		int snapshotSize = cleared ? 0 : snapshot.size();
 		//nothing in both
@@ -105,6 +132,11 @@ public class Association {
 		return size() == 0;
 	}
 
+	/**
+	 * Returns the number of rows within this association.
+	 *
+	 * @return the number of rows within this association
+	 */
 	public int size() {
 		int size = cleared ? 0 : snapshot.size();
 		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
@@ -125,6 +157,11 @@ public class Association {
 		return size;
 	}
 
+	/**
+	 * Returns all keys of all rows contained within this association.
+	 *
+	 * @return all keys of all rows contained within this association
+	 */
 	public Iterable<RowKey> getKeys() {
 		if ( cleared ) {
 			return Collections.emptyList();
@@ -155,6 +192,9 @@ public class Association {
 		}
 	}
 
+	/**
+	 * Removes all rows from this association.
+	 */
 	public void clear() {
 		cleared = true;
 		currentState.clear();
@@ -162,7 +202,7 @@ public class Association {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder( "Association[\n");
+		StringBuilder sb = new StringBuilder( "Association[" ).append( StringHelper.lineSeparator() );
 
 		Iterator<RowKey> rowKeys = getKeys().iterator();
 
@@ -171,11 +211,11 @@ public class Association {
 			sb.append( "  " ).append( rowKey ).append( "=" ).append( get( rowKey ) );
 
 			if ( rowKeys.hasNext() ) {
-				sb.append( ",\n" );
+				sb.append( "," ).append( StringHelper.lineSeparator() );
 			}
 		}
 
-		sb.append( "\n]" );
+		sb.append( StringHelper.lineSeparator() ).append( "]" );
 		return sb.toString();
 	}
 }

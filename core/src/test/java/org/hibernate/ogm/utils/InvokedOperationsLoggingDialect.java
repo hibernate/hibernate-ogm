@@ -37,6 +37,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * A testing dialect wrapper which logs all the invoked {@link GridDialect} operations.
@@ -231,7 +232,7 @@ public class InvokedOperationsLoggingDialect extends ForwardingGridDialect<Seria
 			sb.append( toShortString( rowKey ) ).append( "=" ).append( toShortString( association.get( rowKey ) ) );
 
 			if ( rowKeys.hasNext() ) {
-				sb.append( ",\n" );
+				sb.append( "," ).append( StringHelper.lineSeparator() );
 			}
 		}
 
