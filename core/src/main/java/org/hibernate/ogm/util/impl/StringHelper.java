@@ -7,10 +7,18 @@
 package org.hibernate.ogm.util.impl;
 
 /**
+ * Utility functions for dealing with strings.
+ *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class StringHelper {
+
+	private static final String LINE_SEPARATOR;
+
+	static {
+		LINE_SEPARATOR = System.getProperty( "line.separator" );
+	}
 
 	public static boolean isEmpty(String value) {
 		return value != null ? value.length() == 0 : true;
@@ -18,6 +26,11 @@ public class StringHelper {
 
 	public static boolean isNullOrEmptyString(Object value) {
 		return value == null || value.toString().trim().isEmpty();
+	}
+
+	// System#lineSeparator() is only available from Java 7 onwards
+	public static String lineSeparator() {
+		return LINE_SEPARATOR;
 	}
 
 	public static String toString(Object[] array) {

@@ -298,13 +298,6 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <configuration>
-                            <signature>
-                                <groupId>org.codehaus.mojo.signature</groupId>
-                                <artifactId>java16</artifactId>
-                                <version>1.0</version>
-                            </signature>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -456,6 +449,13 @@
                             <version>5.0.3</version>
                         </dependency>
                     </dependencies>
+                    <configuration>
+                        <signature>
+                            <groupId>org.codehaus.mojo.signature</groupId>
+                            <artifactId>java16</artifactId>
+                            <version>1.0</version>
+                        </signature>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
