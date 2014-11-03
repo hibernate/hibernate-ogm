@@ -378,8 +378,17 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the followin
 More information about the descriptor can be found in the
 https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly documentation].
 
-
 ==== Packaging Hibernate OGM applications for JBoss EAP 6
+
+[WARNING]
+====
+The EAP 6 support in Hibernate OGM is  *experimental*.
+The contents of existing modules of the application server
+(_javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_) will be replaced with the versions required by Hibernate OGM
+when extracting the module ZIP into the application server directory.
+It is therefore recommended to use this module ZIP only for testing purposes.
+Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
+====
 
 You can download the pre-packaged module ZIP from:
 
@@ -398,13 +407,6 @@ Note that the RESTEasy modules are obtained from the official RESTEasy distribut
 (which itself https://docs.jboss.org/resteasy/docs/3.0.7.Final/userguide/html_single/#upgrading-eap61[contains a module ZIP])
 and re-packaged into the module ZIP of Hibernate OGM for your convinience
 * Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
-
-[WARNING]
-====
-The pre-package module for EAP 6 is  *experimental*.
-The content of the existing modules for _javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_ in EAP 6 will be replaced with the versions required by OGM.
-Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
-====
 
 There are two ways to include the dependencies in your project:
 
