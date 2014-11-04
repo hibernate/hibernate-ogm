@@ -68,7 +68,7 @@ public class OneToOneTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testBidirectionalManyToOne() throws Exception {
+	public void testBidirectionalOneToOne() throws Exception {
 		final Session session = openSession();
 		Transaction transaction = session.beginTransaction();
 		Husband husband = new Husband( "alex" );
