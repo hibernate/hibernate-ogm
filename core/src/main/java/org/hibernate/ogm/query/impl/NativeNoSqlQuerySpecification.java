@@ -18,19 +18,7 @@ import org.hibernate.engine.query.spi.sql.NativeSQLQuerySpecification;
  */
 public class NativeNoSqlQuerySpecification extends NativeSQLQuerySpecification {
 
-	private final Object queryObject;
-
 	public NativeNoSqlQuerySpecification(String queryString, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
 		super( queryString, queryReturns, querySpaces );
-		this.queryObject = null;
-	}
-
-	public NativeNoSqlQuerySpecification(Object queryObject, NativeSQLQueryReturn[] queryReturns, Collection<String> querySpaces) {
-		super( queryObject.toString(), queryReturns, querySpaces );
-		this.queryObject = queryObject;
-	}
-
-	public Object getQueryObject() {
-		return queryObject;
 	}
 }

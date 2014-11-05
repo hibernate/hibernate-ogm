@@ -61,7 +61,6 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	private final boolean callable;
 	private final LockOptions lockOptions = new LockOptions();
 	private final SessionImplementor session;
-	private Object queryObject;
 
 	/**
 	 * Constructs a NoSQLQuery given a sql query defined in the mappings.
@@ -93,11 +92,6 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 
 	public NoSQLQueryImpl(String sql, SessionImplementor session, ParameterMetadata parameterMetadata) {
 		this( sql, false, session, parameterMetadata );
-	}
-
-	public NoSQLQueryImpl(Object queryObject, SessionImplementor session, ParameterMetadata parameterMetadata) {
-		this( queryObject.toString(), false, session, parameterMetadata );
-		this.queryObject = queryObject;
 	}
 
 	public NoSQLQueryImpl(String sql, boolean callable, SessionImplementor session, ParameterMetadata parameterMetadata) {
@@ -141,20 +135,11 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 	}
 
 	protected NativeNoSqlQuerySpecification generateQuerySpecification(Map namedParams) {
-		if ( queryObject != null ) {
-			return new NativeNoSqlQuerySpecification(
-					queryObject,
-					queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
-					querySpaces
-			);
-		}
-		else {
-			return new NativeNoSqlQuerySpecification(
-					expandParameterLists( namedParams ),
-					queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
-					querySpaces
-			);
-		}
+		return new NativeNoSqlQuerySpecification(
+				expandParameterLists( namedParams ),
+				queryReturns.toArray( new NativeSQLQueryReturn[queryReturns.size()] ),
+				querySpaces
+		);
 	}
 
 	@Override
@@ -419,10 +404,6 @@ public class NoSQLQueryImpl extends AbstractQueryImpl implements NoSQLQuery {
 		finally {
 			after();
 		}
-	}
-
-	public Object getQueryObject() {
-		return queryObject;
 	}
 
 	private class RootReturnBuilder implements RootReturn, ReturnBuilder {
