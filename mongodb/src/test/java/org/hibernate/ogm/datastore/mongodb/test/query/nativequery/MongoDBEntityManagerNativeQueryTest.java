@@ -38,11 +38,16 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde" );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", (byte) 5 );
+	private final Poet christian = new Poet( "christian", "Christian Abendsonne" );
+	private final Poet james = new Poet( "james", "James Krass" );
+	private final LiteratureSociety stencilClub = new LiteratureSociety( "stencil-club", "Stencil Club Germany", christian, james );
 
 	@Before
 	public void init() throws Exception {
 		begin();
-		EntityManager em = persist( portia, athanasia );
+
+		EntityManager em = persist( portia, athanasia, stencilClub );
+
 		commit();
 		close( em );
 	}
@@ -58,7 +63,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@After
 	public void tearDown() throws Exception {
 		begin();
-		EntityManager em = delete( portia, athanasia );
+		EntityManager em = delete( portia, athanasia, stencilClub );
 		commit();
 		close( em );
 	}
@@ -255,6 +260,27 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		close( em );
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-638")
+	public void canRunSameNativeQuerySeveralTimes() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		Query createNativeQuery = em.createNativeQuery(
+				"db.LiteratureSociety.find( { 'name' : 'Stencil Club Germany' } )",
+				LiteratureSociety.class
+		);
+
+		LiteratureSociety stencilClub = (LiteratureSociety) createNativeQuery.getSingleResult();
+		assertThat( stencilClub.getMembers() ).onProperty( "id" ).containsOnly( "christian", "james" );
+
+		stencilClub = (LiteratureSociety) createNativeQuery.getSingleResult();
+		assertThat( stencilClub.getMembers() ).onProperty( "id" ).containsOnly( "christian", "james" );
+
+		commit();
+		close( em );
+	}
+
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );
@@ -264,7 +290,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[] { OscarWildePoem.class, LiteratureSociety.class, Poet.class };
 	}
 
 	private void close(EntityManager em) {

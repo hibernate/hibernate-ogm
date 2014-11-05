@@ -276,7 +276,7 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 			// do not auto-flush while outside a transaction
 			return false;
 		}
-		AutoFlushEvent event = new AutoFlushEvent( querySpaces, this );
+		AutoFlushEvent event = new AutoFlushEvent( querySpaces, getDelegate() );
 		for ( AutoFlushEventListener listener : listeners( EventType.AUTO_FLUSH ) ) {
 			listener.onAutoFlush( event );
 		}
