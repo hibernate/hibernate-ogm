@@ -13,6 +13,8 @@ import static org.hibernate.ogm.utils.TestHelper.getNumberOfEntities;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Arrays;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.utils.GridDialectType;
@@ -255,8 +257,47 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testUnidirectionalOneToMany() throws Exception {
+		final Session session = openSession();
+		Transaction tx = session.beginTransaction();
+		Product beer = new Product( "Beer", "Tactical nuclear penguin" );
+		session.persist( beer );
+
+		Product pretzel = new Product( "Pretzel", "Glutino Pretzel Sticks" );
+		session.persist( pretzel );
+
+		Basket basket = new Basket();
+		basket.setId( "davide_basket" );
+		basket.setOwner( "Davide" );
+		basket.setProducts( Arrays.asList( beer, pretzel ) );
+		session.persist( basket );
+
+		tx.commit();
+		session.clear();
+
+		tx = session.beginTransaction();
+		basket = (Basket) session.get( Basket.class, basket.getId() );
+		assertThat( basket ).isNotNull();
+		assertThat( basket.getId() ).isEqualTo( basket.getId() );
+		assertThat( basket.getProducts() )
+			.onProperty( "name" ).containsOnly( beer.getName(), pretzel.getName() );
+		tx.commit();
+
+		session.clear();
+
+		tx = session.beginTransaction();
+		session.delete( basket );
+		session.delete( pretzel );
+		session.delete( beer );
+		tx.commit();
+		session.close();
+
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { JUG.class, Member.class, SalesForce.class, SalesGuy.class, Beer.class, Brewery.class };
+		return new Class<?>[] { JUG.class, Member.class, SalesForce.class, SalesGuy.class, Beer.class, Brewery.class, Basket.class, Product.class };
 	}
 }
