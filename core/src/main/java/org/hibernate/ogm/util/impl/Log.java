@@ -209,4 +209,7 @@ public interface Log extends BasicLogger {
 	@Message(id = 66, value = "Entity type %s uses an optimistic locking strategy which is not supported by the "
 			+ "current grid dialect in an atomic manner. There will be two datastore round-trips for version checking and updating the data.")
 	void usingNonAtomicOptimisticLocking(String entityName);
+
+	@Message(id = 67, value = "Trying to insert an already existing entity: %s")
+	HibernateException mustNotInsertSameEntityTwice(String primaryKey);
 }

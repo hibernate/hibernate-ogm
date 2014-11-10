@@ -1241,8 +1241,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			// add the discriminator
 			if ( j == 0 ) {
 				if (resultset != null) {
-					throw new HibernateException( "trying to insert an already existing entity: "
-							+  MessageHelper.infoString( this, id, getFactory() ) );
+					throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ) );
 				}
 
 				if ( discriminator.isNeeded() ) {
