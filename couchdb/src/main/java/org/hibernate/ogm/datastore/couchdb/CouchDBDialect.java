@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.OptimisticLockException;
+
 import org.hibernate.LockMode;
 import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
@@ -30,8 +32,10 @@ import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -97,8 +101,18 @@ public class CouchDBDialect extends BaseGridDialect {
 			revision = getDataStore().getCurrentRevision( Identifier.createEntityId( key ), false );
 		}
 
-		// this will raise an optimistic locking exception if the revision is either null or not the current one
-		getDataStore().saveDocument( new EntityDocument( key, revision, tuple ) );
+		try {
+			// this will raise an optimistic locking exception if the revision is either null or not the current one
+			getDataStore().saveDocument( new EntityDocument( key, revision, tuple ) );
+		}
+		catch (OptimisticLockException ole) {
+			if ( snapshot.isCreatedOnInsert() ) {
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, ole );
+			}
+			else {
+				throw ole;
+			}
+		}
 	}
 
 	@Override
@@ -247,6 +261,11 @@ public class CouchDBDialect extends BaseGridDialect {
 		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
 			forTuple( consumer, entityKeyMetadata );
 		}
+	}
+
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 
 	private void forTuple(ModelConsumer consumer, EntityKeyMetadata entityKeyMetadata) {
