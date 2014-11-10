@@ -56,7 +56,7 @@ public interface GridDialect extends Service {
 	/**
 	 * Inserts or updates the tuple corresponding to the given entity key.
 	 */
-	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext);
+	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException;
 
 	/**
 	 * Remove the tuple for a given key
@@ -132,4 +132,11 @@ public interface GridDialect extends Service {
 	 *            the key metadata of the tables for which we want to apply the costumer
 	 */
 	void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas);
+
+	/**
+	 * Returns this dialect's strategy for detecting the insertion of several entity tuples with the same primary key.
+	 *
+	 * @return This dialect's strategy for detecting the insertion of several entity tuples with the same primary key
+	 */
+	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy();
 }

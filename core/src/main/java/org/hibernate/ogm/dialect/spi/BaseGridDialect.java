@@ -25,4 +25,9 @@ public abstract class BaseGridDialect implements GridDialect {
 	public boolean supportsSequences() {
 		return false;
 	}
+
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+		return DuplicateInsertPreventionStrategy.LOOK_UP;
+	}
 }

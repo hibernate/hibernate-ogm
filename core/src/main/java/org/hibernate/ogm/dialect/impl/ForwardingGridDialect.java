@@ -23,6 +23,7 @@ import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -153,6 +154,11 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
 		gridDialect.forEachTuple( consumer, entityKeyMetadatas );
+	}
+
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+		return gridDialect.getDuplicateInsertPreventionStrategy();
 	}
 
 	/*

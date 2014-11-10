@@ -15,11 +15,14 @@ import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveAssociationOperation;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Wraps a {@link BatchableGridDialect} intercepting the operation and populating the queue that the delegate
@@ -32,6 +35,8 @@ import org.hibernate.ogm.model.spi.Tuple;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable> {
+
+	private static final Log log = LoggerFactory.make();
 
 	// The threadlocal is properly set and cleaned in a try / catch by {@link org.hibernate.ogm.service.impl.BatchManagerEventListener}
 	// if used elsewhere, apply the same pattern
@@ -64,9 +69,17 @@ public class BatchOperationsDelegator extends ForwardingGridDialect<Serializable
 	}
 
 	public void executeBatch() {
-		super.executeBatch( getOperationQueue() );
+		try {
+			super.executeBatch( getOperationQueue() );
+		}
+		catch ( TupleAlreadyExistsException taee ) {
+			// TODO: Ideally, we should log the entity name + id here; For now we trust the datastore to provide this
+			// information via the original exception; It'd require a fair bit of changes to obtain the entity name here
+			// (we'd have to obtain the persister matching the given entity key metadata which in turn would require
+			// access to the session factory which is not easily available here)
+			throw log.mustNotInsertSameEntityTwice( null, taee );
+		}
 	}
-
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {

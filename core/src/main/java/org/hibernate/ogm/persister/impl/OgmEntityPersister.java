@@ -47,7 +47,9 @@ import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
@@ -1237,23 +1239,33 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			}
 
 			final EntityKey key = EntityKeyBuilder.fromPersister( this, id, session );
-			Tuple resultset = gridDialect.getTuple( key, this.getTupleContext() );
-			// add the discriminator
-			if ( j == 0 ) {
-				if (resultset != null) {
-					throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ) );
-				}
 
-				if ( discriminator.isNeeded() ) {
-					resultset = createNewResultSetIfNull( key, resultset, id, session );
-					resultset.put( getDiscriminatorColumnName(), getDiscriminatorValue() );
+			Tuple resultset = null;
+
+			if ( gridDialect.getDuplicateInsertPreventionStrategy() == DuplicateInsertPreventionStrategy.LOOK_UP ) {
+				resultset = gridDialect.getTuple( key, this.getTupleContext() );
+
+				if ( j == 0 && resultset != null ) {
+					throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), null );
 				}
 			}
 
 			resultset = createNewResultSetIfNull( key, resultset, id, session );
 
+			// add the discriminator
+			if ( j == 0 && discriminator.isNeeded() ) {
+				resultset.put( getDiscriminatorColumnName(), getDiscriminatorValue() );
+			}
+
 			dehydrate( resultset, fields, propertiesToInsert, j, id, session );
-			gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+
+			try {
+				gridDialect.insertOrUpdateTuple( key, resultset, getTupleContext() );
+			}
+			catch ( TupleAlreadyExistsException taee ) {
+				throw log.mustNotInsertSameEntityTwice( MessageHelper.infoString( this, id, getFactory() ), taee );
+			}
+
 			addToInverseAssociations( resultset, 0, id, session );
 
 			OgmEntityEntryState.getStateFor( session, object ).setTuple( resultset );

@@ -19,6 +19,7 @@ import javax.transaction.SystemException;
 import org.hibernate.HibernateException;
 import org.hibernate.TransactionException;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Cause;
@@ -211,5 +212,5 @@ public interface Log extends BasicLogger {
 	void usingNonAtomicOptimisticLocking(String entityName);
 
 	@Message(id = 67, value = "Trying to insert an already existing entity: %s")
-	HibernateException mustNotInsertSameEntityTwice(String primaryKey);
+	HibernateException mustNotInsertSameEntityTwice(String primaryKey, @Cause TupleAlreadyExistsException taee );
 }
