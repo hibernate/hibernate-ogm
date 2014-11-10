@@ -167,6 +167,96 @@ so that third party applications not using Hibernate OGM can still read
 and update the same datastore.
 The following describe how entities and associations are mapped to CouchDB documents by Hibernate OGM.
 
+[[couchdb-built-in-types]]
+===== Builtin types
+
+Hibernate OGM support by default the following types:
+
+* [classname]+java.lang.String+
+
+[source, JSON]
+----
+  { "text" : "Hello world!" }
+----
+
+* [classname]+java.lang.Boolean+ (or boolean primitive)
+
+[source, JSON]
+----
+  { "favorite" : true }
+----
+
+* [classname]+java.lang.Byte+ (or byte primitive)
+
+[source, JSON]
+----
+  { "display_mask" : "70" }
+----
+
+* [classname]+java.lang.Long+ (or long primitive)
+
+[source, JSON]
+----
+  { "userId" : "-6718902786625749549" }
+----
+
+* [classname]+java.lang.Integer+ (or integer primitive)
+
+[source, JSON]
+----
+  { "stockCount" : 12309 }
+----
+
+* [classname]+java.lang.Double+ (or double primitive)
+
+[source, JSON]
+----
+  { "tax_percentage" : 12.34 }
+----
+
+* [classname]+java.math.BigDecimal+
+
+[source, JSON]
+----
+  { "site_weight" : "21.77" }
+----
+
+* [classname]+java.math.BigInteger+
+
+[source, JSON]
+----
+  { "site_weight" : "444" }
+----
+
+* [classname]+java.util.Calendar+
+
+[source, JSON]
+----
+  { "creation" : "2014-11-18T15:51:26.252Z" }
+----
+
+* [classname]+java.util.Date+
+
+[source, JSON]
+----
+  { "last_update" : "2014-11-18T15:51:26.252Z" }
+----
+
+* [classname]+java.util.UUID+
+
+[source, JSON]
+----
+  { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
+----
+
+* [classname]+java.util.URL+
+
+[source, JSON]
+----
+  { "url" : "http://www.hibernate.org/" }
+----
+
+=
 ===== Entities
 
 Entities are stored as CouchDB documents and not as BLOBs
@@ -186,7 +276,7 @@ and mark it with the +@Version+ and +@Generated+ annotations.
 The first marks it as a property used for optimistic locking, while the latter advices Hibernate OGM
 to refresh that property after writes since its value is managed by the datastore.
 
-[NOTE]
+[WARNING]
 ====
 Not mapping the +_rev+ attribute may cause lost updates,
 as Hibernate OGM needs to re-read the current revision before doing an update in this case.
@@ -212,7 +302,6 @@ public class News {
 
     private String title;
 
-    @Column(name="desc")
     private String description;
 
     //getters, setters ...
@@ -227,7 +316,7 @@ public class News {
     "$type": "entity",
     "$table": "News",
     "title": "On the merits of NoSQL",
-    "desc": "This paper discuss why NoSQL will save the world for good"
+    "description": "This paper discuss why NoSQL will save the world for good"
 }
 ----
 ====
@@ -246,17 +335,16 @@ Also it is not recommended to start the names of your attributes with the "$" ch
 with attributes possibly introduced by Hibernate OGM in future releases.
 ====
 
-Embedded objects are mapped as nested documents.
-The following listing shows an example:
-
-.Example of an entity with an embedded object
+.Rename field and collection using @Table and @Column
 ====
 [source, JAVA]
 ----
 @Entity
+@Table(name="Article")
 public class News {
 
     @Id
+    @Column(name="code")
     private String id;
 
     @Version
@@ -265,21 +353,9 @@ public class News {
     private String revision;
 
     private String title;
+
     @Column(name="desc")
-
     private String description;
-
-    @Embedded
-    private NewsPaper paper;
-
-    //getters, setters ...
-}
-
-@Embeddable
-public class NewsPaper {
-
-    private String name;
-    private String owner;
 
     //getters, setters ...
 }
@@ -288,16 +364,12 @@ public class NewsPaper {
 [source, JSON]
 ----
 {
-    "_id": "News:id_:news-1_",
+    "_id": "Article:code_:news-1_",
     "_rev": "1-d1cd3b00a677a2e31cd0480a796e8480",
     "$type": "entity",
-    "$table": "News",
+    "$table": "Article",
     "title": "On the merits of NoSQL",
-    "desc": "This paper discuss why NoSQL will save the world for good",
-    "paper": {
-        "name": "NoSQL journal of prophecies",
-        "owner": "Delphy"
-    }
+    "desc": "This paper discuss why NoSQL will save the world for good"
 }
 ----
 ====
@@ -314,6 +386,349 @@ so you can name the entity id like you want, it will always be stored into +_id+
 Note that you also can work with embedded ids (via +@EmbeddedId+),
 but be aware of the fact that CouchDB doesn't support storing embedded structures in the +_id+ attribute.
 Hibernate OGM thus will create a concatenated representation of the embedded id's properties in this case.
+
+.Entity with @EmbeddedId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @EmbeddedId
+    private NewsID newsId;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsID implements Serializable {
+
+    private String title;
+    private String author;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "News:newsId.author_newsId.title_:Guillaume_How to use Hibernate OGM ?_",
+    "_rev": "2-1f02af4fabba7b4fa7394f1167244226",
+    "$type": "entity",
+    "$table": "News",
+    "newsId": {
+        "author": "Guillaume",
+        "title": "How to use Hibernate OGM ?"
+    }
+}
+----
+====
+
+====== Identifier generation strategies
+
+You can assign id values yourself or let Hibernate OGM generate the value using the
+[classname]+@GeneratedValue+ annotation.
+
+Two main strategies are supported:
+
+1. <<couchdb-table-id-generation-strategy, TABLE>>
+2. <<couchdb-sequence-id-generation-strategy, SEQUENCE>>
+
+Both strategy will create a new document containg the nex value to use fo rthe id, the difference
+between the two strategies is the name of the field containing the values.
+
+Hibernate OGM goes not support the +IDENTITY+ strategy and an exception is thrown at startup
+when it is used.
+The +AUTO+ strategy is the same as the <<couchdb-sequence-id-generation-strategy, SEQUENCE>> one.
+
+[[couchdb-table-id-generation-strategy]]
+*1) TABLE generation strategy*
+
+.Id generation strategy TABLE using default values
+====
+[source, JAVA]
+----
+@Entity
+public class Video {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private Integer id;
+    private String name
+
+    // getters, setters, ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Video:id_:1_",
+   "_rev": "1-b4c16b6cd8a083f2173f8df19bd24750",
+   "$type": "entity",
+   "$table": "Video",
+   "id": 1,
+   "name": "Scream",
+   "director": "Wes Craven"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "hibernate_sequences:sequence_name:default",
+   "_rev": "1-ebb82f1cea26d57f47a290fb0c1cc58f",
+   "$type": "sequence",
+   "next_val": "2"
+}
+----
+====
+
+.Id generation strategy TABLE using a custom table
+====
+[source, JAVA]
+----
+@Entity
+public class Video {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
+    @TableGenerator(
+            name = "video",
+            table = "sequences",
+            pkColumnName = "key",
+            pkColumnValue = "video",
+            valueColumnName = "seed"
+    )
+    private Integer id;
+
+    private String name;
+
+    // getter, setters, ...
+}
+----
+
+[source, JSON]
+----
+@Entity
+public class Video {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "video")
+    @TableGenerator(
+            name = "video",
+            table = "sequences",
+            pkColumnName = "key",
+            pkColumnValue = "video",
+            valueColumnName = "seed"
+    )
+    private Integer id;
+    private String name
+
+    // getters, setters, ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "sequences:key:video",
+   "_rev": "2-78b3450e0658743164828c4076e06a49",
+   "$type": "sequence",
+   "seed": "101"
+}
+----
+====
+
+[[couchdb-sequence-id-generation-strategy]]
+*2) SEQUENCE generation strategy*
+
+.SEQUENCE id generation strategy using custom values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator")
+  @SequenceGenerator(
+      name = "songSequenceGenerator",
+      sequenceName = "song_sequence",
+      initialValue = 2,
+      allocationSize = 20
+  )
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Song:id_:2_",
+   "_rev": "1-63bc100449fb2840067028c3825ed784",
+   "$type": "entity",
+   "$table": "Song",
+   "id": "2",
+   "title": "Ave Maria",
+   "singer": "Charlotte Church"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "hibernate_sequences:sequence_name:song_sequence",
+   "_rev": "2-df47883f076c84cb953f9184de7aa82a",
+   "$type": "sequence",
+   "next_val": "21"
+}
+----
+====
+
+====== Embedded objects and collections
+
+Hibernate OGM stores elements annotated with [classname]+@Embedded+
+or [classname]+@ElementCollection+ as nested documents of the owning entity.
+
+.Embedded object
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+    private String title;
+
+    @Embedded
+    private NewsPaper paper;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsPaper {
+
+    private String name;
+    private String owner;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "News:id_:939c892d-1129-4aff-abf8-e6c26e59dcb_",
+    "_rev": "2-1f02af4fabba7b4fa7394f1167244226",
+    "$type": "entity",
+    "$table": "News",
+    "id": "939c892d-1129-4aff-abf8-e6c26e59dcb",
+    "paper": {
+        "name": "NoSQL journal of prophecies",
+        "owner": "Delphy"
+    }
+}
+----
+====
+
+.@ElementCollection with one attibute
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "grandmother:id_:86ada718-f2a2-4299-b6ac-3d90b1ef2331_",
+    "_rev": "2-1f02af4fabba7b4fa7394f1167244226",
+    "$type": "entity",
+    "$table": "grandmother",
+    "id": "86ada718-f2a2-4299-b6ac-3d90b1ef2331",
+    "grandChildren" : [ "Luke", "Leia" ]
+}
+----
+====
+
+The class [classname]+GrandChild+ has only one attribute +name+,
+this means that Hibernate OGM doesn't need to store the name of the attribute.
+
+If the nested document has two or more fields, like in the following example,
+Hibernate OGM will store the name of the fields as well.
+
+.@ElementCollection with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    @OrderColumn( name = "birth_order" )
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "GrandMother:id_:86ada718-f2a2-4299-b6ac-3d90b1ef2331_",
+    "_rev": "2-1f02af4fabba7b4fa7394f1167244226",
+    "$type": "entity",
+    "$table": "GrandMother",
+    "grandChildren" : [
+            {
+                "name" : "luke",
+                "birth_order" : 0
+            },
+            {
+                "name" : "leia",
+                "birthorder" : 1
+            }
+    ]
+}
+----
+====
 
 ===== Associations
 
@@ -333,6 +748,15 @@ into a field or an embedded document
 depending if the mapping concerns a single object or a collection.
 The field that stores the relationship information is named like the entity property.
 
+[NOTE]
+====
+When using this strategy the annotations +@JoinTable+ will be ignored because no collection is created
+for associations.
+
+You can use +@JoinColumn+ to change the name of the field that stores the foreign key (as an example, see
+<<couchdb-in-entity-one-to-one-join-column>>).
+====
+
 .Java entity
 ====
 [source, JAVA]
@@ -346,7 +770,7 @@ public class AccountOwner {
     @ManyToMany
     public Set<BankAccount> bankAccounts;
 
-    //getters, setters, ...
+    // getters, setters, ...
 ----
 ====
 
@@ -367,6 +791,760 @@ public class AccountOwner {
 ----
 ====
 
+.Unidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "Vehicule:id_:V001_",
+    "_rev": "1-41dc2d2fd68ce2fc683241a60e59a676",
+    "$type": "entity",
+    "$table": "Vehicule",
+    "id": "V001",
+    "brand": "Mercedes",
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Wheel:id_:W1_",
+  "_rev": "1-30430d67174484f6b647480dbf781f55",
+  "$type": "entity",
+  "$table": "Wheel",
+  "id": "W1",
+  "diameter" : 0,
+  "vehicule_id" : "V001"
+}
+----
+====
+
+[[coucdhdb-in-entity-one-to-one-join-column]]
+.Unidirectional one-to-one with @JoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @JoinColumn( name = "part_of" )
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "Vehicule:id_:V001_",
+    "_rev": "1-41dc2d2fd68ce2fc683241a60e59a676",
+    "$type": "entity",
+    "$table": "Vehicule",
+    "id": "V001",
+    "brand": "Mercedes",
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Wheel:id_:W1_",
+  "_rev": "1-30430d67174484f6b647480dbf781f55",
+  "$type": "entity",
+  "$table": "Wheel",
+  "id": "W1",
+  "diameter" : 0,
+  "part_of" : "V001"
+}
+----
+====
+
+.Unidirectional one-to-one with @MapsId and @PrimaryKeyJoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @PrimaryKeyJoinColumn
+    @MapsId
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "Vehicule:id_:V001_",
+    "_rev": "1-41dc2d2fd68ce2fc683241a60e59a676",
+    "$type": "entity",
+    "$table": "Vehicule",
+    "id": "V001",
+    "brand": "Mercedes",
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Wheel:vehicule/_id_:V001_",
+  "_rev": "1-30430d67174484f6b647480dbf781f55",
+  "$type": "entity",
+  "$table": "Wheel",
+  "diameter" : 0,
+  "vehicule_id" : "V001"
+}
+----
+====
+
+.Bidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Husband {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Wife wife;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wife {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Husband husband;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Husband:id_:alex_",
+  "_rev": "2-8f976fc216130fb40144b000910b9c1d",
+  "$type": "entity",
+  "$table": "Husband",
+  "id" : "alex",
+  "name" : "Alex",
+  "wife" : "bea"
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Wife:id_:bea_",
+  "_rev": "2-69130cc082958becbdf4154a3d19c2e6",
+  "$type": "entity",
+  "$table": "Wife",
+  "id" : "bea",
+  "name" : "Bea",
+  "husband" : [ "alex" ]
+}
+----
+====
+
+.Unidirectional one-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id": "Basket:id_:davide/_basket_",
+  "_rev": "2-8f976fc216130fb40144b000910b9c1d",
+  "$type": "entity",
+  "$table": "Basket",
+  "id" : "davide_basket",
+  "owner" : "Davide",
+  "products" : [ "Beer", "Pretzel" ]
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id": "Product:name_:Beer_",
+  "_rev": "1-e2a51de970f3e5a0e1118989eef1cf7b",
+  "$type": "entity",
+  "$table": "Product",
+  "name" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+{
+  "_id": "Product:name_:Pretzel_",
+  "_rev": "1-b78ce2687db2fb550d9e8753423db3f3",
+  "$type": "entity",
+  "$table": "Product",
+  "name" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+----
+====
+
+.Unidirectional one-to-many using maps with defaults
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{ 
+  "_id": "User:id_:user/_001",
+  "_rev": "3-77de96250380a79a20a38e78826bf4f7",
+  "$type": "entity",
+  "$table": "User",
+  "id" : "user_001",
+  "addresses" : [
+    { 
+      "addresses_KEY" : "work",
+      "addresses_id" : "address_001"
+    },
+    {
+      "addresses_KEY" : "home",
+      "addresses_id" : "address_002"
+    }
+  ]
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Address:id_:address/_001",
+  "_rev": "1-dd366cd017f87548956dc55d3b12fefd",
+  "$type": "entity",
+  "$table": "Address",
+  "id" : "address_001",
+  "city" : "Rome"
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Address:id_:address/_001",
+  "_rev": "1-04f13666a62473ac951dd039c7cdc780",
+  "$type": "entity",
+  "$table": "Address",
+  "id" : "address_002",
+  "city" : "Paris"
+} 
+----
+====
+
+.Unidirectional one-to-many using maps with @MapKeyColumn
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    @MapKeyColumn(name = "addressType")
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{ 
+  "_id": "User:id_:user/_001",
+  "_rev": "3-77de96250380a79a20a38e78826bf4f7",
+  "$type": "entity",
+  "$table": "User",
+  "id" : "user_001",
+  "addresses" : [
+    { 
+      "addressType" : "work",
+      "addresses_id" : "address_001"
+    },
+    {
+      "addressType" : "home",
+      "addresses_id" : "address_002"
+    }
+  ]
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Address:id_:address/_001",
+  "_rev": "1-dd366cd017f87548956dc55d3b12fefd",
+  "$type": "entity",
+  "$table": "Address",
+  "id" : "address_001",
+  "city" : "Rome"
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Address:id_:address/_001",
+  "_rev": "1-04f13666a62473ac951dd039c7cdc780",
+  "$type": "entity",
+  "$table": "Address",
+  "id" : "address_002",
+  "city" : "Paris"
+} 
+----
+====
+
+.Unidirectional many-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class JavaUserGroup {
+
+    @Id
+    private String jugId;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Member {
+
+    @Id
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private JavaUserGroup memberOf;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "JavaUserGroups:id_:summer/_camp",
+  "_rev": "1-04f13666a62473ac951dd039c7cdc780",
+  "$type": "entity",
+  "$table": "JavaUserGroup",
+  "id" : "summer_camp",
+  "name" : "JUG Summer Camp"
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Member:id_:jerome",
+  "_rev": "1-880bf595c39a965dec0216d9d990ebd1",
+  "$type": "entity",
+  "$table": "Member",
+  "id" : "jerome",
+  "name" : "Jerome"
+  "memberOf_jugId" : "summer_camp"
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "Member:id_:emmanuel",
+  "_rev": "1-18e83ce9774a769814c401c49a5afcf3",
+  "$type": "entity",
+  "$table": "Member",
+  "id" : "emmanuel",
+  "name" : "Emmanuel Bernard"
+  "memberOf_jugId" : "summer_camp"
+}
+----
+====
+
+.Bidirectional many-to-one 
+====
+[source, JAVA]
+----
+@Entity
+public class SalesForce {
+
+    @Id
+    private String id;
+    private String corporation;
+
+    @OneToMany(mappedBy = "salesForce")
+    private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class SalesGuy {
+
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private SalesForce salesForce;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "SalesForce:id_:red/_hat",
+  "_rev": "1-04f13666a62473ac951dd039c7cdc780",
+  "$type": "entity",
+  "$table": "SalesForce",
+  "_id": "red_hat",
+  "corporation": "Red Hat",
+  "salesGuys": [ "eric", "simon" ]
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "SalesGuy:id_:eric",
+  "_rev": "1-18e83ce9774a769814c401c49a5afcf3",
+  "$type": "entity",
+  "$table": "SalesGuy",
+  "id": "eric",
+  "name": "Eric"
+  "salesForce_id": "red_hat",
+}
+----
+
+[source, JSON]
+----
+{
+  "_id": "SalesGuy:id_:eric",
+  "_rev": "1-18e83ce9774a769814c401c49a5afcf3",
+  "$type": "entity",
+  "$table": "SalesGuy",
+  "id": "simon",
+  "name": "Simon",
+  "salesForce_id": "red_hat"
+}
+----
+====
+
+.Unidirectional many-to-many using in entity strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom:id_:1_",
+   "_rev": "2-ae1d9748a84af991615fa842a7e796ea",
+   "$type": "entity",
+   "$table": "ClassRoom",
+   "id": "1",
+   "students": [
+       "mario",
+       "john"
+   ],
+   "name": "Math"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom:id_:2_",
+   "_rev": "2-0e58f03f518c5c1982bb7936308604e4",
+   "$type": "entity",
+   "$table": "ClassRoom",
+   "id": "2",
+   "students": [
+       "kate",
+       "mario"
+   ],
+   "name": "English"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:john_",
+   "_rev": "1-60b642619f0e62e079da8a6521ea9750",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "john",
+   "name": "John Doe"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:kate_",
+   "_rev": "1-911bb5cbc9b16c6d90f1e91e856a9224",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "kate",
+   "name": "Kate Doe"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:mario_",
+   "_rev": "1-7dc611e3c627a837033e7eb5e244f7f8",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "mario",
+   "name": "Mario Rossi"
+}
+----
+====
+
+.Bidirectional many-to-many 
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany( mappedBy = "bankAccounts" )
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "AccountOwner:id_:owner/_1_",
+   "_rev": "3-07eb9959eac966afedd0547aa74a59a7",
+   "$type": "entity",
+   "$table": "AccountOwner",
+   "id": "owner_1",
+   "SSN": "0123456",
+   "bankAccounts": [
+       "account_1",
+       "account_2"
+   ]
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "BankAccount:id_:account/_1_",
+   "_rev": "2-87252fffa4ab443485f55504215fbed3",
+   "$type": "entity",
+   "$table": "BankAccount",
+   "id": "account_1",
+   "accountNumber": "X2345000",
+   "owners": [
+       "owner_1"
+   ]
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "BankAccount:id_:account/_2_",
+   "_rev": "2-15bdfeda927dd10fa10aa19ceee4ea34",
+   "$type": "entity",
+   "$table": "BankAccount",
+   "id": "account_2",
+   "accountNumber": "ZZZ-009",
+   "owners": [
+       "owner_1"
+   ]
+}
+----
+====
+
+[[couchdb-association-document-strategy]]
 ====== Association document strategy
 
 With this strategy, Hibernate OGM uses separate association documents
@@ -413,6 +1591,394 @@ Don't worry, Hibernate OGM takes care of keeping them in sync:
    "$type": "association",
    "rows": [
         "4f5b48ad-f074-4a64-8cf4-1f9c54a33f76"
+   ]
+}
+----
+====
+
+[NOTE]
+====
+This strategy won't affect *-to-one associations or embedded collections.
+====
+
+.Unidirectional one-to-many using document strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Basket:id_:davide/_basket_",
+   "_rev": "1-ba920ac3d1ed5544a71d6c6c5f2ee286",
+   "$type": "entity",
+   "$table": "Basket",
+   "id": "davide_basket",
+   "owner": "Davide"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Basket:id_:davide/_basket_",
+   "_rev": "1-ba920ac3d1ed5544a71d6c6c5f2ee286",
+   "$type": "entity",
+   "$table": "Basket",
+   "id": "davide_basket",
+   "owner": "Davide"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Product:name_:Pretzel_",
+   "_rev": "1-b78ce2687db2fb550d9e8753423db3f3",
+   "$type": "entity",
+   "$table": "Product",
+   "description": "Glutino Pretzel Sticks",
+   "name": "Pretzel"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Basket_Product:Basket/_id_:davide/_basket_",
+   "_rev": "1-f6d9aa44a7ca4f01b68c94b1f5599956",
+   "$type": "association",
+   "rows": [
+       "Beer",
+       "Pretzel"
+   ]
+}
+----
+====
+
+Using the annotation +@JoinTable+ it is possible to change the value
+.Unidirectional one-to-many using document strategy with +@JoinTable+
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    @JoinTable( name = "BasketContent" )
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Basket:id_:davide/_basket_",
+   "_rev": "1-ba920ac3d1ed5544a71d6c6c5f2ee286",
+   "$type": "entity",
+   "$table": "Basket",
+   "id": "davide_basket",
+   "owner": "Davide"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Basket:id_:davide/_basket_",
+   "_rev": "1-ba920ac3d1ed5544a71d6c6c5f2ee286",
+   "$type": "entity",
+   "$table": "Basket",
+   "id": "davide_basket",
+   "owner": "Davide"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Product:name_:Pretzel_",
+   "_rev": "1-b78ce2687db2fb550d9e8753423db3f3",
+   "$type": "entity",
+   "$table": "Product",
+   "description": "Glutino Pretzel Sticks",
+   "name": "Pretzel"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "BasketContent:Basket/_id_:davide/_basket_",
+   "_rev": "1-f6d9aa44a7ca4f01b68c94b1f5599956",
+   "$type": "association",
+   "rows": [
+       "Beer",
+       "Pretzel"
+   ]
+}
+----
+====
+
+.Unidirectional many-to-many using document strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom:id_:1_",
+   "_rev": "2-ae1d9748a84af991615fa842a7e796ea",
+   "$type": "entity",
+   "$table": "ClassRoom",
+   "id": "1",
+   "name": "Math"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom:id_:2_",
+   "_rev": "2-0e58f03f518c5c1982bb7936308604e4",
+   "$type": "entity",
+   "$table": "ClassRoom",
+   "id": "2",
+   "name": "English"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:john_",
+   "_rev": "1-60b642619f0e62e079da8a6521ea9750",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "john",
+   "name": "John Doe"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:kate_",
+   "_rev": "1-911bb5cbc9b16c6d90f1e91e856a9224",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "kate",
+   "name": "Kate Doe"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Student:id_:mario_",
+   "_rev": "1-7dc611e3c627a837033e7eb5e244f7f8",
+   "$type": "entity",
+   "$table": "Student",
+   "id": "mario",
+   "name": "Mario Rossi"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom_Student:ClassRoom/_id_:1_",
+   "_rev": "1-351e470a8c134a084d9ad282796a7464",
+   "$type": "association",
+   "rows": [
+       "mario",
+       "john"
+   ]
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "ClassRoom_Student:ClassRoom/_id_:2_",
+   "_rev": "1-825d1900ec216dc73e0152564de8e975",
+   "$type": "association",
+   "rows": [
+       "kate"
+   ]
+}
+----
+====
+
+.Bidirectional many-to-many using document strategy
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany(mappedBy = "bankAccounts")
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "AccountOwner:id_:owner/_1_",
+   "_rev": "3-07eb9959eac966afedd0547aa74a59a7",
+   "$type": "entity",
+   "$table": "AccountOwner",
+   "id": "owner_1",
+   "SSN": "0123456",
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "BankAccount:id_:account/_1_",
+   "_rev": "2-87252fffa4ab443485f55504215fbed3",
+   "$type": "entity",
+   "$table": "BankAccount",
+   "id": "account_1",
+   "accountNumber": "X2345000",
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "BankAccount:id_:account/_2_",
+   "_rev": "2-15bdfeda927dd10fa10aa19ceee4ea34",
+   "$type": "entity",
+   "$table": "BankAccount",
+   "id": "account_2",
+   "accountNumber": "ZZZ-009",
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "AccountOwner_BankAccount:bankAccounts/_id_:account/_1_",
+   "_rev": "1-34ecb6bcadae6e51112de0cf50387521",
+   "$type": "association",
+   "rows": [
+       "owner_1"
+   ]
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "AccountOwner_BankAccount:bankAccounts/_id_:account/_2_",
+   "_rev": "1-34ecb6bcadae6e51112de0cf50387521",
+   "$type": "association",
+   "rows": [
+       "owner_1"
+   ]
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "AccountOwner_BankAccount:owners/_id_:owner/_1_",
+   "_rev": "2-d2cc7816eae5498a0829a3cdae0b208e",
+   "$type": "association",
+   "rows": [
+       "account_1",
+       "account_2"
    ]
 }
 ----
