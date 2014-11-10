@@ -62,8 +62,10 @@ import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -90,6 +92,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.DuplicateKeyException;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
@@ -301,7 +304,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		DBObject updater = objectForUpdate( tuple, idObject );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
-		getCollection( key ).update( idObject, updater, true, false, writeConcern );
+		try {
+			getCollection( key ).update( idObject, updater, true, false, writeConcern );
+		}
+		catch ( DuplicateKeyException dke ) {
+			throw new TupleAlreadyExistsException( key.getMetadata(), tuple, dke );
+		}
 	}
 
 	@Override
@@ -668,6 +676,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return parseResult.resultValue.build();
 	}
 
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+		return DuplicateInsertPreventionStrategy.NATIVE;
+	}
+
 	private ClosableIterator<Tuple> doFind(MongoDBQueryDescriptor query, QueryParameters queryParameters, DBCollection collection,
 			EntityKeyMetadata entityKeyMetadata) {
 		DBCursor cursor = collection.find( query.getCriteria(), query.getProjection() );
@@ -839,7 +852,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private void prepareForInsert(Map<DBCollection, BatchInsertionTask> inserts, MongoDBTupleSnapshot snapshot, EntityKey entityKey, Tuple tuple, WriteConcern writeConcern) {
 		DBCollection collection = getCollection( entityKey );
-		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, collection, writeConcern );
+		BatchInsertionTask batchInsertion = getOrCreateBatchInsertionTask( inserts, entityKey.getMetadata(), collection, writeConcern );
 		DBObject document = getCurrentDocument( snapshot, batchInsertion, entityKey );
 		DBObject newDocument = objectForInsert( tuple, document );
 		inserts.get( collection ).put( entityKey, newDocument );
@@ -850,11 +863,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return fromBatchInsertion != null ? fromBatchInsertion : snapshot.getDbObject();
 	}
 
-	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, DBCollection collection, WriteConcern writeConcern) {
+	private BatchInsertionTask getOrCreateBatchInsertionTask(Map<DBCollection, BatchInsertionTask> inserts, EntityKeyMetadata entityKeyMetadata, DBCollection collection, WriteConcern writeConcern) {
 		BatchInsertionTask insertsForCollection = inserts.get( collection );
 
 		if ( insertsForCollection == null ) {
-			insertsForCollection = new BatchInsertionTask( writeConcern );
+			insertsForCollection = new BatchInsertionTask( entityKeyMetadata, writeConcern );
 			inserts.put( collection, insertsForCollection );
 		}
 
@@ -864,7 +877,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
 		for ( Map.Entry<DBCollection, BatchInsertionTask> entry : inserts.entrySet() ) {
 			DBCollection collection = entry.getKey();
-			collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
+
+			try {
+				collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
+			}
+			catch ( DuplicateKeyException dke ) {
+				throw new TupleAlreadyExistsException( entry.getValue().getEntityKeyMetadata(), null, dke );
+			}
 		}
 		inserts.clear();
 	}
@@ -919,12 +938,18 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 	private static class BatchInsertionTask {
 
+		private final EntityKeyMetadata entityKeyMetadata;
 		private final Map<EntityKey, DBObject> inserts;
 		private final WriteConcern writeConcern;
 
-		public BatchInsertionTask(WriteConcern writeConcern) {
+		public BatchInsertionTask(EntityKeyMetadata entityKeyMetadata, WriteConcern writeConcern) {
+			this.entityKeyMetadata = entityKeyMetadata;
 			this.inserts = new HashMap<EntityKey, DBObject>();
 			this.writeConcern = writeConcern;
+		}
+
+		public EntityKeyMetadata getEntityKeyMetadata() {
+			return entityKeyMetadata;
 		}
 
 		public List<DBObject> getAll() {
