@@ -25,6 +25,7 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
+import org.hibernate.ogm.datastore.impl.EmptyTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.MapsTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationQueries;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jAssociationSnapshot;
@@ -45,9 +46,11 @@ import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.dialect.spi.SessionFactoryLifecycleAwareDialect;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -69,6 +72,7 @@ import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
+import org.neo4j.cypher.CypherExecutionException;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ConstraintViolationException;
@@ -169,7 +173,14 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		if ( entityNode == null ) {
 			return null;
 		}
-		return createTuple( entityNode, context );
+
+		return new Tuple(
+				new Neo4jTupleSnapshot(
+						entityNode,
+						context.getAllAssociatedEntityKeyMetadata(),
+						context.getAllRoles()
+				)
+		);
 	}
 
 	@Override
@@ -177,13 +188,29 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		return new Tuple();
 	}
 
-	private static Tuple createTuple(Node entityNode, TupleContext tupleContext) {
-		return new Tuple( new Neo4jTupleSnapshot( entityNode, tupleContext.getAllAssociatedEntityKeyMetadata(), tupleContext.getAllRoles() ) );
-	}
-
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Node node = entityQueries.get( key.getMetadata() ).findOrCreateEntity( executionEngine, key.getColumnValues() );
+		Node node;
+
+		// insert
+		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
+			try {
+				node = entityQueries.get( key.getMetadata() ).insertEntity( executionEngine, key.getColumnValues() );
+			}
+			catch (CypherExecutionException cee) {
+				if ( cee.getMessage().contains( "already exists" ) ) {
+					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, cee );
+				}
+				else {
+					throw cee;
+				}
+			}
+		}
+		// update
+		else {
+			node = ( (Neo4jTupleSnapshot) tuple.getSnapshot() ).getNode();
+		}
+
 		applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
 		GraphLogger.log( "Inserted/Updated node: %1$s", node );
 	}
@@ -514,5 +541,10 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		}
 
 		return new EntityKey( associatedEntityKeyMetadata.getEntityKeyMetadata(), columnValues );
+	}
+
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 }

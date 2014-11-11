@@ -29,14 +29,14 @@ public class Neo4jEntityQueries extends QueriesBase {
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
 	private final String findEntitiesQuery;
-	private final String findOrCreateEntityQuery;
+	private final String createEntityQuery;
 	private final String removeEntityQuery;
 
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata );
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
-		this.findOrCreateEntityQuery = initFindOrCreateEntityQuery( entityKeyMetadata );
+		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
 	}
 
@@ -95,11 +95,11 @@ public class Neo4jEntityQueries extends QueriesBase {
 	/*
 	 * Example:
 	 *
-	 * MERGE (n:ENTITY:table {id: {0}})
+	 * CREATE (n:ENTITY:table {id: {0}})
 	 * RETURN n
 	 */
-	private static String initFindOrCreateEntityQuery(EntityKeyMetadata entityKeyMetadata) {
-		StringBuilder queryBuilder = new StringBuilder( "MERGE " );
+	private static String initCreateEntityQuery(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder( "CREATE " );
 		queryBuilder.append( "(n:" );
 		queryBuilder.append( ENTITY );
 		queryBuilder.append( ":" );
@@ -157,15 +157,15 @@ public class Neo4jEntityQueries extends QueriesBase {
 	}
 
 	/**
-	 * Find the node corresponding to an entity or create it if it does not exist.
+	 * Creates the node corresponding to an entity.
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
 	 * @param columnValues the values in {@link org.hibernate.ogm.model.key.spi.EntityKey#getColumnValues()}
 	 * @return the corresponding node
 	 */
-	public Node findOrCreateEntity(ExecutionEngine executionEngine, Object[] columnValues) {
+	public Node insertEntity(ExecutionEngine executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
-		ExecutionResult result = executionEngine.execute( findOrCreateEntityQuery, params );
+		ExecutionResult result = executionEngine.execute( createEntityQuery, params );
 		return singleResult( result );
 	}
 
