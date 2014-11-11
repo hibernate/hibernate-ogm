@@ -61,8 +61,48 @@ public class DuplicateIdDetectionTest extends JpaTestCase {
 		em.close();
 	}
 
+	@Test
+	public void cannotInsertSameEntityUsingCompositeKeyTwice() throws Exception {
+		getTransactionManager().begin();
+		EntityManager em = getFactory().createEntityManager();
+
+		// given
+		MakeupArtistWithCompositeKey wibke = new MakeupArtistWithCompositeKey( new MakeUpArtistId( "fancy-film", "wibke" ), "halloween" );
+		em.persist( wibke );
+
+		getTransactionManager().commit();
+		em.clear();
+		getTransactionManager().begin();
+		em.joinTransaction();
+
+		// when
+		MakeupArtistWithCompositeKey notWibke = new MakeupArtistWithCompositeKey( new MakeUpArtistId( "fancy-film", "wibke" ), "glamorous" );
+		em.persist( notWibke );
+
+		try {
+			getTransactionManager().commit();
+			fail( "Expected exception wasn't raised" );
+		}
+		catch (Exception e) {
+			// then
+			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
+		}
+
+		em.clear();
+		getTransactionManager().begin();
+		em.joinTransaction();
+
+		MakeupArtistWithCompositeKey loadedMakeupArtist = em.find( MakeupArtistWithCompositeKey.class, new MakeUpArtistId( "fancy-film", "wibke" ) );
+		assertThat( loadedMakeupArtist ).isNotNull();
+		assertThat( loadedMakeupArtist.getFavoriteStyle() ).describedAs( "Second insert should not be applied" ).isEqualTo( "halloween" );
+
+		em.remove( loadedMakeupArtist );
+		getTransactionManager().commit();
+		em.close();
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { MakeupArtist.class };
+		return new Class<?>[] { MakeupArtist.class, MakeupArtistWithCompositeKey.class };
 	}
 }

@@ -134,9 +134,12 @@ public interface GridDialect extends Service {
 	void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas);
 
 	/**
-	 * Returns this dialect's strategy for detecting the insertion of several entity tuples with the same primary key.
+	 * Returns this dialect's strategy for detecting the insertion of several entity tuples of the given type with the
+	 * same primary key.
 	 *
-	 * @return This dialect's strategy for detecting the insertion of several entity tuples with the same primary key
+	 * @param entityKeyMetadata meta-data identifying the entity type of interest
+	 * @return This dialect's strategy for detecting the insertion of several entity tuples of the given type with the
+	 * same primary key
 	 */
-	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy();
+	DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata);
 }

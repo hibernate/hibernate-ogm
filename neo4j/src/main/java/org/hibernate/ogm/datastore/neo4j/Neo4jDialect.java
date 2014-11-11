@@ -544,7 +544,9 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
-		return DuplicateInsertPreventionStrategy.NATIVE;
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
+		return entityKeyMetadata.getColumnNames().length == 1 ?
+				DuplicateInsertPreventionStrategy.NATIVE :
+				DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 }

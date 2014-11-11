@@ -264,7 +264,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 

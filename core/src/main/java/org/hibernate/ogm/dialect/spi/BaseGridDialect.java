@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.type.Type;
 
@@ -27,7 +28,7 @@ public abstract class BaseGridDialect implements GridDialect {
 	}
 
 	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.LOOK_UP;
 	}
 }

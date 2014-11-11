@@ -677,7 +677,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 

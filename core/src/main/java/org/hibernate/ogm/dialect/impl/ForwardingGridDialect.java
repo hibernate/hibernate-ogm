@@ -157,8 +157,8 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	@Override
-	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy() {
-		return gridDialect.getDuplicateInsertPreventionStrategy();
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
+		return gridDialect.getDuplicateInsertPreventionStrategy( entityKeyMetadata );
 	}
 
 	/*

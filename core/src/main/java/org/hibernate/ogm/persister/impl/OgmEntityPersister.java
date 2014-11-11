@@ -124,7 +124,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	private final OptionsService optionsService;
 
 	private final EntityKeyMetadata entityKeyMetadata;
-
+	private final DuplicateInsertPreventionStrategy duplicateInsertPreventionStrategy;
 	/**
 	 * One-to-one associations are represented by a collection on the inverse side. This is the meta-data for these
 	 * virtual collections, keyed by property name from the <b>main side</b>.
@@ -273,6 +273,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
 		jpaEntityName = persistentClass.getJpaEntityName();
 		entityKeyMetadata = new DefaultEntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
+		duplicateInsertPreventionStrategy = gridDialect.getDuplicateInsertPreventionStrategy( entityKeyMetadata );
 
 		initCustomSQLStrings();
 
@@ -1242,7 +1243,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 			Tuple resultset = null;
 
-			if ( gridDialect.getDuplicateInsertPreventionStrategy() == DuplicateInsertPreventionStrategy.LOOK_UP ) {
+			if ( duplicateInsertPreventionStrategy == DuplicateInsertPreventionStrategy.LOOK_UP ) {
 				resultset = gridDialect.getTuple( key, this.getTupleContext() );
 
 				if ( j == 0 && resultset != null ) {
