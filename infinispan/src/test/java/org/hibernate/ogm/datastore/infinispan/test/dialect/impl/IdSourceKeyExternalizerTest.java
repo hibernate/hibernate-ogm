@@ -10,6 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.junit.Before;
@@ -31,7 +32,7 @@ public class IdSourceKeyExternalizerTest {
 
 	@Test
 	public void shouldSerializeAndDeserializeRowKey() throws Exception {
-		IdSourceKeyMetadata keyMetadata = IdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdSourceKeyMetadata keyMetadata = DefaultIdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
 
 		// given
 		IdSourceKey key = IdSourceKey.forTable( keyMetadata, "Foo_Sequence" );

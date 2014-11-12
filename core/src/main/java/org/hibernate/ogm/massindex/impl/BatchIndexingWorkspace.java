@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import org.hibernate.CacheMode;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.search.backend.impl.batch.BatchBackend;
@@ -63,7 +64,7 @@ public class BatchIndexingWorkspace implements Runnable {
 
 	private EntityKeyMetadata getEntityKeyMetadata() {
 		OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( indexedType.getName() );
-		return new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+		return new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 	}
 
 	@Override

@@ -4,8 +4,12 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.model.key.spi;
+package org.hibernate.ogm.model.impl;
 
+import java.util.Arrays;
+
+import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
 /**
@@ -15,12 +19,23 @@ import org.hibernate.ogm.model.spi.Tuple;
  * @author Davide D'Alto
  * @author Gunnar Morling
  */
-public interface AssociatedEntityKeyMetadata {
+public class DefaultAssociatedEntityKeyMetadata implements AssociatedEntityKeyMetadata {
+
+	private final String[] associationKeyColumns;
+	private final EntityKeyMetadata entityKeyMetadata;
+
+	public DefaultAssociatedEntityKeyMetadata(String[] associationKeyColumns, EntityKeyMetadata entityKeyMetadata) {
+		this.associationKeyColumns = associationKeyColumns;
+		this.entityKeyMetadata = entityKeyMetadata;
+	}
 
 	/**
 	 * Returns the meta-data for the entity key on the other side of the represented association.
 	 */
-	EntityKeyMetadata getEntityKeyMetadata();
+	@Override
+	public EntityKeyMetadata getEntityKeyMetadata() {
+		return entityKeyMetadata;
+	}
 
 	/**
 	 * Returns the name of the column in the target entity key corresponding to the given association key column.
@@ -32,11 +47,31 @@ public interface AssociatedEntityKeyMetadata {
 	 * @param associationKeyColumn The name of the column in the association
 	 * @return The name of the corresponding column in the referenced entity key
 	 */
-	String getCorrespondingEntityKeyColumn(String associationKeyColumn);
+	@Override
+	public String getCorrespondingEntityKeyColumn(String associationKeyColumn) {
+		int i = 0;
+		for ( String column : associationKeyColumns ) {
+			if ( associationKeyColumn.equals( column ) ) {
+				return entityKeyMetadata.getColumnNames()[i];
+			}
+			i++;
+		}
+
+		return null;
+	}
 
 	/**
 	 * Returns the names of those columns of a tuple or association row which make up the represented association, i.e.
 	 * the columns referring to the entity key on the other side.
 	 */
-	String[] getAssociationKeyColumns();
+	@Override
+	public String[] getAssociationKeyColumns() {
+		return associationKeyColumns;
+	}
+
+	@Override
+	public String toString() {
+		return "DefaultAssociatedEntityKeyMetadata [associationKeyColumns=" + Arrays.toString( associationKeyColumns ) + ", entityKeyMetadata=" + entityKeyMetadata
+				+ "]";
+	}
 }

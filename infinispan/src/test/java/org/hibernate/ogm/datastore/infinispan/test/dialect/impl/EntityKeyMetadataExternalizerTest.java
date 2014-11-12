@@ -10,6 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,14 +33,14 @@ public class EntityKeyMetadataExternalizerTest {
 	public void shouldSerializeAndDeserializeEntityKey() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "Foobar", columnNames );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Foobar", columnNames );
 
 		// when
 		byte[] bytes = externalizerHelper.marshall( keyMetadata );
 		EntityKeyMetadata unmarshalledMetadata = externalizerHelper.unmarshall( bytes );
 
 		// then
-		assertThat( unmarshalledMetadata.getClass() ).isEqualTo( EntityKeyMetadata.class );
+		assertThat( unmarshalledMetadata.getClass() ).isEqualTo( DefaultEntityKeyMetadata.class );
 		assertThat( unmarshalledMetadata.getTable() ).isEqualTo( keyMetadata.getTable() );
 		assertThat( unmarshalledMetadata.getColumnNames() ).isEqualTo( keyMetadata.getColumnNames() );
 

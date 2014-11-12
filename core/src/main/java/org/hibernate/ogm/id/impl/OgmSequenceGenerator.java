@@ -17,6 +17,7 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
@@ -76,7 +77,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 		this.type = type;
 		this.params = params;
 		sequenceName = determineSequenceName( params, dialect );
-		generatorKeyMetadata = IdSourceKeyMetadata.forSequence( sequenceName );
+		generatorKeyMetadata = DefaultIdSourceKeyMetadata.forSequence( sequenceName );
 		delegate = getDelegate( dialect );
 	}
 

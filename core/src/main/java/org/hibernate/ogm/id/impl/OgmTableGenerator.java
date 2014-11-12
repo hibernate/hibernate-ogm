@@ -17,6 +17,7 @@ import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.TableGenerator;
 import org.hibernate.internal.util.StringHelper;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -158,7 +159,7 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 		valueColumnName = determineValueColumnName( params, dialect );
 		segmentValue = determineSegmentValue( params );
 
-		generatorKeyMetadata = IdSourceKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
+		generatorKeyMetadata = DefaultIdSourceKeyMetadata.forTable( tableName, segmentColumnName, valueColumnName );
 	}
 
 	/**

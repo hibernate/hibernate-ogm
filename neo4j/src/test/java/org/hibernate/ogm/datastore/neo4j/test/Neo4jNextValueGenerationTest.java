@@ -32,6 +32,7 @@ import org.hibernate.ogm.dialect.impl.OgmDialect;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.impl.OgmTableGenerator;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -147,7 +148,7 @@ public class Neo4jNextValueGenerationTest {
 	}
 
 	private IdSourceKey buildIdGeneratorKey(String sequenceName) {
-		IdSourceKeyMetadata metadata = IdSourceKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
+		IdSourceKeyMetadata metadata = DefaultIdSourceKeyMetadata.forTable( HIBERNATE_SEQUENCES, "sequence_name", "next_val" );
 		return IdSourceKey.forTable( metadata, sequenceName );
 	}
 }

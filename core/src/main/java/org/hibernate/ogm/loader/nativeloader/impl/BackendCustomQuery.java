@@ -19,6 +19,7 @@ import org.hibernate.loader.custom.CustomQuery;
 import org.hibernate.loader.custom.Return;
 import org.hibernate.loader.custom.RootReturn;
 import org.hibernate.loader.custom.sql.SQLQueryReturnProcessor;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.util.impl.Log;
@@ -72,7 +73,7 @@ public class BackendCustomQuery<T extends Serializable> implements CustomQuery, 
 				}
 				RootReturn rootReturn = (RootReturn) queryReturn;
 				OgmEntityPersister persister = (OgmEntityPersister) sessionFactory.getEntityPersister( rootReturn.getEntityName() );
-				metadata = new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+				metadata = new DefaultEntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
 			}
 		}
 

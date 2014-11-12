@@ -24,8 +24,8 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
 import org.hibernate.ogm.datastore.couchdb.test.dialect.CouchDBDialectTest;
 import org.hibernate.ogm.datastore.couchdb.util.impl.DatabaseIdentifier;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -181,7 +181,7 @@ public class CouchDBDatastoreTest {
 	}
 
 	private EntityKey createEntityKey(String tableName, String[] columnNames, Object[] values) {
-		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
+		return new EntityKey( new DefaultEntityKeyMetadata( tableName, columnNames ), values );
 	}
 
 	private DatabaseIdentifier getDatabaseIdentifierWithUnavailableHost() throws Exception {

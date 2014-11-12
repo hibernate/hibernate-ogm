@@ -36,11 +36,13 @@ import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.TupleContext;
+import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -121,11 +123,11 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		transaction.commit();
 
 		this.addExtraColumn();
-		AssociationKeyMetadata metadata = new AssociationKeyMetadata.Builder()
+		AssociationKeyMetadata metadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( "Project_Module" )
 				.columnNames( new String[] { "Project_id" } )
 				.rowKeyColumnNames( new String[] { "Project_id", "module_id" } )
-				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( new String[] { "module_id" }, new EntityKeyMetadata( "Module", new String[] { "id" } ) ) )
+				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( new String[] { "module_id" }, new DefaultEntityKeyMetadata( "Module", new String[] { "id" } ) ) )
 				.inverse( false )
 				.collectionRole( "modules" )
 				.associationKind( AssociationKind.ASSOCIATION )
@@ -136,7 +138,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 				metadata,
 				new Object[] { "projectID" },
 				new EntityKey(
-						new EntityKeyMetadata( "Project", new String[] { "id" } ),
+						new DefaultEntityKeyMetadata( "Project", new String[] { "id" } ),
 						new String[] { "projectID" }
 				)
 		);
@@ -148,7 +150,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 								Project.class,
 								"modules"
 						),
-						new AssociatedEntityKeyMetadata( null, null ),
+						new DefaultAssociatedEntityKeyMetadata( null, null ),
 						null
 				),
 				new Tuple( new MongoDBTupleSnapshot( null, null, null ) )
@@ -167,7 +169,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 
 	private Tuple getTuple(String collectionName, String id, List<String> selectedColumns) {
 		EntityKey key = new EntityKey(
-				new EntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
+				new DefaultEntityKeyMetadata( collectionName, new String[] { MongoDBDialect.ID_FIELDNAME } ),
 				new Object[] { id }
 		);
 		TupleContext tupleContext = new TupleContextImpl(

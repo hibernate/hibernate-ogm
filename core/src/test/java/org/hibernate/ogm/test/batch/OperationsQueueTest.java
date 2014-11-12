@@ -10,9 +10,10 @@ import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleCon
 
 import org.fest.assertions.Assertions;
 import org.hibernate.HibernateException;
+import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.batch.spi.RemoveTupleOperation;
-import org.hibernate.ogm.dialect.batch.spi.InsertOrUpdateTupleOperation;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Before;
@@ -106,7 +107,7 @@ public class OperationsQueueTest {
 	}
 
 	private EntityKey entityKey() {
-		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "MetadataTable", new String[] {} );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "MetadataTable", new String[] {} );
 		EntityKey key = new EntityKey( keyMetadata, new Object[] {} );
 		return key;
 	}

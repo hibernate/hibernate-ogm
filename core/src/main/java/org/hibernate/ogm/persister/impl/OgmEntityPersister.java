@@ -53,6 +53,9 @@ import org.hibernate.ogm.entityentry.impl.OgmEntityEntryState;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.id.impl.OgmIdentityGenerator;
 import org.hibernate.ogm.loader.impl.OgmLoader;
+import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -267,7 +270,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
 		jpaEntityName = persistentClass.getJpaEntityName();
-		entityKeyMetadata = new EntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
+		entityKeyMetadata = new DefaultEntityKeyMetadata( getTableName(), getIdentifierColumnNames() );
 
 		initCustomSQLStrings();
 
@@ -299,11 +302,11 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			String inverseOneToOneProperty = getInverseOneToOneProperty( property, otherSidePersister );
 
 			if ( inverseOneToOneProperty != null ) {
-				AssociationKeyMetadata metadata = new AssociationKeyMetadata.Builder()
+				AssociationKeyMetadata metadata = new DefaultAssociationKeyMetadata.Builder()
 						.table( getTableName() )
 						.columnNames( propertyColumnNames )
 						.rowKeyColumnNames( rowKeyColumnNames )
-						.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( entityKeyMetadata.getColumnNames(), entityKeyMetadata ) )
+						.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( entityKeyMetadata.getColumnNames(), entityKeyMetadata ) )
 						.inverse( true )
 						.collectionRole( inverseOneToOneProperty )
 						.associationKind( AssociationKind.ASSOCIATION )
@@ -466,7 +469,7 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 						( (EntityType) uniqueKeyType ).getAssociatedEntityName() );
 
 				for ( String column : getPropertyColumnNames( index ) ) {
-					associatedEntityKeyMetadata.put( column, new AssociatedEntityKeyMetadata( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() ) );
+					associatedEntityKeyMetadata.put( column, new DefaultAssociatedEntityKeyMetadata( getPropertyColumnNames( index ), associatedJoinable.getEntityKeyMetadata() ) );
 					roles.put( column, getPropertyNames()[index] );
 				}
 			}

@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
@@ -62,7 +63,7 @@ public class AssociationKeyExternalizer implements AdvancedExternalizer<Associat
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata.Builder()
+		AssociationKeyMetadata associationKeyMetadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( tableName )
 				.columnNames( columnNames )
 				.build();
