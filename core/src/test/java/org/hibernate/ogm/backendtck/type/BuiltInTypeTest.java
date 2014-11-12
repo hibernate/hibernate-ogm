@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
@@ -182,7 +183,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b = (Bookmark) session.get( Bookmark.class, b.getId() );
 
 		//Check directly in the cache the values stored
-		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "Bookmark", new String[]{ "id" } );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Bookmark", new String[]{ "id" } );
 		EntityKey key = new EntityKey( keyMetadata, new Object[]{ "42" } );
 		Map<String, Object> entity = extractEntityTuple( sessions, key );
 

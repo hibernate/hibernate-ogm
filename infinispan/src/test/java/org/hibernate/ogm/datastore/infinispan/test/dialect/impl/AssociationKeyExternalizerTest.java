@@ -10,6 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.junit.Before;
@@ -32,7 +33,7 @@ public class AssociationKeyExternalizerTest {
 	@Test
 	public void shouldSerializeAndDeserializeAssociationKey() throws Exception {
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata.Builder()
+		AssociationKeyMetadata keyMetadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( "Foobar" )
 				.columnNames( columnNames )
 				.build();

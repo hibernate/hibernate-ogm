@@ -10,6 +10,7 @@ import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.junit.Before;
@@ -32,7 +33,7 @@ public class EntityKeyExternalizerTest {
 	@Test
 	public void shouldSerializeAndDeserializeEntityKey() throws Exception {
 		String[] columnNames = { "foo", "bar", "baz" };
-		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "Foobar", columnNames );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Foobar", columnNames );
 		Object[] values = { 123, "Hello", 456L };
 
 		// given

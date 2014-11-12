@@ -51,7 +51,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 
 	private EntityKeyMetadata getKeyMetaData(Class<?> entityType) {
 		OgmEntityPersister persister = (OgmEntityPersister) ( sessionFactory ).getEntityPersister( entityType.getName() );
-		return new EntityKeyMetadata( persister.getTableName(), persister.getRootTableIdentifierColumnNames() );
+		return persister.getEntityKeyMetadata();
 	}
 
 	@Override

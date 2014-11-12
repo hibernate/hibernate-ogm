@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
@@ -62,7 +63,7 @@ public class IdSourceKeyExternalizer implements AdvancedExternalizer<IdSourceKey
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		IdSourceKeyMetadata metadata = IdSourceKeyMetadata.forTable( tableName, columnNames[0], null );
+		IdSourceKeyMetadata metadata = DefaultIdSourceKeyMetadata.forTable( tableName, columnNames[0], null );
 		return IdSourceKey.forTable( metadata , (String) values[0] );
 	}
 

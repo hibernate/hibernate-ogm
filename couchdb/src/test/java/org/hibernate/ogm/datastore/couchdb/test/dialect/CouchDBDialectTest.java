@@ -21,11 +21,12 @@ import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.model.impl.CouchDBTupleSnapshot;
 import org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider;
 import org.hibernate.ogm.datastore.couchdb.utils.CouchDBTestHelper;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
@@ -148,15 +149,15 @@ public class CouchDBDialectTest {
 	}
 
 	private EntityKey createEntityKey(String tableName, String[] columnNames, Object[] values) {
-		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
+		return new EntityKey( new DefaultEntityKeyMetadata( tableName, columnNames ), values );
 	}
 
 	private AssociationKey createAssociationKey(EntityKey ownerEntityKey, String collectionRole, String tableName, String[] columnNames, Object[] columnValues, String[] rowKeyColumnNames) {
-		AssociationKeyMetadata associationKeyMetadata = new AssociationKeyMetadata.Builder()
+		AssociationKeyMetadata associationKeyMetadata = new DefaultAssociationKeyMetadata.Builder()
 			.table( tableName )
 			.columnNames( columnNames )
 			.rowKeyColumnNames( rowKeyColumnNames )
-			.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ) )
+			.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( EMPTY_STRING_ARRAY, null ) )
 			.inverse( false )
 			.collectionRole( collectionRole )
 			.associationKind( AssociationKind.ASSOCIATION )

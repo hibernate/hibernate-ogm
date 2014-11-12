@@ -22,7 +22,10 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -75,7 +78,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadTupleInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		EntityKeyMetadata keyMetadata = new EntityKeyMetadata( "Foobar", columnNames );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Foobar", columnNames );
 		Object[] values = { 123, "Hello", 456L };
 
 		EntityKey key = new EntityKey( keyMetadata, values );
@@ -93,7 +96,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	@Test
 	public void shoulReadAndWriteSequenceInClusteredMode() throws Exception {
 		// given
-		IdSourceKeyMetadata keyMetadata = IdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
+		IdSourceKeyMetadata keyMetadata = DefaultIdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" );
 		IdSourceKey key = IdSourceKey.forTable( keyMetadata, "Foo_Sequence" );
 
 		// when
@@ -109,10 +112,10 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadAssociationInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new AssociationKeyMetadata.Builder()
+		AssociationKeyMetadata keyMetadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( "Foobar" )
 				.columnNames( columnNames )
-				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( null, null ) )
+				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( null, null ) )
 				.build();
 		Object[] values = { 123, "Hello", 456L };
 

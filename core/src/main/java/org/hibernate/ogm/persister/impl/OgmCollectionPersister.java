@@ -35,9 +35,11 @@ import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.TupleAsMapResultSet;
 import org.hibernate.ogm.loader.impl.OgmBasicCollectionLoader;
+import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.impl.RowKeyBuilder;
-import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -138,12 +140,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		String[] rowKeyColumnNames = rowKeyBuilder.getColumnNames();
 		String[] rowKeyIndexColumnNames = rowKeyBuilder.getIndexColumnNames();
 
-		associationKeyMetadata = new AssociationKeyMetadata.Builder()
+		associationKeyMetadata = new DefaultAssociationKeyMetadata.Builder()
 				.table( getTableName() )
 				.columnNames( getKeyColumnNames() )
 				.rowKeyColumnNames( rowKeyColumnNames )
 				.rowKeyIndexColumnNames( rowKeyIndexColumnNames )
-				.associatedEntityKeyMetadata( new AssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
+				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( getElementColumnNames(), targetEntityKeyMetadata( false ) ) )
 				.inverse( isInverse )
 				.collectionRole( getUnqualifiedRole() )
 				.associationKind( getElementType().isEntityType() ? AssociationKind.ASSOCIATION : AssociationKind.EMBEDDED_COLLECTION )
@@ -177,7 +179,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 			else {
 				targetColumnNames = getElementColumnNames();
 			}
-			return new EntityKeyMetadata( getTableName(), targetColumnNames );
+			return new DefaultEntityKeyMetadata( getTableName(), targetColumnNames );
 		}
 	}
 

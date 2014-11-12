@@ -14,8 +14,8 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
@@ -62,7 +62,7 @@ public class EntityKeyExternalizer implements AdvancedExternalizer<EntityKey> {
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
 
-		return new EntityKey( new EntityKeyMetadata( tableName, columnNames ), values );
+		return new EntityKey( new DefaultEntityKeyMetadata( tableName, columnNames ), values );
 	}
 
 	@Override

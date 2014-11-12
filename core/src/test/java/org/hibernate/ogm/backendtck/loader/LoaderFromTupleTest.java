@@ -21,8 +21,8 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.loader.impl.OgmLoader;
 import org.hibernate.ogm.loader.impl.OgmLoadingContext;
+import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -46,7 +46,7 @@ public class LoaderFromTupleTest extends OgmTestCase {
 		session.clear();
 
 		transaction = session.beginTransaction();
-		EntityKey key = new EntityKey( new EntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
+		EntityKey key = new EntityKey( new DefaultEntityKeyMetadata( "Feeling", new String[] { "UUID" } ), new Object[] { feeling.getUUID() } );
 		Map<String, Object> entityTuple = extractEntityTuple( sessions, key );
 		final Tuple tuple = new Tuple( new MapTupleSnapshot( entityTuple ) );
 
