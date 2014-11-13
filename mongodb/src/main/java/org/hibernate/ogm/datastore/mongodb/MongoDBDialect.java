@@ -552,8 +552,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			if ( entity != null ) {
 				BasicDBObject updater = new BasicDBObject();
 				addSubQuery( "$unset", updater, key.getMetadata().getCollectionRole(), Integer.valueOf( 1 ) );
-				( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().removeField( key.getMetadata().getCollectionRole() );
-				getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
+				DBObject dbObject = getEmbeddingEntity( key, associationContext );
+				if ( dbObject != null ) {
+					dbObject.removeField( key.getMetadata().getCollectionRole() );
+					getCollection( key.getEntityKey() ).update( entity, updater, true, false, writeConcern );
+				}
 			}
 		}
 		else {
