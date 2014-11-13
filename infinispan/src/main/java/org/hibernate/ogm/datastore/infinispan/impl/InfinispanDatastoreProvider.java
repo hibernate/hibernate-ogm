@@ -54,6 +54,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 
 	private JtaPlatform jtaPlatform;
 	private JndiService jndiService;
+	//caches are cached because the lookup is expensive
 	private Map<String,Cache> caches;
 	private boolean isCacheProvided;
 	private EmbeddedCacheManager cacheManager;
