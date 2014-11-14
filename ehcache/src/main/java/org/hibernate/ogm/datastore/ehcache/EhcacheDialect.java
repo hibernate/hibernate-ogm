@@ -28,8 +28,10 @@ import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
 import org.hibernate.ogm.dialect.spi.BaseGridDialect;
+import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.dialect.spi.TupleAlreadyExistsException;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -91,20 +93,26 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
-		final HashMap<String, Object> tuple = new HashMap<String, Object>();
-		entityCache.put( new Element( new SerializableEntityKey( key ), tuple ) );
-
-		return new Tuple( new MapTupleSnapshot( tuple ) );
+		return new Tuple( new MapTupleSnapshot( new HashMap<String, Object>() ) );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
-		MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+		Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
 
-		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
-		entityCache.put( new Element( new SerializableEntityKey( key ), entityRecord ) );
+		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
+
+		if ( entityRecord.isEmpty() ) {
+			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+			Element previous = entityCache.putIfAbsent( new Element( new SerializableEntityKey( key ), entityRecord ) );
+			if ( previous != null ) {
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, null );
+			}
+		}
+		else {
+			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
+			entityCache.put( new Element( new SerializableEntityKey( key ), entityRecord ) );
+		}
 	}
 
 	@Override
@@ -200,5 +208,10 @@ public class EhcacheDialect extends BaseGridDialect {
 				}
 			}
 		}
+	}
+
+	@Override
+	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
+		return DuplicateInsertPreventionStrategy.NATIVE;
 	}
 }
