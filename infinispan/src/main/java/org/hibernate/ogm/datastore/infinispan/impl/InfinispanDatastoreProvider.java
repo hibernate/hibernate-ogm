@@ -58,6 +58,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	private Map<String,Cache> caches;
 	private boolean isCacheProvided;
 	private EmbeddedCacheManager cacheManager;
+	private CacheAndKeyProvider cacheAndKeyProvider;
 	private final InfinispanConfiguration config = new InfinispanConfiguration();
 
 	@Override
@@ -67,6 +68,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 
 	@Override
 	public void start() {
+		cacheAndKeyProvider = new OnePerKindCacheAndKeyProvider();
 		try {
 			String jndiProperty = config.getJndiName();
 			if ( jndiProperty == null ) {
@@ -86,6 +88,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 		//clear resources
 		this.jtaPlatform = null;
 		this.jndiService = null;
+		this.cacheAndKeyProvider.configure( this );
 	}
 
 	/**
@@ -188,5 +191,9 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	@Override
 	public void configure(Map configurationValues) {
 		this.config.initConfiguration( configurationValues );
+	}
+
+	public CacheAndKeyProvider getCacheAndKeyProvider() {
+		return cacheAndKeyProvider;
 	}
 }
