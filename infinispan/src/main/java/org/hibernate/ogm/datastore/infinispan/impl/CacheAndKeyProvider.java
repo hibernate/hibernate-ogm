@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.infinispan.distexec.mapreduce.Mapper;
 
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -27,40 +28,45 @@ import org.hibernate.ogm.model.key.spi.RowKey;
  * Abstracts the selection of caches for a given entity key, association key and identity source key.
  * Also offers conversion from the OGM keys to the cache keys.
  *
+ * EK is the entity cache key type
+ * AK is the association cache key type
+ * ISK is the identity source cache key type
+ *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public interface CacheAndKeyProvider {
+public interface CacheAndKeyProvider<EK,AK,ISK> {
 
 	void configure(InfinispanDatastoreProvider provider);
 
-	Cache<EntityKey, Map<String, Object>> getCacheForEntity(EntityKeyMetadata keyMetadata);
+	Cache<EK, Map<String, Object>> getCacheForEntity(EntityKeyMetadata keyMetadata);
 
-	EntityKey getEntityCacheKey(EntityKey key);
+	EK getEntityCacheKey(EntityKey key);
 
-	Cache<AssociationKey,Map<RowKey,Map<String,Object>>> getCacheForAssociation(AssociationKeyMetadata keyMetadata);
+	Cache<AK,Map<RowKey,Map<String,Object>>> getCacheForAssociation(AssociationKeyMetadata keyMetadata);
 
-	AssociationKey getAssociationCacheKey(AssociationKey key);
+	AK getAssociationCacheKey(AssociationKey key);
 
-	Cache<IdSourceKey, Object> getCacheForIdSource(IdSourceKeyMetadata keyMetadata);
+	Cache<ISK, Object> getCacheForIdSource(IdSourceKeyMetadata keyMetadata);
 
-	IdSourceKey getIdSourceCacheKey(IdSourceKey key);
+	ISK getIdSourceCacheKey(IdSourceKey key);
 
 	Set<Bucket> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas);
+
+	Mapper<EK, Map<String, Object>, EK, Map<String, Object>> getMapper(EntityKeyMetadata... entityKeyMetadatas);
 
 	/**
 	 * Describe all the entity key metadata that work on a given cache
 	 */
-	public static class Bucket {
-		//TODO make it generic?
-		private Cache cache;
+	public static class Bucket<EK> {
+		private Cache<EK, Map<String,Object>> cache;
 		private List<EntityKeyMetadata> entityKeyMetadatas;
 
-		public Bucket(Cache cache) {
+		public Bucket(Cache<EK, Map<String,Object>> cache) {
 			this.cache = cache;
 			this.entityKeyMetadatas = new ArrayList<EntityKeyMetadata>();
 		}
 
-		public Bucket(Cache cache, EntityKeyMetadata... entityKeyMetadatas) {
+		public Bucket(Cache<EK, Map<String,Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
 			this.cache = cache;
 			this.entityKeyMetadatas = Arrays.asList( entityKeyMetadatas );
 		}

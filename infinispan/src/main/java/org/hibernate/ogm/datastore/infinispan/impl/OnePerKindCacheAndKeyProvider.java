@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.infinispan.Cache;
+import org.infinispan.distexec.mapreduce.Collector;
+import org.infinispan.distexec.mapreduce.Mapper;
 
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -27,7 +29,7 @@ import org.hibernate.ogm.model.key.spi.RowKey;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 //TODO Consider the move the InfinispanDatastoreProvider#getCache from the provider
-public class OnePerKindCacheAndKeyProvider implements CacheAndKeyProvider {
+public class OnePerKindCacheAndKeyProvider implements CacheAndKeyProvider<EntityKey, AssociationKey, IdSourceKey> {
 
 	private InfinispanDatastoreProvider provider;
 
@@ -73,4 +75,29 @@ public class OnePerKindCacheAndKeyProvider implements CacheAndKeyProvider {
 		result.add( bucket );
 		return result;
 	}
+
+	@Override
+	public Mapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
+		return new TupleMapper(entityKeyMetadatas);
+	}
+
+	private static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {
+
+		private final EntityKeyMetadata[] entityKeyMetadatas;
+
+		public TupleMapper(EntityKeyMetadata... entityKeyMetadatas) {
+			this.entityKeyMetadatas = entityKeyMetadatas;
+		}
+
+		@Override
+		public void map(EntityKey key, Map<String, Object> value, Collector<EntityKey, Map<String, Object>> collector) {
+			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {
+					collector.emit( key, value );
+				}
+			}
+		}
+
+	}
+
 }

@@ -32,7 +32,6 @@ import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
@@ -42,20 +41,24 @@ import org.infinispan.Cache;
 import org.infinispan.atomic.AtomicMapLookup;
 import org.infinispan.atomic.FineGrainedAtomicMap;
 import org.infinispan.context.Flag;
-import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.MapReduceTask;
-import org.infinispan.distexec.mapreduce.Mapper;
 import org.infinispan.distexec.mapreduce.Reducer;
 
 /**
+ * EK is the entity cache key type
+ * AK is the association cache key type
+ * ISK is the identity source cache key type
+ *
  * @author Emmanuel Bernard
  */
-public class InfinispanDialect extends BaseGridDialect {
+public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	private final InfinispanDatastoreProvider provider;
+	private final CacheAndKeyProvider<EK,AK,ISK> cacheAndKeyProvider;
 
 	public InfinispanDialect(InfinispanDatastoreProvider provider) {
 		this.provider = provider;
+		this.cacheAndKeyProvider = provider.getCacheAndKeyProvider();
 	}
 
 	/**
@@ -91,10 +94,17 @@ public class InfinispanDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
+		EK cacheKey = cacheAndKeyProvider.getEntityCacheKey( key );
+		Cache<EK, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
+		return getTupleFromCacheKey( cacheKey, cache );
+	}
 
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
-		EntityKey cacheKey = provider.getCacheAndKeyProvider().getEntityCacheKey( key );
-		FineGrainedAtomicMap<String, Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, false );
+	private Tuple getTupleFromCacheKey(EK cacheKey, Cache<EK, Map<String,Object>> cache) {
+		FineGrainedAtomicMap<String, Object> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap(
+				cache,
+				cacheKey,
+				false
+		);
 		if ( atomicMap == null ) {
 			return null;
 		}
@@ -107,8 +117,8 @@ public class InfinispanDialect extends BaseGridDialect {
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
 		//TODO we don't verify that it does not yet exist assuming that this has been done before by the calling code
 		//should we improve?
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
-		EntityKey cacheKey = provider.getCacheAndKeyProvider().getEntityCacheKey( key );
+		Cache<EK, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
+		EK cacheKey = cacheAndKeyProvider.getEntityCacheKey( key );
 		FineGrainedAtomicMap<String,Object> atomicMap =  AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, true );
 		return new Tuple( new InfinispanTupleSnapshot( atomicMap ) );
 	}
@@ -121,15 +131,17 @@ public class InfinispanDialect extends BaseGridDialect {
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		Cache<EntityKey, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
-		EntityKey cacheKey = provider.getCacheAndKeyProvider().getEntityCacheKey( key );
+		Cache<EK, Map<String, Object>> cache = provider.getCacheAndKeyProvider().getCacheForEntity( key.getMetadata() );
+		EK cacheKey = cacheAndKeyProvider.getEntityCacheKey( key );
 		AtomicMapLookup.removeAtomicMap( cache, cacheKey );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation( key.getMetadata() );
-		AssociationKey cacheKey = provider.getCacheAndKeyProvider().getAssociationCacheKey( key );
+		Cache<AK, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation(
+				key.getMetadata()
+		);
+		AK cacheKey = cacheAndKeyProvider.getAssociationCacheKey( key );
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, false );
 		return atomicMap == null ? null : new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
@@ -138,8 +150,10 @@ public class InfinispanDialect extends BaseGridDialect {
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
 		//TODO we don't verify that it does not yet exist assuming that this ahs been done before by the calling code
 		//should we improve?
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation( key.getMetadata() );
-		AssociationKey cacheKey = provider.getCacheAndKeyProvider().getAssociationCacheKey( key );
+		Cache<AK, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation(
+				key.getMetadata()
+		);
+		AK cacheKey = cacheAndKeyProvider.getAssociationCacheKey( key );
 		Map<RowKey, Map<String, Object>> atomicMap = AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, true );
 		return new Association( new MapAssociationSnapshot( atomicMap ) );
 	}
@@ -151,8 +165,10 @@ public class InfinispanDialect extends BaseGridDialect {
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		Cache<AssociationKey, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation( key.getMetadata() );
-		AssociationKey cacheKey = provider.getCacheAndKeyProvider().getAssociationCacheKey( key );
+		Cache<AK, Map<RowKey, Map<String, Object>>> cache = provider.getCacheAndKeyProvider().getCacheForAssociation(
+				key.getMetadata()
+		);
+		AK cacheKey = cacheAndKeyProvider.getAssociationCacheKey( key );
 		AtomicMapLookup.removeAtomicMap( cache, cacheKey );
 	}
 
@@ -164,11 +180,11 @@ public class InfinispanDialect extends BaseGridDialect {
 	@Override
 	//TODO should we use GridTypes here?
 	public Number nextValue(NextValueRequest request) {
-		final AdvancedCache<IdSourceKey, Object> identifierCache = provider
+		final AdvancedCache<ISK, Object> identifierCache = provider
 				.getCacheAndKeyProvider()
 				.getCacheForIdSource( request.getKey().getMetadata() )
 				.getAdvancedCache();
-		IdSourceKey cacheKey = provider.getCacheAndKeyProvider().getIdSourceCacheKey( request.getKey() );
+		ISK cacheKey = cacheAndKeyProvider.getIdSourceCacheKey( request.getKey() );
 		boolean done;
 		Number value;
 
@@ -195,44 +211,27 @@ public class InfinispanDialect extends BaseGridDialect {
 	@Override
 	@SuppressWarnings("unchecked")
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Set<CacheAndKeyProvider.Bucket> buckets = provider.getCacheAndKeyProvider().getWorkBucketsFor( entityKeyMetadatas );
+		Set<CacheAndKeyProvider.Bucket> buckets = provider.getCacheAndKeyProvider().getWorkBucketsFor(
+				entityKeyMetadatas
+		);
 		for ( CacheAndKeyProvider.Bucket bucket : buckets ) {
-			Map<EntityKey, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
-			for ( Entry<EntityKey, Map<String, Object>> entry : queryResult.entrySet() ) {
-				consumer.consume( getTuple( entry.getKey(), null ) );
+			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
+			for ( Entry<EK, Map<String, Object>> entry : queryResult.entrySet() ) {
+				consumer.consume( getTupleFromCacheKey( entry.getKey(), bucket.getCache() ) );
 			}
 		}
 	}
 
-	private Map<EntityKey, Map<String, Object>> retrieveKeys(Cache<EntityKey, Map<String, Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
-		MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> queryTask = new MapReduceTask<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>>( cache );
-		queryTask.mappedWith( new TupleMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer() );
+	private Map<EK, Map<String, Object>> retrieveKeys(Cache<EK, Map<String, Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
+		MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>> queryTask = new MapReduceTask<EK, Map<String, Object>, EK, Map<String, Object>>( cache );
+		queryTask.mappedWith( cacheAndKeyProvider.getMapper( entityKeyMetadatas ) ).reducedWith( new TupleReducer<EK>() );
 		return queryTask.execute();
 	}
 
-	static class TupleMapper implements Mapper<EntityKey, Map<String, Object>, EntityKey, Map<String, Object>> {
-
-		private final EntityKeyMetadata[] entityKeyMetadatas;
-
-		public TupleMapper(EntityKeyMetadata... entityKeyMetadatas) {
-			this.entityKeyMetadatas = entityKeyMetadatas;
-		}
+	static class TupleReducer<EK> implements Reducer<EK, Map<String, Object>> {
 
 		@Override
-		public void map(EntityKey key, Map<String, Object> value, Collector<EntityKey, Map<String, Object>> collector) {
-			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {
-					collector.emit( key, value );
-				}
-			}
-		}
-
-	}
-
-	static class TupleReducer implements Reducer<EntityKey, Map<String, Object>> {
-
-		@Override
-		public Map<String, Object> reduce(EntityKey reducedKey, Iterator<Map<String, Object>> iter) {
+		public Map<String, Object> reduce(EK reducedKey, Iterator<Map<String, Object>> iter) {
 			return iter.next();
 		}
 
