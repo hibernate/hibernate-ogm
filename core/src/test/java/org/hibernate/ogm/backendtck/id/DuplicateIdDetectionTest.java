@@ -9,6 +9,7 @@ package org.hibernate.ogm.backendtck.id;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
@@ -45,6 +46,7 @@ public class DuplicateIdDetectionTest extends JpaTestCase {
 		}
 		catch (Exception e) {
 			// then
+			assertThat( e.getCause() ).isExactlyInstanceOf( EntityExistsException.class );
 			assertThat( e.getCause().getMessage() ).matches( ".*OGM000067.*" );
 		}
 

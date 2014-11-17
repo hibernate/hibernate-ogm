@@ -22,7 +22,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.internal.metamodel.EntityTypeImpl;
-import org.hibernate.jpa.spi.HibernateEntityManagerImplementor;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 
 /**
@@ -40,22 +39,22 @@ public class OgmEntityManagerFactory implements EntityManagerFactory, HibernateE
 
 	@Override
 	public EntityManager createEntityManager() {
-		return new OgmEntityManager( this, (HibernateEntityManagerImplementor) hibernateEmf.createEntityManager() );
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager() );
 	}
 
 	@Override
 	public EntityManager createEntityManager(Map map) {
-		return new OgmEntityManager( this, (HibernateEntityManagerImplementor) hibernateEmf.createEntityManager( map ) );
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( map ) );
 	}
 
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType) {
-		return new OgmEntityManager( this, (HibernateEntityManagerImplementor) hibernateEmf.createEntityManager( synchronizationType ) );
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType ) );
 	}
 
 	@Override
 	public EntityManager createEntityManager(SynchronizationType synchronizationType, Map map) {
-		return new OgmEntityManager( this, (HibernateEntityManagerImplementor) hibernateEmf.createEntityManager( synchronizationType, map ) );
+		return new OgmEntityManager( this, hibernateEmf.createEntityManager( synchronizationType, map ) );
 	}
 
 	@Override

@@ -9,12 +9,14 @@ package org.hibernate.ogm.jpa.impl;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityExistsException;
 import javax.persistence.EntityGraph;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.FlushModeType;
 import javax.persistence.LockModeType;
+import javax.persistence.PersistenceException;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import javax.persistence.Tuple;
@@ -24,6 +26,7 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
+import javax.transaction.SystemException;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.FlushMode;
@@ -45,15 +48,18 @@ import org.hibernate.engine.spi.NamedQueryDefinition;
 import org.hibernate.engine.spi.NamedSQLQueryDefinition;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.transaction.synchronization.spi.ExceptionMapper;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.jpa.QueryHints;
 import org.hibernate.jpa.internal.QueryImpl;
 import org.hibernate.jpa.internal.util.LockModeTypeHelper;
+import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
@@ -65,6 +71,7 @@ import org.hibernate.ogm.hibernatecore.impl.OgmSessionImpl;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OgmEntityManager implements EntityManager {
+
 	private final EntityManager hibernateEm;
 	private final OgmEntityManagerFactory factory;
 	private final LockOptions lockOptions = new LockOptions();
@@ -542,6 +549,11 @@ public class OgmEntityManager implements EntityManager {
 	@Override
 	public void joinTransaction() {
 		hibernateEm.joinTransaction();
+
+		( (SessionImplementor) ( (AbstractEntityManagerImpl) hibernateEm ).getSession() )
+				.getTransactionCoordinator()
+				.getSynchronizationCallbackCoordinator()
+				.setExceptionMapper( new OgmExceptionMapper() );
 	}
 
 	@Override
@@ -604,5 +616,40 @@ public class OgmEntityManager implements EntityManager {
 	@Override
 	public Metamodel getMetamodel() {
 		return hibernateEm.getMetamodel();
+	}
+
+	/**
+	 * Resembles {@link AbstractEntityManagerImpl#CallbackExceptionMapperImpl}, it only adds mappings for OGM-specific
+	 * exceptions.
+	 *
+	 * @author Gunnar Morling
+	 */
+	private final class OgmExceptionMapper implements ExceptionMapper {
+
+		private OgmExceptionMapper() {
+		}
+
+		@Override
+		public RuntimeException mapStatusCheckFailure(String message, SystemException systemException) {
+			throw new PersistenceException( message, systemException );
+		}
+
+		@Override
+		public RuntimeException mapManagedFlushFailure(String message, RuntimeException failure) {
+			// OGM-specific
+			if ( EntityAlreadyExistsException.class.isInstance( failure ) ) {
+				throw  new EntityExistsException( failure );
+			}
+			// Let ORM deal with the others
+			else if ( HibernateException.class.isInstance( failure ) ) {
+				throw ( (AbstractEntityManagerImpl) hibernateEm ).convert( failure );
+			}
+			else if ( PersistenceException.class.isInstance( failure ) ) {
+				throw failure;
+			}
+			else {
+				throw new PersistenceException( message, failure );
+			}
+		}
 	}
 }
