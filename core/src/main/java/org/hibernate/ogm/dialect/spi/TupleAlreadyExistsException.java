@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 
@@ -15,7 +16,7 @@ import org.hibernate.ogm.model.spi.Tuple;
  *
  * @author Gunnar Morling
  */
-public class TupleAlreadyExistsException extends GridDialectException {
+public class TupleAlreadyExistsException extends HibernateException {
 
 	private final EntityKeyMetadata entityKeyMetadata;
 	private final Tuple id;

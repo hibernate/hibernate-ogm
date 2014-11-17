@@ -24,7 +24,7 @@ public enum DuplicateInsertPreventionStrategy {
 	 * datastores. It is not optimal for several reasons though:
 	 * <ul>
 	 * <li>The additional round-trip to the datastore has negative performance implications</li>
-	 * <li>As the read and the following insert or not an atomic operation, there is a small time window left within
+	 * <li>As the read and the following insert are not an atomic operation, there is a small time window left within
 	 * which duplicate inserts may go unnoticed</li>
 	 * </ul>
 	 */

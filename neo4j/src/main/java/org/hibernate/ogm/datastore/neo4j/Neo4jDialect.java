@@ -79,6 +79,7 @@ import org.neo4j.graphdb.ConstraintViolationException;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
 import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
@@ -198,7 +199,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				node = entityQueries.get( key.getMetadata() ).insertEntity( executionEngine, key.getColumnValues() );
 			}
 			catch (CypherExecutionException cee) {
-				if ( cee.getMessage().contains( "already exists" ) ) {
+				if ( cee.getCause() instanceof UniqueConstraintViolationKernelException ) {
 					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, cee );
 				}
 				else {
@@ -545,6 +546,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
+		// Only for non-composite keys (= one column) Neo4j supports unique key constraints; Hence an explicit look-up
+		// is required to detect duplicate insertions when using composite keys
 		return entityKeyMetadata.getColumnNames().length == 1 ?
 				DuplicateInsertPreventionStrategy.NATIVE :
 				DuplicateInsertPreventionStrategy.LOOK_UP;
