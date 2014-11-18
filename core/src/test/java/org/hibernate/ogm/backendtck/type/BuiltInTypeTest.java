@@ -96,7 +96,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
 		b.setType( BookmarkType.URL );
-
+		b.setTaxPercentage( 12.34d );
 		session.persist( b );
 		transaction.commit();
 
@@ -112,6 +112,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "serial number incorrect", serialNumber, b.getSerialNumber() );
 		assertEquals( "user id incorrect", userId, b.getUserId() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
+		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
+		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
 
 		//Date - DATE
 		Calendar creationDate = Calendar.getInstance();
