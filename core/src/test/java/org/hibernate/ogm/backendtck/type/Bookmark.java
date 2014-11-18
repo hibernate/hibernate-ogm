@@ -47,6 +47,7 @@ public class Bookmark {
 	private Date destructionDate;
 	private Calendar creationCalendar;
 	private Boolean favourite;
+	private Double taxPercentage;
 
 	@Id
 	public String getId() {
@@ -205,4 +206,11 @@ public class Bookmark {
 		this.userId = userId;
 	}
 
+	public Double getTaxPercentage() {
+		return taxPercentage;
+	}
+
+	public void setTaxPercentage(Double taxPercentage) {
+		this.taxPercentage = taxPercentage;
+	}
 }
