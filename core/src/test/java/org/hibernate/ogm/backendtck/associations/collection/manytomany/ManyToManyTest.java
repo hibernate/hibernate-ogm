@@ -24,7 +24,36 @@ import org.junit.Test;
 public class ManyToManyTest extends OgmTestCase {
 
 	@Test
-	public void testManyToMany() {
+	public void testUnidirectionalManyToMany() {
+		Session session = openSession();
+		Transaction tx = session.beginTransaction();
+
+		Student john = new Student( "john", "John Doe" );
+		Student kate = new Student( "kate", "Kate Doe" );
+		Student mario = new Student( "mario", "Mario Rossi" );
+
+		ClassRoom math = new ClassRoom( 1L, "Math" );
+		math.getStudents().add( john );
+		math.getStudents().add( mario );
+		ClassRoom english = new ClassRoom( 2L, "English" );
+		english.getStudents().add( kate );
+		math.getStudents().add( mario );
+
+		persist( session, math, english, john, mario, kate );
+		tx.commit();
+
+		assertThat( getNumberOfEntities( sessions ) ).isEqualTo( 5 );
+		assertThat( getNumberOfAssociations( sessions ) ).isEqualTo( expectedAssociationNumber() );
+		session.clear();
+
+		delete( session, math, english, john, mario, kate );
+
+		session.close();
+		checkCleanCache();
+	}
+
+	@Test
+	public void testBidirectionalManyToMany() {
 		Session session = openSession();
 		Transaction tx = session.beginTransaction();
 		AccountOwner owner = new AccountOwner( "owner_1" );
@@ -115,6 +144,20 @@ public class ManyToManyTest extends OgmTestCase {
 		session.close();
 	}
 
+	private void persist(Session session, Object... entities) {
+		for ( Object entity : entities ) {
+			session.persist( entity );
+		}
+	}
+
+	private void delete(Session session, Object... entities) {
+		Transaction transaction = session.beginTransaction();
+		for ( Object entity : entities ) {
+			session.delete( entity );
+		}
+		transaction.commit();
+	}
+
 	private int expectedAssociationNumber() {
 		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
 			// In Neo4j relationships are bidirectional
@@ -131,7 +174,9 @@ public class ManyToManyTest extends OgmTestCase {
 				AccountOwner.class,
 				BankAccount.class,
 				Car.class,
-				Tire.class
+				Tire.class,
+				Student.class,
+				ClassRoom.class
 		};
 	}
 }
