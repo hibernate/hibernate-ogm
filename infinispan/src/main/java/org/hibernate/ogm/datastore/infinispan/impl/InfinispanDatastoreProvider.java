@@ -13,6 +13,7 @@ import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -93,7 +94,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 		return persistenceStrategy.getCacheManager();
 	}
 
-	public CacheAndKeyProvider<?, ?, ?> getKeyProvider() {
+	public KeyProvider<?, ?, ?> getKeyProvider() {
 		return persistenceStrategy.getKeyProvider();
 	}
 

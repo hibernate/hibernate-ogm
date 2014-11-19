@@ -10,9 +10,8 @@ import java.net.URL;
 import java.util.Set;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheAndKeyProvider;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindCacheAndKeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindCacheManager;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindKeyProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -32,9 +31,9 @@ import org.infinispan.manager.EmbeddedCacheManager;
 public class PersistenceStrategy<EK, AK, ISK> {
 
 	private final LocalCacheManager<EK, AK, ISK> cacheManager;
-	private final CacheAndKeyProvider<EK, AK, ISK> keyProvider;
+	private final KeyProvider<EK, AK, ISK> keyProvider;
 
-	private PersistenceStrategy(LocalCacheManager<EK, AK, ISK> cacheManager, CacheAndKeyProvider<EK, AK, ISK> keyProvider) {
+	private PersistenceStrategy(LocalCacheManager<EK, AK, ISK> cacheManager, KeyProvider<EK, AK, ISK> keyProvider) {
 		this.cacheManager = cacheManager;
 		this.keyProvider = keyProvider;
 	}
@@ -44,7 +43,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * and one for id sources.
 	 */
 	public static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes) {
-		OnePerKindCacheAndKeyProvider keyProvider = new OnePerKindCacheAndKeyProvider();
+		OnePerKindKeyProvider keyProvider = new OnePerKindKeyProvider();
 
 		OnePerKindCacheManager cacheManager = externalCacheManager != null ?
 				new OnePerKindCacheManager( externalCacheManager ) :
@@ -64,7 +63,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * Returns the {@link KeyProvider} of this strategy, converting OGM core's key objects into the keys persisted in
 	 * thed datastore.
 	 */
-	public CacheAndKeyProvider<EK, AK, ISK> getKeyProvider() {
+	public KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return keyProvider;
 	}
 }

@@ -17,7 +17,7 @@ import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheAndKeyProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -31,7 +31,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
-public class OnePerKindCacheAndKeyProvider implements CacheAndKeyProvider<EntityKey, AssociationKey, IdSourceKey> {
+public class OnePerKindKeyProvider implements KeyProvider<EntityKey, AssociationKey, IdSourceKey> {
 
 	@Override
 	public EntityKey getEntityCacheKey(EntityKey key) {

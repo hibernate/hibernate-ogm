@@ -5,7 +5,7 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 
-package org.hibernate.ogm.datastore.infinispan.impl;
+package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +26,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
  * @param <AK> the association cache key type
  * @param <ISK> the identity source cache key type
  */
-public interface CacheAndKeyProvider<EK,AK,ISK> {
+public interface KeyProvider<EK,AK,ISK> {
 
 	EK getEntityCacheKey(EntityKey key);
 

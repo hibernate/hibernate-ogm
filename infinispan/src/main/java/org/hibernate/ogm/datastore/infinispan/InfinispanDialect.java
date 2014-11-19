@@ -18,8 +18,8 @@ import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanPessimisticWriteLockingStrategy;
 import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapshot;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheAndKeyProvider;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
@@ -232,8 +232,8 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@SuppressWarnings("unchecked")
-	private CacheAndKeyProvider<EK, AK, ISK> getKeyProvider() {
-		return (CacheAndKeyProvider<EK, AK, ISK>) provider.getKeyProvider();
+	private KeyProvider<EK, AK, ISK> getKeyProvider() {
+		return (KeyProvider<EK, AK, ISK>) provider.getKeyProvider();
 	}
 
 	static class TupleReducer<EK> implements Reducer<EK, Map<String, Object>> {
