@@ -45,7 +45,7 @@ public class OnePerKindCacheManager extends LocalCacheManager<EntityKey, Associa
 		idSourceCache = getCacheManager().getCache( CacheNames.IDENTIFIER_CACHE );
 	}
 
-	public OnePerKindCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, OnePerKindCacheAndKeyProvider keyProvider) {
+	public OnePerKindCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, OnePerKindKeyProvider keyProvider) {
 		super( configUrl, platform, entityTypes, keyProvider );
 
 		entityCache = getCacheManager().getCache( CacheNames.ENTITY_CACHE );

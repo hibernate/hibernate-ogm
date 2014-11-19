@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheAndKeyProvider;
 import org.hibernate.ogm.datastore.infinispan.impl.CacheNames;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -58,12 +57,12 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 		this.isProvidedCacheManager = true;
 	}
 
-	protected LocalCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, CacheAndKeyProvider<EK, AK, ISK> keyProvider) {
+	protected LocalCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, KeyProvider<EK, AK, ISK> keyProvider) {
 		this.cacheManager = createCustomCacheManager( configUrl, platform, entityTypes, keyProvider );
 		this.isProvidedCacheManager = false;
 	}
 
-	private static EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, CacheAndKeyProvider<?, ?, ?> keyProvider) {
+	private static EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, KeyProvider<?, ?, ?> keyProvider) {
 		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 		try {
 			InputStream configurationFile = configUrl.openStream();
