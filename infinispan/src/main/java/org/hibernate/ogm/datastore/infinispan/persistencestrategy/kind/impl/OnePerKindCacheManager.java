@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheNames;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;

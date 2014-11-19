@@ -12,12 +12,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.AssociationKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyMetadataExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.IdSourceKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
