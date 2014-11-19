@@ -16,8 +16,8 @@ import java.util.Set;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.datastore.infinispan.impl.CacheNames;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.CacheNames;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;

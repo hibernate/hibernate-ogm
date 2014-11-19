@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispan.dialect.impl;
+package org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -14,13 +14,12 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
- * An externalizer for serializing and de-serializing {@link EntityKeyMetadata} instances. Implicitly used by
- * {@link InfinispanDialect} during mass-indexing.
+ * An externalizer for serializing and de-serializing {@link RowKey} instances. Implicitly used by
+ * {@link InfinispanDialect} which stores keys as is in the Infinispan data store.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
  * {@link InfinispanDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
@@ -30,9 +29,9 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  */
 // As an implementation of AdvancedExternalizer this is never serialized according to the Externalizer docs
 @SuppressWarnings("serial")
-public class EntityKeyMetadataExternalizer implements AdvancedExternalizer<EntityKeyMetadata> {
+public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 
-	public static final EntityKeyMetadataExternalizer INSTANCE = new EntityKeyMetadataExternalizer();
+	public static final RowKeyExternalizer INSTANCE = new RowKeyExternalizer();
 
 	/**
 	 * Format version of the key type; allows to apply version dependent deserialization logic in the future if
@@ -40,37 +39,36 @@ public class EntityKeyMetadataExternalizer implements AdvancedExternalizer<Entit
 	 */
 	private static final int VERSION = 1;
 
-	private static final Set<Class<? extends EntityKeyMetadata>> TYPE_CLASSES = Collections
-			.<Class<? extends EntityKeyMetadata>>singleton( DefaultEntityKeyMetadata.class );
+	private static final Set<Class<? extends RowKey>> TYPE_CLASSES = Collections.<Class<? extends RowKey>>singleton( RowKey.class );
 
-	private EntityKeyMetadataExternalizer() {
+	private RowKeyExternalizer() {
 	}
 
 	@Override
-	public void writeObject(ObjectOutput output, EntityKeyMetadata metadata) throws IOException {
+	public void writeObject(ObjectOutput output, RowKey key) throws IOException {
 		output.writeInt( VERSION );
-		output.writeUTF( metadata.getTable() );
-		output.writeObject( metadata.getColumnNames() );
+		output.writeObject( key.getColumnNames() );
+		output.writeObject( key.getColumnValues() );
 	}
 
 	@Override
-	public EntityKeyMetadata readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+	public RowKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 		// version
 		input.readInt();
 
-		String tableName = input.readUTF();
 		String[] columnNames = (String[]) input.readObject();
+		Object[] values = (Object[]) input.readObject();
 
-		return new DefaultEntityKeyMetadata( tableName, columnNames );
+		return new RowKey( columnNames, values );
 	}
 
 	@Override
-	public Set<Class<? extends EntityKeyMetadata>> getTypeClasses() {
+	public Set<Class<? extends RowKey>> getTypeClasses() {
 		return TYPE_CLASSES;
 	}
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ENTITY_METADATA;
+		return ExternalizerIds.ROW_KEY;
 	}
 }
