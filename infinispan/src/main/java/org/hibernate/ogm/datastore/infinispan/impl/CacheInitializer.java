@@ -24,6 +24,9 @@ public class CacheInitializer extends BaseSchemaDefiner {
 				.getServiceRegistry()
 				.getService( DatastoreProvider.class );
 
-		provider.initializePersistenceStrategy( getAllEntityKeyMetadata( factory ) );
+		provider.initializePersistenceStrategy(
+				getAllEntityKeyMetadata( factory ),
+				getAllAssociationKeyMetadata( factory )
+		);
 	}
 }

@@ -21,7 +21,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
 class ExternalizerIds {
 
 	static final int ENTITY_KEY = 1411;
-	static final int ASSOCIATION_KEY = 1401;
+	static final int ASSOCIATION_KEY = 1412;
 	static final int ROW_KEY = 1402;
 	static final int ENTITY_METADATA = 1403;
 	static final int ID_GENERATOR_KEY = 1404;

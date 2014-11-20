@@ -13,10 +13,11 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.AssociationKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyMetadataExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.RowKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKeyExternalizer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -33,7 +34,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 //TODO Consider the move the InfinispanDatastoreProvider#getCache from the provider
-public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, AssociationKey, IdSourceKey> {
+public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, PersistentAssociationKey, IdSourceKey> {
 
 	@Override
 	public PersistentEntityKey getEntityCacheKey(EntityKey key) {
@@ -41,8 +42,8 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Ass
 	}
 
 	@Override
-	public AssociationKey getAssociationCacheKey(AssociationKey key) {
-		return key;
+	public PersistentAssociationKey getAssociationCacheKey(AssociationKey key) {
+		return PersistentAssociationKey.fromAssociationKey( key );
 	}
 
 	@Override
@@ -60,7 +61,7 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Ass
 		Set<AdvancedExternalizer<?>> externalizers = new HashSet<AdvancedExternalizer<?>>( 5 );
 
 		externalizers.add( PersistentEntityKeyExternalizer.INSTANCE );
-		externalizers.add( AssociationKeyExternalizer.INSTANCE );
+		externalizers.add( PersistentAssociationKeyExternalizer.INSTANCE );
 		externalizers.add( RowKeyExternalizer.INSTANCE );
 		externalizers.add( EntityKeyMetadataExternalizer.INSTANCE );
 		externalizers.add( IdSourceKeyExternalizer.INSTANCE );
