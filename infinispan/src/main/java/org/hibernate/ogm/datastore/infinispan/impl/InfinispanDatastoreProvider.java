@@ -78,12 +78,23 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 * @param entityTypes meta-data of all the entity types registed with the current session factory
 	 */
 	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes) {
-		persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
-				externalCacheManager,
-				config.getConfigurationUrl(),
-				jtaPlatform,
-				entityTypes
-		);
+		// TODO Configuration option
+		if ( !true ) {
+			persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
+					externalCacheManager,
+					config.getConfigurationUrl(),
+					jtaPlatform,
+					entityTypes
+					);
+		}
+		else {
+			persistenceStrategy = PersistenceStrategy.getPerTableStrategy(
+					externalCacheManager,
+					config.getConfigurationUrl(),
+					jtaPlatform,
+					entityTypes
+					);
+		}
 
 		// clear resources
 		this.externalCacheManager = null;
