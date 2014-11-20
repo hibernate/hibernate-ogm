@@ -47,7 +47,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 
 		OnePerKindCacheManager cacheManager = externalCacheManager != null ?
 				new OnePerKindCacheManager( externalCacheManager ) :
-				new OnePerKindCacheManager( configUrl, platform, entityTypes, keyProvider );
+				new OnePerKindCacheManager( configUrl, platform, keyProvider );
 
 		return new PersistenceStrategy<EntityKey, AssociationKey, IdSourceKey>( cacheManager, keyProvider );
 	}

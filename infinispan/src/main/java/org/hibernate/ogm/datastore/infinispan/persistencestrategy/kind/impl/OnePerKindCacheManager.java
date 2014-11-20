@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl;
 
+import static org.hibernate.ogm.util.impl.CollectionHelper.asSet;
+
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +35,10 @@ import org.infinispan.manager.EmbeddedCacheManager;
  */
 public class OnePerKindCacheManager extends LocalCacheManager<EntityKey, AssociationKey, IdSourceKey> {
 
+	private static final Set<String> CACHE_NAMES = Collections.unmodifiableSet(
+			asSet( CacheNames.ENTITY_CACHE, CacheNames.ASSOCIATION_CACHE, CacheNames.IDENTIFIER_CACHE )
+	);
+
 	private final Cache<EntityKey, Map<String, Object>> entityCache;
 	private final Cache<AssociationKey, Map<RowKey, Map<String, Object>>> associationCache;
 	private final Cache<IdSourceKey, Object> idSourceCache;
@@ -44,8 +51,8 @@ public class OnePerKindCacheManager extends LocalCacheManager<EntityKey, Associa
 		idSourceCache = getCacheManager().getCache( CacheNames.IDENTIFIER_CACHE );
 	}
 
-	public OnePerKindCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, OnePerKindKeyProvider keyProvider) {
-		super( configUrl, platform, entityTypes, keyProvider );
+	public OnePerKindCacheManager(URL configUrl, JtaPlatform platform, OnePerKindKeyProvider keyProvider) {
+		super( configUrl, platform, CACHE_NAMES, keyProvider );
 
 		entityCache = getCacheManager().getCache( CacheNames.ENTITY_CACHE );
 		associationCache = getCacheManager().getCache( CacheNames.ASSOCIATION_CACHE );
