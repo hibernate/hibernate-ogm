@@ -17,12 +17,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.CacheNames;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.Cache;
@@ -33,28 +32,31 @@ import org.infinispan.manager.EmbeddedCacheManager;
  *
  * @author Gunnar Morling
  */
-public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey, PersistentAssociationKey, IdSourceKey> {
+public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey, PersistentAssociationKey, PersistentIdSourceKey> {
 
 	private static final String ASSOCIATIONS_CACHE_PREFIX = "associations_";
 
 	private final ConcurrentMap<String, Cache<PersistentEntityKey, Map<String, Object>>> entityCaches;
 	private final ConcurrentMap<String, Cache<PersistentAssociationKey, Map<RowKey, Map<String, Object>>>> associationCaches;
+	private final ConcurrentMap<String, Cache<PersistentIdSourceKey, Object>> idSourceCaches;
 
-	public PerTableCacheManager(EmbeddedCacheManager cacheManager, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
+	public PerTableCacheManager(EmbeddedCacheManager cacheManager, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
 		super( cacheManager );
 
 		entityCaches = initializeEntityCaches( getCacheManager(), entityTypes );
 		associationCaches = initializeAssociationCaches( getCacheManager(), associationTypes );
+		idSourceCaches = initializeIdSourceCaches( getCacheManager(), idSourceTypes );
 	}
 
-	public PerTableCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
-		super( configUrl, platform, getCacheNames( entityTypes, associationTypes ), new PerTableKeyProvider() );
+	public PerTableCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
+		super( configUrl, platform, getCacheNames( entityTypes, associationTypes, idSourceTypes ), new PerTableKeyProvider() );
 
 		entityCaches = initializeEntityCaches( getCacheManager(), entityTypes );
 		associationCaches = initializeAssociationCaches( getCacheManager(), associationTypes );
+		idSourceCaches = initializeIdSourceCaches( getCacheManager(), idSourceTypes );
 	}
 
-	private static Set<String> getCacheNames(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
+	private static Set<String> getCacheNames(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
 		Set<String> cacheNames = new HashSet<String>();
 
 		for ( EntityKeyMetadata entityKeyMetadata : entityTypes ) {
@@ -65,7 +67,9 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 			cacheNames.add( getCacheName( associationKeyMetadata ) );
 		}
 
-		cacheNames.add( CacheNames.IDENTIFIER_CACHE );
+		for ( IdSourceKeyMetadata idSourceKeyMetadata : idSourceTypes ) {
+			cacheNames.add( idSourceKeyMetadata.getName() );
+		}
 
 		return cacheNames;
 	}
@@ -94,6 +98,18 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 		return associationCaches;
 	}
 
+	private static ConcurrentMap<String, Cache<PersistentIdSourceKey, Object>> initializeIdSourceCaches(EmbeddedCacheManager embeddedCacheManager, Set<IdSourceKeyMetadata> idSourceTypes) {
+		ConcurrentMap<String, Cache<PersistentIdSourceKey, Object>> idSourceCaches = newConcurrentHashMap( idSourceTypes.size() );
+		for ( IdSourceKeyMetadata entityKeyMetadata : idSourceTypes ) {
+			if ( !idSourceCaches.containsKey( entityKeyMetadata.getName() ) ) {
+				Cache<PersistentIdSourceKey, Object> entityCache = embeddedCacheManager.getCache( entityKeyMetadata.getName() );
+				idSourceCaches.put( entityKeyMetadata.getName(), entityCache );
+			}
+		}
+
+		return idSourceCaches;
+	}
+
 	@Override
 	public Cache<PersistentEntityKey, Map<String, Object>> getEntityCache(EntityKeyMetadata keyMetadata) {
 		return entityCaches.get( keyMetadata.getTable() );
@@ -105,9 +121,8 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 	}
 
 	@Override
-	public Cache<IdSourceKey, Object> getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
-		// TODO Use cache per table
-		return getCacheManager().getCache( CacheNames.IDENTIFIER_CACHE );
+	public Cache<PersistentIdSourceKey, Object> getIdSourceCache(IdSourceKeyMetadata keyMetadata) {
+		return idSourceCaches.get( keyMetadata.getName() );
 	}
 
 	@Override

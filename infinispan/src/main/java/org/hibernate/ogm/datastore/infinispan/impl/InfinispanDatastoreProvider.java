@@ -21,6 +21,7 @@ import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
@@ -78,7 +79,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 *
 	 * @param entityTypes meta-data of all the entity types registed with the current session factory
 	 */
-	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
+	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
 		// TODO Configuration option
 		if ( !true ) {
 			persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
@@ -94,8 +95,9 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 					config.getConfigurationUrl(),
 					jtaPlatform,
 					entityTypes,
-					associationTypes
-					);
+					associationTypes,
+					idSourceTypes
+			);
 		}
 
 		// clear resources
