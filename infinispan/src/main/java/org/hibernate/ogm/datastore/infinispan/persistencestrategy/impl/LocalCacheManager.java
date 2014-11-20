@@ -17,7 +17,6 @@ import java.util.Set;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.impl.TransactionManagerLookupDelegator;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.CacheNames;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -57,12 +56,12 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 		this.isProvidedCacheManager = true;
 	}
 
-	protected LocalCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, KeyProvider<EK, AK, ISK> keyProvider) {
-		this.cacheManager = createCustomCacheManager( configUrl, platform, entityTypes, keyProvider );
+	protected LocalCacheManager(URL configUrl, JtaPlatform platform, Set<String> cacheNames, KeyProvider<EK, AK, ISK> keyProvider) {
+		this.cacheManager = createCustomCacheManager( configUrl, platform, cacheNames, keyProvider );
 		this.isProvidedCacheManager = false;
 	}
 
-	private static EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, KeyProvider<?, ?, ?> keyProvider) {
+	private static EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform, Set<String> cacheNames, KeyProvider<?, ?, ?> keyProvider) {
 		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
 		try {
 			InputStream configurationFile = configUrl.openStream();
@@ -84,8 +83,8 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 
 				// override the named cache configuration defined in the configuration file to
 				// inject the platform TransactionManager
-				for (EntityKeyMetadata entityType : entityTypes ) {
-					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( entityType.getTable() );
+				for ( String cacheName : cacheNames ) {
+					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
 					if ( originalCfg == null ) {
 						originalCfg = tmpCacheManager.getDefaultCacheConfiguration();
 					}
@@ -94,33 +93,8 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 							.transaction()
 								.transactionManagerLookup( transactionManagerLookupDelegator )
 						.build();
-					cacheManager.defineConfiguration( entityType.getTable(), newCfg );
+					cacheManager.defineConfiguration( cacheName, newCfg );
 				}
-
-				Configuration originalCfg2 = tmpCacheManager.getCacheConfiguration( CacheNames.ENTITY_CACHE );
-				Configuration newCfg2 = new ConfigurationBuilder()
-					.read( originalCfg2 )
-						.transaction()
-							.transactionManagerLookup( transactionManagerLookupDelegator )
-					.build();
-				cacheManager.defineConfiguration( CacheNames.ENTITY_CACHE, newCfg2 );
-
-				Configuration originalCfg = tmpCacheManager.getCacheConfiguration( CacheNames.ASSOCIATION_CACHE );
-				Configuration newCfg = new ConfigurationBuilder()
-					.read( originalCfg )
-						.transaction()
-							.transactionManagerLookup( transactionManagerLookupDelegator )
-					.build();
-				cacheManager.defineConfiguration( CacheNames.ASSOCIATION_CACHE, newCfg );
-
-				Configuration originalCfg1 = tmpCacheManager.getCacheConfiguration( CacheNames.IDENTIFIER_CACHE );
-				Configuration newCfg1 = new ConfigurationBuilder()
-					.read( originalCfg1 )
-						.transaction()
-							.transactionManagerLookup( transactionManagerLookupDelegator )
-					.build();
-				cacheManager.defineConfiguration( CacheNames.IDENTIFIER_CACHE, newCfg1 );
-
 
 				cacheManager.start();
 				return cacheManager;
