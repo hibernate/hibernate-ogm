@@ -70,10 +70,11 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return (Map) getEntityCache( sessionFactory, key.getMetadata() ).get( key );
+		InfinispanDatastoreProvider provider = getProvider( sessionFactory );
+		return getEntityCache( sessionFactory, key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
 	}
 
-	private static Cache<?, ?> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
+	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
 	}

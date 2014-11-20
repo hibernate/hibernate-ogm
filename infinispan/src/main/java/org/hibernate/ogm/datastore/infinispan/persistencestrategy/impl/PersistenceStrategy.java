@@ -12,6 +12,9 @@ import java.util.Set;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindKeyProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableCacheManager;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableKeyProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -50,6 +53,20 @@ public class PersistenceStrategy<EK, AK, ISK> {
 				new OnePerKindCacheManager( configUrl, platform, keyProvider );
 
 		return new PersistenceStrategy<EntityKey, AssociationKey, IdSourceKey>( cacheManager, keyProvider );
+	}
+
+	/**
+	 * Returns the "per-table" persistence strategy, i.e. one dedicated cache will be used for each
+	 * entity/association/id source table.
+	 */
+	public static PersistenceStrategy<?, ?, ?> getPerTableStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes) {
+		PerTableKeyProvider keyProvider = new PerTableKeyProvider();
+
+		PerTableCacheManager cacheManager = externalCacheManager != null ?
+				new PerTableCacheManager( externalCacheManager, entityTypes ) :
+				new PerTableCacheManager( configUrl, platform, entityTypes );
+
+		return new PersistenceStrategy<PersistentEntityKey, AssociationKey, IdSourceKey>( cacheManager, keyProvider );
 	}
 
 	/**

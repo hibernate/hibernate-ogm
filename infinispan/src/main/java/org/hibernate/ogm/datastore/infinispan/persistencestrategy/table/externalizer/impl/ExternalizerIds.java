@@ -4,14 +4,14 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl;
+package org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl;
 
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
  * The ids of our {@link AdvancedExternalizer} implementations used for (de-)serializing key objects from/into
- * Infinispan via the "per kind" {@link PersistenceStrategy}.
+ * Infinispan via the "per table" {@link PersistenceStrategy}.
  * <p>
  * The range 1400 - 1499 is <a
  * href="http://infinispan.org/docs/6.0.x/user_guide/user_guide.html#_advanced_externalizers">reserved</a> for OGM.
@@ -20,7 +20,7 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  */
 class ExternalizerIds {
 
-	static final int ENTITY_KEY = 1400;
+	static final int ENTITY_KEY = 1411;
 	static final int ASSOCIATION_KEY = 1401;
 	static final int ROW_KEY = 1402;
 	static final int ENTITY_METADATA = 1403;
