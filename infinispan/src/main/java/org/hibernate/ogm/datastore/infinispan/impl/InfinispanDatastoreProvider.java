@@ -6,23 +6,19 @@
  */
 package org.hibernate.ogm.datastore.infinispan.impl;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
-import org.hibernate.HibernateException;
 import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.AssociationKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyMetadataExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.IdSourceKeyExternalizer;
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
@@ -30,13 +26,6 @@ import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.Startable;
 import org.hibernate.service.spi.Stoppable;
-import org.infinispan.Cache;
-import org.infinispan.commons.marshall.AdvancedExternalizer;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
@@ -54,11 +43,10 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 
 	private JtaPlatform jtaPlatform;
 	private JndiService jndiService;
-	//caches are cached because the lookup is expensive
-	private Map<String,Cache> caches;
-	private boolean isCacheProvided;
-	private EmbeddedCacheManager cacheManager;
+	private EmbeddedCacheManager externalCacheManager;
 	private final InfinispanConfiguration config = new InfinispanConfiguration();
+
+	private PersistenceStrategy<?, ?, ?> persistenceStrategy;
 
 	@Override
 	public Class<? extends GridDialect> getDefaultDialect() {
@@ -69,114 +57,49 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	public void start() {
 		try {
 			String jndiProperty = config.getJndiName();
-			if ( jndiProperty == null ) {
-				cacheManager = createCustomCacheManager( config.getConfigurationUrl(), jtaPlatform );
-				isCacheProvided = false;
-			}
-			else {
+			if ( jndiProperty != null ) {
 				log.tracef( "Retrieving Infinispan from JNDI at %1$s", jndiProperty );
-				cacheManager = (EmbeddedCacheManager) jndiService.locate( jndiProperty );
-				isCacheProvided = true;
+				externalCacheManager = (EmbeddedCacheManager) jndiService.locate( jndiProperty );
 			}
 		}
 		catch (RuntimeException e) {
 			throw log.unableToInitializeInfinispan( e );
 		}
-		eagerlyInitializeCaches( cacheManager );
-		//clear resources
-		this.jtaPlatform = null;
+
+		// clear resources
 		this.jndiService = null;
 	}
 
 	/**
-	 * Need to make sure all needed caches are started before state transfer happens.
-	 * This prevents this node to return undefined cache errors during replication
-	 * when other nodes join this one.
-	 * @param cacheManager
+	 * Initializes the persistence strategy to be used when accessing the datastore. In particular, all the required
+	 * caches will be configured and initialized.
+	 *
+	 * @param entityTypes meta-data of all the entity types registed with the current session factory
 	 */
-	private void eagerlyInitializeCaches(EmbeddedCacheManager cacheManager) {
-		caches = new ConcurrentHashMap<String, Cache>( 3 );
-		putInLocalCache( cacheManager, CacheNames.ASSOCIATION_CACHE );
-		putInLocalCache( cacheManager, CacheNames.ENTITY_CACHE );
-		putInLocalCache( cacheManager, CacheNames.IDENTIFIER_CACHE );
+	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes) {
+		persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
+				externalCacheManager,
+				config.getConfigurationUrl(),
+				jtaPlatform,
+				entityTypes
+		);
+
+		// clear resources
+		this.externalCacheManager = null;
+		this.jtaPlatform = null;
 	}
 
-	private void putInLocalCache(EmbeddedCacheManager cacheManager, String cacheName) {
-		caches.put( cacheName, cacheManager.getCache( cacheName ) );
+	public LocalCacheManager<?, ?, ?> getCacheManager() {
+		return persistenceStrategy.getCacheManager();
 	}
 
-	private EmbeddedCacheManager createCustomCacheManager(URL configUrl, JtaPlatform platform) {
-		TransactionManagerLookupDelegator transactionManagerLookupDelegator = new TransactionManagerLookupDelegator( platform );
-		try {
-			InputStream configurationFile = configUrl.openStream();
-			try {
-				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationFile, false );
-
-				AdvancedExternalizer<?> entityKeyExternalizer = EntityKeyExternalizer.INSTANCE;
-				AdvancedExternalizer<?> associationKeyExternalizer = AssociationKeyExternalizer.INSTANCE;
-				AdvancedExternalizer<?> rowKeyExternalizer = RowKeyExternalizer.INSTANCE;
-				AdvancedExternalizer<?> entityKeyMetadataExternalizer = EntityKeyMetadataExternalizer.INSTANCE;
-				AdvancedExternalizer<?> idGeneratorKeyExternalizer = IdSourceKeyExternalizer.INSTANCE;
-
-				// override global configuration from the config file to inject externalizers
-				GlobalConfiguration globalConfiguration = new GlobalConfigurationBuilder()
-					.read( tmpCacheManager.getCacheManagerConfiguration() )
-					.serialization()
-						.addAdvancedExternalizer( entityKeyExternalizer.getId(), entityKeyExternalizer )
-						.addAdvancedExternalizer( associationKeyExternalizer.getId(), associationKeyExternalizer )
-						.addAdvancedExternalizer( rowKeyExternalizer.getId(), rowKeyExternalizer )
-						.addAdvancedExternalizer( entityKeyMetadataExternalizer.getId(), entityKeyMetadataExternalizer )
-						.addAdvancedExternalizer( idGeneratorKeyExternalizer.getId(), idGeneratorKeyExternalizer )
-					.build();
-
-				cacheManager = new DefaultCacheManager( globalConfiguration, false );
-
-				// override the named cache configuration defined in the configuration file to
-				// inject the platform TransactionManager
-				for (String cacheName : tmpCacheManager.getCacheNames() ) {
-					Configuration originalCfg = tmpCacheManager.getCacheConfiguration( cacheName );
-					Configuration newCfg = new ConfigurationBuilder()
-						.read( originalCfg )
-							.transaction()
-								.transactionManagerLookup( transactionManagerLookupDelegator )
-						.build();
-					cacheManager.defineConfiguration( cacheName, newCfg );
-				}
-
-				cacheManager.start();
-				return cacheManager;
-			}
-			finally {
-				if ( configurationFile != null ) {
-					configurationFile.close();
-				}
-			}
-		}
-		catch (Exception e) {
-			throw raiseConfigurationError( e, configUrl.toString() );
-		}
-	}
-
-	public EmbeddedCacheManager getEmbeddedCacheManager() {
-		return cacheManager;
-	}
-
-	//prefer generic form over specific ones to prepare for flexible cache setting
-	public Cache getCache(String name) {
-		return caches.get( name );
+	public CacheAndKeyProvider<?, ?, ?> getKeyProvider() {
+		return persistenceStrategy.getKeyProvider();
 	}
 
 	@Override
 	public void stop() {
-		if ( !isCacheProvided && cacheManager != null ) {
-			cacheManager.stop();
-		}
-	}
-
-	private HibernateException raiseConfigurationError(Exception e, String cfgName) {
-		return new HibernateException(
-				"Could not start Infinispan CacheManager using as configuration file: " + cfgName, e
-		);
+		persistenceStrategy.getCacheManager().stop();
 	}
 
 	@Override
@@ -188,5 +111,10 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	@Override
 	public void configure(Map configurationValues) {
 		this.config.initConfiguration( configurationValues );
+	}
+
+	@Override
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return CacheInitializer.class;
 	}
 }

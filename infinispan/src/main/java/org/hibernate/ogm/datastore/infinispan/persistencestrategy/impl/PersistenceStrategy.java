@@ -1,0 +1,70 @@
+/*
+ * Hibernate OGM, Domain model persistence for NoSQL datastores
+ *
+ * License: GNU Lesser General Public License (LGPL), version 2.1 or later
+ * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ */
+package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
+
+import java.net.URL;
+import java.util.Set;
+
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.ogm.datastore.infinispan.impl.CacheAndKeyProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindCacheAndKeyProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindCacheManager;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
+import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.infinispan.manager.EmbeddedCacheManager;
+
+/**
+ * A strategy for persisting entities, associations and id sources in Infinispan. Depending on the specific strategy,
+ * shared or specific caches will be used, and different key types will be used to represent key objects.
+ *
+ * @author Gunnar Morling
+ *
+ * @param <EK> the entity cache key type
+ * @param <AK> the association cache key type
+ * @param <ISK> the identity source cache key type
+ */
+public class PersistenceStrategy<EK, AK, ISK> {
+
+	private final LocalCacheManager<EK, AK, ISK> cacheManager;
+	private final CacheAndKeyProvider<EK, AK, ISK> keyProvider;
+
+	private PersistenceStrategy(LocalCacheManager<EK, AK, ISK> cacheManager, CacheAndKeyProvider<EK, AK, ISK> keyProvider) {
+		this.cacheManager = cacheManager;
+		this.keyProvider = keyProvider;
+	}
+
+	/**
+	 * Returns the "per-kind" persistence strategy. Three caches will be used: one for entities, one for associations
+	 * and one for id sources.
+	 */
+	public static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes) {
+		OnePerKindCacheAndKeyProvider keyProvider = new OnePerKindCacheAndKeyProvider();
+
+		OnePerKindCacheManager cacheManager = externalCacheManager != null ?
+				new OnePerKindCacheManager( externalCacheManager ) :
+				new OnePerKindCacheManager( configUrl, platform, entityTypes, keyProvider );
+
+		return new PersistenceStrategy<EntityKey, AssociationKey, IdSourceKey>( cacheManager, keyProvider );
+	}
+
+	/**
+	 * Returns the {@link LocalCacheManager} of this strategy, providing access to the actual ISPN caches.
+	 */
+	public LocalCacheManager<EK, AK, ISK> getCacheManager() {
+		return cacheManager;
+	}
+
+	/**
+	 * Returns the {@link KeyProvider} of this strategy, converting OGM core's key objects into the keys persisted in
+	 * thed datastore.
+	 */
+	public CacheAndKeyProvider<EK, AK, ISK> getKeyProvider() {
+		return keyProvider;
+	}
+}
