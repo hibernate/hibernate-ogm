@@ -11,16 +11,19 @@ import static org.hibernate.ogm.utils.GridDialectOperationContexts.emptyTupleCon
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
@@ -35,9 +38,10 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -53,19 +57,20 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 	private static InfinispanDatastoreProvider provider1;
 	private static InfinispanDatastoreProvider provider2;
-	private InfinispanDialect dialect1;
-	private InfinispanDialect dialect2;
+	private static InfinispanDialect dialect1;
+	private static InfinispanDialect dialect2;
 
 	@BeforeClass
-	public static void setupProviders() {
-		provider1 = createAndStartNewProvider();
-		provider2 = createAndStartNewProvider();
-	}
-
-	@Before
-	public void setupDialects() {
+	public static void setupProvidersAndDialects() throws Exception {
+		SessionFactoryImplementor sessionFactory1 = getSessionFactory();
+		SessionFactoryImplementor sessionFactory2 = getSessionFactory();
+		provider1 = (InfinispanDatastoreProvider) sessionFactory1.getServiceRegistry().getService( DatastoreProvider.class );
+		provider2 = (InfinispanDatastoreProvider) sessionFactory2.getServiceRegistry().getService( DatastoreProvider.class );
 		dialect1 = new InfinispanDialect( provider1 );
 		dialect2 = new InfinispanDialect( provider2 );
+
+		provider1.getSchemaDefinerType().newInstance().initializeSchema( null, sessionFactory1 );
+		provider2.getSchemaDefinerType().newInstance().initializeSchema( null, sessionFactory2 );
 	}
 
 	@AfterClass
@@ -137,12 +142,12 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		assertThat( readKey.get( "zip" ) ).isEqualTo( "zap" );
 	}
 
-	private static InfinispanDatastoreProvider createAndStartNewProvider() {
+
+	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
 		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist-duplicate-domains-allowed.xml" );
-		ServiceRegistryImplementor serviceRegistry = getServiceRegistry();
-
 		InfinispanDatastoreProvider provider = new InfinispanDatastoreProvider();
+
 		provider.configure( configurationValues );
 		provider.injectServices( serviceRegistry );
 		provider.start();
@@ -152,12 +157,29 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 	private static ServiceRegistryImplementor getServiceRegistry() {
 		ServiceRegistryImplementor serviceRegistry = mock( ServiceRegistryImplementor.class );
+
 		JBossStandAloneJtaPlatform jtaPlatform = new JBossStandAloneJtaPlatform();
 		jtaPlatform.injectServices( serviceRegistry );
-
-		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
 		when( serviceRegistry.getService( JtaPlatform.class ) ).thenReturn( jtaPlatform );
 
+		InfinispanDatastoreProvider provider = createAndStartNewProvider( serviceRegistry );
+		when( serviceRegistry.getService( DatastoreProvider.class ) ).thenReturn( provider );
+
+		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
+
 		return serviceRegistry;
+	}
+
+	private static SessionFactoryImplementor getSessionFactory() {
+		SessionFactoryImplementor sessionFactory = mock( SessionFactoryImplementor.class );
+
+		OgmEntityPersister foobarPersister = mock( OgmEntityPersister.class );
+		when( foobarPersister.getEntityKeyMetadata() ).thenReturn( new DefaultEntityKeyMetadata( "Foobar", new String[] {} ) );
+		when( sessionFactory.getEntityPersisters() ).thenReturn( Collections.<String, EntityPersister> singletonMap( "Foobar", foobarPersister ) );
+
+		ServiceRegistryImplementor serviceRegistry = getServiceRegistry();
+		when( sessionFactory.getServiceRegistry() ).thenReturn( serviceRegistry );
+
+		return sessionFactory;
 	}
 }

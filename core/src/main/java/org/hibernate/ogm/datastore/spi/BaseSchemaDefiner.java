@@ -13,6 +13,8 @@ import java.util.Set;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.entity.EntityPersister;
 
 /**
@@ -47,5 +49,18 @@ public class BaseSchemaDefiner implements SchemaDefiner {
 		}
 
 		return persistentGenerators;
+	}
+
+	/**
+	 * Returns the meta-data for all the entity types registered with the given session factory.
+	 */
+	protected Set<EntityKeyMetadata> getAllEntityKeyMetadata(SessionFactoryImplementor factory) {
+		Set<EntityKeyMetadata> allEntityKeyMetadata = new HashSet<EntityKeyMetadata>();
+
+		for ( EntityPersister entityPersister : factory.getEntityPersisters().values() ) {
+			allEntityKeyMetadata.add( ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
+		}
+
+		return allEntityKeyMetadata;
 	}
 }
