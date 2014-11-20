@@ -38,7 +38,9 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
+import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.AfterClass;
@@ -175,7 +177,13 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 		OgmEntityPersister foobarPersister = mock( OgmEntityPersister.class );
 		when( foobarPersister.getEntityKeyMetadata() ).thenReturn( new DefaultEntityKeyMetadata( "Foobar", new String[] {} ) );
+		when( foobarPersister.getPropertyNames() ).thenReturn( new String[] {} );
 		when( sessionFactory.getEntityPersisters() ).thenReturn( Collections.<String, EntityPersister> singletonMap( "Foobar", foobarPersister ) );
+
+		OgmCollectionPersister foobarCollectionPersister = mock( OgmCollectionPersister.class );
+		when( foobarCollectionPersister.getAssociationKeyMetadata() ).thenReturn( new DefaultAssociationKeyMetadata.Builder().table( "Foobar" ).build() );
+		when( sessionFactory.getCollectionPersisters() ).thenReturn(
+				Collections.<String, CollectionPersister> singletonMap( "Foobar", foobarCollectionPersister ) );
 
 		ServiceRegistryImplementor serviceRegistry = getServiceRegistry();
 		when( sessionFactory.getServiceRegistry() ).thenReturn( serviceRegistry );

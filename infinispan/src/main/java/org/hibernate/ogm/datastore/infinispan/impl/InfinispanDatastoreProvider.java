@@ -19,6 +19,7 @@ import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.Persisten
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -77,7 +78,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 *
 	 * @param entityTypes meta-data of all the entity types registed with the current session factory
 	 */
-	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes) {
+	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
 		// TODO Configuration option
 		if ( !true ) {
 			persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
@@ -92,7 +93,8 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 					externalCacheManager,
 					config.getConfigurationUrl(),
 					jtaPlatform,
-					entityTypes
+					entityTypes,
+					associationTypes
 					);
 		}
 
@@ -111,7 +113,9 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 
 	@Override
 	public void stop() {
-		persistenceStrategy.getCacheManager().stop();
+		if ( persistenceStrategy != null ) {
+			persistenceStrategy.getCacheManager().stop();
+		}
 	}
 
 	@Override

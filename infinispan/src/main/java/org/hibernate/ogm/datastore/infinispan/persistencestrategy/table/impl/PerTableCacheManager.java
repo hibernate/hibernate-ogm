@@ -18,8 +18,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.CacheNames;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
-import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -33,28 +33,39 @@ import org.infinispan.manager.EmbeddedCacheManager;
  *
  * @author Gunnar Morling
  */
-public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey, AssociationKey, IdSourceKey> {
+public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey, PersistentAssociationKey, IdSourceKey> {
+
+	private static final String ASSOCIATIONS_CACHE_PREFIX = "associations_";
 
 	private final ConcurrentMap<String, Cache<PersistentEntityKey, Map<String, Object>>> entityCaches;
+	private final ConcurrentMap<String, Cache<PersistentAssociationKey, Map<RowKey, Map<String, Object>>>> associationCaches;
 
-	public PerTableCacheManager(EmbeddedCacheManager cacheManager, Set<EntityKeyMetadata> entityTypes) {
+	public PerTableCacheManager(EmbeddedCacheManager cacheManager, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
 		super( cacheManager );
 
 		entityCaches = initializeEntityCaches( getCacheManager(), entityTypes );
+		associationCaches = initializeAssociationCaches( getCacheManager(), associationTypes );
 	}
 
-	public PerTableCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes) {
-		super( configUrl, platform, getCacheNames ( entityTypes ), new PerTableKeyProvider() );
+	public PerTableCacheManager(URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
+		super( configUrl, platform, getCacheNames( entityTypes, associationTypes ), new PerTableKeyProvider() );
 
 		entityCaches = initializeEntityCaches( getCacheManager(), entityTypes );
+		associationCaches = initializeAssociationCaches( getCacheManager(), associationTypes );
 	}
 
-	private static Set<String> getCacheNames(Set<EntityKeyMetadata> entityTypes) {
+	private static Set<String> getCacheNames(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
 		Set<String> cacheNames = new HashSet<String>();
 
 		for ( EntityKeyMetadata entityKeyMetadata : entityTypes ) {
 			cacheNames.add( entityKeyMetadata.getTable() );
 		}
+
+		for ( AssociationKeyMetadata associationKeyMetadata : associationTypes ) {
+			cacheNames.add( getCacheName( associationKeyMetadata ) );
+		}
+
+		cacheNames.add( CacheNames.IDENTIFIER_CACHE );
 
 		return cacheNames;
 	}
@@ -69,15 +80,28 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 		return entityCaches;
 	}
 
+	private static ConcurrentMap<String, Cache<PersistentAssociationKey, Map<RowKey, Map<String, Object>>>> initializeAssociationCaches(EmbeddedCacheManager embeddedCacheManager, Set<AssociationKeyMetadata> associationTypes) {
+		ConcurrentHashMap<String, Cache<PersistentAssociationKey, Map<RowKey, Map<String, Object>>>> associationCaches = newConcurrentHashMap( associationTypes.size() );
+		for ( AssociationKeyMetadata associationKeyMetadata : associationTypes ) {
+			String cacheName = getCacheName( associationKeyMetadata );
+
+			associationCaches.put(
+					cacheName,
+					embeddedCacheManager.<PersistentAssociationKey, Map<RowKey, Map<String, Object>>>getCache( cacheName )
+			);
+		}
+
+		return associationCaches;
+	}
+
 	@Override
 	public Cache<PersistentEntityKey, Map<String, Object>> getEntityCache(EntityKeyMetadata keyMetadata) {
 		return entityCaches.get( keyMetadata.getTable() );
 	}
 
 	@Override
-	public Cache<AssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(AssociationKeyMetadata keyMetadata) {
-		// TODO Use cache per table
-		return getCacheManager().getCache( CacheNames.ASSOCIATION_CACHE );
+	public Cache<PersistentAssociationKey, Map<RowKey, Map<String, Object>>> getAssociationCache(AssociationKeyMetadata keyMetadata) {
+		return associationCaches.get( getCacheName( keyMetadata ) );
 	}
 
 	@Override
@@ -96,5 +120,9 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 		}
 
 		return result;
+	}
+
+	private static String getCacheName(AssociationKeyMetadata keyMetadata) {
+		return ASSOCIATIONS_CACHE_PREFIX + keyMetadata.getTable();
 	}
 }
