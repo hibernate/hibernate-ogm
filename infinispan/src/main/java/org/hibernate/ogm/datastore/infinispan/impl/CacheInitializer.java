@@ -26,7 +26,9 @@ public class CacheInitializer extends BaseSchemaDefiner {
 
 		provider.initializePersistenceStrategy(
 				getAllEntityKeyMetadata( factory ),
-				getAllAssociationKeyMetadata( factory )
+				getAllAssociationKeyMetadata( factory ),
+				getAllIdSourceKeyMetadata( factory )
+
 		);
 	}
 }

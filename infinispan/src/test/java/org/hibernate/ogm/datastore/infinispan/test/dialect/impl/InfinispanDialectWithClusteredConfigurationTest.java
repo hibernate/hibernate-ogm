@@ -25,6 +25,7 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
+import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
@@ -119,11 +120,8 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	public void shouldWriteAndReadAssociationInClusteredMode() throws Exception {
 		// given
 		String[] columnNames = { "foo", "bar", "baz" };
-		AssociationKeyMetadata keyMetadata = new DefaultAssociationKeyMetadata.Builder()
-				.table( "Foobar" )
-				.columnNames( columnNames )
-				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( null, null ) )
-				.build();
+		AssociationKeyMetadata keyMetadata = new DefaultAssociationKeyMetadata.Builder().table( "Foobar" ).columnNames( columnNames )
+				.associatedEntityKeyMetadata( new DefaultAssociatedEntityKeyMetadata( null, null ) ).build();
 		Object[] values = { 123, "Hello", 456L };
 
 		AssociationKey key = new AssociationKey( keyMetadata, values, null );
@@ -143,7 +141,6 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		assertThat( readKey ).isNotNull();
 		assertThat( readKey.get( "zip" ) ).isEqualTo( "zap" );
 	}
-
 
 	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
@@ -175,16 +172,25 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 	private static SessionFactoryImplementor getSessionFactory() {
 		SessionFactoryImplementor sessionFactory = mock( SessionFactoryImplementor.class );
 
+		// entity persister
 		OgmEntityPersister foobarPersister = mock( OgmEntityPersister.class );
 		when( foobarPersister.getEntityKeyMetadata() ).thenReturn( new DefaultEntityKeyMetadata( "Foobar", new String[] {} ) );
 		when( foobarPersister.getPropertyNames() ).thenReturn( new String[] {} );
-		when( sessionFactory.getEntityPersisters() ).thenReturn( Collections.<String, EntityPersister> singletonMap( "Foobar", foobarPersister ) );
 
+		// id generator
+		PersistentNoSqlIdentifierGenerator generator = mock( PersistentNoSqlIdentifierGenerator.class );
+		when( generator.getGeneratorKeyMetadata() ).thenReturn( DefaultIdSourceKeyMetadata.forTable( "Hibernate_Sequences", "sequence_name", "next_val" ) );
+		when( foobarPersister.getIdentifierGenerator() ).thenReturn( generator );
+
+		when( sessionFactory.getEntityPersisters() ).thenReturn( Collections.<String, EntityPersister>singletonMap( "Foobar", foobarPersister ) );
+
+		// collection persister
 		OgmCollectionPersister foobarCollectionPersister = mock( OgmCollectionPersister.class );
 		when( foobarCollectionPersister.getAssociationKeyMetadata() ).thenReturn( new DefaultAssociationKeyMetadata.Builder().table( "Foobar" ).build() );
 		when( sessionFactory.getCollectionPersisters() ).thenReturn(
-				Collections.<String, CollectionPersister> singletonMap( "Foobar", foobarCollectionPersister ) );
+				Collections.<String, CollectionPersister>singletonMap( "Foobar", foobarCollectionPersister ) );
 
+		// service registry
 		ServiceRegistryImplementor serviceRegistry = getServiceRegistry();
 		when( sessionFactory.getServiceRegistry() ).thenReturn( serviceRegistry );
 

@@ -14,6 +14,7 @@ import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OneP
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.impl.OnePerKindKeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableKeyProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
@@ -21,6 +22,7 @@ import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.infinispan.manager.EmbeddedCacheManager;
 
 /**
@@ -61,14 +63,18 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * Returns the "per-table" persistence strategy, i.e. one dedicated cache will be used for each
 	 * entity/association/id source table.
 	 */
-	public static PersistenceStrategy<?, ?, ?> getPerTableStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes) {
+	public static PersistenceStrategy<?, ?, ?> getPerTableStrategy(EmbeddedCacheManager externalCacheManager,
+																	URL configUrl, JtaPlatform platform,
+																	Set<EntityKeyMetadata> entityTypes,
+																	Set<AssociationKeyMetadata> associationTypes,
+																	Set<IdSourceKeyMetadata> idSourceTypes) {
 		PerTableKeyProvider keyProvider = new PerTableKeyProvider();
 
 		PerTableCacheManager cacheManager = externalCacheManager != null ?
-				new PerTableCacheManager( externalCacheManager, entityTypes, associationTypes ) :
-				new PerTableCacheManager( configUrl, platform, entityTypes, associationTypes );
+				new PerTableCacheManager( externalCacheManager, entityTypes, associationTypes, idSourceTypes ) :
+				new PerTableCacheManager( configUrl, platform, entityTypes, associationTypes, idSourceTypes );
 
-		return new PersistenceStrategy<PersistentEntityKey, PersistentAssociationKey, IdSourceKey>( cacheManager, keyProvider );
+		return new PersistenceStrategy<PersistentEntityKey, PersistentAssociationKey, PersistentIdSourceKey>( cacheManager, keyProvider );
 	}
 
 	/**

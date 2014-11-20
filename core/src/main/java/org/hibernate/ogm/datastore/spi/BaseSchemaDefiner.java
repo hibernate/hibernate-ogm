@@ -15,6 +15,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -52,6 +53,16 @@ public class BaseSchemaDefiner implements SchemaDefiner {
 		}
 
 		return persistentGenerators;
+	}
+
+	protected Set<IdSourceKeyMetadata> getAllIdSourceKeyMetadata(SessionFactoryImplementor factory) {
+		Set<IdSourceKeyMetadata> allIdSourceKeyMetadata = new HashSet<IdSourceKeyMetadata>();
+
+		for ( PersistentNoSqlIdentifierGenerator generator : getPersistentGenerators( factory ) ) {
+			allIdSourceKeyMetadata.add( generator.getGeneratorKeyMetadata() );
+		}
+
+		return allIdSourceKeyMetadata;
 	}
 
 	/**

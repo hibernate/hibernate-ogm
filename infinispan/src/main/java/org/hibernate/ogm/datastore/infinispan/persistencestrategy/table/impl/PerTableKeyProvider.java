@@ -14,12 +14,13 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyMetadataExternalizer;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.IdSourceKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentEntityKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKeyExternalizer;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -34,7 +35,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  */
 //TODO Consider the move the InfinispanDatastoreProvider#getCache from the provider
-public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, PersistentAssociationKey, IdSourceKey> {
+public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, PersistentAssociationKey, PersistentIdSourceKey> {
 
 	@Override
 	public PersistentEntityKey getEntityCacheKey(EntityKey key) {
@@ -47,8 +48,8 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 	}
 
 	@Override
-	public IdSourceKey getIdSourceCacheKey(IdSourceKey key) {
-		return key;
+	public PersistentIdSourceKey getIdSourceCacheKey(IdSourceKey key) {
+		return PersistentIdSourceKey.fromIdSourceKey( key );
 	}
 
 	@Override
@@ -64,7 +65,7 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 		externalizers.add( PersistentAssociationKeyExternalizer.INSTANCE );
 		externalizers.add( RowKeyExternalizer.INSTANCE );
 		externalizers.add( EntityKeyMetadataExternalizer.INSTANCE );
-		externalizers.add( IdSourceKeyExternalizer.INSTANCE );
+		externalizers.add( PersistentIdSourceKeyExternalizer.INSTANCE );
 
 		return Collections.unmodifiableSet( externalizers );
 	}
