@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -80,6 +81,6 @@ public class AssociationKeyExternalizer implements AdvancedExternalizer<Associat
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ASSOCIATION_KEY;
+		return ExternalizerIds.PER_KIND_ASSOCIATION_KEY;
 	}
 }

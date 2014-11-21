@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
@@ -70,6 +71,6 @@ public class PersistentEntityKeyExternalizer implements AdvancedExternalizer<Per
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ENTITY_KEY;
+		return ExternalizerIds.PER_TABLE_ENTITY_KEY;
 	}
 }
