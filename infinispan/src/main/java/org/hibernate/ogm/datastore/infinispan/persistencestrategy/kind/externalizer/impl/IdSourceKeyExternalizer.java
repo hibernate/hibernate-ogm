@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -74,6 +75,6 @@ public class IdSourceKeyExternalizer implements AdvancedExternalizer<IdSourceKey
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ID_GENERATOR_KEY;
+		return ExternalizerIds.PER_KIND_ID_GENERATOR_KEY;
 	}
 }
