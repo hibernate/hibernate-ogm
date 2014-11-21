@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
-import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyMetadataExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentAssociationKeyExternalizer;
@@ -30,11 +29,11 @@ import org.infinispan.distexec.mapreduce.Collector;
 import org.infinispan.distexec.mapreduce.Mapper;
 
 /**
- * Initial strategy that uses three caches. One for entities, one for associations and one for the identity sources.
+ * Provides the persistent keys for the "per-table" strategy. These keys don't contain the table name.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Gunnar Morling
  */
-//TODO Consider the move the InfinispanDatastoreProvider#getCache from the provider
 public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, PersistentAssociationKey, PersistentIdSourceKey> {
 
 	@Override
@@ -53,8 +52,8 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 	}
 
 	@Override
-	public Mapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
-		return new TupleMapper(entityKeyMetadatas);
+	public TupleMapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
+		return TupleMapper.INSTANCE;
 	}
 
 	@Override
@@ -64,7 +63,6 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 		externalizers.add( PersistentEntityKeyExternalizer.INSTANCE );
 		externalizers.add( PersistentAssociationKeyExternalizer.INSTANCE );
 		externalizers.add( RowKeyExternalizer.INSTANCE );
-		externalizers.add( EntityKeyMetadataExternalizer.INSTANCE );
 		externalizers.add( PersistentIdSourceKeyExternalizer.INSTANCE );
 
 		return Collections.unmodifiableSet( externalizers );
@@ -72,17 +70,11 @@ public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, Per
 
 	private static class TupleMapper implements Mapper<PersistentEntityKey, Map<String, Object>, PersistentEntityKey, Map<String, Object>> {
 
-		private final EntityKeyMetadata[] entityKeyMetadatas;
-
-		public TupleMapper(EntityKeyMetadata... entityKeyMetadatas) {
-			this.entityKeyMetadatas = entityKeyMetadatas;
-		}
+		private static final TupleMapper INSTANCE = new TupleMapper();
 
 		@Override
 		public void map(PersistentEntityKey key, Map<String, Object> value, Collector<PersistentEntityKey, Map<String, Object>> collector) {
-			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-				collector.emit( key, value );
-			}
+			collector.emit( key, value );
 		}
 	}
 }

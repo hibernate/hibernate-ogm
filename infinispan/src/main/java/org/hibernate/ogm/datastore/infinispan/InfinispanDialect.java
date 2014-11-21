@@ -21,6 +21,7 @@ import org.hibernate.ogm.datastore.infinispan.dialect.impl.InfinispanTupleSnapsh
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager.Bucket;
 import org.hibernate.ogm.datastore.map.impl.MapAssociationSnapshot;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -207,12 +208,11 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Set<LocalCacheManager.Bucket> buckets = getCacheManager().getWorkBucketsFor(
+		Set<Bucket<EK>> buckets = getCacheManager().getWorkBucketsFor(
 				entityKeyMetadatas
 		);
-		for ( LocalCacheManager.Bucket bucket : buckets ) {
+		for ( Bucket<EK> bucket : buckets ) {
 			Map<EK, Map<String, Object>> queryResult = retrieveKeys( bucket.getCache(), bucket.getEntityKeyMetadata() );
 			for ( Entry<EK, Map<String, Object>> entry : queryResult.entrySet() ) {
 				consumer.consume( getTupleFromCacheKey( entry.getKey(), bucket.getCache() ) );

@@ -20,7 +20,8 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
  * An externalizer for serializing and de-serializing {@link EntityKeyMetadata} instances. Implicitly used by
- * {@link InfinispanDialect} during mass-indexing.
+ * {@link InfinispanDialect} during mass-indexing where {@code EntityKeyMetadata} instances are sent to the cluster
+ * nodes in order to find the matching entries from the global entity cache.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
  * {@link InfinispanDatastoreProvider}, so it's not required to configure the externalizer in the Infinispan
