@@ -24,6 +24,7 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.id.spi.PersistentNoSqlIdentifierGenerator;
 import org.hibernate.ogm.model.impl.DefaultAssociatedEntityKeyMetadata;
@@ -140,6 +141,36 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		Tuple readKey = readAssociation.get( rowKey );
 		assertThat( readKey ).isNotNull();
 		assertThat( readKey.get( "zip" ) ).isEqualTo( "zap" );
+	}
+
+	@Test
+	public void shouldApplyForEachTupleInClusteredMode() throws Exception {
+		// given
+		String[] columnNames = { "foo", "bar", "baz" };
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Foobar", columnNames );
+		Object[] values = { 123, "Hello", 456L };
+
+		EntityKey key = new EntityKey( keyMetadata, values );
+
+		// when
+		Tuple tuple = dialect1.createTuple( key, emptyTupleContext() );
+		tuple.put( "foo", "bar" );
+		dialect1.insertOrUpdateTuple( key, tuple, emptyTupleContext() );
+
+		// then
+		MyConsumer consumer = new MyConsumer();
+		dialect2.forEachTuple( consumer, keyMetadata );
+		assertThat( consumer.consumedTuple.get( "foo" ) ).isEqualTo( "bar" );
+	}
+
+	private final class MyConsumer implements ModelConsumer {
+
+		private Tuple consumedTuple;
+
+		@Override
+		public void consume(Tuple tuple) {
+			consumedTuple = tuple;
+		}
 	}
 
 	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {

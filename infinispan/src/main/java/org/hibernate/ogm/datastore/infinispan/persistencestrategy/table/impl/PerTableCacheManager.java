@@ -7,10 +7,14 @@
 package org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl;
 
 import static org.hibernate.ogm.util.impl.CollectionHelper.newConcurrentHashMap;
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -126,15 +130,32 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 	}
 
 	@Override
-	public Set<LocalCacheManager.Bucket> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas) {
-		Set<Bucket> result = new HashSet<Bucket>();
+	public Set<Bucket<PersistentEntityKey>> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas) {
+		Map<String, List<EntityKeyMetadata>> metadataByTable = groupByTable( entityKeyMetadatas );
+		Set<Bucket<PersistentEntityKey>> result = new HashSet<Bucket<PersistentEntityKey>>();
 
-		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-			Bucket bucket = new Bucket( getEntityCache( entityKeyMetadata ), entityKeyMetadatas );
-			result.add( bucket );
+		for ( Entry<String, List<EntityKeyMetadata>> entry : metadataByTable.entrySet() ) {
+			result.add( new Bucket<PersistentEntityKey>( entityCaches.get( entry.getKey() ), entry.getValue() ) );
 		}
 
 		return result;
+	}
+
+	private Map<String, List<EntityKeyMetadata>> groupByTable(EntityKeyMetadata... entityKeyMetadatas) {
+		Map<String, List<EntityKeyMetadata>> metadataByTable = newHashMap();
+
+		for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
+			List<EntityKeyMetadata> metadataOfTable = metadataByTable.get( entityKeyMetadata.getTable() );
+
+			if ( metadataOfTable == null ) {
+				metadataOfTable = new ArrayList<EntityKeyMetadata>();
+				metadataByTable.put( entityKeyMetadata.getTable(), metadataOfTable );
+			}
+
+			metadataOfTable.add( entityKeyMetadata );
+		}
+
+		return metadataByTable;
 	}
 
 	private static String getCacheName(AssociationKeyMetadata keyMetadata) {

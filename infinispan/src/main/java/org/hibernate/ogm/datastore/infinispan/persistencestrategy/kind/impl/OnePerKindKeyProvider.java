@@ -49,8 +49,8 @@ public class OnePerKindKeyProvider implements KeyProvider<EntityKey, Association
 	}
 
 	@Override
-	public Mapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
-		return new TupleMapper(entityKeyMetadatas);
+	public TupleMapper getMapper(EntityKeyMetadata... entityKeyMetadatas) {
+		return new TupleMapper( entityKeyMetadatas );
 	}
 
 	@Override

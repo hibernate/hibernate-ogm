@@ -10,7 +10,6 @@ import static org.hibernate.ogm.util.impl.CollectionHelper.asSet;
 
 import java.net.URL;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,10 +74,7 @@ public class OnePerKindCacheManager extends LocalCacheManager<EntityKey, Associa
 	}
 
 	@Override
-	public Set<Bucket> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas) {
-		Set<Bucket> result = new HashSet<Bucket>();
-		Bucket bucket = new Bucket( entityCache, entityKeyMetadatas );
-		result.add( bucket );
-		return result;
+	public Set<Bucket<EntityKey>> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas) {
+		return Collections.<Bucket<EntityKey>>singleton( new Bucket<EntityKey>( entityCache, entityKeyMetadatas ) );
 	}
 }

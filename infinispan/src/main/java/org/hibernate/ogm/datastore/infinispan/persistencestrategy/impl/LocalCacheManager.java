@@ -8,8 +8,6 @@ package org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -132,35 +130,35 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 
 	public abstract Cache<ISK, Object> getIdSourceCache(IdSourceKeyMetadata keyMetadata);
 
-	public abstract Set<Bucket> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas);
+	/**
+	 * Groups the given entity types by the caches they are stored in.
+	 */
+	public abstract Set<Bucket<EK>> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas);
 
 	/**
 	 * Describe all the entity key metadata that work on a given cache
 	 */
 	public static class Bucket<EK> {
-		private final Cache<EK, Map<String,Object>> cache;
-		private final List<EntityKeyMetadata> entityKeyMetadatas;
 
-		public Bucket(Cache<EK, Map<String,Object>> cache) {
+		private final Cache<EK, Map<String, Object>> cache;
+		private final EntityKeyMetadata[] entityKeyMetadatas;
+
+		public Bucket(Cache<EK, Map<String,Object>> cache, List<EntityKeyMetadata> entityKeyMetadatas) {
 			this.cache = cache;
-			this.entityKeyMetadatas = new ArrayList<EntityKeyMetadata>();
+			this.entityKeyMetadatas = entityKeyMetadatas.toArray( new EntityKeyMetadata[entityKeyMetadatas.size()] );
 		}
 
 		public Bucket(Cache<EK, Map<String,Object>> cache, EntityKeyMetadata... entityKeyMetadatas) {
 			this.cache = cache;
-			this.entityKeyMetadatas = Arrays.asList( entityKeyMetadatas );
+			this.entityKeyMetadatas = entityKeyMetadatas;
 		}
 
-		public Cache getCache() {
+		public Cache<EK, Map<String, Object>> getCache() {
 			return cache;
 		}
 
 		public EntityKeyMetadata[] getEntityKeyMetadata() {
-			return entityKeyMetadatas.toArray( new EntityKeyMetadata[ entityKeyMetadatas.size() ] );
-		}
-
-		public void addEntityKeyMetadata(EntityKeyMetadata entityKeyMetadata) {
-			this.entityKeyMetadatas.add( entityKeyMetadata );
+			return entityKeyMetadatas;
 		}
 	}
 }
