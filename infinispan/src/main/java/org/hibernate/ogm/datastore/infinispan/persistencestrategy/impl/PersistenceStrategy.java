@@ -49,7 +49,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * Returns the "per-kind" persistence strategy. Three caches will be used: one for entities, one for associations
 	 * and one for id sources.
 	 */
-	public static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform, Set<EntityKeyMetadata> entityTypes) {
+	public static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform) {
 		OnePerKindKeyProvider keyProvider = new OnePerKindKeyProvider();
 
 		OnePerKindCacheManager cacheManager = externalCacheManager != null ?

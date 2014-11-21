@@ -80,14 +80,12 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 * @param entityTypes meta-data of all the entity types registed with the current session factory
 	 */
 	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
-		// TODO Configuration option
-		if ( !true ) {
+		if ( config.getPersistenceStrategy() == org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy.CACHE_PER_KIND ) {
 			persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
 					externalCacheManager,
 					config.getConfigurationUrl(),
-					jtaPlatform,
-					entityTypes
-					);
+					jtaPlatform
+			);
 		}
 		else {
 			persistenceStrategy = PersistenceStrategy.getPerTableStrategy(
