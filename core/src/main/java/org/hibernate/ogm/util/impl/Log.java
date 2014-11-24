@@ -213,4 +213,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 67, value = "Trying to insert an already existing entity: %s")
 	EntityAlreadyExistsException mustNotInsertSameEntityTwice(String primaryKey, @Cause Exception taee );
+
+	@Message(id = 68, value = "Could not configure property %1$s#%2$s")
+	HibernateException couldNotConfigureProperty(String entityName, String string, @Cause Exception e);
 }

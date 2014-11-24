@@ -267,7 +267,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		final int length = types.length;
 		gridPropertyTypes = new GridType[length];
 		for (int index = 0 ; index < length ; index++) {
-			gridPropertyTypes[index] = typeTranslator.getType( types[index] );
+			try {
+				gridPropertyTypes[index] = typeTranslator.getType( types[index] );
+			}
+			catch ( Exception e ) {
+				throw log.couldNotConfigureProperty( getEntityName(), getPropertyNames()[index], e );
+			}
 		}
 		gridVersionType = typeTranslator.getType( getVersionType() );
 		gridIdentifierType = typeTranslator.getType( getIdentifierType() );
