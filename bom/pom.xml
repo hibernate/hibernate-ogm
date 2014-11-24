@@ -142,9 +142,11 @@
                 <artifactId>hibernate-ogm-neo4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
+            <!-- Hibernate OGM Contributions -->
             <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>hibernate-ogm-couchdb</artifactId>
+                <groupId>org.hibernate.ogm.contrib</groupId>
+                <artifactId>hibernate-ogm-contrib-couchdb</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
