@@ -68,10 +68,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-neo4j</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate.ogm</groupId>
-            <artifactId>hibernate-ogm-couchdb</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
@@ -86,16 +82,8 @@
                         ${basedir}/../../infinispan/src/main/java;
                         ${basedir}/../../mongodb/src/main/java;
                         ${basedir}/../../neo4j/src/main/java;
-                        ${basedir}/../../couchdb/src/main/java
                     </sourcepath>
                     <show>public</show>
-                    <tags>
-                        <tag>
-                            <name>experimental</name>
-                            <placement>a</placement>
-                            <head>Experimental</head>
-                        </tag>
-                    </tags>
                     <docfilessubdirs>true</docfilessubdirs>
                     <stylesheetfile>${basedir}/src/main/javadoc/stylesheet.css</stylesheetfile>
                     <links>

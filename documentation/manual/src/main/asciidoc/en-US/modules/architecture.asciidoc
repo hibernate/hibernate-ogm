@@ -52,22 +52,26 @@ by the notion of a [classname]+DatastoreProvider+ and a [classname]+GridDialect+
 * [classname]+GridDialect+ abstracts how data itself including association
   is persisted.
 
-
 Think of them as the JDBC layer for our NoSQL stores.
 
 Other than these, all the Create/Read/Update/Delete (CRUD) operations
 are implemented by the Hibernate ORM engine
 (object hydration and dehydration, cascading, lifecycle etc).
 
-As of today, we have implemented four datastore providers:
+As of today, we have implemented the following datastore providers:
 
 * a Map based datastore provider (for testing)
 * an Infinispan based datastore provider to persist your entities in Infinispan
 * a Ehcache based datastore provider to persist your entities in Ehcache
 * a MongoDB based datastore provider to persist data in a MongoDB database
 * a Neo4j based datastore provider to persist data in the Neo4j graph database
-* a CouchDB based datastore provider to persist data in the CouchDB document store
 
+Additional datastore providers are provided through the Hibernate OGM Contributions project.
+These providers are incubating state and/or may be led by members from the Hibernate OGM community.
+Incubating providers should be used with great care,
+as their approach for persisting data in the corresponding NoSQL store may change in future revisions.
+Currently there is a provider for the CouchDB document data store in the Hibernate OGM Contributions project.
+Refer to its documentation to learn more about the details.
 
 To implement JP-QL queries, Hibernate OGM parses the JP-QL string
 and calls the appropriate translator functions to build a native query.
