@@ -138,7 +138,6 @@
     <modules>
         <module>testcase</module>
         <module>mongodb</module>
-        <module>couchdb</module>
         <module>neo4j</module>
     </modules>
 
