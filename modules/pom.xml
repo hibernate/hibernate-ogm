@@ -26,7 +26,6 @@
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
-        <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
         <org.parboiled.module.slot>main</org.parboiled.module.slot>
     </properties>
 

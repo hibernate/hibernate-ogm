@@ -206,48 +206,6 @@
 
         <!--
         #######################################################################
-        #  hibernate-ogm-couchdb
-        #######################################################################
-         -->
-
-        <moduleSet>
-            <useAllReactorProjects>true</useAllReactorProjects>
-            <includes>
-                <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
-            </includes>
-            <binaries>
-                <outputDirectory>dist/lib/couchdb</outputDirectory>
-                <unpack>false</unpack>
-                <dependencySets>
-                    <dependencySet>
-                        <outputDirectory>/dist/lib/couchdb</outputDirectory>
-                        <useProjectArtifact>false</useProjectArtifact>
-                        <scope>runtime</scope>
-                        <includes>
-                            <include>org.jboss.resteasy:resteasy-client</include>
-                            <include>org.jboss.resteasy:resteasy-jackson2-provider</include>
-                            <include>org.jboss.resteasy:resteasy-jaxrs</include>
-                            <include>org.jboss.resteasy:jaxrs-api</include>
-                            <include>org.scannotation:scannotation</include>
-                            <include>org.jboss.spec.javax.annotation:jboss-annotations-api_1.1_spec</include>
-                            <include>javax.activation:activation</include>
-                            <include>org.apache.httpcomponents:httpclient</include>
-                            <include>org.apache.httpcomponents:httpcore</include>
-                            <include>commons-logging:commons-logging</include>
-                            <include>commons-codec:commons-codec</include>
-                            <include>commons-io:commons-io</include>
-                            <include>net.jcip:jcip-annotations</include>
-                            <include>com.fasterxml.jackson.core:jackson-core</include>
-                            <include>com.fasterxml.jackson.core:jackson-databind</include>
-                            <include>com.fasterxml.jackson.core:jackson-annotations</include>
-                        </includes>
-                    </dependencySet>
-                </dependencySets>
-            </binaries>
-        </moduleSet>
-
-        <!--
-        #######################################################################
         #  API Javadoc
         #######################################################################
          -->

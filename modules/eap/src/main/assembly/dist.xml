@@ -49,11 +49,6 @@
              <filtered>true</filtered>
         </file>
         <file>
-             <source>${module.xml.basedir}/ogm/couchdb/module.xml</source>
-             <outputDirectory>/org/hibernate/ogm/couchdb/main</outputDirectory>
-             <filtered>true</filtered>
-        </file>
-        <file>
             <source>${module.xml.basedir}/org/parboiled/module.xml</source>
             <outputDirectory>/org/parboiled/${org.parboiled.module.slot}</outputDirectory>
             <filtered>true</filtered>
@@ -129,15 +124,6 @@
                  <include>org.mongodb:mongo-java-driver</include>
               </includes>
        </dependencySet>
-        <dependencySet>
-             <useProjectArtifact>false</useProjectArtifact>
-             <outputDirectory>org/hibernate/ogm/couchdb/${hibernate.ogm.couchdb.module.slot}</outputDirectory>
-             <useTransitiveFiltering>false</useTransitiveFiltering>
-             <unpack>false</unpack>
-             <includes>
-                 <include>org.hibernate.ogm:hibernate-ogm-couchdb</include>
-             </includes>
-       </dependencySet>
        <dependencySet>
               <useProjectArtifact>false</useProjectArtifact>
               <outputDirectory>org/hibernate/ogm/neo4j/${hibernate.ogm.neo4j.module.slot}</outputDirectory>
@@ -179,10 +165,4 @@
             </includes>
        </dependencySet>
     </dependencySets>
-    <fileSets>
-        <fileSet>
-            <directory>${project.build.directory}/unpacked-resteasy-modules</directory>
-            <outputDirectory>/system/layers/base</outputDirectory>
-        </fileSet>
-    </fileSets>
 </assembly>

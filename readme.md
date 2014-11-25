@@ -21,7 +21,7 @@ To run the full project build including tests for all backends, documentation et
 
     mvn clean install -s settings-example.xml
 
-Note that for running the test suite against separately installed MongoDB and CouchDB servers their host name must be specified via an environment variable.
+Note that for running the test suite against a separately installed MongoDB server its host name must be specified via an environment variable.
 See the sections below for the details.
 
 To speed things up, there are several options for skipping parts of the build.
@@ -100,15 +100,6 @@ prior to running the tests:
     export MONGODB_USERNAME=someUsername
     export MONGODB_PASSWORD=someP@ssw0rd
     mvn clean install -s settings-example.xml
-
-### CouchDB
-
-For running the tests in the _couchdb_ module an installed CouchDB server is required. Specify its host name by
-setting the environment variable `COUCHDB_HOSTNAME` prior to running the test suite:
-
-    export COUCHDB_HOSTNAME=couchdb-machine
-
-If this variable is not set, the _couchdb_ module still will be compiled and packaged but the tests will be skipped.
 
 ## Contact
 
