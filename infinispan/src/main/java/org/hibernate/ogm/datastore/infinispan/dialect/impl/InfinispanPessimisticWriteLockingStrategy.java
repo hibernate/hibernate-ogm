@@ -53,7 +53,7 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 				identifierGridType,
 				id,
 				session );
-		advCache.lock( key );
+		advCache.lock( getProvider( session ).getKeyProvider().getEntityCacheKey( key ) );
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 
