@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispan.dialect.impl;
+package org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -14,11 +14,11 @@ import java.util.Set;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
- * An externalizer for serializing and de-serializing {@link RowKey} instances. Implicitly used by
+ * An externalizer for serializing and de-serializing {@link PersistentIdSourceKey} instances. Implicitly used by
  * {@link InfinispanDialect} which stores keys as is in the Infinispan data store.
  * <p>
  * This externalizer is automatically registered with the cache manager when starting the
@@ -29,9 +29,9 @@ import org.infinispan.commons.marshall.AdvancedExternalizer;
  */
 // As an implementation of AdvancedExternalizer this is never serialized according to the Externalizer docs
 @SuppressWarnings("serial")
-public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
+public class PersistentIdSourceKeyExternalizer implements AdvancedExternalizer<PersistentIdSourceKey> {
 
-	public static final RowKeyExternalizer INSTANCE = new RowKeyExternalizer();
+	public static final PersistentIdSourceKeyExternalizer INSTANCE = new PersistentIdSourceKeyExternalizer();
 
 	/**
 	 * Format version of the key type; allows to apply version dependent deserialization logic in the future if
@@ -39,36 +39,37 @@ public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 	 */
 	private static final int VERSION = 1;
 
-	private static final Set<Class<? extends RowKey>> TYPE_CLASSES = Collections.<Class<? extends RowKey>>singleton( RowKey.class );
+	private static final Set<Class<? extends PersistentIdSourceKey>> TYPE_CLASSES = Collections
+			.<Class<? extends PersistentIdSourceKey>>singleton( PersistentIdSourceKey.class );
 
-	private RowKeyExternalizer() {
+	private PersistentIdSourceKeyExternalizer() {
 	}
 
 	@Override
-	public void writeObject(ObjectOutput output, RowKey key) throws IOException {
+	public void writeObject(ObjectOutput output, PersistentIdSourceKey key) throws IOException {
 		output.writeInt( VERSION );
-		output.writeObject( key.getColumnNames() );
-		output.writeObject( key.getColumnValues() );
+		output.writeObject( key.getName() );
+		output.writeObject( key.getValue() );
 	}
 
 	@Override
-	public RowKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+	public PersistentIdSourceKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
 		// version
 		input.readInt();
 
-		String[] columnNames = (String[]) input.readObject();
-		Object[] values = (Object[]) input.readObject();
+		String name = (String) input.readObject();
+		Object value = input.readObject();
 
-		return new RowKey( columnNames, values );
+		return new PersistentIdSourceKey( name, value );
 	}
 
 	@Override
-	public Set<Class<? extends RowKey>> getTypeClasses() {
+	public Set<Class<? extends PersistentIdSourceKey>> getTypeClasses() {
 		return TYPE_CLASSES;
 	}
 
 	@Override
 	public Integer getId() {
-		return ExternalizerIds.ROW_KEY;
+		return ExternalizerIds.PER_TABLE_ID_GENERATOR_KEY;
 	}
 }

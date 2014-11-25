@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.EntityKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.kind.externalizer.impl.EntityKeyExternalizer;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;

@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationOperation;
@@ -60,7 +59,7 @@ public final class MapHelpers {
 		return map;
 	}
 
-	public static void updateAssociation(Association association, AssociationKey key) {
+	public static void updateAssociation(Association association) {
 		Map<RowKey, Map<String, Object>> underlyingMap = ( (MapAssociationSnapshot) association.getSnapshot() ).getUnderlyingMap();
 		for ( AssociationOperation action : association.getOperations() ) {
 			switch ( action.getType() ) {
