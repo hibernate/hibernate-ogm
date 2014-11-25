@@ -160,7 +160,7 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 
 	@Override
 	public void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext) {
-		MapHelpers.updateAssociation( association, key );
+		MapHelpers.updateAssociation( association );
 	}
 
 	@Override
