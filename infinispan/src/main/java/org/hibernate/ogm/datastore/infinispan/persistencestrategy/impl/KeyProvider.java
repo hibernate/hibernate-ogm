@@ -19,6 +19,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
 
 /**
  * Converts the OGM-internal keys into the cache keys.
+ * Implementations must be thread-safe.
  *
  * @author Emmanuel Bernard <emmanuel@hibernate.org>
  *
