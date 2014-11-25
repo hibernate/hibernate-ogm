@@ -76,11 +76,11 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 			return new PessimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
 		else if ( lockMode == LockMode.PESSIMISTIC_WRITE ) {
-			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
+			return new InfinispanPessimisticWriteLockingStrategy<EK>( lockable, lockMode );
 		}
 		else if ( lockMode == LockMode.PESSIMISTIC_READ ) {
 			// TODO find a more efficient pessimistic read
-			return new InfinispanPessimisticWriteLockingStrategy( lockable, lockMode );
+			return new InfinispanPessimisticWriteLockingStrategy<EK>( lockable, lockMode );
 		}
 		else if ( lockMode == LockMode.OPTIMISTIC ) {
 			return new OptimisticLockingStrategy( lockable, lockMode );
