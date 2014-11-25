@@ -77,26 +77,20 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 * Initializes the persistence strategy to be used when accessing the datastore. In particular, all the required
 	 * caches will be configured and initialized.
 	 *
-	 * @param entityTypes meta-data of all the entity types registed with the current session factory
+	 * @param entityTypes meta-data of all the entity types registered with the current session factory
+	 * @param associationTypes meta-data of all the association types registered with the current session factory
+	 * @param idSourceTypes meta-data of all the id source types registered with the current session factory
 	 */
 	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
-		if ( config.getPersistenceStrategy() == org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy.CACHE_PER_KIND ) {
-			persistenceStrategy = PersistenceStrategy.getPerKindStrategy(
-					externalCacheManager,
-					config.getConfigurationUrl(),
-					jtaPlatform
-			);
-		}
-		else {
-			persistenceStrategy = PersistenceStrategy.getPerTableStrategy(
-					externalCacheManager,
-					config.getConfigurationUrl(),
-					jtaPlatform,
-					entityTypes,
-					associationTypes,
-					idSourceTypes
-			);
-		}
+		persistenceStrategy = PersistenceStrategy.getInstance(
+				config.getPersistenceStrategy(),
+				externalCacheManager,
+				config.getConfigurationUrl(),
+				jtaPlatform,
+				entityTypes,
+				associationTypes,
+				idSourceTypes
+		);
 
 		// clear resources
 		this.externalCacheManager = null;
