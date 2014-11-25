@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.infinispan.utils;
 
-import static org.hibernate.ogm.datastore.infinispan.impl.CacheNames.ASSOCIATION_CACHE;
-import static org.hibernate.ogm.datastore.infinispan.impl.CacheNames.ENTITY_CACHE;
-
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -20,9 +20,15 @@ import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.options.navigation.GlobalContext;
+import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
+import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.utils.TestableGridDialect;
+import org.hibernate.persister.collection.CollectionPersister;
+import org.hibernate.persister.entity.EntityPersister;
 import org.infinispan.Cache;
 
 /**
@@ -32,22 +38,45 @@ public class InfinispanTestHelper implements TestableGridDialect {
 
 	@Override
 	public long getNumberOfEntities(SessionFactory sessionFactory) {
-		return getEntityCache( sessionFactory ).size();
+		int entityCount = 0;
+		Set<Cache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?, ?>, Boolean>() );
+
+		for ( EntityPersister entityPersister : ( (SessionFactoryImplementor) sessionFactory ).getEntityPersisters().values() ) {
+			Cache<?, ?> entityCache = getEntityCache( sessionFactory, ( (OgmEntityPersister) entityPersister ).getEntityKeyMetadata() );
+			if ( !processedCaches.contains( entityCache ) ) {
+				entityCount += entityCache.size();
+				processedCaches.add( entityCache );
+			}
+		}
+
+		return entityCount;
 	}
 
 	@Override
 	public long getNumberOfAssociations(SessionFactory sessionFactory) {
-		return getAssociationCache( sessionFactory ).size();
+		int asscociationCount = 0;
+		Set<Cache<?, ?>> processedCaches = Collections.newSetFromMap( new IdentityHashMap<Cache<?, ?>, Boolean>() );
+
+		for ( CollectionPersister collectionPersister : ( (SessionFactoryImplementor) sessionFactory ).getCollectionPersisters().values() ) {
+			Cache<?, ?> associationCache = getAssociationCache( sessionFactory, ( (OgmCollectionPersister) collectionPersister ).getAssociationKeyMetadata() );
+			if ( !processedCaches.contains( associationCache ) ) {
+				asscociationCount += associationCache.size();
+				processedCaches.add( associationCache );
+			}
+		}
+
+		return asscociationCount;
 	}
 
 	@Override
 	public Map<String, Object> extractEntityTuple(SessionFactory sessionFactory, EntityKey key) {
-		return (Map) getEntityCache( sessionFactory ).get( key );
+		InfinispanDatastoreProvider provider = getProvider( sessionFactory );
+		return getEntityCache( sessionFactory, key.getMetadata() ).get( provider.getKeyProvider().getEntityCacheKey( key ) );
 	}
 
-	private static Cache<?, ?> getEntityCache(SessionFactory sessionFactory) {
+	private static Cache<?, Map<String, Object>> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCache( ENTITY_CACHE );
+		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
 	}
 
 	public static InfinispanDatastoreProvider getProvider(SessionFactory sessionFactory) {
@@ -58,9 +87,9 @@ public class InfinispanTestHelper implements TestableGridDialect {
 		return InfinispanDatastoreProvider.class.cast( provider );
 	}
 
-	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory) {
+	private static Cache<?, ?> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
 		InfinispanDatastoreProvider castProvider = getProvider( sessionFactory );
-		return castProvider.getCache( ASSOCIATION_CACHE );
+		return castProvider.getCacheManager().getAssociationCache( associationKeyMetadata );
 	}
 
 	@Override

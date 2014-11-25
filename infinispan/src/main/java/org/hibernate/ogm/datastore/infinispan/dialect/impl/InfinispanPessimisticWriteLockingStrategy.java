@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.datastore.infinispan.dialect.impl;
 
-import static org.hibernate.ogm.datastore.infinispan.impl.CacheNames.ENTITY_CACHE;
-
 import java.io.Serializable;
 
 import org.hibernate.JDBCException;
@@ -49,13 +47,13 @@ public class InfinispanPessimisticWriteLockingStrategy implements LockingStrateg
 	@Override
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
-		AdvancedCache advCache = getProvider( session ).getCache( ENTITY_CACHE ).getAdvancedCache();
+		AdvancedCache advCache = getProvider( session ).getCacheManager().getEntityCache( ( (OgmEntityPersister) lockable).getRootEntityKeyMetadata() ).getAdvancedCache();
 		EntityKey key = EntityKeyBuilder.fromData(
 				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
 				identifierGridType,
 				id,
 				session );
-		advCache.lock( key );
+		advCache.lock( getProvider( session ).getKeyProvider().getEntityCacheKey( key ) );
 		//FIXME check the version number as well and raise an optimistic lock exception if there is an issue JPA 2 spec: 3.4.4.2
 	}
 

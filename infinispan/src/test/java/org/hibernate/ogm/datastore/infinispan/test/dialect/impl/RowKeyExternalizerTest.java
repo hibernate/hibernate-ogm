@@ -9,7 +9,7 @@ package org.hibernate.ogm.datastore.infinispan.test.dialect.impl;
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.hibernate.ogm.datastore.infinispan.dialect.impl.RowKeyExternalizer;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.RowKeyExternalizer;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.junit.Before;
 import org.junit.Test;
