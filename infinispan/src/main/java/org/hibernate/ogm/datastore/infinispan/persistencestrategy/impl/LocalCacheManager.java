@@ -35,6 +35,8 @@ import org.infinispan.manager.EmbeddedCacheManager;
  * <p>
  * Implementations need to make sure all needed caches are started before state transfer happens. This prevents this
  * node to return undefined cache errors during replication when other nodes join this one.
+ * <p>
+ * Implementations must be thread-safe.
  *
  * @author Sanne Grinovero
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
