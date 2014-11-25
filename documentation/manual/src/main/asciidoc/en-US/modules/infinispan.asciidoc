@@ -84,6 +84,14 @@ as Infinispan is assumed being already configured.
 Should point to the resource name of an Infinispan configuration file.
 This is ignored in case [acronym]+JNDI+  lookup is set.
 Defaults to +org/hibernate/ogm/datastore/infinispan/default-config.xml+.
++hibernate.ogm.infinispan.persistence_strategy+::
+The strategy for persisting data in Infinispan.
+The following two strategies exist (values of the +org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy+ enum):
++CACHE_PER_KIND+
+(Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources) and
++CACHE_PER_TABLE+
+(A dedicated cache will be used for each entity type, association type and id source table).
+Defaults to +CACHE_PER_TABLE+.
 
 [NOTE]
 ====
