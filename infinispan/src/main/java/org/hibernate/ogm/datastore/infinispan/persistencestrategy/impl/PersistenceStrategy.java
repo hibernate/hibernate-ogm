@@ -46,10 +46,41 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	}
 
 	/**
+	 * Returns a persistence strategy based on the passed configuration.
+	 */
+	public static PersistenceStrategy<?, ?, ?> getInstance(
+			org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy strategy,
+			EmbeddedCacheManager externalCacheManager,
+			URL configurationUrl,
+			JtaPlatform jtaPlatform,
+			Set<EntityKeyMetadata> entityTypes,
+			Set<AssociationKeyMetadata> associationTypes,
+			Set<IdSourceKeyMetadata> idSourceTypes ) {
+
+		if ( strategy == org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy.CACHE_PER_KIND ) {
+			return getPerKindStrategy(
+					externalCacheManager,
+					configurationUrl,
+					jtaPlatform
+			);
+		}
+		else {
+			return getPerTableStrategy(
+					externalCacheManager,
+					configurationUrl,
+					jtaPlatform,
+					entityTypes,
+					associationTypes,
+					idSourceTypes
+			);
+		}
+	}
+
+	/**
 	 * Returns the "per-kind" persistence strategy. Three caches will be used: one for entities, one for associations
 	 * and one for id sources.
 	 */
-	public static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform) {
+	private static PersistenceStrategy<?, ?, ?> getPerKindStrategy(EmbeddedCacheManager externalCacheManager, URL configUrl, JtaPlatform platform) {
 		OnePerKindKeyProvider keyProvider = new OnePerKindKeyProvider();
 
 		OnePerKindCacheManager cacheManager = externalCacheManager != null ?
@@ -63,11 +94,14 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * Returns the "per-table" persistence strategy, i.e. one dedicated cache will be used for each
 	 * entity/association/id source table.
 	 */
-	public static PersistenceStrategy<?, ?, ?> getPerTableStrategy(EmbeddedCacheManager externalCacheManager,
-																	URL configUrl, JtaPlatform platform,
-																	Set<EntityKeyMetadata> entityTypes,
-																	Set<AssociationKeyMetadata> associationTypes,
-																	Set<IdSourceKeyMetadata> idSourceTypes) {
+	private static PersistenceStrategy<?, ?, ?> getPerTableStrategy(
+			EmbeddedCacheManager externalCacheManager,
+			URL configUrl,
+			JtaPlatform platform,
+			Set<EntityKeyMetadata> entityTypes,
+			Set<AssociationKeyMetadata> associationTypes,
+			Set<IdSourceKeyMetadata> idSourceTypes) {
+
 		PerTableKeyProvider keyProvider = new PerTableKeyProvider();
 
 		PerTableCacheManager cacheManager = externalCacheManager != null ?
@@ -86,7 +120,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 
 	/**
 	 * Returns the {@link KeyProvider} of this strategy, converting OGM core's key objects into the keys persisted in
-	 * thed datastore.
+	 * the datastore.
 	 */
 	public KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return keyProvider;
