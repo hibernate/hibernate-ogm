@@ -86,6 +86,1193 @@ Common properties shared between stores are declared on +OgmProperties+.
 To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
+[[ogm-ehcache-storage-principles]]
+===== Storage principles
+
+[[ogm-ehcache-built-in-types]]
+===== Builtin types
+
+Hibernate OGM support by default the following types:
+
+* [classname]+java.lang.String+
+* [classname]+java.lang.Boolean+ (or boolean primitive)
+* [classname]+java.lang.Byte+ (or byte primitive)
+* [classname]+java.lang.Long+ (or long primitive)
+* [classname]+java.lang.Integer+ (or integer primitive)
+* [classname]+java.lang.Double+ (or double primitive)
+
+* [classname]+java.math.BigDecimal+
+* [classname]+java.math.BigInteger+
+
+* [classname]+java.util.Calendar+
+* [classname]+java.util.Date+
+* [classname]+java.util.UUID+
+* [classname]+java.util.URL+
+
+====== Identifiers
+
+Hibernate OGM will map the identifier of an entity as key of the entry of in the cache.
+
+The key is going to be a serializable implementation of +org.hibernate.ogm.model.key.spi.EntityKey+
+instance containing the entity table name and the key columns names and values.
+
+.Define an identifier as a primitive type
+====
+[source, JAVA]
+----
+@Entity
+public class Bookmark {
+
+    @Id
+    private Long id;
+
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITY cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                   2+^| MAP ENTRIES
+
+.2+^.^| "Bookmark", ["id"], [42] | id       | 42 
+                                 | title    | "Hibernate OGM documentation" 
+|===
+====
+
+.Define an identifier using @EmbeddedId
+====
+[source, JAVA]
+----
+@Embeddable
+public class NewsID implements Serializable {
+
+    private String title;
+    private String author;
+
+    // getters, setters ...
+}
+
+@Entity
+public class News {
+
+    @EmbeddedId
+    private NewsID newsId;
+    private String content;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITY cache
+[cols="3*", options="header"]
+|===
+     ^| KEY
+   2+^| MAP ENTRIES
+
+.3+^.^| "News",[newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
+      | newsId.author  | "Guillaume"
+
+      | newsId.title   | "How to use Hibernate OGM ?"
+
+      | content        | "Simple, just like ORM but with a NoSQL database"
+|===
+====
+
+====== Identifier generation strategies
+
+The only table strategy available in ehcahce is the +TABLE+ one.
+Selecting a different strategies won't cause any execption but Hibernate OGM will still rely on the
++TABLE+ strategy to generate identifiers.
+
+.Id generation strategy TABLE using default values
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    private long id;
+
+    private String name;
+
+    // getters, setters ...
+}
+
+----
+
+.Content of the IDENTIFIERS cache
+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | [type=TABLE, name=hibernate_sequences, keyColumnName=sequence_name, valueColumnName=next_val],
+      columnNames=[sequence_name], columnValues=[default] 
+^.^|  2
+|===
+====
+
+.Id generation strategy TABLE using a custom table
+====
+[source, JAVA]
+----
+@Entity
+public class GuitarPlayer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE, generator = "guitarGen")
+    @TableGenerator(
+        name = "guitarGen",
+        table = "GuitarPlayerSequence",
+        pkColumnValue = "guitarPlayer",
+        valueColumnName = "nextGuitarPlayerId"
+    )
+    private long id;
+
+    // getters, setters ...
+}
+
+----
+
+.Content of the IDENTIFIERS cache
+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+
+   | [type=TABLE, name=GuitarPlayerSequence, keyColumnName=sequence_name,
+     valueColumnName=nextGuitarPlayerId], columnNames=[sequence_name], columnValues=[guitarPlayer]
+^.^| 2
+|===
+====
+
+.SEQUENCE id generation strategy
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator")
+  @SequenceGenerator(
+      name = "songSequenceGenerator",
+      sequenceName = "song_sequence",
+      initialValue = 2,
+      allocationSize = 20
+  )
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | [type="TABLE", "name"="hibernate_sequences", keyColumnName="sequence_name", 
+      valueColumnName="next_val]", columnNames=[sequence_name], columnValues=[song_sequence_name]
+^.^| 11
+|===
+====
+
+===== Entities
+
+Entites are stored in the +ENTITIES+ cache.
+
+.Default JPA mapping for an entity
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+
+[cols="3*", options="header"]
+|===
+     ^| KEY                        2+^| MAP ENTRIES
+
+.2+^.^| "News", ["id"], ["1234-5678"] | id       | "1234-5678"
+                                      | title    | "On the merits of NoSQL" 
+|===
+====
+
+.Rename field and collection using @Table and @Column
+====
+[source, JAVA]
+----
+@Entity
+@Table(name = "Article")
+public class News {
+
+    @Id
+    private String id;
+
+    @Column(name = "headline")
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                               2+^| MAP ENTRIES
+
+.2+^.^| "Article", ["id"], ["1234-5678"]     | id       | "1234-5678"
+                                             | headline | "On the merits of NoSQL" 
+|===
+====
+
+====== Embedded objects and collections
+
+.Embedded object
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+    private String title;
+
+    @Embedded
+    private NewsPaper paper;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsPaper {
+
+    private String name;
+    private String owner;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                               2+^| MAP ENTRIES
+
+.4+^.^| "Article", ["id"], ["1234-5678"]     | id          | "1234-5678"
+                                             | title       | "On the merits of NoSQL" 
+                                             | paper.name  | "NoSQL journal of prophecies" 
+                                             | paper.owner | "Delphy" 
+|===
+====
+
+.@ElementCollection with one attibute
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                            2+^| MAP ENTRIES
+   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Leia"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Leia"
+
+.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Luke"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Luke"
+|===
+====
+
+.@ElementCollection with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    @OrderColumn( name = "birth_order" )
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                            2+^| MAP ENTRIES
+   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.3+^.^| ["GrandMother_id", "birth_order"], ["granny", 0]
+      | GrandMother_id
+      | "granny"
+
+      | birth_order
+      | 0
+
+      | name
+      | "Leia"
+
+.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.3+^.^| ["GrandMother_id", "birth_order"], ["granny", 1]
+      | GrandMother_id
+      | "granny"
+
+      | birth_order
+      | 1
+
+      | name
+      | "Luke"
+|===
+====
+
+===== Associations
+
+.Unidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+                                     | brand          | "Mercedes"
+
+.3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
+                                     | diameter       | 0.0
+                                     | vehicule_id    | "V_01"
+|===
+====
+
+[[ehcache-in-entity-one-to-one-join-column]]
+.Unidirectional one-to-one with @JoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @JoinColumn( name = "part_of" )
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+                                     | brand          | "Mercedes"
+
+.3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
+                                     | diameter       | 0.0
+                                     | part_of       | "V_01"
+|===
+====
+
+.Unidirectional one-to-one with @MapsId and @PrimaryKeyJoinColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Vehicule {
+
+    @Id
+    private String id;
+    private String brand;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wheel {
+
+    @Id
+    private String id;
+    private double diameter;
+
+    @OneToOne
+    @PrimaryKeyJoinColumn
+    @MapsId
+    private Vehicule vehicule;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                2+^| MAP ENTRIES
+
+.2+^.^| "Vehicule", ["id"], ["V_01"]          | id             | "V_01"
+                                              | brand          | "Mercedes"
+
+.2+^.^| "Wheel", ["vehicule_id"], ["V_01"]    | vehicule_id    | "V_01"
+                                              | diameter       | 0.0
+|===
+====
+
+.Bidirectional one-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class Husband {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Wife wife;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wife {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Husband husband;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.3+^.^| "Husband", ["id"], ["alex"]  | id             | "alex"
+                                     | name           | "Alex"
+                                     | wife           | "bea"
+
+.2+^.^| "Wife", ["id"], ["bea"]      | id             | "bea"
+                                     | name           | "Bea"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.2+^.^| "Husband", ["wife"], ["bea"]
+.2+^.^| ["id", "wife"], ["alex", "bea"]
+      | id
+      | "alex"
+
+      | wife
+      | "bea"
+|===
+====
+
+.Unidirectional one-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+                                            | owner            | "Davide"
+
+.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+                                            | description      | "Tactical Nuclear Penguin"
+
+.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+                                            | description      | "Glutino Pretzel Sticks"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.4+^.^| "Basket_Product", ["Basket_id"], ["davide_basket"]
+.2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
+      | Basket_id
+      | "davide_basket"
+
+      | products_name
+      | "Beer"
+
+.2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Pretzel"]
+      | Basket_id
+      | "davide_basket"
+
+      | products_name
+      | "Pretzel"
+
+
+|===
+====
+
+.Unidirectional one-to-many with +@JoinTable+
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    @JoinTable( name = "BasketContent" )
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+                                            | owner            | "Davide"
+
+.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+                                            | description      | "Tactical Nuclear Penguin"
+
+.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+                                            | description      | "Glutino Pretzel Sticks"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.4+^.^| "BasketContent", ["Basket_id"], ["davide_basket"]
+.2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
+      | Basket_id
+      | "davide_basket"
+
+      | products_name
+      | "Beer"
+
+.2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Pretzel"]
+      | Basket_id
+      | "davide_basket"
+
+      | products_name
+      | "Pretzel"
+|===
+====
+
+.Unidirectional one-to-many using maps with defaults
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+
+   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+
+.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+                                           | city | "Rome"
+
+.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+                                           | city | "Paris"
+|===
+
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.6+^.^| "User_address", ["User_id"], "user_001"]
+.3+^.^| ["User_id", "addresses_KEY"], ["user_001", "home"]
+      | User_id
+      | "user_001"
+
+      | addresses_KEY
+      | "home"
+
+      | addresses_id
+      | "address_001"
+
+
+.3+^.^| ["User_id", "addresses_KEY"], ["user_001", "work"]
+      | User_id
+      | "user_002"
+
+      | addresses_KEY
+      | "work"
+
+      | addresses_id
+      | "address_002"
+|===
+====
+
+.Unidirectional one-to-many using maps with @MapKeyColumn
+====
+[source, JAVA]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    @MapKeyColumn(name = "addressType")
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+
+   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+
+.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+                                           | city | "Rome"
+
+.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+                                           | city | "Paris"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.6+^.^| "User_address", ["User_id"], "user_001"]
+.3+^.^| ["User_id", "addressType"], ["user_001", "home"]
+      | User_id
+      | "user_001"
+
+      | addressesType
+      | "home"
+
+      | addresses_id
+      | "address_001"
+
+
+.3+^.^| ["User_id", "addressType"], ["user_001", "work"]
+      | User_id
+      | "user_002"
+
+      | addressesType
+      | "work"
+
+      | addresses_id
+      | "address_002"
+|===
+====
+
+.Unidirectional many-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class JavaUserGroup {
+
+    @Id
+    private String jugId;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Member {
+
+    @Id
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private JavaUserGroup memberOf;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+
+.2+^.^| "JavaUserGroup", ["jugId"], ["summer_camp"] | jugId           | "summer_camp"
+                                                    | name            | "JUG Summer Camp"
+
+.3+^.^| "Member", ["member_id"], ["emmanuel"]       | member_id       | "emmanuel"
+                                                    | name            | "Emmanuel Bernard"
+                                                    | memberOf_jug_id | "summer_camp"
+
+.3+^.^| "Member", ["member_id"], ["jerome"]         | member_id       | "jerome"
+                                                    | name            | "Jerome"
+                                                    | memberOf_jug_id | "summer_camp"
+|===
+====
+
+.Bidirectional many-to-one 
+====
+[source, JAVA]
+----
+@Entity
+public class SalesForce {
+
+    @Id
+    private String id;
+    private String corporation;
+
+    @OneToMany(mappedBy = "salesForce")
+    private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class SalesGuy {
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private SalesForce salesForce;
+
+    // getters, setters ...
+}
+----
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+
+.2+^.^| "SalesForce", ["id"], ["sales_force"]       | id              | "red_hat"
+                                                    | corporation     | "Red Hat"
+
+.3+^.^| "SalesGuy", ["id"], ["eric"]                | id              | "eric"
+                                                    | name            | "Eric"
+                                                    | salesForce_id   | "red_hat"
+
+.3+^.^| "SalesGuy", ["id"], ["simon"]               | id              | "simon"
+                                                    | name            | "Simon"
+                                                    | salesForce_id   | "red_hat"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.4+^.^| "SalesGuy", ["salesForce_id"], "red_hat"]
+.2+^.^| ["salesForce_id", "id"], ["red_hat", "eric"]
+      | salesForce_id
+      | "red_hat"
+
+      | id
+      | "eric"
+
+.2+^.^| ["salesForce_id", "id"], ["red_hat", "simon"]
+      | salesForce_id
+      | "red_hat"
+
+      | id
+      | "simon"
+|===
+====
+
+.Unidirectional many-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+The "Math" class has 2 students: John Doe and Mario Rossi
+
+The "English" class has 2 students: Kate Doe and Mario Rossi
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+
+.2+^.^| "ClassRoom", ["id"], [1]       | id         | 1 
+                                       | name       | "Math"
+
+.2+^.^| "ClassRoom", ["id"], [2]       | id         | 2 
+                                       | name       | "English"
+
+.2+^.^| "Student", ["id"], ["john"]    | id         | "john"
+                                       | name       | "John Doe"
+
+.2+^.^| "Student", ["id"], ["mario"]   | id         | "mario"
+                                       | name       | "Mario Rossi"
+
+.2+^.^| "Student", ["id"], ["kate"]    | id         | "kate"
+                                       | name       | "Kate Doe"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [1]
+.2+^.^| ["ClassRoom_id", "students_id"], [1, "mario"]
+      | ClassRoom_id
+      | 1 
+
+      | students_id
+      | "mario"
+
+.2+^.^| ["ClassRoom_id", "students_id"], [1, "john"]
+      | ClassRoom_id
+      | 1 
+
+      | students_id
+      | "john"
+
+.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [2]
+.2+^.^| ["ClassRoom_id", "students_id"], [2, "kate"]
+      | ClassRoom_id
+      | 2 
+
+      | students_id
+      | "kate"
+
+.2+^.^| ["ClassRoom_id", "students_id"], [2, "mario"]
+      | ClassRoom_id
+      | 2 
+
+      | students_id
+      | "mario"
+|===
+====
+
+.Bidirectional many-to-many 
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany( mappedBy = "bankAccounts" )
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+David owns 2 accounts: "012345" and "ZZZ-009"
+
+.Content of the ENTITIES cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                               2+^| MAP ENTRIES
+
+.2+^.^| "AccountOwner", ["id"], ["David"]    | id            | "David"
+                                             | SSN           | "0123456"
+
+.2+^.^| "BankAccount", ["id"], ["account_1"] | id            | "account_1"
+                                             | accountNumber | "X2345000"
+
+.2+^.^| "BankAccount", ["id"], ["account_2"] | id            | "account_2"
+                                             | accountNumber | "ZZZ-009"
+|===
+
+.Content of the ASSOCIATIONS cache
+[cols="4*", options="header"]
+|===
+     ^| KEY
+   3+^| MAP ENTRIES
+
+.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_1"]
+.2+^.^| ["bankAccounts_id", "owners_id"], ["account_1", "David"]
+      | bankAccounts_id
+      | "account_1"
+
+      | owners_id
+      | "David"
+
+.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["David"]
+.2+^.^| ["owners_id", "banksAccounts_id"], ["Davide", "account_1"]
+      | bankAccounts_id
+      | "account_1"
+
+      | owners_id
+      | "David"
+
+.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_2"]
+.2+^.^| ["bankAccounts_id", "owners_id"], ["account_2", "David"]
+      | bankAccounts_id
+      | "account_2"
+
+      | owners_id
+      | "David"
+
+.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["Davide"]
+.2+^.^| ["owners_id", "banksAccounts_id"], ["David", "account_2"]
+      | bankAccounts_id
+      | "account_2"
+
+      | owners_id
+      | "David"
+|===
+====
+
 [[ogm-ehcache-transactions]]
 
 ==== Transactions
