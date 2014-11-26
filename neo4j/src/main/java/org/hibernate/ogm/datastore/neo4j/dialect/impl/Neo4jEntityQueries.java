@@ -170,10 +170,10 @@ public class Neo4jEntityQueries extends QueriesBase {
 	}
 
 	/**
-	 * Find all the node representing the entity.
+	 * Find all the nodes representing an entity.
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @return
+	 * @return an iterator over all nodes representing an entity
 	 */
 	public ResourceIterator<Node> findEntities(ExecutionEngine executionEngine) {
 		ExecutionResult result = executionEngine.execute( findEntitiesQuery );

@@ -25,7 +25,7 @@ public interface IdentityColumnAwareGridDialect extends GridDialect {
 	 *
 	 * @param entityKeyMetadata Represents the entity type for which the tuple should be created
 	 * @param tupleContext Provides additional meta-data useful for tuple creation
-	 * @return
+	 * @return an empty tuple of the specified entity type
 	 */
 	Tuple createTuple(EntityKeyMetadata entityKeyMetadata, TupleContext tupleContext);
 
