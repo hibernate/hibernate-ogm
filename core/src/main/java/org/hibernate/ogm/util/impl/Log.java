@@ -17,8 +17,10 @@ import java.lang.annotation.ElementType;
 import javax.transaction.SystemException;
 
 import org.hibernate.HibernateException;
+import org.hibernate.LockMode;
 import org.hibernate.TransactionException;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
@@ -217,4 +219,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 68, value = "Could not configure property %1$s#%2$s")
 	HibernateException couldNotConfigureProperty(String entityName, String string, @Cause Exception e);
+
+	@Message(id = 69, value = "Grid dialect %1$s does not support lock mode %2$s")
+	HibernateException unsupportedLockMode(@FormatWith(ClassObjectFormatter.class) Class<? extends GridDialect> dialectClass, LockMode lockMode);
 }

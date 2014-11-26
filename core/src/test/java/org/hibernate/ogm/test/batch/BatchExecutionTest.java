@@ -7,10 +7,8 @@
 package org.hibernate.ogm.test.batch;
 
 import org.fest.assertions.Assertions;
-import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -30,7 +28,6 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.hibernate.persister.entity.Lockable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -102,11 +99,6 @@ public class BatchExecutionTest extends OgmTestCase {
 		@Override
 		public void executeBatch(OperationsQueue queue) {
 			batchExecuted = true;
-		}
-
-		@Override
-		public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-			return null;
 		}
 
 		@Override

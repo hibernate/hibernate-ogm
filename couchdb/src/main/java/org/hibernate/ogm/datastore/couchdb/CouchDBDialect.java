@@ -13,8 +13,6 @@ import java.util.Map;
 
 import javax.persistence.OptimisticLockException;
 
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
@@ -48,7 +46,6 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
 import org.hibernate.ogm.type.spi.GridType;
-import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -67,11 +64,6 @@ public class CouchDBDialect extends BaseGridDialect {
 
 	public CouchDBDialect(CouchDBDatastoreProvider provider) {
 		this.provider = provider;
-	}
-
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		return null;
 	}
 
 	@Override

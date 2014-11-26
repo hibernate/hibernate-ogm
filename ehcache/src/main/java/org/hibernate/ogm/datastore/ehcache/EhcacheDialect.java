@@ -71,7 +71,9 @@ public class EhcacheDialect extends BaseGridDialect {
 		else if ( lockMode == LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Ehcache GridDialect" );
+		else {
+			return null;
+		}
 	}
 
 	@Override
