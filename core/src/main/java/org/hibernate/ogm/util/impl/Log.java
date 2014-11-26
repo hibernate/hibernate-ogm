@@ -222,4 +222,8 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 69, value = "Grid dialect %1$s does not support lock mode %2$s")
 	HibernateException unsupportedLockMode(@FormatWith(ClassObjectFormatter.class) Class<? extends GridDialect> dialectClass, LockMode lockMode);
+
+	@LogMessage(level = WARN)
+	@Message(id = 70, value = "'%1$s' is no valid datastore provider short name. Valid values are: %2$s")
+	void noValidDatastoreProviderShortName(String providerName, String validProviderNames);
 }
