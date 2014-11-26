@@ -88,8 +88,9 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 		else if ( lockMode == LockMode.OPTIMISTIC_FORCE_INCREMENT ) {
 			return new OptimisticForceIncrementLockingStrategy( lockable, lockMode );
 		}
-		throw new UnsupportedOperationException( "LockMode " + lockMode
-				+ " is not supported by the Infinispan GridDialect" );
+		else {
+			return null;
+		}
 	}
 
 	@Override

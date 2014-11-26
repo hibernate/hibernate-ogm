@@ -39,8 +39,7 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 	private final LockMode lockMode;
 	private final Lockable lockable;
 
-	private final LocalCacheManager<EK, ?, ?> cacheManager;
-	private final KeyProvider<EK, ?, ?> keyProvider;
+	private final InfinispanDatastoreProvider provider;
 
 	public InfinispanPessimisticWriteLockingStrategy(Lockable lockable, LockMode lockMode) {
 		this.lockMode = lockMode;
@@ -48,15 +47,16 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 		TypeTranslator typeTranslator = lockable.getFactory().getServiceRegistry().getService( TypeTranslator.class );
 		this.identifierGridType = typeTranslator.getType( lockable.getIdentifierType() );
 
-		InfinispanDatastoreProvider provider = getProvider( lockable.getFactory() );
-		cacheManager = getCacheManager( provider );
-		keyProvider = getKeyProvider( provider );
+		provider = getProvider( lockable.getFactory() );
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void lock(Serializable id, Object version, Object object, int timeout, SessionImplementor session)
 			throws StaleObjectStateException, JDBCException {
+		LocalCacheManager<EK, ?, ?> cacheManager = getCacheManager();
+		KeyProvider<EK, ?, ?> keyProvider = getKeyProvider();
+
 		AdvancedCache<EK, ?> advCache = cacheManager.getEntityCache( ( (OgmEntityPersister) lockable).getRootEntityKeyMetadata() ).getAdvancedCache();
 		EntityKey key = EntityKeyBuilder.fromData(
 				( (OgmEntityPersister) lockable).getRootEntityKeyMetadata(),
@@ -79,12 +79,12 @@ public class InfinispanPessimisticWriteLockingStrategy<EK> implements LockingStr
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <EK> LocalCacheManager<EK, ?, ?> getCacheManager(InfinispanDatastoreProvider provider) {
+	private LocalCacheManager<EK, ?, ?> getCacheManager() {
 		return (LocalCacheManager<EK, ?, ?>) provider.getCacheManager();
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <EK> KeyProvider<EK, ?, ?> getKeyProvider(InfinispanDatastoreProvider provider) {
+	private KeyProvider<EK, ?, ?> getKeyProvider() {
 		return (KeyProvider<EK, ?, ?>) provider.getKeyProvider();
 	}
 }

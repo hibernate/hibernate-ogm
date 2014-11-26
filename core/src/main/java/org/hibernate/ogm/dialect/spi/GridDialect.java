@@ -32,6 +32,14 @@ import org.hibernate.type.Type;
  */
 public interface GridDialect extends Service {
 
+	/**
+	 * Returns a {@link LockingStrategy} for locking the given lockable, using the given lock mode.
+	 *
+	 * @param lockable Static meta-data describing a lockable type
+	 * @param lockMode A lock mode
+	 * @return A locking strategy for the given lockable and lock mode or {@code null} if this dialect does not support
+	 * the specified lock mode
+	 */
 	LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode);
 
 	/**

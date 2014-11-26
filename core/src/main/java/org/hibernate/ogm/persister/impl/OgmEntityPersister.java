@@ -44,6 +44,7 @@ import org.hibernate.mapping.PersistentClass;
 import org.hibernate.mapping.Table;
 import org.hibernate.ogm.dialect.identity.spi.IdentityColumnAwareGridDialect;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
+import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
 import org.hibernate.ogm.dialect.impl.TupleContextImpl;
 import org.hibernate.ogm.dialect.optimisticlock.spi.OptimisticLockingAwareGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -285,6 +286,8 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 		propertyMightRequireInverseAssociationManagement = getPropertyMightRequireInverseAssociationManagement();
 		mightRequireInverseAssociationManagement = initMayManageInverseAssociations();
 		usesNonAtomicOptimisticLocking = initUsesNonAtomicOptimisticLocking();
+
+		initLockers();
 	}
 
 	// Required to avoid null pointer errors when super.postInstantiate() is called
@@ -938,9 +941,9 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 
 	@Override
 	protected LockingStrategy generateLocker(LockMode lockMode) {
-		return gridDialect.getLockingStrategy( this, lockMode );
+		LockingStrategy lockingStrategy = gridDialect.getLockingStrategy( this, lockMode );
+		return lockingStrategy != null ? lockingStrategy : new ExceptionThrowingLockingStrategy( gridDialect, lockMode );
 	}
-
 
 	/**
 	 * Update an object

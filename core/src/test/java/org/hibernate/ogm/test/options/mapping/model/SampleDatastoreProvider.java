@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.test.options.mapping.model;
 
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
@@ -22,7 +20,6 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.persister.entity.Lockable;
 
 /**
  * @author Gunnar Morling
@@ -37,11 +34,6 @@ public class SampleDatastoreProvider extends BaseDatastoreProvider {
 	public static class SampleDialect extends BaseGridDialect {
 
 		public SampleDialect(SampleDatastoreProvider provider) {
-		}
-
-		@Override
-		public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-			return null;
 		}
 
 		@Override

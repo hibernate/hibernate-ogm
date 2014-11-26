@@ -6,8 +6,12 @@
  */
 package org.hibernate.ogm.dialect.spi;
 
+import org.hibernate.LockMode;
+import org.hibernate.dialect.lock.LockingStrategy;
+import org.hibernate.ogm.dialect.impl.ExceptionThrowingLockingStrategy;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.Type;
 
 /**
@@ -16,6 +20,15 @@ import org.hibernate.type.Type;
  * @author Gunnar Morling
  */
 public abstract class BaseGridDialect implements GridDialect {
+
+	/**
+	 * Returns a no-op locking strategy for all lock modes which will raise an exception upon lock retrieval. Dialects
+	 * may override this method to provide support for those lock modes they can handle.
+	 */
+	@Override
+	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
+		return new ExceptionThrowingLockingStrategy( this, lockMode );
+	}
 
 	@Override
 	public GridType overrideType(Type type) {

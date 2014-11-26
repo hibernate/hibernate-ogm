@@ -18,9 +18,7 @@ import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
-import org.hibernate.LockMode;
 import org.hibernate.annotations.common.AssertionFailure;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
@@ -79,7 +77,6 @@ import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
-import org.hibernate.persister.entity.Lockable;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -139,11 +136,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public MongoDBDialect(MongoDBDatastoreProvider provider) {
 		this.provider = provider;
 		this.currentDB = this.provider.getDatabase();
-	}
-
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		throw new UnsupportedOperationException( "The MongoDB GridDialect does not support locking" );
 	}
 
 	@Override
