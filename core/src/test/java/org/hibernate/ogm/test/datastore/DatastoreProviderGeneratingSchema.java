@@ -8,9 +8,7 @@ package org.hibernate.ogm.test.datastore;
 
 import java.util.Iterator;
 
-import org.hibernate.LockMode;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.mapping.Column;
 import org.hibernate.mapping.Table;
@@ -30,7 +28,6 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
-import org.hibernate.persister.entity.Lockable;
 
 /**
  * Example of datastore provider using metadata to generate some hypothetical
@@ -77,11 +74,6 @@ public class DatastoreProviderGeneratingSchema extends BaseDatastoreProvider {
 
 		public Dialect(DatastoreProviderGeneratingSchema provider) {
 
-		}
-
-		@Override
-		public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-			return null;
 		}
 
 		@Override

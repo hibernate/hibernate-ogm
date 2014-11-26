@@ -20,8 +20,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.hibernate.AssertionFailure;
-import org.hibernate.LockMode;
-import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.engine.spi.QueryParameters;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.spi.TypedValue;
@@ -68,7 +66,6 @@ import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
-import org.hibernate.persister.entity.Lockable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.type.Type;
@@ -161,11 +158,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			}
 		}
 		return queryMap;
-	}
-
-	@Override
-	public LockingStrategy getLockingStrategy(Lockable lockable, LockMode lockMode) {
-		throw new UnsupportedOperationException( "LockMode " + lockMode + " is not supported by the Neo4j GridDialect" );
 	}
 
 	@Override
