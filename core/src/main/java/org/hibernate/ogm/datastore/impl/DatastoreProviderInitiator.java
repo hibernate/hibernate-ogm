@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.impl;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
@@ -58,7 +59,17 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 
 		@Override
 		public boolean isShortName(String name) {
-			return AvailableDatastoreProvider.isShortName( name );
+			boolean isShortName = AvailableDatastoreProvider.isShortName( name );
+
+			if ( !isShortName ) {
+				// There is the legitimate case of the provider FQN name given; As we encourage the usage of the short
+				// names though, chances are much higher that a misspelled short name has been given; Let's thus raise a
+				// warning, accepting it to be superfluous in the FQN case
+				String validProviderNames = Arrays.toString( AvailableDatastoreProvider.values() );
+				log.noValidDatastoreProviderShortName( name, validProviderNames.substring( 1, validProviderNames.length() - 1 ) );
+			}
+
+			return isShortName;
 		}
 
 		@Override
