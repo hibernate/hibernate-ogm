@@ -30,6 +30,10 @@ import javax.persistence.TemporalType;
 @Entity
 public class Bookmark {
 
+	public enum Classifier {
+		HOME, WORK
+	}
+
 	private String id;
 	private Long userId;
 	private Calendar destructionCalendar;
@@ -48,6 +52,8 @@ public class Bookmark {
 	private Calendar creationCalendar;
 	private Boolean favourite;
 	private Double taxPercentage;
+	private Classifier classifier;
+	private Classifier classifierAsOrdinal;
 
 	@Id
 	public String getId() {
@@ -56,6 +62,24 @@ public class Bookmark {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	@Enumerated(EnumType.STRING)
+	public Classifier getClassifier() {
+		return classifier;
+	}
+
+	public void setClassifier(Classifier classifier) {
+		this.classifier = classifier;
+	}
+
+	@Enumerated(EnumType.ORDINAL)
+	public Classifier getClassifierAsOrdinal() {
+		return classifierAsOrdinal;
+	}
+
+	public void setClassifierAsOrdinal(Classifier classifierAsOrdinal) {
+		this.classifierAsOrdinal = classifierAsOrdinal;
 	}
 
 	public String getDescription() {
