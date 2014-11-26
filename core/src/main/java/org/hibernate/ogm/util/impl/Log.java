@@ -23,6 +23,7 @@ import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.FormatWith;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -50,13 +51,13 @@ public interface Log extends BasicLogger {
 	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
 
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
-	HibernateException cannotInstantiateGridDialect(Class<?> dialectClass, @Cause Exception e);
+	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 
 	@Message(id = 14, value = "%1$s has no constructor accepting DatasourceProvider")
-	HibernateException gridDialectHasNoProperConstructor(Class<?> dialectClass);
+	HibernateException gridDialectHasNoProperConstructor(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
 
 	@Message(id = 15, value = "Expected DatastoreProvider %2$s but found %1$s")
-	HibernateException unexpectedDatastoreProvider(Class<?> found, Class<?> expected);
+	HibernateException unexpectedDatastoreProvider(@FormatWith(ClassObjectFormatter.class) Class<?> found, @FormatWith(ClassObjectFormatter.class) Class<?> expected);
 
 	@LogMessage(level = INFO)
 	@Message(id = 16, value = "NoSQL Datastore provider: %1$s")
@@ -106,7 +107,7 @@ public interface Log extends BasicLogger {
 	void unsupportedIndexerConfigurationOption(String optionName);
 
 	@Message(id = 32, value = "Unable to support mapping subtypes that are not interfaces: %1$s")
-	HibernateException mappingSubtypeNotInterface(Class<?> mappingType);
+	HibernateException mappingSubtypeNotInterface(@FormatWith(ClassObjectFormatter.class) Class<?> mappingType);
 
 	@Message(id = 33, value = "Unable to create new proxy instance")
 	HibernateException cannotCreateNewProxyInstance(@Cause Exception e);
@@ -115,16 +116,16 @@ public interface Log extends BasicLogger {
 	HibernateException cannotConvertAnnotation(Class<? extends AnnotationConverter<?>> converterClass, @Cause Exception e);
 
 	@Message(id = 36, value = "Unable to load %1$s method from %2$s ")
-	HibernateException unableToLoadContext(String methodName, Class<?> contextClass, @Cause Exception e);
+	HibernateException unableToLoadContext(String methodName, @FormatWith(ClassObjectFormatter.class) Class<?> contextClass, @Cause Exception e);
 
 	@Message(id = 37, value = "Unable to create global context proxy for type %1$s")
-	HibernateException cannotCreateGlobalContextProxy(Class<?> contextClass, @Cause Exception e);
+	HibernateException cannotCreateGlobalContextProxy(@FormatWith(ClassObjectFormatter.class) Class<?> contextClass, @Cause Exception e);
 
 	@Message(id = 38, value = "Unable to create entity context proxy for type %1$s")
-	HibernateException cannotCreateEntityContextProxy(Class<?> contextClass, @Cause Exception e);
+	HibernateException cannotCreateEntityContextProxy(@FormatWith(ClassObjectFormatter.class) Class<?> contextClass, @Cause Exception e);
 
 	@Message(id = 39, value = "Unable to create property context proxy for type %1$s")
-	HibernateException cannotCreatePropertyContextProxy(Class<?> contextClass, @Cause Exception e);
+	HibernateException cannotCreatePropertyContextProxy(@FormatWith(ClassObjectFormatter.class) Class<?> contextClass, @Cause Exception e);
 
 	@Message(id = 41, value = "The given propery %1$s#%2$s with element type %3$s does not exist.")
 	HibernateException getPropertyDoesNotExistException(String typeName, String property, ElementType elementType);
