@@ -19,7 +19,7 @@ public enum AvailableDatastoreProvider {
 	EHCACHE( "org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider" ),
 	MONGODB( "org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider" ),
 	NEO4J_EMBEDDED( "org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider" ),
-	COUCHDB( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" );
+	COUCHDB_EXPERIMENTAL( "org.hibernate.ogm.datastore.couchdb.impl.CouchDBDatastoreProvider" );
 
 	private String datastoreProviderClassName;
 
