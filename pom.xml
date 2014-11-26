@@ -138,7 +138,7 @@
         <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossLoggingVersion>3.1.4.GA</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>1.0.3.Final</jbossLoggingProcessorVersion>
+        <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
         <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.9.Final</resteasyVersion>

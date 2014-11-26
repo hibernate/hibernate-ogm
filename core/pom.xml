@@ -80,6 +80,12 @@
             <groupId>com.fasterxml</groupId>
             <artifactId>classmate</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-annotations</artifactId>
+            <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
+            <scope>provided</scope>
+        </dependency>
 
         <!-- test dependencies -->
         <dependency>

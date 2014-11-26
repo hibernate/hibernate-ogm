@@ -159,6 +159,11 @@
                 <artifactId>jboss-logging</artifactId>
                 <version>${jbossLoggingVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-annotations</artifactId>
+                <version>${jbossLoggingProcessorVersion}</version>
+            </dependency>
 
             <!-- slf4j is not used by OGM itself; Still setting the version to make sure different versions pulled in
                  transitively converge -->
