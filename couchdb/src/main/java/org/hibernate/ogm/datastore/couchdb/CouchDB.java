@@ -27,7 +27,7 @@ public class CouchDB implements DatastoreConfiguration<CouchDBGlobalContext> {
 	 *
 	 * @see OgmProperties#DATASTORE_PROVIDER
 	 */
-	public static final String DATASTORE_PROVIDER_NAME = "COUCHDB";
+	public static final String DATASTORE_PROVIDER_NAME = "COUCHDB_EXPERIMENTAL";
 
 	@Override
 	public CouchDBGlobalContext getConfigurationBuilder(ConfigurationContext context) {

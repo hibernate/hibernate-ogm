@@ -1,6 +1,6 @@
 [[ogm-couchdb]]
 
-=== CouchDB
+=== CouchDB (Experimental)
 
 https://couchdb.apache.org/[CouchDB] is a document-oriented datastore
 which stores your data in form of JSON documents and exposes its API via HTTP based on REST principles.
@@ -10,6 +10,16 @@ It is thus very easy to access from a wide range of languages and applications.
 ====
 Support for CouchDB is considered an EXPERIMENTAL feature as of this release.
 In particular you should be prepared for possible changes to the persistent representation of mapped objects in future releases.
+
+Also be aware of the fact that partial updates are unsupported at the moment
+(https://hibernate.atlassian.net/browse/OGM-388[OGM-388]).
+Instead always the entire document will be replaced during updates.
+This means that fields possibly written by other applications but not mapped to properties in your domain model will get lost.
+
+The +ASSOCIATION_DOCUMENT+ mode for storing associations should be used with care
+as there is potential for lost updates (https://hibernate.atlassian.net/browse/OGM-461[OGM-461]).
+It is recommended to use the +IN_ENTITY+ mode (which is the default).
+
 Should you find any bugs or have feature requests for this dialect,
 then please open a ticket in the https://hibernate.atlassian.net/browse/OGM[OGM issue tracker].
 ====
@@ -23,7 +33,7 @@ The following properties are available to configure CouchDB support in Hibernate
 
 .CouchDB datastore configuration properties
 hibernate.ogm.datastore.provider::
-To use CouchDB as a datastore provider, this property must be set to +couchdb+
+To use CouchDB as a datastore provider, this property must be set to +couchdb_experimental+
 hibernate.ogm.option.configurator::
 The fully-qualified class name or an instance of a programmatic option configurator (see <<ogm-couchdb-programmatic-configuration>>)
 hibernate.ogm.datastore.host::
