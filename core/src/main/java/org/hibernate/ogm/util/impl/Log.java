@@ -31,7 +31,21 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
+ * Log messages and exceptions used by Hibernate OGM core. Dialects may provide extensions of this interface with their
+ * own specific log messages.
+ * <p>
+ * The following intervals for the message ids are to be used:
+ * <ul>
+ * <li>1-1000: core</li>
+ * <li>1101-1200: infinispan</li>
+ * <li>1201-1300: mongob</li>
+ * <li>1301-1400: couchdb</li>
+ * <li>1401-1500: neo4j</li>
+ * <li>1501-1600: ehcache</li>
+ * </ul>
+ *
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt; (C) 2011 Red Hat Inc.
+ * @author Gunnar Morling
  */
 @MessageLogger(projectCode = "OGM")
 public interface Log extends BasicLogger {
