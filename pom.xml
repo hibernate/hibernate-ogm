@@ -733,6 +733,8 @@
         <profile>
             <id>doc</id>
             <activation>
+                <!-- asciidoctor won't work on JDK9  -->
+                <jdk>[1.7, 1.9)</jdk>
                 <property>
                     <name>skipDocs</name>
                     <value>!true</value>
