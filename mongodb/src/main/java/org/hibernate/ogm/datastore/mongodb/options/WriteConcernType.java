@@ -67,7 +67,9 @@ public enum WriteConcernType {
 	}
 
 	/**
-	 * Returns the {@link WriteConcern} associated with this enum value; {@code null} in the case of {@link #CUSTOM}.
+	 * Get the write concern
+	 *
+	 * @return the {@link WriteConcern} associated with this enum value; {@code null} in the case of {@link #CUSTOM}.
 	 */
 	public WriteConcern getWriteConcern() {
 		return writeConcern;

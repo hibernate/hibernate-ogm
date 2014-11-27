@@ -19,22 +19,32 @@ import org.hibernate.ogm.model.key.spi.RowKey;
 public interface AssociationSnapshot {
 
 	/**
-	 * Returns the row with the specified key from this association, if present.
+	 * Get the row associated to the {@link RowKey}.
+	 *
+	 * @param rowKey the identifier of the row in the association
+	 * @return the row with the specified key from this association, if present. {@code null} otherwise.
 	 */
 	Tuple get(RowKey rowKey);
 
 	/**
 	 * Whether this snapshot contains the specified key or not.
+	 *
+	 * @param rowKey the identifier of the row in the association
+	 * @return {@code true} if the snapshot contains the row identified by the {@link RowKey}. {@code false} otherwise
 	 */
 	boolean containsKey(RowKey rowKey);
 
 	/**
 	 * Returns the number of rows contained in this snapshot.
+	 *
+	 * @return the number of rows in the association snapshot
 	 */
 	int size();
 
 	/**
 	 * Returns an iterable with the rows contained in this snapshot.
+	 *
+	 * @return an {@link Iterable} over the rows in the association
 	 */
 	Iterable<RowKey> getRowKeys();
 }

@@ -29,6 +29,8 @@ public interface OptionsContainer {
 	 *
 	 * @param optionType the type of option to return the value of
 	 * @param identifier the identifier of the option to return the value of
+	 * @param <I> the option identifier type
+	 * @param <V> the option identifier value
 	 * @return the value of the specified option or {@code null} if no value is present
 	 */
 	<I, V> V get(Class<? extends Option<I, V>> optionType, I identifier);
@@ -37,6 +39,7 @@ public interface OptionsContainer {
 	 * Returns the value of the unique option of the given type, if present in this container.
 	 *
 	 * @param optionType the type of option to return
+	 * @param <V> the option identifier value
 	 * @return the unique option with the given type or {@code null} if this option is not present in this container
 	 */
 	<V> V getUnique(Class<? extends UniqueOption<V>> optionType);
@@ -46,6 +49,9 @@ public interface OptionsContainer {
 	 * be obtained via {@link #getUnique(Class)}.
 	 *
 	 * @param optionType the type of option to return
+	 * @param <I> the option identifier type
+	 * @param <V> the option identifier value
+	 * @param <T> the type of the option
 	 * @return a map with all values of the specified option, keyed by identifier. May be empty but never {@code null}
 	 */
 	<I, V, T extends Option<I, V>> Map<I, V> getAll(Class<T> optionType);

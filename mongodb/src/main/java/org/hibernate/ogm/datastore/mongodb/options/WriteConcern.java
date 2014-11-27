@@ -41,12 +41,16 @@ public @interface WriteConcern {
 	 * Use {@link WriteConcernType#CUSTOM} in conjunction with {@link #type()} to specify a custom {@link WriteConcern}
 	 * implementation. This is useful in cases where the pre-defined configurations are not sufficient, e.g. if you want
 	 * to ensure that writes are propagated to a specific number of replicas or given "tag set".
+	 *
+	 * @return the corresponding {@link WriteConcernType}
 	 */
 	WriteConcernType value();
 
 	/**
 	 * Specifies a custom {@link com.mongodb.WriteConcern} implementation. Only takes effect if {@link #value()} is set
 	 * to {@link WriteConcernType#CUSTOM}. The specified type must have a default (no-args) constructor.
+	 *
+	 * @return the {@link com.mongodb.WriteConcern} to use when {@link WriteConcernType#CUSTOM} is set
 	 */
 	Class<? extends com.mongodb.WriteConcern> type() default com.mongodb.WriteConcern.class;
 }

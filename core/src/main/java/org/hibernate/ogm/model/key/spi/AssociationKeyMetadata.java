@@ -22,6 +22,8 @@ public interface AssociationKeyMetadata {
 
 	/**
 	 * The columns identifying an element of the association
+	 *
+	 * @return the column names identifying an element of the association
 	 */
 	String[] getRowKeyColumnNames();
 
@@ -30,6 +32,8 @@ public interface AssociationKeyMetadata {
 	 * <p>
 	 * For example, the key columns of a map-type property or the column with the order if the property is annotated with
 	 * {@link javax.persistence.OrderColumn}
+	 *
+	 * @return the columns names representing the index of the element of the association
 	 */
 	String[] getRowKeyIndexColumnNames();
 
@@ -45,6 +49,9 @@ public interface AssociationKeyMetadata {
 	 * <p>
 	 * Stores can opt to persist only the returned columns when writing a row of this key family. All other columns can
 	 * be retrieved from the key meta-data itself when reading an association row.
+	 *
+	 * @param candidates the column to check
+	 * @return all the columns that are not part of this key family
 	 */
 	String[] getColumnsWithoutKeyColumns(Iterable<String> candidates);
 
@@ -65,6 +72,7 @@ public interface AssociationKeyMetadata {
 	/**
 	 * Whether the given column is part of this key family or not.
 	 *
+	 * @param columnName the name of the column to check
 	 * @return {@code true} if the given column is part of this key, {@code false} otherwise.
 	 */
 	boolean isKeyColumn(String columnName);
@@ -78,14 +86,23 @@ public interface AssociationKeyMetadata {
 	boolean isInverse();
 
 	/**
-	 * Returns the association role.
+	 * Get the association role.
+	 *
+	 * @return the association role
 	 */
 	String getCollectionRole();
 
 	/**
-	 * Returns the type of association
+	 * Get the type of association
+	 *
+	 * @return the association kind
 	 */
 	AssociationKind getAssociationKind();
 
+	/**
+	 * Check if the key identify a one-to-one association
+	 *
+	 * @return {@code true} if the association is one-to-one, {@code false} otherwise
+	 */
 	boolean isOneToOne();
 }

@@ -20,6 +20,8 @@ public interface Configurable {
 	 * Applies configuration options to the bootstrapped session factory.
 	 *
 	 * @param datastoreType represents the datastore to be configured
+	 * @param <D> the datastore configuration type
+	 * @param <G> the global context type
 	 * @return a context object representing the entry point into the fluent configuration API
 	 */
 	<D extends DatastoreConfiguration<G>, G extends GlobalContext<?, ?>> G configureOptionsFor(Class<D> datastoreType);

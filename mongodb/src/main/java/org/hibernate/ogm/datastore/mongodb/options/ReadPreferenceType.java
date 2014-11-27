@@ -47,7 +47,9 @@ public enum ReadPreferenceType {
 	}
 
 	/**
-	 * Returns the {@link ReadPreference} associated with this enum value.
+	 * Get the read preference.
+	 *
+	 * @return the {@link ReadPreference} associated with this enum value.
 	 */
 	public ReadPreference getReadPreference() {
 		return readPreference;

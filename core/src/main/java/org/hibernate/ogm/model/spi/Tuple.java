@@ -83,6 +83,8 @@ public class Tuple {
 	/**
 	 * Return the list of actions on the tuple.
 	 * Inherently deduplicated operations
+	 *
+	 * @return the operations to execute on the Tuple
 	 */
 	public Set<TupleOperation> getOperations() {
 		if ( currentState == null ) {

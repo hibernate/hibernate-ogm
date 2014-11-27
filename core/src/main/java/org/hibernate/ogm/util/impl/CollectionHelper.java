@@ -30,6 +30,7 @@ public class CollectionHelper {
 	 * Returns an unmodifiable set containing the given elements.
 	 *
 	 * @param ts the elements from which to create a set
+	 * @param <T> the type of the element in the set
 	 * @return an unmodifiable set containing the given elements or {@code null} in case the given element array is
 	 * {@code null}.
 	 */

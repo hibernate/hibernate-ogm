@@ -35,6 +35,8 @@ public @interface ReadPreference {
 	/**
 	 * Specifies the read concern setting to be applied when performing read operations for the annotated entity or
 	 * property.
+	 *
+	 * @return the {@link ReadPreferenceType}
 	 */
 	ReadPreferenceType value();
 }

@@ -134,11 +134,14 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 
 	/**
 	 * Groups the given entity types by the caches they are stored in.
+	 *
+	 * @param entityKeyMetadatas the meta-data of the entities
+	 * @return the {@link Bucket}s containg the entities corressponding to the entity key meta-datas
 	 */
 	public abstract Set<Bucket<EK>> getWorkBucketsFor(EntityKeyMetadata... entityKeyMetadatas);
 
 	/**
-	 * Describe all the entity key metadata that work on a given cache
+	 * Describe all the entity key meta-data that work on a given cache
 	 */
 	public static class Bucket<EK> {
 

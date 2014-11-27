@@ -25,6 +25,14 @@ public class ArrayHelper {
 		return (String[][]) coll.toArray( new String[ coll.size() ][] );
 	}
 
+	/**
+	 * Create a smaller array from an existing one.
+	 *
+	 * @param strings an array containing element of type {@link String}
+	 * @param begin the starting position of the sub-array
+	 * @param length the number of element to consider
+	 * @return a new array continaining only the selected elements
+	 */
 	public static String[] slice(String[] strings, int begin, int length) {
 		String[] result = new String[length];
 		System.arraycopy( strings, begin, result, 0, length );
@@ -36,6 +44,7 @@ public class ArrayHelper {
 	 *
 	 * @param array the array where it looks for an element
 	 * @param element the element to find in the array
+	 * @param <T> the type of elements in the array
 	 * @return the position of the element if it's found in the array, -1 otherwise
 	 */
 	public static <T> int indexOf(T[] array, T element) {
@@ -47,10 +56,25 @@ public class ArrayHelper {
 		return -1;
 	}
 
+	/**
+	 * Check if an array contains an element.
+	 *
+	 * @param array the array with all the elements
+	 * @param element the element to find in the array
+	 * @return {@code true} if the array contains the element
+	 */
 	public static boolean contains(Object[] array, Object element) {
 		return indexOf( array, element ) != -1;
 	}
 
+	/**
+	 * Concats two arrays.
+	 *
+	 * @param first the first array
+	 * @param second the second array
+	 * @param <T> the type of the element in the array
+	 * @return a new array created adding the element in the second array after the first one,
+	 */
 	public static <T> T[] concat(T[] first, T[] second) {
 		int firstLength = first.length;
 		int secondLength = second.length;

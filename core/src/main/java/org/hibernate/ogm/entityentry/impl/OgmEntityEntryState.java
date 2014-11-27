@@ -25,6 +25,8 @@ public class OgmEntityEntryState implements EntityEntryExtraState {
 	/**
 	 * The {@link Tuple} representing the given entity, as loaded from the datastore. May be {@code null} in case the
 	 * loading code failed to set it.
+	 *
+	 * @return the tuple representing the given entity
 	 */
 	public Tuple getTuple() {
 		return tuple;

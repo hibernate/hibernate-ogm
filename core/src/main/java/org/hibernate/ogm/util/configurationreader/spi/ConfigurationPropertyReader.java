@@ -65,6 +65,7 @@ public class ConfigurationPropertyReader {
 	 *
 	 * @param propertyName the name of the property to retrieve
 	 * @param targetType the target type of the property
+	 * @param <T> the type of the property
 	 * @return a context for retrieving the specified property
 	 */
 	public <T> PropertyReaderContext<T> property(String propertyName, Class<T> targetType) {

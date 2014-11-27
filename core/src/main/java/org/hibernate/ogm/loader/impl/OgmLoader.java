@@ -72,6 +72,8 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	/**
 	 * Load a collection
+	 *
+	 * @param collectionPersisters the collection persisters
 	 */
 	public OgmLoader(OgmCollectionPersister[] collectionPersisters) {
 		if ( collectionPersisters == null || collectionPersisters.length == 0 ) {
@@ -92,7 +94,9 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	/**
-	 * Load an entity
+	 * Load an entity.
+	 *
+	 * @param entityPersisters the {@link OgmEntityPersister}s
 	 */
 	public OgmLoader(OgmEntityPersister[] entityPersisters) {
 		if ( entityPersisters == null || entityPersisters.length == 0 ) {
@@ -109,7 +113,11 @@ public class OgmLoader implements UniqueEntityLoader {
 		this.collectionAliases = new CollectionAliases[0];
 	}
 
-	/** returns the collection column names */
+	/**
+	 * Get the columns names representing the collection
+	 *
+	 * @return the collection column names
+	 */
 	public CollectionAliases[] getCollectionAliases() {
 		return collectionAliases;
 	}
@@ -185,8 +193,12 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	/**
-	 * Load a list of entities from a list of tuples
-	 * TODO it sucks that we have to expose Tuple to a public API of OgmLoader
+	 * Load a list of entities using the information in the context
+	 *
+	 * @param session The session
+	 * @param lockOptions The locking details
+	 * @param ogmContext The context with the information to load the entities
+	 * @return the list of entities corresponding to the given context
 	 */
 	public List<Object> loadEntities(SessionImplementor session, LockOptions lockOptions, OgmLoadingContext ogmContext) {
 		return loadEntity( null, null, session, lockOptions, ogmContext );
@@ -194,6 +206,11 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	/**
 	 * Called by subclasses that initialize collections
+	 *
+	 * @param session the session
+	 * @param id  the collection identifier
+	 * @param type collection type
+	 * @throws HibernateException if an error occurs
 	 */
 	public final void loadCollection(
 		final SessionImplementor session,
@@ -226,6 +243,12 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	/**
 	 * Load the entity activating the persistence context execution boundaries
+	 *
+	 * @param session the session
+	 * @param qp the query parameters
+	 * @param ogmLoadingContext the loading context
+	 * @param returnProxies when {@code true}, get an existing proxy for each collection element (if there is one)
+	 * @return the result of the query
 	 */
 	private List<Object> doQueryAndInitializeNonLazyCollections(
 			SessionImplementor session,
@@ -264,6 +287,12 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	/**
 	 * Execute the physical query and initialize the various entities and collections
+	 *
+	 * @param session the session
+	 * @param qp the query parameters
+	 * @param ogmLoadingContext the loading context
+	 * @param returnProxies when {@code true}, get an existing proxy for each collection element (if there is one)
+	 * @return the result of the query
 	 */
 	private List<Object> doQuery(
 			SessionImplementor session,
@@ -335,6 +364,10 @@ public class OgmLoader implements UniqueEntityLoader {
 	 * If this is a collection initializer, we need to tell the session that a collection
 	 * is being initialized, to account for the possibility of the collection having
 	 * no elements (hence no rows in the result set).
+	 *
+	 * @param keys the collection keys
+	 * @param resultSetId the result set
+	 * @param session the session
 	 */
 	private void handleEmptyCollections(
 		final Serializable[] keys,
@@ -546,6 +579,15 @@ public class OgmLoader implements UniqueEntityLoader {
 
 	/**
 	 * Read one collection element from the current row of the JDBC result set
+	 *
+	 * @param optionalOwner the collection owner
+	 * @param optionalKey the collection key
+	 * @param persister the collection persister
+	 * @param descriptor the collection aliases
+	 * @param rs the result set
+	 * @param session the session
+	 * @throws HibernateException if an error occurs
+	 * @throws SQLException if an error occurs during the query execution
 	 */
 	private void readCollectionElement(
 		final Object optionalOwner,
@@ -623,7 +665,13 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	/**
-	 * copied from Loader#initializeEntitiesAndCollections
+	 * Copied from {@link org.hibernate.loader.Loader#initializeEntitiesAndCollections}
+	 *
+	 * @param hydratedObjects hydrated objects
+	 * @param resultSetId the result set
+	 * @param session the session
+	 * @param readOnly if the entities load are read only
+	 * @throws HibernateException if an error occurs
 	 */
 	private void initializeEntitiesAndCollections(
 			final List hydratedObjects,
@@ -680,7 +728,11 @@ public class OgmLoader implements UniqueEntityLoader {
 	}
 
 	/**
-	 * copied from Loader#endCollectionLoad
+	 * Copied from {@link org.hibernate.loader.Loader#endCollectionLoad}
+	 *
+	 * @param resultSetId the collection result set
+	 * @param session the session
+	 * @param collectionPersister the collection persister
 	 */
 	private void endCollectionLoad(
 			final ResultSet resultSetId,

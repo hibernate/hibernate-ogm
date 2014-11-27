@@ -51,6 +51,7 @@ public interface OptionsService extends Service {
 		 * via annotations or configuration options, falling back to the global configuration level if a specific option
 		 * is not specifically set for the given entity
 		 *
+		 * @param entityType the type of the entity
 		 * @return a context with the options effectively applying for the given entity
 		 */
 		OptionsContext getEntityOptions(Class<?> entityType);
@@ -60,6 +61,8 @@ public interface OptionsService extends Service {
 		 * via annotations or configuration options, falling back to the entity and global configuration levels if a
 		 * specific option is not specifically set for the given property
 		 *
+		 * @param entityType the type of the entity
+		 * @param propertyName the property name
 		 * @return a context with the options effectively applying for the given property
 		 */
 		OptionsContext getPropertyOptions(Class<?> entityType, String propertyName);

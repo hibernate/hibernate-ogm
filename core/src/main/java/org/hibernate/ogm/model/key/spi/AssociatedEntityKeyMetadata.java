@@ -18,7 +18,9 @@ import org.hibernate.ogm.model.spi.Tuple;
 public interface AssociatedEntityKeyMetadata {
 
 	/**
-	 * Returns the meta-data for the entity key on the other side of the represented association.
+	 * Get the meta-data for the entity key on the other side of the represented association.
+	 *
+	 * @return The entity key meta-data
 	 */
 	EntityKeyMetadata getEntityKeyMetadata();
 
@@ -35,8 +37,10 @@ public interface AssociatedEntityKeyMetadata {
 	String getCorrespondingEntityKeyColumn(String associationKeyColumn);
 
 	/**
-	 * Returns the names of those columns of a tuple or association row which make up the represented association, i.e.
+	 * get the names of those columns of a tuple or association row which make up the represented association, i.e.
 	 * the columns referring to the entity key on the other side.
+	 *
+	 * @return The association key columns names
 	 */
 	String[] getAssociationKeyColumns();
 }

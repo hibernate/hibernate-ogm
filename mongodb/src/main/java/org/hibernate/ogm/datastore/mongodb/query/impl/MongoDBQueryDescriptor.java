@@ -15,6 +15,9 @@ import com.mongodb.DBObject;
  *
  * @author Gunnar Morling
  */
+/**
+ * @author Davide D'Alto
+ */
 public class MongoDBQueryDescriptor implements Serializable {
 
 	public enum Operation {
@@ -38,6 +41,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	/**
 	 * The name of the collection to select from.
+	 *
+	 * @return the collection name
 	 */
 	public String getCollectionName() {
 		return collectionName;
@@ -49,6 +54,8 @@ public class MongoDBQueryDescriptor implements Serializable {
 
 	/**
 	 * Criteria describing the records to apply this query to.
+	 *
+	 * @return the {@link DBObject} representing the criteria
 	 */
 	public DBObject getCriteria() {
 		return criteria;
@@ -57,16 +64,21 @@ public class MongoDBQueryDescriptor implements Serializable {
 	/**
 	 * The fields to be selected, if this query doesn't return all fields of the entity. Passed to the {@code keys}
 	 * parameter of the MongoDB find API.
+	 *
+	 * @return the {@link DBObject} representing the projection
 	 */
 	public DBObject getProjection() {
 		return projection;
 	}
 
+	/**
+	 * Get the order criteria of the result of the query.
+	 *
+	 * @return the {@link DBObject} representing the order to apply the results of the query
+	 */
 	public DBObject getOrderBy() {
 		return orderBy;
 	}
-
-
 
 	@Override
 	public String toString() {

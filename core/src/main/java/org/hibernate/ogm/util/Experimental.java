@@ -30,6 +30,8 @@ public @interface Experimental {
 
 	/**
 	 * An optional description of the reasons for the annotated element to be marked as experimental.
+	 *
+	 * @return the reason for the experimental annotation
 	 */
 	String value() default "";
 }

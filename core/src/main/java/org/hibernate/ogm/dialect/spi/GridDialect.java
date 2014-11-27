@@ -44,6 +44,10 @@ public interface GridDialect extends Service {
 
 	/**
 	 * Return the tuple with the given column for a given key
+	 *
+	 * @param key The tuple identifier
+	 * @param tupleContext Contains additional information that might be used to create the tuple
+	 * @return the tuple identified by the key
 	 */
 	Tuple getTuple(EntityKey key, TupleContext tupleContext);
 
@@ -58,21 +62,37 @@ public interface GridDialect extends Service {
 	 * other entities. Implementations may choose to persist the latter e.g. in form of fields or as actual
 	 * links/relationships to the element representing the associated entity. In case of multi-column keys, the
 	 * corresponding association role for a given column can be obtained from the passed tuple context.
+	 *
+	 * @param key The tuple identifier
+	 * @param tupleContext Contains additional information that might be used to create the tuple
+	 * @return the created tuple
 	 */
 	Tuple createTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Inserts or updates the tuple corresponding to the given entity key.
+	 *
+	 * @param key The tuple identifier
+	 * @param tuple The list of operations to execute
+	 * @param tupleContext Contains additional information that might be used to create or update the tuple
+	 * @throws TupleAlreadyExistsException upon insertion of a tuple with an already existing unique identifier
 	 */
 	void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) throws TupleAlreadyExistsException;
 
 	/**
 	 * Remove the tuple for a given key
+	 *
+	 * @param key The tuple identifier
+	 * @param tupleContext Contains additional information that might be used to remove the tuple
 	 */
 	void removeTuple(EntityKey key, TupleContext tupleContext);
 
 	/**
 	 * Return the list of tuples corresponding to a given association and the given context
+	 *
+	 * @param key Identifies the association
+	 * @param associationContext Contains additional information that might be used to get the association
+	 * @return a list of tuples
 	 */
 	Association getAssociation(AssociationKey key, AssociationContext associationContext);
 
@@ -82,16 +102,27 @@ public interface GridDialect extends Service {
 	 * Only invoked if the association does not yet exist in the datastore. Implementations should not perform a
 	 * round-trip to the datastore but rather return a transient instance. The OGM engine will invoke
 	 * {@link #insertOrUpdateAssociation(AssociationKey, Association, AssociationContext)} subsequently.
+	 *
+	 * @param key Identifies the association
+	 * @param associationContext Contains additional information that might be used to create the association
+	 * @return the created association
 	 */
 	Association createAssociation(AssociationKey key, AssociationContext associationContext);
 
 	/**
 	 * Inserts or updates the given association in the datastore.
+	 *
+	 * @param key Identifies the association
+	 * @param association The list of operations to execute
+	 * @param associationContext Contains additional information that might be used to create the association
 	 */
 	void insertOrUpdateAssociation(AssociationKey key, Association association, AssociationContext associationContext);
 
 	/**
 	 * Remove the list of tuples corresponding to a given association
+	 *
+	 * @param key Identifies the association
+	 * @param associationContext Contains additional information that might be used to remove an association
 	 */
 	void removeAssociation(AssociationKey key, AssociationContext associationContext);
 
@@ -110,6 +141,7 @@ public interface GridDialect extends Service {
 	/**
 	 * Returns the next value from the specified id generator with the specified increment.
 	 *
+	 * @param request Identifies a specific id generator
 	 * @return the next value from the specified id generator
 	 */
 	Number nextValue(NextValueRequest request);
@@ -123,10 +155,11 @@ public interface GridDialect extends Service {
 	boolean supportsSequences();
 
 	/**
-	 * Let the dialect override types if required to customize them to the datastore. Returns the GridType instance to
-	 * use to bind the given {@code type} or null if not overridden.
-	 * <p>
-	 * Most types should not be overridden and thus return null
+	 * If the datastore does not support a {@link Type} the dialect might override it with a custom one.
+	 *
+	 * @param type The {@link Type} that might need to be overridden
+	 * @return the GridType instance to use to bind the given {@code type} or null if the type does not need to be
+	 * overridden
 	 */
 	@Experimental( "Custom types including the GridType contract will be re-visited after OGM 4.1.0.Final." )
 	GridType overrideType(Type type);

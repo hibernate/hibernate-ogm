@@ -29,7 +29,6 @@ import org.hibernate.type.Type;
  * <p>
  * This identifier generator is also used for JPA auto identifier generation. {@link OgmTableGenerator} is used as
  * fall-back, if the current datastore does not support sequences.
- * <p>
  * <table>
  * <caption>Configuration parameters</caption>
  * <tr>
@@ -105,7 +104,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 	 */
 	private String determineSequenceName(Properties params, Dialect dialect) {
 		final String sequencePerEntitySuffix = ConfigurationHelper.getString( SequenceStyleGenerator.CONFIG_SEQUENCE_PER_ENTITY_SUFFIX, params, SequenceStyleGenerator.DEF_SEQUENCE_SUFFIX );
-		// JPA_ENTITY_NAME value honors <class ... entity-name="..."> (HBM) and @Entity#name (JPA) overrides.
+		// JPA_ENTITY_NAME value honours <class ... entity-name="..."> (HBM) and @Entity#name (JPA) overrides.
 		String sequenceName = ConfigurationHelper.getBoolean( SequenceStyleGenerator.CONFIG_PREFER_SEQUENCE_PER_ENTITY, params, false )
 				? params.getProperty( JPA_ENTITY_NAME ) + sequencePerEntitySuffix
 				: SequenceStyleGenerator.DEF_SEQUENCE_NAME;

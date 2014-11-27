@@ -31,22 +31,28 @@ public final class RowKey {
 	 * This class should be treated as immutable. While we expose this array,
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
+	 *
+	 * @return the column names
 	 */
 	public String[] getColumnNames() {
 		return columnNames;
 	}
 
 	/**
-	 * This class should be treated as immutable. While we expose this array,
-	 * you should never make changes to it!
-	 * This is a design tradeoff vs. raw performance and memory usage.
+	 * This class should be treated as immutable. While we expose this array, you should never make changes to it! This
+	 * is a design tradeoff vs. raw performance and memory usage.
+	 *
+	 * @return the column values corresponding to the column names returned by {@code RowKey#getColumnNames()}
 	 */
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
 
 	/**
-	 * @return the corresponding value of the column, null if the column does not exist in the row key
+	 * Get the value of the specified column.
+	 *
+	 * @param columnName the name of the column
+	 * @return the corresponding value of the column, {@code null} if the column does not exist in the row key
 	 */
 	public Object getColumnValue(String columnName) {
 		for ( int j = 0; j < columnNames.length; j++ ) {
@@ -58,6 +64,9 @@ public final class RowKey {
 	}
 
 	/**
+	 * Check if a column is part of the row key columns.
+	 *
+	 * @param column the name of the column to check
 	 * @return true if the column is one of the row key columns, false otherwise
 	 */
 	public boolean contains(String column) {

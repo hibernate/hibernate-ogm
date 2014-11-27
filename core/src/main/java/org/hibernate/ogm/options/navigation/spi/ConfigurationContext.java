@@ -22,10 +22,31 @@ import org.hibernate.ogm.options.spi.Option;
  */
 public interface ConfigurationContext {
 
+	/**
+	 * Add an option to the global context
+	 *
+	 * @param option the option to add to the context
+	 * @param value the value of the option
+	 * @param <V> the type of the option value
+	 */
 	<V> void addGlobalOption(Option<?, V> option, V value);
 
+	/**
+	 * Add an option to the global context
+	 *
+	 * @param option the option to add to the context
+	 * @param value the value of the option
+	 * @param <V> the type of the option value
+	 */
 	<V> void addEntityOption(Option<?, V> option, V value);
 
+	/**
+	 * Add an option to the global context
+	 *
+	 * @param option the option to add to the context
+	 * @param value the value of the option
+	 * @param <V> the type of the option value
+	 */
 	<V> void addPropertyOption(Option<?, V> option, V value);
 
 	/**
@@ -42,6 +63,7 @@ public interface ConfigurationContext {
 	 * @param globalContextImplType the provider-specific global context implementation type
 	 * @param entityContextImplType the provider-specific entity context implementation type
 	 * @param propertyContextImplType the provider-specific property context implementation type
+	 * @param <G> the {@link GlobalContext} type
 	 * @return a new {@link GlobalContext} object based on the given context implementation types
 	 */
 	<G extends GlobalContext<?, ?>> G createGlobalContext(

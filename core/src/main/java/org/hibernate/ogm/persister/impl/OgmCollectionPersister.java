@@ -800,7 +800,9 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	}
 
 	/**
-	 * Returns the property name on the main side, if this collection represents the inverse (non-main) side of a
+	 * Get the property name representing the collection on the main side of the association.
+	 *
+	 * @return the property name on the main side, if this collection represents the inverse (non-main) side of a
 	 * bi-directional association, this association's own property name otherwise.
 	 */
 	public String getMainSidePropertyName() {
@@ -814,6 +816,8 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 	 * <b>Note:</b> Due to initialization order related constraints, this method may only be invoked after all
 	 * collection and entity persisters have been set up. Use {@link #getAssociationTypeContext(String)} when in need of
 	 * a context prior to that point.
+	 *
+	 * @return the association type context, it never returns {@code null}
 	 */
 	public AssociationTypeContext getAssociationTypeContext() {
 		Contracts.assertNotNull( associationTypeContext, "Association type context has not yet been initialized" );

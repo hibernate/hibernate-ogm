@@ -54,6 +54,8 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	/**
 	 * Only used in tests.
+	 *
+	 * @param mongoClient the client to connect to mongodb
 	 */
 	public MongoDBDatastoreProvider(MongoClient mongoClient) {
 		this.mongo = mongoClient;

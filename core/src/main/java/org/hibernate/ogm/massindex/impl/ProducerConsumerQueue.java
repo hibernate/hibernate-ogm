@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * a "poison" token to signal consumer threads
  * that the task is finished.
  *
+ * @param <T> the type of the elemnts in the queue
  * @author Sanne Grinovero
  */
 public class ProducerConsumerQueue<T> {
@@ -44,7 +45,8 @@ public class ProducerConsumerQueue<T> {
 	 * is returned the client thread should quit.
 	 *
 	 * @return the next object in the queue, or null to exit
-	 * @throws InterruptedException
+	 *
+	 * @throws InterruptedException if interrupted while waiting
 	 */
 	@SuppressWarnings("unchecked")
 	public T take() throws InterruptedException {
@@ -63,8 +65,9 @@ public class ProducerConsumerQueue<T> {
 	 * Adds a new object to the queue, blocking if no space is
 	 * available.
 	 *
-	 * @param obj
-	 * @throws InterruptedException
+	 * @param obj the objec to add to the queue
+	 *
+	 * @throws InterruptedException if interrupted while waiting
 	 */
 	public void put(T obj) throws InterruptedException {
 		queue.put( obj );

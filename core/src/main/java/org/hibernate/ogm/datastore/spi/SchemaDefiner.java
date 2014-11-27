@@ -35,11 +35,16 @@ public interface SchemaDefiner extends Service {
 	/**
 	 * Validates the mapped objects such as entities, id generators etc. against any specific requirements of the
 	 * current datastore.
+	 *
+	 * @param factory the sesison factory
 	 */
 	void validateMapping(SessionFactoryImplementor factory);
 
 	/**
 	 * Initializes the schema in the datastore.
+	 *
+	 * @param configuration all the configuration properties
+	 * @param factory the session factory
 	 */
 	void initializeSchema(Configuration configuration, SessionFactoryImplementor factory);
 }

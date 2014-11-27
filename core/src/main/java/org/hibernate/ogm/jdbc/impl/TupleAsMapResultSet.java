@@ -52,17 +52,26 @@ public class TupleAsMapResultSet implements ResultSet {
 
 	/**
 	 * Define the current value for the collection entry
+	 *
+	 * @param tuple the tuple to add
 	 */
 	public void addTuple(Tuple tuple) {
 		this.tuples.add( tuple );
 	}
 
+	/**
+	 * Set the tuples
+	 *
+	 * @param tuples the new tuples
+	 */
 	public void setTuples(List<Tuple> tuples) {
 		this.tuples = tuples;
 	}
 
 	/**
 	 * Retrieve the current value for the collection entry
+	 *
+	 * @return the current tuple
 	 */
 	public Tuple getTuple() {
 		return tuples.get( index );

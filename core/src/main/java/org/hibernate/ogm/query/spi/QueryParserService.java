@@ -37,12 +37,21 @@ public interface QueryParserService extends Service {
 	/**
 	 * Parses the given query. If it has parameters, they will be resolved in the resulting query by applying the given
 	 * parameter values.
+	 *
+	 * @param sessionFactory the session factory
+	 * @param queryString the query to parse
+	 * @param namedParameters contains the parameters of the query and the corresponding values
+	 * @return the parsed query
 	 */
 	// TODO: Should SF be injected during construction?
 	QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString, Map<String, Object> namedParameters);
 
 	/**
 	 * Parses the given query. If it has parameters, the resulting query will have parameters as well.
+	 *
+	 * @param sessionFactory the session factory
+	 * @param queryString the query to parse
+	 * @return the parsed query
 	 */
 	QueryParsingResult parseQuery(SessionFactoryImplementor sessionFactory, String queryString);
 }

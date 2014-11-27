@@ -45,6 +45,8 @@ public final class AssociationKey {
 
 	/**
 	 * Returns the table name of this key.
+	 *
+	 * @return the table name of this key
 	 */
 	public String getTable() {
 		return metadata.getTable();
@@ -64,17 +66,26 @@ public final class AssociationKey {
 	 * <pre>
 	 * AssociationKey{table='AccountOwner_BankAccount', columnNames=[owners_id], columnValues=[...]},
 	 * </pre>
+	 *
+	 * @return the columns names as an array, it never returns {@code null}
 	 */
 	public String[] getColumnNames() {
 		return metadata.getColumnNames();
 	}
 
+	/**
+	 * Get values of the key
+	 *
+	 * @return the values of the key. It never returns {@code null}
+	 */
 	public Object[] getColumnValues() {
 		return columnValues;
 	}
 
 	/**
 	 * Returns the owning entity key.
+	 *
+	 * @return an {@link EntityKey} representing the owner of the association
 	 */
 	public EntityKey getEntityKey() {
 		return entityKey;

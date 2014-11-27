@@ -22,7 +22,9 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public interface TupleContext {
 
 	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
+	 * Get the option context.
+	 *
+	 * @return a context object providing access to the options effectively applying for a given entity or property.
 	 */
 	OptionsContext getOptionsContext();
 
@@ -30,6 +32,8 @@ public interface TupleContext {
 	 * Returns the mapped columns of the given entity. May be used by a dialect to only load those columns instead of
 	 * the complete document/record. If the dialect supports the embedded storage of element collections and
 	 * associations, the respective columns will be part of the returned list as well.
+	 *
+	 * @return the columns that can be selected on the given entity
 	 */
 	List<String> getSelectableColumns();
 
@@ -37,6 +41,9 @@ public interface TupleContext {
 	 * Whether the given column is part of a *-to-one association or not. If so, a dialect may choose to not persist the
 	 * column value in the corresponding tuple data structure itself but e.g. as a native relationship (in the case of
 	 * graph stores).
+	 *
+	 * @param column the name of the column
+	 * @return {@code true} if the given column is part of a *-to-one association, {@code false} otherwise.
 	 */
 	boolean isPartOfAssociation(String column);
 
@@ -51,12 +58,25 @@ public interface TupleContext {
 	AssociatedEntityKeyMetadata getAssociatedEntityKeyMetadata(String column);
 
 	/**
-	 * Returns meta-data about all the *-to-one associations represented in a given tuple, keyed by column name.
+	 * Get the the meta-data of all the associated entities keys
+	 *
+	 * @return the meta-data about all the *-to-one associations represented in a given tuple, keyed by column name.
 	 */
 	Map<String, AssociatedEntityKeyMetadata> getAllAssociatedEntityKeyMetadata();
 
+	/**
+	 * Get the role of a column
+	 *
+	 * @param column the column name
+	 * @return the role of the given column
+	 */
 	String getRole(String column);
 
+	/**
+	 * Get all the roles
+	 *
+	 * @return the the roles, keyed by column name.
+	 */
 	Map<String, String> getAllRoles();
 
 	/**

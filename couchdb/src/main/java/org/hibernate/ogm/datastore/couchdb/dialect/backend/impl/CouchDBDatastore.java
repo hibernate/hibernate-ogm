@@ -223,6 +223,10 @@ public class CouchDBDatastore {
 
 	/**
 	 * Whether the given document exists in the datastore or not.
+	 *
+	 * @param documentId the id of the document to check
+	 * @param isDesignDocument {@code true} if it's a {@link DesignDocument}
+	 * @return {@code true} if the document exists in the datastore
 	 */
 	public boolean exists(String documentId, boolean isDesignDocument) {
 		return getCurrentRevision( documentId, isDesignDocument ) != null;

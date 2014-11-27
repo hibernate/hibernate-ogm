@@ -40,21 +40,27 @@ public class IdSourceKey {
 	}
 
 	/**
-	 * Returns the table name if this is a table-based generator, the sequence name otherwise.
+	 * Get the table name if this is a table-based generator, the sequence name otherwise.
+	 *
+	 * @return the table or the sequence name
 	 */
 	public String getTable() {
 		return metadata.getName();
 	}
 
 	/**
-	 * Returns the segment column name if this is a table-based generator, {@code null} otherwise.
+	 * Get the segment column name if this is a table-based generator, {@code null} otherwise.
+	 *
+	 * @return the segment column name when using a table-based generator, {@code null} otherwise
 	 */
 	public String[] getColumnNames() {
 		return columnNames;
 	}
 
 	/**
-	 * Returns the segment name if this is a table-based generator, {@code null} otherwise.
+	 * Get the segment name if this is a table-based generator, {@code null} otherwise.
+	 *
+	 * @return the segment name when using a table-based generator, {@code null} otherwise
 	 */
 	public Object[] getColumnValues() {
 		return columnValues;

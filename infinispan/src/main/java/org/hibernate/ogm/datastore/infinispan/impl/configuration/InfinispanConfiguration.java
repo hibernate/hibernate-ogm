@@ -32,6 +32,8 @@ public class InfinispanConfiguration {
 	private PersistenceStrategy persistenceStrategy;
 
 	/**
+	 * The location of the configuration file.
+	 *
 	 * @see InfinispanProperties#CONFIGURATION_RESOURCE_NAME
 	 * @return might be the name of the file (too look it up in the class path) or an URL to a file.
 	 */
@@ -40,6 +42,8 @@ public class InfinispanConfiguration {
 	}
 
 	/**
+	 * Get the JNDI name of the cache manager.
+	 *
 	 * @see InfinispanProperties#CACHE_MANAGER_JNDI_NAME
 	 * @return the {@literal JNDI} name of the cache manager
 	 */
@@ -49,7 +53,9 @@ public class InfinispanConfiguration {
 
 	/**
 	 * Returns the persistence strategy to be used.
+	 *
 	 * @see InfinispanProperties#PERSISTENCE_STRATEGY
+	 * @return the configured {@link PersistenceStrategy}
 	 */
 	public PersistenceStrategy getPersistenceStrategy() {
 		return persistenceStrategy;

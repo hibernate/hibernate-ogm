@@ -17,7 +17,9 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 public class Version {
 
 	/**
-	 * Returns the current version of Hibernate OGM.
+	 * Get the current version of Hibernate OGM.
+	 *
+	 * @return the current Hibernate OGM version
 	 */
 	public static String getVersionString() {
 		// The actual value will be injected into the class file during the build

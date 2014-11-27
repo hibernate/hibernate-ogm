@@ -25,6 +25,9 @@ public interface GlobalContext<G extends GlobalContext<G, E>, E extends EntityCo
 
 	/**
 	 * Specify mapping for the entity {@code type}
+	 *
+	 * @param type the type of the entity
+	 * @return the entity context definition
 	 */
 	E entity(Class<?> type);
 

@@ -33,7 +33,6 @@ import org.hibernate.type.Type;
 /**
  * A table-based id generator. Inspired by ORM's {@link TableGenerator}. Refer to its JavaDoc for some design
  * considerations.
- * <p>
  * <table>
  * <caption>Configuration parameters</caption>
  * <tr>

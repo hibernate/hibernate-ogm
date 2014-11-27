@@ -247,12 +247,13 @@ public interface GridType extends Serializable {
 	 * should handle possibility of null values.
 	 *
 	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object) alternative, 2-phase property initialization
-	 * @param rs
+	 * @param rs the resultset
 	 * @param names the column names
-	 * @param session
+	 * @param session the session
 	 * @param owner the parent entity
-	 * @return Object
-	 * @throws HibernateException
+	 * @return the instance of the mapped class from a grid resultset
+	 *
+	 * @throws HibernateException if an error occurs while retrievin the instance
 	 */
 	Object nullSafeGet(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
@@ -262,12 +263,14 @@ public interface GridType extends Serializable {
 	 * should handle possibility of null values. This method might be called if the
 	 * type is known to be a single-column type.
 	 *
-	 * @param rs
+	 * @see GridType#hydrate(Tuple, String[], SessionImplementor, Object) alternative, 2-phase property initialization
+	 * @param rs the resultset
 	 * @param name the column name
-	 * @param session
+	 * @param session the session
 	 * @param owner the parent entity
-	 * @return Object
-	 * @throws HibernateException
+	 * @return an instance of the mapped class
+	 *
+	 * @throws HibernateException if an error occurs retrieving the instance
 	 */
 	Object nullSafeGet(Tuple rs, String name, SessionImplementor session, Object owner)
 	throws HibernateException;
@@ -276,13 +279,14 @@ public interface GridType extends Serializable {
 	 * Write an instance of the mapped class to a prepared statement, ignoring some columns.
 	 * Implementors should handle possibility of null values. A multi-column type should be
 	 * written to parameters starting from <tt>index</tt>.
+	 *
 	 * @param resultset to push value into
 	 * @param value the object to write
-	 * @param names the column names
+	 * @param names of affected columns
 	 * @param settable an array indicating which columns to ignore
-	 * @param session
+	 * @param session the session
 	 *
-	 * @throws HibernateException
+	 * @throws HibernateException if an error occurs writing the value
 	 */
 	void nullSafeSet(Tuple resultset, Object value, String[] names, boolean[] settable, SessionImplementor session)
 	throws HibernateException;
@@ -291,12 +295,13 @@ public interface GridType extends Serializable {
 	 * Write an instance of the mapped class to a prepared statement. Implementors
 	 * should handle possibility of null values. A multi-column type should be written
 	 * to parameters starting from <tt>index</tt>.
+	 *
 	 * @param resultset to push value into
 	 * @param value the object to write
 	 * @param names of affected columns
-	 * @param session
+	 * @param session the session
 	 *
-	 * @throws HibernateException
+	 * @throws HibernateException if an error occurs writing the value
 	 */
 	void nullSafeSet(Tuple resultset, Object value, String[] names, SessionImplementor session)
 	throws HibernateException;
@@ -304,9 +309,11 @@ public interface GridType extends Serializable {
 	/**
 	 * A representation of the value to be embedded in an XML element.
 	 *
-	 * @param value
-	 * @param factory
-	 * @throws HibernateException
+	 * @param node the XML element
+	 * @param value the object to embed
+	 * @param factory the session factory
+	 *
+	 * @throws HibernateException if an error occurs embedding the value
 	 */
 	void setToXMLNode(Node node, Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
@@ -314,37 +321,42 @@ public interface GridType extends Serializable {
 	/**
 	 * A representation of the value to be embedded in a log file.
 	 *
-	 * @param value
-	 * @param factory
-	 * @return String
-	 * @throws HibernateException
+	 * @param value the object to convert into a string to log
+	 * @param factory the session factory
+	 * @return a {@link String} representation of the value
+	 *
+	 * @throws HibernateException if an error occurs during the conversion
 	 */
 	String toLoggableString(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
 
 	/**
 	 * Parse the XML representation of an instance.
-	 * @param xml
-	 * @param factory
 	 *
+	 * @param xml the XML node
+	 * @param factory the session factory
 	 * @return an instance of the type
-	 * @throws HibernateException
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object fromXMLNode(Node xml, Mapping factory) throws HibernateException;
 
 	/**
 	 * Returns the abbreviated name of the type.
 	 *
-	 * @return String the Hibernate type name
+	 * @return the Hibernate type name as {@link String}
 	 */
 	String getName();
 
 	/**
 	 * Return a deep copy of the persistent state, stopping at entities and at
 	 * collections.
+	 *
 	 * @param value generally a collection element or entity field
-	 * @param factory
+	 * @param factory the session factory
 	 * @return Object a copy
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object deepCopy(Object value, SessionFactoryImplementor factory)
 	throws HibernateException;
@@ -354,12 +366,13 @@ public interface GridType extends Serializable {
 	 * entities and collections are considered immutable because they manage their
 	 * own internal state.)
 	 *
-	 * @return boolean
+	 * @return {@code true} if mutable, false otherwise
 	 */
 	boolean isMutable();
 
 	/**
 	 * Return a cacheable "disassembled" representation of the object.
+	 *
 	 * @param value the value to cache
 	 * @param session the session
 	 * @param owner optional parent entity object (needed for collections)
@@ -369,10 +382,11 @@ public interface GridType extends Serializable {
 
 	/**
 	 * Reconstruct the object from its cached "disassembled" state.
+	 *
 	 * @param cached the disassembled state from the cache
 	 * @param session the session
 	 * @param owner the parent entity object
-	 * @return the the object
+	 * @return owner the assembled object
 	 */
 	Object assemble(Serializable cached, SessionImplementor session, Object owner)
 	throws HibernateException;
@@ -380,6 +394,9 @@ public interface GridType extends Serializable {
 	/**
 	 * Called before assembling a query result set from the query cache, to allow batch fetching
 	 * of entities missing from the second-level cache.
+	 *
+	 * @param cached the cached result set
+	 * @param session the session
 	 */
 	void beforeAssemble(Serializable cached, SessionImplementor session);
 
@@ -389,12 +406,13 @@ public interface GridType extends Serializable {
 	 * phase is a call to <tt>resolveIdentifier()</tt>.
 	 *
 	 * @see #resolve(Object, SessionImplementor, Object)
-	 * @param rs
+	 * @param rs the result set
 	 * @param names the column names
 	 * @param session the session
 	 * @param owner the parent entity
 	 * @return Object an identifier or actual value
-	 * @throws HibernateException
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object hydrate(Tuple rs, String[] names, SessionImplementor session, Object owner)
 	throws HibernateException;
@@ -408,7 +426,8 @@ public interface GridType extends Serializable {
 	 * @param owner the parent entity
 	 * @param session the session
 	 * @return the given value, or the value associated with the identifier
-	 * @throws HibernateException
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object resolve(Object value, SessionImplementor session, Object owner)
 	throws HibernateException;
@@ -416,12 +435,22 @@ public interface GridType extends Serializable {
 	/**
 	 * Given a hydrated, but unresolved value, return a value that may be used to
 	 * reconstruct property-ref associations.
+	 *
+	 * @param value the unresolved value
+	 * @param session the session
+	 * @param owner the owner of the association
+	 * @return a value that may be used to reconstruct property-ref associations
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object semiResolve(Object value, SessionImplementor session, Object owner)
 	throws HibernateException;
 
 	/**
 	 * Get the type of a semi-resolved value.
+	 *
+	 * @param factory the session factory
+	 * @return the {@link GridType} of the semi resolve value
 	 */
 	GridType getSemiResolvedType(SessionFactoryImplementor factory);
 
@@ -434,7 +463,12 @@ public interface GridType extends Serializable {
 	 *
 	 * @param original the value from the detached entity being merged
 	 * @param target the value in the managed entity
+	 * @param session the session
+	 * @param owner the owner entity
+	 * @param copyCache the cache of already copied/replaced values
 	 * @return the value to be merged
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object replace(
 			Object original,
@@ -453,7 +487,13 @@ public interface GridType extends Serializable {
 	 *
 	 * @param original the value from the detached entity being merged
 	 * @param target the value in the managed entity
+	 * @param session the sesison
+	 * @param owner the owner entity
+	 * @param copyCache the cache of already copied/replaced values
+	 * @param foreignKeyDirection the directionality of the foreign key constraint
 	 * @return the value to be merged
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	Object replace(
 			Object original,
@@ -465,10 +505,12 @@ public interface GridType extends Serializable {
 	throws HibernateException;
 
 	/**
-	 * Given an instance of the type, return an array of boolean, indicating
-	 * which mapped columns would be null.
+	 * Given an instance of the type, return an array of boolean, indicating which mapped columns would be null.
 	 *
 	 * @param value an instance of the type
+	 * @param mapping the session factory
+	 * @return an array of {@code boolean}s, each value is associated to the corresponding column and it's {@code true}
+	 * if the column can be null, {@code false} otherwise
 	 */
 	boolean[] toColumnNullness(Object value, Mapping mapping);
 

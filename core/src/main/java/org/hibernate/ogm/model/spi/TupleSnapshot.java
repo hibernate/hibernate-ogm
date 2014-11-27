@@ -19,11 +19,24 @@ import java.util.Set;
  */
 public interface TupleSnapshot {
 	/**
-	 * Returns the value set in a column or null if not set
+	 * Get the value of a column in the tuple
+	 *
+	 * @param column the name of the column
+	 * @return the column value or {@code null} if the value is not set
 	 */
 	Object get(String column);
 
+	/**
+	 * Check if the tuple contains some values
+	 *
+	 * @return {@code true} is there is at lease one value in the tuple, {@code false} otherwise.
+	 */
 	boolean isEmpty();
 
+	/**
+	 * Get columns names composing the tuple
+	 *
+	 * @return the columns names
+	 */
 	Set<String> getColumnNames();
 }

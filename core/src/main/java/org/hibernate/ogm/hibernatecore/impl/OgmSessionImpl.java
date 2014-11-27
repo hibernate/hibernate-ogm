@@ -369,6 +369,8 @@ public class OgmSessionImpl extends SessionDelegatorBaseImpl implements OgmSessi
 
 	/**
 	 * Returns the underlying ORM session to which most work is delegated.
+	 *
+	 * @return the underlying session
 	 */
 	public EventSource getDelegate() {
 		return delegate;

@@ -76,7 +76,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 	}
 
 	/**
-	 * Returns the wrapped dialect implementation.
+	 * Get the underlying grid dialect.
+	 *
+	 * @return the wrapped dialect implementation.
 	 */
 	public GridDialect getGridDialect() {
 		return gridDialect;

@@ -44,6 +44,8 @@ public class OptionsContainerBuilder {
 	 *
 	 * @param option to add to the container
 	 * @param value the value of the option to add
+	 * @param <I> the option identifier type
+	 * @param <V> the oprion value type
 	 */
 	public <I, V> void add(Option<I, V> option, V value) {
 		getOrCreateValueContainer( option ).add( option.getOptionIdentifier(), value );
@@ -119,6 +121,9 @@ public class OptionsContainerBuilder {
 
 	/**
 	 * Implementations store one or more values of a given option, depending on whether the option is unique or not.
+	 *
+	 * @param <I> the option identifier type
+	 * @param <V> the option value type
 	 */
 	interface ValueContainer<I, V> {
 

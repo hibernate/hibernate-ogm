@@ -34,6 +34,8 @@ public @interface AssociationDocumentStorage {
 	/**
 	 * Whether association documents should be stored in a separate collection per association type or in one global
 	 * collection for all associations
+	 *
+	 * @return the {@link AssociationDocumentType} to use
 	 */
 	AssociationDocumentType value();
 }

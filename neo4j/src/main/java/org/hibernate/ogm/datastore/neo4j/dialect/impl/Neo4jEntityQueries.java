@@ -173,7 +173,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * Find all the node representing the entity.
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
-	 * @return
+	 * @return an iterator over the nodes representing an entity
 	 */
 	public ResourceIterator<Node> findEntities(ExecutionEngine executionEngine) {
 		ExecutionResult result = executionEngine.execute( findEntitiesQuery );
@@ -184,6 +184,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * Remove the nodes representing the entity.
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param columnValues the values of the key identifying the entity to remove
 	 */
 	public void removeEntity(ExecutionEngine executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );

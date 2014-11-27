@@ -28,6 +28,9 @@ public interface PropertyContext<E extends EntityContext<E, P>, P extends Proper
 
 	/**
 	 * Specify mapping for the entity {@code type}
+	 *
+	 * @param type the type of the entity
+	 * @return the entity context definition
 	 */
 	E entity(Class<?> type);
 
@@ -37,6 +40,7 @@ public interface PropertyContext<E extends EntityContext<E, P>, P extends Proper
 	 * @param propertyName the name of the property to be configured, following to the JavaBeans naming convention
 	 * @param target the target element type of the property, must either be {@link ElementType#FIELD} or
 	 * {@link ElementType#METHOD}).
+	 * @return the property context definition
 	 */
 	P property(String propertyName, ElementType target);
 }

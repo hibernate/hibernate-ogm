@@ -28,6 +28,8 @@ public class VersionChecker {
 	 * @param input the input to read from
 	 * @param supportedVersion the type version supported by this version of OGM
 	 * @param externalizedType the type to be unmarshalled
+	 *
+	 * @throws IOException if an error occurs while reading the input
 	 */
 	public static void readAndCheckVersion(ObjectInput input, int supportedVersion, Class<?> externalizedType) throws IOException {
 		int version = input.readInt();

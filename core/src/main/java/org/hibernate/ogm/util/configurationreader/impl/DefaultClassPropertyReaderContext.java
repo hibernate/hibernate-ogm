@@ -21,8 +21,9 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
  * A {@link PropertyReaderContext} which allows to retrieve properties by instantiating a given implementation type,
  * e.g. specified as fully-qualified class name or class object.
  *
+ * @param <T> the type of the value to instantiate
+ *
  * @author Gunnar Morling
- * @param <T>
  */
 public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextBase<T> implements ClassPropertyReaderContext<T> {
 
@@ -56,6 +57,9 @@ public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextB
 	/**
 	 * Sets an instantiator to be used to create an instance of the property. Currently not exposed on the SPI as it is
 	 * only needed within this module. May be promoted to an SPI later on, if required.
+	 *
+	 * @param instantiator the {@link Instantiator} to use to create the instance of the property
+	 * @return an instance of the property
 	 */
 	public DefaultClassPropertyReaderContext<T> withInstantiator(Instantiator<T> instantiator) {
 		this.instantiator = instantiator;

@@ -19,6 +19,8 @@ public interface BatchableGridDialect extends GridDialect {
 
 	/**
 	 * Executes the batched operations using the mechanism provided by the db
+	 *
+	 * @param queue The batched operations
 	 */
 	void executeBatch(OperationsQueue queue);
 

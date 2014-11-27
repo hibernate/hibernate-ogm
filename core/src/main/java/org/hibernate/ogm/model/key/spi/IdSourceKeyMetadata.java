@@ -22,22 +22,30 @@ public interface IdSourceKeyMetadata {
 	}
 
 	/**
-	 * Returns the type of the represented id source.
+	 * Get the type of the represented id source.
+	 *
+	 * @return type of the id source
 	 */
 	IdSourceType getType();
 
 	/**
 	 * Returns the table name for table-based sources, the sequence name otherwise.
+	 *
+	 * @return the table name for table-based sources, the sequence name otherwise
 	 */
 	String getName();
 
 	/**
-	 * Returns the key column name for table-based sources, {@code null} otherwise.
+	 * Get the key column name for table-based sources, {@code null} otherwise.
+	 *
+	 * @return the key column name for table-based sources, {@code null} otherwise.
 	 */
 	String getKeyColumnName();
 
 	/**
-	 * Returns the value column name for table-based sources, {@code null} otherwise.
+	 * Get the value column name for table-based sources, {@code null} otherwise.
+	 *
+	 * @return the value column name for table-based sources, {@code null} otherwise.
 	 */
 	String getValueColumnName();
 }

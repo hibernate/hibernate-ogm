@@ -94,6 +94,8 @@ public class Association {
 	 * operation for a specific row key.
 	 * <p>
 	 * Note that the global CLEAR operation is put at the top of the list.
+	 *
+	 * @return the operations to execute on the association, the global CLEAR operation is put at the top of the list
 	 */
 	public List<AssociationOperation> getOperations() {
 		List<AssociationOperation> result = new ArrayList<AssociationOperation>( currentState.size() + 1 );

@@ -54,6 +54,8 @@ public class NativeQueryParser extends BaseParser<MongoDBQueryDescriptorBuilder>
 
 	/**
 	 * A find query only given as criterion. Leave it to MongoDB's own parser to handle it.
+	 *
+	 * @return the {@link Rule} to identify a find query only
 	 */
 	public Rule CriteriaOnlyFindQuery() {
 		return Sequence( ZeroOrMore( ANY ), builder.setOperation( Operation.FIND ), builder.setCriteria( match() ) );

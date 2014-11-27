@@ -27,6 +27,8 @@ public class NextValueRequest {
 
 	/**
 	 * Describes the id source to fetch the next value from.
+	 *
+	 * @return the key identifying the source
 	 */
 	public IdSourceKey getKey() {
 		return key;
@@ -34,6 +36,8 @@ public class NextValueRequest {
 
 	/**
 	 * The increment to be applied when fetching the value.
+	 *
+	 * @return the increment to apply
 	 */
 	public int getIncrement() {
 		return increment;
@@ -41,6 +45,8 @@ public class NextValueRequest {
 
 	/**
 	 * The initial value when fetching values from the given id source.
+	 *
+	 * @return the initial value
 	 */
 	public int getInitialValue() {
 		return initialValue;

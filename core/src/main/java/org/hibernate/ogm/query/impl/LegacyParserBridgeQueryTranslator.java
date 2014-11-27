@@ -57,6 +57,11 @@ public abstract class LegacyParserBridgeQueryTranslator implements QueryTranslat
 
 	/**
 	 * Compiles the given query so it can be executed several times with different parameter values.
+	 *
+	 * @param replacements Defined query substitutions
+	 * @param shallow If {@code true}, this represent a shallow (scalar or entity-id) select
+	 * @throws QueryException   There was a problem parsing the query string.
+	 * @throws MappingException There was a problem querying defined mappings.
 	 */
 	protected abstract void doCompile(Map replacements, boolean shallow) throws QueryException, MappingException;
 

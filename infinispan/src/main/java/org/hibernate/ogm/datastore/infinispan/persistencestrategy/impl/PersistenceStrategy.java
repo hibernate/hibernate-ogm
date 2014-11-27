@@ -47,6 +47,15 @@ public class PersistenceStrategy<EK, AK, ISK> {
 
 	/**
 	 * Returns a persistence strategy based on the passed configuration.
+	 *
+	 * @param strategy the selected {@link org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy}
+	 * @param externalCacheManager the infinispan cache manager
+	 * @param configurationUrl the location of the configuration file
+	 * @param jtaPlatform the {@link JtaPlatform}
+	 * @param entityTypes the meta-data of the entities
+	 * @param associationTypes the meta-data of the associations
+	 * @param idSourceTypes the meta-data of the id generators
+	 * @return the persistence strategy
 	 */
 	public static PersistenceStrategy<?, ?, ?> getInstance(
 			org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy strategy,
@@ -113,6 +122,8 @@ public class PersistenceStrategy<EK, AK, ISK> {
 
 	/**
 	 * Returns the {@link LocalCacheManager} of this strategy, providing access to the actual ISPN caches.
+	 *
+	 * @return the cache manager
 	 */
 	public LocalCacheManager<EK, AK, ISK> getCacheManager() {
 		return cacheManager;
@@ -121,6 +132,8 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	/**
 	 * Returns the {@link KeyProvider} of this strategy, converting OGM core's key objects into the keys persisted in
 	 * the datastore.
+	 *
+	 * @return the key provider
 	 */
 	public KeyProvider<EK, AK, ISK> getKeyProvider() {
 		return keyProvider;

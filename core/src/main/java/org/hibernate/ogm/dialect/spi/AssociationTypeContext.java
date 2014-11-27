@@ -20,7 +20,9 @@ import org.hibernate.ogm.options.spi.OptionsContext;
 public interface AssociationTypeContext {
 
 	/**
-	 * Returns a context object providing access to the options effectively applying for a given entity or property.
+	 * Provide access to the options set for an entity or property.
+	 *
+	 * @return a context object providing access to the options effectively applying for a given entity or property.
 	 */
 	OptionsContext getOptionsContext();
 

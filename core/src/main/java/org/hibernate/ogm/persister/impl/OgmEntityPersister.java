@@ -823,6 +823,16 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 	 * Unmarshall the fields of a persistent instance from a result set,
 	 * without resolving associations or collections. Question: should
 	 * this really be here, or should it be sent back to Loader?
+	 *
+	 * @param resultset the result to get the property values from
+	 * @param id the identifier of the entity to hydrate
+	 * @param object the parent entity
+	 * @param rootLoadable the root entity persister
+	 * @param allProperties {@code true} if we need all the properties, {@code false} otherwise
+	 * @param session the session
+	 * @return the unmarshalled fields from the result set
+	 *
+	 * @throws HibernateException if an error occurs
 	 */
 	public Object[] hydrate(
 			final Tuple resultset,

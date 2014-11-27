@@ -26,7 +26,9 @@ public final class EntityKey {
 	}
 
 	/**
-	 * Returns the table name of this key.
+	 * Get the table name of this key.
+	 *
+	 * @return the table name of this key
 	 */
 	public String getTable() {
 		return keyMetadata.getTable();
@@ -36,6 +38,8 @@ public final class EntityKey {
 	 * This class should be treated as immutable. While we expose this array,
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
+	 *
+	 * @return values of the column names
 	 */
 	public Object[] getColumnValues() {
 		return columnValues;
@@ -45,11 +49,18 @@ public final class EntityKey {
 	 * This class should be treated as immutable. While we expose this array,
 	 * you should never make changes to it!
 	 * This is a design tradeoff vs. raw performance and memory usage.
+	 *
+	 * @return the column names
 	 */
 	public String[] getColumnNames() {
 		return keyMetadata.getColumnNames();
 	}
 
+	/**
+	 * Get the key meta-data
+	 *
+	 * @return the {@link EntityKeyMetadata} of the key
+	 */
 	public EntityKeyMetadata getMetadata() {
 		return keyMetadata;
 	}
