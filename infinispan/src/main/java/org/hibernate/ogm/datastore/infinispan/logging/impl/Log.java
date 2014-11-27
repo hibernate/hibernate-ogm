@@ -7,6 +7,7 @@
 package org.hibernate.ogm.datastore.infinispan.logging.impl;
 
 import org.hibernate.HibernateException;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
@@ -21,4 +22,7 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	@Message(id = 1101, value = "Cannot unmarshal key of type %1$s written by a newer version of Hibernate OGM."
 			+ " Expecting version %3$s but found version %2$s.")
 	HibernateException unexpectedKeyVersion(Class<?> clazz, int version, int supportedVersion);
+
+	@Message(id = 1102, value = "Unable to find or initialize Infinispan CacheManager")
+	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
 }

@@ -13,6 +13,8 @@ import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
+import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.PersistenceStrategy;
@@ -22,8 +24,6 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -42,7 +42,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 public class InfinispanDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 													ServiceRegistryAwareService, Configurable {
 
-	private static final Log log = LoggerFactory.make();
+	private static final Log LOG = LoggerFactory.getLogger();
 
 	private JtaPlatform jtaPlatform;
 	private JndiService jndiService;
@@ -61,12 +61,12 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 		try {
 			String jndiProperty = config.getJndiName();
 			if ( jndiProperty != null ) {
-				log.tracef( "Retrieving Infinispan from JNDI at %1$s", jndiProperty );
+				LOG.tracef( "Retrieving Infinispan from JNDI at %1$s", jndiProperty );
 				externalCacheManager = (EmbeddedCacheManager) jndiService.locate( jndiProperty );
 			}
 		}
 		catch (RuntimeException e) {
-			throw log.unableToInitializeInfinispan( e );
+			throw LOG.unableToInitializeInfinispan( e );
 		}
 
 		// clear resources
