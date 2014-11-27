@@ -63,9 +63,6 @@ public interface Log extends BasicLogger {
 	@Message(id = 3, value = "Use default transaction factory (use a TransactionManager exclusively to pilot the transaction)")
 	void usingDefaultTransactionFactory();
 
-	@Message(id = 4, value = "Unable to find or initialize Infinispan CacheManager")
-	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
-
 	@Message(id = 11, value = "Cannot instantiate GridDialect class [%1$s]")
 	HibernateException cannotInstantiateGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, @Cause Exception e);
 
