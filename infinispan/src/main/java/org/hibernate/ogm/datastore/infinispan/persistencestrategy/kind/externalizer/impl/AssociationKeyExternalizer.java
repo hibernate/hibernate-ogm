@@ -15,6 +15,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.VersionChecker;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -57,8 +58,7 @@ public class AssociationKeyExternalizer implements AdvancedExternalizer<Associat
 
 	@Override
 	public AssociationKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-		// version
-		input.readInt();
+		VersionChecker.readAndCheckVersion( input, VERSION, AssociationKey.class );
 
 		String tableName = input.readUTF();
 		String[] columnNames = (String[]) input.readObject();

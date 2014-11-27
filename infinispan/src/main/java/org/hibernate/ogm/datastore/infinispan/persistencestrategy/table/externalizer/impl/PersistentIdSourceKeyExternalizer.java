@@ -15,6 +15,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.VersionChecker;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
 /**
@@ -54,8 +55,7 @@ public class PersistentIdSourceKeyExternalizer implements AdvancedExternalizer<P
 
 	@Override
 	public PersistentIdSourceKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-		// version
-		input.readInt();
+		VersionChecker.readAndCheckVersion( input, VERSION, PersistentIdSourceKey.class );
 
 		String name = (String) input.readObject();
 		Object value = input.readObject();

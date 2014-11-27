@@ -53,8 +53,7 @@ public class RowKeyExternalizer implements AdvancedExternalizer<RowKey> {
 
 	@Override
 	public RowKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-		// version
-		input.readInt();
+		VersionChecker.readAndCheckVersion( input, VERSION, RowKey.class );
 
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();

@@ -15,6 +15,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.ExternalizerIds;
+import org.hibernate.ogm.datastore.infinispan.persistencestrategy.common.externalizer.impl.VersionChecker;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.infinispan.commons.marshall.AdvancedExternalizer;
 
@@ -55,8 +56,7 @@ public class PersistentEntityKeyExternalizer implements AdvancedExternalizer<Per
 
 	@Override
 	public PersistentEntityKey readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-		// version
-		input.readInt();
+		VersionChecker.readAndCheckVersion( input, VERSION, PersistentEntityKey.class );
 
 		String[] columnNames = (String[]) input.readObject();
 		Object[] values = (Object[]) input.readObject();
