@@ -31,7 +31,7 @@ public class WriteConcernConverter implements AnnotationConverter<WriteConcern> 
 				writeConcern = annotation.type().newInstance();
 			}
 			catch (Exception e) {
-				throw log.unableToInstantiateType( annotation.type().getName(), e );
+				throw log.unableToInstantiateType( annotation.type(), e );
 			}
 		}
 		else {

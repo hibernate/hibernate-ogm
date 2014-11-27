@@ -95,7 +95,7 @@ public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextB
 			typedValue = instantiator.newInstance( configuredClazz );
 		}
 		else {
-			throw log.unexpectedInstanceType( getPropertyName(), configuredValue.toString(), configuredValue.getClass().getName(), targetType.getName() );
+			throw log.unexpectedInstanceType( getPropertyName(), configuredValue.toString(), configuredValue.getClass(), targetType );
 		}
 
 		return typedValue;
@@ -131,7 +131,7 @@ public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextB
 
 	private Class<? extends T> narrowDownClass(Class<?> clazz, Class<T> targetType) {
 		if ( !targetType.isAssignableFrom( clazz ) ) {
-			throw log.unexpectedClassType( getPropertyName(), clazz.getName(), targetType.getName() );
+			throw log.unexpectedClassType( getPropertyName(), clazz, targetType );
 		}
 
 		@SuppressWarnings("unchecked")
@@ -171,7 +171,7 @@ public class DefaultClassPropertyReaderContext<T> extends PropertyReaderContextB
 
 			}
 			catch (Exception e) {
-				throw log.unableToInstantiateType( clazz.getName(), e );
+				throw log.unableToInstantiateType( clazz, e );
 			}
 		}
 	}

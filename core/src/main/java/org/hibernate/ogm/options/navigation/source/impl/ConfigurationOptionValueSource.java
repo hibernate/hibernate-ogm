@@ -71,7 +71,7 @@ public class ConfigurationOptionValueSource implements OptionValueSource {
 				return optionType.newInstance().getDefaultValue( propertyReader );
 			}
 			catch (Exception e) {
-				throw log.unableToInstantiateType( optionType.getName(), e );
+				throw log.unableToInstantiateType( optionType, e );
 			}
 		}
 
@@ -83,7 +83,7 @@ public class ConfigurationOptionValueSource implements OptionValueSource {
 				return value != null ? Collections.<I, V>singletonMap( option.getOptionIdentifier(), value ) : Collections.<I, V>emptyMap();
 			}
 			catch (Exception e) {
-				throw log.unableToInstantiateType( optionType.getName(), e );
+				throw log.unableToInstantiateType( optionType, e );
 			}
 		}
 	}

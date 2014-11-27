@@ -44,7 +44,7 @@ public class SchemaDefinerInitiator implements SessionFactoryServiceInitiator<Sc
 				return schemaInitializerType.newInstance();
 			}
 			catch (Exception e) {
-				throw log.unableToInstantiateType( schemaInitializerType.getName(), e );
+				throw log.unableToInstantiateType( schemaInitializerType, e );
 			}
 		}
 
