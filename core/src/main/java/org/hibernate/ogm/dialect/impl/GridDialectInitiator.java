@@ -87,7 +87,7 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					gridDialect = new BatchOperationsDelegator( batchable );
 				}
 
-				log.useGridDialect( gridDialect.getClass().getName() );
+				log.useGridDialect( gridDialect.getClass() );
 				if ( GridDialectLogger.activationNeeded() ) {
 					gridDialect = new GridDialectLogger( gridDialect );
 					log.info( "Grid dialect logs are active" );

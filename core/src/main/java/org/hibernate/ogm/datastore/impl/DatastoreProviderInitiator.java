@@ -46,7 +46,7 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 				.withShortNameResolver( DatastoreProviderShortNameResolver.INSTANCE )
 				.getValue();
 
-		log.useDatastoreProvider( datastoreProvider.getClass().getName() );
+		log.useDatastoreProvider( datastoreProvider.getClass() );
 		return datastoreProvider;
 	}
 

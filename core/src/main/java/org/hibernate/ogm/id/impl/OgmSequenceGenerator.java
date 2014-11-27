@@ -137,7 +137,7 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			return new SequenceKeyAndMetadataProvider( generatorKeyMetadata );
 		}
 		else {
-			log.dialectDoesNotSupportSequences( gridDialect.getClass().getName() );
+			log.dialectDoesNotSupportSequences( gridDialect.getClass() );
 
 			OgmTableGenerator tableGenerator = new OgmTableGenerator();
 			Properties newParams = new Properties();

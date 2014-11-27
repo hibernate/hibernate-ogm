@@ -44,7 +44,7 @@ public class ConfigurableImpl implements Configurable {
 
 		}
 		catch (Exception e) {
-			throw log.unableToInstantiateType( datastoreType.getName(), e );
+			throw log.unableToInstantiateType( datastoreType, e );
 		}
 	}
 }

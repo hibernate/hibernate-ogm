@@ -74,11 +74,11 @@ public interface Log extends BasicLogger {
 
 	@LogMessage(level = INFO)
 	@Message(id = 16, value = "NoSQL Datastore provider: %1$s")
-	void useDatastoreProvider(String datastoreProviderClass);
+	void useDatastoreProvider(@FormatWith(ClassObjectFormatter.class) Class<?> datastoreProviderClass);
 
 	@LogMessage(level = INFO)
 	@Message(id = 17, value = "Grid Dialect: %1$s")
-	void useGridDialect(String gridDialectClass);
+	void useGridDialect(@FormatWith(ClassObjectFormatter.class) Class<?> gridDialectClass);
 
 	@Message(id = 18, value = "JTA transaction begin failed")
 	TransactionException jtaTransactionBeginFailed(@Cause Exception e);
@@ -126,7 +126,7 @@ public interface Log extends BasicLogger {
 	HibernateException cannotCreateNewProxyInstance(@Cause Exception e);
 
 	@Message(id = 34, value = "Annotation cannot be converted using %1$s")
-	HibernateException cannotConvertAnnotation(Class<? extends AnnotationConverter<?>> converterClass, @Cause Exception e);
+	HibernateException cannotConvertAnnotation(@FormatWith(ClassObjectFormatter.class) Class<? extends AnnotationConverter<?>> converterClass, @Cause Exception e);
 
 	@Message(id = 36, value = "Unable to load %1$s method from %2$s ")
 	HibernateException unableToLoadContext(String methodName, @FormatWith(ClassObjectFormatter.class) Class<?> contextClass, @Cause Exception e);
@@ -147,16 +147,16 @@ public interface Log extends BasicLogger {
 	HibernateException getUnsupportedElementTypeException(ElementType elementType);
 
 	@Message(id = 43, value = "Cannot instantiate type %1$s. Does it define a default constructor?")
-	HibernateException unableToInstantiateType(String className, @Cause Exception e);
+	HibernateException unableToInstantiateType(@FormatWith(ClassObjectFormatter.class) Class<?> clazz, @Cause Exception e);
 
 	@Message(id = 44, value = "Cannot load class %2$s specified via configuration property '%1$s'")
 	HibernateException unableToLoadClass(String propertyName, String className, @Cause Exception e);
 
 	@Message(id = 45, value = "Type %2$s specified via configuration property '%1$s' is not a sub-type of expected type %3$s")
-	HibernateException unexpectedClassType(String propertyName, String className, String expectedClassName);
+	HibernateException unexpectedClassType(String propertyName, @FormatWith(ClassObjectFormatter.class) Class<?> clazz, @FormatWith(ClassObjectFormatter.class) Class<?> expectedClass);
 
 	@Message(id = 46, value = "Object %2$s of type %3$s specified via configuration property '%1$s' is not of the expected type %4$s")
-	HibernateException unexpectedInstanceType(String propertyName, String instance, String actualClassName, String expectedClassName);
+	HibernateException unexpectedInstanceType(String propertyName, String instance, @FormatWith(ClassObjectFormatter.class) Class<?> actualClass, @FormatWith(ClassObjectFormatter.class) Class<?> expectedClass);
 
 	@Message(id = 47, value = "Either an option configurator may be specified via configuration property '%1$s' or OgmConfiguration#configureOptions() may be called, but not both at the same time.")
 	HibernateException ambigiousOptionConfiguration(String propertyName);
@@ -199,7 +199,7 @@ public interface Log extends BasicLogger {
 
 	@LogMessage(level = WARN)
 	@Message(id = 60, value = "Grid dialect %1$s does not support sequences, falling back to table-based id generation. Consider to use @TableGenerator rather than @SequenceGenerator.")
-	void dialectDoesNotSupportSequences(String dialectClass);
+	void dialectDoesNotSupportSequences(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
 
 	@LogMessage(level = WARN)
 	@Message(id = 61, value = "The option '@TableGenerator#catalog()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
