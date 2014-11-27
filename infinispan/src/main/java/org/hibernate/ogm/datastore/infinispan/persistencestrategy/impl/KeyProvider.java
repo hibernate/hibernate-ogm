@@ -21,7 +21,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
  * Converts the OGM-internal keys into the cache keys.
  * Implementations must be thread-safe.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  *
  * @param <EK> the entity cache key type
  * @param <AK> the association cache key type

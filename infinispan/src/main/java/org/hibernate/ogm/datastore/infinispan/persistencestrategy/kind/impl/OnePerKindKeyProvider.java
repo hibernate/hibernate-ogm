@@ -29,7 +29,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
 /**
  * Key provider which stores all keys as is in ISPN.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class OnePerKindKeyProvider implements KeyProvider<EntityKey, AssociationKey, IdSourceKey> {
 

@@ -31,7 +31,7 @@ import org.infinispan.distexec.mapreduce.Mapper;
 /**
  * Provides the persistent keys for the "per-table" strategy. These keys don't contain the table name.
  *
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
 public class PerTableKeyProvider implements KeyProvider<PersistentEntityKey, PersistentAssociationKey, PersistentIdSourceKey> {
