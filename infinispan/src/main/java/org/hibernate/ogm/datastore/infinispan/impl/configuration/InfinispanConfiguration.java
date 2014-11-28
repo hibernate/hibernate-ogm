@@ -11,7 +11,8 @@ import java.util.Map;
 
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy;
+import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
@@ -29,7 +30,7 @@ public class InfinispanConfiguration {
 
 	private URL configUrl;
 	private String jndi;
-	private PersistenceStrategy persistenceStrategy;
+	private CacheStorageType cacheStorage;
 
 	/**
 	 * The location of the configuration file.
@@ -52,13 +53,12 @@ public class InfinispanConfiguration {
 	}
 
 	/**
-	 * Returns the persistence strategy to be used.
+	 * Returns the cache mapping to be used.
 	 *
-	 * @see InfinispanProperties#PERSISTENCE_STRATEGY
-	 * @return the configured {@link PersistenceStrategy}
+	 * @see KeyValueStoreProperties#CACHE_STORAGE
 	 */
-	public PersistenceStrategy getPersistenceStrategy() {
-		return persistenceStrategy;
+	public CacheStorageType getCacheStorage() {
+		return cacheStorage;
 	}
 
 	/**
@@ -79,9 +79,9 @@ public class InfinispanConfiguration {
 				.property( InfinispanProperties.CACHE_MANAGER_JNDI_NAME, String.class )
 				.getValue();
 
-		this.persistenceStrategy = propertyReader
-				.property( InfinispanProperties.PERSISTENCE_STRATEGY, PersistenceStrategy.class )
-				.withDefault( PersistenceStrategy.CACHE_PER_TABLE )
+		this.cacheStorage = propertyReader
+				.property( KeyValueStoreProperties.CACHE_STORAGE, CacheStorageType.class )
+				.withDefault( CacheStorageType.CACHE_PER_TABLE )
 				.getValue();
 
 		log.tracef( "Initializing Infinispan from configuration file at %1$s", configUrl );

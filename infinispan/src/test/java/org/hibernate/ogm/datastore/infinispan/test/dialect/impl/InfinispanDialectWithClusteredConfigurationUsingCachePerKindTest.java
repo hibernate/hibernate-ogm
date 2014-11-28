@@ -23,7 +23,7 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
 import org.hibernate.ogm.datastore.infinispan.InfinispanProperties;
 import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
@@ -177,7 +177,7 @@ public class InfinispanDialectWithClusteredConfigurationUsingCachePerKindTest {
 	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
 		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist-duplicate-domains-allowed.xml" );
-		configurationValues.put( InfinispanProperties.PERSISTENCE_STRATEGY, PersistenceStrategy.CACHE_PER_KIND );
+		configurationValues.put( InfinispanProperties.CACHE_STORAGE, CacheStorageType.CACHE_PER_KIND );
 		InfinispanDatastoreProvider provider = new InfinispanDatastoreProvider();
 
 		provider.configure( configurationValues );
