@@ -6,9 +6,7 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl;
 
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -215,17 +213,6 @@ public class EntityDocument extends Document {
 		for ( Entry<String, Object> entry : value.entrySet() ) {
 			set( name + PATH_SEPARATOR + entry.getKey(), entry.getValue() );
 		}
-	}
-
-	public List<Object> getAssociation(String name) {
-		@SuppressWarnings("unchecked")
-		List<Object> association = (List<Object>) properties.get( name );
-		return association != null ? association : Collections.<Object>emptyList();
-	}
-
-	@JsonIgnore
-	public void setAssociation(String name, List<Object> rows) {
-		properties.put( name, rows );
 	}
 
 	@JsonIgnore
