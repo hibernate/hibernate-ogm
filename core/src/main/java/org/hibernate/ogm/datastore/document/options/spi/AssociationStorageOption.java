@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.document.options.spi;
 
-import org.hibernate.ogm.cfg.DocumentStoreProperties;
+import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
