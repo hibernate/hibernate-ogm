@@ -17,6 +17,7 @@ import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.external
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.externalizer.impl.PersistentIdSourceKey;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableCacheManager;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.table.impl.PerTableKeyProvider;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -58,7 +59,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * @return the persistence strategy
 	 */
 	public static PersistenceStrategy<?, ?, ?> getInstance(
-			org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy strategy,
+			CacheStorageType cacheStorage,
 			EmbeddedCacheManager externalCacheManager,
 			URL configurationUrl,
 			JtaPlatform jtaPlatform,
@@ -66,7 +67,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 			Set<AssociationKeyMetadata> associationTypes,
 			Set<IdSourceKeyMetadata> idSourceTypes ) {
 
-		if ( strategy == org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy.CACHE_PER_KIND ) {
+		if ( cacheStorage == CacheStorageType.CACHE_PER_KIND ) {
 			return getPerKindStrategy(
 					externalCacheManager,
 					configurationUrl,

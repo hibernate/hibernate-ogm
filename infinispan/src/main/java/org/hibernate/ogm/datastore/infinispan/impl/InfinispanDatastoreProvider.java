@@ -83,7 +83,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 	 */
 	public void initializePersistenceStrategy(Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
 		persistenceStrategy = PersistenceStrategy.getInstance(
-				config.getPersistenceStrategy(),
+				config.getCacheStorage(),
 				externalCacheManager,
 				config.getConfigurationUrl(),
 				jtaPlatform,
