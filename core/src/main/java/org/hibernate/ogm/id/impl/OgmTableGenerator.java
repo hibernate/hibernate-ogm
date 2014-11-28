@@ -226,8 +226,6 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	 * @param dialect The dialect in effect
 	 *
 	 * @return The name of the value column
-	 *
-	 * @see #getValueColumnName()
 	 */
 	protected String determineValueColumnName(Properties params, Dialect dialect) {
 		ObjectNameNormalizer normalizer = (ObjectNameNormalizer) params.get( PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER );
@@ -243,8 +241,6 @@ public class OgmTableGenerator extends OgmGeneratorBase implements Configurable 
 	 * @param params The params supplied in the generator config (plus some standard useful extras).
 	 *
 	 * @return The name of the value column
-	 *
-	 * @see #getSegmentValue()
 	 */
 	protected String determineSegmentValue(Properties params) {
 		String segmentValue = params.getProperty( SEGMENT_VALUE_PARAM );
