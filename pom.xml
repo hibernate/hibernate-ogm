@@ -733,6 +733,8 @@
         <profile>
             <id>doc</id>
             <activation>
+                <!-- asciidoctor won't work on JDK9  -->
+                <jdk>[1.7, 1.9)</jdk>
                 <property>
                     <name>skipDocs</name>
                     <value>!true</value>
@@ -745,6 +747,9 @@
         <profile>
             <id>distro</id>
             <activation>
+            <!-- At the moment we don't generate the documentation with JDK 9.
+                 We don't want to release a distribution without documentation -->
+                <jdk>[1.7, 1.9)</jdk>
                 <property>
                     <name>skipDistro</name>
                     <value>!true</value>
@@ -753,6 +758,29 @@
             <modules>
                 <module>distribution</module>
             </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>enforce-rules</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                   <version>[1.7, 1.9)</version>
+                                </requireJavaVersion>
+                                <DependencyConvergence />
+                            </rules>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
