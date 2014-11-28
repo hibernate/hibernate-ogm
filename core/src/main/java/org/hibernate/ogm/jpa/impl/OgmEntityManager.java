@@ -619,7 +619,7 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	/**
-	 * Resembles {@link AbstractEntityManagerImpl#CallbackExceptionMapperImpl}, it only adds mappings for OGM-specific
+	 * Resembles {@code AbstractEntityManagerImpl#CallbackExceptionMapperImpl}, it only adds mappings for OGM-specific
 	 * exceptions.
 	 *
 	 * @author Gunnar Morling
