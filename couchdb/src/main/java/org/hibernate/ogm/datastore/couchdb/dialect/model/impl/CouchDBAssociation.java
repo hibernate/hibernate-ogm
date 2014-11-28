@@ -11,6 +11,7 @@ import java.util.List;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.AssociationDocument;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 
 /**
  * Represents an association stored in CouchDB, backed either by an association document (external storage of
@@ -30,8 +31,8 @@ public abstract class CouchDBAssociation {
 	 * @param name the association name
 	 * @return a {@link CouchDBAssociation} representing the association
 	 */
-	public static CouchDBAssociation fromEmbeddedAssociation(EntityDocument entity, String name) {
-		return new EmbeddedAssociation( entity, name );
+	public static CouchDBAssociation fromEmbeddedAssociation(EntityDocument entity, AssociationKeyMetadata associationKeyMetadata) {
+		return new EmbeddedAssociation( entity, associationKeyMetadata );
 	}
 
 	/**

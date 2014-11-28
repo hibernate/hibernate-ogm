@@ -6,10 +6,13 @@
  */
 package org.hibernate.ogm.datastore.couchdb.dialect.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.Document;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocument;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 
 /**
  * A {@link CouchDBAssociation} backed by an {@link EntityDocument}.
@@ -19,21 +22,42 @@ import org.hibernate.ogm.datastore.couchdb.dialect.backend.json.impl.EntityDocum
 class EmbeddedAssociation extends CouchDBAssociation {
 
 	private final EntityDocument entity;
-	private final String name;
+	private final AssociationKeyMetadata associationKeyMetadata;
 
-	public EmbeddedAssociation(EntityDocument entity, String name) {
+	public EmbeddedAssociation(EntityDocument entity, AssociationKeyMetadata associationKeyMetadata) {
 		this.entity = entity;
-		this.name = name;
+		this.associationKeyMetadata = associationKeyMetadata;
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public List<Object> getRows() {
-		return entity.getAssociation( name );
+		List<Object> rows;
+		Object fieldValue = entity.getProperties().get( associationKeyMetadata.getCollectionRole() );
+
+		if ( fieldValue == null ) {
+			rows = Collections.emptyList();
+		}
+		else if ( associationKeyMetadata.isOneToOne() ) {
+			rows = new ArrayList<Object>( 1 );
+			rows.add( fieldValue );
+		}
+		else {
+			rows = (List<Object>) fieldValue;
+		}
+
+		return rows;
 	}
 
 	@Override
 	public void setRows(List<Object> rows) {
-		entity.set( name, rows );
+		if ( rows.isEmpty() ) {
+			entity.removeAssociation( associationKeyMetadata.getCollectionRole() );
+		}
+		else {
+			Object value = associationKeyMetadata.isOneToOne() ? rows.iterator().next() : rows;
+			entity.set( associationKeyMetadata.getCollectionRole(), value );
+		}
 	}
 
 	@Override

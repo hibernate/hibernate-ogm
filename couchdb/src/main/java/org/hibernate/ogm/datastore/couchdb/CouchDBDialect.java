@@ -119,7 +119,7 @@ public class CouchDBDialect extends BaseGridDialect {
 		if ( isStoredInEntityStructure( key.getMetadata(), associationContext.getAssociationTypeContext() ) ) {
 			EntityDocument owningEntity = getDataStore().getEntity( Identifier.createEntityId( key.getEntityKey() ) );
 			if ( owningEntity != null && owningEntity.getProperties().containsKey( key.getMetadata().getCollectionRole() ) ) {
-				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata().getCollectionRole() );
+				couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
 			}
 		}
 		else {
@@ -142,7 +142,7 @@ public class CouchDBDialect extends BaseGridDialect {
 				owningEntity = (EntityDocument) getDataStore().saveDocument( new EntityDocument( key.getEntityKey() ) );
 			}
 
-			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata().getCollectionRole() );
+			couchDBAssociation = CouchDBAssociation.fromEmbeddedAssociation( owningEntity, key.getMetadata() );
 		}
 		else {
 			AssociationDocument association = new AssociationDocument( Identifier.createAssociationId( key ) );
@@ -163,7 +163,7 @@ public class CouchDBDialect extends BaseGridDialect {
 	}
 
 	private List<Object> getAssociationRows(Association association, AssociationKey associationKey) {
-		List<Object> rows = new ArrayList<Object>();
+		List<Object> rows = new ArrayList<Object>( association.size() );
 
 		for ( RowKey rowKey : association.getKeys() ) {
 			Tuple tuple = association.get( rowKey );
@@ -207,7 +207,8 @@ public class CouchDBDialect extends BaseGridDialect {
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		return associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
+		return associationKeyMetadata.isOneToOne() ||
+				associationKeyMetadata.getAssociationKind() == AssociationKind.EMBEDDED_COLLECTION ||
 				associationStorage == AssociationStorageType.IN_ENTITY;
 	}
 
