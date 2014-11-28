@@ -8,11 +8,11 @@ package org.hibernate.ogm.util.parser.impl;
 
 import java.util.regex.Pattern;
 
+import org.hibernate.hql.ast.spi.predicate.LikePredicate;
+
 /**
- * Creates {@link Pattern} objects equivalent to given HQL/JPQL {@code LIKE} expressions.
- * <p>
- * Used by {@link org.hibernate.ogm.datastore.mongodb.query.parsing.predicate.impl.MongoDBLikePredicate} to run {@code LIKE}
- * queries against MongoDB, using the {@code $regex} operator.
+ * Creates {@link Pattern} objects equivalent to given HQL/JPQL {@code LIKE} expressions. Used by
+ * {@link LikePredicate} implementations to emulate {@code LIKE} predicates via a native regexp operator.
  * <p>
  * The following rules apply for creating regular expressions:
  * <ul>
