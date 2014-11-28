@@ -20,10 +20,10 @@ import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
+import org.hibernate.ogm.datastore.ehcache.configuration.impl.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
-import org.hibernate.ogm.datastore.ehcache.impl.configuration.EhcacheConfiguration;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.service.spi.Configurable;

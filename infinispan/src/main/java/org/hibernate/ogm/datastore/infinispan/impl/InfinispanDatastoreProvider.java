@@ -12,7 +12,7 @@ import java.util.Set;
 import org.hibernate.engine.jndi.spi.JndiService;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.infinispan.InfinispanDialect;
-import org.hibernate.ogm.datastore.infinispan.impl.configuration.InfinispanConfiguration;
+import org.hibernate.ogm.datastore.infinispan.configuration.impl.InfinispanConfiguration;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.Log;
 import org.hibernate.ogm.datastore.infinispan.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.infinispan.persistencestrategy.impl.KeyProvider;
