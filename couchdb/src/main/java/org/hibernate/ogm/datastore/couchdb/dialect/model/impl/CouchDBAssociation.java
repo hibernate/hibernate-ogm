@@ -28,7 +28,7 @@ public abstract class CouchDBAssociation {
 	 * Creates a {@link CouchDBAssociation} from the given {@link EntityDocument} and association name.
 	 *
 	 * @param entity the owner of the association
-	 * @param name the association name
+	 * @param associationKeyMetadata association key meta-data
 	 * @return a {@link CouchDBAssociation} representing the association
 	 */
 	public static CouchDBAssociation fromEmbeddedAssociation(EntityDocument entity, AssociationKeyMetadata associationKeyMetadata) {
