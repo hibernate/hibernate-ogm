@@ -40,6 +40,8 @@ import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.Tuple;
+import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
+import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.persister.collection.CollectionPersister;
@@ -196,6 +198,11 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 		when( serviceRegistry.getService( DatastoreProvider.class ) ).thenReturn( provider );
 
 		when( serviceRegistry.getService( ClassLoaderService.class ) ).thenReturn( new ClassLoaderServiceImpl() );
+
+		OptionsServiceImpl optionsService = new OptionsServiceImpl();
+		optionsService.injectServices( serviceRegistry );
+		optionsService.configure( Collections.emptyMap() );
+		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionsService );
 
 		return serviceRegistry;
 	}

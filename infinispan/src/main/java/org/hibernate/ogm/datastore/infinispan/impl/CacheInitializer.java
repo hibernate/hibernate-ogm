@@ -8,8 +8,11 @@ package org.hibernate.ogm.datastore.infinispan.impl;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheStorageOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * Triggers initialization of the caches in the Infinispan store.
@@ -20,15 +23,16 @@ public class CacheInitializer extends BaseSchemaDefiner {
 
 	@Override
 	public void initializeSchema(Configuration configuration, SessionFactoryImplementor factory) {
-		InfinispanDatastoreProvider provider = (InfinispanDatastoreProvider) factory
-				.getServiceRegistry()
-				.getService( DatastoreProvider.class );
+		ServiceRegistryImplementor serviceRegistry = factory.getServiceRegistry();
+
+		OptionsService optionsService = serviceRegistry.getService( OptionsService.class );
+		InfinispanDatastoreProvider provider = (InfinispanDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 
 		provider.initializePersistenceStrategy(
+				optionsService.context().getGlobalOptions().getUnique( CacheStorageOption.class ),
 				getAllEntityKeyMetadata( factory ),
 				getAllAssociationKeyMetadata( factory ),
 				getAllIdSourceKeyMetadata( factory )
-
 		);
 	}
 }

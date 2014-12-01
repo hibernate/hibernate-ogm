@@ -7,17 +7,19 @@
 package org.hibernate.ogm.datastore.infinispan;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.infinispan.options.navigation.InfinispanGlobalContext;
+import org.hibernate.ogm.datastore.infinispan.options.navigation.impl.InfinispanEntityContextImpl;
+import org.hibernate.ogm.datastore.infinispan.options.navigation.impl.InfinispanGlobalContextImpl;
+import org.hibernate.ogm.datastore.infinispan.options.navigation.impl.InfinispanPropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.spi.GenericOptionModel;
 
 /**
  * Allows to configure options specific to the Infinispan data store.
  *
  * @author Gunnar Morling
  */
-public class Infinispan implements DatastoreConfiguration<GlobalContext<?, ?>> {
+public class Infinispan implements DatastoreConfiguration<InfinispanGlobalContext> {
 
 	/**
 	 * Short name of this data store provider.
@@ -27,7 +29,7 @@ public class Infinispan implements DatastoreConfiguration<GlobalContext<?, ?>> {
 	public static final String DATASTORE_PROVIDER_NAME = "INFINISPAN";
 
 	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
+	public InfinispanGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+		return context.createGlobalContext( InfinispanGlobalContextImpl.class, InfinispanEntityContextImpl.class, InfinispanPropertyContextImpl.class );
 	}
 }
