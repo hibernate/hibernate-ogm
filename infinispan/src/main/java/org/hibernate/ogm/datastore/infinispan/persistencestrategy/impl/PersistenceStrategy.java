@@ -49,7 +49,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	/**
 	 * Returns a persistence strategy based on the passed configuration.
 	 *
-	 * @param strategy the selected {@link org.hibernate.ogm.datastore.infinispan.options.PersistenceStrategy}
+	 * @param cacheStorage the selected {@link CacheStorageType}
 	 * @param externalCacheManager the infinispan cache manager
 	 * @param configurationUrl the location of the configuration file
 	 * @param jtaPlatform the {@link JtaPlatform}
