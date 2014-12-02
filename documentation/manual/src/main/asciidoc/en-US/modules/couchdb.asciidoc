@@ -266,7 +266,6 @@ Hibernate OGM support by default the following types:
   { "url" : "http://www.hibernate.org/" }
 ----
 
-=
 ===== Entities
 
 Entities are stored as CouchDB documents and not as BLOBs
@@ -445,7 +444,7 @@ Two main strategies are supported:
 1. <<couchdb-table-id-generation-strategy, TABLE>>
 2. <<couchdb-sequence-id-generation-strategy, SEQUENCE>>
 
-Both strategy will create a new document containg the nex value to use fo rthe id, the difference
+Both strategy will create a new document containg the next value to use for the id, the difference
 between the two strategies is the name of the field containing the values.
 
 Hibernate OGM goes not support the +IDENTITY+ strategy and an exception is thrown at startup
@@ -554,6 +553,47 @@ public class Video {
 [[couchdb-sequence-id-generation-strategy]]
 *2) SEQUENCE generation strategy*
 
+.SEQUENCE id generation strategy using default values
+====
+[source, JAVA]
+----
+@Entity
+public class Song {
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.SEQUENCE)
+  private Long id;
+
+  private String title;
+
+  // getters, setters ...
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "Song:id_:2_",
+   "_rev": "1-63bc100449fb2840067028c3825ed784",
+   "$type": "entity",
+   "$table": "Song",
+   "id": "2",
+   "title": "Ave Maria",
+   "singer": "Charlotte Church"
+}
+----
+
+[source, JSON]
+----
+{
+   "_id": "hibernate_sequences:sequence_name:hibernate_sequence",
+   "_rev": "2-dcc622bcb1389ad18829dcfc8b812c87",
+   "$type": "sequence",
+   "next_val": "3"
+}
+----
+====
+
 .SEQUENCE id generation strategy using custom values
 ====
 [source, JAVA]
@@ -649,7 +689,42 @@ public class NewsPaper {
 ----
 ====
 
-.@ElementCollection with one attibute
+.@ElementCollection with primitive types
+====
+[source, JAVA]
+----
+@Entity
+public class AccountWithPhone {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<String> mobileNumbers;
+
+    // getters, setters ...
+}
+----
+
+AccountWithPhone collection
+
+[source, JSON]
+----
+{
+   "_id": "AccountWithPhone:id_:2_",
+   "_rev": "2-a71f7c0d621a08232568f9840bff05ce",
+   "$type": "entity",
+   "$table": "AccountWithPhone",
+   "id": "2",
+   "mobileNumbers": [
+       "+1-222-555-0222",
+       "+1-202-555-0333"
+   ]
+}
+----
+====
+
+.@ElementCollection with one attribute
 ====
 [source, JAVA]
 ----
@@ -742,13 +817,16 @@ public class GrandChild {
 
 ===== Associations
 
-Hibernate OGM CouchDB provides two strategies to store navigation information for associations.
-To switch between these strategies,
-either use the +@AssocationStorage+ annotation (see <<ogm-couchdb-annotation-configuration>>),
-the API for programmatic configuration (see <<ogm-couchdb-programmatic-configuration>>) or
-specify a global default strategy via the +hibernate.ogm.datastore.document.association_storage+ configuration property.
+Hibernate OGM CouchDB provides two strategies to store navigation information for associations:
 
-The possible strategies are +IN_ENTITY+ (default) and +ASSOCIATION_DOCUMENT+.
+* +IN_ENTITY+ (default)
+* +ASSOCIATION_DOCUMENT+
+
+You can switch between the two strategies using:
+
+* the +@AssociationStorage+ annotation (see <<ogm-couchdb-annotation-configuration>>)
+* the API for programmatic configuration (see <<ogm-couchdb-programmatic-configuration>>)
+* specifying a gloabl default strategy via the +hibernate.ogm.datastore.document.association_storage+ configuration property
 
 ====== In Entity strategy
 
@@ -913,6 +991,10 @@ public class Wheel {
 ----
 ====
 
+In a true one-to-one association, it is possible to share the same id between the two entities
+and therefore a foreign key is not required. You can see how to map this type of association in
+the following example:
+
 .Unidirectional one-to-one with @MapsId and @PrimaryKeyJoinColumn
 ====
 [source, JAVA]
@@ -1021,7 +1103,7 @@ public class Wife {
   "$table": "Wife",
   "id" : "bea",
   "name" : "Bea",
-  "husband" : [ "alex" ]
+  "husband" : "alex"
 }
 ----
 ====
@@ -1092,6 +1174,82 @@ Product collection
 }
 ----
 ====
+
+.Unidirectional one-to-many using one collection per strategy with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
+
+    @OneToMany
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Product {
+
+    @Id
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
+}
+----
+
+Basket collection
+
+[source, JSON]
+----
+{
+  "_id" : "davide_basket",
+  "owner" : "Davide"
+}
+----
+
+Product collection
+[source, JSON]
+----
+{
+  "_id" : "Pretzel",
+  "description" : "Glutino Pretzel Sticks"
+}
+{
+  "_id" : "Beer",
+  "description" : "Tactical nuclear penguin"
+}
+----
+
+associations_Basket_Product collection
+[source, JSON]
+----
+{
+  "_id" : { "Basket_id" : "davide_basket" },
+  "rows" : [
+    {
+      "products_name" : "Pretzel",
+      "products_ORDER" : 1
+    },
+    {
+      "products_name" : "Beer",
+      "products_ORDER" : 0
+    }
+  ]
+}
+----
+====
+
+A map can be used to represents an association,
+in this case Hibernate OGM will store the key of the map
+and the associated id.
 
 .Unidirectional one-to-many using maps with defaults
 ====
@@ -1165,6 +1323,8 @@ public class Address {
 } 
 ----
 ====
+
+You can use @MapKeyColumn to rename the column containing the key of the map.
 
 .Unidirectional one-to-many using maps with @MapKeyColumn
 ====
@@ -1395,7 +1555,7 @@ public class Student {
 public class ClassRoom {
 
     @Id
-    private long id;
+    private Long id;
     private String lesson;
 
     @ManyToMany
@@ -1691,7 +1851,9 @@ public class Product {
 ----
 ====
 
-Using the annotation +@JoinTable+ it is possible to change the value
+Using the annotation +@JoinTable+ it is possible to change the value of
+the document containing the association.
+
 .Unidirectional one-to-many using document strategy with +@JoinTable+
 ====
 [source, JAVA]
@@ -1791,7 +1953,7 @@ public class Student {
 public class ClassRoom {
 
     @Id
-    private long id;
+    private Long id;
     private String lesson;
 
     @ManyToMany

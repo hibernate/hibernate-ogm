@@ -384,7 +384,7 @@ public class NewsPaper {
 |===
 ====
 
-.@ElementCollection with one attibute
+.@ElementCollection with one attribute
 ====
 [source, JAVA]
 ----
