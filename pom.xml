@@ -28,6 +28,7 @@
         <module>neo4j</module>
         <module>couchdb</module>
         <module>modules</module>
+        <module>performance</module>
     </modules>
 
     <prerequisites>
@@ -148,10 +149,11 @@
         <concurrentlinkedhashmapVersion>1.3.1</concurrentlinkedhashmapVersion>
         <asmVersion>4.1</asmVersion>
 
-        <!-- test dependency versions, managed below -->
+        <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
         <arquillianVersion>1.1.5.Final</arquillianVersion>
+        <jmhVersion>1.0</jmhVersion>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -230,6 +232,17 @@
                 <artifactId>guava</artifactId>
                 <version>18.0</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-core</artifactId>
+                <version>${jmhVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openjdk.jmh</groupId>
+                <artifactId>jmh-generator-annprocess</artifactId>
+                <version>${jmhVersion}</version>
+                <scope>provided</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
