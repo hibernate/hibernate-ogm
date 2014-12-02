@@ -16,18 +16,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
-
-import org.bson.types.ObjectId;
+import javax.persistence.SequenceGenerator;
 
 /**
  * @author Gunnar Morling
  */
 @Entity
-public class Scientist {
+public class ScientistWithSequence {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private ObjectId id;
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "scientist_seq")
+	@SequenceGenerator(name = "scientist_seq", allocationSize=100)
+	private Long id;
 
 	private String name;
 	private Date dob;
@@ -39,11 +39,11 @@ public class Scientist {
 	@ManyToMany
 	private List<FieldOfScience> interestedIn = new ArrayList<FieldOfScience>();
 
-	public ObjectId getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(ObjectId id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
