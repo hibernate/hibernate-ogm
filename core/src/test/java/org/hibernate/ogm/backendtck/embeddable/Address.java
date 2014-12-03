@@ -69,4 +69,10 @@ public class Address {
 	public void setType(AddressType type) {
 		this.type = type;
 	}
+
+	@Override
+	public String toString() {
+		return "Address [street1=" + street1 + ", street2=" + street2 + ", city=" + city + ", zipCode=" + zipCode + ", country=" + country + ", type=" + type
+				+ "]";
+	}
 }
