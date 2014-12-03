@@ -299,8 +299,14 @@ public class News {
 
 [NOTE]
 ====
-You also can use +GenerationType.AUTO+ to store ids as object id in MongoDB.
-This requires though the property +hibernate.id.new_generator_mappings+ to be set to +false+.
+Care must be taken when using the +GenerationType.AUTO+ strategy.
+When the property +hibernate.id.new_generator_mappings+ is set to +false+ (default),
+it will map to the +IDENTITY+ strategy.
+As described before, this requires your ids to be of type +ObjectId+ or @Type(type = "objectid") String.
+If +hibernate.id.new_generator_mappings+ is set to true, +AUTO+ will be mapped to the +TABLE+ strategy.
+This requires your id to be of a numeric type.
+We recommend to not use +AUTO+ but one of the explicit strategies (+IDENTITY+ or +TABLE+) to avoid
+potential misconfigurations.
 ====
 
 Embedded identifiers are stored as embedded document within the +_id+ field.
