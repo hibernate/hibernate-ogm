@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
@@ -32,7 +33,9 @@ public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRo
 
 	@Override
 	protected DBObject getSingleColumnRow(String columnName, Object value) {
-		return new BasicDBObject( columnName, value );
+		DBObject dbObjectAsRow = new BasicDBObject(1);
+		MongoHelpers.setValue( dbObjectAsRow, columnName, value );
+		return dbObjectAsRow;
 	}
 
 	@Override
@@ -46,12 +49,26 @@ public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRo
 
 		@Override
 		public Set<String> getColumnNames(DBObject row) {
-			return row.keySet();
+			Set<String> columnNames = new HashSet<String>();
+			addColumnNames( row, columnNames, "" );
+			return columnNames;
+		}
+
+		private void addColumnNames(DBObject row, Set<String> columnNames, String prefix) {
+			for ( String field : row.keySet() ) {
+				Object sub = row.get( field );
+				if ( sub instanceof DBObject ) {
+					addColumnNames( (DBObject) sub, columnNames, MongoHelpers.flatten( prefix, field ) );
+				}
+				else {
+					columnNames.add( MongoHelpers.flatten( prefix, field ) );
+				}
+			}
 		}
 
 		@Override
 		public Object get(DBObject row, String column) {
-			return row.get( column );
+			return MongoHelpers.getValueOrNull( row, column );
 		}
 	}
 }

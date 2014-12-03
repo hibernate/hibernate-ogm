@@ -305,6 +305,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
+	//TODO deal with dotted column names once this method is used for ALL / Dirty optimistic locking
 	public boolean updateTupleWithOptimisticLock(EntityKey entityKey, Tuple oldLockState, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( entityKey );
 
@@ -503,10 +504,9 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			for ( String column : rowKeyColumnsToPersist ) {
 				Object value = row.get( column );
 				if ( value != null ) {
-					rowObject.put( column, value );
+					MongoHelpers.setValue( rowObject, column, value );
 				}
 			}
-
 			return rowObject;
 		}
 	}
@@ -532,6 +532,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			query = this.prepareIdObject( key.getEntityKey() );
 			associationField = key.getMetadata().getCollectionRole();
 
+			//TODO would that fail if getCollectionRole has dots?
 			( (MongoDBTupleSnapshot) associationContext.getEntityTuple().getSnapshot() ).getDbObject().put( key.getMetadata().getCollectionRole(), toStore );
 		}
 		else {

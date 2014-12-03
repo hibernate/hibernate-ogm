@@ -104,4 +104,12 @@ public class MongoHelpers {
 
 		return entity.get( path[size - 1] );
 	}
+
+	/**
+	 * Links the two field names into a single left.right field name.
+	 * If the left field is empty, right is returned
+	 */
+	public static String flatten(String left, String right) {
+		return left == null || left.isEmpty() ? right : left + "." + right;
+	}
 }

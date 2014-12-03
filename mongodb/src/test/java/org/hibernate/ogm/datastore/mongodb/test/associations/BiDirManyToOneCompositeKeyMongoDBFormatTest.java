@@ -65,8 +65,8 @@ public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				"{ " +
 						"'_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
 						"'games' : " +
-						"[ { 'id.sequenceNo': 456, 'id.category': 'primary' }, " +
-						" { 'id.sequenceNo': 457, 'id.category': 'primary' } ], " +
+						"[ { 'id': { 'sequenceNo': 456, 'category': 'primary' } }, " +
+						" { 'id': { 'sequenceNo': 457, 'category': 'primary' } } ], " +
 						"'name': 'Hamburg Court' " +
 				"}"
 		);
