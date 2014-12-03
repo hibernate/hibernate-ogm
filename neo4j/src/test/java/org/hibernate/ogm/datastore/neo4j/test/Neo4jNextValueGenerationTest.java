@@ -122,7 +122,7 @@ public class Neo4jNextValueGenerationTest {
 	public void testFirstValueIsInitialValue() {
 		final IdSourceKey generatorKey = buildIdGeneratorKey( INITIAL_VALUE_SEQUENCE );
 		Number sequenceValue = dialect.nextValue( new NextValueRequest( generatorKey, 1, INITIAL_VALUE_FIRST_VALUE_TEST ) );
-		assertThat( sequenceValue ).isEqualTo( INITIAL_VALUE_FIRST_VALUE_TEST );
+		assertThat( sequenceValue ).isEqualTo( Long.valueOf( INITIAL_VALUE_FIRST_VALUE_TEST ) );
 	}
 
 	@Test
@@ -144,7 +144,7 @@ public class Neo4jNextValueGenerationTest {
 			thread.join();
 		}
 		Number value = dialect.nextValue( new NextValueRequest( generatorKey, 0, 1 ) );
-		assertThat( value ).isEqualTo( LOOPS * THREADS );
+		assertThat( value ).isEqualTo( Long.valueOf( LOOPS * THREADS ) );
 	}
 
 	private IdSourceKey buildIdGeneratorKey(String sequenceName) {
