@@ -165,6 +165,7 @@
         <skipUnitTests>false</skipUnitTests>
 
         <!-- The following properties configure the embedded MongoDB instance used for tests -->
+        <embeddedMongoDbVersion>2.6.5</embeddedMongoDbVersion>
         <embeddedMongoDbBindIp>127.0.0.1</embeddedMongoDbBindIp>
         <embeddedMongoDbTempDir>${project.build.directory}/embeddedMongoDb/extracted</embeddedMongoDbTempDir>
         <embeddedMongoDbLogDir>${project.build.directory}/embeddedMongoDb/logs</embeddedMongoDbLogDir>
@@ -660,12 +661,13 @@
                 <plugin>
                     <groupId>com.github.joelittlejohn.embedmongo</groupId>
                     <artifactId>embedmongo-maven-plugin</artifactId>
-                    <version>0.1.9</version>
+                    <version>0.1.12</version>
                     <configuration>
                         <port>${embeddedMongoDbPort}</port>
                         <logging>file</logging>
                         <logFile>${embeddedMongoDbLogDir}/embedded-mongodb.log</logFile>
                         <bindIp>${embeddedMongoDbBindIp}</bindIp>
+                        <version>${embeddedMongoDbVersion}</version>
                     </configuration>
                 </plugin>
                 <plugin>
