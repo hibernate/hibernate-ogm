@@ -872,6 +872,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	private void flushInserts(Map<DBCollection, BatchInsertionTask> inserts) {
 		for ( Map.Entry<DBCollection, BatchInsertionTask> entry : inserts.entrySet() ) {
 			DBCollection collection = entry.getKey();
+			if ( entry.getValue().isEmpty() ) {
+				// has been emptied due to subsequent removals before flushes
+				continue;
+			}
 
 			try {
 				collection.insert( entry.getValue().getAll(), entry.getValue().getWriteConcern() );
@@ -969,6 +973,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 
 		public WriteConcern getWriteConcern() {
 			return writeConcern;
+		}
+
+		public boolean isEmpty() {
+			return inserts.isEmpty();
 		}
 	}
 }
