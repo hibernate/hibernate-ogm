@@ -501,7 +501,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
 			for ( String column : rowKeyColumnsToPersist ) {
-				rowObject.put( column, row.get( column ) );
+				Object value = row.get( column );
+				if ( value != null ) {
+					rowObject.put( column, value );
+				}
 			}
 
 			return rowObject;

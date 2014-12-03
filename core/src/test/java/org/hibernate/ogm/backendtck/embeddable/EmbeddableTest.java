@@ -93,6 +93,7 @@ public class EmbeddableTest extends OgmTestCase {
 		anotherAddress.setCountry( "Italy" );
 		anotherAddress.setStreet1( "Piazza del Colosseo, 1" );
 		anotherAddress.setZipCode( "00184" );
+		anotherAddress.setType( new AddressType( "primary" ) );
 
 		MultiAddressAccount account = new MultiAddressAccount();
 		account.setLogin( "gunnar" );
@@ -108,9 +109,11 @@ public class EmbeddableTest extends OgmTestCase {
 		transaction = session.beginTransaction();
 		MultiAddressAccount loadedAccount = (MultiAddressAccount) session.get( MultiAddressAccount.class, account.getLogin() );
 		assertThat( loadedAccount ).as( "Cannot load persisted object" ).isNotNull();
-		assertThat( loadedAccount.getAddresses() ).onProperty( "city" ).contains( "Paris", "Rome" );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "zipCode" ).contains( "75007", "00184" );
-		assertThat( loadedAccount.getAddresses() ).onProperty( "country" ).contains( "France", "Italy" );
+		assertThat( loadedAccount.getAddresses() ).onProperty( "city" ).containsOnly( "Paris", "Rome" );
+		assertThat( loadedAccount.getAddresses() ).onProperty( "zipCode" ).containsOnly( "75007", "00184" );
+		assertThat( loadedAccount.getAddresses() ).onProperty( "country" ).containsOnly( "France", "Italy" );
+		assertThat( loadedAccount.getAddresses() ).onProperty( "street2" ).containsOnly( null, null );
+		assertThat( loadedAccount.getAddresses() ).onProperty( "type" ).containsOnly( new AddressType( "primary" ), null );
 
 		Address loadedAddress1 = loadedAccount.getAddresses().get( 0 );
 		Address loadedAddress2 = loadedAccount.getAddresses().get( 1 );

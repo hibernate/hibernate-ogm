@@ -178,7 +178,10 @@ public class CouchDBDialect extends BaseGridDialect {
 			else {
 				Map<String, Object> row = new HashMap<String, Object>( columnsToPersist.length );
 				for ( String columnName : columnsToPersist ) {
-					row.put( columnName, tuple.get( columnName ) );
+					Object value = tuple.get( columnName );
+					if ( value != null ) {
+						row.put( columnName, value );
+					}
 				}
 
 				rows.add( row );
