@@ -51,12 +51,12 @@ public final class MapHelpers {
 		}
 	}
 
-	public static Map<String, Object> tupleToMap(Tuple tuple) {
-		if (tuple == null) {
+	public static Map<String, Object> associationRowToMap(Tuple associationRow) {
+		if (associationRow == null) {
 			return null;
 		}
 		Map<String, Object> snapshot;
-		TupleSnapshot snapshotInstance = tuple.getSnapshot();
+		TupleSnapshot snapshotInstance = associationRow.getSnapshot();
 		if ( snapshotInstance.isEmpty() ) {
 			//new assoc tuples are made of EmptyTupleSnapshot
 			snapshot = Collections.emptyMap();
@@ -66,7 +66,7 @@ public final class MapHelpers {
 			snapshot = ( (MapTupleSnapshot) snapshotInstance ).getMap();
 		}
 		Map<String, Object> map = new HashMap<String, Object>( snapshot );
-		MapHelpers.applyTupleOpsOnMap( tuple, map, false );
+		MapHelpers.applyTupleOpsOnMap( associationRow, map, false );
 		return map;
 	}
 
@@ -78,7 +78,7 @@ public final class MapHelpers {
 					underlyingMap.clear();
 				case PUT_NULL:
 				case PUT:
-					underlyingMap.put( action.getKey(), MapHelpers.tupleToMap( action.getValue() ) );
+					underlyingMap.put( action.getKey(), MapHelpers.associationRowToMap( action.getValue() ) );
 					break;
 				case REMOVE:
 					underlyingMap.remove( action.getKey() );
