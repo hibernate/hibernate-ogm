@@ -76,12 +76,12 @@ public class MongoHelpers {
 		}
 	}
 
-	public static boolean hasField(DBObject entity, String dothPath) {
-		return getValueOrNull( entity, dothPath ) != null;
+	public static boolean hasField(DBObject entity, String dotPath) {
+		return getValueOrNull( entity, dotPath ) != null;
 	}
 
-	public static <T> T getValueOrNull(DBObject entity, String dothPath, Class<T> type) {
-		Object value = getValueOrNull( entity, dothPath );
+	public static <T> T getValueOrNull(DBObject entity, String dotPath, Class<T> type) {
+		Object value = getValueOrNull( entity, dotPath );
 		return type.isInstance( value ) ? type.cast( value ) : null;
 	}
 
