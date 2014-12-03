@@ -344,10 +344,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			String column = operation.getColumn();
 			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
-					case PUT_NULL:
 					case PUT:
 						MongoHelpers.setValue( dbObject, column, operation.getValue() );
 						break;
+					case PUT_NULL:
 					case REMOVE:
 						dbObject.removeField( column );
 						break;
@@ -365,10 +365,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			String column = operation.getColumn();
 			if ( notInIdField( snapshot, column ) ) {
 				switch ( operation.getType() ) {
-				case PUT_NULL:
 				case PUT:
 					this.addSubQuery( "$set", updater, column, operation.getValue() );
 					break;
+				case PUT_NULL:
 				case REMOVE:
 					this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
 					break;
