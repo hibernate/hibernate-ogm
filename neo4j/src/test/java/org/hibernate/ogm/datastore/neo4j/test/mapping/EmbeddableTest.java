@@ -57,6 +57,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		properties.put( "homeAddress.city", account.getHomeAddress().getCity() );
 		properties.put( "homeAddress.country", account.getHomeAddress().getCountry() );
 		properties.put( "postal_code", account.getHomeAddress().getZipCode() );
+		properties.put( "version", account.getVersion() );
 
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put( "n", properties );
@@ -68,6 +69,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 				+ ", `homeAddress.city`: {n}.`homeAddress.city`"
 				+ ", `homeAddress.country`: {n}.`homeAddress.country`"
 				+ ", `postal_code`: {n}.postal_code"
+				+ ", `version`: {n}.version"
 				+ " })", params );
 	}
 

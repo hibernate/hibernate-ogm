@@ -8,6 +8,7 @@ package org.hibernate.ogm.backendtck.embeddable;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Version;
 
 /**
  * @author Emmanuel Bernard
@@ -17,6 +18,7 @@ public class Account {
 	private String login;
 	private String password;
 	private Address homeAddress;
+	private Integer version;
 
 	@Id
 	public String getLogin() {
@@ -41,5 +43,14 @@ public class Account {
 
 	public void setHomeAddress(Address homeAddress) {
 		this.homeAddress = homeAddress;
+	}
+
+	@Version
+	public Integer getVersion() {
+		return version;
+	}
+
+	public void setVersion(Integer version) {
+		this.version = version;
 	}
 }

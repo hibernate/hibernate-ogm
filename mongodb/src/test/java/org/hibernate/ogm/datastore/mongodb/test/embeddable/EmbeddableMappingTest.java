@@ -67,7 +67,8 @@ public class EmbeddableMappingTest extends OgmTestCase {
 						"}" +
 					"}, " +
 					"'postal_code' : '75007', " +
-					"'password' : 'like I would tell ya' " +
+					"'password' : 'like I would tell ya', " +
+					"'version': 0 " +
 				"}"
 		);
 
@@ -104,7 +105,8 @@ public class EmbeddableMappingTest extends OgmTestCase {
 							"'name' : 'main'" +
 						"}" +
 					"}, " +
-					"'postal_code' : '75007' " +
+					"'postal_code' : '75007', " +
+					"'version': 1 " +
 				"}"
 		);
 
