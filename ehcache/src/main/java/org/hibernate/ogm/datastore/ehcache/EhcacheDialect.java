@@ -183,10 +183,10 @@ public class EhcacheDialect extends BaseGridDialect {
 		}
 		if ( previousValue != null ) {
 			while ( !cache.replace( previousValue,
-					new Element( key, ( (Integer) previousValue.getObjectValue() ) + request.getIncrement() ) ) ) {
+					new Element( key, ( (Number) previousValue.getObjectValue() ).longValue() + request.getIncrement() ) ) ) {
 				previousValue = cache.get( key );
 			}
-			return ( (Integer) previousValue.getObjectValue() ) + request.getIncrement();
+			return ( (Number) previousValue.getObjectValue() ).longValue() + request.getIncrement();
 		}
 		else {
 			return request.getInitialValue();

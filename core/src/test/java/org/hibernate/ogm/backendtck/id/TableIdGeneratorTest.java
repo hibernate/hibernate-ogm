@@ -6,12 +6,12 @@
  */
 package org.hibernate.ogm.backendtck.id;
 
+import static org.fest.assertions.Assertions.assertThat;
+
 import javax.persistence.EntityManager;
 
-import org.junit.Test;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
-
-import static org.fest.assertions.Assertions.assertThat;
+import org.junit.Test;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -48,11 +48,34 @@ public class TableIdGeneratorTest extends JpaTestCase {
 		em.close();
 	}
 
+	@Test
+	public void testTableIdGeneratorUsingLong() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+		Composer composer = new Composer();
+		composer.setName( "Gainsbourg" );
+		em.persist( composer );
+		getTransactionManager().commit();
+
+		em.clear();
+
+		getTransactionManager().begin();
+		composer = em.find( Composer.class, composer.getId() );
+		assertThat( composer ).isNotNull();
+		assertThat( composer.getName() ).isEqualTo( "Gainsbourg" );
+		assertThat( composer.getId() ).isEqualTo( Integer.MAX_VALUE + 1 );
+		em.remove( composer );
+		getTransactionManager().commit();
+
+		em.close();
+	}
+
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class<?>[] {
 				Music.class,
-				Video.class
+				Video.class,
+				Composer.class
 		};
 	}
 }

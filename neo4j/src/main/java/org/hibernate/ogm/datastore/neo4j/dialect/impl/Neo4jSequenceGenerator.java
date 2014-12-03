@@ -221,7 +221,7 @@ public class Neo4jSequenceGenerator {
 	 * @param initialValue the initial value of the given generator
 	 * @return the next value in a sequence
 	 */
-	public int nextValue(IdSourceKey idSourceKey, int increment, int initialValue) {
+	public long nextValue(IdSourceKey idSourceKey, int increment, int initialValue) {
 		Transaction tx = neo4jDb.beginTx();
 		Lock lock = null;
 		try {
@@ -240,7 +240,7 @@ public class Neo4jSequenceGenerator {
 			}
 
 			lock = tx.acquireWriteLock( sequence );
-			int nextValue = updateSequenceValue( idSourceKey, sequence, increment );
+			long nextValue = updateSequenceValue( idSourceKey, sequence, increment );
 			tx.success();
 			lock.release();
 			return nextValue;
@@ -305,11 +305,11 @@ public class Neo4jSequenceGenerator {
 		return key.getMetadata().getType() == IdSourceType.SEQUENCE ? key.getMetadata().getName() : (String) key.getColumnValues()[0];
 	}
 
-	private int updateSequenceValue(IdSourceKey idSourceKey, Node sequence, int increment) {
+	private long updateSequenceValue(IdSourceKey idSourceKey, Node sequence, int increment) {
 		String valueProperty = idSourceKey.getMetadata().getType() == IdSourceType.TABLE ? idSourceKey.getMetadata().getValueColumnName() : SEQUENCE_VALUE_PROPERTY;
-		int currentValue = (Integer) sequence.getProperty( valueProperty );
-		int updatedValue = currentValue + increment;
+		Number currentValue = (Number) sequence.getProperty( valueProperty );
+		long updatedValue = currentValue.longValue() + increment;
 		sequence.setProperty( valueProperty, updatedValue );
-		return currentValue;
+		return currentValue.longValue();
 	}
 }
