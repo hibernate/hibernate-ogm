@@ -27,9 +27,20 @@ public final class MapHelpers {
 	}
 
 	public static void applyTupleOpsOnMap(Tuple tuple, Map<String, Object> map) {
+		applyTupleOpsOnMap( tuple, map, true );
+	}
+
+	public static void applyTupleOpsOnMap(Tuple tuple, Map<String, Object> map, boolean putNulls) {
 		for ( TupleOperation action : tuple.getOperations() ) {
 			switch ( action.getType() ) {
 				case PUT_NULL:
+					if ( putNulls ) {
+						map.put( action.getColumn(), action.getValue() );
+					}
+					else {
+						map.remove( action.getColumn() );
+					}
+					break;
 				case PUT:
 					map.put( action.getColumn(), action.getValue() );
 					break;
@@ -55,7 +66,7 @@ public final class MapHelpers {
 			snapshot = ( (MapTupleSnapshot) snapshotInstance ).getMap();
 		}
 		Map<String, Object> map = new HashMap<String, Object>( snapshot );
-		MapHelpers.applyTupleOpsOnMap( tuple, map );
+		MapHelpers.applyTupleOpsOnMap( tuple, map, false );
 		return map;
 	}
 
