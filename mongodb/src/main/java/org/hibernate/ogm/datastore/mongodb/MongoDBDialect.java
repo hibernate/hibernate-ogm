@@ -540,9 +540,6 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		List<?> rows = getAssociationRows( association, key );
 		Object toStore = key.getMetadata().isOneToOne() ? rows.get( 0 ) : rows;
 
-		// We need to execute the previous operations first or it won't be able to find the key that should have
-		// been created
-		executeBatch( associationContext.getOperationsQueue() );
 		if ( storageStrategy == AssociationStorageStrategy.IN_ENTITY ) {
 			collection = this.getCollection( key.getEntityKey() );
 			query = this.prepareIdObject( key.getEntityKey() );
