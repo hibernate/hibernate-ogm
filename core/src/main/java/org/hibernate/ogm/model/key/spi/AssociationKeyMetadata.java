@@ -16,8 +16,30 @@ import org.hibernate.ogm.model.spi.AssociationKind;
  */
 public interface AssociationKeyMetadata {
 
+	/**
+	 * Returns the table name of this key.
+	 *
+	 * @return the table name of this key
+	 */
 	String getTable();
 
+	/**
+	 * The columns identifying the association.
+	 *
+	 * For example, in a many to many association, the row key will look like:
+	 *
+	 * <pre>
+	 * RowKey{table='AccountOwner_BankAccount', columnNames=[owners_id, bankAccounts_id], columnValues=[...]},
+	 * </pre>
+	 *
+	 * the association key will be something like:
+	 *
+	 * <pre>
+	 * AssociationKey{table='AccountOwner_BankAccount', columnNames=[owners_id], columnValues=[...]},
+	 * </pre>
+	 *
+	 * @return the columns names as an array, it never returns {@code null}
+	 */
 	String[] getColumnNames();
 
 	/**
