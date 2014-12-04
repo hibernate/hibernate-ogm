@@ -11,8 +11,8 @@ package org.hibernate.ogm.datastore.ehcache.impl;
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-final class CacheNames {
-	static final String ENTITY_CACHE = "ENTITIES";
-	static final String ASSOCIATION_CACHE = "ASSOCIATIONS";
-	static final String IDENTIFIER_CACHE = "IDENTIFIERS";
+public final class CacheNames {
+	public static final String ENTITY_CACHE = "ENTITIES";
+	public static final String ASSOCIATION_CACHE = "ASSOCIATIONS";
+	public static final String IDENTIFIER_CACHE = "IDENTIFIERS";
 }
