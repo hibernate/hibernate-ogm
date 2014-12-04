@@ -15,6 +15,11 @@ import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.OnePerK
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableAssociationKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableIdSourceKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableCacheManager;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableKeyProvider;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableAssociationKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableEntityKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableIdSourceKey;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -61,7 +66,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 			return getPerKindStrategy( externalCacheManager );
 		}
 		else {
-			throw new UnsupportedOperationException( "Not implemented yet" );
+			return getPerTableStrategy( externalCacheManager, entityTypes, associationTypes, idSourceTypes );
 		}
 	}
 
@@ -71,10 +76,25 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 */
 	private static PersistenceStrategy<?, ?, ?> getPerKindStrategy(CacheManager externalCacheManager) {
 		OnePerKindKeyProvider keyProvider = new OnePerKindKeyProvider();
-
 		OnePerKindCacheManager cacheManager = new OnePerKindCacheManager( externalCacheManager );
 
 		return new PersistenceStrategy<SerializableEntityKey, SerializableAssociationKey, SerializableIdSourceKey>( cacheManager, keyProvider );
+	}
+
+	/**
+	 * Returns the "per-table" persistence strategy, i.e. one dedicated cache will be used for each
+	 * entity/association/id source table.
+	 */
+	private static PersistenceStrategy<?, ?, ?> getPerTableStrategy(
+			CacheManager externalCacheManager,
+			Set<EntityKeyMetadata> entityTypes,
+			Set<AssociationKeyMetadata> associationTypes,
+			Set<IdSourceKeyMetadata> idSourceTypes) {
+
+		PerTableKeyProvider keyProvider = new PerTableKeyProvider();
+		PerTableCacheManager cacheManager = new PerTableCacheManager( externalCacheManager, entityTypes, associationTypes, idSourceTypes );
+
+		return new PersistenceStrategy<PerTableSerializableEntityKey, PerTableSerializableAssociationKey, PerTableSerializableIdSourceKey>( cacheManager, keyProvider );
 	}
 
 	/**
