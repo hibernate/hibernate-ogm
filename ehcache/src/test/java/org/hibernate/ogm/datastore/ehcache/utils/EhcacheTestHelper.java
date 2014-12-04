@@ -21,6 +21,7 @@ import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -52,7 +53,7 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		return entityCount;
 	}
 
-	private static Cache<?> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
+	public static Cache<?> getEntityCache(SessionFactory sessionFactory, EntityKeyMetadata entityKeyMetadata) {
 		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getEntityCache( entityKeyMetadata );
 	}
@@ -73,9 +74,14 @@ public class EhcacheTestHelper implements TestableGridDialect {
 		return asscociationCount;
 	}
 
-	private static Cache<?> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
+	public static Cache<?> getAssociationCache(SessionFactory sessionFactory, AssociationKeyMetadata associationKeyMetadata) {
 		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
 		return castProvider.getCacheManager().getAssociationCache( associationKeyMetadata );
+	}
+
+	public static Cache<?> getIdSourceCache(SessionFactory sessionFactory, String tableName) {
+		EhcacheDatastoreProvider castProvider = getProvider( sessionFactory );
+		return castProvider.getCacheManager().getIdSourceCache( DefaultIdSourceKeyMetadata.forTable( tableName, "sequence_name", "next_val" ) );
 	}
 
 	@Override
