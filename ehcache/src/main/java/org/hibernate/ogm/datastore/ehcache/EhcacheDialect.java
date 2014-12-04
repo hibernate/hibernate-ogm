@@ -16,13 +16,13 @@ import org.hibernate.dialect.lock.LockingStrategy;
 import org.hibernate.dialect.lock.OptimisticForceIncrementLockingStrategy;
 import org.hibernate.dialect.lock.OptimisticLockingStrategy;
 import org.hibernate.dialect.lock.PessimisticForceIncrementLockingStrategy;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableMapAssociationSnapshot;
 import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableRowKey;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager.KeyProcessor;
 import org.hibernate.ogm.datastore.map.impl.MapHelpers;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
@@ -43,9 +43,16 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.persister.entity.Lockable;
 
 /**
+ * Persists domain models in the Ehcache key/value store.
+ *
  * @author Alex Snaps
+ * @author Gunnar Morling
+ *
+ * @param <EK> the entity cache key type
+ * @param <AK> the association cache key type
+ * @param <ISK> the identity source cache key type
  */
-public class EhcacheDialect extends BaseGridDialect {
+public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 
 	EhcacheDatastoreProvider datastoreProvider;
 
@@ -78,8 +85,8 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		final Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
-		final Element element = entityCache.get( new SerializableEntityKey( key ) );
+		final Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
+		final Element element = entityCache.get( getKeyProvider().getEntityCacheKey( key ) );
 		if ( element != null ) {
 			return createTuple( element );
 		}
@@ -100,32 +107,32 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
-		Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
+		Cache<EK> entityCache = getCacheManager().getEntityCache( key.getMetadata() );
 
 		Map<String, Object> entityRecord = ( (MapTupleSnapshot) tuple.getSnapshot() ).getMap();
 
 		if ( entityRecord.isEmpty() ) {
 			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
-			Element previous = entityCache.putIfAbsent( new Element( new SerializableEntityKey( key ), entityRecord ) );
+			Element previous = entityCache.putIfAbsent( new Element( getKeyProvider().getEntityCacheKey( key ), entityRecord ) );
 			if ( previous != null ) {
 				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, null );
 			}
 		}
 		else {
 			MapHelpers.applyTupleOpsOnMap( tuple, entityRecord );
-			entityCache.put( new Element( new SerializableEntityKey( key ), entityRecord ) );
+			entityCache.put( new Element( getKeyProvider().getEntityCacheKey( key ), entityRecord ) );
 		}
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		datastoreProvider.getEntityCache().remove( new SerializableEntityKey( key ) );
+		getCacheManager().getEntityCache( key.getMetadata() ).remove( getKeyProvider().getEntityCacheKey( key ) );
 	}
 
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
-		final Element element = associationCache.get( new SerializableAssociationKey( key ) );
+		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
+		final Element element = associationCache.get( getKeyProvider().getAssociationCacheKey( key ) );
 
 		if ( element == null ) {
 			return null;
@@ -139,9 +146,9 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
+		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
 		Map<SerializableRowKey, Map<String, Object>> association = new HashMap<SerializableRowKey, Map<String, Object>>();
-		associationCache.put( new Element( new SerializableAssociationKey( key ), association ) );
+		associationCache.put( new Element( getKeyProvider().getAssociationCacheKey( key ), association ) );
 		return new Association( new SerializableMapAssociationSnapshot( association ) );
 	}
 
@@ -163,19 +170,19 @@ public class EhcacheDialect extends BaseGridDialect {
 			}
 		}
 
-		final Cache<SerializableAssociationKey> associationCache = datastoreProvider.getAssociationCache();
-		associationCache.put( new Element( new SerializableAssociationKey( key ), associationRows ) );
+		final Cache<AK> associationCache = getCacheManager().getAssociationCache( key.getMetadata() );
+		associationCache.put( new Element( getKeyProvider().getAssociationCacheKey( key ), associationRows ) );
 	}
 
 	@Override
 	public void removeAssociation(AssociationKey key, AssociationContext associationContext) {
-		datastoreProvider.getAssociationCache().remove( new SerializableAssociationKey( key ) );
+		getCacheManager().getAssociationCache( key.getMetadata() ).remove( getKeyProvider().getAssociationCacheKey( key ) );
 	}
 
 	@Override
 	public Number nextValue(NextValueRequest request) {
-		final Cache<SerializableIdSourceKey> cache = datastoreProvider.getIdentifierCache();
-		SerializableIdSourceKey key = new SerializableIdSourceKey( request.getKey() );
+		final Cache<ISK> cache = getCacheManager().getIdSourceCache( request.getKey().getMetadata() );
+		ISK key = getKeyProvider().getIdSourceCacheKey( request.getKey() );
 
 		Element previousValue = cache.get( key );
 		if ( previousValue == null ) {
@@ -200,20 +207,36 @@ public class EhcacheDialect extends BaseGridDialect {
 
 	@Override
 	public void forEachTuple(ModelConsumer consumer, EntityKeyMetadata... entityKeyMetadatas) {
-		Cache<SerializableEntityKey> entityCache = datastoreProvider.getEntityCache();
-		for ( SerializableEntityKey key : entityCache.getKeys() ) {
-			for ( EntityKeyMetadata entityKeyMetadata : entityKeyMetadatas ) {
-				// Check if there is a way to load keys applying a filter
-				if ( key.getTable().equals( entityKeyMetadata.getTable() ) ) {
-					Element element = entityCache.get( key );
-					consumer.consume( createTuple( element ) );
-				}
-			}
-		}
+		getCacheManager().forEachTuple( new EntityKeyProcessor( consumer ), entityKeyMetadatas );
 	}
 
 	@Override
 	public DuplicateInsertPreventionStrategy getDuplicateInsertPreventionStrategy(EntityKeyMetadata entityKeyMetadata) {
 		return DuplicateInsertPreventionStrategy.NATIVE;
+	}
+
+	@SuppressWarnings("unchecked")
+	private LocalCacheManager<EK, AK, ISK> getCacheManager() {
+		return (LocalCacheManager<EK, AK, ISK>) datastoreProvider.getCacheManager();
+	}
+
+	@SuppressWarnings("unchecked")
+	private KeyProvider<EK, AK, ISK> getKeyProvider() {
+		return (KeyProvider<EK, AK, ISK>) datastoreProvider.getKeyProvider();
+	}
+
+	private class EntityKeyProcessor implements KeyProcessor<EK> {
+
+		private final ModelConsumer consumer;
+
+		private EntityKeyProcessor(ModelConsumer consumer) {
+			this.consumer = consumer;
+		}
+
+		@Override
+		public void processKey(EK key, Cache<EK> cache) {
+			Element element = cache.get( key );
+			consumer.consume( createTuple( element ) );
+		}
 	}
 }

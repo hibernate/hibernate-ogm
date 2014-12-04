@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.ehcache.impl;
 
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.transaction.TransactionManager;
 
@@ -21,11 +22,16 @@ import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.configuration.impl.EhcacheConfiguration;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.PersistenceStrategy;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
+import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -40,11 +46,10 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
-	private Cache<SerializableEntityKey> entityCache;
-	private Cache<SerializableAssociationKey> associationCache;
-	private Cache<SerializableIdSourceKey> identifierCache;
 
 	private final EhcacheConfiguration config = new EhcacheConfiguration();
+
+	private PersistenceStrategy<?, ?, ?> persistenceStrategy;
 
 	@Override
 	public void configure(Map map) {
@@ -71,27 +76,49 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 			configuration.addTransactionManagerLookup( transactionManagerLookupParameter );
 		}
 		cacheManager = CacheManager.create( config.getUrl() );
+	}
 
-		entityCache = new Cache<SerializableEntityKey>( cacheManager.getCache( CacheNames.ENTITY_CACHE ) );
-		associationCache = new Cache<SerializableAssociationKey>( cacheManager.getCache( CacheNames.ASSOCIATION_CACHE ) );
-		identifierCache = new Cache<SerializableIdSourceKey>( cacheManager.getCache( CacheNames.IDENTIFIER_CACHE ) );
+	/**
+	 * Initializes the persistence strategy to be used when accessing the datastore. In particular, all the required
+	 * caches will be configured and initialized.
+	 *
+	 * @param cacheStorageType the {@link CacheStorageType} to be used
+	 * @param entityTypes meta-data of all the entity types registered with the current session factory
+	 * @param associationTypes meta-data of all the association types registered with the current session factory
+	 * @param idSourceTypes meta-data of all the id source types registered with the current session factory
+	 */
+	public void initializePersistenceStrategy(CacheStorageType cacheStorageType, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
+		persistenceStrategy = PersistenceStrategy.getInstance(
+				cacheStorageType,
+				cacheManager,
+				entityTypes,
+				associationTypes,
+				idSourceTypes
+		);
+
+		// clear resources
+		this.cacheManager = null;
+		this.jtaPlatform = null;
+	}
+
+	public LocalCacheManager<?, ?, ?> getCacheManager() {
+		return persistenceStrategy.getCacheManager();
+	}
+
+	public KeyProvider<?, ?, ?> getKeyProvider() {
+		return persistenceStrategy.getKeyProvider();
 	}
 
 	@Override
 	public void stop() {
-		cacheManager.shutdown();
+		if ( persistenceStrategy != null ) {
+			persistenceStrategy.getCacheManager().stop();
+		}
 	}
 
-	public Cache<SerializableEntityKey> getEntityCache() {
-		return entityCache;
-	}
-
-	public Cache<SerializableAssociationKey> getAssociationCache() {
-		return associationCache;
-	}
-
-	public Cache<SerializableIdSourceKey> getIdentifierCache() {
-		return identifierCache;
+	@Override
+	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
+		return CacheInitializer.class;
 	}
 
 	public static class OgmTransactionManagerLookupDelegate implements TransactionManagerLookup {
