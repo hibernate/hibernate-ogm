@@ -349,7 +349,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 						break;
 					case PUT_NULL:
 					case REMOVE:
-						dbObject.removeField( column );
+						MongoHelpers.resetValue( dbObject, column );
 						break;
 					}
 			}

@@ -48,6 +48,34 @@ public class MongoHelpers {
 		}
 	}
 
+	/**
+	 * Remove a column from the DBObject
+	 */
+	public static void resetValue(DBObject entity, String column) {
+		// fast path for non-embedded case
+		if ( !column.contains( "." ) ) {
+			entity.removeField( column );
+		}
+		else {
+			String[] path = DOT_SEPARATOR_PATTERN.split( column );
+			Object field = entity;
+			int size = path.length;
+			for (int index = 0 ; index < size ; index++) {
+				String node = path[index];
+				DBObject parent = (DBObject) field;
+				field = parent.get( node );
+				if ( field == null && index < size - 1 ) {
+					//TODO clean up the hierarchy of empty containers
+					// no way to reach the leaf, nothing to do
+					return;
+				}
+				if ( index == size - 1 ) {
+					parent.removeField( node );
+				}
+			}
+		}
+	}
+
 	public static boolean hasField(DBObject entity, String dothPath) {
 		return getValueOrNull( entity, dothPath ) != null;
 	}
