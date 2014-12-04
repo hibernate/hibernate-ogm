@@ -12,6 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.VersionChecker;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 
 /**
@@ -113,8 +114,7 @@ public class SerializableIdSourceKey implements Externalizable {
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		// version
-		in.readInt();
+		VersionChecker.readAndCheckVersion( in, VERSION, SerializableIdSourceKey.class );
 
 		table = in.readUTF();
 		columnNames = (String[]) in.readObject();
