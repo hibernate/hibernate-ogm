@@ -116,8 +116,6 @@ public class GridDialectOperationInvocationsTest extends OgmTestCase {
 		assertThat( getOperations() ).containsExactly(
 				"createTuple",
 				"getAssociation",
-				"createAssociation",
-				"insertOrUpdateAssociation",
 				"executeBatch",
 				"getTuple",
 				"getAssociation",
