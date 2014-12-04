@@ -72,6 +72,7 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.model.spi.Association;
+import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
@@ -434,9 +435,20 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 	}
 
+	private boolean isInTheQueue(EntityKey key, AssociationContext associationContext) {
+		OperationsQueue queue = associationContext.getOperationsQueue();
+		return queue != null && queue.contains( key );
+	}
+
 	@Override
 	public Association getAssociation(AssociationKey key, AssociationContext associationContext) {
 		AssociationStorageStrategy storageStrategy = getAssociationStorageStrategy( key, associationContext );
+
+		if ( isEmbeddedAssociation( key ) && isInTheQueue( key.getEntityKey(), associationContext ) ) {
+			// The association is embedded and the owner of the association is in the insertion queue
+			DBObject idObject = prepareIdObject( key.getEntityKey() );
+			return new Association( new MongoDBAssociationSnapshot( idObject, key, storageStrategy ) );
+		}
 
 		// We need to execute the previous operations first or it won't be able to find the key that should have
 		// been created
@@ -458,6 +470,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			return new Association( new MongoDBAssociationSnapshot( result, key, storageStrategy ) );
 		}
+	}
+
+	private boolean isEmbeddedAssociation(AssociationKey key) {
+		return AssociationKind.EMBEDDED_COLLECTION == key.getMetadata().getAssociationKind();
 	}
 
 	@Override
@@ -793,7 +809,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				}
 				else if ( operation instanceof InsertOrUpdateAssociationOperation ) {
 					InsertOrUpdateAssociationOperation update = (InsertOrUpdateAssociationOperation) operation;
-					insertOrUpdateAssociation( update.getAssociationKey(), update.getAssociation(), update.getContext() );
+					executeBatchUpdateAssociation( inserts, update );
 				}
 				else if ( operation instanceof RemoveAssociationOperation ) {
 					RemoveAssociationOperation remove = (RemoveAssociationOperation) operation;
@@ -839,6 +855,26 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			// Object already exists in the db or has invalid fields:
 			insertOrUpdateTuple( entityKey, tuple, tupleOperation.getTupleContext() );
 		}
+	}
+
+	private void executeBatchUpdateAssociation(Map<DBCollection, BatchInsertionTask> inserts, InsertOrUpdateAssociationOperation updateOp) {
+		AssociationKey associationKey = updateOp.getAssociationKey();
+		if ( isEmbeddedAssociation( associationKey ) ) {
+			DBCollection collection = getCollection( associationKey.getEntityKey() );
+			BatchInsertionTask batchInserts = inserts.get( collection );
+			if ( batchInserts != null && batchInserts.containsKey( associationKey.getEntityKey() ) ) {
+				// The owner of the association is in the insertion queue,
+				// we are going to update it with the collection of elements
+				WriteConcern writeConcern = getWriteConcern( updateOp.getContext() );
+				BatchInsertionTask insertTask = getOrCreateBatchInsertionTask( inserts, associationKey.getEntityKey().getMetadata(), collection, writeConcern );
+				DBObject documentForInsertion = insertTask.get( associationKey.getEntityKey() );
+				List<?> embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
+				String collectionRole = associationKey.getMetadata().getCollectionRole();
+				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
+				return;
+			}
+		}
+		insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
 	}
 
 	@Override
