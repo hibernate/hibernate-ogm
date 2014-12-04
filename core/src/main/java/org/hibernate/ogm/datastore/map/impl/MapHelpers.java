@@ -65,6 +65,7 @@ public final class MapHelpers {
 			switch ( action.getType() ) {
 				case CLEAR:
 					underlyingMap.clear();
+					break;
 				case PUT_NULL:
 				case PUT:
 					underlyingMap.put( action.getKey(), MapHelpers.associationRowToMap( action.getValue() ) );
