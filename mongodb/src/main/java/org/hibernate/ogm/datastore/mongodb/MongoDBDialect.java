@@ -871,10 +871,14 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				List<?> embeddedElements = getAssociationRows( updateOp.getAssociation(), updateOp.getAssociationKey() );
 				String collectionRole = associationKey.getMetadata().getCollectionRole();
 				MongoHelpers.setValue( documentForInsertion, collectionRole, embeddedElements );
-				return;
+			}
+			else {
+				insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
 			}
 		}
-		insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+		else {
+			insertOrUpdateAssociation( updateOp.getAssociationKey(), updateOp.getAssociation(), updateOp.getContext() );
+		}
 	}
 
 	@Override
