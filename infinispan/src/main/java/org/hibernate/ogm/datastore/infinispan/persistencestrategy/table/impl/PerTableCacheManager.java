@@ -104,10 +104,10 @@ public class PerTableCacheManager extends LocalCacheManager<PersistentEntityKey,
 
 	private static ConcurrentMap<String, Cache<PersistentIdSourceKey, Object>> initializeIdSourceCaches(EmbeddedCacheManager embeddedCacheManager, Set<IdSourceKeyMetadata> idSourceTypes) {
 		ConcurrentMap<String, Cache<PersistentIdSourceKey, Object>> idSourceCaches = newConcurrentHashMap( idSourceTypes.size() );
-		for ( IdSourceKeyMetadata entityKeyMetadata : idSourceTypes ) {
-			if ( !idSourceCaches.containsKey( entityKeyMetadata.getName() ) ) {
-				Cache<PersistentIdSourceKey, Object> entityCache = embeddedCacheManager.getCache( entityKeyMetadata.getName() );
-				idSourceCaches.put( entityKeyMetadata.getName(), entityCache );
+		for ( IdSourceKeyMetadata idSourceKeyMetadata : idSourceTypes ) {
+			if ( !idSourceCaches.containsKey( idSourceKeyMetadata.getName() ) ) {
+				Cache<PersistentIdSourceKey, Object> idSourceCache = embeddedCacheManager.getCache( idSourceKeyMetadata.getName() );
+				idSourceCaches.put( idSourceKeyMetadata.getName(), idSourceCache );
 			}
 		}
 
