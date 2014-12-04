@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ehcache.dialect.impl;
+package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class SerializableAssociationKey implements Externalizable {
 	public SerializableAssociationKey() {
 	}
 
-	public SerializableAssociationKey(AssociationKey key) {
+	SerializableAssociationKey(AssociationKey key) {
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
 		table = key.getTable();

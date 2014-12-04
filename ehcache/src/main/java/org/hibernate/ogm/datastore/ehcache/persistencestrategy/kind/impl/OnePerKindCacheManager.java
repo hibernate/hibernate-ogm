@@ -8,11 +8,8 @@ package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
 import net.sf.ehcache.CacheManager;
 
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
-import org.hibernate.ogm.datastore.ehcache.impl.CacheNames;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.CacheNames;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;

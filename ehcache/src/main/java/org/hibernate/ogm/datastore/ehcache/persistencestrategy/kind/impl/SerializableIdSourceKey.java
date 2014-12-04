@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ehcache.dialect.impl;
+package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -12,14 +12,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
-import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKey;
 
 /**
- * Used to serialize {@link RowKey} objects in Ehcache.
+ * Used to serialize {@link IdSourceKey} objects in Ehcache.
  *
  * @author Gunnar Morling
  */
-public class SerializableRowKey implements Externalizable {
+public class SerializableIdSourceKey implements Externalizable {
 
 	/**
 	 * NEVER change this, as otherwise serialized representations cannot be read back after an update
@@ -32,16 +32,22 @@ public class SerializableRowKey implements Externalizable {
 	 */
 	private static final int VERSION = 1;
 
+	private String table;
 	private String[] columnNames;
 	private Object[] columnValues;
 
 	// required by Externalizable
-	public SerializableRowKey() {
+	public SerializableIdSourceKey() {
 	}
 
-	public SerializableRowKey(RowKey key) {
+	SerializableIdSourceKey(IdSourceKey key) {
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
+		table = key.getTable();
+	}
+
+	public String getTable() {
+		return table;
 	}
 
 	public String[] getColumnNames() {
@@ -58,6 +64,7 @@ public class SerializableRowKey implements Externalizable {
 		int result = 1;
 		result = prime * result + Arrays.hashCode( columnNames );
 		result = prime * result + Arrays.hashCode( columnValues );
+		result = prime * result + ( ( table == null ) ? 0 : table.hashCode() );
 		return result;
 	}
 
@@ -72,11 +79,19 @@ public class SerializableRowKey implements Externalizable {
 		if ( getClass() != obj.getClass() ) {
 			return false;
 		}
-		SerializableRowKey other = (SerializableRowKey) obj;
+		SerializableIdSourceKey other = (SerializableIdSourceKey) obj;
 		if ( !Arrays.equals( columnNames, other.columnNames ) ) {
 			return false;
 		}
 		if ( !Arrays.equals( columnValues, other.columnValues ) ) {
+			return false;
+		}
+		if ( table == null ) {
+			if ( other.table != null ) {
+				return false;
+			}
+		}
+		else if ( !table.equals( other.table ) ) {
 			return false;
 		}
 		return true;
@@ -84,12 +99,14 @@ public class SerializableRowKey implements Externalizable {
 
 	@Override
 	public String toString() {
-		return "SerializableRowKey [columnNames=" + Arrays.toString( columnNames ) + ", columnValues=" + Arrays.toString( columnValues ) + "]";
+		return "SerializableIdSourceKey [table=" + table + ", columnNames=" + Arrays.toString( columnNames ) + ", columnValues="
+				+ Arrays.toString( columnValues ) + "]";
 	}
 
 	@Override
 	public void writeExternal(ObjectOutput out) throws IOException {
 		out.writeInt( VERSION );
+		out.writeUTF( table );
 		out.writeObject( columnNames );
 		out.writeObject( columnValues );
 	}
@@ -99,6 +116,7 @@ public class SerializableRowKey implements Externalizable {
 		// version
 		in.readInt();
 
+		table = in.readUTF();
 		columnNames = (String[]) in.readObject();
 		columnValues = (Object[]) in.readObject();
 	}

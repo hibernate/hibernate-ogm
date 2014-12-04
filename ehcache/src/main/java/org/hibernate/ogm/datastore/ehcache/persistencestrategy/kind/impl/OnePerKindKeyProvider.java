@@ -7,9 +7,6 @@
 
 package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.EntityKey;
