@@ -96,8 +96,7 @@ public class SerializableRowKey implements Externalizable {
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		// version
-		in.readInt();
+		VersionChecker.readAndCheckVersion( in, VERSION, SerializableRowKey.class );
 
 		columnNames = (String[]) in.readObject();
 		columnValues = (Object[]) in.readObject();
