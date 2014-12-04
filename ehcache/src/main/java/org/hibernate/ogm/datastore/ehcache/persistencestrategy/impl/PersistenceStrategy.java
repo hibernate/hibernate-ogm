@@ -10,11 +10,11 @@ import java.util.Set;
 
 import net.sf.ehcache.CacheManager;
 
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableAssociationKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableEntityKey;
-import org.hibernate.ogm.datastore.ehcache.dialect.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.OnePerKindCacheManager;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.OnePerKindKeyProvider;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableAssociationKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableEntityKey;
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl.SerializableIdSourceKey;
 import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
