@@ -98,7 +98,11 @@ public class EntityDocument extends Document {
 		if ( tuple != null ) {
 			for ( String columnName : tuple.getColumnNames() ) {
 				if ( columnName != Document.REVISION_FIELD_NAME ) {
-					properties.put( columnName, tuple.get( columnName ) );
+
+					Object value = tuple.get( columnName );
+					if ( value != null ) {
+						properties.put( columnName, value );
+					}
 				}
 			}
 		}
