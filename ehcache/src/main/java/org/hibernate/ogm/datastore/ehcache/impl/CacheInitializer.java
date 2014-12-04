@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.ehcache.impl;
 
 import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheStorageOption;
 import org.hibernate.ogm.datastore.spi.BaseSchemaDefiner;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -29,9 +29,7 @@ public class CacheInitializer extends BaseSchemaDefiner {
 		EhcacheDatastoreProvider provider = (EhcacheDatastoreProvider) serviceRegistry.getService( DatastoreProvider.class );
 
 		provider.initializePersistenceStrategy(
-				// TODO Use option
-				// optionsService.context().getGlobalOptions().getUnique( CacheStorageOption.class ),
-				CacheStorageType.CACHE_PER_KIND,
+				optionsService.context().getGlobalOptions().getUnique( CacheStorageOption.class ),
 				getAllEntityKeyMetadata( factory ),
 				getAllAssociationKeyMetadata( factory ),
 				getAllIdSourceKeyMetadata( factory )

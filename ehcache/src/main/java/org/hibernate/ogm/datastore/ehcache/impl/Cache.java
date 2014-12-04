@@ -50,4 +50,8 @@ public class Cache<K> {
 	public int getSize() {
 		return delegate.getSize();
 	}
+
+	public String getName() {
+		return delegate.getName();
+	}
 }
