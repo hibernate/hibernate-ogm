@@ -68,6 +68,14 @@ To use Ehcache as a datastore provider set it to +ehcache+.
 hibernate.ogm.ehcache.configuration_resource_name::
 Should point to the resource name of an Ehcache configuration file.
 Defaults to +org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
++hibernate.ogm.datastore.keyvalue.cache_storage+::
+The strategy for persisting data in EhCache.
+The following two strategies exist (values of the +org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType+ enum):
++CACHE_PER_KIND+
+(Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources) and
++CACHE_PER_TABLE+
+(A dedicated cache will be used for each entity type, association type and id source table).
+Defaults to +CACHE_PER_TABLE+.
 
 [NOTE]
 ====
