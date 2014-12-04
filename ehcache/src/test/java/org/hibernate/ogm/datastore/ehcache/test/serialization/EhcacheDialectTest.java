@@ -9,13 +9,18 @@ package org.hibernate.ogm.datastore.ehcache.test.serialization;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.HashMap;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
+import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
+import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +39,12 @@ public class EhcacheDialectTest {
 		final EhcacheDatastoreProvider datastoreProvider = new EhcacheDatastoreProvider();
 		datastoreProvider.configure( new HashMap() );
 		datastoreProvider.start();
+		datastoreProvider.initializePersistenceStrategy(
+				CacheStorageType.CACHE_PER_KIND,
+				Collections.<EntityKeyMetadata>emptySet(),
+				Collections.<AssociationKeyMetadata>emptySet(),
+				Collections.<IdSourceKeyMetadata>singleton( DefaultIdSourceKeyMetadata.forTable( "sequences", "key", "next_val" ) )
+		);
 		dialect = new EhcacheDialect( datastoreProvider );
 	}
 

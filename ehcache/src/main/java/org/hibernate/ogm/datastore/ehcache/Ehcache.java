@@ -7,17 +7,19 @@
 package org.hibernate.ogm.datastore.ehcache;
 
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.ehcache.options.navigation.EhcacheGlobalContext;
+import org.hibernate.ogm.datastore.ehcache.options.navigation.impl.EhcacheEntityContextImpl;
+import org.hibernate.ogm.datastore.ehcache.options.navigation.impl.EhcacheGlobalContextImpl;
+import org.hibernate.ogm.datastore.ehcache.options.navigation.impl.EhcachePropertyContextImpl;
 import org.hibernate.ogm.datastore.spi.DatastoreConfiguration;
-import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
-import org.hibernate.ogm.options.navigation.spi.GenericOptionModel;
 
 /**
  * Allows to configure options specific to the Ehcache data store.
  *
  * @author Gunnar Morling
  */
-public class Ehcache implements DatastoreConfiguration<GlobalContext<?, ?>> {
+public class Ehcache implements DatastoreConfiguration<EhcacheGlobalContext> {
 
 	/**
 	 * Short name of this data store provider.
@@ -27,7 +29,7 @@ public class Ehcache implements DatastoreConfiguration<GlobalContext<?, ?>> {
 	public static final String DATASTORE_PROVIDER_NAME = "EHCACHE";
 
 	@Override
-	public GlobalContext<?, ?> getConfigurationBuilder(ConfigurationContext context) {
-		return GenericOptionModel.createGlobalContext( context );
+	public EhcacheGlobalContext getConfigurationBuilder(ConfigurationContext context) {
+		return context.createGlobalContext( EhcacheGlobalContextImpl.class, EhcacheEntityContextImpl.class, EhcachePropertyContextImpl.class );
 	}
 }

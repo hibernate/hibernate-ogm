@@ -4,7 +4,7 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ehcache.dialect.impl;
+package org.hibernate.ogm.datastore.ehcache.persistencestrategy.kind.impl;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -12,6 +12,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Arrays;
 
+import org.hibernate.ogm.datastore.ehcache.persistencestrategy.common.impl.VersionChecker;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
@@ -40,7 +41,7 @@ public class SerializableEntityKey implements Externalizable {
 	public SerializableEntityKey() {
 	}
 
-	public SerializableEntityKey(EntityKey key) {
+	SerializableEntityKey(EntityKey key) {
 		columnNames = key.getColumnNames();
 		columnValues = key.getColumnValues();
 		table = key.getTable();
@@ -113,8 +114,7 @@ public class SerializableEntityKey implements Externalizable {
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-		// version
-		in.readInt();
+		VersionChecker.readAndCheckVersion( in, VERSION, SerializableEntityKey.class );
 
 		table = in.readUTF();
 		columnNames = (String[]) in.readObject();
