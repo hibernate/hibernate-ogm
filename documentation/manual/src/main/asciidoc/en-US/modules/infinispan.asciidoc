@@ -392,6 +392,13 @@ You can fine tune these setting when you are closer to going in production.
 [[ogm-infinispan-built-in-types]]
 ===== Builtin types
 
+[NOTE]
+====
+Hibernate OGM doesn't store null values in Infinispan,
+setting a value to null is the same as removing the corresponding entry
+from Infinispan.
+====
+
 Hibernate OGM support by default the following types:
 
 * [classname]+java.lang.String+

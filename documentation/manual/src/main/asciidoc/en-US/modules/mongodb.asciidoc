@@ -208,6 +208,13 @@ and the MongoDB documents.
 [[mongodb-built-in-types]]
 ===== Builtin types
 
+[NOTE]
+====
+Hibernate OGM doesn't store null values in MongoDB,
+setting a value to null is the same as removing the field
+in the corresponding object in the db.
+====
+
 Hibernate OGM supports by default the following types:
 
 * [classname]+java.lang.String+

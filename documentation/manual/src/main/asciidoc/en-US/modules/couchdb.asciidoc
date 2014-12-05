@@ -180,6 +180,13 @@ The following describe how entities and associations are mapped to CouchDB docum
 [[couchdb-built-in-types]]
 ===== Builtin types
 
+[NOTE]
+====
+Hibernate OGM doesn't store null values in CouchDB,
+setting a value to null will be the same as removing the field
+in the corresponding object in the db.
+====
+
 Hibernate OGM support by default the following types:
 
 * [classname]+java.lang.String+

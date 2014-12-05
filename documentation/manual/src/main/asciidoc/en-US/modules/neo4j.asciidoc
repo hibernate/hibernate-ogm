@@ -85,6 +85,13 @@ To ease migration between stores, it is recommended to reference these constants
 [[ogm-neo4j-built-in-types]]
 ===== Builtin types
 
+[NOTE]
+====
+In Neo4j, it is not possible to set properties to null.
+If an attribute is set to null, Hibernate OGM removes the corresponding
+property form the node.
+====
+
 The following types (and corresponding primitives) get passed to Neo4j without any conversion:
 
 * [classname]+java.lang.Boolean+
