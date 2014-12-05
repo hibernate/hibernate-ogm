@@ -21,6 +21,7 @@ import java.util.UUID;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.ogm.backendtck.type.Bookmark.Classifier;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -71,6 +72,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setFavourite( Boolean.TRUE );
 		Byte displayMask = Byte.valueOf( (byte) '8' );
 		b.setDisplayMask( displayMask );
+		b.setClassifier( Classifier.HOME );
+		b.setClassifierAsOrdinal( Classifier.WORK );
 
 		Date now = new Date( System.currentTimeMillis() );
 		Calendar nowCalendar = Calendar.getInstance();
@@ -96,7 +99,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
 		b.setType( BookmarkType.URL );
-
+		b.setTaxPercentage( 12.34d );
 		session.persist( b );
 		transaction.commit();
 
@@ -112,6 +115,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "serial number incorrect", serialNumber, b.getSerialNumber() );
 		assertEquals( "user id incorrect", userId, b.getUserId() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
+		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
+		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
+		assertEquals( "Classifier as enum string is incorrect", Classifier.HOME, b.getClassifier() );
+		assertEquals( "Classifier stored as enum ordinal is incorrect", Classifier.WORK, b.getClassifierAsOrdinal() );
 
 		//Date - DATE
 		Calendar creationDate = Calendar.getInstance();

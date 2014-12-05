@@ -82,6 +82,42 @@ Common properties shared between stores are declared on +OgmProperties+.
 To ease migration between stores, it is recommended to reference these constants directly from there.
 ====
 
+[[ogm-neo4j-built-in-types]]
+===== Builtin types
+
+[NOTE]
+====
+In Neo4j, it is not possible to set properties to null.
+If an attribute is set to null, Hibernate OGM removes the corresponding
+property form the node.
+====
+
+The following types (and corresponding primitives) get passed to Neo4j without any conversion:
+
+* [classname]+java.lang.Boolean+
+* [classname]+java.lang.Byte+
+* [classname]+java.lang.Character+
+* [classname]+java.lang.Double+
+* [classname]+java.lang.Float+
+* [classname]+java.lang.Integer+
+* [classname]+java.lang.Long+
+* [classname]+java.lang.String+
+
+The following types get converted into [classname]+java.lang.String+:
+
+* [classname]+java.math.BigDecimal+
+* [classname]+java.math.BigInteger+
+* [classname]+java.util.Calendar+
+
+  stored as +String+ with the format "yyyy/MM/dd HH:mm:ss:SSS Z"
+
+* [classname]+java.util.Date+
+
+  stored as +String+ with the format "yyyy/MM/dd HH:mm:ss:SSS Z"
+
+* [classname]+java.util.UUID+
+* [classname]+java.util.URL+
+
 [[ogm-neo4j-storage-principles]]
 ==== Storage principles
 
@@ -91,7 +127,7 @@ and update the same datastore.
 
 [WARNING]
 ====
-The mappings are still EXPERIMENTAL and they might change in future.
+The mappings are still EXPERIMENTAL and they might change in the future.
 ====
 
 ===== Entities
@@ -104,77 +140,197 @@ to rename the label and the node's properties.
 
 An additional label +ENTITY+ is added to the node. 
 
-.Example of entity and the corresponding representation using Cypher
+.Default JPA mapping for an entity
 ====
 [source, JAVA]
 ----
 @Entity
-class Account {
+public class News {
 
     @Id
-    String login;
+    private String id;
+    private String title;
 
-    String password;
-
+    // getters, setters ...
 }
 ----
 
-[subs="verbatim,attributes"]
-----
-Using Cypher:
-
-(n:Account:ENTITY {login: '...', password: '...'})
-----
+image::images/neo4j-single-node-example.png[align="center", depth="", scalefit="1"]
 ====
 
-.Example of enitty with @Embaddable
+.Rename node label and properties using @Table and @Column
 ====
 [source, JAVA]
 ----
 @Entity
-class Account {
-	String login;
-	String password;
-	Address homeAddress;
-	...
+@Table(name="ARTICLE")
+public class News {
+
+    @Id
+    private String id;
+
+    @Column(name = "headline")
+    private String title;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-@Column-@Table-example.png[align="center", depth="", scalefit="1"]
+====
+
+====== Identifiers and unique constraints
+
+[WARNING]
+====
+Neo4j does not support constraints on more than one property.
+For this reason, Hibernate OGM will create a unique constraint ONLY when it spans
+a single property and it will ignore the ones spanning multiple properties.
+
+The lack of unique constraints on node properties might result in the creation of multiple
+nodes with the same identifier.
+====
+
+Hibernate OGM will create unique constraints for the identifier of entities and for the properties 
+annotated with:
+
+* +@Id+
+* +@EmbeddedId+
+* +@NaturalId+
+* +@Column( unique = true )+
+* +@Table( uniqueConstraints = @UniqueConstraint(columnNames = { "column_name" } ) )+
+
+Embedded identifiers are currently stored as dot separated properties.
+
+.Entity with @EmbeddedId
+====
+[source, JAVA]
+----
+@Entity
+public class News {
+
+    @EmbeddedId
+    private NewsID newsId;
+
+    private String content
+
+    // getters, setters ...
 }
 
 @Embeddable
-public class Address {
-	String street1;
-	String street2;
-	String city;
-	String country;
+public class NewsID implements Serializable {
 
-	@Column(name = "postal_code")
-	String zipCode;
+    private String title;
+    private String author;
+
+    // getters, setters ...
 }
 ----
 
-[subs="verbatim,attributes"]
-----
-(n:Account:ENTITY {login: ..., 
-                   , password: ...
-                   , `homeAddress.street1`: ...
-                   , `homeAddress.city`: ...
-                   , `homeAddress.country`: ...
-                   , postal_code`: ...})
-----
-
+image::images/neo4j-@EmbeddedId-example.png[align="center", depth="", scalefit="1"]
 ====
 
-Currently an embeddable element is stored saving the values on the node that represents the entity.
+====== Embedded objects and collections
 
-Hibernate OGM will create unique constraints for the identifier of entities and for the properties defined
-as unique using:
+The properties of an +@Emebddable+ element are stored as dot-separated properties in the owner node.
 
-* @NaturalId
-* @Column(unique = true)
-* @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "column_name" }
+.Embedded object
+====
+[source, JAVA]
+----
+@Entity
+public class News {
 
-  Neo4j does not support constraints on more than one property.
-  For this reason, Hibernate OGM will create a unique constraint only when
-  defined on a single column and it will ignore the ones defined on multiple columns.
+    @EmbeddedId
+    private NewsID newsId;
+
+    @Embedded
+    private NewsPaper paper;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsID implements Serializable {
+
+    private String title;
+    private String author;
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class NewsPaper {
+
+    private String name;
+    private String owner;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-@Embedded-example.png[align="center", depth="", scalefit="1"]
+====
+
+.@ElementCollection
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-@ElementCollection-example.png[align="center", depth="", scalefit="1"]
+====
+
+Note that in the previous example no property is added to the relationships;
+in the following one, one property is added to keep track of the order of the elements in the list.
+
+.@ElementCollection with @OrderColumn
+====
+[source, JAVA]
+----
+@Entity
+public class GrandMother {
+
+    @Id
+    private String id;
+
+    @ElementCollection
+    @OrderColumn( name = "birth_order" )
+    private List<GrandChild> grandChildren = new ArrayList<GrandChild>();
+
+    // getters, setters ...
+}
+
+@Embeddable
+public class GrandChild {
+
+    private String name;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-@ElementCollection-@OrderColumn-example.png[align="center", depth="", scalefit="1"]
+====
 
 ===== Associations
 
@@ -187,172 +343,298 @@ but in general it is the role of the association on the main side.
 The only property stored on the relationship is going to be the index of the association when required,
 for example when the association is annotated with +@OrderColumn+ or when a +java.util.Map+ is used.
 
-.Example of bidirectional @ManyToMany
+In Neo4j nodes are connected via relationship, this means that we don't need to create properties
+which store foreign column keys. This means that annotation like +@JoinColumn+ won't have any effect.
+
+.Unidirectional one-to-one
 ====
 [source, JAVA]
 ----
 @Entity
-class AccountOwner {
+public class Vehicule {
 
     @Id
-    String sSN;
+    private String id;
+    private String brand;
 
-    @ManyToMany
-    Set<BankAccount> bankAccounts = new HashSet<BankAccount>();
-
+    // getters, setters ...
 }
+
 
 @Entity
-class BankAccount {
+public class Wheel {
 
     @Id
-    String accountNumber;
+    private String id;
+    private String company;
+    private double diameter;
 
-    @ManyToMany(mappedBy = "bankAccounts")
-    Set<AccountOwner> owners = new HashSet<AccountOwner>();
+    @OneToOne
+    private Vehicule vehicule;
 
+    // getters, setters ...
 }
 ----
 
-[subs="verbatim,attributes"]
-----
-(:AccountOwner:ENTITY {...}) - [:bankAccounts] -> (:BankAccount:ENTITY {...})
-----
-
+image::images/neo4j-uni-one-to-one-example.png[align="center", depth="", scalefit="1"]
 ====
 
-.Example of unidirectional @ManyToOne with @OrderColumn
+.Bidirectional one-to-one
 ====
 [source, JAVA]
 ----
 @Entity
-class Father {
+public class Husband {
+
     @Id
-    String name;
+    private String id;
+    private String name;
+
+    @OneToOne
+    private Wife wife;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Wife {
+
+    @Id
+    private String id;
+    private String name;
+
+    @OneToOne(mappedBy = "wife")
+    private Husband husband;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-bi-one-to-one-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Unidirectional one-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Basket {
+
+    @Id
+    private String id;
+
+    private String owner;
 
     @OneToMany
-    @OrderColumn(name = "birthorder")
-    List<Child> children = new ArrayList<Child>();
+    private List<Product> products = new ArrayList<Product>();
+
+    // getters, setters ...
 }
 
 @Entity
-class Child {
+public class Product {
+
     @Id
-    String name;
+    private String name;
+
+    private String description;
+
+    // getters, setters ...
 }
-
 ----
 
-[subs="verbatim,attributes"]
-----
-(:Father:ENTITY {...}) - [:children { birthorder: 0 }] -> (:Child:ENTITY {...})
-(:Father:ENTITY {...}) - [:children { birthorder: 1 }] -> (:Child:ENTITY {...})
-----
-
+image::images/neo4j-uni-one-to-many-example.png[align="center", depth="", scalefit="1"]
 ====
 
-.Example of bidirectional @OneToOne
+.Unidirectional one-to-many using maps with defaults
 ====
 [source, JAVA]
 ----
 @Entity
-class Husband {
-	String id;
-	String name;
-	Wife wife;
+public class User {
 
-	@Id
-	Long getId() {
-		return id;
-	}
+    @Id
+    private String id;
 
-	...
+    @OneToMany
+    private Map<String, Address> addresses = new HashMap<String, Address>();
 
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "wife")
-	Wife getWife() {
-		return wife;
-	}
-
-	void setWife(Wife wife) {
-		this.wife = wife;
-	}
-
+    // getters, setters ...
 }
 
 @Entity
-class Wife {
-	String id;
-	String name;
-	...
-	
-	@Id
-	Long getId() {
-		return id;
-	}
-
-	...
-
-	@OneToOne(mappedBy = "wife")
-	public Husband getHusband() {
-		return husband;
-	}
-
-}
-
-----
-
-[subs="verbatim,attributes"]
-----
-(:Wife:ENTITY { id: 1, name: "Karen" }) <- [:wife] - (:Husband:ENTITY {id: 2, name: "Mark"})
-----
-
-====
-
-.Example of collection of @Embeddable
-====
-[source, JAVA]
-----
-@Entity
-class MultiAddressAccount {
-	String login;
-	String password;
-	List<Address> addresses = new ArrayList<Address>();
-
-	@Id
-	public String getLogin() {
-		return login;
-	}
-
-	...
-
-	@ElementCollection
-	public List<Address> getAddresses() {
-		return addresses;
-	}
-
-	public void setAddresses(List<Address> addresses) {
-		this.addresses = addresses;
-	}
-}
-
-@Embeddable
 public class Address {
-	String street1;
-	String street2;
-	String city;
-	String country;
 
-	@Column(name = "postal_code")
-	String zipCode;
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
 }
 ----
 
-[subs="verbatim,attributes"]
+image::images/neo4j-uni-one-to-many-with-map-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Unidirectional one-to-many using maps with @MapKeyColumn
+====
+[source, JAVA]
 ----
-(:MultiAddressAccount:ENTITY{login: '...', password: '...' }) - [:addresses] -> (:MultiAddressAccount_addresses:EMBEDDED {street1: '...', city: '...', country: '...', postal_code: '...'})
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    @MapKeyColumn(name = "addressType")
+    private Map<String, Address> addresses = new HashMap<String, Address>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class Address {
+
+    @Id
+    private String id;
+    private String city;
+
+    // getters, setters ...
+}
 ----
 
+image::images/neo4j-uni-one-to-many-with-@MapKeyColumn-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Unidirectional many-to-one
+====
+[source, JAVA]
+----
+@Entity
+public class JavaUserGroup {
+
+    @Id
+    private String jug_id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Member {
+
+    @Id
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private JavaUserGroup memberOf;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-uni-many-to-one-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Bidirectional many-to-one 
+====
+[source, JAVA]
+----
+@Entity
+public class SalesForce {
+
+    @Id
+    private String id;
+    private String corporation;
+
+    @OneToMany(mappedBy = "salesForce")
+    private Set<SalesGuy> salesGuys = new HashSet<SalesGuy>();
+
+    // getters, setters ...
+}
+
+@Entity
+public class SalesGuy {
+    private String id;
+    private String name;
+
+    @ManyToOne
+    private SalesForce salesForce;
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-bi-many-to-one-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Unidirectional many-to-many
+====
+[source, JAVA]
+----
+@Entity
+public class Student {
+
+    @Id
+    private String id;
+    private String name;
+
+    // getters, setters ...
+}
+
+@Entity
+public class ClassRoom {
+
+    @Id
+    private long id;
+    private String lesson;
+
+    @ManyToMany
+    private List<Student> students = new ArrayList<Student>();
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-uni-many-to-many-example.png[align="center", depth="", scalefit="1"]
+====
+
+.Bidirectional many-to-many 
+====
+[source, JAVA]
+----
+@Entity
+public class AccountOwner {
+
+    @Id
+    private String id;
+
+    private String SSN;
+
+    @ManyToMany
+    private Set<BankAccount> bankAccounts;
+
+    // getters, setters ...
+}
+
+@Entity
+public class BankAccount {
+
+    @Id
+    private String id;
+
+    private String accountNumber;
+
+    @ManyToMany( mappedBy = "bankAccounts" )
+    private Set<AccountOwner> owners = new HashSet<AccountOwner>();
+
+    // getters, setters ...
+}
+----
+
+image::images/neo4j-bi-many-to-many-example.png[align="center", depth="", scalefit="1"]
 ====
 
 ===== Auto-generated Values
@@ -363,12 +645,30 @@ as it allows a slightly more efficient querying for the next sequence value.
 
 Sequence-based generators are represented by nodes in the following form:
 
-.Example of a sequence-based generator using Cypher
+.GenerationType.SEQUENCE
 ====
-[subs="verbatim,attributes"]
+[source, JAVA]
 ----
-(:SEQUENCE { sequence_name = 'ExampleSequence', next_val : 3 })
+@Entity
+public class Song {
+
+    ...
+
+    @Id
+    @GeneratedValue( strategy = GenerationType.SEQUENCE, generator = "songSequenceGenerator" )
+    @SequenceGenerator(
+            name = "songSequenceGenerator",
+            sequenceName = "song_sequence",
+            initialValue = INITIAL_VALUE,
+            allocationSize = 10)
+    public Long getId() {
+        return id;
+    }
+
+    ...
 ----
+
+image::images/neo4j-sequence-example.png[align="center", depth="", scalefit="1"]
 ====
 
 Each sequence generator node is labelled with +SEQUENCE+.
@@ -381,12 +681,32 @@ The options +@SequenceGenerator#catalog()+ and +@SequenceGenerator#schema()+ are
 
 Table-based generators are represented by nodes in the following form:
 
-.Example of a table-based generator using Cypher
+.GenerationType.TABLE
 ====
-[subs="verbatim,attributes"]
+[source, JAVA]
 ----
-(:hibernate_sequences:TABLE_BASED_SEQUENCE { sequence_name = 'ExampleSequence', current_value : 3 })
+@Entity
+public class Video {
+
+    ...
+
+    @Id
+    @GeneratedValue( strategy = GenerationType.TABLE, generator = "video" )
+    @TableGenerator(
+         name = "video",
+         table = "Sequences",
+         pkColumnName = "key",
+         pkColumnValue = "video",
+         valueColumnName = "seed"
+    )
+    public Integer getId() {
+        return id;
+    }
+
+    ...
 ----
+
+image::images/neo4j-table-based-sequence-example.png[align="center", depth="", scalefit="1"]
 ====
 
 Each table generator node is labelled with +TABLE_BASED_SEQUENCE+
