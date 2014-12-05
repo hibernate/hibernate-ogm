@@ -92,6 +92,14 @@ To ease migration between stores, it is recommended to reference these constants
 [[ogm-ehcache-built-in-types]]
 ===== Builtin types
 
+[NOTE]
+====
+Hibernate OGM don't store null values in EhCache,
+setting an attribute to null is the same as removing the entry
+in the corresponding cache.
+====
+
+
 Hibernate OGM support by default the following types:
 
 * [classname]+java.lang.String+
