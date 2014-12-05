@@ -15,7 +15,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
-import org.hibernate.ogm.datastore.document.association.spi.SingleColumnAwareAssociationRowFactory;
+import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
@@ -27,7 +27,7 @@ import com.mongodb.DBObject;
  * @author Gunnar Morling
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRowFactory<DBObject> {
+public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationRowFactory<DBObject> {
 
 	public static final MongoDBAssociationRowFactory INSTANCE = new MongoDBAssociationRowFactory();
 

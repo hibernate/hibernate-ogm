@@ -39,7 +39,7 @@ import org.hibernate.ogm.util.impl.Contracts;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @param <R> The type of key/value association rows supported by this factory.
  */
-public abstract class SingleColumnAwareAssociationRowFactory<R> implements AssociationRowFactory {
+public abstract class StructureOptimizerAssociationRowFactory<R> implements AssociationRowFactory {
 
 	/**
 	 * The type of key/value association rows supported by this factory; This basically corresponds to {@code Class<R>}
@@ -47,7 +47,7 @@ public abstract class SingleColumnAwareAssociationRowFactory<R> implements Assoc
 	 */
 	private final Class<?> associationRowType;
 
-	protected SingleColumnAwareAssociationRowFactory(Class<?> associationRowType) {
+	protected StructureOptimizerAssociationRowFactory(Class<?> associationRowType) {
 		this.associationRowType = associationRowType;
 	}
 

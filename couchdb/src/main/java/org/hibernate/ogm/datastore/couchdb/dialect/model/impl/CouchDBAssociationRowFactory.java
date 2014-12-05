@@ -16,7 +16,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
-import org.hibernate.ogm.datastore.document.association.spi.SingleColumnAwareAssociationRowFactory;
+import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
 
 /**
  * {@link AssociationRowFactory} which creates association rows based on the map based representation used in CouchDB.
@@ -24,7 +24,7 @@ import org.hibernate.ogm.datastore.document.association.spi.SingleColumnAwareAss
  * @author Gunnar Morling
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class CouchDBAssociationRowFactory extends SingleColumnAwareAssociationRowFactory<Map<String, Object>> {
+public class CouchDBAssociationRowFactory extends StructureOptimizerAssociationRowFactory<Map<String, Object>> {
 
 	public static final CouchDBAssociationRowFactory INSTANCE = new CouchDBAssociationRowFactory();
 
