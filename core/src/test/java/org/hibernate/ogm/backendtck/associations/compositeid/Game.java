@@ -8,6 +8,7 @@
 package org.hibernate.ogm.backendtck.associations.compositeid;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -51,6 +52,7 @@ public class Game {
 
 	public static class GameId implements Serializable {
 		private String category;
+		@Column(name = "id.gameSequenceNo")
 		private int sequenceNo;
 
 		public String getCategory() {
@@ -61,6 +63,7 @@ public class Game {
 			this.category = category;
 		}
 
+		@Column(name = "id.gameSequenceNo")
 		public int getSequenceNo() {
 			return sequenceNo;
 		}

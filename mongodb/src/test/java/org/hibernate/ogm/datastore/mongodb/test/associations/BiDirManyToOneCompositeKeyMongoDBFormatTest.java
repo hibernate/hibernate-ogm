@@ -66,8 +66,8 @@ public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				"{ " +
 						"'_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
 						"'games' : " +
-						"[ { 'sequenceNo': 456, 'category': 'primary' }, " +
-						"  { 'sequenceNo': 457, 'category': 'primary' } ], " +
+						"[ { 'gameSequenceNo': 456, 'category': 'primary' }, " +
+						"  { 'gameSequenceNo': 457, 'category': 'primary' } ], " +
 						"'name': 'Hamburg Court' " +
 						"}"
 		);
@@ -76,10 +76,10 @@ public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				// collection
 				"Game",
 				// query
-				"{ '_id' : { 'category': 'primary', 'sequenceNo': 456 } }",
+				"{ '_id' : { 'category': 'primary', 'gameSequenceNo': 456 } }",
 				// expected
 				"{ " +
-						"'_id' : { 'category': 'primary', 'sequenceNo': 456 }, " +
+						"'_id' : { 'category': 'primary', 'gameSequenceNo': 456 }, " +
 						"'playedOn_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
 						"'name': 'The game' " +
 				"}"
