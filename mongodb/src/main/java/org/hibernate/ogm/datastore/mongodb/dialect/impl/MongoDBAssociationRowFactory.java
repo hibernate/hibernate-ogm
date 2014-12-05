@@ -6,7 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.dialect.impl;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
@@ -22,6 +25,7 @@ import com.mongodb.DBObject;
  * in MongoDB.
  *
  * @author Gunnar Morling
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRowFactory<DBObject> {
 
@@ -39,19 +43,48 @@ public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRo
 	}
 
 	@Override
-	protected AssociationRowAccessor<DBObject> getAssociationRowAccessor() {
-		return MongoDBAssociationRowAccessor.INSTANCE;
+	protected AssociationRowAccessor<DBObject> getAssociationRowAccessor(String[] prefixedColumns, String prefix) {
+		return prefix != null ? new MongoDBAssociationRowAccessor(prefixedColumns, prefix) : MongoDBAssociationRowAccessor.INSTANCE;
 	}
 
 	private static class MongoDBAssociationRowAccessor implements AssociationRow.AssociationRowAccessor<DBObject> {
 
 		private static final MongoDBAssociationRowAccessor INSTANCE = new MongoDBAssociationRowAccessor();
 
+		private final String prefix;
+		private final List<String> prefixedColumns;
+
+		public MongoDBAssociationRowAccessor() {
+			this( null, null );
+		}
+
+		public MongoDBAssociationRowAccessor(String[] prefixedColumns, String prefix) {
+			this.prefix = prefix;
+			if ( prefix != null ) {
+				this.prefixedColumns = Arrays.asList( prefixedColumns );
+			}
+			else {
+				this.prefixedColumns = new ArrayList<String>( 0 );
+			}
+		}
+
 		@Override
 		public Set<String> getColumnNames(DBObject row) {
 			Set<String> columnNames = new HashSet<String>();
 			addColumnNames( row, columnNames, "" );
+			for ( String prefixedColumn : prefixedColumns ) {
+				String unprefixedColumn = unprefix( prefixedColumn );
+				if ( columnNames.contains( unprefixedColumn ) ) {
+					columnNames.remove( unprefixedColumn );
+					columnNames.add( prefixedColumn );
+				}
+			}
 			return columnNames;
+		}
+
+		// only call if you have a prefix
+		private String unprefix(String prefixedColumn) {
+			return prefixedColumn.substring( prefix.length() + 1 ); //name + "."
 		}
 
 		private void addColumnNames(DBObject row, Set<String> columnNames, String prefix) {
@@ -68,6 +101,9 @@ public class MongoDBAssociationRowFactory extends SingleColumnAwareAssociationRo
 
 		@Override
 		public Object get(DBObject row, String column) {
+			if ( prefixedColumns.contains( column ) ) {
+				column = unprefix( column );
+			}
 			return MongoHelpers.getValueOrNull( row, column );
 		}
 	}

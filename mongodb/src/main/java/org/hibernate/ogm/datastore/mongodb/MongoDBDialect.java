@@ -11,6 +11,7 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnaps
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -516,15 +518,41 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		// otherwise a DBObject with the row contents
 		else {
+			// if the columns are only made of the embedded id columns, remove the embedded id property prefix
+			// collectionrole: [ { id: { id1: "foo", id2: "bar" } } ] becomes collectionrole: [ { id1: "foo", id2: "bar" } ]
+			String prefix = getColumnSharedPrefixIfAssociatedEntityKeyColumns( associationKey, rowKeyColumnsToPersist );
 			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
 			for ( String column : rowKeyColumnsToPersist ) {
 				Object value = row.get( column );
 				if ( value != null ) {
-					MongoHelpers.setValue( rowObject, column, value );
+					// remove the prefix if present
+					MongoHelpers.setValue( rowObject, column.substring( prefix.length() ), value );
 				}
 			}
 			return rowObject;
 		}
+	}
+
+	private String getColumnSharedPrefixIfAssociatedEntityKeyColumns(AssociationKey associationKey, String[] rowKeyColumnsToPersist) {
+		String[] associationKeyColumns = associationKey.getMetadata()
+				.getAssociatedEntityKeyMetadata()
+				.getAssociationKeyColumns();
+		String prefix = null;
+		// need to test unordered as the row Tuple does not use the Hibernate OGM internal column order
+		if ( unorderedArrayEqual( associationKeyColumns, rowKeyColumnsToPersist ) ) {
+			// we have several columns and they are not part of the key
+			// to they share the same prefix i.e. are from the same embedded id
+			prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
+		}
+		return prefix == null ? "" : prefix + ".";
+	}
+
+	private boolean unorderedArrayEqual(Object[] left, Object[] right) {
+		Object[] leftCopy = Arrays.copyOf( left, left.length );
+		Object[] rightCopy = Arrays.copyOf( right, right.length );
+		Arrays.sort( leftCopy );
+		Arrays.sort( rightCopy );
+		return Arrays.equals( leftCopy, rightCopy );
 	}
 
 	@Override

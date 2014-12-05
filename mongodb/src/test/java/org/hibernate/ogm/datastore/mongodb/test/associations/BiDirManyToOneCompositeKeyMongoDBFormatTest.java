@@ -15,10 +15,11 @@ import org.hibernate.ogm.backendtck.associations.compositeid.Court;
 import org.hibernate.ogm.backendtck.associations.compositeid.Game;
 import org.hibernate.ogm.utils.OgmTestCase;
 
+import static org.fest.assertions.Assertions.assertThat;
 import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assertDbObject;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
@@ -65,13 +66,27 @@ public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				"{ " +
 						"'_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
 						"'games' : " +
-						"[ { 'id': { 'sequenceNo': 456, 'category': 'primary' } }, " +
-						" { 'id': { 'sequenceNo': 457, 'category': 'primary' } } ], " +
+						"[ { 'sequenceNo': 456, 'category': 'primary' }, " +
+						"  { 'sequenceNo': 457, 'category': 'primary' } ], " +
 						"'name': 'Hamburg Court' " +
+						"}"
+		);
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Game",
+				// query
+				"{ '_id' : { 'category': 'primary', 'sequenceNo': 456 } }",
+				// expected
+				"{ " +
+						"'_id' : { 'category': 'primary', 'sequenceNo': 456 }, " +
+						"'playedOn_id' : { 'countryCode': 'DE', 'sequenceNo': 123 }, " +
+						"'name': 'The game' " +
 				"}"
 		);
 
 		Court localCourt = (Court) session.get( Court.class, new Court.CourtId( "DE", 123 ) );
+		assertThat( localCourt.getGames() ).hasSize( 2 );
 		for ( Game game : localCourt.getGames() ) {
 			session.delete( game );
 		}
