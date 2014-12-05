@@ -15,7 +15,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Entity
 public class Court {
