@@ -776,9 +776,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
 
+		// if the columns are only made of the embedded id columns, remove the embedded id property prefix
+		// _id: [ { id: { id1: "foo", id2: "bar" } } ] becomes _id: [ { id1: "foo", id2: "bar" } ]
+		String prefix = DocumentHelpers.getColumnSharedPrefix( key.getColumnNames() );
+		prefix = prefix == null ? "" : prefix + ".";
 		int i = 0;
 		for ( String name : key.getColumnNames() ) {
-			columns.put( name, columnValues[i++] );
+			MongoHelpers.setValue( columns, name.substring( prefix.length() ), columnValues[i++] );
 		}
 
 		BasicDBObject idObject = new BasicDBObject( 1 );
