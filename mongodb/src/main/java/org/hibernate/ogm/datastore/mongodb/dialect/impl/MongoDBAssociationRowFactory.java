@@ -12,9 +12,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow;
 import org.hibernate.ogm.datastore.document.association.spi.AssociationRow.AssociationRowAccessor;
+import org.hibernate.ogm.datastore.document.association.spi.AssociationRowFactory;
 import org.hibernate.ogm.datastore.document.association.spi.StructureOptimizerAssociationRowFactory;
 
 import com.mongodb.BasicDBObject;
