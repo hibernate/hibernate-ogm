@@ -25,7 +25,7 @@ public class DocumentHelpers {
 	}
 
 	/**
-	 * Returns the shared prefix of these column. Null otherwise.
+	 * Returns the shared prefix of these columns. Null otherwise.
 	 */
 	public static String getColumnSharedPrefix(String[] associationKeyColumns) {
 		String prefix = null;

@@ -537,7 +537,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		String[] associationKeyColumns = associationKey.getMetadata()
 				.getAssociatedEntityKeyMetadata()
 				.getAssociationKeyColumns();
-		// we used to check that columns are the same (in an ordered fashion
+		// we used to check that columns are the same (in an ordered fashion)
 		// but to handle List and Map and store indexes / keys at the same level as the id columns
 		// this check is removed
 		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );

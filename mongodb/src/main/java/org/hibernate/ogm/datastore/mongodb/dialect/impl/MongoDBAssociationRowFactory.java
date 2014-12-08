@@ -84,7 +84,7 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 
 		// only call if you have a prefix
 		private String unprefix(String prefixedColumn) {
-			return prefixedColumn.substring( prefix.length() + 1 ); //name + "."
+			return prefixedColumn.substring( prefix.length() + 1 ); // prefix + "."
 		}
 
 		private void addColumnNames(DBObject row, Set<String> columnNames, String prefix) {

@@ -288,6 +288,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			// we don't care about the order here for now
 			BasicDBList leftAsList = (BasicDBList) left;
 			BasicDBList rightAsList = (BasicDBList) right;
+			// check that the fields names are the same
 			Set<String> leftFields = new HashSet<String>( leftAsList.keySet() );
 			Set<String> rightFields = new HashSet<String>( rightAsList.keySet() );
 			if ( ! leftFields.equals( rightFields ) ) {
@@ -307,6 +308,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 			}
 			DBObject leftAsDBObject = (DBObject) left;
 			DBObject rightAsDBObject = (DBObject) right;
+			// check that the fields names are the same
 			Set<String> leftFields = new HashSet<String>( leftAsDBObject.keySet() );
 			Set<String> rightFields = new HashSet<String>( rightAsDBObject.keySet() );
 			if ( ! leftFields.equals( rightFields ) ) {
