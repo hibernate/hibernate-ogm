@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
+import org.hibernate.ogm.backendtck.associations.collection.types.Race;
+import org.hibernate.ogm.backendtck.associations.collection.types.Runner;
 import org.hibernate.ogm.backendtck.associations.manytoone.Court;
 import org.hibernate.ogm.backendtck.associations.manytoone.Game;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -96,8 +98,53 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 		session.close();
 	}
+
+	@Test
+	public void testOrderedListAndCompositeId() throws Exception {
+		OgmSession session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Race race = new Race();
+		race.setRaceId( new Race.RaceId( 23, 75 ) );
+		Runner runner = new Runner();
+		runner.setAge( 37 );
+		runner.setRunnerId( new Runner.RunnerId( "Emmanuel", "Bernard" ) );
+		Runner runner2 = new Runner();
+		runner2.setAge( 105 );
+		runner2.setRunnerId( new Runner.RunnerId( "Pere", "Noel" ) );
+		race.getRunnersByArrival().add( runner );
+		race.getRunnersByArrival().add( runner2 );
+		session.persist( race );
+		session.persist( runner );
+		session.persist( runner2 );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Race",
+				// query
+				"{ '_id' : { 'federationDepartment' : 75, 'federationSequence' : 23 } }",
+				// expected
+				"{ '_id' : { 'federationDepartment' : 75, 'federationSequence' : 23 }, " +
+						"'runnersByArrival' : [ { 'firstname' : 'Pere', 'lastname' : 'Noel', 'ranking' : 1 }, " +
+						"{ 'firstname' : 'Emmanuel', 'lastname' : 'Bernard', 'ranking' : 0 } ] }"
+		);
+		race = (Race) session.get( Race.class, race.getRaceId() );
+		assertThat( race.getRunnersByArrival() ).hasSize( 2 );
+		assertThat( race.getRunnersByArrival().get( 0 ).getRunnerId().getFirstname() ).isEqualTo( "Emmanuel" );
+		session.delete( race.getRunnersByArrival().get( 0 ) );
+		session.delete( race.getRunnersByArrival().get( 1 ) );
+		session.delete( race );
+		transaction.commit();
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Game.class, Court.class };
+		return new Class<?>[] { Game.class, Court.class, Race.class, Runner.class };
 	}
 }

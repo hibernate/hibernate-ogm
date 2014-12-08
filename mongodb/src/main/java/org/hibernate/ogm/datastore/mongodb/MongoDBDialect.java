@@ -11,7 +11,6 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnaps
 import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -520,39 +519,29 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		else {
 			// if the columns are only made of the embedded id columns, remove the embedded id property prefix
 			// collectionrole: [ { id: { id1: "foo", id2: "bar" } } ] becomes collectionrole: [ { id1: "foo", id2: "bar" } ]
-			String prefix = getColumnSharedPrefixIfAssociatedEntityKeyColumns( associationKey, rowKeyColumnsToPersist );
+			String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
 			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
 			for ( String column : rowKeyColumnsToPersist ) {
 				Object value = row.get( column );
 				if ( value != null ) {
 					// remove the prefix if present
-					MongoHelpers.setValue( rowObject, column.substring( prefix.length() ), value );
+					String columnName = column.startsWith( prefix ) ? column.substring( prefix.length() ) : column;
+					MongoHelpers.setValue( rowObject, columnName, value );
 				}
 			}
 			return rowObject;
 		}
 	}
 
-	private String getColumnSharedPrefixIfAssociatedEntityKeyColumns(AssociationKey associationKey, String[] rowKeyColumnsToPersist) {
+	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
 		String[] associationKeyColumns = associationKey.getMetadata()
 				.getAssociatedEntityKeyMetadata()
 				.getAssociationKeyColumns();
-		String prefix = null;
-		// need to test unordered as the row Tuple does not use the Hibernate OGM internal column order
-		if ( unorderedArrayEqual( associationKeyColumns, rowKeyColumnsToPersist ) ) {
-			// we have several columns and they are not part of the key
-			// to they share the same prefix i.e. are from the same embedded id
-			prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
-		}
+		// we used to check that columns are the same (in an ordered fashion
+		// but to handle List and Map and store indexes / keys at the same level as the id columns
+		// this check is removed
+		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
 		return prefix == null ? "" : prefix + ".";
-	}
-
-	private boolean unorderedArrayEqual(Object[] left, Object[] right) {
-		Object[] leftCopy = Arrays.copyOf( left, left.length );
-		Object[] rightCopy = Arrays.copyOf( right, right.length );
-		Arrays.sort( leftCopy );
-		Arrays.sort( rightCopy );
-		return Arrays.equals( leftCopy, rightCopy );
 	}
 
 	@Override

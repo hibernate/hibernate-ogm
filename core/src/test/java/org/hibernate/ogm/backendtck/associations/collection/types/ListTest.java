@@ -138,8 +138,48 @@ public class ListTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testOrderedListAndCompositeId() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Race race = new Race();
+		race.setRaceId( new Race.RaceId( 23, 75 ) );
+		Runner runner = new Runner();
+		runner.setAge( 37 );
+		runner.setRunnerId( new Runner.RunnerId( "Emmanuel", "Bernard" ) );
+		Runner runner2 = new Runner();
+		runner2.setAge( 105 );
+		runner2.setRunnerId( new Runner.RunnerId( "Pere", "Noel" ) );
+		race.getRunnersByArrival().add( runner );
+		race.getRunnersByArrival().add( runner2 );
+		session.persist( race );
+		session.persist( runner );
+		session.persist( runner2 );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		race = (Race) session.get( Race.class, race.getRaceId() );
+		assertThat( race.getRunnersByArrival() ).hasSize( 2 );
+		assertThat( race.getRunnersByArrival().get( 0 ).getRunnerId().getFirstname() ).isEqualTo( "Emmanuel" );
+		session.delete( race.getRunnersByArrival().get( 0 ) );
+		session.delete( race.getRunnersByArrival().get( 1 ) );
+		session.delete( race );
+		transaction.commit();
+
+		session.close();
+		checkCleanCache();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Father.class, GrandMother.class, Child.class };
+		return new Class<?>[] {
+				Father.class,
+				GrandMother.class,
+				Child.class,
+				Race.class,
+				Runner.class
+		};
 	}
 }
