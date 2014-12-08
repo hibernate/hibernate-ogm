@@ -296,8 +296,62 @@ public class ManyToOneTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testDefaultBiDirManyToOneCompositeKeyTest() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Court court = new Court();
+		court.setId( new Court.CourtId() );
+		court.getId().setCountryCode( "DE" );
+		court.getId().setSequenceNo( 123 );
+		court.setName( "Hamburg Court" );
+		session.persist( court );
+		Game game1 = new Game();
+		game1.setId( new Game.GameId() );
+		game1.getId().setCategory( "primary" );
+		game1.getId().setSequenceNo( 456 );
+		game1.setName( "The game" );
+		game1.setPlayedOn( court );
+		court.getGames().add( game1 );
+		Game game2 = new Game();
+		game2.setId( new Game.GameId() );
+		game2.getId().setCategory( "primary" );
+		game2.getId().setSequenceNo( 457 );
+		game2.setName( "The other game" );
+		game2.setPlayedOn( court );
+		session.persist( game1 );
+		session.persist( game2 );
+		session.flush();
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		Court localCourt = (Court) session.get( Court.class, new Court.CourtId( "DE", 123 ) );
+		assertThat( localCourt.getGames() ).hasSize( 2 );
+		for ( Game game : localCourt.getGames() ) {
+			session.delete( game );
+		}
+		localCourt.getGames().clear();
+		session.delete( localCourt );
+		transaction.commit();
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { JUG.class, Member.class, SalesForce.class, SalesGuy.class, Beer.class, Brewery.class, Basket.class, Product.class };
+		return new Class<?>[] {
+				JUG.class,
+				Member.class,
+				SalesForce.class,
+				SalesGuy.class,
+				Beer.class,
+				Brewery.class,
+				Basket.class,
+				Product.class,
+				Game.class,
+				Court.class
+		};
 	}
 }

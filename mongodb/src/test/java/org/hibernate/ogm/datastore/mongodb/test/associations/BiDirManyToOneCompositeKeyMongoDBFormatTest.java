@@ -11,8 +11,8 @@ import org.junit.Test;
 
 import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.backendtck.associations.compositeid.Court;
-import org.hibernate.ogm.backendtck.associations.compositeid.Game;
+import org.hibernate.ogm.backendtck.associations.manytoone.Court;
+import org.hibernate.ogm.backendtck.associations.manytoone.Game;
 import org.hibernate.ogm.utils.OgmTestCase;
 
 import static org.fest.assertions.Assertions.assertThat;
