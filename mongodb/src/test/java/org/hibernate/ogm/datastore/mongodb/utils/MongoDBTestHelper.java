@@ -33,6 +33,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.utils.TestableGridDialect;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
@@ -272,6 +273,56 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder );
 
-		assertThat( actual ).isEqualTo( expected );
+		assertThat( isDBObjectAndContentEqual( actual, expected ) ).isTrue();
+	}
+
+	/*
+	 * Do a manual equals of each element in the DBObjects.
+	 * In particular, ignores the indexes of arrays and compare their content only.
+	 */
+	private static boolean isDBObjectAndContentEqual(Object left, Object right) {
+		if ( left instanceof BasicDBList ) {
+			if ( ! ( right instanceof BasicDBList ) ) {
+				return false;
+			}
+			// we don't care about the order here for now
+			BasicDBList leftAsList = (BasicDBList) left;
+			BasicDBList rightAsList = (BasicDBList) right;
+			Set<String> leftFields = new HashSet<String>( leftAsList.keySet() );
+			Set<String> rightFields = new HashSet<String>( rightAsList.keySet() );
+			if ( ! leftFields.equals( rightFields ) ) {
+				return false;
+			}
+			// check that all left field values are in right
+			for ( String field : leftFields ) {
+				// fall back to native equals via the contains. It is out of our current tests
+				if ( ! rightAsList.contains( leftAsList.get( field ) ) ) {
+					return false;
+				}
+			}
+		}
+		else if ( left instanceof DBObject ) {
+			if ( ! ( right instanceof DBObject ) ) {
+				return false;
+			}
+			DBObject leftAsDBObject = (DBObject) left;
+			DBObject rightAsDBObject = (DBObject) right;
+			Set<String> leftFields = new HashSet<String>( leftAsDBObject.keySet() );
+			Set<String> rightFields = new HashSet<String>( rightAsDBObject.keySet() );
+			if ( ! leftFields.equals( rightFields ) ) {
+				return false;
+			}
+			// check that all left fields are in right and equal
+			for ( String field : leftFields ) {
+				boolean matches = isDBObjectAndContentEqual( leftAsDBObject.get( field ), rightAsDBObject.get( field ) );
+				if ( ! matches ) {
+					return false;
+				}
+			}
+		}
+		else {
+			return left == right || ( left != null && left.equals( right ) );
+		}
+		return true;
 	}
 }

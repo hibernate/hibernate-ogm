@@ -129,8 +129,10 @@ public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 				"{ '_id' : { 'federationDepartment' : 75, 'federationSequence' : 23 } }",
 				// expected
 				"{ '_id' : { 'federationDepartment' : 75, 'federationSequence' : 23 }, " +
-						"'runnersByArrival' : [ { 'firstname' : 'Pere', 'lastname' : 'Noel', 'ranking' : 1 }, " +
-						"{ 'firstname' : 'Emmanuel', 'lastname' : 'Bernard', 'ranking' : 0 } ] }"
+						"'runnersByArrival' : [ " +
+						"{ 'firstname' : 'Emmanuel', 'lastname' : 'Bernard', 'ranking' : 0 }, " +
+						"{ 'firstname' : 'Pere', 'lastname' : 'Noel', 'ranking' : 1 } " +
+						"] }"
 		);
 		race = (Race) session.get( Race.class, race.getRaceId() );
 		assertThat( race.getRunnersByArrival() ).hasSize( 2 );
