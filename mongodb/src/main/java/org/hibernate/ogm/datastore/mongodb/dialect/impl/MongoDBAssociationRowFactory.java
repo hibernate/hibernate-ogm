@@ -73,7 +73,7 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 			Set<String> columnNames = new HashSet<String>();
 			addColumnNames( row, columnNames, "" );
 			for ( String prefixedColumn : prefixedColumns ) {
-				String unprefixedColumn = unprefix( prefixedColumn );
+				String unprefixedColumn = removePrefix( prefixedColumn );
 				if ( columnNames.contains( unprefixedColumn ) ) {
 					columnNames.remove( unprefixedColumn );
 					columnNames.add( prefixedColumn );
@@ -83,7 +83,7 @@ public class MongoDBAssociationRowFactory extends StructureOptimizerAssociationR
 		}
 
 		// only call if you have a prefix
-		private String unprefix(String prefixedColumn) {
+		private String removePrefix(String prefixedColumn) {
 			return prefixedColumn.substring( prefix.length() + 1 ); // prefix + "."
 		}
 
