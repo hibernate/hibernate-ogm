@@ -21,7 +21,7 @@ import static org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper.assert
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class BiDirManyToOneCompositeKeyMongoDBFormatTest extends OgmTestCase {
+public class AssociationCompositeKeyMongoDBFormatTest extends OgmTestCase {
 
 	@Test
 	public void testDefaultBiDirManyToOneCompositeKeyTest() throws Exception {
