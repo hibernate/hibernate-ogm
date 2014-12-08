@@ -5,15 +5,16 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 
-package org.hibernate.ogm.backendtck.associations.compositeid;
+package org.hibernate.ogm.backendtck.associations.manytoone;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 
 /**
- * @author Emmanuel Bernard <emmanuel@hibernate.org>
+ * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @Entity
 public class Game {
@@ -51,6 +52,7 @@ public class Game {
 
 	public static class GameId implements Serializable {
 		private String category;
+		@Column(name = "id.gameSequenceNo")
 		private int sequenceNo;
 
 		public String getCategory() {
@@ -61,6 +63,7 @@ public class Game {
 			this.category = category;
 		}
 
+		@Column(name = "id.gameSequenceNo")
 		public int getSequenceNo() {
 			return sequenceNo;
 		}

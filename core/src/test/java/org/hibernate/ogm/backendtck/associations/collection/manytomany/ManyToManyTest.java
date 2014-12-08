@@ -87,6 +87,34 @@ public class ManyToManyTest extends OgmTestCase {
 		checkCleanCache();
 	}
 
+	@Test
+	public void testManyToManyCompositeId() throws Exception {
+		Session session = openSession();
+		Transaction transaction = session.beginTransaction();
+		Car car = new Car();
+		car.setCarId( new Car.CarId( "Citroen", "AX" ) );
+		car.setHp( 20 );
+		session.persist( car );
+		Tire tire = new Tire();
+		tire.setTireId( new Tire.TireId( "Michelin", "B1" ) );
+		tire.setSize( 17d );
+		car.getTires().add( tire );
+		tire.getCars().add( car );
+		session.persist( tire );
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+		car = (Car) session.get( Car.class, car.getCarId() );
+		assertThat( car.getTires() ).hasSize( 1 );
+		assertThat( car.getTires().iterator().next().getCars() ).contains( car );
+		session.delete( car );
+		session.delete( car.getTires().iterator().next() );
+		transaction.commit();
+		session.close();
+	}
+
 	private int expectedAssociationNumber() {
 		if ( TestHelper.getCurrentDialectType().equals( GridDialectType.NEO4J ) ) {
 			// In Neo4j relationships are bidirectional
@@ -99,6 +127,11 @@ public class ManyToManyTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { AccountOwner.class, BankAccount.class };
+		return new Class<?>[] {
+				AccountOwner.class,
+				BankAccount.class,
+				Car.class,
+				Tire.class
+		};
 	}
 }

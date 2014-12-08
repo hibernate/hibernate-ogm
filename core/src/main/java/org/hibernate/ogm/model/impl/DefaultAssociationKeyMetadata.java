@@ -160,6 +160,8 @@ public class DefaultAssociationKeyMetadata implements AssociationKeyMetadata {
 	 * <p>
 	 * Stores can opt to persist only the returned columns when writing a row of this key family. All other columns can
 	 * be retrieved from the key meta-data itself when reading an association row.
+	 * <p>
+	 * The column order is not preserved.
 	 */
 	@Override
 	public String[] getColumnsWithoutKeyColumns(Iterable<String> candidates) {

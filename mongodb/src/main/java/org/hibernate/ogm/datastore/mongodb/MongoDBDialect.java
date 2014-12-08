@@ -20,6 +20,7 @@ import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
+import org.hibernate.ogm.datastore.document.association.spi.impl.DocumentHelpers;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption;
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
@@ -516,15 +517,31 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		// otherwise a DBObject with the row contents
 		else {
+			// if the columns are only made of the embedded id columns, remove the embedded id property prefix
+			// collectionrole: [ { id: { id1: "foo", id2: "bar" } } ] becomes collectionrole: [ { id1: "foo", id2: "bar" } ]
+			String prefix = getColumnSharedPrefixOfAssociatedEntityLink( associationKey );
 			DBObject rowObject = new BasicDBObject( rowKeyColumnsToPersist.length );
 			for ( String column : rowKeyColumnsToPersist ) {
 				Object value = row.get( column );
 				if ( value != null ) {
-					MongoHelpers.setValue( rowObject, column, value );
+					// remove the prefix if present
+					String columnName = column.startsWith( prefix ) ? column.substring( prefix.length() ) : column;
+					MongoHelpers.setValue( rowObject, columnName, value );
 				}
 			}
 			return rowObject;
 		}
+	}
+
+	private String getColumnSharedPrefixOfAssociatedEntityLink(AssociationKey associationKey) {
+		String[] associationKeyColumns = associationKey.getMetadata()
+				.getAssociatedEntityKeyMetadata()
+				.getAssociationKeyColumns();
+		// we used to check that columns are the same (in an ordered fashion
+		// but to handle List and Map and store indexes / keys at the same level as the id columns
+		// this check is removed
+		String prefix = DocumentHelpers.getColumnSharedPrefix( associationKeyColumns );
+		return prefix == null ? "" : prefix + ".";
 	}
 
 	@Override
@@ -748,9 +765,13 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		Object[] columnValues = key.getColumnValues();
 		DBObject columns = new BasicDBObject( columnValues.length );
 
+		// if the columns are only made of the embedded id columns, remove the embedded id property prefix
+		// _id: [ { id: { id1: "foo", id2: "bar" } } ] becomes _id: [ { id1: "foo", id2: "bar" } ]
+		String prefix = DocumentHelpers.getColumnSharedPrefix( key.getColumnNames() );
+		prefix = prefix == null ? "" : prefix + ".";
 		int i = 0;
 		for ( String name : key.getColumnNames() ) {
-			columns.put( name, columnValues[i++] );
+			MongoHelpers.setValue( columns, name.substring( prefix.length() ), columnValues[i++] );
 		}
 
 		BasicDBObject idObject = new BasicDBObject( 1 );
