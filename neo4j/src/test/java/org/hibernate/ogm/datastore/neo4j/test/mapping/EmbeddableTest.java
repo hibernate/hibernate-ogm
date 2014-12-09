@@ -13,6 +13,7 @@ import javax.persistence.EntityManager;
 
 import org.hibernate.ogm.backendtck.embeddable.Account;
 import org.hibernate.ogm.backendtck.embeddable.Address;
+import org.hibernate.ogm.backendtck.embeddable.AddressType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,6 +40,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		address.setCountry( "France" );
 		address.setStreet1( "1 avenue des Champs Elysees" );
 		address.setZipCode( "75007" );
+		address.setType( new AddressType( "HOME" ) );
 
 		em.persist( account );
 		commitOrRollback( true );
@@ -46,7 +48,94 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 	}
 
 	@Test
-	public void testMapping() throws Exception {
+	public void testEmbeddedNodesMapping() throws Exception {
+		assertNumberOfNodes( 3 );
+		assertRelationships( 2 );
+
+		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
+		String addressNode = "(e:EMBEDDED {street1: {e}.street1, city: {e}.city, country: {e}.country})";
+		String addressTypeNode = "(t:EMBEDDED {name: {t}.name})";
+
+		Map<String, Object> accountProperties = new HashMap<String, Object>();
+		accountProperties.put( "login", account.getLogin() );
+		accountProperties.put( "password", account.getPassword());
+		accountProperties.put( "version", account.getVersion() );
+
+		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
+		// unless you define it as @Column("homeAddress.postal_code")
+		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+
+		Map<String, Object> addressProperties = new HashMap<String, Object>();
+		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
+		addressProperties.put( "city", account.getHomeAddress().getCity() );
+		addressProperties.put( "country", account.getHomeAddress().getCountry() );
+
+		Map<String, Object> addressTypeProperties = new HashMap<String, Object>();
+		addressTypeProperties.put( "name", account.getHomeAddress().getType().getName() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "a", accountProperties);
+		params.put( "e", addressProperties );
+		params.put( "t", addressTypeProperties );
+
+		assertExpectedMapping( "a", accountNode, params );
+		assertExpectedMapping( "e", addressNode, params );
+		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
+		assertExpectedMapping( "r", addressNode + " - [r:type] - " + addressTypeNode, params );
+	}
+
+	@Test
+	public void testRemovePropertyFromEmbeddedNode() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+		Account found = em.find( Account.class, account.getLogin() );
+		found.getHomeAddress().setCity( null );
+		commitOrRollback( true );
+		em.close();
+
+		assertNumberOfNodes( 3 );
+		assertRelationships( 2 );
+
+		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
+		String addressNode = "(e:EMBEDDED {street1: {e}.street1, country: {e}.country})";
+		String addressTypeNode = "(t:EMBEDDED {name: {t}.name})";
+
+		Map<String, Object> accountProperties = new HashMap<String, Object>();
+		accountProperties.put( "login", account.getLogin() );
+		accountProperties.put( "password", account.getPassword());
+		accountProperties.put( "version", account.getVersion() + 1 );
+
+		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
+		// unless you define it as @Column("homeAddress.postal_code")
+		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+
+		Map<String, Object> addressProperties = new HashMap<String, Object>();
+		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
+		addressProperties.put( "country", account.getHomeAddress().getCountry() );
+
+		Map<String, Object> addressTypeProperties = new HashMap<String, Object>();
+		addressTypeProperties.put( "name", account.getHomeAddress().getType().getName() );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "a", accountProperties);
+		params.put( "e", addressProperties );
+		params.put( "t", addressTypeProperties );
+
+		assertExpectedMapping( "a", accountNode, params );
+		assertExpectedMapping( "e", addressNode, params );
+		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
+		assertExpectedMapping( "r", addressNode + " - [r:type] - " + addressTypeNode, params );
+	}
+
+	@Test
+	public void testRemoveEmbedded() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+		Account found = em.find( Account.class, account.getLogin() );
+		found.getHomeAddress().setType( null );
+		commitOrRollback( true );
+		em.close();
+
 		assertNumberOfNodes( 2 );
 		assertRelationships( 1 );
 
@@ -56,7 +145,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		Map<String, Object> accountProperties = new HashMap<String, Object>();
 		accountProperties.put( "login", account.getLogin() );
 		accountProperties.put( "password", account.getPassword());
-		accountProperties.put( "version", account.getVersion() );
+		accountProperties.put( "version", account.getVersion() + 1 );
 
 		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
 		// unless you define it as @Column("homeAddress.postal_code")
