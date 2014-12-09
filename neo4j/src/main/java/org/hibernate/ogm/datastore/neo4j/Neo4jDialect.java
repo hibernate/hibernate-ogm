@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.hibernate.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
@@ -74,6 +75,7 @@ import org.neo4j.cypher.CypherExecutionException;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.ConstraintViolationException;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
@@ -93,6 +95,8 @@ import org.neo4j.kernel.impl.util.StringLogger;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
+
+	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
 
 	private static final String PROPERTY_SEPARATOR = ".";
 
@@ -391,14 +395,19 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			break;
 		case PUT_NULL:
 		case REMOVE:
-			removeTupleOperation( node, operation, tupleContext, processedAssociationRoles );
+			removeTupleOperation( entityKey, node, operation, tupleContext, processedAssociationRoles );
 			break;
 		}
 	}
 
-	private void removeTupleOperation(Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+	private void removeTupleOperation(EntityKey entityKey, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
 		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
-			if ( node.hasProperty( operation.getColumn() ) ) {
+			if ( isPartOfRegularEmbedded( entityKey.getColumnNames(), operation.getColumn() ) ) {
+				// Embedded node
+				String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( operation.getColumn() );
+				removePropertyForEmbedded( node, split, 0 );
+			}
+			else  if ( node.hasProperty( operation.getColumn() ) ) {
 				node.removeProperty( operation.getColumn() );
 			}
 		}
@@ -411,6 +420,43 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 				if ( relationships.hasNext() ) {
 					relationships.next().delete();
+				}
+			}
+		}
+	}
+
+	/*
+	 * It will remove remove a property from an embedded node if it exists.
+	 * After deleting the property, if the node does not have any more properties and relationships (except for an incoming one),
+	 * it will delete the embedded node as well.
+	 */
+	private void removePropertyForEmbedded(Node embeddedNode, String[] embeddedColumnSplit, int i) {
+		if ( i == embeddedColumnSplit.length - 1 ) {
+			// Property
+			String property = embeddedColumnSplit[embeddedColumnSplit.length - 1];
+			if ( embeddedNode.hasProperty( property ) ) {
+				embeddedNode.removeProperty( property );
+			}
+		}
+		else {
+			Iterator<Relationship> iterator = embeddedNode.getRelationships( Direction.OUTGOING, withName( embeddedColumnSplit[i] ) ).iterator();
+			if ( iterator.hasNext() ) {
+				removePropertyForEmbedded( iterator.next().getEndNode(), embeddedColumnSplit, i + 1 );
+			}
+		}
+		if ( !embeddedNode.getPropertyKeys().iterator().hasNext() ) {
+			// Node without properties
+			Iterator<Relationship> iterator = embeddedNode.getRelationships().iterator();
+			if ( iterator.hasNext() ) {
+				Relationship relationship = iterator.next();
+				if ( !iterator.hasNext() ) {
+					// Node with only one relationship and no properties,
+					// we can remove it:
+					// It means we have removed all the properties from the embedded node
+					// and it is NOT an intermediate node like
+					// (entity) --> (embedded1) --> (embedded2)
+					relationship.delete();
+					embeddedNode.delete();
 				}
 			}
 		}
