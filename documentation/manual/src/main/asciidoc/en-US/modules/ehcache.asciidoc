@@ -2,8 +2,8 @@
 
 === Ehcache
 
-When combined with Hibernate ORM, Ehcache is commonly used as a 2nd level cache,
-so caching data which is stored in a relational database.
+When combined with Hibernate ORM, Ehcache is commonly used as a 2nd level cache
+to cache data whose primary storage is a relational database.
 When used with Hibernate OGM it is not "just a cache"
 but is the main storage engine for your data.
 
@@ -71,36 +71,56 @@ Defaults to +org/hibernate/ogm/datastore/ehcache/default-ehcache.xml+.
 +hibernate.ogm.datastore.keyvalue.cache_storage+::
 The strategy for persisting data in EhCache.
 The following two strategies exist (values of the +org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType+ enum):
-+CACHE_PER_KIND+
-(Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources) and
-+CACHE_PER_TABLE+
-(A dedicated cache will be used for each entity type, association type and id source table).
-Defaults to +CACHE_PER_TABLE+.
+
+* +CACHE_PER_TABLE+: A dedicated cache will be used for each entity type, association type and id source table.
+* +CACHE_PER_KIND+: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
++
+Defaults to +CACHE_PER_TABLE+. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
 you should use the constants accessible via +EhcacheProperties+
 when specifying the configuration properties listed above.
-Common properties shared between stores are declared on +OgmProperties+.
-To ease migration between stores, it is recommended to reference these constants directly from there.
+
+Common properties shared between stores are declared on +OgmProperties+
+(a super interface of +EhcacheProperties+).
+
+For maximum portability between stores, use the most generic interface possible.
 ====
+
+===== Cache names used by Hibernate OGM
+
+Depending on the cache storage approach, Hibernate OGM will either:
+
+* store each entity type, association type and id source table in a dedicated cache
+  very much like what Hibernate ORM would do. This is the +CACHE_PER_TABLE+ approach.
+* store data in three different caches when using the +CACHE_PER_KIND+ approach:
+** +ENTITIES+: is going to be used to store the main attributes of all your entities.
+** +ASSOCIATIONS+: stores the association information representing the links between entities.
+** +IDENTIFIER_STORE+: contains internal metadata that Hibernate OGM needs
+    to provide sequences and auto-incremental numbers for primary key generation.
+
+The preferred strategy is +CACHE_PER_TABLE+ as it offers both more fine grained configuration options
+and the ability to work on specific entities in a more simple fashion.
 
 [[ogm-ehcache-storage-principles]]
-===== Storage principles
+==== Storage principles
+
+To describe things simply, each entity is stored under a single key.
+The value itself is a map containing the columns / values pair.
+
+Each association from one entity instance to (a set of) another is stored under a single key.
+The value contains the navigational information to the (set of) entity.
 
 [[ogm-ehcache-built-in-types]]
-===== Builtin types
+===== Properties and built-in types
 
-[NOTE]
-====
-Hibernate OGM don't store null values in EhCache,
-setting an attribute to null is the same as removing the entry
-in the corresponding cache.
-====
+Each entity is represented by a map.
+Each property or more precisely column is represented by an entry in this map,
+the key being the column name.
 
-
-Hibernate OGM support by default the following types:
+Hibernate OGM support by default the following property types:
 
 * [classname]+java.lang.String+
 * [classname]+java.lang.Boolean+ (or boolean primitive)
@@ -117,12 +137,27 @@ Hibernate OGM support by default the following types:
 * [classname]+java.util.UUID+
 * [classname]+java.util.URL+
 
-====== Identifiers
+[NOTE]
+====
+Hibernate OGM doesn't store null values in Ehcache,
+setting a value to null is the same as removing the corresponding entry
+from Ehcache.
 
-Hibernate OGM will map the identifier of an entity as key of the entry of in the cache.
+This can have consequences when it comes to queries on null value.
+====
 
-The key is going to be a serializable implementation of +org.hibernate.ogm.model.key.spi.EntityKey+
-instance containing the entity table name and the key columns names and values.
+===== Identifiers
+
+Entity identifiers are used to build the key in which the entity is stored in the cache.
+
+The key is comprised of the following information:
+
+* the identifier column names
+* the identifier column values
+* the entity table (for the +CACHE_PER_KIND+ strategy)
+
+In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
+In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
 
 .Define an identifier as a primitive type
 ====
@@ -140,7 +175,16 @@ public class Bookmark {
 }
 ----
 
-.Content of the ENTITY cache
+.Content of the +Bookmark+ cache in +CACHE_PER_TABLE+
+[cols="3*", options="header"]
+|===
+     ^| KEY                   2+^| MAP ENTRIES
+
+.2+^.^| ["id"], [42]             | id       | 42 
+                                 | title    | "Hibernate OGM documentation" 
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -174,13 +218,27 @@ public class News {
 }
 ----
 
-.Content of the ENTITY cache
+.Content of the +News+ cache in +CACHE_PER_TABLE+
 [cols="3*", options="header"]
 |===
      ^| KEY
    2+^| MAP ENTRIES
 
-.3+^.^| "News",[newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
+.3+^.^| [newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
+      | newsId.author  | "Guillaume"
+
+      | newsId.title   | "How to use Hibernate OGM ?"
+
+      | content        | "Simple, just like ORM but with a NoSQL database"
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+[cols="3*", options="header"]
+|===
+     ^| KEY
+   2+^| MAP ENTRIES
+
+.3+^.^| "News", [newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
       | newsId.author  | "Guillaume"
 
       | newsId.title   | "How to use Hibernate OGM ?"
@@ -191,9 +249,11 @@ public class News {
 
 ====== Identifier generation strategies
 
-The only table strategy available in ehcahce is the +TABLE+ one.
-Selecting a different strategies won't cause any execption but Hibernate OGM will still rely on the
-+TABLE+ strategy to generate identifiers.
+Since Ehcache has not native sequence nor identity column support,
+these are simulated using the table strategy, however their default values vary.
+We highly recommend you explicitly use a +TABLE+ strategy if you want to generate a monotonic identifier.
+
+But if you can, use a pure in-memory and scalable strategy like a UUID generator.
 
 .Id generation strategy TABLE using default values
 ====
@@ -213,17 +273,27 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the IDENTIFIERS cache
-
+.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
-   | [type=TABLE, name=hibernate_sequences, keyColumnName=sequence_name, valueColumnName=next_val],
-      columnNames=[sequence_name], columnValues=[default] 
+   | ["sequence_name"], ["default"]
+^.^|  2
+|===
+
+.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "hibernate_sequences", ["sequence_name"], ["default"]
 ^.^|  2
 |===
 ====
+
+As you can see, in +CACHE_PER_TABLE+, the key does not contain the id source table name.
+It is inferred by the cache name hosting that key.
 
 .Id generation strategy TABLE using a custom table
 ====
@@ -237,8 +307,8 @@ public class GuitarPlayer {
     @TableGenerator(
         name = "guitarGen",
         table = "GuitarPlayerSequence",
+        pkColumnName = "seq"
         pkColumnValue = "guitarPlayer",
-        valueColumnName = "nextGuitarPlayerId"
     )
     private long id;
 
@@ -247,15 +317,21 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the IDENTIFIERS cache
-
+.Content of the +GuitarPlayerSequence+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
+   | ["seq"], ["guitarPlayer"]
+^.^| 2
+|===
 
-   | [type=TABLE, name=GuitarPlayerSequence, keyColumnName=sequence_name,
-     valueColumnName=nextGuitarPlayerId], columnNames=[sequence_name], columnValues=[guitarPlayer]
+.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "GuitarPlayerSequence", ["seq"], ["guitarPlayer"]
 ^.^| 2
 |===
 ====
@@ -283,19 +359,42 @@ public class Song {
 }
 ----
 
+.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
-   | [type="TABLE", "name"="hibernate_sequences", keyColumnName="sequence_name", 
-      valueColumnName="next_val]", columnNames=[sequence_name], columnValues=[song_sequence_name]
+   | ["sequence_name"], ["song_sequence"]
+^.^| 11
+|===
+
+.Content of the +IDENTIFIERS+ cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "hibernate_sequences", "["sequence_name"], ["song_sequence"]
 ^.^| 11
 |===
 ====
 
 ===== Entities
 
-Entites are stored in the +ENTITIES+ cache.
+Entities are stored in the cache named after the entity name when using the +CACHE_PER_TABLE+ strategy.
+In the +CACHE_PER_KIND+ strategy, entities are stored in a single cache named +ENTITIES+.
+
+The key is comprised of the following information:
+
+* the identifier column names
+* the identifier column values
+* the entity table (for the +CACHE_PER_KIND+ strategy)
+
+In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
+In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
+
+The entry value is itself a map which contains all the entity properties -
+or to be specific columns.
+Each column name and value is stored as a key / value pair in the map.
 
 .Default JPA mapping for an entity
 ====
@@ -312,8 +411,16 @@ public class News {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +News+ cache in +CACHE_PER_TYPE+
+[cols="3*", options="header"]
+|===
+     ^| KEY                        2+^| MAP ENTRIES
 
+.2+^.^| ["id"], ["1234-5678"] | id       | "1234-5678"
+                                      | title    | "On the merits of NoSQL" 
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -322,6 +429,9 @@ public class News {
                                       | title    | "On the merits of NoSQL" 
 |===
 ====
+
+As you can see, the table name is not part of the key for +CACHE_PER_TYPE+.
+In the rest of this section we will no longer show the +CACHE_PER_KIND+ strategy.
 
 .Rename field and collection using @Table and @Column
 ====
@@ -341,12 +451,12 @@ public class News {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Article+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.2+^.^| "Article", ["id"], ["1234-5678"]     | id       | "1234-5678"
+.2+^.^| ["id"], ["1234-5678"]                | id       | "1234-5678"
                                              | headline | "On the merits of NoSQL" 
 |===
 ====
@@ -380,12 +490,12 @@ public class NewsPaper {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +News+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.4+^.^| "Article", ["id"], ["1234-5678"]     | id          | "1234-5678"
+.4+^.^| ["id"], ["1234-5678"]                | id          | "1234-5678"
                                              | title       | "On the merits of NoSQL" 
                                              | paper.name  | "NoSQL journal of prophecies" 
                                              | paper.owner | "Delphy" 
@@ -417,20 +527,21 @@ public class GrandChild {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +GrandMother+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
-   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+   ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_GrandMother_grandChildren+ cache in +CACHE_PER_TYPE+
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
 
-.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.4+^.^| ["GrandMother_id"], ["granny"]
 .2+^.^| ["GrandMother_id", "name"], ["granny", "Leia"]
       | GrandMother_id
       | "granny"
@@ -438,7 +549,29 @@ public class GrandChild {
       | name
       | "Leia"
 
-.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Luke"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Luke"
+|===
+
+.Content of the +ASSOCIATIONS+ cache in +CACHE_PER_KIND+
+[cols="4*", options="header"]
+|===
+     ^| KEY
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
+
+.4+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Leia"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Leia"
+
 .2+^.^| ["GrandMother_id", "name"], ["granny", "Luke"]
       | GrandMother_id
       | "granny"
@@ -447,6 +580,22 @@ public class GrandChild {
       | "Luke"
 |===
 ====
+
+Here, we see that the collection of elements is stored in a separate cache and entry.
+The association key is made of:
+
+* the foreign key column names pointing to the owner of this association
+* the foreign key column values pointing to the owner of this association
+* the association table name in the +CACHE_PER_KIND+ approach where all associations share the same cache
+
+The association entry is a map containing the representation of each entry in the collection.
+The keys of that map are made of:
+
+* the names of the columns uniquely identifying that specific collection entry
+  (e.g. for a +Set+ this is all of the columns)
+* the values of the columns uniquely identifying that specific collection entry
+
+The value attack to that collection entry key is a Map containing the key value pairs column name / column value.
 
 .@ElementCollection with @OrderColumn
 ====
@@ -474,20 +623,21 @@ public class GrandChild {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +GrandMother+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
-   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+   ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +GrandMother_grandChildren+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
 
-.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.6+^.^| ["GrandMother_id"], ["granny"]
 .3+^.^| ["GrandMother_id", "birth_order"], ["granny", 0]
       | GrandMother_id
       | "granny"
@@ -498,7 +648,6 @@ public class GrandChild {
       | name
       | "Leia"
 
-.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
 .3+^.^| ["GrandMother_id", "birth_order"], ["granny", 1]
       | GrandMother_id
       | "granny"
@@ -511,7 +660,14 @@ public class GrandChild {
 |===
 ====
 
+Here we used an indexed collection and to identify the entry in the collection,
+only the owning entity id and the index value is enough.
+
 ===== Associations
+
+Associations between entities are mapped like (collection of) embeddables 
+except that the target entity is represented by its identifier(s).
+
 
 .Unidirectional one-to-one
 ====
@@ -541,15 +697,21 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicule+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]             | id             | "V_01"
                                      | brand          | "Mercedes"
+|===
 
-.3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.3+^.^| ["id"], ["W001"]             | id             | "W001"
                                      | diameter       | 0.0
                                      | vehicule_id    | "V_01"
 |===
@@ -586,13 +748,19 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicle+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]             | id             | "V_01"
                                      | brand          | "Mercedes"
+|===
+
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
 
 .3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
                                      | diameter       | 0.0
@@ -630,15 +798,21 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicle+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"]          | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]                      | id             | "V_01"
                                               | brand          | "Mercedes"
+|===
 
-.2+^.^| "Wheel", ["vehicule_id"], ["V_01"]    | vehicule_id    | "V_01"
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                2+^| MAP ENTRIES
+
+.2+^.^| ["vehicule_id"], ["V_01"]             | vehicule_id    | "V_01"
                                               | diameter       | 0.0
 |===
 ====
@@ -667,32 +841,38 @@ public class Wife {
     private String id;
     private String name;
 
-    @OneToOne
+    @OneToOne(mappedBy="wife")
     private Husband husband;
 
     // getters, setters ...
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Husband+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
-.3+^.^| "Husband", ["id"], ["alex"]  | id             | "alex"
+.3+^.^| ["id"], ["alex"]             | id             | "alex"
                                      | name           | "Alex"
                                      | wife           | "bea"
+|===
 
-.2+^.^| "Wife", ["id"], ["bea"]      | id             | "bea"
+.Content of the +Wife+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["id"], ["bea"]              | id             | "bea"
                                      | name           | "Bea"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_Husband+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.2+^.^| "Husband", ["wife"], ["bea"]
+.2+^.^| ["wife"], ["bea"]
 .2+^.^| ["id", "wife"], ["alex", "bea"]
       | id
       | "alex"
@@ -732,28 +912,34 @@ public class Product {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Basket+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+.2+^.^| ["id"], ["davide_basket"]           | id               | "davide_basket"
                                             | owner            | "Davide"
+|===
 
-.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+.Content of the +Product+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["name"], ["Beer"]                  | name             | "Beer"
                                             | description      | "Tactical Nuclear Penguin"
 
-.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+.2+^.^| ["name"], ["Pretzel"]               | name             | "Pretzel"
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_Basket_Product+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "Basket_Product", ["Basket_id"], ["davide_basket"]
+.4+^.^| ["Basket_id"], ["davide_basket"]
 .2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
       | Basket_id
       | "davide_basket"
@@ -803,28 +989,34 @@ public class Product {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Basket+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+.2+^.^| ["id"], ["davide_basket"]           | id               | "davide_basket"
                                             | owner            | "Davide"
+|===
 
-.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+.Content of the +Basket+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["name"], ["Beer"]                  | name             | "Beer"
                                             | description      | "Tactical Nuclear Penguin"
 
-.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+.2+^.^| ["name"], ["Pretzel"]               | name             | "Pretzel"
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_BasketContent+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "BasketContent", ["Basket_id"], ["davide_basket"]
+.4+^.^| ["Basket_id"], ["davide_basket"]
 .2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
       | Basket_id
       | "davide_basket"
@@ -868,28 +1060,34 @@ public class Address {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +User+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
 
-   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+   ^.^| ["id"], ["user_001"]               | id   | "user_001"
+|===
 
-.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+.Content of the +Address+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+.2+^.^| ["id"], ["address_001"]            | id   | "address_001"
                                            | city | "Rome"
 
-.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+.2+^.^| ["id"], ["address_002"]            | id   | "address_002"
                                            | city | "Paris"
 |===
 
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_User_address+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.6+^.^| "User_address", ["User_id"], "user_001"]
+.6+^.^| ["User_id"], "user_001"]
 .3+^.^| ["User_id", "addresses_KEY"], ["user_001", "home"]
       | User_id
       | "user_001"
@@ -941,27 +1139,33 @@ public class Address {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +User+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
 
-   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+   ^.^| ["id"], ["user_001"]               | id   | "user_001"
+|===
 
-.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+.Content of the +Address+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+.2+^.^| ["id"], ["address_001"]            | id   | "address_001"
                                            | city | "Rome"
 
-.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+.2+^.^| ["id"], ["address_002"]            | id   | "address_002"
                                            | city | "Paris"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_User_address+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.6+^.^| "User_address", ["User_id"], "user_001"]
+.6+^.^| ["User_id"], "user_001"]
 .3+^.^| ["User_id", "addressType"], ["user_001", "home"]
       | User_id
       | "user_001"
@@ -1013,19 +1217,24 @@ public class Member {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +JavaUserGroup+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "JavaUserGroup", ["jugId"], ["summer_camp"] | jugId           | "summer_camp"
+.2+^.^| ["jugId"], ["summer_camp"]                  | jugId           | "summer_camp"
                                                     | name            | "JUG Summer Camp"
+|===
 
-.3+^.^| "Member", ["member_id"], ["emmanuel"]       | member_id       | "emmanuel"
+.Content of the +Member+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.3+^.^| ["member_id"], ["emmanuel"]                 | member_id       | "emmanuel"
                                                     | name            | "Emmanuel Bernard"
                                                     | memberOf_jug_id | "summer_camp"
 
-.3+^.^| "Member", ["member_id"], ["jerome"]         | member_id       | "jerome"
+.3+^.^| ["member_id"], ["jerome"]                   | member_id       | "jerome"
                                                     | name            | "Jerome"
                                                     | memberOf_jug_id | "summer_camp"
 |===
@@ -1060,30 +1269,36 @@ public class SalesGuy {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +SalesForce+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "SalesForce", ["id"], ["sales_force"]       | id              | "red_hat"
+.2+^.^| ["id"], ["red_hat"]                         | id              | "red_hat"
                                                     | corporation     | "Red Hat"
+|===
 
-.3+^.^| "SalesGuy", ["id"], ["eric"]                | id              | "eric"
+.Content of the +SalesGuy+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.3+^.^| ["id"], ["eric"]                            | id              | "eric"
                                                     | name            | "Eric"
                                                     | salesForce_id   | "red_hat"
 
-.3+^.^| "SalesGuy", ["id"], ["simon"]               | id              | "simon"
+.3+^.^| ["id"], ["simon"]                           | id              | "simon"
                                                     | name            | "Simon"
                                                     | salesForce_id   | "red_hat"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_SalesGuy+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "SalesGuy", ["salesForce_id"], "red_hat"]
+.4+^.^| ["salesForce_id"], ["red_hat"]
 .2+^.^| ["salesForce_id", "id"], ["red_hat", "eric"]
       | salesForce_id
       | "red_hat"
@@ -1132,34 +1347,40 @@ The "Math" class has 2 students: John Doe and Mario Rossi
 
 The "English" class has 2 students: Kate Doe and Mario Rossi
 
-.Content of the ENTITIES cache
+.Content of the +ClassRoom+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "ClassRoom", ["id"], [1]       | id         | 1 
+.2+^.^| ["id"], [1]                    | id         | 1 
                                        | name       | "Math"
 
-.2+^.^| "ClassRoom", ["id"], [2]       | id         | 2 
+.2+^.^| ["id"], [2]                    | id         | 2 
                                        | name       | "English"
+|===
 
-.2+^.^| "Student", ["id"], ["john"]    | id         | "john"
+.Content of the +Student+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.2+^.^| ["id"], ["john"]               | id         | "john"
                                        | name       | "John Doe"
 
-.2+^.^| "Student", ["id"], ["mario"]   | id         | "mario"
+.2+^.^| ["id"], ["mario"]              | id         | "mario"
                                        | name       | "Mario Rossi"
 
-.2+^.^| "Student", ["id"], ["kate"]    | id         | "kate"
+.2+^.^| ["id"], ["kate"]               | id         | "kate"
                                        | name       | "Kate Doe"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_ClassRoom_Student+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [1]
+.4+^.^| ["ClassRoom_id"], [1]
 .2+^.^| ["ClassRoom_id", "students_id"], [1, "mario"]
       | ClassRoom_id
       | 1 
@@ -1174,7 +1395,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
       | students_id
       | "john"
 
-.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [2]
+.4+^.^| ["ClassRoom_id"], [2]
 .2+^.^| ["ClassRoom_id", "students_id"], [2, "kate"]
       | ClassRoom_id
       | 2 
@@ -1226,28 +1447,34 @@ public class BankAccount {
 
 David owns 2 accounts: "012345" and "ZZZ-009"
 
-.Content of the ENTITIES cache
+.Content of the +AccountOwner+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.2+^.^| "AccountOwner", ["id"], ["David"]    | id            | "David"
+.2+^.^| ["id"], ["David"]                    | id            | "David"
                                              | SSN           | "0123456"
+|===
 
-.2+^.^| "BankAccount", ["id"], ["account_1"] | id            | "account_1"
+.Content of the +BankAccount+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                               2+^| MAP ENTRIES
+.2+^.^| ["id"], ["account_1"]                | id            | "account_1"
                                              | accountNumber | "X2345000"
 
-.2+^.^| "BankAccount", ["id"], ["account_2"] | id            | "account_2"
+.2+^.^| ["id"], ["account_2"]                | id            | "account_2"
                                              | accountNumber | "ZZZ-009"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +AccountOwner_BankAccount+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_1"]
+.2+^.^| ["bankAccounts_id"], ["account_1"]
 .2+^.^| ["bankAccounts_id", "owners_id"], ["account_1", "David"]
       | bankAccounts_id
       | "account_1"
@@ -1255,15 +1482,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
       | owners_id
       | "David"
 
-.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["David"]
-.2+^.^| ["owners_id", "banksAccounts_id"], ["Davide", "account_1"]
-      | bankAccounts_id
-      | "account_1"
-
-      | owners_id
-      | "David"
-
-.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_2"]
+.2+^.^| ["bankAccounts_id"], ["account_2"]
 .2+^.^| ["bankAccounts_id", "owners_id"], ["account_2", "David"]
       | bankAccounts_id
       | "account_2"
@@ -1271,13 +1490,21 @@ David owns 2 accounts: "012345" and "ZZZ-009"
       | owners_id
       | "David"
 
-.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["Davide"]
+.4+^.^| ["owners_id"], ["David"]
+.2+^.^| ["owners_id", "banksAccounts_id"], ["David", "account_1"]
+      | bankAccounts_id
+      | "account_1"
+
+      | owners_id
+      | "David"
+
 .2+^.^| ["owners_id", "banksAccounts_id"], ["David", "account_2"]
       | bankAccounts_id
       | "account_2"
 
       | owners_id
       | "David"
+
 |===
 ====
 
