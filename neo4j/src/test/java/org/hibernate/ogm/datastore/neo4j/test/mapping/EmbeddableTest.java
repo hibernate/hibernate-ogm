@@ -47,35 +47,37 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 
 	@Test
 	public void testMapping() throws Exception {
-		assertNumberOfNodes( 1 );
-		assertRelationships( 0 );
+		assertNumberOfNodes( 2 );
+		assertRelationships( 1 );
 
-		Map<String, Object> properties = new HashMap<String, Object>();
-		properties.put( "login", account.getLogin() );
-		properties.put( "password", account.getPassword());
-		properties.put( "homeAddress.street1", account.getHomeAddress().getStreet1() );
-		properties.put( "homeAddress.city", account.getHomeAddress().getCity() );
-		properties.put( "homeAddress.country", account.getHomeAddress().getCountry() );
-		properties.put( "postal_code", account.getHomeAddress().getZipCode() );
-		properties.put( "version", account.getVersion() );
+		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version, postal_code: {a}.postal_code })";
+		String addressNode = "(e:EMBEDDED {street1: {e}.street1, city: {e}.city, country: {e}.country})";
+
+		Map<String, Object> accountProperties = new HashMap<String, Object>();
+		accountProperties.put( "login", account.getLogin() );
+		accountProperties.put( "password", account.getPassword());
+		accountProperties.put( "version", account.getVersion() );
+
+		// see OGM-673: At the moment the @Column annotation will make the value stored in the owner node
+		// unless you define it as @Column("homeAddress.postal_code")
+		accountProperties.put( "postal_code", account.getHomeAddress().getZipCode() );
+
+		Map<String, Object> addressProperties = new HashMap<String, Object>();
+		addressProperties.put( "street1", account.getHomeAddress().getStreet1() );
+		addressProperties.put( "city", account.getHomeAddress().getCity() );
+		addressProperties.put( "country", account.getHomeAddress().getCountry() );
 
 		Map<String, Object> params = new HashMap<String, Object>();
-		params.put( "n", properties );
+		params.put( "a", accountProperties);
+		params.put( "e", addressProperties );
 
-		assertExpectedMapping( "n", "(n:Account:ENTITY {"
-				+ "  `login`: {n}.login"
-				+ ", `password`: {n}.password"
-				+ ", `homeAddress.street1`: {n}.`homeAddress.street1`"
-				+ ", `homeAddress.city`: {n}.`homeAddress.city`"
-				+ ", `homeAddress.country`: {n}.`homeAddress.country`"
-				+ ", `postal_code`: {n}.postal_code"
-				+ ", `version`: {n}.version"
-				+ " })", params );
+		assertExpectedMapping( "a", accountNode, params );
+		assertExpectedMapping( "e", addressNode, params );
+		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
 	}
 
 	@Override
 	public Class<?>[] getEntities() {
 		return new Class[] { Account.class, Address.class };
 	}
-
 }

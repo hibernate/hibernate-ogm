@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
 import java.util.Map;
 
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
@@ -20,8 +21,11 @@ import org.neo4j.graphdb.Node;
  */
 public class NodesTupleIterator extends MapsTupleIterator {
 
-	public NodesTupleIterator(ExecutionResult result) {
+	private final EntityKeyMetadata entityKeyMetadata;
+
+	public NodesTupleIterator(ExecutionResult result, EntityKeyMetadata entityKeyMetadata) {
 		super( result );
+		this.entityKeyMetadata = entityKeyMetadata;
 	}
 
 	protected Tuple convert(Map<String, Object> next) {
@@ -29,6 +33,6 @@ public class NodesTupleIterator extends MapsTupleIterator {
 	}
 
 	private Tuple createTuple(Node node) {
-		return new Tuple( new Neo4jTupleSnapshot( node ) );
+		return new Tuple( new Neo4jTupleSnapshot( node, entityKeyMetadata ) );
 	}
 }

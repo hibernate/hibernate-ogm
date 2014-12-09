@@ -8,10 +8,13 @@ package org.hibernate.ogm.datastore.neo4j.dialect.impl;
 
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.EMBEDDED;
 import static org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel.ENTITY;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.escapeIdentifier;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.Node;
@@ -26,11 +29,14 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class Neo4jEntityQueries extends QueriesBase {
 
+	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
+
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
 	private final String findEntitiesQuery;
 	private final String createEntityQuery;
 	private final String removeEntityQuery;
+	private final String updateEmbeddedNodeQuery;
 
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
@@ -38,6 +44,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
 		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
+		this.updateEmbeddedNodeQuery = initUpdateEmbeddedNodeQuery( entityKeyMetadata );
 	}
 
 	/*
@@ -53,9 +60,29 @@ public class Neo4jEntityQueries extends QueriesBase {
 		queryBuilder.append( ":" );
 		appendLabel( entityKeyMetadata, queryBuilder );
 		appendProperties( entityKeyMetadata, queryBuilder );
-		queryBuilder.append( ")" );
-		queryBuilder.append( " RETURN n" );
+		queryBuilder.append( ") RETURN n" );
 		return queryBuilder.toString();
+	}
+
+	/* This is only the first part of the query, the one related to the owner of the embedded.
+	 * We need to know the embedded columns to create the whole query.
+	 *
+	 * Example:
+	 * MERGE (owner:ENTITY:Example {id: {0}}) MERGE (owner)
+	 */
+	private static String initUpdateEmbeddedNodeQuery(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder( "MERGE " );
+		queryBuilder.append( "(owner:" );
+		queryBuilder.append( ENTITY );
+		queryBuilder.append( ":" );
+		appendLabel( entityKeyMetadata, queryBuilder );
+		appendProperties( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ") MERGE (owner)" );
+		return queryBuilder.toString();
+	}
+
+	private static void appendRelationshipType(StringBuilder queryBuilder, String relationshipType) {
+		escapeIdentifier( queryBuilder, relationshipType );
 	}
 
 	/*
@@ -189,5 +216,52 @@ public class Neo4jEntityQueries extends QueriesBase {
 	public void removeEntity(ExecutionEngine executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
 		executionEngine.execute( removeEntityQuery, params );
+	}
+
+	/**
+	 * Update the value of an embedded node property.
+	 *
+	 * @param executionEngine the {@link ExecutionEngine} used to run the query
+	 * @param keyValues the columns representing the identifier in the entity owning the embedded
+	 * @param embeddedColumn the column on the embedded node (dot-separated properties)
+	 * @param value the new value for the property
+	 */
+	public void updateEmbeddedColumn(ExecutionEngine executionEngine, Object[] keyValues, String embeddedColumn, Object value) {
+		StringBuilder queryBuilder = new StringBuilder( updateEmbeddedNodeQuery );
+		String[] columns = appendEmbeddedNodes( embeddedColumn, queryBuilder );
+		queryBuilder.append( " ON CREATE SET e." );
+		escapeIdentifier( queryBuilder, columns[columns.length - 1] );
+		queryBuilder.append( " = {" );
+		queryBuilder.append( keyValues.length );
+		queryBuilder.append( "}" );
+		queryBuilder.append( " ON MATCH SET e." );
+		escapeIdentifier( queryBuilder, columns[columns.length - 1] );
+		queryBuilder.append( " = {" );
+		queryBuilder.append( keyValues.length + 1 );
+		queryBuilder.append( "}" );
+		Map<String, Object> params = params( ArrayHelper.concat( keyValues, value, value ) );
+		executionEngine.execute( queryBuilder.toString(), params );
+	}
+
+	private static String[] appendEmbeddedNodes(String embeddedColumn, StringBuilder queryBuilder) {
+		String[] columns = EMBEDDED_FIELDNAME_SEPARATOR.split( embeddedColumn );
+		for ( int i = 0; i < columns.length - 1; i++ ) {
+			queryBuilder.append( " - [:" );
+			appendRelationshipType( queryBuilder, columns[i] );
+			queryBuilder.append( "] ->" );
+			if ( i < columns.length - 2 ) {
+				queryBuilder.append( " (e" );
+				queryBuilder.append( i );
+				queryBuilder.append( ":" );
+				queryBuilder.append( EMBEDDED );
+				queryBuilder.append( ") MERGE (e" );
+				queryBuilder.append( i );
+				queryBuilder.append( ")" );
+			}
+		}
+		queryBuilder.append( " (e:" );
+		queryBuilder.append( EMBEDDED );
+		queryBuilder.append( ")" );
+		return columns;
 	}
 }
