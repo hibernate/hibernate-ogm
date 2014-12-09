@@ -28,6 +28,14 @@ public final class GraphLogger {
 	private GraphLogger() {
 	}
 
+	public static void log(Node node) {
+		log( "%1$s", node );
+	}
+
+	public static void log(Relationship relationship) {
+		log( "%1$s", relationship );
+	}
+
 	public static void log(String msg, Node node) {
 		if ( log.isTraceEnabled() ) {
 			StringBuilder builder = new StringBuilder();
