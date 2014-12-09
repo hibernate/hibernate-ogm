@@ -14,7 +14,7 @@ you will need to configure some networking details
 but nothing changes in terms of application behaviour,
 while performance and data size can scale linearly.
 
-From all its features we'll only describe those relevant to Hibernate OGM;
+From all its features we will only describe those relevant to Hibernate OGM;
 for a complete description of all its capabilities and configuration options,
 refer to the Infinispan project documentation at
 http://infinispan.org[infinispan.org].
@@ -23,13 +23,13 @@ http://infinispan.org[infinispan.org].
 
 ==== Configure Infinispan
 
-Two steps basically:
+You configure Hibernate OGM and Infinispan in two steps basically:
 
-* Add the dependencies to classpath
+* Add the dependencies to your classpath
 * And then choose one of:
 
 ** Use the default Infinispan configuration (no action needed)
-** Point to your own configuration resource name
+** Point to your own configuration resource file
 ** Point to a [acronym]+JNDI+ name of an existing Infinispan instance
 
 
@@ -37,8 +37,7 @@ Two steps basically:
 
 ===== Adding Infinispan dependencies
 
-To add the dependencies via some Maven-definitions-using tool,
-add the following module:
+To add the dependencies via Maven, add the following module:
 
 
 [source, XML]
@@ -71,15 +70,16 @@ and usually just point to this external resource.
 To use the default configuration provided by Hibernate OGM -
 which is a good starting point for new users - you don't have to set any property.
 
-.Infinispan datastore configuration properties
+.Hibernate OGM properties for Infinispan
 +hibernate.ogm.datastore.provider+::
-To use Infinispan as a datastore provider set it to +infinispan+.
+Set it to +infinispan+ to use Infinispan as the datastore provider.
 +hibernate.ogm.infinispan.cachemanager_jndi_name+::
-If you have an Infinispan [classname]+EmbeddedCacheManager+  registered in JNDI,
+If you have an Infinispan [classname]+EmbeddedCacheManager+ registered in JNDI,
 provide the JNDI name and Hibernate OGM will use this instance
 instead of starting a new +CacheManager+.
 This will ignore any further configuration properties
 as Infinispan is assumed being already configured.
+Infinispan can typically be pushed to JNDI via WildFly, Spring or Seam.
 +hibernate.ogm.infinispan.configuration_resource_name+::
 Should point to the resource name of an Infinispan configuration file.
 This is ignored in case [acronym]+JNDI+  lookup is set.
@@ -87,40 +87,43 @@ Defaults to +org/hibernate/ogm/datastore/infinispan/default-config.xml+.
 +hibernate.ogm.datastore.keyvalue.cache_storage+::
 The strategy for persisting data in Infinispan.
 The following two strategies exist (values of the +org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType+ enum):
-+CACHE_PER_KIND+
-(Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources) and
-+CACHE_PER_TABLE+
-(A dedicated cache will be used for each entity type, association type and id source table).
-Defaults to +CACHE_PER_TABLE+.
+
+* +CACHE_PER_TABLE+: A dedicated cache will be used for each entity type, association type and id source table.
+* +CACHE_PER_KIND+: Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id sources.
++
+Defaults to +CACHE_PER_TABLE+. It is the recommended strategy as it makes it easier to target a specific cache for a given entity.
 
 [NOTE]
 ====
 When bootstrapping a session factory or entity manager factory programmatically,
-you should use the constants accessible via +InfinspanProperties+
+you should use the constants accessible via +InfinispanProperties+
 when specifying the configuration properties listed above.
-Common properties shared between stores are declared on +OgmProperties+.
-To ease migration between stores, it is recommended to reference these constants directly from there.
+
+Common properties shared between stores are declared on +OgmProperties+
+(a super interface of +InfinispanProperties+).
+
+For maximum portability between stores, use the most generic interface possible.
 ====
 
 ===== Cache names used by Hibernate OGM
 
-Hibernate OGM will not use a single Cache but three
-and is going to use them for different purposes;
-so that you can configure the Caches meant for each role separately.
+Depending on the cache storage approach, Hibernate OGM will either:
 
-.Infinispan cache names and purpose
-+ENTITIES+::
-Is going to be used to store the main attributed of your entities.
-+ASSOCIATIONS+::
-Stores the association information which maps to the relations between your entities.
-+IDENTIFIER_STORE+::
-Contains internal metadata that Hibernate OGM needs
-to provide sequences and auto-incremental numbers for primary key generation.
+* store each entity type, association type and id source table in a dedicated cache
+  very much like what Hibernate ORM would do. This is the +CACHE_PER_TABLE+ approach.
+* store data in three different caches when using the +CACHE_PER_KIND+ approach:
+** +ENTITIES+: is going to be used to store the main attributes of all your entities.
+** +ASSOCIATIONS+: stores the association information representing the links between entities.
+** +IDENTIFIER_STORE+: contains internal metadata that Hibernate OGM needs
+    to provide sequences and auto-incremental numbers for primary key generation.
 
-We'll explain in the following paragraphs how you can take advantage of this
-and which aspects of Infinispan you're likely to want to reconfigure from their defaults.
+The preferred strategy is +CACHE_PER_TABLE+ as it offers both more fine grained configuration options
+and the ability to work on specific entities in a more simple fashion.
+
+In the following paragraphs, we will explain which aspects of Infinispan
+you're likely to want to reconfigure from their defaults.
 All attributes and elements from Infinispan which we don't mention are safe to ignore.
-Refer to the https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
+Refer to the http://infinispan.org/documentation/[Infinispan User Guide]
 for the guru level performance tuning and customizations.
 
 An Infinispan configuration file is an XML file complying with the Infinispan schema;
@@ -143,13 +146,13 @@ the basic structure is shown in the following example:
     <default>
     </default>
 
-    <namedCache name="ENTITIES">
+    <namedCache name="User">
     </namedCache>
 
-    <namedCache name="ASSOCIATIONS">
+    <namedCache name="Order">
     </namedCache>
 
-    <namedCache name="IDENTIFIERS">
+    <namedCache name="associations_User_Order">
     </namedCache>
 
 </infinispan>
@@ -158,10 +161,10 @@ the basic structure is shown in the following example:
 
 The +global+ section contains elements which affect the whole instance;
 mainly of interest for Hibernate OGM users is the +transport+ element
-in which we'll set JGroups configuration overrides.
+in which we will set JGroups configuration overrides.
 
 In the +namedCache+ section (or in +default+ if we want to affect all named caches)
-we'll likely want to configure clustering modes, eviction policies and ++CacheStore++s.
+we will likely want to configure clustering modes, eviction policies and ++CacheStore++s.
 
 [[ogm-infinispan-storage]]
 
@@ -181,7 +184,7 @@ in the additional modules found in the Infinispan distribution.
 Here you can find many more implementations to store your data in anything
 from JDBC connected relational databases, other NoSQL engines,
 to cloud storage services or other Infinispan clusters.
-Finally, implementing a custom +CacheStore+ is a trivial programming exercise.
+Finally, implementing a custom +CacheStore+ is quite easy.
 
 To limit the memory consumption of the precious heap space,
 you can activate a +passivation+ or an +eviction+ policy;
@@ -210,18 +213,10 @@ with a synchronous replication to other Infinispan nodes.
 
 [source, XML]
 ----
-<namedCache name="ENTITIES">
+<namedCache name="User">
   <eviction strategy="LIRS" maxEntries="2000" />
-  <loaders
-    passivation="true" shared="false">
-    <loader
-      class="org.infinispan.loaders.file.FileCacheStore"
-      fetchPersistentState="false"
-      purgeOnStartup="false">
-      <properties>
-        <property name="location" value="/var/hibernate-ogm/myapp/entities-data" />
-      </properties>
-    </loader>
+  <loaders passivation="true" shared="false">
+    <singleFile location="/var/infinispan/myapp/users" />
   </loaders>
 </namedCache>
 ----
@@ -243,24 +238,14 @@ That is a valid configuration for Infinispan but will have the evictor permanent
 Hibernate OGM will break in such a configuration.
 ====
 
-[TIP]
-====
-Currently with Infinispan 5.1,
-the [classname]+FileCacheStore+ is neither very fast nor very efficient:
-we picked it for ease of setup.
-For a production system it's worth looking at the large collection
-of high performance and cloud friendly cachestores
-provided by the Infinispan distribution.
-====
-
 [[ogm-infinispan-clustering]]
 
-==== Clustering: deploy multiple Infinispan nodes
+==== Clustering: store data on multiple Infinispan nodes
 
 The best thing about Infinispan is that all nodes are treated equally
 and it requires almost no beforehand capacity planning:
 to add more nodes to the cluster you just have to start new JVMs,
-on the same or different physical server,
+on the same or different physical servers,
 having your same Infinispan configuration and your same application.
 
 Infinispan supports several clustering _cache modes_;
@@ -347,22 +332,16 @@ Let's see how to reconfigure this:
             mode="distribution" />
     </default>
 
-    <!-- Cache to store the OGM entities -->
-    <namedCache
-        name="ENTITIES">
-    </namedCache>
-
-    <!-- Cache to store the relations across entities -->
-    <namedCache
-        name="ASSOCIATIONS">
-    </namedCache>
-
-    <!-- Cache to store identifiers -->
-    <namedCache
-        name="IDENTIFIERS">
+    <namedCache name="User">
         <!-- Override the cache mode: -->
-        <clustering
-            mode="replication" />
+        <clustering mode="replication" />
+    </namedCache>
+
+    <namedCache
+        name="Order">
+    </namedCache>
+
+    <namedCache name="associations_User_Order">
     </namedCache>
 
 </infinispan>
@@ -371,8 +350,8 @@ Let's see how to reconfigure this:
 
 In the example above we specify a custom JGroups configuration file
 and set the cache mode for the default cache to +distribution+;
-this is going to be inherited by the +ENTITIES+ and the +ASSOCIATIONS+ caches.
-But for +IDENTIFIERS+ we have chosen (for the sake of this example) to use +replication+.
+this is going to be inherited by the +Order+ and the +associations_User_Order+ caches.
+But for +User+ we have chosen (for the sake of this example) to use +replication+.
 
 Now that you have clustering configured, start the service on multiple nodes.
 Each node will need the same configuration and jars.
@@ -389,17 +368,20 @@ You can fine tune these setting when you are closer to going in production.
 [[ogm-infinispan-storage-principles]]
 ==== Storage principles
 
+To describe things simply, each entity is stored under a single key.
+The value itself is a map containing the columns / values pair.
+
+Each association from one entity instance to (a set of) another is stored under a single key.
+The value contains the navigational information to the (set of) entity.
+
 [[ogm-infinispan-built-in-types]]
-===== Builtin types
+===== Properties and built-in types
 
-[NOTE]
-====
-Hibernate OGM doesn't store null values in Infinispan,
-setting a value to null is the same as removing the corresponding entry
-from Infinispan.
-====
+Each entity is represented by a map.
+Each property or more precisely column is represented by an entry in this map,
+the key being the column name.
 
-Hibernate OGM support by default the following types:
+Hibernate OGM support by default the following property types:
 
 * [classname]+java.lang.String+
 * [classname]+java.lang.Boolean+ (or boolean primitive)
@@ -416,12 +398,27 @@ Hibernate OGM support by default the following types:
 * [classname]+java.util.UUID+
 * [classname]+java.util.URL+
 
-====== Identifiers
+[NOTE]
+====
+Hibernate OGM doesn't store null values in Infinispan,
+setting a value to null is the same as removing the corresponding entry
+from Infinispan.
 
-Hibernate OGM will map the identifier of an entity as key of the entry of in the cache.
+This can have consequences when it comes to queries on null value.
+====
 
-The key is going to be a +org.hibernate.ogm.model.key.spi.EntityKey+ instance containing the entityu
-table name and the key columns names and values.
+===== Identifiers
+
+Entity identifiers are used to build the key in which the entity is stored in the cache.
+
+The key is comprised of the following information:
+
+* the identifier column names
+* the identifier column values
+* the entity table (for the +CACHE_PER_KIND+ strategy)
+
+In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
+In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
 
 .Define an identifier as a primitive type
 ====
@@ -439,7 +436,16 @@ public class Bookmark {
 }
 ----
 
-.Content of the ENTITY cache
+.Content of the +Bookmark+ cache in +CACHE_PER_TABLE+
+[cols="3*", options="header"]
+|===
+     ^| KEY                   2+^| MAP ENTRIES
+
+.2+^.^| ["id"], [42]             | id       | 42 
+                                 | title    | "Hibernate OGM documentation" 
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
 [cols="3*", options="header"]
 |===
      ^| KEY                   2+^| MAP ENTRIES
@@ -473,13 +479,27 @@ public class News {
 }
 ----
 
-.Content of the ENTITY cache
+.Content of the +News+ cache in +CACHE_PER_TABLE+
 [cols="3*", options="header"]
 |===
      ^| KEY
    2+^| MAP ENTRIES
 
-.3+^.^| "News",[newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
+.3+^.^| [newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
+      | newsId.author  | "Guillaume"
+
+      | newsId.title   | "How to use Hibernate OGM ?"
+
+      | content        | "Simple, just like ORM but with a NoSQL database"
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
+[cols="3*", options="header"]
+|===
+     ^| KEY
+   2+^| MAP ENTRIES
+
+.3+^.^| "News", [newsId.author, newsId.title], ["Guillaume", "How to use Hibernate OGM ?"]
       | newsId.author  | "Guillaume"
 
       | newsId.title   | "How to use Hibernate OGM ?"
@@ -490,9 +510,11 @@ public class News {
 
 ====== Identifier generation strategies
 
-The only table strategy available in infinispan is the +TABLE+ one.
-Selecting a different strategies won't cause any execption but Hibernate OGM will still rely on the
-+TABLE+ strategy to generate identifiers.
+Since Infinispan has not native sequence nor identity column support,
+these are simulated using the table strategy, however their default values vary.
+We highly recommend you explicitly use a +TABLE+ strategy if you want to generate a monotonic identifier.
+
+But if you can, use a pure in-memory and scalable strategy like a UUID generator.
 
 .Id generation strategy TABLE using default values
 ====
@@ -512,17 +534,27 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the IDENTIFIERS cache
-
+.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
-   | [type=TABLE, name=hibernate_sequences, keyColumnName=sequence_name, valueColumnName=next_val],
-      columnNames=[sequence_name], columnValues=[default] 
+   | ["sequence_name"], ["default"]
+^.^|  2
+|===
+
+.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "hibernate_sequences", ["sequence_name"], ["default"]
 ^.^|  2
 |===
 ====
+
+As you can see, in +CACHE_PER_TABLE+, the key does not contain the id source table name.
+It is inferred by the cache name hosting that key.
 
 .Id generation strategy TABLE using a custom table
 ====
@@ -536,8 +568,8 @@ public class GuitarPlayer {
     @TableGenerator(
         name = "guitarGen",
         table = "GuitarPlayerSequence",
+        pkColumnName = "seq"
         pkColumnValue = "guitarPlayer",
-        valueColumnName = "nextGuitarPlayerId"
     )
     private long id;
 
@@ -546,15 +578,21 @@ public class GuitarPlayer {
 
 ----
 
-.Content of the IDENTIFIERS cache
-
+.Content of the +GuitarPlayerSequence+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
+   | ["seq"], ["guitarPlayer"]
+^.^| 2
+|===
 
-   | [type=TABLE, name=GuitarPlayerSequence, keyColumnName=sequence_name,
-     valueColumnName=nextGuitarPlayerId], columnNames=[sequence_name], columnValues=[guitarPlayer]
+.Content of the IDENTIFIERS cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "GuitarPlayerSequence", ["seq"], ["guitarPlayer"]
 ^.^| 2
 |===
 ====
@@ -582,24 +620,41 @@ public class Song {
 }
 ----
 
+.Content of the +hibernate_sequences+ cache in +CACHE_PER_TABLE+
 [cols="2*", options="header"]
 |===
   ^| KEY
   ^| NEXT VALUE
-   | [type="TABLE", "name"="hibernate_sequences", keyColumnName="sequence_name", 
-      valueColumnName="next_val]", columnNames=[sequence_name], columnValues=[song_sequence_name]
+   | ["sequence_name"], ["song_sequence"]
+^.^| 11
+|===
+
+.Content of the +IDENTIFIERS+ cache in +CACHE_PER_KIND+
+[cols="2*", options="header"]
+|===
+  ^| KEY
+  ^| NEXT VALUE
+   | "hibernate_sequences", "["sequence_name"], ["song_sequence"]
 ^.^| 11
 |===
 ====
 
 ===== Entities
 
-Entites are stored in the +ENTITIES+ cache.
-The type of an entry key in the cache is [classname]+org.hibernate.ogm.model.key.spi.EntityKey+
-containing teh columns names and values of the identifier and the table name.
+Entities are stored in the cache named after the entity name when using the +CACHE_PER_TABLE+ strategy.
+In the +CACHE_PER_KIND+ strategy, entities are stored in a single cache named +ENTITIES+.
+
+The key is comprised of the following information:
+
+* the identifier column names
+* the identifier column values
+* the entity table (for the +CACHE_PER_KIND+ strategy)
+
+In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
+In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
 
 The entry value is an instance of [classname]+org.infinispan.atomic.FineGrainedMap+ which contains
-all the properties names and values respectevely as keys and values of the map.
+all the properties names and values respectively as keys and values of the map.
 
 .Default JPA mapping for an entity
 ====
@@ -616,8 +671,16 @@ public class News {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +News+ cache in +CACHE_PER_TYPE+
+[cols="3*", options="header"]
+|===
+     ^| KEY                        2+^| MAP ENTRIES
 
+.2+^.^| ["id"], ["1234-5678"] | id       | "1234-5678"
+                                      | title    | "On the merits of NoSQL" 
+|===
+
+.Content of the +ENTITIES+ cache in +CACHE_PER_KIND+
 [cols="3*", options="header"]
 |===
      ^| KEY                        2+^| MAP ENTRIES
@@ -626,6 +689,9 @@ public class News {
                                       | title    | "On the merits of NoSQL" 
 |===
 ====
+
+As you can see, the table name is not part of the key for +CACHE_PER_TYPE+.
+In the rest of this section we will no longer show the +CACHE_PER_KIND+ strategy.
 
 .Rename field and collection using @Table and @Column
 ====
@@ -645,12 +711,12 @@ public class News {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Article+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.2+^.^| "Article", ["id"], ["1234-5678"]     | id       | "1234-5678"
+.2+^.^| ["id"], ["1234-5678"]                | id       | "1234-5678"
                                              | headline | "On the merits of NoSQL" 
 |===
 ====
@@ -684,12 +750,12 @@ public class NewsPaper {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +News+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.4+^.^| "Article", ["id"], ["1234-5678"]     | id          | "1234-5678"
+.4+^.^| ["id"], ["1234-5678"]                | id          | "1234-5678"
                                              | title       | "On the merits of NoSQL" 
                                              | paper.name  | "NoSQL journal of prophecies" 
                                              | paper.owner | "Delphy" 
@@ -721,20 +787,21 @@ public class GrandChild {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +GrandMother+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
-   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+   ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_GrandMother_grandChildren+ cache in +CACHE_PER_TYPE+
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
 
-.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.4+^.^| ["GrandMother_id"], ["granny"]
 .2+^.^| ["GrandMother_id", "name"], ["granny", "Leia"]
       | GrandMother_id
       | "granny"
@@ -742,7 +809,29 @@ public class GrandChild {
       | name
       | "Leia"
 
-.2+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Luke"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Luke"
+|===
+
+.Content of the +ASSOCIATIONS+ cache in +CACHE_PER_KIND+
+[cols="4*", options="header"]
+|===
+     ^| KEY
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
+
+.4+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.2+^.^| ["GrandMother_id", "name"], ["granny", "Leia"]
+      | GrandMother_id
+      | "granny"
+
+      | name
+      | "Leia"
+
 .2+^.^| ["GrandMother_id", "name"], ["granny", "Luke"]
       | GrandMother_id
       | "granny"
@@ -751,6 +840,22 @@ public class GrandChild {
       | "Luke"
 |===
 ====
+
+Here, we see that the collection of elements is stored in a separate cache and entry.
+The association key is made of:
+
+* the foreign key column names pointing to the owner of this association
+* the foreign key column values pointing to the owner of this association
+* the association table name in the +CACHE_PER_KIND+ approach where all associations share the same cache
+
+The association entry is a map containing the representation of each entry in the collection.
+The keys of that map are made of:
+
+* the names of the columns uniquely identifying that specific collection entry
+  (e.g. for a +Set+ this is all of the columns)
+* the values of the columns uniquely identifying that specific collection entry
+
+The value attack to that collection entry key is a Map containing the key value pairs column name / column value.
 
 .@ElementCollection with @OrderColumn
 ====
@@ -778,20 +883,21 @@ public class GrandChild {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +GrandMother+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                            2+^| MAP ENTRIES
-   ^.^| "GrandMother", ["id"], ["granny"] | id          | "granny"
+   ^.^| ["id"], ["granny"]                | id          | "granny"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +GrandMother_grandChildren+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| ROW MAP ENTRIES
 
-.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
+.6+^.^| ["GrandMother_id"], ["granny"]
 .3+^.^| ["GrandMother_id", "birth_order"], ["granny", 0]
       | GrandMother_id
       | "granny"
@@ -802,7 +908,6 @@ public class GrandChild {
       | name
       | "Leia"
 
-.3+^.^| "GrandMother_grandChildren", ["GrandMother_id"], ["granny"]
 .3+^.^| ["GrandMother_id", "birth_order"], ["granny", 1]
       | GrandMother_id
       | "granny"
@@ -815,7 +920,14 @@ public class GrandChild {
 |===
 ====
 
+Here we used an indexed collection and to identify the entry in the collection,
+only the owning entity id and the index value is enough.
+
 ===== Associations
+
+Associations between entities are mapped like (collection of) embeddables 
+except that the target entity is represented by its identifier(s).
+
 
 .Unidirectional one-to-one
 ====
@@ -845,15 +957,21 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicule+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]             | id             | "V_01"
                                      | brand          | "Mercedes"
+|===
 
-.3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+
+.3+^.^| ["id"], ["W001"]             | id             | "W001"
                                      | diameter       | 0.0
                                      | vehicule_id    | "V_01"
 |===
@@ -890,13 +1008,19 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicle+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"] | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]             | id             | "V_01"
                                      | brand          | "Mercedes"
+|===
+
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
 
 .3+^.^| "Wheel", ["id"], ["W001"]    | id             | "W001"
                                      | diameter       | 0.0
@@ -934,15 +1058,21 @@ public class Wheel {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Vehicle+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                2+^| MAP ENTRIES
 
-.2+^.^| "Vehicule", ["id"], ["V_01"]          | id             | "V_01"
+.2+^.^| ["id"], ["V_01"]                      | id             | "V_01"
                                               | brand          | "Mercedes"
+|===
 
-.2+^.^| "Wheel", ["vehicule_id"], ["V_01"]    | vehicule_id    | "V_01"
+.Content of the +Wheel+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                2+^| MAP ENTRIES
+
+.2+^.^| ["vehicule_id"], ["V_01"]             | vehicule_id    | "V_01"
                                               | diameter       | 0.0
 |===
 ====
@@ -971,32 +1101,38 @@ public class Wife {
     private String id;
     private String name;
 
-    @OneToOne
+    @OneToOne(mappedBy="wife")
     private Husband husband;
 
     // getters, setters ...
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Husband+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
-.3+^.^| "Husband", ["id"], ["alex"]  | id             | "alex"
+.3+^.^| ["id"], ["alex"]             | id             | "alex"
                                      | name           | "Alex"
                                      | wife           | "bea"
+|===
 
-.2+^.^| "Wife", ["id"], ["bea"]      | id             | "bea"
+.Content of the +Wife+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["id"], ["bea"]              | id             | "bea"
                                      | name           | "Bea"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_Husband+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.2+^.^| "Husband", ["wife"], ["bea"]
+.2+^.^| ["wife"], ["bea"]
 .2+^.^| ["id", "wife"], ["alex", "bea"]
       | id
       | "alex"
@@ -1036,28 +1172,34 @@ public class Product {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Basket+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+.2+^.^| ["id"], ["davide_basket"]           | id               | "davide_basket"
                                             | owner            | "Davide"
+|===
 
-.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+.Content of the +Product+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["name"], ["Beer"]                  | name             | "Beer"
                                             | description      | "Tactical Nuclear Penguin"
 
-.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+.2+^.^| ["name"], ["Pretzel"]               | name             | "Pretzel"
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_Basket_Product+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "Basket_Product", ["Basket_id"], ["davide_basket"]
+.4+^.^| ["Basket_id"], ["davide_basket"]
 .2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
       | Basket_id
       | "davide_basket"
@@ -1107,28 +1249,34 @@ public class Product {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +Basket+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                       2+^| MAP ENTRIES
 
-.2+^.^| "Basket", ["id"], ["davide_basket"] | id               | "davide_basket"
+.2+^.^| ["id"], ["davide_basket"]           | id               | "davide_basket"
                                             | owner            | "Davide"
+|===
 
-.2+^.^| "Product", ["name"], ["Beer"]       | name             | "Beer"
+.Content of the +Basket+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                       2+^| MAP ENTRIES
+.2+^.^| ["name"], ["Beer"]                  | name             | "Beer"
                                             | description      | "Tactical Nuclear Penguin"
 
-.2+^.^| "Product", ["name"], ["Pretzel"]    | name             | "Pretzel"
+.2+^.^| ["name"], ["Pretzel"]               | name             | "Pretzel"
                                             | description      | "Glutino Pretzel Sticks"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_BasketContent+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "BasketContent", ["Basket_id"], ["davide_basket"]
+.4+^.^| ["Basket_id"], ["davide_basket"]
 .2+^.^| ["Basket_id", "products_name"], ["davide_basket", "Beer"]
       | Basket_id
       | "davide_basket"
@@ -1172,28 +1320,34 @@ public class Address {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +User+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
 
-   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+   ^.^| ["id"], ["user_001"]               | id   | "user_001"
+|===
 
-.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+.Content of the +Address+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+.2+^.^| ["id"], ["address_001"]            | id   | "address_001"
                                            | city | "Rome"
 
-.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+.2+^.^| ["id"], ["address_002"]            | id   | "address_002"
                                            | city | "Paris"
 |===
 
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_User_address+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.6+^.^| "User_address", ["User_id"], "user_001"]
+.6+^.^| ["User_id"], "user_001"]
 .3+^.^| ["User_id", "addresses_KEY"], ["user_001", "home"]
       | User_id
       | "user_001"
@@ -1245,27 +1399,33 @@ public class Address {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +User+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                             2+^| MAP ENTRIES
 
-   ^.^| "User", ["id"], ["user_001"]       | id   | "user_001"
+   ^.^| ["id"], ["user_001"]               | id   | "user_001"
+|===
 
-.2+^.^| "Address", ["id"], ["address_001"] | id   | "address_001"
+.Content of the +Address+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                             2+^| MAP ENTRIES
+.2+^.^| ["id"], ["address_001"]            | id   | "address_001"
                                            | city | "Rome"
 
-.2+^.^| "Address", ["id"], ["address_002"] | id   | "address_002"
+.2+^.^| ["id"], ["address_002"]            | id   | "address_002"
                                            | city | "Paris"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_User_address+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.6+^.^| "User_address", ["User_id"], "user_001"]
+.6+^.^| ["User_id"], "user_001"]
 .3+^.^| ["User_id", "addressType"], ["user_001", "home"]
       | User_id
       | "user_001"
@@ -1317,19 +1477,24 @@ public class Member {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +JavaUserGroup+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "JavaUserGroup", ["jugId"], ["summer_camp"] | jugId           | "summer_camp"
+.2+^.^| ["jugId"], ["summer_camp"]                  | jugId           | "summer_camp"
                                                     | name            | "JUG Summer Camp"
+|===
 
-.3+^.^| "Member", ["member_id"], ["emmanuel"]       | member_id       | "emmanuel"
+.Content of the +Member+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.3+^.^| ["member_id"], ["emmanuel"]                 | member_id       | "emmanuel"
                                                     | name            | "Emmanuel Bernard"
                                                     | memberOf_jug_id | "summer_camp"
 
-.3+^.^| "Member", ["member_id"], ["jerome"]         | member_id       | "jerome"
+.3+^.^| ["member_id"], ["jerome"]                   | member_id       | "jerome"
                                                     | name            | "Jerome"
                                                     | memberOf_jug_id | "summer_camp"
 |===
@@ -1364,30 +1529,36 @@ public class SalesGuy {
 }
 ----
 
-.Content of the ENTITIES cache
+.Content of the +SalesForce+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "SalesForce", ["id"], ["sales_force"]       | id              | "red_hat"
+.2+^.^| ["id"], ["red_hat"]                         | id              | "red_hat"
                                                     | corporation     | "Red Hat"
+|===
 
-.3+^.^| "SalesGuy", ["id"], ["eric"]                | id              | "eric"
+.Content of the +SalesGuy+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.3+^.^| ["id"], ["eric"]                            | id              | "eric"
                                                     | name            | "Eric"
                                                     | salesForce_id   | "red_hat"
 
-.3+^.^| "SalesGuy", ["id"], ["simon"]               | id              | "simon"
+.3+^.^| ["id"], ["simon"]                           | id              | "simon"
                                                     | name            | "Simon"
                                                     | salesForce_id   | "red_hat"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_SalesGuy+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "SalesGuy", ["salesForce_id"], "red_hat"]
+.4+^.^| ["salesForce_id"], ["red_hat"]
 .2+^.^| ["salesForce_id", "id"], ["red_hat", "eric"]
       | salesForce_id
       | "red_hat"
@@ -1436,34 +1607,40 @@ The "Math" class has 2 students: John Doe and Mario Rossi
 
 The "English" class has 2 students: Kate Doe and Mario Rossi
 
-.Content of the ENTITIES cache
+.Content of the +ClassRoom+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                                      2+^| MAP ENTRIES
 
-.2+^.^| "ClassRoom", ["id"], [1]       | id         | 1 
+.2+^.^| ["id"], [1]                    | id         | 1 
                                        | name       | "Math"
 
-.2+^.^| "ClassRoom", ["id"], [2]       | id         | 2 
+.2+^.^| ["id"], [2]                    | id         | 2 
                                        | name       | "English"
+|===
 
-.2+^.^| "Student", ["id"], ["john"]    | id         | "john"
+.Content of the +Student+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                                      2+^| MAP ENTRIES
+.2+^.^| ["id"], ["john"]               | id         | "john"
                                        | name       | "John Doe"
 
-.2+^.^| "Student", ["id"], ["mario"]   | id         | "mario"
+.2+^.^| ["id"], ["mario"]              | id         | "mario"
                                        | name       | "Mario Rossi"
 
-.2+^.^| "Student", ["id"], ["kate"]    | id         | "kate"
+.2+^.^| ["id"], ["kate"]               | id         | "kate"
                                        | name       | "Kate Doe"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +associations_ClassRoom_Student+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [1]
+.4+^.^| ["ClassRoom_id"], [1]
 .2+^.^| ["ClassRoom_id", "students_id"], [1, "mario"]
       | ClassRoom_id
       | 1 
@@ -1478,7 +1655,7 @@ The "English" class has 2 students: Kate Doe and Mario Rossi
       | students_id
       | "john"
 
-.4+^.^| "ClassRoom_Student", ["ClassRoom_id"], [2]
+.4+^.^| ["ClassRoom_id"], [2]
 .2+^.^| ["ClassRoom_id", "students_id"], [2, "kate"]
       | ClassRoom_id
       | 2 
@@ -1530,28 +1707,34 @@ public class BankAccount {
 
 David owns 2 accounts: "012345" and "ZZZ-009"
 
-.Content of the ENTITIES cache
+.Content of the +AccountOwner+ cache
 [cols="3*", options="header"]
 |===
      ^| KEY                               2+^| MAP ENTRIES
 
-.2+^.^| "AccountOwner", ["id"], ["David"]    | id            | "David"
+.2+^.^| ["id"], ["David"]                    | id            | "David"
                                              | SSN           | "0123456"
+|===
 
-.2+^.^| "BankAccount", ["id"], ["account_1"] | id            | "account_1"
+.Content of the +BankAccount+ cache
+[cols="3*", options="header"]
+|===
+     ^| KEY                               2+^| MAP ENTRIES
+.2+^.^| ["id"], ["account_1"]                | id            | "account_1"
                                              | accountNumber | "X2345000"
 
-.2+^.^| "BankAccount", ["id"], ["account_2"] | id            | "account_2"
+.2+^.^| ["id"], ["account_2"]                | id            | "account_2"
                                              | accountNumber | "ZZZ-009"
 |===
 
-.Content of the ASSOCIATIONS cache
+.Content of the +AccountOwner_BankAccount+ cache
 [cols="4*", options="header"]
 |===
      ^| KEY
-   3+^| MAP ENTRIES
+     ^| ROW KEY
+   2+^| MAP ENTRIES
 
-.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_1"]
+.2+^.^| ["bankAccounts_id"], ["account_1"]
 .2+^.^| ["bankAccounts_id", "owners_id"], ["account_1", "David"]
       | bankAccounts_id
       | "account_1"
@@ -1559,15 +1742,7 @@ David owns 2 accounts: "012345" and "ZZZ-009"
       | owners_id
       | "David"
 
-.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["David"]
-.2+^.^| ["owners_id", "banksAccounts_id"], ["Davide", "account_1"]
-      | bankAccounts_id
-      | "account_1"
-
-      | owners_id
-      | "David"
-
-.2+^.^| "AccountOwner_BankAccount", ["bankAccounts_id"], ["account_2"]
+.2+^.^| ["bankAccounts_id"], ["account_2"]
 .2+^.^| ["bankAccounts_id", "owners_id"], ["account_2", "David"]
       | bankAccounts_id
       | "account_2"
@@ -1575,13 +1750,21 @@ David owns 2 accounts: "012345" and "ZZZ-009"
       | owners_id
       | "David"
 
-.2+^.^| "AccountOwner_BankAccount", ["owners_id"], ["Davide"]
+.4+^.^| ["owners_id"], ["David"]
+.2+^.^| ["owners_id", "banksAccounts_id"], ["David", "account_1"]
+      | bankAccounts_id
+      | "account_1"
+
+      | owners_id
+      | "David"
+
 .2+^.^| ["owners_id", "banksAccounts_id"], ["David", "account_2"]
       | bankAccounts_id
       | "account_2"
 
       | owners_id
       | "David"
+
 |===
 ====
 
@@ -1602,7 +1785,7 @@ by using the [acronym]+JNDI+ lookup approach,
 then you have to make sure the CacheManager is using the same [classname]+TransactionManager+
 as Hibernate:
 
-.Configuring a JBoss Standalone TransactionManager lookup
+.Configuring a JBoss Standalone TransactionManager lookup in Infinispan configuration
 ====
 [source, XML]
 ----
@@ -1617,7 +1800,7 @@ as Hibernate:
 
 Infinispan supports different transaction modes like +PESSIMISTIC+ and +OPTIMISTIC+,
 supports [acronym]+XA+ recovery and provides many more configuration options;
-see the https://docs.jboss.org/author/display/ISPN/User+Guide[Infinispan User Guide]
+see the http://infinispan.org/documentation/[Infinispan User Guide]
 for more advanced configuration options.
 
 [[ogm-infinispan-indexstorage]]
@@ -1631,7 +1814,7 @@ A common place to store these indexes is the filesystem
 which is the default for Hibernate Search;
 however if your goal is to scale your NoSQL engine on multiple nodes
 you need to share this index.
-Network sharing filesystems are a possibility but we don't recommended that.
+Network sharing file systems are a possibility but we don't recommended that.
 Often the best option is to store the index
 in whatever NoSQL database you are using (or a different dedicated one).
 
