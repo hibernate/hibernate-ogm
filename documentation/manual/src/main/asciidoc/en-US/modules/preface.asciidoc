@@ -11,20 +11,24 @@ instead of a relational database.
 It reuses the Java Persistence Query Language (JP-QL)
 as an interface to querying stored data.
 
-The project is still very young and very ambitious at the same time.
+The project is now fairly mature when it comes to the storage strategies.
+And the feature set is sufficient to be used in your projects.
+We do have however much bigger ambitions than a simple object mapper.
 Many things are on the roadmap (more NoSQL, query, denormalization engine, etc).
-If you wish to help, please check <<ogm-howtocontribute>>.
+If you feel a feature in missing, <<ogm-howtocontribute-contribute,report it to us>>.
+If you want to contribute, <<ogm-howtocontribute,even better>>!
 
 Hibernate OGM is released under the LGPL open source license.
 
 [WARNING]
 ====
-This documentation and this project are work in progress.
+The future of this project is being shaped by the requests from our users.
 Please give us feedback on
 
 * what you like
 * what you don't like
 * what is confusing
+* what you are missing as a feature
 
 Check <<ogm-howtocontribute-contribute>> on how to contact us.
 ====
@@ -33,7 +37,7 @@ Check <<ogm-howtocontribute-contribute>> on how to contact us.
 
 Hibernate OGM:
 
-* offers a familiar programming paradigm to deal with NoSQL stores
+* offers a familiar programming paradigm (JPA) to deal with NoSQL stores
 * moves model denormalization from a manual imperative work
   to a declarative approach handled by the engine
 * encourages new data usage patterns
@@ -81,15 +85,20 @@ Today, Hibernate OGM does not support all of these goals.
 Here is a list of what we have:
 
 * store data in key/value stores (Infinispan's datagrid and Ehcache)
-* store data in document stores (MongoDB)
+* store data in document stores (MongoDB and CouchDB - the latter in preview)
+* store data in graph databases (Neo4J)
 * Create, Read, Update and Delete operations (CRUD) for entities
 * polymorphic entities (support for superclasses, subclasses etc).
 * embeddable objects (aka components)
 * support for basic types (numbers, String, URL, Date, enums, etc)
 * support for associations
 * support for collections (Set, List, Map, etc)
+* support for JP-QL queries (not arbitrary joins though)
+* support for mapping native queries results to managed entities
 * support for Hibernate Search's full-text queries
-* JPA and native Hibernate ORM API support
+* and generally, support for JPA and native Hibernate ORM API support
+
+In short, a perfectly capable Object Mapper for multiple popular NoSQL datastores.
 
 === Experimental features
 
@@ -110,6 +119,8 @@ A manual update of the affected data may be thus required.
 Experimental deliverables should be use with special care, as they are work in progress.
 You should use them for testing but not production use cases.
 
+But most of our dialects are mature, so don't worry ;)
+
 === Use cases
 
 Here are a few areas where Hibernate OGM can be beneficial:
@@ -119,11 +130,9 @@ Here are a few areas where Hibernate OGM can be beneficial:
 * keep your domain model independent of the underlying datastore technology
   (RDBMS, Infinispan, NoSQL)
 * explore the best tool for the use case
-  while using a familiar programming model
-* use a familiar JPA front end to datagrids (in particular Infinispan)
+* use a familiar JPA front end to your datastore
 * use Hibernate Search full-text search / text analysis capabilities
-  and store the data set in an elastic grid
+  and store the data set in an scalable datastore
 
 
-These are a few ideas and the list will grow
-as we add more capabilities to Hibernate OGM.
+These are a few ideas and the list will grow as we add more capabilities to Hibernate OGM.
