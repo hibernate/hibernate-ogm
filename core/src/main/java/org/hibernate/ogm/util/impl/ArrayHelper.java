@@ -75,7 +75,7 @@ public class ArrayHelper {
 	 * @param <T> the type of the element in the array
 	 * @return a new array created adding the element in the second array after the first one,
 	 */
-	public static <T> T[] concat(T[] first, T[] second) {
+	public static <T> T[] concat(T[] first, T... second) {
 		int firstLength = first.length;
 		int secondLength = second.length;
 

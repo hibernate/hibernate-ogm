@@ -64,6 +64,7 @@ import org.hibernate.ogm.persister.impl.OgmCollectionPersister;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
+import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
 import org.hibernate.service.spi.ServiceRegistryAwareService;
@@ -92,6 +93,8 @@ import org.neo4j.kernel.impl.util.StringLogger;
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialect<String>, ServiceRegistryAwareService, SessionFactoryLifecycleAwareDialect {
+
+	private static final String PROPERTY_SEPARATOR = ".";
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -171,7 +174,8 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 				new Neo4jTupleSnapshot(
 						entityNode,
 						context.getAllAssociatedEntityKeyMetadata(),
-						context.getAllRoles()
+						context.getAllRoles(),
+						key.getMetadata()
 				)
 		);
 	}
@@ -187,25 +191,31 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 
 		// insert
 		if ( tuple.getSnapshot() instanceof EmptyTupleSnapshot ) {
-			try {
-				node = entityQueries.get( key.getMetadata() ).insertEntity( executionEngine, key.getColumnValues() );
-			}
-			catch (CypherExecutionException cee) {
-				if ( cee.getCause() instanceof UniqueConstraintViolationKernelException ) {
-					throw new TupleAlreadyExistsException( key.getMetadata(), tuple, cee );
-				}
-				else {
-					throw cee;
-				}
-			}
+			node = insertTuple( key, tuple );
+			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
+			GraphLogger.log( "Inserted node: %1$s", node );
 		}
 		// update
 		else {
 			node = ( (Neo4jTupleSnapshot) tuple.getSnapshot() ).getNode();
+			applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
+			GraphLogger.log( "Updated node: %1$s", node );
 		}
 
-		applyTupleOperations( key, tuple, node, tuple.getOperations(), tupleContext );
-		GraphLogger.log( "Inserted/Updated node: %1$s", node );
+	}
+
+	private Node insertTuple(EntityKey key, Tuple tuple) {
+		try {
+			return entityQueries.get( key.getMetadata() ).insertEntity( executionEngine, key.getColumnValues() );
+		}
+		catch (CypherExecutionException cee) {
+			if ( cee.getCause() instanceof UniqueConstraintViolationKernelException ) {
+				throw new TupleAlreadyExistsException( key.getMetadata(), tuple, cee );
+			}
+			else {
+				throw cee;
+			}
+		}
 	}
 
 	@Override
@@ -407,34 +417,56 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	private void putTupleOperation(EntityKey entityKey, Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
-		if ( !tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
-			try {
-				node.setProperty( operation.getColumn(), operation.getValue() );
-			}
-			catch (ConstraintViolationException e) {
-				throw log.constraintViolation( entityKey, operation, e );
-			}
+		if ( tupleContext.isPartOfAssociation( operation.getColumn() ) ) {
+			// the column represents a to-one association, map it as relationship
+			putOneToOneAssociation( tuple, node, operation, tupleContext, processedAssociationRoles );
 		}
-		// the column represents a to-one association, map it as relationship
+		else if ( isPartOfRegularEmbedded( entityKey.getMetadata().getColumnNames(), operation.getColumn() ) ) {
+			entityQueries.get( entityKey.getMetadata() ).updateEmbeddedColumn( executionEngine, entityKey.getColumnValues(), operation.getColumn(), operation.getValue() );
+		}
 		else {
-			String associationRole = tupleContext.getRole( operation.getColumn() );
+			putProperty( entityKey, node, operation );
+		}
+	}
 
-			if ( !processedAssociationRoles.contains( associationRole ) ) {
-				processedAssociationRoles.add( associationRole );
+	/**
+	 * A regular embedded is an element that it is embedded but it is not a key or a collection.
+	 *
+	 * @param keyColumnNames the column names representing the identifier of the entity
+	 * @param column the column we want to check
+	 * @return {@code true} if the column represent an attribute of a regular embedded element, {@code false} otherwise
+	 */
+	public static boolean isPartOfRegularEmbedded(String[] keyColumnNames, String column) {
+		return column.contains( PROPERTY_SEPARATOR ) && !ArrayHelper.contains( keyColumnNames, column );
+	}
 
-				EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+	private void putProperty(EntityKey entityKey, Node node, TupleOperation operation) {
+		try {
+			node.setProperty( operation.getColumn(), operation.getValue() );
+		}
+		catch (ConstraintViolationException e) {
+			throw log.constraintViolation( entityKey, operation, e );
+		}
+	}
 
-				// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
-				// properties, so the type is uniquely identifying it
-				Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
-				if ( relationships.hasNext() ) {
-					relationships.next().delete();
-				}
+	private void putOneToOneAssociation(Tuple tuple, Node node, TupleOperation operation, TupleContext tupleContext, Set<String> processedAssociationRoles) {
+		String associationRole = tupleContext.getRole( operation.getColumn() );
 
-				// create a new relationship
-				Node targetNode = entityQueries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
-				node.createRelationshipTo( targetNode, withName( associationRole ) );
+		if ( !processedAssociationRoles.contains( associationRole ) ) {
+			processedAssociationRoles.add( associationRole );
+
+			EntityKey targetKey = getEntityKey( tuple, tupleContext.getAssociatedEntityKeyMetadata( operation.getColumn() ) );
+
+			// delete the previous relationship if there is one; for a to-one association, the relationship won't have any
+			// properties, so the type is uniquely identifying it
+			Iterator<Relationship> relationships = node.getRelationships( withName( associationRole ) ).iterator();
+			if ( relationships.hasNext() ) {
+				relationships.next().delete();
 			}
+
+			// create a new relationship
+			Node targetNode = entityQueries.get( targetKey.getMetadata() ).findEntity( executionEngine, targetKey.getColumnValues() );
+			node.createRelationshipTo( targetNode, withName( associationRole ) );
 		}
 	}
 
@@ -445,7 +477,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 			try {
 				while ( queryNodes.hasNext() ) {
 					Node next = queryNodes.next();
-					Tuple tuple = new Tuple( new Neo4jTupleSnapshot( next ) );
+					Tuple tuple = new Tuple( new Neo4jTupleSnapshot( next, entityKeyMetadata ) );
 					consumer.consume( tuple );
 				}
 			}
@@ -462,7 +494,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		ExecutionResult result = executionEngine.execute( nativeQuery, parameters );
 
 		if ( backendQuery.getSingleEntityKeyMetadataOrNull() != null ) {
-			return new NodesTupleIterator( result );
+			return new NodesTupleIterator( result, backendQuery.getSingleEntityKeyMetadataOrNull() );
 		}
 		return new MapsTupleIterator( result );
 	}

@@ -13,8 +13,11 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;
+import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.spi.TupleSnapshot;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
@@ -29,24 +32,31 @@ import org.neo4j.graphdb.Relationship;
  */
 public final class Neo4jTupleSnapshot implements TupleSnapshot {
 
+	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
+
 	private final Node node;
 	private final Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata;
 	private final Map<String, String> rolesByColumn;
+	private final EntityKeyMetadata entityKeyMetadata;
 
-	public Neo4jTupleSnapshot(Node node) {
-		this( node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap() );
+	public Neo4jTupleSnapshot(Node node, EntityKeyMetadata entityKeyMetadata) {
+		this( node, Collections.<String, AssociatedEntityKeyMetadata>emptyMap(), Collections.<String, String>emptyMap(), entityKeyMetadata );
 	}
 
-	public Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn) {
+	public Neo4jTupleSnapshot(Node node, Map<String, AssociatedEntityKeyMetadata> associatedEntityKeyMetadata, Map<String, String> rolesByColumn, EntityKeyMetadata entityKeyMetadata) {
 		this.node = node;
 		this.associatedEntityKeyMetadata = associatedEntityKeyMetadata;
 		this.rolesByColumn = rolesByColumn;
+		this.entityKeyMetadata = entityKeyMetadata;
 	}
 
 	@Override
 	public Object get(String column) {
 		if ( associatedEntityKeyMetadata.containsKey( column ) ) {
 			return readPropertyOnOtherNode( column );
+		}
+		else if ( Neo4jDialect.isPartOfRegularEmbedded( entityKeyMetadata.getColumnNames(), column ) ) {
+			return readEmbeddedProperty( column );
 		}
 		else {
 			return readProperty( node, column );
@@ -62,6 +72,23 @@ public final class Neo4jTupleSnapshot implements TupleSnapshot {
 		}
 
 		return null;
+	}
+
+	// TODO: We should create a query to read this value
+	private Object readEmbeddedProperty(String column) {
+		String[] split = EMBEDDED_FIELDNAME_SEPARATOR.split( column );
+		Node embeddedNode = node;
+		for ( int i = 0; i < split.length - 1; i++ ) {
+			String relType = split[i];
+			Iterator<Relationship> rels = embeddedNode.getRelationships( Direction.OUTGOING, withName( relType ) ).iterator();
+			if ( rels.hasNext() ) {
+				embeddedNode = rels.next().getEndNode();
+			}
+			else {
+				return null;
+			}
+		}
+		return readProperty( embeddedNode, split[split.length - 1] );
 	}
 
 	private Object readProperty(Node otherNode, String targetColumnName) {
