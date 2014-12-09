@@ -13,6 +13,7 @@ import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.Cyp
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.ArrayHelper;
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -29,7 +30,12 @@ import org.neo4j.graphdb.ResourceIterator;
  */
 public class Neo4jEntityQueries extends QueriesBase {
 
+	private static final int CACHE_CAPACITY = 1000;
+	private static final int CACHE_CONCURRENCY_LEVEL = 20;
+
 	private static final Pattern EMBEDDED_FIELDNAME_SEPARATOR = Pattern.compile( "\\." );
+
+	private final BoundedConcurrentHashMap<String, String> updateEmbeddedPropertyQueryCache;
 
 	private final String createEmbeddedNodeQuery;
 	private final String findEntityQuery;
@@ -39,6 +45,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	private final String updateEmbeddedNodeQuery;
 
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
+		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
 		this.createEmbeddedNodeQuery = initCreateEmbeddedNodeQuery( entityKeyMetadata );
 		this.findEntityQuery = initFindEntityQuery( entityKeyMetadata );
 		this.findEntitiesQuery = initFindEntitiesQuery( entityKeyMetadata );
@@ -227,6 +234,27 @@ public class Neo4jEntityQueries extends QueriesBase {
 	 * @param value the new value for the property
 	 */
 	public void updateEmbeddedColumn(ExecutionEngine executionEngine, Object[] keyValues, String embeddedColumn, Object value) {
+		String query = updateEmbeddedPropertyQueryCache.get( embeddedColumn );
+		if ( query == null ) {
+			query = initUpdateEmbeddedColumnQuery( keyValues, embeddedColumn );
+			String cached = updateEmbeddedPropertyQueryCache.putIfAbsent( embeddedColumn, query );
+			if ( cached != null ) {
+				query = cached;
+			}
+		}
+		Map<String, Object> params = params( ArrayHelper.concat( keyValues, value, value ) );
+		executionEngine.execute( query, params );
+	}
+
+	/*
+	 * Example:
+	 *
+	 * MERGE (owner:ENTITY:Account {login: {0}})
+	 * MERGE (owner) - [:homeAddress] -> (e:EMBEDDED)
+	 *   ON CREATE SET e.country = {1}
+	 *   ON MATCH SET e.country = {2}
+	 */
+	private String initUpdateEmbeddedColumnQuery(Object[] keyValues, String embeddedColumn) {
 		StringBuilder queryBuilder = new StringBuilder( updateEmbeddedNodeQuery );
 		String[] columns = appendEmbeddedNodes( embeddedColumn, queryBuilder );
 		queryBuilder.append( " ON CREATE SET e." );
@@ -239,8 +267,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 		queryBuilder.append( " = {" );
 		queryBuilder.append( keyValues.length + 1 );
 		queryBuilder.append( "}" );
-		Map<String, Object> params = params( ArrayHelper.concat( keyValues, value, value ) );
-		executionEngine.execute( queryBuilder.toString(), params );
+		return queryBuilder.toString();
 	}
 
 	private static String[] appendEmbeddedNodes(String embeddedColumn, StringBuilder queryBuilder) {
