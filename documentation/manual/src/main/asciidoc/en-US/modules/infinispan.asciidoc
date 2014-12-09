@@ -653,8 +653,12 @@ The key is comprised of the following information:
 In +CACHE_PER_TABLE+, the table name is inferred from the cache name.
 In +CACHE_PER_KIND+, the table name is necessary to identify the entity in the generic cache.
 
-The entry value is an instance of [classname]+org.infinispan.atomic.FineGrainedMap+ which contains
-all the properties names and values respectively as keys and values of the map.
+The entry value is an instance of [classname]+org.infinispan.atomic.FineGrainedMap+ 
+which contains all the entity properties -
+or to be specific columns.
+Each column name and value is stored as a key / value pair in the map.
+We use this specialized map as Infinispan is able to transport changes
+in a much more efficient way.
 
 .Default JPA mapping for an entity
 ====
