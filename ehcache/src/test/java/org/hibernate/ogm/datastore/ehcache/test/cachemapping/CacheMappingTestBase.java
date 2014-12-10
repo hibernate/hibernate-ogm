@@ -4,29 +4,24 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispan.test.cachestorage;
+package org.hibernate.ogm.datastore.ehcache.test.cachemapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
-import java.util.Map;
-
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.datastore.infinispan.impl.InfinispanDatastoreProvider;
-import org.hibernate.ogm.datastore.spi.DatastoreProvider;
+import org.hibernate.ogm.datastore.ehcache.impl.Cache;
+import org.hibernate.ogm.datastore.ehcache.utils.EhcacheTestHelper;
 import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
-import org.hibernate.ogm.model.key.spi.RowKey;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.infinispan.Cache;
 import org.junit.Test;
 
 /**
- * Base for tests around the cache storage strategy.
+ * Base for tests around the cache mapping strategy.
  *
  * @author Gunnar Morling
  */
-public abstract class CacheStorageTestBase extends OgmTestCase {
+public abstract class CacheMappingTestBase extends OgmTestCase {
 
 	@Test
 	public void canStoreAndLoadEntitiesWithIdGeneratorAndAssociation() {
@@ -55,28 +50,20 @@ public abstract class CacheStorageTestBase extends OgmTestCase {
 		session.close();
 	}
 
-	protected Cache<?, Map<String, Object>> getEntityCache(String tableName, String... columnNames) {
-		return getProvider().getCacheManager()
-				.getEntityCache( new DefaultEntityKeyMetadata( tableName, columnNames ) );
+	protected Cache<?> getEntityCache(String tableName, String... columnNames) {
+		return EhcacheTestHelper.getEntityCache( sessions, new DefaultEntityKeyMetadata( tableName, columnNames ) );
 	}
 
-	protected Cache<?,Map<RowKey,Map<String,Object>>> getAssociationCache(String tableName, String... columnNames) {
+	protected Cache<?> getAssociationCache(String tableName, String... columnNames) {
 		DefaultAssociationKeyMetadata associationKeyMetadata = new DefaultAssociationKeyMetadata.Builder().table( tableName )
 				.columnNames( columnNames )
 				.build();
 
-		return getProvider().getCacheManager().getAssociationCache( associationKeyMetadata );
+		return EhcacheTestHelper.getAssociationCache( sessions, associationKeyMetadata );
 	}
 
-	protected Cache<?,Object> getIdSourceCache(String tableName) {
-		return getProvider().getCacheManager()
-				.getIdSourceCache( DefaultIdSourceKeyMetadata.forTable( tableName, "sequence_name", "next_val" ) );
-	}
-
-	private InfinispanDatastoreProvider getProvider() {
-		return (InfinispanDatastoreProvider) sessions
-				.getServiceRegistry()
-				.getService( DatastoreProvider.class );
+	protected Cache<?> getIdSourceCache(String tableName) {
+		return EhcacheTestHelper.getIdSourceCache( sessions, tableName );
 	}
 
 	@Override

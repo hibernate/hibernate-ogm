@@ -4,23 +4,22 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.infinispan.test.cachestorage;
+package org.hibernate.ogm.datastore.infinispan.test.cachemapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.Map;
 
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 import org.hibernate.ogm.model.key.spi.RowKey;
 import org.infinispan.Cache;
 import org.junit.Test;
 
 /**
- * Test for the {@link CacheStorageType#CACHE_PER_TABLE} strategy.
+ * Test for the {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType#CACHE_PER_TABLE} strategy.
  *
  * @author Gunnar Morling
  */
-public class CachePerTableCacheStorageTest extends CacheStorageTestBase {
+public class CachePerTableCacheMappingTest extends CacheMappingTestBase {
 
 	@Test
 	public void shouldUseCachePerTable() {

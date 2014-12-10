@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.ehcache.test.serialization;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 
 /**
@@ -21,6 +21,6 @@ public class ReadingFromDiskStoreUsingCachePerKindStrategyTest extends ReadingFr
 	@Override
 	protected void refineInfo(GetterPersistenceUnitInfo info) {
 		super.refineInfo( info );
-		info.getProperties().put( EhcacheProperties.CACHE_STORAGE, CacheStorageType.CACHE_PER_KIND );
+		info.getProperties().put( EhcacheProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

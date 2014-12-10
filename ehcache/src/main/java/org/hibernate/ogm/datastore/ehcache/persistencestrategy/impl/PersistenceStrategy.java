@@ -20,7 +20,7 @@ import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTab
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableAssociationKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableEntityKey;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.table.impl.PerTableSerializableIdSourceKey;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKeyMetadata;
@@ -48,7 +48,7 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	/**
 	 * Returns a persistence strategy based on the passed configuration.
 	 *
-	 * @param cacheStorage the selected {@link CacheStorageType}
+	 * @param cacheMapping the selected {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType}
 	 * @param externalCacheManager the Ehcache cache manager
 	 * @param entityTypes the meta-data of the entities
 	 * @param associationTypes the meta-data of the associations
@@ -56,13 +56,13 @@ public class PersistenceStrategy<EK, AK, ISK> {
 	 * @return the persistence strategy
 	 */
 	public static PersistenceStrategy<?, ?, ?> getInstance(
-			CacheStorageType cacheStorage,
+			CacheMappingType cacheMapping,
 			CacheManager externalCacheManager,
 			Set<EntityKeyMetadata> entityTypes,
 			Set<AssociationKeyMetadata> associationTypes,
 			Set<IdSourceKeyMetadata> idSourceTypes ) {
 
-		if ( cacheStorage == CacheStorageType.CACHE_PER_KIND ) {
+		if ( cacheMapping == CacheMappingType.CACHE_PER_KIND ) {
 			return getPerKindStrategy( externalCacheManager );
 		}
 		else {

@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.datastore.keyvalue.options.navigation;
 
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 
 /**
@@ -20,8 +20,8 @@ public interface KeyValueStoreGlobalContext<G extends KeyValueStoreGlobalContext
 	/**
 	 * Specifies how data (entity, associations, id source) should be mapped to caches.
 	 *
-	 * @param cacheStorage the cache storage type to be used when not configured on the entity or property level
+	 * @param cacheMapping the cache mapping type to be used when not configured on the entity or property level
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	G cacheStorage(CacheStorageType cacheStorage);
+	G cacheMapping(CacheMappingType cacheMappingType);
 }

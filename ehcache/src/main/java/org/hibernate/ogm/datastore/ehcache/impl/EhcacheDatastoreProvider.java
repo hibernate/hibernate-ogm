@@ -25,7 +25,7 @@ import org.hibernate.ogm.datastore.ehcache.configuration.impl.EhcacheConfigurati
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.PersistenceStrategy;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.SchemaDefiner;
 import org.hibernate.ogm.dialect.spi.GridDialect;
@@ -82,14 +82,14 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 	 * Initializes the persistence strategy to be used when accessing the datastore. In particular, all the required
 	 * caches will be configured and initialized.
 	 *
-	 * @param cacheStorageType the {@link CacheStorageType} to be used
+	 * @param cacheMappingType the {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType} to be used
 	 * @param entityTypes meta-data of all the entity types registered with the current session factory
 	 * @param associationTypes meta-data of all the association types registered with the current session factory
 	 * @param idSourceTypes meta-data of all the id source types registered with the current session factory
 	 */
-	public void initializePersistenceStrategy(CacheStorageType cacheStorageType, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
+	public void initializePersistenceStrategy(CacheMappingType cacheMappingType, Set<EntityKeyMetadata> entityTypes, Set<AssociationKeyMetadata> associationTypes, Set<IdSourceKeyMetadata> idSourceTypes) {
 		persistenceStrategy = PersistenceStrategy.getInstance(
-				cacheStorageType,
+				cacheMappingType,
 				cacheManager,
 				entityTypes,
 				associationTypes,

@@ -4,25 +4,22 @@
  * License: GNU Lesser General Public License (LGPL), version 2.1 or later
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
-package org.hibernate.ogm.datastore.ehcache.test.cachestorage;
+package org.hibernate.ogm.datastore.ehcache.test.cachemapping;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.cfg.Configurable;
-import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.cfg.OptionConfigurator;
-import org.hibernate.ogm.datastore.ehcache.Ehcache;
+import org.hibernate.ogm.datastore.ehcache.EhcacheProperties;
 import org.hibernate.ogm.datastore.ehcache.impl.Cache;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.junit.Test;
 
 /**
- * Test for the {@link CacheStorageType#CACHE_PER_KIND} strategy, given through the option system.
+ * Test for the {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType#CACHE_PER_KIND} strategy.
  *
  * @author Gunnar Morling
  */
-public class CachePerKindConfiguredViaOptionCacheStorageTest extends CacheStorageTestBase {
+public class CachePerKindCacheMappingTest extends CacheMappingTestBase {
 
 	@Test
 	public void shouldUseCachePerTable() {
@@ -41,13 +38,6 @@ public class CachePerKindConfiguredViaOptionCacheStorageTest extends CacheStorag
 
 	@Override
 	protected void configure(Configuration cfg) {
-		cfg.getProperties().put( OgmProperties.OPTION_CONFIGURATOR, new OptionConfigurator() {
-
-			@Override
-			public void configure(Configurable configurable) {
-				configurable.configureOptionsFor( Ehcache.class )
-					.cacheStorage( CacheStorageType.CACHE_PER_KIND );
-			}
-		} );
+		cfg.getProperties().put( EhcacheProperties.CACHE_MAPPING, CacheMappingType.CACHE_PER_KIND );
 	}
 }

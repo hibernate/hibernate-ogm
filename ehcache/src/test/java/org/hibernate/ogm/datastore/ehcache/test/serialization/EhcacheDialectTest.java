@@ -14,7 +14,7 @@ import java.util.HashMap;
 
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.impl.EhcacheDatastoreProvider;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.dialect.spi.NextValueRequest;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
@@ -40,7 +40,7 @@ public class EhcacheDialectTest {
 		datastoreProvider.configure( new HashMap() );
 		datastoreProvider.start();
 		datastoreProvider.initializePersistenceStrategy(
-				CacheStorageType.CACHE_PER_KIND,
+				CacheMappingType.CACHE_PER_KIND,
 				Collections.<EntityKeyMetadata>emptySet(),
 				Collections.<AssociationKeyMetadata>emptySet(),
 				Collections.<IdSourceKeyMetadata>singleton( DefaultIdSourceKeyMetadata.forTable( "sequences", "key", "next_val" ) )

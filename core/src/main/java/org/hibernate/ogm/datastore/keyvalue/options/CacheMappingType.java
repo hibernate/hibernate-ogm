@@ -11,7 +11,7 @@ package org.hibernate.ogm.datastore.keyvalue.options;
  *
  * @author Gunnar Morling
  */
-public enum CacheStorageType {
+public enum CacheMappingType {
 
 	/**
 	 * Three caches will be used: one cache for all entities, one cache for all associations and one cache for all id

@@ -6,10 +6,10 @@
  */
 package org.hibernate.ogm.datastore.keyvalue.options.navigation.spi;
 
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreEntityContext;
 import org.hibernate.ogm.datastore.keyvalue.options.navigation.KeyValueStoreGlobalContext;
-import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheStorageOption;
+import org.hibernate.ogm.datastore.keyvalue.options.spi.CacheMappingOption;
 import org.hibernate.ogm.options.navigation.spi.BaseGlobalContext;
 import org.hibernate.ogm.options.navigation.spi.ConfigurationContext;
 
@@ -26,8 +26,8 @@ public abstract class BaseKeyValueStoreGlobalContext<G extends KeyValueStoreGlob
 	}
 
 	@Override
-	public G cacheStorage(CacheStorageType cacheStorage) {
-		addGlobalOption( new CacheStorageOption(), cacheStorage );
+	public G cacheMapping(CacheMappingType cacheMapping) {
+		addGlobalOption( new CacheMappingOption(), cacheMapping );
 
 		// ok; an error would only occur for inconsistently defined context types
 		@SuppressWarnings("unchecked")

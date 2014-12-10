@@ -8,7 +8,6 @@ package org.hibernate.ogm.datastore.keyvalue.cfg;
 
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 
 /**
  * Common properties for configuring key/value datastores such as Infinispan or Ehcache via {@code persistence.xml} or
@@ -24,11 +23,12 @@ import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
 public interface KeyValueStoreProperties extends OgmProperties {
 
 	/**
-	 * The configuration property for setting the cache storage. Supported values are the {@link CacheStorageType} enum or
-	 * the String representations of its constants. Defaults to {@link CacheStorageType#CACHE_PER_TABLE}.
+	 * The configuration property for setting the cache mapping. Supported values are the
+	 * {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType} enum or
+	 * the String representations of its constants. Defaults to {@link org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType#CACHE_PER_TABLE}.
 	 * <p>
 	 * Note that any value specified via this property will be overridden by values configured via annotations or the
 	 * programmatic API.
 	 */
-	String CACHE_STORAGE = "hibernate.ogm.datastore.keyvalue.cache_storage";
+	String CACHE_MAPPING = "hibernate.ogm.datastore.keyvalue.cache_mapping";
 }

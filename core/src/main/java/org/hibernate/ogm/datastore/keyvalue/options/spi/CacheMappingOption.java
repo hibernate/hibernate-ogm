@@ -7,22 +7,22 @@
 package org.hibernate.ogm.datastore.keyvalue.options.spi;
 
 import org.hibernate.ogm.datastore.keyvalue.cfg.KeyValueStoreProperties;
-import org.hibernate.ogm.datastore.keyvalue.options.CacheStorageType;
+import org.hibernate.ogm.datastore.keyvalue.options.CacheMappingType;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
 /**
- * Represents the type of cache storage as configured via the API or annotations for a given element.
+ * Represents the type of cache mapping as configured via the API or annotations for a given element.
  *
  * @author Gunnar Morling
  */
-public class CacheStorageOption extends UniqueOption<CacheStorageType> {
+public class CacheMappingOption extends UniqueOption<CacheMappingType> {
 
-	private static final CacheStorageType DEFAULT_CACHE_STORAGE = CacheStorageType.CACHE_PER_TABLE;
+	private static final CacheMappingType DEFAULT_CACHE_STORAGE = CacheMappingType.CACHE_PER_TABLE;
 
 	@Override
-	public CacheStorageType getDefaultValue(ConfigurationPropertyReader propertyReader) {
-		return propertyReader.property( KeyValueStoreProperties.CACHE_STORAGE, CacheStorageType.class )
+	public CacheMappingType getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader.property( KeyValueStoreProperties.CACHE_MAPPING, CacheMappingType.class )
 				.withDefault( DEFAULT_CACHE_STORAGE )
 				.getValue();
 	}
