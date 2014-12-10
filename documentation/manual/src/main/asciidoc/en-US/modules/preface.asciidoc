@@ -15,7 +15,7 @@ The project is now fairly mature when it comes to the storage strategies.
 And the feature set is sufficient to be used in your projects.
 We do have however much bigger ambitions than a simple object mapper.
 Many things are on the roadmap (more NoSQL, query, denormalization engine, etc).
-If you feel a feature in missing, <<ogm-howtocontribute-contribute,report it to us>>.
+If you feel a feature is missing, <<ogm-howtocontribute-contribute,report it to us>>.
 If you want to contribute, <<ogm-howtocontribute,even better>>!
 
 Hibernate OGM is released under the LGPL open source license.
@@ -116,7 +116,7 @@ E.g. API/SPI methods may be altered, so that code using them needs to be adapted
 For experimental dialects the persistent format of data may be changed,
 so that a future version of such dialect may not be able to read back data written by previous versions.
 A manual update of the affected data may be thus required.
-Experimental deliverables should be use with special care, as they are work in progress.
+Experimental deliverables should be used with special care, as they are work in progress.
 You should use them for testing but not production use cases.
 
 But most of our dialects are mature, so don't worry ;)
