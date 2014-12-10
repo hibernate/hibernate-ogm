@@ -19,6 +19,9 @@ public class DocumentHelpers {
 	/**
 	 * If the column name is a dotted column, returns the first part.
 	 * Returns null otherwise.
+	 *
+	 * @param column the column that might have a prefix
+	 * @return the first part of the prefix of the column or {@code null} if the column does not have a prefix.
 	 */
 	public static String getPrefix(String column) {
 		return column.contains( "." ) ? DOT_SEPARATOR_PATTERN.split( column )[0] : null;
@@ -26,6 +29,9 @@ public class DocumentHelpers {
 
 	/**
 	 * Returns the shared prefix of these columns. Null otherwise.
+	 *
+	 * @param associationKeyColumns the columns sharing a prefix
+	 * @return the shared prefix of these columns. {@code null} otherwise.
 	 */
 	public static String getColumnSharedPrefix(String[] associationKeyColumns) {
 		String prefix = null;
