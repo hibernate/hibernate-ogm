@@ -1383,6 +1383,104 @@ SalesGuy collection
 ----
 ====
 
+.Bidirectional many-to-one between entities with composite ids
+====
+[source, JAVA]
+----
+@Entity
+public class Game {
+
+    @EmbeddedId
+    private GameId id;
+
+    private String name;
+
+    @ManyToOne
+    private Court playedOn;
+
+    // getters, setters ...
+}
+
+
+public static class GameId implements Serializable {
+
+    private String category;
+
+    @Column(name = "id.gameSequenceNo")
+    private int sequenceNo;
+
+    // getters, setters ...
+}
+
+@Entity
+public class Court {
+
+    @EmbeddedId
+    private CourtId id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "playedOn")
+    private Set<Game> games = new HashSet<Game>();
+
+    // getters, setters ...
+}
+
+public static class CourtId implements Serializable {
+
+    private String countryCode;
+    private int sequenceNo;
+
+    // getters, setters ...
+}
+----
+
+Court collection
+
+[source, JSON]
+----
+{
+    "_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    },
+    "name" : "Hamburg Court",
+    "games" : [
+        { "gameSequenceNo" : 457, "category" : "primary" },
+        { "gameSequenceNo" : 456, "category" : "primary" }
+    ]
+}
+----
+
+Game collection
+
+[source, JSON]
+----
+{
+    "_id" : {
+        "category" : "primary",
+        "gameSequenceNo" : 456
+    },
+    "name" : "The game",
+    "playedOn_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    }
+}
+{
+    "_id" : {
+        "category" : "primary",
+        "gameSequenceNo" : 457
+    },
+    "name" : "The other game",
+    "playedOn_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    }
+}
+----
+====
+
 [[mongodb-in-entity-to-many-associations]]
 ====== To-many associations
 
