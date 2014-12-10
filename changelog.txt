@@ -1,6 +1,44 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.CR1 (10-12-2014)
+-------------------------
+
+** Sub-task
+    * [OGM-680] - Update key/value documentation with the new cache per entity format
+    * [OGM-681] - Update the documentation with the new MongoDB format for composite id
+    * [OGM-682] - Update the documentation with embeddable as separated node for Neo4J
+
+** Bug
+    * [OGM-545] - Change Association#getKeys() from Set to Iterable
+    * [OGM-618] - Don't persist null values in MongoDB
+    * [OGM-638] - Cannot run same native query twice via entity manager
+    * [OGM-646] - Unidirectional one-to-many association causes NullPointer exception in MongoDB
+    * [OGM-651] - Documentation build fails with JDK 8
+
+** Improvement
+    * [OGM-294] - Reuse association data loaded from the main entity when loading from Tuple
+    * [OGM-332] - Review and improve Infinispan and MongoDB documentation
+    * [OGM-451] - Perform insert of entity with embedded associations in one operation in MongoDB
+    * [OGM-605] - [MongoDB] Avoid dots in column names & Map composite keys more naturally (not in a nested structure)
+    * [OGM-606] - Describe each JPA mapping and its corresponding backend mapping
+    * [OGM-637] - Make sure sequences can return values larger than int on stores where it's feasible
+    * [OGM-642] - Avoid get prior to inserts if possible
+    * [OGM-645] - Make meta-data types interfaces rather than classes
+    * [OGM-647] - Insertion of entity with duplicate id should be indicated via EntityExistsException
+    * [OGM-649] - Improve logging if property cannot be configured in OgmEntityPersister
+    * [OGM-658] - The ISPN externalizers should raise a clear exception in case they encounter a newer format version
+    * [OGM-659] - Describe the implications of "Experimental" in the reference documentation
+    * [OGM-660] - Don't store OneToOne associations as array in CouchDB
+    * [OGM-663] - Advice not to use GenerationType.AUTO with MongoDB
+    * [OGM-685] - [MongoDB] Rename AssociationDocumentType to AssociationDocumentStorageType to align with AssociationStorageType
+    * [OGM-688] - Don't expose jboss-logging-annotations as a dependency
+
+** New Feature
+    * [OGM-452] - Make Infinispan store each table in a dedicated cache
+    * [OGM-657] - Implement "Cache-per-Table" strategy for Ehcache
+
+
 4.1.0.Beta8 (30-10-2014)
 -------------------------
 
