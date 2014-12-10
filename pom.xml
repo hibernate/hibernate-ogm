@@ -546,7 +546,6 @@
                         <arguments>-DskipTests</arguments>
                         <pushChanges>false</pushChanges>
                         <localCheckout>true</localCheckout>
-                        <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
                         <tagNameFormat>@{project.version}</tagNameFormat>
                     </configuration>
                 </plugin>
