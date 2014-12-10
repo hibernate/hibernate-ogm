@@ -122,6 +122,10 @@ public class Neo4jEntityQueriesTest {
 			@Override
 			public void close() {
 			}
+
+			@Override
+			public void remove() {
+			}
 		};
 	}
 }
