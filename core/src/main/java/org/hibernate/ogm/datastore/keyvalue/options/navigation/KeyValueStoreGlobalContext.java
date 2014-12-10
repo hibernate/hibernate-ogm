@@ -23,5 +23,5 @@ public interface KeyValueStoreGlobalContext<G extends KeyValueStoreGlobalContext
 	 * @param cacheMapping the cache mapping type to be used when not configured on the entity or property level
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	G cacheMapping(CacheMappingType cacheMappingType);
+	G cacheMapping(CacheMappingType cacheMapping);
 }

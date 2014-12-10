@@ -72,7 +72,8 @@ public class Association {
 
 	/**
 	 * Adds the given row to this association, using the given row key.
-	 * The row must not be null, use the {@link #remove()} operation instead.
+	 * The row must not be null, use the {@link org.hibernate.ogm.model.spi.Association#remove(org.hibernate.ogm.model.key.spi.RowKey)}
+	 * operation instead.
 	 *
 	 * @param key the key to store the row under
 	 * @param value the association row to store
