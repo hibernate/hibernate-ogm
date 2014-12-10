@@ -19,14 +19,14 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.ogm.datastore.document.options.AssociationStorage;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorage;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 
 /**
  * @author Gunnar Morling
  */
 @Entity
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
-@AssociationDocumentStorage(AssociationDocumentType.COLLECTION_PER_ASSOCIATION)
+@AssociationDocumentStorage(AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION)
 public class AnnotatedCloud {
 	private String id;
 	private String type;
@@ -73,7 +73,7 @@ public class AnnotatedCloud {
 
 	@OneToMany
 	@JoinTable
-	@AssociationDocumentStorage(AssociationDocumentType.GLOBAL_COLLECTION)
+	@AssociationDocumentStorage(AssociationDocumentStorageType.GLOBAL_COLLECTION)
 	public Set<SnowFlake> getBackupSnowFlakes() {
 		return backupSnowFlakes;
 	}

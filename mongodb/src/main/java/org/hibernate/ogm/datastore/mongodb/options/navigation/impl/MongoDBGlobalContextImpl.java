@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
 import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStoreGlobalContext;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
@@ -55,7 +55,7 @@ public abstract class MongoDBGlobalContextImpl extends BaseDocumentStoreGlobalCo
 	}
 
 	@Override
-	public MongoDBGlobalContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
+	public MongoDBGlobalContext associationDocumentStorage(AssociationDocumentStorageType associationDocumentStorage) {
 		Contracts.assertParameterNotNull( associationDocumentStorage, "associationDocumentStorage" );
 		addGlobalOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
 		return this;

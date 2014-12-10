@@ -9,7 +9,6 @@ package org.hibernate.ogm.datastore.mongodb;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
@@ -64,8 +63,8 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	/**
 	 * Configuration property for specifying how to store association documents. Only applicable if
 	 * {@link DocumentStoreProperties#ASSOCIATIONS_STORE} is set to {@link AssociationStorageType#ASSOCIATION_DOCUMENT}.
-	 * Supported values are the {@link AssociationDocumentType} enum or the String representations of its constants.
-	 * Defaults to {@link AssociationDocumentType#GLOBAL_COLLECTION}.
+	 * Supported values are the {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType} enum or the String representations of its constants.
+	 * Defaults to {@link org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType#GLOBAL_COLLECTION}.
 	 */
 	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.association_document_storage";
 

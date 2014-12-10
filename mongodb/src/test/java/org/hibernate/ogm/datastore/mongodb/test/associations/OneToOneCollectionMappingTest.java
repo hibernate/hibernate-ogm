@@ -16,7 +16,7 @@ import org.hibernate.ogm.backendtck.associations.onetoone.Wife;
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.junit.Test;
 
@@ -97,7 +97,7 @@ public class OneToOneCollectionMappingTest extends OgmTestCase {
 		);
 		cfg.getProperties().put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
-				AssociationDocumentType.COLLECTION_PER_ASSOCIATION
+				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
 		);
 	}
 

@@ -11,7 +11,7 @@ import org.hibernate.ogm.backendtck.associations.collection.unidirectional.Colle
 import org.hibernate.ogm.datastore.document.cfg.DocumentStoreProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -26,7 +26,7 @@ public class CollectionUnidirectionalCollectionTest extends CollectionUnidirecti
 		);
 		cfg.getProperties().put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
-				AssociationDocumentType.COLLECTION_PER_ASSOCIATION
+				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
 		);
 	}
 }

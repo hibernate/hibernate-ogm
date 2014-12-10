@@ -11,7 +11,7 @@ package org.hibernate.ogm.datastore.mongodb.options;
  *
  * @author Gunnar Morling
  */
-public enum AssociationDocumentType {
+public enum AssociationDocumentStorageType {
 
 	/**
 	 * Stores the association info in the same MongoDB collection for all associations

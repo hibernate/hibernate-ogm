@@ -8,7 +8,7 @@ package org.hibernate.ogm.datastore.mongodb.options.navigation;
 
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
 import org.hibernate.ogm.datastore.document.options.navigation.DocumentStoreEntityContext;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
@@ -57,5 +57,5 @@ public interface MongoDBEntityContext extends DocumentStoreEntityContext<MongoDB
 	 * @param associationDocumentStorage the association document type to be used when not configured the property level
 	 * @return this context, allowing for further fluent API invocations
 	 */
-	MongoDBEntityContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage);
+	MongoDBEntityContext associationDocumentStorage(AssociationDocumentStorageType associationDocumentStorage);
 }

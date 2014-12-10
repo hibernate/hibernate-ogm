@@ -18,7 +18,7 @@ import org.hibernate.Transaction;
 import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.utils.MongoDBTestHelper;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.TestHelper;
@@ -54,7 +54,7 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 	public void associationDocumentStorageSetOnGlobalLevel() throws Exception {
 		testHelper.configureDatastore( configuration )
 			.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-			.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION );
+			.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
@@ -69,7 +69,7 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 		testHelper.configureDatastore( configuration )
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-				.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION );
+				.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedSnowflakes();
@@ -85,9 +85,9 @@ public class AssociationDocumentStorageConfiguredProgrammaticallyTest extends Og
 			.entity( Cloud.class )
 				.associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
 				.property( "producedSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
+					.associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION )
 				.property( "backupSnowFlakes", ElementType.METHOD )
-					.associationDocumentStorage( AssociationDocumentType.GLOBAL_COLLECTION );
+					.associationDocumentStorage( AssociationDocumentStorageType.GLOBAL_COLLECTION );
 
 		setupSessionFactory();
 		createCloudWithTwoProducedAndOneBackupSnowflake();

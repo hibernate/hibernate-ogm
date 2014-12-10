@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.options.impl;
 
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.options.spi.UniqueOption;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 
@@ -17,12 +17,12 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
  *
  * @author Gunnar Morling
  */
-public class AssociationDocumentStorageOption extends UniqueOption<AssociationDocumentType> {
+public class AssociationDocumentStorageOption extends UniqueOption<AssociationDocumentStorageType> {
 
 	@Override
-	public AssociationDocumentType getDefaultValue(ConfigurationPropertyReader propertyReader) {
-		return propertyReader.property( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE, AssociationDocumentType.class )
-				.withDefault( AssociationDocumentType.GLOBAL_COLLECTION )
+	public AssociationDocumentStorageType getDefaultValue(ConfigurationPropertyReader propertyReader) {
+		return propertyReader.property( MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE, AssociationDocumentStorageType.class )
+				.withDefault( AssociationDocumentStorageType.GLOBAL_COLLECTION )
 				.getValue();
 	}
 }
