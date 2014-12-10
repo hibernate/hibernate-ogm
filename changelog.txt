@@ -38,6 +38,26 @@ Hibernate OGM Changelog
     * [OGM-452] - Make Infinispan store each table in a dedicated cache
     * [OGM-657] - Implement "Cache-per-Table" strategy for Ehcache
 
+** Task
+    * [OGM-231] - Make sure mutable attributes are copied on read from Infinispan
+    * [OGM-450] - Verify that we are efficient in our datastore roundtrips
+    * [OGM-530] - Verify correctness of GridDialect and other central SPI contracts
+    * [OGM-535] - Embeddable should be stored as separate nodes in Neo4j
+    * [OGM-538] - Verify correctness of persistent data formats
+    * [OGM-576] - Explore what happens when lock is called
+    * [OGM-577] - Move DefaultDatastoreNames to a impl package and stop sharing it between dialects
+    * [OGM-609] - Extend PerfTest to cover queries as well
+    * [OGM-635] - Mark the jboss module for EAP as experimental
+    * [OGM-636] - Update to Hibernate ORM 4.3.7.Final
+    * [OGM-639] - Hibernate OGM build is failing with JDK 9
+    * [OGM-644] - Use non-deprecated annotations for JBoss logging
+    * [OGM-654] - Make the CouchDB dialect's experimental nature more explicit
+    * [OGM-661] - Rename and move cache selection property to core
+    * [OGM-671] - Update embedded MongoDB version used for tests
+    * [OGM-677] - Rename "CacheStorage" into "CacheMapping"
+    * [OGM-678] - Remove AssociationOperationType#PUT_NULL
+    * [OGM-689] - [Neo4j] Upgrade to Neo4j 2.1.6
+
 
 4.1.0.Beta8 (30-10-2014)
 -------------------------
