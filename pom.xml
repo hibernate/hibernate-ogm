@@ -125,7 +125,7 @@
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>6.0.0.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
-        <neo4jVersion>2.1.5</neo4jVersion>
+        <neo4jVersion>2.1.6</neo4jVersion>
 
         <!--
              Not all the Neo4j artifacts are available in the latest version; Some artifacts with the older
