@@ -43,6 +43,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 	private final String createEntityQuery;
 	private final String removeEntityQuery;
 	private final String updateEmbeddedNodeQuery;
+	private final String removeEmbdeddedElementQuery;
 
 	public Neo4jEntityQueries(EntityKeyMetadata entityKeyMetadata) {
 		this.updateEmbeddedPropertyQueryCache = new BoundedConcurrentHashMap<String, String>( CACHE_CAPACITY, CACHE_CONCURRENCY_LEVEL, BoundedConcurrentHashMap.Eviction.LIRS );
@@ -52,6 +53,7 @@ public class Neo4jEntityQueries extends QueriesBase {
 		this.createEntityQuery = initCreateEntityQuery( entityKeyMetadata );
 		this.removeEntityQuery = initRemoveEntityQuery( entityKeyMetadata );
 		this.updateEmbeddedNodeQuery = initUpdateEmbeddedNodeQuery( entityKeyMetadata );
+		this.removeEmbdeddedElementQuery = initRemoveEmbdeddedElementQuery( entityKeyMetadata );
 	}
 
 	/*
@@ -147,6 +149,31 @@ public class Neo4jEntityQueries extends QueriesBase {
 	/*
 	 * Example:
 	 *
+	 * MATCH (n:ENTITY:table {id: {0}}) --> (e:EMBEDDED)
+	 * WITH e
+	 * MATCH path=(e) -[*0..]-> (:EMBEDDED)
+	 * FOREACH (r IN relationships(path) | DELETE r)
+	 * FOREACH (e IN relationships(path) | DELETE e)
+	 */
+	private static String initRemoveEmbdeddedElementQuery(EntityKeyMetadata entityKeyMetadata) {
+		StringBuilder queryBuilder = new StringBuilder( "MATCH " );
+		queryBuilder.append( "(n:" );
+		queryBuilder.append( ENTITY );
+		queryBuilder.append( ":" );
+		appendLabel( entityKeyMetadata, queryBuilder );
+		appendProperties( entityKeyMetadata, queryBuilder );
+		queryBuilder.append( ")" );
+		queryBuilder.append( " --> (e:EMBEDDED)" );
+		queryBuilder.append( " WITH e " );
+		queryBuilder.append( " MATCH path=(e) -[*0..]-> (:EMBEDDED) ");
+		queryBuilder.append( " FOREACH ( r IN relationships(path) | DELETE r )" );
+		queryBuilder.append( " FOREACH ( e IN nodes(path) | DELETE e )" );
+		return queryBuilder.toString();
+	}
+
+	/*
+	 * Example:
+	 *
 	 * MATCH (n:ENTITY:table {id: {0}})
 	 * OPTIONAL MATCH (n) - [r] - ()
 	 * DELETE n, r
@@ -215,13 +242,16 @@ public class Neo4jEntityQueries extends QueriesBase {
 	}
 
 	/**
-	 * Remove the nodes representing the entity.
+	 * Remove the nodes representing the entity and the embedded elements attached to it.
 	 *
 	 * @param executionEngine the {@link ExecutionEngine} used to run the query
 	 * @param columnValues the values of the key identifying the entity to remove
 	 */
 	public void removeEntity(ExecutionEngine executionEngine, Object[] columnValues) {
 		Map<String, Object> params = params( columnValues );
+		// Remove the embedded elements first
+		executionEngine.execute( removeEmbdeddedElementQuery, params );
+		// Remove the entity
 		executionEngine.execute( removeEntityQuery, params );
 	}
 

@@ -128,7 +128,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 	}
 
 	@Test
-	public void testRemoveEmbedded() throws Exception {
+	public void testRemoveEmbeddedWhenPropertyIsSetToNull() throws Exception {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 		Account found = em.find( Account.class, account.getLogin() );
@@ -163,6 +163,44 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 		assertExpectedMapping( "a", accountNode, params );
 		assertExpectedMapping( "e", addressNode, params );
 		assertExpectedMapping( "r", accountNode + " - [r:homeAddress] - " + addressNode, params );
+	}
+
+	@Test
+	public void testRemoveEmbeddedWhenIntermediateEmbeddedIsRemoved() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+		Account found = em.find( Account.class, account.getLogin() );
+		found.setHomeAddress( null );
+		commitOrRollback( true );
+		em.close();
+
+		assertNumberOfNodes( 1 );
+		assertRelationships( 0 );
+
+		String accountNode = "(a:Account:ENTITY { login: {a}.login, password: {a}.password, version: {a}.version})";
+
+		Map<String, Object> accountProperties = new HashMap<String, Object>();
+		accountProperties.put( "login", account.getLogin() );
+		accountProperties.put( "password", account.getPassword());
+		accountProperties.put( "version", account.getVersion() + 1 );
+
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put( "a", accountProperties);
+
+		assertExpectedMapping( "a", accountNode, params );
+	}
+
+	@Test
+	public void testRemoveEmbeddedWhenOwnerIsRemoved() throws Exception {
+		getTransactionManager().begin();
+		final EntityManager em = getFactory().createEntityManager();
+		Account found = em.find( Account.class, account.getLogin() );
+		em.remove( found );
+		commitOrRollback( true );
+		em.close();
+
+		assertNumberOfNodes( 0 );
+		assertRelationships( 0 );
 	}
 
 	@Override
