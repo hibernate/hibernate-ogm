@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.impl.AssociationContextImpl;
 import org.hibernate.ogm.dialect.impl.AssociationTypeContextImpl;
@@ -197,7 +197,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		);
 		cfg.getProperties().put(
 				MongoDBProperties.ASSOCIATION_DOCUMENT_STORAGE,
-				AssociationDocumentType.COLLECTION_PER_ASSOCIATION
+				AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION
 		);
 	}
 

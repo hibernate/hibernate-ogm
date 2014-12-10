@@ -33,7 +33,7 @@ import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
@@ -797,11 +797,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 				.getOptionsContext()
 				.getUnique( AssociationStorageOption.class );
 
-		AssociationDocumentType associationDocumentType = associationTypeContext
+		AssociationDocumentStorageType associationDocumentStorageType = associationTypeContext
 				.getOptionsContext()
 				.getUnique( AssociationDocumentStorageOption.class );
 
-		return AssociationStorageStrategy.getInstance( keyMetadata, associationStorage, associationDocumentType );
+		return AssociationStorageStrategy.getInstance( keyMetadata, associationStorage, associationDocumentStorageType );
 	}
 
 	@Override

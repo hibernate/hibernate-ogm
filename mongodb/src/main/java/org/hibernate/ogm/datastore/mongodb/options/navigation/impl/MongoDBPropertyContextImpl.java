@@ -7,7 +7,7 @@
 package org.hibernate.ogm.datastore.mongodb.options.navigation.impl;
 
 import org.hibernate.ogm.datastore.document.options.navigation.spi.BaseDocumentStorePropertyContext;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.ReadPreferenceType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.AssociationDocumentStorageOption;
@@ -34,7 +34,7 @@ public abstract class MongoDBPropertyContextImpl extends BaseDocumentStoreProper
 	}
 
 	@Override
-	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentType associationDocumentStorage) {
+	public MongoDBPropertyContext associationDocumentStorage(AssociationDocumentStorageType associationDocumentStorage) {
 		Contracts.assertParameterNotNull( associationDocumentStorage, "associationDocumentStorage" );
 		addPropertyOption( new AssociationDocumentStorageOption(), associationDocumentStorage );
 		return this;

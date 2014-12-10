@@ -15,7 +15,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorage;
-import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType;
+import org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcern;
 import org.hibernate.ogm.datastore.mongodb.options.WriteConcernType;
 
@@ -67,7 +67,7 @@ public class GolfPlayer {
 	}
 
 	@OneToMany
-	@AssociationDocumentStorage(AssociationDocumentType.GLOBAL_COLLECTION)
+	@AssociationDocumentStorage(AssociationDocumentStorageType.GLOBAL_COLLECTION)
 	public List<GolfCourse> getPlayedCourses() {
 		return playedCourses;
 	}
