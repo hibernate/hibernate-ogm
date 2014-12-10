@@ -50,6 +50,9 @@ public class MongoHelpers {
 
 	/**
 	 * Remove a column from the DBObject
+	 *
+	 * @param entity the {@link DBObject} with the column
+	 * @param column the column to remove
 	 */
 	public static void resetValue(DBObject entity, String column) {
 		// fast path for non-embedded case
@@ -108,6 +111,10 @@ public class MongoHelpers {
 	/**
 	 * Links the two field names into a single left.right field name.
 	 * If the left field is empty, right is returned
+	 *
+	 * @param left one field name
+	 * @param right the other field name
+	 * @return left.right or right if left is an empty string
 	 */
 	public static String flatten(String left, String right) {
 		return left == null || left.isEmpty() ? right : left + "." + right;

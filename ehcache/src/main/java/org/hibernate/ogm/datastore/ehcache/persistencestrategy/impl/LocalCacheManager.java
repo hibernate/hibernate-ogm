@@ -54,11 +54,16 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 	/**
 	 * Determines the caches storing the entities of the given key families, fetches the keys of these families and
 	 * invokes the given processor for each key.
+	 *
+	 * @param processor the processor that will be invoked on the keys of the given families
+	 * @param entityKeyMetadatas the meta-data of the keys to process
 	 */
 	public abstract void forEachTuple(KeyProcessor<EK> processor, EntityKeyMetadata... entityKeyMetadatas);
 
 	/**
 	 * Processes keys obtained from a cache.
+	 *
+	 * @param <EK> the type of the keys
 	 */
 	public interface KeyProcessor<EK> {
 		void processKey(EK key, Cache<EK> cache);
