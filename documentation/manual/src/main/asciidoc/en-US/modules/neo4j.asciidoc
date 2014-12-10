@@ -232,7 +232,10 @@ image::images/neo4j-@EmbeddedId-example.png[align="center", depth="", scalefit="
 
 ====== Embedded objects and collections
 
-The properties of an +@Emebddable+ element are stored as dot-separated properties in the owner node.
+Embedded elements are stored as separate nodes labeled with +EMBEDDED+.
+
+The the type of the relationship that connects the entity node to the embedded node is
+the attribute name representing the embedded in the java class.
 
 .Embedded object
 ====
@@ -300,7 +303,7 @@ public class GrandChild {
 image::images/neo4j-@ElementCollection-example.png[align="center", depth="", scalefit="1"]
 ====
 
-Note that in the previous example no property is added to the relationships;
+Note that in the previous examples no property is added to the relationships;
 in the following one, one property is added to keep track of the order of the elements in the list.
 
 .@ElementCollection with @OrderColumn
