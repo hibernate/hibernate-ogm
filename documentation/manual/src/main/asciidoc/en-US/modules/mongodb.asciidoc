@@ -117,8 +117,11 @@ http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official docum
 When bootstrapping a session factory or entity manager factory programmatically,
 you should use the constants accessible via +MongoDBProperties+
 when specifying the configuration properties listed above.
-Common properties shared between (document) stores are declared on +OgmProperties+ and +DocumentStoreProperties+, respectively.
-To ease migration between stores, it is recommended to reference these constants directly from there.
+
+Common properties shared between stores are declared on +OgmProperties+
+(a super interface of +MongoDBProperties+).
+
+For maximum portability between stores, use the most generic interface possible.
 ====
 
 [[ogm-mongodb-annotation-configuration]]
@@ -247,15 +250,17 @@ We worked particularly hard on the MongoDB model
 to offer various classic mappings between your object model
 and the MongoDB documents.
 
-[[mongodb-built-in-types]]
-===== Builtin types
+To describe things simply, each entity is stored as a MongoDB document.
+This document is stored in a MongoDB collection named after the entity type.
+The navigational information for each association from one entity to (a set of) entity
+is stored in the document representing the entity we are departing from.
 
-[NOTE]
-====
-Hibernate OGM doesn't store null values in MongoDB,
-setting a value to null is the same as removing the field
-in the corresponding object in the db.
-====
+[[mongodb-built-in-types]]
+===== Properties and built-in types
+
+Each entity is represented by a document.
+Each property or more precisely column is represented by a field in this document,
+the field name being the column name.
 
 Hibernate OGM supports by default the following types:
 
@@ -363,6 +368,15 @@ Hibernate OGM supports by default the following types:
 ----
   { "object_id" : ObjectId("547d9b40e62048750f25ef77") }
 ----
+
+[NOTE]
+====
+Hibernate OGM doesn't store null values in MongoDB,
+setting a value to null is the same as removing the field
+in the corresponding object in the db.
+
+This can have consequences when it comes to queries on null value.
+====
 
 ===== Entities
 
