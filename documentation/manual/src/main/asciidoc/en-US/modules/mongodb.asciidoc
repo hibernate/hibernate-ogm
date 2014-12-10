@@ -11,6 +11,43 @@ The currently supported version is {mongodb-version}.
 
 ==== Configuring MongoDB
 
+Configuring Hibernate OGM to use MongoDb is easy:
+
+* Add the MongoDB module and driver to the classpath
+* provide the MongoDB URL to Hibernate OGM
+
+===== Adding MongoDB dependencies
+
+To add the dependencies via Maven, add the following module:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-mongodb</artifactId>
+    <version>{hibernate-ogm-version}</version>
+</dependency>
+----
+
+This will pull the MongoDB driver transparently.
+
+If you're not using a dependency management tool,
+copy all the dependencies from the distribution in the directories:
+
+* +/lib/required+
+* +/lib/mongodb+
+* Optionally - depending on your container - you might need some of the jars from +/lib/provided+
+
+===== MongoDB specific configuration properties
+
+To get started quickly, pay attention to the following options:
+
+* +hibernate.ogm.datastore.provider+
+* +hibernate.ogm.datastore.host+
+* +hibernate.ogm.datastore.database+
+
+And we should have you running.
 The following properties are available to configure MongoDB support:
 
 .MongoDB datastore configuration properties
@@ -39,14 +76,18 @@ The default value is +5000+.
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
 The following two strategies exist (values of the +org.hibernate.ogm.datastore.document.options.AssociationStorageType+ enum):
-+IN_ENTITY+ (store association information within the entity) and
-+ASSOCIATION_DOCUMENT+ (store association information in a dedicated document per association).
+
+* +IN_ENTITY+: store association information within the entity
+* +ASSOCIATION_DOCUMENT+: store association information in a dedicated document per association
+
++
 +IN_ENTITY+ is the default and recommended option
 unless the association navigation data is much bigger than the core of the document and leads to performance degradation.
 hibernate.ogm.mongodb.association_document_storage::
 Defines how to store assocation documents (applies only if the +ASSOCIATION_DOCUMENT+
 association storage strategy is used).
 Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType+ enum):
+
 * +GLOBAL_COLLECTION+ (default): stores the association information in a unique MongoDB collection for all associations
 * +COLLECTION_PER_ASSOCIATION+ stores the association in a dedicated MongoDB collection per association
 hibernate.ogm.mongodb.write_concern::
@@ -54,6 +95,8 @@ Defines the write concern setting to be applied when issuing writes against the 
 Possible settings are (values of the +WriteConcernType+ enum):
 +ERRORS_IGNORED+, +ACKNOWLEDGED+, +UNACKNOWLEDGED+, +FSYNCED+, +JOURNALED+, +REPLICA_ACKNOWLEDGED+, +MAJORITY+ and +CUSTOM+.
 When set to +CUSTOM+, a custom +WriteConcern+ implementation type has to be specified.
++
+This option is case insensitive and the default value is +ACKNOWLEDGED+.
 hibernate.ogm.mongodb.write_concern_type::
 Specifies a custom +WriteConcern+ implementation type (fully-qualified name, class object or instance).
 This is useful in cases where the pre-defined configurations are not sufficient,
@@ -68,7 +111,6 @@ If you're interested in such a feature, please let us know.
 
 For more information, please refer to the
 http://api.mongodb.org/java/current/com/mongodb/WriteConcern.html[official documentation].
-This option is case insensitive and the default value is +ACKNOWLEDGED+.
 
 [NOTE]
 ====
