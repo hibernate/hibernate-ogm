@@ -86,7 +86,7 @@ unless the association navigation data is much bigger than the core of the docum
 hibernate.ogm.mongodb.association_document_storage::
 Defines how to store assocation documents (applies only if the +ASSOCIATION_DOCUMENT+
 association storage strategy is used).
-Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentType+ enum):
+Possible strategies are (values of the +org.hibernate.ogm.datastore.mongodb.options.AssociationDocumentStorageType+ enum):
 
 * +GLOBAL_COLLECTION+ (default): stores the association information in a unique MongoDB collection for all associations
 * +COLLECTION_PER_ASSOCIATION+ stores the association in a dedicated MongoDB collection per association
@@ -142,7 +142,7 @@ The following shows an example:
 @WriteConcern(WriteConcernType.JOURNALED)
 @ReadPreference(ReadPreferenceType.PRIMARY_PREFERRED)
 @AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
-@AssociationDocumentStorage(AssociationDocumentType.COLLECTION_PER_ASSOCIATION)
+@AssociationDocumentStorage(AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION)
 public class Zoo {
 
     @OneToMany
@@ -200,7 +200,7 @@ public class MyOptionConfigurator extends OptionConfigurator {
             .readPreference( ReadPreferenceType.NEAREST )
             .entity( Zoo.class )
                 .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
-                .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION )
+                .associationDocumentStorage( AssociationDocumentStorageType.COLLECTION_PER_ASSOCIATION )
                 .property( "animals", ElementType.FIELD )
                     .associationStorage( AssociationStorageType.IN_ENTITY )
             .entity( Animal.class )
