@@ -12,8 +12,11 @@ package org.hibernate.ogm.model.spi;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 public enum AssociationOperationType {
+	/**
+	 * The PUT operation is never for a null value.
+	 * Use REMOVE instead.
+	 */
 	PUT,
 	REMOVE,
-	PUT_NULL,
 	CLEAR
 }

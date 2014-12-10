@@ -160,7 +160,6 @@ public class EhcacheDialect<EK, AK, ISK> extends BaseGridDialect {
 			switch ( action.getType() ) {
 				case CLEAR:
 					associationRows.clear();
-				case PUT_NULL:
 				case PUT:
 					associationRows.put( new SerializableRowKey( action.getKey() ), MapHelpers.associationRowToMap( action.getValue() ) );
 					break;
