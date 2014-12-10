@@ -7,7 +7,6 @@
 package org.hibernate.ogm.model.spi;
 
 import static org.hibernate.ogm.model.spi.AssociationOperationType.PUT;
-import static org.hibernate.ogm.model.spi.AssociationOperationType.PUT_NULL;
 import static org.hibernate.ogm.model.spi.AssociationOperationType.REMOVE;
 
 import java.util.ArrayList;
@@ -22,6 +21,7 @@ import java.util.Set;
 import org.hibernate.ogm.datastore.impl.EmptyAssociationSnapshot;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.RowKey;
+import org.hibernate.ogm.util.impl.Contracts;
 import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
@@ -64,7 +64,7 @@ public class Association {
 		if ( result == null ) {
 			return cleared ? null : snapshot.get( key );
 		}
-		else if ( result.getType() == PUT_NULL || result.getType() == REMOVE ) {
+		else if ( result.getType() == REMOVE ) {
 			return null;
 		}
 		return result.getValue();
@@ -72,12 +72,15 @@ public class Association {
 
 	/**
 	 * Adds the given row to this association, using the given row key.
+	 * The row must not be null, use the {@link #remove()} operation instead.
 	 *
 	 * @param key the key to store the row under
 	 * @param value the association row to store
 	 */
 	public void put(RowKey key, Tuple value) {
-		currentState.put( key, new AssociationOperation( key, value, value == null ? PUT_NULL : PUT )  );
+		// instead of setting it to null, core must use remove
+		Contracts.assertNotNull( value, "association.put value" );
+		currentState.put( key, new AssociationOperation( key, value, PUT )  );
 	}
 
 	/**
@@ -144,7 +147,6 @@ public class Association {
 		for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
 			switch ( op.getValue().getType() ) {
 				case PUT:
-				case PUT_NULL:
 					if ( cleared || !snapshot.containsKey( op.getKey() ) ) {
 						size++;
 					}
@@ -181,7 +183,6 @@ public class Association {
 			for ( Map.Entry<RowKey,AssociationOperation> op : currentState.entrySet() ) {
 				switch ( op.getValue().getType() ) {
 					case PUT:
-					case PUT_NULL:
 						keys.add( op.getKey() );
 						break;
 					case REMOVE:

@@ -69,7 +69,6 @@ public final class MapHelpers {
 				case PUT:
 					underlyingMap.put( action.getKey(), MapHelpers.associationRowToMap( action.getValue() ) );
 					break;
-				case PUT_NULL:
 				case REMOVE:
 					underlyingMap.remove( action.getKey() );
 					break;

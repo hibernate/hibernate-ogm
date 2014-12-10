@@ -353,7 +353,6 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 		case PUT:
 			putAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
 			break;
-		case PUT_NULL:
 		case REMOVE:
 			removeAssociationOperation( association, key, operation, associationContext.getAssociationTypeContext().getAssociatedEntityKeyMetadata() );
 			break;
