@@ -1439,6 +1439,107 @@ SalesGuy collection
 ----
 ====
 
+.Bidirectional many-to-one between entities with embedded ids
+====
+[source, JAVA]
+----
+@Entity
+public class Game {
+
+    @EmbeddedId
+    private GameId id;
+
+    private String name;
+
+    @ManyToOne
+    private Court playedOn;
+
+    // getters, setters ...
+}
+
+
+public class GameId implements Serializable {
+
+    private String category;
+
+    @Column(name = "id.gameSequenceNo")
+    private int sequenceNo;
+
+    // getters, setters ...
+    // equals / hashCode
+}
+
+@Entity
+public class Court {
+
+    @EmbeddedId
+    private CourtId id;
+
+    private String name;
+
+    @OneToMany(mappedBy = "playedOn")
+    private Set<Game> games = new HashSet<Game>();
+
+    // getters, setters ...
+}
+
+public class CourtId implements Serializable {
+
+    private String countryCode;
+    private int sequenceNo;
+
+    // getters, setters ...
+    // equals / hashCode
+}
+----
+
+.Court collection
+[source, JSON]
+----
+{
+    "_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    },
+    "name" : "Hamburg Court",
+    "games" : [
+        { "gameSequenceNo" : 457, "category" : "primary" },
+        { "gameSequenceNo" : 456, "category" : "primary" }
+    ]
+}
+----
+
+.Game collection
+[source, JSON]
+----
+{
+    "_id" : {
+        "category" : "primary",
+        "gameSequenceNo" : 456
+    },
+    "name" : "The game",
+    "playedOn_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    }
+}
+{
+    "_id" : {
+        "category" : "primary",
+        "gameSequenceNo" : 457
+    },
+    "name" : "The other game",
+    "playedOn_id" : {
+        "countryCode" : "DE",
+        "sequenceNo" : 123
+    }
+}
+----
+====
+
+Here we see that the embedded id is represented as a nested document
+and directly referenced by the associations.
+
 [[mongodb-in-entity-to-many-associations]]
 ====== To-many associations
 
@@ -1799,6 +1900,85 @@ BankAccount collection
     "_id" : "account_1",
     "accountNumber" : "X2345000"
     "owners" : [ "owner_1", "owner2222" ]
+}
+----
+====
+
+.Ordered list with embedded id
+====
+[source, JAVA]
+----
+@Entity
+public class Race {
+    @EmbeddedId
+    private RaceId raceId;
+
+    @OrderColumn(name = "ranking")
+    @OneToMany @JoinTable(name = "Race_Runners")
+    private List<Runner> runnersByArrival = new ArrayList<Runner>();
+
+    // getters, setters ...
+}
+
+public class RaceId implements Serializable {
+    private int federationSequence;
+    private int federationDepartment;
+
+    // getters, setters, equals, hashCode
+}
+
+@Entity
+public class Runner {
+    @EmbeddedId
+    private RunnerId runnerId;
+    private int age;
+
+    // getters, setters ...
+}
+
+public class RunnerId implements Serializable {
+    private String firstname;
+    private String lastname;
+
+    // getters, setters, equals, hashCode
+}
+----
+
+.Race collection
+[source, JSON]
+----
+{
+    "_id": {
+        "federationDepartment": 75,
+        "federationSequence": 23
+    },
+    "runnersByArrival": [{
+        "firstname": "Pere",
+        "lastname": "Noel",
+        "ranking": 1
+    }, {
+        "firstname": "Emmanuel",
+        "lastname": "Bernard",
+        "ranking": 0
+    }]
+}
+----
+
+.Runner collection
+[source, JSON]
+----
+{
+    "_id": {
+        "firstname": "Pere",
+        "lastname": "Noel"
+    },
+    "age": 105
+} {
+    "_id": {
+        "firstname": "Emmanuel",
+        "lastname": "Bernard"
+    },
+    "age": 37
 }
 ----
 ====
