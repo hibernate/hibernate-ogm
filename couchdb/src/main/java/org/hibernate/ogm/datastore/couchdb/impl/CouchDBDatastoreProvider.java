@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.couchdb.impl;
 
 import java.util.Map;
 
+import org.hibernate.HibernateException;
 import org.hibernate.ogm.datastore.couchdb.CouchDBDialect;
 import org.hibernate.ogm.datastore.couchdb.dialect.backend.impl.CouchDBDatastore;
 import org.hibernate.ogm.datastore.couchdb.logging.impl.Log;
@@ -60,7 +61,14 @@ public class CouchDBDatastoreProvider extends BaseDatastoreProvider implements S
 	@Override
 	public void start() {
 		if ( isDatastoreNotInitialized() ) {
-			datastore = CouchDBDatastore.newInstance( getDatabase(), configuration.isCreateDatabase() );
+			try {
+				datastore = CouchDBDatastore.newInstance( getDatabase(), configuration.isCreateDatabase() );
+			}
+			catch (HibernateException e) {
+				// Wrap HibernateException in a ServiceException to make the stack trace more friendly
+				// Otherwise a generic unable to request service is thrown
+				throw logger.unableToStartDatastoreProvider( e );
+			}
 		}
 	}
 

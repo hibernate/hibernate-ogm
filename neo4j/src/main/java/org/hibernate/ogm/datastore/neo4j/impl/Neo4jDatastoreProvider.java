@@ -12,6 +12,8 @@ import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.neo4j.Neo4jDialect;
 import org.hibernate.ogm.datastore.neo4j.Neo4jProperties;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jSequenceGenerator;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
+import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jBasedQueryParserService;
 import org.hibernate.ogm.datastore.neo4j.spi.GraphDatabaseServiceFactory;
 import org.hibernate.ogm.datastore.spi.BaseDatastoreProvider;
@@ -34,6 +36,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
 
 	private static final int DEFAULT_SEQUENCE_QUERY_CACHE_MAX_SIZE = 128;
+	private static Log LOG = LoggerFactory.getLogger();
 
 	private GraphDatabaseService neo4jDb;
 
@@ -71,10 +74,15 @@ public class Neo4jDatastoreProvider extends BaseDatastoreProvider implements Sta
 
 	@Override
 	public void start() {
-		this.neo4jDb = graphDbFactory.create();
-		this.sequenceGenerator = new Neo4jSequenceGenerator( neo4jDb, sequenceCacheMaxSize );
-		this.graphDbFactory = null;
-		this.sequenceCacheMaxSize = null;
+		try {
+			this.neo4jDb = graphDbFactory.create();
+			this.sequenceGenerator = new Neo4jSequenceGenerator( neo4jDb, sequenceCacheMaxSize );
+			this.graphDbFactory = null;
+			this.sequenceCacheMaxSize = null;
+		}
+		catch (Exception e) {
+			throw LOG.unableToStartDatastoreProvider( e );
+		}
 	}
 
 	@Override

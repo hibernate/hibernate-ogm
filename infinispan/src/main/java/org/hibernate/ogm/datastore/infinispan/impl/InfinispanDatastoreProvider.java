@@ -67,6 +67,7 @@ public class InfinispanDatastoreProvider extends BaseDatastoreProvider implement
 			}
 		}
 		catch (RuntimeException e) {
+			// return a ServiceException to be stack trace friendly
 			throw LOG.unableToInitializeInfinispan( e );
 		}
 

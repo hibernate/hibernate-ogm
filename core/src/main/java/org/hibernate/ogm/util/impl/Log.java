@@ -23,6 +23,8 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
+import org.hibernate.service.spi.ServiceException;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.FormatWith;
@@ -237,4 +239,7 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = WARN)
 	@Message(id = 70, value = "'%1$s' is no valid datastore provider short name. Valid values are: %2$s")
 	void noValidDatastoreProviderShortName(String providerName, String validProviderNames);
+
+	@Message(id = 71, value = "Unable to start datatore provider")
+	ServiceException unableToStartDatastoreProvider(@Cause Exception e);
 }
