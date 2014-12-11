@@ -22,6 +22,8 @@ import net.sf.ehcache.transaction.xa.EhcacheXAResource;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.ogm.datastore.ehcache.EhcacheDialect;
 import org.hibernate.ogm.datastore.ehcache.configuration.impl.EhcacheConfiguration;
+import org.hibernate.ogm.datastore.ehcache.logging.impl.Log;
+import org.hibernate.ogm.datastore.ehcache.logging.impl.LoggerFactory;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.KeyProvider;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.LocalCacheManager;
 import org.hibernate.ogm.datastore.ehcache.persistencestrategy.impl.PersistenceStrategy;
@@ -43,6 +45,8 @@ import org.hibernate.service.spi.Stoppable;
  */
 public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable,
 		ServiceRegistryAwareService, Configurable {
+
+	private static final Log logger = LoggerFactory.getLogger();
 
 	private JtaPlatform jtaPlatform;
 	private CacheManager cacheManager;
@@ -68,14 +72,21 @@ public class EhcacheDatastoreProvider extends BaseDatastoreProvider implements S
 
 	@Override
 	public void start() {
-		final Configuration configuration = ConfigurationFactory.parseConfiguration( config.getUrl() );
-		if ( jtaPlatform != null ) {
-			OgmTransactionManagerLookupDelegate.transactionManager = jtaPlatform.retrieveTransactionManager();
-			final FactoryConfiguration transactionManagerLookupParameter = new FactoryConfiguration();
-			transactionManagerLookupParameter.setClass( OgmTransactionManagerLookupDelegate.class.getName() );
-			configuration.addTransactionManagerLookup( transactionManagerLookupParameter );
+		try {
+			final Configuration configuration = ConfigurationFactory.parseConfiguration( config.getUrl() );
+			if ( jtaPlatform != null ) {
+				OgmTransactionManagerLookupDelegate.transactionManager = jtaPlatform.retrieveTransactionManager();
+				final FactoryConfiguration transactionManagerLookupParameter = new FactoryConfiguration();
+				transactionManagerLookupParameter.setClass( OgmTransactionManagerLookupDelegate.class.getName() );
+				configuration.addTransactionManagerLookup( transactionManagerLookupParameter );
+			}
+			cacheManager = CacheManager.create( config.getUrl() );
 		}
-		cacheManager = CacheManager.create( config.getUrl() );
+		catch (Exception e) {
+			// Wrap Exception in a ServiceException to make the stack trace more friendly
+			// Otherwise a generic unable to request service is thrown
+			throw logger.unableToStartDatastoreProvider( e );
+		}
 	}
 
 	/**

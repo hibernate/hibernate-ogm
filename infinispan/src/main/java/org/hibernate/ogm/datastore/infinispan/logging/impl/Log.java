@@ -7,6 +7,8 @@
 package org.hibernate.ogm.datastore.infinispan.logging.impl;
 
 import org.hibernate.HibernateException;
+import org.hibernate.service.spi.ServiceException;
+
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -24,5 +26,5 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 	HibernateException unexpectedKeyVersion(Class<?> clazz, int version, int supportedVersion);
 
 	@Message(id = 1102, value = "Unable to find or initialize Infinispan CacheManager")
-	HibernateException unableToInitializeInfinispan(@Cause RuntimeException e);
+	ServiceException unableToInitializeInfinispan(@Cause RuntimeException e);
 }

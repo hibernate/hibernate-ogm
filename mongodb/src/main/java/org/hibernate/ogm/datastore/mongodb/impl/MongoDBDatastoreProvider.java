@@ -92,23 +92,30 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	@Override
 	public void start() {
-		if ( mongo == null ) {
-			try {
-				ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
-				MongoClientOptions clientOptions = config.buildOptions();
+		try {
+			if ( mongo == null ) {
+				try {
+					ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
+					MongoClientOptions clientOptions = config.buildOptions();
 
-				log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
+					log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
 
-				this.mongo = new MongoClient( serverAddress, clientOptions );
+					this.mongo = new MongoClient( serverAddress, clientOptions );
+				}
+				catch (UnknownHostException e) {
+					throw log.mongoOnUnknownHost( config.getHost() );
+				}
+				catch (RuntimeException e) {
+					throw log.unableToInitializeMongoDB( e );
+				}
 			}
-			catch ( UnknownHostException e ) {
-				throw log.mongoOnUnknownHost( config.getHost() );
-			}
-			catch ( RuntimeException e ) {
-				throw log.unableToInitializeMongoDB( e );
-			}
+			mongoDb = extractDatabase();
 		}
-		mongoDb = extractDatabase();
+		catch (Exception e) {
+			// Wrap Exception in a ServiceException to make the stack trace more friendly
+			// Otherwise a generic unable to request service is thrown
+			throw log.unableToStartDatastoreProvider( e );
+		}
 	}
 
 	@Override

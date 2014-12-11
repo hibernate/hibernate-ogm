@@ -7,14 +7,15 @@
 package org.hibernate.ogm.datastore.mongodb.test.datastore;
 
 import static org.fest.assertions.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.fail;
+import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.OgmProperties;
@@ -23,6 +24,7 @@ import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.utils.TestHelper;
+import org.hibernate.service.spi.ServiceException;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,8 +55,10 @@ public class DatastoreInitializationTest {
 		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
-		error.expect( HibernateException.class );
-		error.expectMessage( "OGM001213" );
+		error.expect( ServiceException.class );
+		error.expectMessage( "OGM000071" );
+		//nested exception
+		error.expectCause( hasMessage( containsString( "OGM001213" ) ) );
 
 		provider.start();
 	}
@@ -68,8 +72,10 @@ public class DatastoreInitializationTest {
 		provider.injectServices( getServiceRegistry( cfg ) );
 		provider.configure( cfg );
 
-		error.expect( HibernateException.class );
-		error.expectMessage( "OGM001214" );
+		error.expect( ServiceException.class );
+		error.expectMessage( "OGM000071" );
+		//nested exception
+		error.expectCause( hasMessage( containsString( "OGM001214" ) ) );
 
 		provider.start();
 	}
