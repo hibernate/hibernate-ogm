@@ -698,7 +698,7 @@
                     <artifactId>clirr-maven-plugin</artifactId>
                     <version>2.6.1</version>
                     <configuration>
-                        <comparisonVersion>4.1.0.Beta8</comparisonVersion>
+                        <comparisonVersion>4.1.0.CR1</comparisonVersion>
                         <excludes>
                             <exclude>org/hibernate/ogm/**/impl/**</exclude>
                         </excludes>
