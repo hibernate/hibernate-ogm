@@ -153,7 +153,7 @@ provides the entry point into the API. Following the fluent API pattern, you the
 global options and navigate to single entities or properties to apply options specific to these.
 
 Options given on the property level precede entity-level options. So e.g. the +visitors+ association of the +Zoo+
-class would be stored using the in-entity strategy, while all other associations of the +Zoo+ entity would
+class would be stored using the in entity strategy, while all other associations of the +Zoo+ entity would
 be stored using separate association documents.
 
 Similarly, entity-level options take precedence over options given on the global level.
@@ -178,7 +178,7 @@ and update the same datastore.
 The following describe how entities and associations are mapped to CouchDB documents by Hibernate OGM.
 
 [[couchdb-built-in-types]]
-==== Builtin types
+==== Properties and built-in types
 
 [NOTE]
 ====

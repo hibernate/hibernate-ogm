@@ -226,7 +226,7 @@ Here +RequiringReplicaCountOf+ is a custom implementation of +WriteConcern+ whic
 that writes are propagated to a given number of replicas before a write is acknowledged.
 
 Options given on the property level precede entity-level options. So e.g. the +animals+ association of the +Zoo+
-class would be stored using the in-entity strategy, while all other associations of the +Zoo+ entity would
+class would be stored using the in entity strategy, while all other associations of the +Zoo+ entity would
 be stored using separate association documents.
 
 Similarly, entity-level options take precedence over options given on the global level.
@@ -2922,7 +2922,7 @@ public class Planet implements Nameable {
 ====
 
 The +@Version+ annotation define which attribute will keep track of the version of the document,
-Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
+Hibernate OGM will update the field when required and if two changes from two different sessions (for example)
 are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
 
 You can use [classname]+@Column+ to change the name of the field created on MongoDB:

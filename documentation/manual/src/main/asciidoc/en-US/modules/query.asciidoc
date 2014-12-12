@@ -26,7 +26,7 @@ the following preconditions must be met:
 * the entity involved in the query must be indexed
 * the properties involved in the predicates must be indexed
 
-Here is an example
+Here is an example:
 
 [source, JAVA]
 ----
