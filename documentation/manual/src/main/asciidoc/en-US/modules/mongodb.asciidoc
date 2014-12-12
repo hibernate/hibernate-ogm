@@ -2940,7 +2940,7 @@ You can express queries in a few different ways:
 * using a native MongoQL query
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
 
-While you can use JP-QL for simple queries, you might hit a limitation of our conversion.
+While you can use JP-QL for simple queries, you might hit limitations.
 The current recommended approach is to use native MongoQL
 if your query involves nested (list of) elements.
 
