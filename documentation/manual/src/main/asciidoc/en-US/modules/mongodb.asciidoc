@@ -2435,7 +2435,7 @@ unless embedding the association information proves to be too big for your docum
 and you wish to separate them.
 ====
 
-.Associations collection containing unidirecational association
+.Associations collection containing unidirectional association
 ====
 [source, JSON]
 ----
