@@ -1078,6 +1078,74 @@ public class GrandChild {
 ----
 ====
 
+[NOTE]
+====
+You can override the column name used for a property of an embedded object.
+But you need to know that the default column name is the concatenation of the embedding property,
+a +.+ (dot) and the embedded property (recursively for several levels of embedded objects).
+
+The MongoDB datastore treats dots specifically as it transforms them into nested documents.
+If you want to override one column name but still keep the nested structure, don't forget the dots.
+
+That's a bit abstract, so let's use an example.
+
+[source, JAVA]
+----
+@Entity
+class Order {
+    @Id String number;
+    User user;
+    Address shipping;
+    DeliveryProvider deliveryProvider;
+}
+
+// default columns
+@Embedded
+class User {
+    String firstname;
+    String lastname;
+}
+
+// override one column
+@Embeddable
+public Address {
+    String street;
+    @Column(name="shipping.dest_city")
+    String city;
+}
+
+@Embeddable
+public DeliveryProvider {
+    @Column(name="delivery.provider")
+    String name;
+    @Column(name="delivery.delays")
+    Integer expectedDelaysInDays;
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "123RF33",
+    "user": {
+        "firstname": "Emmanuel",
+        "lastname": "Bernard"
+    },
+    "shipping": {
+        "street": "1 av des Champs Elysées",
+        "dest_city": "Paris"
+    },
+    "delivery": {
+        "provider": "Santa Claus Inc.",
+        "delays": "1"
+    }
+}
+----
+
+If you share the same embeddable in different places, you can use JPA's +@AttributeOverride+
+to override columns from the embedding side.
+====
+
 ==== Associations
 
 Hibernate OGM MongoDB proposes three strategies to store navigation information for associations.
