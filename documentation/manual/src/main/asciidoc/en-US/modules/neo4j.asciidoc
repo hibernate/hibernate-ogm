@@ -794,6 +794,7 @@ what query you wish to execute.
 Expanding our support in this area is high on our priority list.
 ====
 
+[[ogm-neo4j-queries-native]]
 ==== Cypher queries
 
 Hibernate OGM also supports http://docs.neo4j.org/chunked/stable/cypher-query-lang.html[Cypher queries] for Neo4j.

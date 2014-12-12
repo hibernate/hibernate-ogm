@@ -3003,6 +3003,7 @@ what query you wish to execute.
 Expanding our support in this area is high on our priority list.
 ====
 
+[[ogm-mongodb-queries-native]]
 ==== Native MongoDB queries
 
 Hibernate OGM also supports certain forms of native queries for MongoDB.
