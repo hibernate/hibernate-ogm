@@ -1085,7 +1085,7 @@ But you need to know that the default column name is the concatenation of the em
 a +.+ (dot) and the embedded property (recursively for several levels of embedded objects).
 
 The MongoDB datastore treats dots specifically as it transforms them into nested documents.
-If you want to override one column name but still keep the nested structure, don't forget the dots.
+If you want to override one column name and still keep the nested structure, don't forget the dots.
 
 That's a bit abstract, so let's use an example.
 
@@ -1096,7 +1096,12 @@ class Order {
     @Id String number;
     User user;
     Address shipping;
+    @AttributeOverrides({
+        @AttributeOverride(name="name", column=@Column(name="delivery.provider"),
+        @AttributeOverride(name="expectedDelaysInDays", column=@Column(name="delivery.delays")
+    })
     DeliveryProvider deliveryProvider;
+    CreditCardType cardType;
 }
 
 // default columns
@@ -1114,12 +1119,20 @@ public Address {
     String city;
 }
 
+// both columns overridden from the embedding side
 @Embeddable
 public DeliveryProvider {
-    @Column(name="delivery.provider")
     String name;
-    @Column(name="delivery.delays")
     Integer expectedDelaysInDays;
+}
+
+// do not use dots in the overriding
+// and mix levels (bad form)
+@Embedded
+class CreditCardType {
+    String merchant;
+    @Column(name="network")
+    String network;
 }
 ----
 
@@ -1139,11 +1152,22 @@ public DeliveryProvider {
         "provider": "Santa Claus Inc.",
         "delays": "1"
     }
+    "network": "VISA",
+    "cardType: {
+        "merchant": "Amazon"
+    }
 }
 ----
 
 If you share the same embeddable in different places, you can use JPA's +@AttributeOverride+
 to override columns from the embedding side.
+This is the case of +DeliveryProvider+ in our example.
+
+If you omit the dot in one of the columns, this column will not be part of the nested document.
+This is demonstrated by the +CreditCardType+.
+We advise you against it.
+Like crossing streams, it is bad form.
+This approach might not be supported in the future.
 ====
 
 ==== Associations
