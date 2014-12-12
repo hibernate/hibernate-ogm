@@ -2856,6 +2856,76 @@ We recommend that you still use transaction demarcations with Hibernate OGM
 to trigger the flush operation transparently (on commit).
 But do not consider rollback as a possibility, this won't work.
 
+[[ogm-mongodb-optimisticlocking]]
+=== Optimistic Locking
+
+MongoDB does not provide a built-in mechanism for detecting concurrent updates to the same document
+but it provides a way to execute atomic find and update operations.
+By exploiting this commands Hibernate OGM can detect concurrent modifications to the same document.
+
+You can enable optimistic locking detection using the annotation [classname]+@Version+:
+
+.Optimistic locking detection via +@Version+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "version" : 0
+}
+----
+====
+
+The +@Version+ annotation define which attribute will keep track of the version of the document,
+Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
+are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
+
+You can use [classname]+@Column+ to change the name of the field created on MongoDB:
+
+.Optimistic locking detection via +@Version+ using +@Column+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    @Column(name="OPTLOCK")
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "OPTLOCK" : 0
+}
+----
+====
+
 [[ogm-mongodb-queries]]
 === Queries
 
@@ -3026,75 +3096,6 @@ Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
 Hibernate OGM stores data in a natural way so you can still execute queries using the
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
-
-==== Optimistic Locking
-
-MongoDB does not provide a built-in mechanism for detecting concurrent updates to the same document
-but it provides a way to execute atomic find and update operations. by exploiting this commands
-Hibernate OGM can detect concurrent modification to the same document.
-
-You can enable optimistic locking detection using the annotation [classname]+@Version+:
-
-.Optimistic locking detection via +@Version+
-====
-[source, JAVA]
-----
-@Entity
-public class Planet implements Nameable {
-
-    @Id
-    private String id;
-    private String name;
-
-    @Version
-    private int version;
-
-   // getters, setters ...
-}
-----
-
-----
-{
-  "_id" : "planet-1",
-  "name" : "Pluto",
-  "version" : 0
-}
-----
-====
-
-The +@Version+ annotation define which attribute will keep track of the version of the document,
-Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
-are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
-
-You can use [classname]+@Column+ to change the name of the field created on MongoDB:
-
-.Optimistic locking detection via +@Version+ using +@Column+
-====
-[source, JAVA]
-----
-@Entity
-public class Planet implements Nameable {
-
-    @Id
-    private String id;
-    private String name;
-
-    @Version
-    @Column(name="OPTLOCK")
-    private int version;
-
-   // getters, setters ...
-}
-----
-
-----
-{
-  "_id" : "planet-1",
-  "name" : "Pluto",
-  "OPTLOCK" : 0
-}
-----
-====
 
 ==== Hibernate Search
 
