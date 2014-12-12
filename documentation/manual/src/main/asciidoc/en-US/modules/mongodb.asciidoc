@@ -128,6 +128,9 @@ For maximum portability between stores, use the most generic interface possible.
 ==== Annotation based configuration
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
+You can override global configurations for a specific entity or even a specify property
+by virtue of the location where you place that annotation.
+
 When working with the MongoDB backend, you can specify the following settings:
 
 * the write concern for entities and associations using the +@WriteConcern+ annotation
@@ -262,7 +265,7 @@ Each entity is represented by a document.
 Each property or more precisely column is represented by a field in this document,
 the field name being the column name.
 
-Hibernate OGM supports by default the following types:
+Hibernate OGM supports by default the following property types:
 
 * [classname]+java.lang.String+
 
@@ -447,6 +450,8 @@ public class News {
 ====
 Hibernate OGM always store identifiers using the +_id+ field of a MongoDB document ignoring
 the name of the property in the entity.
+
+That's a good thing as MongoDB has special treatment and expectation of the property +_id+.
 ====
 
 An identifier type may be one of the <<mongodb-built-in-types,built-in types>>
@@ -2959,6 +2964,10 @@ You can express queries in a few different ways:
 * using a native MongoQL query
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
 
+While you can use JP-QL for simple queries, you might hit a limitation of our conversion.
+The current recommended approach is to use native MongoQL
+if your query involves nested (list of) elements.
+
 [NOTE]
 ====
 In order to reflect changes performed in the current session,
@@ -2986,6 +2995,13 @@ when using the JP-QL query support. This includes:
 * +ORDER BY+
 
 Queries using these constructs will be transformed into equivalent native MongoDB queries.
+
+[NOTE]
+====
+Let us know <<ogm-howtocontribute,by opening an issue or sending an email>>
+what query you wish to execute.
+Expanding our support in this area is high on our priority list.
+====
 
 ==== Native MongoDB queries
 
@@ -3083,13 +3099,6 @@ List<Poem> poems = session.createNativeQuery( query2 )
                       .addEntity( "Poem", Poem.class )
                       .list();
 ----
-====
-
-[NOTE]
-====
-As +OgmSession+ extends +org.hibernate.Session+ (which originally has been designed with relational databases in mind only)
-you could also invoke +createSQLQuery()+ to create a native query. But for the sake of comprehensibility, you should prefer
-+createNativeQuery()+, and in fact +createSQLQuery()+ has been deprecated on +OgmSession+.
 ====
 
 Native queries can also be created using the +@NamedNativeQuery+ annotation:
