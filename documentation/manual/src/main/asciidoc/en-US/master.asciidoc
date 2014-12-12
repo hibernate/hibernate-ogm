@@ -10,6 +10,10 @@ include::modules/architecture.asciidoc[]
 
 include::modules/configuration.asciidoc[]
 
+include::modules/mapping.asciidoc[]
+
+include::modules/query.asciidoc[]
+
 include::modules/datastore-providers.asciidoc[]
 
 include::modules/infinispan.asciidoc[]
@@ -21,7 +25,3 @@ include::modules/mongodb.asciidoc[]
 include::modules/neo4j.asciidoc[]
 
 include::modules/couchdb.asciidoc[]
-
-include::modules/mapping.asciidoc[]
-
-include::modules/query.asciidoc[]
