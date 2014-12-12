@@ -3,8 +3,6 @@
 == How to get help and contribute on Hibernate OGM
 
 Hibernate OGM is a young project.
-The code, the direction and the documentation are all in flux
-and being built by the community.
 Join and help us shape it!
 
 [[ogm-howtocontribute-help]]
