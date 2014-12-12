@@ -1,6 +1,6 @@
 [[ogm-neo4j]]
 
-=== Neo4j
+== Neo4j
 
 http://www.neo4j.org[Neo4j] is a robust (fully ACID) transactional property graph database.
 This kind of databases are suited for those type of problems that can be represented with a graph 
@@ -8,9 +8,7 @@ like social relationships or road maps for example.
 
 At the moment only the support for the embedded Neo4j is included in OGM.
 
-This is our first version and a bit experimental. In particular we plan on using node navigation much more than index lookup in a future version.
-
-==== How to add Neo4j integration
+=== How to add Neo4j integration
 
 .1. Add the dependencies to your project
 If your project uses Maven you can add this to the pom.xml: 
@@ -35,7 +33,7 @@ hibernate.ogm.datastore.provider = neo4j_embedded
 hibernate.ogm.neo4j.database_path = C:\example\mydb
 ----
 
-==== Configuring Neo4j
+=== Configuring Neo4j
 
 The following properties are available to configure Neo4j support:
 
@@ -55,13 +53,13 @@ Default value is +DROP_RECREATE_QUIETLY+.
 [WARNING]
 ====
 At the moment, you must not specify the property +hibernate.transaction.jta.platform+ when using Neo4j.
-When this property is explicitly set it will override the specific JtaPlatform required to integrate OGM with Neo4j
-causing transaction not to work correctly.
+It would override Hibernate OGM's version and the transactions would not work correctly.
 ====
 
 [NOTE]
 ====
-Use the following method to retrieve the transaction manager (it needs to be done after the EMF has been bootstrapped):
+Use the following method to retrieve the transaction manager
+(it needs to be done after the +EntityManagerFactory+ has been bootstrapped):
 
 [source, JAVA]
 ----
@@ -78,19 +76,31 @@ private static TransactionManager extractJBossTransactionManager(EntityManagerFa
 When bootstrapping a session factory or entity manager factory programmatically,
 you should use the constants accessible via +Neo4jProperties+
 when specifying the configuration properties listed above.
-Common properties shared between stores are declared on +OgmProperties+.
-To ease migration between stores, it is recommended to reference these constants directly from there.
+
+Common properties shared between stores are declared on +OgmProperties+
+(a super interface of +Neo4jProperties+).
+
+For maximum portability between stores, use the most generic interface possible.
 ====
+
+[[ogm-neo4j-storage-principles]]
+=== Storage principles
+
+Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
+so that third party applications not using Hibernate OGM can still read
+and update the same datastore.
+
+To make things simple, each entity is represented by a node,
+each embedded object is also represented by a node.
+Links between entities (whether to-one to to-many associations)
+are represented by relationships between nodes.
+Entity and embedded nodes are labelled +ENTITY+ and +EMBEDDED+ respectively.
 
 [[ogm-neo4j-built-in-types]]
-===== Builtin types
+==== Properties and built-in types
 
-[NOTE]
-====
-In Neo4j, it is not possible to set properties to null.
-If an attribute is set to null, Hibernate OGM removes the corresponding
-property form the node.
-====
+Each entity is represented by a node.
+Each property or more precisely column is represented by an attribute of this node.
 
 The following types (and corresponding primitives) get passed to Neo4j without any conversion:
 
@@ -118,27 +128,25 @@ The following types get converted into [classname]+java.lang.String+:
 * [classname]+java.util.UUID+
 * [classname]+java.util.URL+
 
-[[ogm-neo4j-storage-principles]]
-==== Storage principles
-
-Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
-so that third party applications not using Hibernate OGM can still read
-and update the same datastore.
-
-[WARNING]
+[NOTE]
 ====
-The mappings are still EXPERIMENTAL and they might change in the future.
+Hibernate OGM doesn't store null values in Neo4J,
+setting a value to null is the same as removing the corresponding entry
+from Neo4J.
+
+This can have consequences when it comes to queries on null value.
 ====
 
-===== Entities
+==== Entities
 
-Entities are stored as Neo4j nodes, which means each entity property will be translated into a property of the node.
+Entities are stored as Neo4j nodes,
+which means each entity property will be translated into a property of the node.
 The name of the table mapping the entity is used as label.
 
 You can use the name property of the [classname]+@Table+ and [classname]+@Column+ annotations
 to rename the label and the node's properties.
 
-An additional label +ENTITY+ is added to the node. 
+An additional label +ENTITY+ is added to the node.
 
 .Default JPA mapping for an entity
 ====
@@ -179,7 +187,7 @@ public class News {
 image::images/neo4j-@Column-@Table-example.png[align="center", depth="", scalefit="1"]
 ====
 
-====== Identifiers and unique constraints
+===== Identifiers and unique constraints
 
 [WARNING]
 ====
@@ -230,7 +238,7 @@ public class NewsID implements Serializable {
 image::images/neo4j-@EmbeddedId-example.png[align="center", depth="", scalefit="1"]
 ====
 
-====== Embedded objects and collections
+===== Embedded objects and collections
 
 Embedded elements are stored as separate nodes labeled with +EMBEDDED+.
 
@@ -335,7 +343,7 @@ public class GrandChild {
 image::images/neo4j-@ElementCollection-@OrderColumn-example.png[align="center", depth="", scalefit="1"]
 ====
 
-===== Associations
+==== Associations
 
 An association, bidirectional or unidirectional, is always mapped using one relationship,
 beginning at the owning side of the association.
@@ -640,7 +648,7 @@ public class BankAccount {
 image::images/neo4j-bi-many-to-many-example.png[align="center", depth="", scalefit="1"]
 ====
 
-===== Auto-generated Values
+==== Auto-generated Values
 
 Hibernate OGM supports the table generation strategy as well as the sequence generation strategy with Neo4j.
 It is generally recommended to work with the latter,
@@ -724,7 +732,7 @@ If required, you can set the initial value of a sequence and the increment size 
 The options +@TableGenerator#catalog()+, +@TableGenerator#schema()+, +@TableGenerator#uniqueConstraints()+ and +@TableGenerator#indexes()+  are not supported.
 
 [[ogm-neo4j-transactions]]
-==== Transactions
+=== Transactions
 
 Neo4j operations can be executed only inside a transaction.
 Unless a different +org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform+ is specified, OGM will use a specific implementation to integrate with the Neo4j transaction mechanism.
@@ -754,7 +762,7 @@ tx.commit();
 ====
 
 [[ogm-neo4j-queries]]
-==== Queries
+=== Queries
 
 You can express queries in a few different ways:
 
@@ -762,7 +770,11 @@ You can express queries in a few different ways:
 * using the Cypher query language
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
 
-===== JP-QL queries
+While you can use JP-QL for simple queries, you might hit limitations.
+The current recommended approach is to use native MongoQL
+if your query involves nested (list of) elements.
+
+==== JP-QL queries
 
 Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
 when using the JP-QL query support. This includes:
@@ -775,7 +787,14 @@ when using the JP-QL query support. This includes:
 
 Queries using these constructs will be transformed into equivalent http://docs.neo4j.org/chunked/stable/cypher-query-lang.html[Cypher queries].
 
-===== Cypher queries
+[NOTE]
+====
+Let us know <<ogm-howtocontribute,by opening an issue or sending an email>>
+what query you wish to execute.
+Expanding our support in this area is high on our priority list.
+====
+
+==== Cypher queries
 
 Hibernate OGM also supports http://docs.neo4j.org/chunked/stable/cypher-query-lang.html[Cypher queries] for Neo4j.
 You can execute Cypher queries as shown in the following example:
@@ -842,13 +861,6 @@ List<Poem> poems = session.createNativeQuery( query2 )
 ----
 ====
 
-[NOTE]
-====
-As +OgmSession+ extends +org.hibernate.Session+ (which originally has been designed with relational databases in mind only)
-you could also invoke +createSQLQuery()+ to create a native query. But for the sake of comprehensibility, you should prefer
-+createNativeQuery()+, and in fact +createSQLQuery()+ has been deprecated on +OgmSession+.
-====
-
 Native queries can also be created using the +@NamedNativeQuery+ annotation:
 
 .Using @NamedNativeQuery
@@ -877,7 +889,7 @@ Poem poem2 = (Poem) session.getNamedQuery( "AthanasiaPoem" )
 Hibernate OGM stores data in a natural way so you can still execute queries using your favorite tool,
 the main drawback is that the results are going to be raw Neo4j elements and not managed entities.
 
-===== Hibernate Search
+==== Hibernate Search
 
 You can index your entities using Hibernate Search.
 That way, a set of secondary indexes independent of Neo4j is maintained by Hibernate Search

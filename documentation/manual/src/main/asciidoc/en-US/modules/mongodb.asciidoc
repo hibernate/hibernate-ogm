@@ -1,6 +1,6 @@
 [[ogm-mongodb]]
 
-=== MongoDB
+== MongoDB
 
 http://www.mongodb.org[MongoDB] is a document oriented datastore
 written in C++ with strong emphasis on ease of use.
@@ -9,14 +9,14 @@ The nested nature of documents make it a particularly natural fit for most objec
 This implementation is based upon the MongoDB Java driver.
 The currently supported version is {mongodb-version}.
 
-==== Configuring MongoDB
+=== Configuring MongoDB
 
 Configuring Hibernate OGM to use MongoDb is easy:
 
 * Add the MongoDB module and driver to the classpath
 * provide the MongoDB URL to Hibernate OGM
 
-===== Adding MongoDB dependencies
+==== Adding MongoDB dependencies
 
 To add the dependencies via Maven, add the following module:
 
@@ -39,7 +39,7 @@ copy all the dependencies from the distribution in the directories:
 * +/lib/mongodb+
 * Optionally - depending on your container - you might need some of the jars from +/lib/provided+
 
-===== MongoDB specific configuration properties
+==== MongoDB specific configuration properties
 
 To get started quickly, pay attention to the following options:
 
@@ -125,9 +125,12 @@ For maximum portability between stores, use the most generic interface possible.
 ====
 
 [[ogm-mongodb-annotation-configuration]]
-===== Annotation based configuration
+==== Annotation based configuration
 
 Hibernate OGM allows to configure store-specific options via Java annotations.
+You can override global configurations for a specific entity or even a specify property
+by virtue of the location where you place that annotation.
+
 When working with the MongoDB backend, you can specify the following settings:
 
 * the write concern for entities and associations using the +@WriteConcern+ annotation
@@ -172,7 +175,7 @@ Only the elements of the +visitors+ association will be stored in the document o
 as per the configuration of that specific property which takes precedence over the entity-level configuration.
 
 [[ogm-mongodb-programmatic-configuration]]
-===== Programmatic configuration
+==== Programmatic configuration
 
 In addition to the annotation mechanism,
 Hibernate OGM also provides a programmatic API for applying store-specific configuration options.
@@ -241,7 +244,7 @@ you also can pass in an +OptionConfigurator+ instance or the class object repres
 
 
 [[ogm-mongodb-storage-principles]]
-==== Storage principles
+=== Storage principles
 
 Hibernate OGM tries to make the mapping to the underlying datastore as natural as possible
 so that third party applications not using Hibernate OGM can still read
@@ -256,13 +259,13 @@ The navigational information for each association from one entity to (a set of) 
 is stored in the document representing the entity we are departing from.
 
 [[mongodb-built-in-types]]
-===== Properties and built-in types
+==== Properties and built-in types
 
 Each entity is represented by a document.
 Each property or more precisely column is represented by a field in this document,
 the field name being the column name.
 
-Hibernate OGM supports by default the following types:
+Hibernate OGM supports by default the following property types:
 
 * [classname]+java.lang.String+
 
@@ -378,7 +381,7 @@ in the corresponding object in the db.
 This can have consequences when it comes to queries on null value.
 ====
 
-===== Entities
+==== Entities
 
 Entities are stored as MongoDB documents and not as BLOBs:
 each entity property will be translated into a document field.
@@ -441,12 +444,14 @@ public class News {
 ----
 ====
 
-====== Identifiers
+===== Identifiers
 
 [NOTE]
 ====
 Hibernate OGM always store identifiers using the +_id+ field of a MongoDB document ignoring
 the name of the property in the entity.
+
+That's a good thing as MongoDB has special treatment and expectation of the property +_id+.
 ====
 
 An identifier type may be one of the <<mongodb-built-in-types,built-in types>>
@@ -564,7 +569,7 @@ public class News {
 ----
 ====
 
-====== Identifier generation strategies
+===== Identifier generation strategies
 
 You can assign id values yourself or let Hibernate OGM generate the value using the
 [classname]+@GeneratedValue+ annotation.
@@ -921,7 +926,7 @@ Rendered as JSON in MongoDB
 ----
 ====
 
-====== Embedded objects and collections
+===== Embedded objects and collections
 
 Hibernate OGM stores elements annotated with [classname]+@Embedded+ or [classname]+@ElementCollection+ as nested documents of the owning entity.
 
@@ -1078,7 +1083,75 @@ public class GrandChild {
 ----
 ====
 
-===== Associations
+[NOTE]
+====
+You can override the column name used for a property of an embedded object.
+But you need to know that the default column name is the concatenation of the embedding property,
+a +.+ (dot) and the embedded property (recursively for several levels of embedded objects).
+
+The MongoDB datastore treats dots specifically as it transforms them into nested documents.
+If you want to override one column name but still keep the nested structure, don't forget the dots.
+
+That's a bit abstract, so let's use an example.
+
+[source, JAVA]
+----
+@Entity
+class Order {
+    @Id String number;
+    User user;
+    Address shipping;
+    DeliveryProvider deliveryProvider;
+}
+
+// default columns
+@Embedded
+class User {
+    String firstname;
+    String lastname;
+}
+
+// override one column
+@Embeddable
+public Address {
+    String street;
+    @Column(name="shipping.dest_city")
+    String city;
+}
+
+@Embeddable
+public DeliveryProvider {
+    @Column(name="delivery.provider")
+    String name;
+    @Column(name="delivery.delays")
+    Integer expectedDelaysInDays;
+}
+----
+
+[source, JSON]
+----
+{
+    "_id": "123RF33",
+    "user": {
+        "firstname": "Emmanuel",
+        "lastname": "Bernard"
+    },
+    "shipping": {
+        "street": "1 av des Champs Elysées",
+        "dest_city": "Paris"
+    },
+    "delivery": {
+        "provider": "Santa Claus Inc.",
+        "delays": "1"
+    }
+}
+----
+
+If you share the same embeddable in different places, you can use JPA's +@AttributeOverride+
+to override columns from the embedding side.
+====
+
+==== Associations
 
 Hibernate OGM MongoDB proposes three strategies to store navigation information for associations.
 The three possible strategies are:
@@ -1095,7 +1168,7 @@ To switch between these strategies, use of the three approaches to options:
 +hibernate.ogm.mongodb.association_document_storage+ configuration properties.
 
 [[mongodb-in-entity-strategy]]
-====== In Entity strategy
+===== In Entity strategy
 
 * <<mongodb-in-entity-to-one-associations, *-to-one associations>>
 * <<mongodb-in-entity-to-many-associations, *-to-many associations>>
@@ -1116,7 +1189,7 @@ You can use +@JoinColumn+ to change the name of the field that stores the foreig
 ====
 
 [[mongodb-in-entity-to-one-associations]]
-====== To-one associations
+===== To-one associations
 
 .Unidirectional one-to-one
 ====
@@ -1541,7 +1614,7 @@ Here we see that the embedded id is represented as a nested document
 and directly referenced by the associations.
 
 [[mongodb-in-entity-to-many-associations]]
-====== To-many associations
+===== To-many associations
 
 .Unidirectional one-to-many
 ====
@@ -1984,7 +2057,7 @@ public class RunnerId implements Serializable {
 ====
 
 [[mongodb-collection-per-association-strategy]]
-====== One collection per association strategy
+===== One collection per association strategy
 
 In this strategy, Hibernate OGM creates a MongoDB collection per association
 in which it will store all navigation information for that particular association.
@@ -2416,7 +2489,7 @@ OwnerBankAccount
 ====
 
 [[mongodb-association-document-strategy]]
-====== Global collection strategy
+===== Global collection strategy
 
 With this strategy, Hibernate OGM creates a single collection named +Associations+
 in which it will store all navigation information for all associations.
@@ -2435,7 +2508,7 @@ unless embedding the association information proves to be too big for your docum
 and you wish to separate them.
 ====
 
-.Associations collection containing unidirecational association
+.Associations collection containing unidirectional association
 ====
 [source, JSON]
 ----
@@ -2775,7 +2848,7 @@ Associations collection
 ====
 
 
-==== Transactions
+=== Transactions
 
 MongoDB does not support transactions.
 Only changes applied to the same document are done atomically.
@@ -2788,14 +2861,88 @@ We recommend that you still use transaction demarcations with Hibernate OGM
 to trigger the flush operation transparently (on commit).
 But do not consider rollback as a possibility, this won't work.
 
+[[ogm-mongodb-optimisticlocking]]
+=== Optimistic Locking
+
+MongoDB does not provide a built-in mechanism for detecting concurrent updates to the same document
+but it provides a way to execute atomic find and update operations.
+By exploiting this commands Hibernate OGM can detect concurrent modifications to the same document.
+
+You can enable optimistic locking detection using the annotation [classname]+@Version+:
+
+.Optimistic locking detection via +@Version+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "version" : 0
+}
+----
+====
+
+The +@Version+ annotation define which attribute will keep track of the version of the document,
+Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
+are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
+
+You can use [classname]+@Column+ to change the name of the field created on MongoDB:
+
+.Optimistic locking detection via +@Version+ using +@Column+
+====
+[source, JAVA]
+----
+@Entity
+public class Planet implements Nameable {
+
+    @Id
+    private String id;
+    private String name;
+
+    @Version
+    @Column(name="OPTLOCK")
+    private int version;
+
+   // getters, setters ...
+}
+----
+
+----
+{
+  "_id" : "planet-1",
+  "name" : "Pluto",
+  "OPTLOCK" : 0
+}
+----
+====
+
 [[ogm-mongodb-queries]]
-==== Queries
+=== Queries
 
 You can express queries in a few different ways:
 
 * using JP-QL
 * using a native MongoQL query
 * using a Hibernate Search query (brings advanced full-text and geospatial queries)
+
+While you can use JP-QL for simple queries, you might hit limitations.
+The current recommended approach is to use native MongoQL
+if your query involves nested (list of) elements.
 
 [NOTE]
 ====
@@ -2812,7 +2959,7 @@ e.g. by invoking +query.setFlushMode( FlushMode.MANUAL )+.
 Bear in mind though that query results will then not reflect changes applied within the current session.
 ====
 
-===== JP-QL queries
+==== JP-QL queries
 
 Hibernate OGM is a work in progress, so only a sub-set of JP-QL constructs is available
 when using the JP-QL query support. This includes:
@@ -2825,7 +2972,14 @@ when using the JP-QL query support. This includes:
 
 Queries using these constructs will be transformed into equivalent native MongoDB queries.
 
-===== Native MongoDB queries
+[NOTE]
+====
+Let us know <<ogm-howtocontribute,by opening an issue or sending an email>>
+what query you wish to execute.
+Expanding our support in this area is high on our priority list.
+====
+
+==== Native MongoDB queries
 
 Hibernate OGM also supports certain forms of native queries for MongoDB.
 Currently two forms of native queries are available via the MongoDB backend:
@@ -2923,13 +3077,6 @@ List<Poem> poems = session.createNativeQuery( query2 )
 ----
 ====
 
-[NOTE]
-====
-As +OgmSession+ extends +org.hibernate.Session+ (which originally has been designed with relational databases in mind only)
-you could also invoke +createSQLQuery()+ to create a native query. But for the sake of comprehensibility, you should prefer
-+createNativeQuery()+, and in fact +createSQLQuery()+ has been deprecated on +OgmSession+.
-====
-
 Native queries can also be created using the +@NamedNativeQuery+ annotation:
 
 .Using @NamedNativeQuery
@@ -2959,76 +3106,7 @@ Hibernate OGM stores data in a natural way so you can still execute queries usin
 MongoDB driver, the main drawback is that the results are going to be raw MongoDB
 documents and not managed entities.
 
-===== Optimistic Locking
-
-MongoDB does not provide a built-in mechanism for detecting concurrent updates to the same document
-but it provides a way to execute atomic find and update operations. by exploiting this commands
-Hibernate OGM can detect concurrent modification to the same document.
-
-You can enable optimistic locking detection using the annotation [classname]+@Version+:
-
-.Optimistic locking detection via +@Version+
-====
-[source, JAVA]
-----
-@Entity
-public class Planet implements Nameable {
-
-    @Id
-    private String id;
-    private String name;
-
-    @Version
-    private int version;
-
-   // getters, setters ...
-}
-----
-
-----
-{
-  "_id" : "planet-1",
-  "name" : "Pluto",
-  "version" : 0
-}
-----
-====
-
-The +@Version+ annotation define which attribute will keep track of the version of the document,
-Hibernate OGM will update the field when required and if two changes form two different sessions (for example)
-are applied to the same document a [classname]+org.hibernate.StaleObjectStateException+ is thrown.
-
-You can use [classname]+@Column+ to change the name of the field created on MongoDB:
-
-.Optimistic locking detection via +@Version+ using +@Column+
-====
-[source, JAVA]
-----
-@Entity
-public class Planet implements Nameable {
-
-    @Id
-    private String id;
-    private String name;
-
-    @Version
-    @Column(name="OPTLOCK")
-    private int version;
-
-   // getters, setters ...
-}
-----
-
-----
-{
-  "_id" : "planet-1",
-  "name" : "Pluto",
-  "OPTLOCK" : 0
-}
-----
-====
-
-===== Hibernate Search
+==== Hibernate Search
 
 You can index your entities using Hibernate Search.
 That way, a set of secondary indexes independent of MongoDB is maintained by Hibernate Search
