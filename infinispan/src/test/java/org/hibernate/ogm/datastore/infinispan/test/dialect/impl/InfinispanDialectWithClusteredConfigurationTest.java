@@ -177,7 +177,7 @@ public class InfinispanDialectWithClusteredConfigurationTest {
 
 	private static InfinispanDatastoreProvider createAndStartNewProvider(ServiceRegistryImplementor serviceRegistry) {
 		Map<String, Object> configurationValues = new HashMap<String, Object>();
-		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist-duplicate-domains-allowed.xml" );
+		configurationValues.put( InfinispanProperties.CONFIGURATION_RESOURCE_NAME, "infinispan-dist.xml" );
 		InfinispanDatastoreProvider provider = new InfinispanDatastoreProvider();
 
 		provider.configure( configurationValues );

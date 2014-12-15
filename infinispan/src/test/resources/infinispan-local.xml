@@ -13,48 +13,44 @@
 -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-    xmlns="urn:infinispan:config:6.0">
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
 
-    <global>
-        <globalJmxStatistics
-            enabled="false"
-            cacheManagerName="HibernateOGM-Testsuite"
-            allowDuplicateDomains="true" />
-    </global>
+    <cache-container name="HibernateOGM-Testsuite" default-cache="DEFAULT" statistics="false">
 
-    <!-- *************************** -->
-    <!--   Default cache settings    -->
-    <!-- *************************** -->
+        <jmx duplicate-domains="true"/>
 
-    <default>
-        <transaction
-            transactionMode="TRANSACTIONAL"
-            transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
-        <expiration
-            wakeUpInterval="-1"
-            reaperEnabled="false" />
-    </default>
+        <!-- *************************** -->
+        <!--   Default cache settings    -->
+        <!-- *************************** -->
+        <local-cache name="DEFAULT">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
 
-    <!-- *************************************** -->
-    <!--     Cache to store the OGM entities     -->
-    <!-- *************************************** -->
-    <namedCache
-        name="ENTITIES">
-    </namedCache>
+        <!-- *************************************** -->
+        <!--     Cache to store the OGM entities     -->
+        <!-- *************************************** -->
+        <local-cache name="ENTITIES">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
 
-    <!-- *********************************************** -->
-    <!--   Cache to store the relations across entities  -->
-    <!-- *********************************************** -->
-    <namedCache
-        name="ASSOCIATIONS">
-    </namedCache>
+        <!-- *********************************************** -->
+        <!--   Cache to store the relations across entities  -->
+        <!-- *********************************************** -->
+        <local-cache name="ASSOCIATIONS">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
 
-    <!-- ***************************** -->
-    <!--   Cache to store identifiers  -->
-    <!-- ***************************** -->
-    <namedCache
-        name="IDENTIFIERS">
-    </namedCache>
+        <!-- ***************************** -->
+        <!--   Cache to store identifiers  -->
+        <!-- ***************************** -->
+        <local-cache name="IDENTIFIERS">
+            <transaction mode="NON_DURABLE_XA" transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+            <expiration interval="-1"/>
+        </local-cache>
 
+    </cache-container>
 </infinispan>
