@@ -68,6 +68,7 @@ In particular and of notice, what is not supported is:
 * refer to a collection of embedded objects https://hibernate.atlassian.net/browse/OGM-693[OGM-693]
 * cross entity joins
 * JP-QL functions in particular aggregation functions like +count+
+* JP-QL update and delete queries
 
 That may sound rather limiting for your use cases so bear with us.
 This is a hot area we want to improve, please tell us what feature you miss
@@ -123,6 +124,22 @@ from Helicopter h order by h.make desc, h.name
 ----
 ====
 
+[NOTE]
+====
+In order to reflect changes performed in the current session,
+all entities affected by a given query are flushed to the datastore prior to query execution
+(that’s the case for Hibernate ORM as well as Hibernate OGM).
+
+For not fully transactional stores,
+this can cause changes to be written as a side-effect of running queries
+which cannot be reverted by a possible later rollback.
+
+Depending on your specific use cases and requirements you may prefer to disable auto-flushing,
+e.g. by invoking +query.setFlushMode(FlushMode.MANUAL)+.
+Bear in mind though that query results will then not reflect changes applied within the current session.
+====
+
+[[ogm-query-native]]
 === Using the native query language of your NoSQL
 
 Often you want the raw power of the underlying NoSQL query engine.

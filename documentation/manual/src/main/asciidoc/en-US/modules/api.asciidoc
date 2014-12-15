@@ -1,0 +1,167 @@
+[[ogm-api]]
+
+// vim: set colorcolumn=100:
+
+== Hibernate OGM APIs
+
+Hibernate OGM has very few specific APIs.
+For the most part, you will interact with it via either:
+
+* the JPA APIs
+* the native Hibernate ORM APIs
+
+This chapter will only discuss the Hibernate OGM specific behaviors regarding these APIs.
+If you need to learn JPA or the native Hibernate APIs,
+check out http://hibernate.org/orm/documentation/[the Hibernate ORM documentation].
+
+=== Bootstrap Hibernate OGM
+
+We already discussed this subject earlier, have a look at <<ogm-configuration>> for all the details.
+
+As a reminder, it basically boils down to either:
+
+* set the right persistence provider in your +persistence.xml+ file
+  and create an +EntityManagerFactory+ the usual way
+* start via the Hibernate ORM native APIs using +OgmConfiguration+
+  to boot a +SessionFactory+
+
+=== JPA and native Hibernate ORM APIs
+
+You know of the Java Persistence and Hibernate ORM native APIs?
+You are pretty much good to go.
+If you need a refresher, make sure you read the http://hibernate.org/orm/documentation/[Hibernate ORM documentation].
+
+A few things are a bit different though, let's discuss them.
+
+Most of the +EntityManager+ and +Session+ contracts are supported.
+Here are the few exceptions:
+
+* +Session.createCriteria+: criteria queries are not yet supported in Hibernate OGM
+* +Session.createFilter+: queries on collections are not supported yet
+* +Session+ 's +enableFilter+, +disableFilter+ etc: query filters are not supported at the moment
+* +doWork+ and +doReturningWork+ are not implemented as they rely on JDBC connections - see
+  https://hibernate.atlassian.net/browse/OGM-694[OGM-694]
+* +Session+ 's stored procedure APIs are not supported
+* +Session+ 's natural id APIs are not yet supported
+* +Session.lock+ is not fully supported at this time
+* +EntityManager+ 's criteria query APIs are not supported
+* +EntityManager+ 's stored procedure APIs are not supported - see
+  https://hibernate.atlassian.net/browse/OGM-695[OGM-695]
+* +EntityManager.lock+ is not fully supported at this time
+* see <<ogm-query>> to know what is supported for JP-QL and native queries
+
+==== Accessing the +OgmSession+ API
+
+To execute NoSQL native queries, one approach is to use +OgmSession.createNativeQuery+.
+You can read more about it in <<ogm-query-native>>.
+But let's see how to access an +OgmSession+ instance.
+
+From JPA, use the +unwrap+ method of +EntityManager+
+
+.Get to an +OgmSession+ from an +EntityManager+
+====
+[source, JAVA]
+----
+EntityManager entityManager = ...
+OgmSession ogmSession = entityManager.unwrap(OgmSession.class);
+NoSQLQuery query = ogmSession.createNativeQuery(...);
+----
+====
+
+In the Hibernate native API case, you should already have access to an +OgmSession+.
+The +OgmConfiguration+ you used returns an +OgmSessionFactory+.
+This factory in turns produces +OgmSession+.
+
+.Get to an +OgmSession+ with Hibernate ORM native APIs
+====
+[source, JAVA]
+----
+OgmConfiguration ogmConfiguration = new OgmConfiguration();
+OgmSessionFactory ogmSessionFactory = ogmConfiguration.buildSessionFactory();
+OgmSession ogmSession = ogmSessionFactory.openSession();
+NoSQLQuery query = ogmSession.createNativeQuery(...);
+----
+====
+
+=== On flush and transactions
+
+While most underlying datastores do not support transaction,
+it is important to demarcate transaction via the Hibernate OGM APIs.
+Let's see why.
+
+Hibernate does pile up changes for as long as it can before pushing them down to the datastore.
+This opens up the doors to huge optimizations (avoiding duplication, batching operations etc).
+You can force changes to be sent to the datastore by calling +Session.flush+ or +EntityManager.flush+.
+In some situations - for example before some queries are executed -, Hibernate will flush automatically.
+It will also flush when the transaction demarcation happens (whether there is a real transaction or not).
+
+The best approach is to always demarcate the transaction as shown below.
+This avoids the needs to manually call flush and will offer future opportunities for Hibernate OGM.
+
+.Explicitly demarcating transactions
+====
+Here is how you do outside of a JTA environment.
+
+[source, JAVA]
+----
+Session session = ...
+
+Transaction transaction = session.beginTransaction();
+try {
+    // do your work
+    transaction.commit(); // will flush changes to the datastore
+catch (Exception e) {
+    transaction.rollback();
+}
+
+// or in JPA
+EntityManager entityManager = ...
+EntityTransaction transaction = entityManager.getTransaction();
+try {
+    // do your work
+    transaction.commit(); // will flush changes to the datastore
+}
+catch (Exception e) {
+    transaction.rollback();
+}
+----
+
+Inside a JTA environment, either the container demarcate the transaction for you
+and Hibernate OGM will transparently joins that transaction and flush at commit time.
+Or you need to manually demarcate the transaction.
+In the latter case,
+it is best to start / stop the transaction before retrieving the +Session+ or +EntityManager+
+as show below.
+The alternative is to call the +EntityManager.joinTransaction()+ once the transaction has started.
+
+[source, JAVA]
+----
+transactionManager.begin();
+Session session = sessionFactory.openSession();
+// do your work
+transactionManager.commit(); // will flush changes to the datastore
+
+// or in JPA
+transactionManager.begin();
+EntityManager entityManager = entityManagerFactory.createEntityManager();
+// do your work
+transactionManager.commit(); // will flush changes to the datastore
+----
+====
+
+=== SPIs
+
+Some of the Hibernate OGM public contracts are geared towards either integrators
+or implementors of datastore providers.
+They should not be used by a regular application.
+These contracts are named SPIs and are in a +.spi+ package.
+
+To keep improving Hibernate OGM, we might break these SPIs between versions.
+If you plan on writing a datastore, come and talk to us.
+
+[TIP]
+====
+Non public contracts are stored within a +.impl+ package.
+If you see yourself using one of these classes,
+beware that we can break these without notice.
+====

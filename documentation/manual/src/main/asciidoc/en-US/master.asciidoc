@@ -12,6 +12,8 @@ include::modules/configuration.asciidoc[]
 
 include::modules/mapping.asciidoc[]
 
+include::modules/api.asciidoc[]
+
 include::modules/query.asciidoc[]
 
 include::modules/datastore-providers.asciidoc[]
