@@ -8,6 +8,7 @@ package org.hibernate.ogm.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
@@ -32,6 +33,7 @@ public class PackagingRule extends TemporaryFolder {
 	private static final ArchivePath persistencePath = ArchivePaths.create( "persistence.xml" );
 	private final JavaArchive archive;
 	private final File testPackage;
+	private final URLClassLoader classLoader;
 
 	public PackagingRule(String persistenceConfResource, Class<?>... entities) {
 		try {
@@ -47,12 +49,18 @@ public class PackagingRule extends TemporaryFolder {
 			throw new RuntimeException( e );
 		}
 		archive.as( ZipExporter.class ).exportTo( testPackage, true );
+		try {
+			URL url = testPackage.toURL();
+			classLoader = new URLClassLoader( new URL[]{ url }, originalClassLoader );
+		}
+		catch (MalformedURLException e) {
+			throw new RuntimeException( e );
+		}
 	}
 
 	@Override
 	public void before() throws Throwable {
 		super.before();
-		URLClassLoader classLoader = new URLClassLoader( new URL[]{ testPackage.toURL() }, originalClassLoader );
 		Thread.currentThread().setContextClassLoader( classLoader );
 	}
 
@@ -60,6 +68,12 @@ public class PackagingRule extends TemporaryFolder {
 	public void after() {
 		// reset the classloader
 		Thread.currentThread().setContextClassLoader( originalClassLoader );
+		try {
+			classLoader.close();
+		}
+		catch (IOException e) {
+			throw new RuntimeException( e );
+		}
 		super.after();
 	}
 
