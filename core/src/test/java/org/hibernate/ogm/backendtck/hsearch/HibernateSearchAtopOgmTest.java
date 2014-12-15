@@ -13,6 +13,8 @@ import javax.persistence.EntityManager;
 import org.apache.lucene.search.Query;
 import org.junit.Test;
 import org.hibernate.Session;
+import org.hibernate.ogm.utils.GridDialectType;
+import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.ogm.utils.jpa.GetterPersistenceUnitInfo;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.hibernate.search.FullTextSession;
@@ -28,6 +30,7 @@ import static org.fest.assertions.Assertions.assertThat;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@SkipByGridDialect(value = GridDialectType.NEO4J, comment = "Neo4j is not compatible with HSEARCH 5")
 public class HibernateSearchAtopOgmTest extends JpaTestCase {
 
 	@Test

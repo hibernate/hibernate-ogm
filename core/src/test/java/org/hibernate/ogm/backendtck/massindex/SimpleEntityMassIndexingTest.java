@@ -20,6 +20,7 @@ import org.hibernate.ogm.backendtck.hsearch.Insurance;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
+import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.IndexDirectoryManager;
 import org.hibernate.ogm.utils.OgmTestCase;
 import org.hibernate.ogm.utils.SkipByGridDialect;
@@ -38,6 +39,7 @@ public class SimpleEntityMassIndexingTest extends OgmTestCase {
 	private static final File indexDir = getBaseIndexDir();
 
 	@Test
+	@SkipByGridDialect(value = GridDialectType.NEO4J, comment = "Neo4j is not compatible with HSEARCH 5")
 	public void testSimpleEntityMassIndexing() throws Exception {
 		{
 			Session session = openSession();
