@@ -20,7 +20,7 @@ If you want to contribute, <<ogm-howtocontribute,even better>>!
 
 Hibernate OGM is released under the LGPL open source license.
 
-[WARNING]
+[NOTE]
 ====
 The future of this project is being shaped by the requests from our users.
 Please give us feedback on
@@ -31,6 +31,22 @@ Please give us feedback on
 * what you are missing as a feature
 
 Check <<ogm-howtocontribute-contribute>> on how to contact us.
+====
+
+[TIP]
+====
+We worked hard on this documentation but we know it is far from perfect.
+If you find something confusing or feel that an explanation is missing,
+contact us in one of the following ways:
+
+* post on https://forum.hibernate.org/viewforum.php?f=31[Hibernate OGM's forum].
+* open bug reports in https://hibernate.atlassian.net/browse/OGM[JIRA]
+* propose improvements on the
+  http://www.hibernate.org/community/mailinglists[development mailing list]
+* join us on IRC to discuss developments and improvements
+  (+#hibernate-dev+ on +freenode.net+;
+  you need to be registered on freenode:
+  the room does not accept "anonymous" users).
 ====
 
 === Goals
