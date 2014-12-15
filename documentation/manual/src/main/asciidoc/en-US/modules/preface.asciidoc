@@ -141,7 +141,7 @@ But most of our dialects are mature, so don't worry ;)
 
 Here are a few areas where Hibernate OGM can be beneficial:
 
-* need to scale your data store up and down rapidly
+* need to scale your datastore up and down rapidly
   (via the underlying NoSQL datastore capability)
 * keep your domain model independent of the underlying datastore technology
   (RDBMS, Infinispan, NoSQL)

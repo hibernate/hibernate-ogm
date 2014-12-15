@@ -1,5 +1,7 @@
 [[ogm-architecture]]
 
+// vim: set colorcolumn=100:
+
 == Architecture
 
 [NOTE]
@@ -7,7 +9,7 @@
 Hibernate OGM defines an abstraction layer
 represented by [classname]+DatastoreProvider+ and [classname]+GridDialect+
 to separate the OGM engine from the datastores interaction.
-It has successfully abstracted various key/value stores and MongoDB.
+It has successfully abstracted various key/value stores, document stores and graph databases.
 We are working on testing it on other NoSQL families.
 ====
 
@@ -25,9 +27,9 @@ Let's start with the general architecture.
 Hibernate OGM is really made possible by the reuse of a few key components:
 
 * Hibernate ORM for JPA support
-* Hibernate Search for indexing and query purposes
 * the NoSQL drivers to interact with the underlying datastore
-* Infinispan's Lucene Directory to store indexes in Infinispan itself,
+* optionally Hibernate Search for indexing and query purposes
+* optionally Infinispan's Lucene Directory to store indexes in Infinispan itself,
   or in many other NoSQL using Infinispan's write-through cachestores
 * Hibernate OGM itself
 
@@ -59,7 +61,7 @@ Other than these, all the Create/Read/Update/Delete (CRUD) operations
 are implemented by the Hibernate ORM engine
 (object hydration and dehydration, cascading, lifecycle etc).
 
-As of today, we have implemented four datastore providers:
+As of today, we have implemented the following datastore providers:
 
 * a Map based datastore provider (for testing)
 * an Infinispan based datastore provider to persist your entities in Infinispan
@@ -68,16 +70,12 @@ As of today, we have implemented four datastore providers:
 * a Neo4j based datastore provider to persist data in the Neo4j graph database
 * a CouchDB based datastore provider to persist data in the CouchDB document store
 
-
 To implement JP-QL queries, Hibernate OGM parses the JP-QL string
 and calls the appropriate translator functions to build a native query.
-If the query is too complex for the native capabilities of the NoSQL store,
-the Teiid query engine is used as an intermediary engine
-to implement the missing features (typically joins between entities, aggregation).
-Finally, if the underlying engine does not have any query support,
+If the underlying engine does not have any query support,
 we use Hibernate Search as an external query engine.
 
-Reality is a bit more nuanced, we will discuss the subject of querying
+We will discuss the subject of querying
 in more details in <<ogm-architecture-dataqueried>>.
 
 Hibernate OGM best works in a JTA environment.
@@ -105,8 +103,7 @@ In particular, Hibernate OGM inherits the following traits:
 
 
 If the application data model is too tightly coupled
-with your persistent data model,
-a few issues arise including:
+with your persistent data model, a few issues arise:
 
 * any change in the application object hierarchy / composition
   must be reflected in the persistent data
@@ -122,7 +119,7 @@ a few issues arise including:
 .Why aren't entities serialized in the key/value entry
 ====
 There are a couple of reasons why serializing the entity
-directly in the datastore can lead to problems:
+directly in the datastore - key/value in particular - can lead to problems:
 
 * When entities are pointing to other entities are you storing the whole graph?
   Hint: this can be quite big!
@@ -192,13 +189,6 @@ Note that this approach has benefits and drawbacks:
 * it favors reads over writes (for associations)
 * but it duplicates data
 
-
-[NOTE]
-====
-We might offer alternative association data persistence options in the future
-based on feedback.
-====
-
 Again, there are specificities in how data is inherently stored
 in the specific NoSQL store.
 For example, in document oriented stores,
@@ -206,8 +196,9 @@ the association information including the identifier to the associated entities
 can be stored in the entity owning the association.
 This is a more natural model for documents.
 
-TODO: this sentence might be worth a diagram
-to show the difference with the key/value store.
+// On native Asciidoctor, remove width=15cm to have it work
+.Storing associations in a document store
+image::images/data-association-document.png[align="center", depth="", scalefit="1", width="15cm"]
 
 Some identifiers require to store a seed in the datastore
 (like sequences for examples).
@@ -217,8 +208,14 @@ The seed is stored in the value whose key is composed of:
 * the column name representing the segment
 * the column value representing the segment
 
+[WARNING]
+====
+This description is how conceptually Hibernate OGM asks the datastore provider to store data.
+Depending on the family and even the specific datastore, the storage is optimized to be as natural as possible.
+In other words as you would have stored the specific structure naturally.
 Make sure to check the chapter dedicated to the NoSQL store you target
 to find the specificities.
+====
 
 Many NoSQL stores have no notion of schema.
 Likewise, the tuple stored by Hibernate OGM is not tied to a particular schema:
@@ -239,21 +236,12 @@ and the totally schema-less approach pushed by some NoSQL families.
 
 === How is data queried
 
-[NOTE]
-====
-Query support is in active development.
-This section describes where the project is going.
-====
-
 Since Hibernate OGM wants to offer all of JPA, it needs to support JP-QL queries.
 Hibernate OGM parses the JP-QL query string and extracts its meaning.
 From there, several options are available
 depending of the capabilities of the NoSQL store you target:
 
 * it directly delegates the native query generation
-  to the datastore specific query translator implementation
-* it uses Teiid as an intermediary engine,
-  Teiid delegating parts of the query
   to the datastore specific query translator implementation
 * it uses Hibernate Search as a query engine to execute the query
 
@@ -262,19 +250,10 @@ If the NoSQL datastore has some query capabilities
 and if the JP-QL query is simple enough to be executed by the datastore,
 then the JP-QL parser directly pushes the query generation
 to the NoSQL specific query translator.
-The query returns the list of matching identifiers
-snd uses Hibernate OGM to return managed objects.
+The query returns the list of matching entity columns or projections
+and Hibernate OGM returns managed entities.
 
-Some of the JP-QL features are not supported by NoSQL solutions.
-Two typical examples are joins between entities -
-which you should limit anyways in a NoSQL environment -
-and aggregations like average, max, min etc.
-When the NoSQL store does not support the query,
-we use Teiid - a database federation engine - to build simpler queries
-executed to the datastore
-and perform the join or aggregation operations in Teiid itself.
-
-Finally some NoSQL stores have poor query support, or none at all.
+Some NoSQL stores have poor query support, or none at all.
 In this case Hibernate OGM can use Hibernate Search as its indexing and query engine.
 Hibernate Search is able to index and query objects - entities -
 and run full-text queries.
@@ -303,12 +282,9 @@ Indexes can be stored in various fashions:
   in this case Infinispan is used as an intermediary layer
   to serve the index efficiently but persists the index in another NoSQL store.
 
-
-Note that for complex queries involving joins or aggregation,
-Hibernate OGM can use Teiid as an intermediary query engine
-that will delegate to Hibernate Search.
-
-Note that you can use Hibernate Search
+[TIP]
+====
+You can use Hibernate Search
 even if you do plan to use the NoSQL datastore query capabilities.
 Hibernate Search offers a few interesting options:
 
@@ -317,23 +293,4 @@ Hibernate Search offers a few interesting options:
 * geospatial queries
 * query faceting (ie dynamic categorization of the query results by price,
   brand etc)
-
-
-[NOTE]
-.What's the progress status on queries?
-====
-Well... now is a good time to remind you
-that Hibernate OGM is open source
-and that contributing to such cutting edge project is a lot of fun.
-Check out <<ogm-howtocontribute>> for more details.
-
-But to answer your question,
-we have finished the skeleton of the architecture
-as well as the JP-QL parser implementation.
-The Hibernate Search query translator can execute simple queries already.
-However, we do not yet have a NoSQL specific query translator
-but the approach is quite clear to us.
-Teiid for complex queries is also not integrated
-but work is being done to facilitate that integration soon.
-Native Hibernate Search queries are fully supported.
 ====
