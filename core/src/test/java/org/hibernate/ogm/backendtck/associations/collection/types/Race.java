@@ -71,5 +71,36 @@ public class Race {
 		public void setFederationDepartment(int federationDepartment) {
 			this.federationDepartment = federationDepartment;
 		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + federationDepartment;
+			result = prime * result + federationSequence;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if ( this == obj ) {
+				return true;
+			}
+			if ( obj == null ) {
+				return false;
+			}
+			if ( getClass() != obj.getClass() ) {
+				return false;
+			}
+			RaceId other = (RaceId) obj;
+			if ( federationDepartment != other.federationDepartment ) {
+				return false;
+			}
+			if ( federationSequence != other.federationSequence ) {
+				return false;
+			}
+			return true;
+		}
+
 	}
 }
