@@ -142,7 +142,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 	@SkipByGridDialect(value = { MONGODB, NEO4J }, comment = "Doesn't apply to MongoDB or Neo4j queries.")
 	public void testSelectingCompleteIndexedEmbeddedEntityInProjectionQueryRaisesException() throws Exception {
 		thrown.expect( ParsingException.class );
-		thrown.expectMessage( "HQLLUCN000005" );
+		thrown.expectMessage( "HQL100005" );
 
 		session.createQuery( "select h.author from Hypothesis h" ).list();
 	}

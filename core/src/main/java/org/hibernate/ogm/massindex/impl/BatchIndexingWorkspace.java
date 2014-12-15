@@ -16,7 +16,8 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.search.backend.impl.batch.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.spi.SearchIntegrator;
+import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.exception.ErrorHandler;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
@@ -32,7 +33,7 @@ public class BatchIndexingWorkspace implements Runnable {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final SearchFactoryImplementor searchFactory;
+	private final ExtendedSearchIntegrator searchIntegrator;
 	private final SessionFactoryImplementor sessionFactory;
 
 	private final Class<?> indexedType;
@@ -49,12 +50,12 @@ public class BatchIndexingWorkspace implements Runnable {
 
 	private final CountDownLatch endAllSignal;
 
-	public BatchIndexingWorkspace(GridDialect gridDialect, SearchFactoryImplementor searchFactoryImplementor,
+	public BatchIndexingWorkspace(GridDialect gridDialect, SearchIntegrator search,
 			SessionFactoryImplementor sessionFactory, Class<?> entityType, CacheMode cacheMode, CountDownLatch endAllSignal,
 			MassIndexerProgressMonitor monitor, BatchBackend backend) {
 		this.gridDialect = gridDialect;
 		this.indexedType = entityType;
-		this.searchFactory = searchFactoryImplementor;
+		this.searchIntegrator = search.unwrap( ExtendedSearchIntegrator.class );
 		this.sessionFactory = sessionFactory;
 		this.cacheMode = cacheMode;
 		this.endAllSignal = endAllSignal;
@@ -69,10 +70,10 @@ public class BatchIndexingWorkspace implements Runnable {
 
 	@Override
 	public void run() {
-		ErrorHandler errorHandler = searchFactory.getErrorHandler();
+		ErrorHandler errorHandler = searchIntegrator.getErrorHandler();
 		try {
 			final EntityKeyMetadata keyMetadata = getEntityKeyMetadata();
-			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchFactory, cacheMode, batchBackend, errorHandler );
+			final SessionAwareRunnable consumer = new TupleIndexer( indexedType, monitor, sessionFactory, searchIntegrator, cacheMode, batchBackend, errorHandler );
 			gridDialect.forEachTuple( new OptionallyWrapInJTATransaction( sessionFactory, errorHandler, consumer ), keyMetadata );
 		}
 		catch ( RuntimeException re ) {

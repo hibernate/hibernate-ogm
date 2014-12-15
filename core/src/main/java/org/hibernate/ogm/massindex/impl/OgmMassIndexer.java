@@ -18,21 +18,22 @@ import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.MassIndexer;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
-import org.hibernate.search.impl.SimpleIndexingProgressMonitor;
-import org.hibernate.search.jmx.IndexingProgressMonitor;
+import org.hibernate.search.batchindexing.impl.SimpleIndexingProgressMonitor;
+import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
+import org.hibernate.search.jmx.impl.JMXRegistrar.IndexingProgressMonitor;
+import org.hibernate.search.spi.SearchIntegrator;
 
 /**
  * {@link MassIndexer} that can be register in Hibernate Search to index existing data stores.
  *
- * @see org.hibernate.search.spi.MassIndexerFactory
+ * @see org.hibernate.search.batchindexing.spi.MassIndexerFactory
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
 public class OgmMassIndexer implements MassIndexer {
 
 	private static final Log log = LoggerFactory.make();
 
-	private final SearchFactoryImplementor searchFactory;
+	private final ExtendedSearchIntegrator searchIntegrator;
 	private final SessionFactoryImplementor sessionFactory;
 	private final GridDialect gridDialect;
 
@@ -45,15 +46,15 @@ public class OgmMassIndexer implements MassIndexer {
 
 	private final Set<Class<?>> rootEntities;
 
-	public OgmMassIndexer(GridDialect gridDialect, SearchFactoryImplementor searchFactory, SessionFactoryImplementor sessionFactory, Class<?>... entities) {
+	public OgmMassIndexer(GridDialect gridDialect, SearchIntegrator searchFactory, SessionFactoryImplementor sessionFactory, Class<?>... entities) {
 		this.gridDialect = gridDialect;
-		this.searchFactory = searchFactory;
+		this.searchIntegrator = searchFactory.unwrap( ExtendedSearchIntegrator.class );
 		this.sessionFactory = sessionFactory;
-		this.rootEntities = toRootEntities( searchFactory, entities );
-		this.monitor = createMonitor( searchFactory );
+		this.rootEntities = toRootEntities( searchIntegrator, entities );
+		this.monitor = createMonitor( searchIntegrator );
 	}
 
-	private MassIndexerProgressMonitor createMonitor(SearchFactoryImplementor searchFactory) {
+	private MassIndexerProgressMonitor createMonitor(ExtendedSearchIntegrator searchFactory) {
 		return searchFactory.isJMXEnabled() ? new IndexingProgressMonitor() : new SimpleIndexingProgressMonitor();
 	}
 
@@ -72,12 +73,6 @@ public class OgmMassIndexer implements MassIndexer {
 	@Override
 	public MassIndexer threadsForSubsequentFetching(int numberOfThreads) {
 		log.unsupportedIndexerConfigurationOption( "threadForSubsequentFetching" );
-		return this;
-	}
-
-	@Override
-	@Deprecated
-	public MassIndexer threadsForIndexWriter(int numberOfThreads) {
 		return this;
 	}
 
@@ -148,7 +143,7 @@ public class OgmMassIndexer implements MassIndexer {
 	}
 
 	protected BatchCoordinator createCoordinator() {
-		return new BatchCoordinator( gridDialect, rootEntities, searchFactory, sessionFactory, typesToIndexInParallel, cacheMode, optimizeOnFinish,
+		return new BatchCoordinator( gridDialect, rootEntities, searchIntegrator, sessionFactory, typesToIndexInParallel, cacheMode, optimizeOnFinish,
 				purgeAllOnStart, optimizeAfterPurge, monitor );
 	}
 
@@ -164,7 +159,7 @@ public class OgmMassIndexer implements MassIndexer {
 	 *
 	 * @return a new set of entities
 	 */
-	private static Set<Class<?>> toRootEntities(SearchFactoryImplementor searchFactoryImplementor, Class<?>... selection) {
+	private static Set<Class<?>> toRootEntities(ExtendedSearchIntegrator searchFactoryImplementor, Class<?>... selection) {
 		Set<Class<?>> entities = new HashSet<Class<?>>();
 		// first build the "entities" set containing all indexed subtypes of "selection".
 		for ( Class<?> entityType : selection ) {

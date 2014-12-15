@@ -29,14 +29,15 @@ import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.bridge.spi.ConversionContext;
 import org.hibernate.search.bridge.util.impl.ContextualExceptionBridgeHelper;
 import org.hibernate.search.engine.impl.HibernateSessionLoadingInitializer;
+import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
+import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.engine.spi.DocumentBuilderIndexedEntity;
-import org.hibernate.search.engine.spi.EntityIndexBinder;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.engine.spi.EntityIndexBinding;
 import org.hibernate.search.exception.ErrorHandler;
+import org.hibernate.search.hcore.util.impl.HibernateHelper;
 import org.hibernate.search.indexes.interceptor.EntityIndexingInterceptor;
 import org.hibernate.search.indexes.interceptor.IndexingOverride;
 import org.hibernate.search.spi.InstanceInitializer;
-import org.hibernate.search.util.impl.HibernateHelper;
 import org.hibernate.search.util.logging.impl.Log;
 import org.hibernate.search.util.logging.impl.LoggerFactory;
 
@@ -54,16 +55,16 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private static final Log log = LoggerFactory.make();
 
 	private final SessionFactoryImplementor sessionFactory;
-	private final Map<Class<?>, EntityIndexBinder> entityIndexBinders;
+	private final Map<Class<?>, EntityIndexBinding> entityIndexBindings;
 	private final MassIndexerProgressMonitor monitor;
 	private final CacheMode cacheMode;
 	private final BatchBackend backend;
 	private final ErrorHandler errorHandler;
-
 	private final Class<?> indexedType;
+	private final ServiceManager serviceManager;
 
 	public TupleIndexer(Class<?> indexedType, MassIndexerProgressMonitor monitor,
-			SessionFactoryImplementor sessionFactory, SearchFactoryImplementor searchFactory,
+			SessionFactoryImplementor sessionFactory, ExtendedSearchIntegrator searchIntegrator,
 			CacheMode cacheMode, BatchBackend backend, ErrorHandler errorHandler) {
 		this.indexedType = indexedType;
 		this.monitor = monitor;
@@ -71,7 +72,8 @@ public class TupleIndexer implements SessionAwareRunnable {
 		this.cacheMode = cacheMode;
 		this.backend = backend;
 		this.errorHandler = errorHandler;
-		this.entityIndexBinders = searchFactory.getIndexBindingForEntity();
+		this.entityIndexBindings = searchIntegrator.getIndexBindings();
+		serviceManager = searchIntegrator.getServiceManager();
 	}
 
 	private void index(Session session, Object entity) {
@@ -94,7 +96,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 	private void index(Object entity, Session session, InstanceInitializer sessionInitializer,
 			ConversionContext conversionContext) throws InterruptedException {
 		Class<?> clazz = HibernateHelper.getClass( entity );
-		EntityIndexBinder entityIndexBinding = entityIndexBinders.get( clazz );
+		EntityIndexBinding entityIndexBinding = entityIndexBindings.get( clazz );
 		// it might be possible to receive not-indexes subclasses of the currently indexed type;
 		// being not-indexed, we skip them.
 		// FIXME for improved performance: avoid loading them in an early phase.
@@ -111,7 +113,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private AddLuceneWork createAddLuceneWork(Object entity, InstanceInitializer sessionInitializer,
-			ConversionContext conversionContext, Serializable id, Class<?> clazz, EntityIndexBinder entityIndexBinding) {
+			ConversionContext conversionContext, Serializable id, Class<?> clazz, EntityIndexBinding entityIndexBinding) {
 		DocumentBuilderIndexedEntity docBuilder = entityIndexBinding.getDocumentBuilder();
 		String idInString = idInString( conversionContext, id, clazz, docBuilder );
 		// depending on the complexity of the object graph going to be indexed it's possible
@@ -153,7 +155,7 @@ public class TupleIndexer implements SessionAwareRunnable {
 
 	private Transaction beginTransaction(Session session) throws ClassNotFoundException, NoSuchMethodException,
 			IllegalAccessException, InvocationTargetException {
-		Transaction transaction = Helper.getTransactionAndMarkForJoin( session );
+		Transaction transaction = Helper.getTransactionAndMarkForJoin( session, serviceManager );
 		transaction.begin();
 		return transaction;
 	}
