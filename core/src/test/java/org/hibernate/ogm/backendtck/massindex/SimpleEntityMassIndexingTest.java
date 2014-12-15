@@ -20,6 +20,7 @@ import org.hibernate.ogm.backendtck.hsearch.Insurance;
 import org.hibernate.ogm.backendtck.id.NewsID;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedLabel;
 import org.hibernate.ogm.backendtck.massindex.model.IndexedNews;
+import org.hibernate.ogm.utils.FileHelper;
 import org.hibernate.ogm.utils.GridDialectType;
 import org.hibernate.ogm.utils.IndexDirectoryManager;
 import org.hibernate.ogm.utils.OgmTestCase;
@@ -27,7 +28,6 @@ import org.hibernate.ogm.utils.SkipByGridDialect;
 import org.hibernate.search.FullTextSession;
 import org.hibernate.search.Search;
 import org.hibernate.search.query.dsl.QueryBuilder;
-import org.hibernate.search.util.impl.FileHelper;
 import org.junit.AfterClass;
 import org.junit.Test;
 
