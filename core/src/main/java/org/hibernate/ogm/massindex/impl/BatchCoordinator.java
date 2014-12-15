@@ -18,7 +18,7 @@ import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.search.backend.PurgeAllLuceneWork;
 import org.hibernate.search.backend.impl.batch.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
 import org.hibernate.search.exception.ErrorHandler;
 
 /**
@@ -34,7 +34,7 @@ public class BatchCoordinator implements Runnable {
 	private static final Log log = LoggerFactory.make();
 
 	private final Class<?>[] rootEntities; // entity types to reindex excluding all subtypes of each-other
-	private final SearchFactoryImplementor searchFactoryImplementor;
+	private final ExtendedSearchIntegrator searchFactoryImplementor;
 	private final SessionFactoryImplementor sessionFactory;
 	private final int typesToIndexInParallel;
 	private final CacheMode cacheMode;
@@ -47,7 +47,7 @@ public class BatchCoordinator implements Runnable {
 
 	private final GridDialect gridDialect;
 
-	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, SearchFactoryImplementor searchFactoryImplementor,
+	public BatchCoordinator(GridDialect gridDialect, Set<Class<?>> rootEntities, ExtendedSearchIntegrator searchFactoryImplementor,
 			SessionFactoryImplementor sessionFactory, int typesToIndexInParallel, CacheMode cacheMode, boolean optimizeAtEnd, boolean purgeAtStart,
 			boolean optimizeAfterPurge, MassIndexerProgressMonitor monitor) {
 		this.gridDialect = gridDialect;

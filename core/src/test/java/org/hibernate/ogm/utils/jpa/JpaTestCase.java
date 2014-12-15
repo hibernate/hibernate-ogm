@@ -29,7 +29,7 @@ import org.hibernate.ogm.jpa.HibernateOgmPersistence;
 import org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory;
 import org.hibernate.ogm.utils.GridDialectSkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
-import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;
+import org.hibernate.search.batchindexing.spi.MassIndexerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -76,7 +76,7 @@ public abstract class JpaTestCase {
 		info.setSharedCacheMode( SharedCacheMode.ENABLE_SELECTIVE );
 		info.setTransactionType( PersistenceUnitTransactionType.JTA );
 		info.setValidationMode( ValidationMode.AUTO );
-		info.getProperties().setProperty( MassIndexerFactoryProvider.MASS_INDEXER_FACTORY_CLASSNAME, OgmMassIndexerFactory.class.getName() );
+		info.getProperties().setProperty( MassIndexerFactory.MASS_INDEXER_FACTORY_CLASSNAME, OgmMassIndexerFactory.class.getName() );
 		for ( Map.Entry<String, String> entry : TestHelper.getEnvironmentProperties().entrySet() ) {
 			info.getProperties().setProperty( entry.getKey(), entry.getValue() );
 		}

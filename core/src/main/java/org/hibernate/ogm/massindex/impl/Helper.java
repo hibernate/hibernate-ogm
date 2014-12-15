@@ -10,8 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hibernate.Session;
-import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
+import org.hibernate.search.engine.service.spi.ServiceManager;
 import org.hibernate.search.util.impl.ClassLoaderHelper;
 
 /**
@@ -22,33 +22,21 @@ class Helper {
 	/**
 	 * if the transaction object is a JoinableCMTTransaction, call markForJoined()
 	 * This must be done prior to starting the transaction
+	 * @param serviceManager
 	 */
-	public static Transaction getTransactionAndMarkForJoin(StatelessSession session) throws ClassNotFoundException,
+	public static Transaction getTransactionAndMarkForJoin(Session session, ServiceManager serviceManager) throws ClassNotFoundException,
 			NoSuchMethodException, IllegalAccessException, InvocationTargetException {
 		Transaction transaction = session.getTransaction();
-		doMarkforJoined( transaction );
+		doMarkforJoined( serviceManager, transaction );
 		return transaction;
 	}
 
-	/**
-	 * if the transaction object is a JoinableCMTTransaction, call markForJoined()
-	 * This must be done prior to starting the transaction
-	 */
-	public static Transaction getTransactionAndMarkForJoin(Session session) throws ClassNotFoundException,
-			NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-		Transaction transaction = session.getTransaction();
-		doMarkforJoined( transaction );
-		return transaction;
-	}
-
-	private static void doMarkforJoined(Transaction transaction) throws ClassNotFoundException, NoSuchMethodException,
+	private static void doMarkforJoined(ServiceManager serviceManager, Transaction transaction) throws ClassNotFoundException, NoSuchMethodException,
 			IllegalAccessException, InvocationTargetException {
 		if ( transaction.getClass().getName().equals( "org.hibernate.ejb.transaction.JoinableCMTTransaction" ) ) {
-			Class<?> joinableCMTTransaction = ClassLoaderHelper.classForName(
-					"org.hibernate.ejb.transaction.JoinableCMTTransaction", Helper.class.getClassLoader() );
+			Class<?> joinableCMTTransaction = ClassLoaderHelper.classForName( "org.hibernate.ejb.transaction.JoinableCMTTransaction", serviceManager );
 			final Method markForJoined = joinableCMTTransaction.getMethod( "markForJoined" );
 			markForJoined.invoke( transaction );
 		}
 	}
-
 }
