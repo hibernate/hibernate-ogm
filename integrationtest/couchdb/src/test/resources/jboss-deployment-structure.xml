@@ -13,6 +13,7 @@
         <dependencies>
             <module name="org.hibernate" slot="ogm" services="export" />
             <module name="org.hibernate.ogm.couchdb" slot="main" services="export" />
+            <module name="org.hibernate.search.orm" slot="5.0.0.Final-orm-4.3.7.Final" services="import" />
             <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
         </dependencies>
         <exclusions>

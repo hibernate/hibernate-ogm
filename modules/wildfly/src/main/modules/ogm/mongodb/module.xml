@@ -13,6 +13,7 @@
     <dependencies>
         <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.commons-annotations"/>
+        <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />

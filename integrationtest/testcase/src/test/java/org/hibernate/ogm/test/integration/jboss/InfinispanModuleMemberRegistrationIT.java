@@ -30,7 +30,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 		return new ModuleMemberRegistrationDeployment
 			.Builder( InfinispanModuleMemberRegistrationIT.class )
 			.persistenceXml( persistenceXml() )
-			.manifestDependencies( "org.hibernate:ogm services" )
+			.manifestDependencies( "org.hibernate:ogm services, org.hibernate.search.orm:5.0.0.Final-orm-4.3.7.Final services" )
 			.createDeployment()
 			.addAsResource( infinispanXml(), "infinispan.xml" );
 	}

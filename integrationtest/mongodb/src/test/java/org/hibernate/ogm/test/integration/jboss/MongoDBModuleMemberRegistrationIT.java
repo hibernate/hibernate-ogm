@@ -44,7 +44,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 				.Builder( MongoDBModuleMemberRegistrationIT.class )
 				.addClasses( PhoneNumber.class, PhoneNumberService.class )
 				.persistenceXml( persistenceXml() )
-				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.mongodb services" )
+				.manifestDependencies( "org.hibernate:ogm services, org.hibernate.ogm.mongodb services, org.hibernate.search.orm:5.0.0.Final-orm-4.3.7.Final services" )
 				.createDeployment();
 	}
 

@@ -148,7 +148,7 @@
         <scalaLibraryVersion>2.10.4</scalaLibraryVersion>
         <concurrentlinkedhashmapVersion>1.3.1</concurrentlinkedhashmapVersion>
         <asmVersion>4.1</asmVersion>
-
+        <luceneVersion>4.10.2</luceneVersion>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
