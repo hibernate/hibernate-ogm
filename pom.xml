@@ -123,7 +123,7 @@
         <!-- compile/runtime dependency versions, managed in the BOM -->
         <classmateVersion>1.0.0</classmateVersion>
         <ehcacheVersion>2.6.9</ehcacheVersion>
-        <infinispanVersion>6.0.0.Final</infinispanVersion>
+        <infinispanVersion>7.0.2.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
 

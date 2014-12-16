@@ -7,60 +7,82 @@
   -->
 
 <!--
-    This is the testing configuration, running in LOCAL clustering mode to speedup tests.
-    Not all tests use this, so that at least one still validates the configuration
-    validity which would be shipped with a release (like JPAStandaloneTest).
+    This is a testing configuration, running in clustered mode.
 -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-    xmlns="urn:infinispan:config:6.0">
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
 
-    <global>
-        <globalJmxStatistics
-            enabled="false"
-            allowDuplicateDomains="false" />
-        <transport
-            clusterName="HibernateOGM-Infinispan-cluster"
-            >
-            <!-- Note that the JGroups transport uses sensible defaults if no configuration
-                property is defined. See the JGroupsTransport javadocs for more flags -->
-        </transport>
-    </global>
+    <jgroups>
+        <!-- This is a JGroups stack useful for in-VM tests only -->
+        <stack-file name="loopback-stack" path="testing-flush-loopback.xml" />
+    </jgroups>
 
-    <!-- *************************** -->
-    <!--   Default cache settings    -->
-    <!-- *************************** -->
+    <cache-container name="HibernateOGM-tests" default-cache="DEFAULT" statistics="false" shutdown-hook="DONT_REGISTER">
+        <transport stack="loopback-stack" />
+        <jmx duplicate-domains="true" />
 
-    <default>
-        <clustering mode="distribution" />
-        <transaction
-            transactionMode="TRANSACTIONAL"
-            transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
-        <expiration
-            wakeUpInterval="-1"
-            reaperEnabled="false" />
-    </default>
+        <!-- *************************************** -->
+        <!--     Default cache used as template      -->
+        <!-- *************************************** -->
+        <distributed-cache name="DEFAULT" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    <!-- *************************************** -->
-    <!--     Cache to store the OGM entities     -->
-    <!-- *************************************** -->
-    <namedCache
-        name="ENTITIES">
-    </namedCache>
+        <!-- *************************************** -->
+        <!--     Cache to store the OGM entities     -->
+        <!-- *************************************** -->
+        <distributed-cache name="ENTITIES" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    <!-- *********************************************** -->
-    <!--   Cache to store the relations across entities  -->
-    <!-- *********************************************** -->
-    <namedCache
-        name="ASSOCIATIONS">
-    </namedCache>
+        <!-- *********************************************** -->
+        <!--   Cache to store the relations across entities  -->
+        <!-- *********************************************** -->
+        <distributed-cache name="ASSOCIATIONS" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    <!-- ***************************** -->
-    <!--   Cache to store identifiers  -->
-    <!-- ***************************** -->
-    <namedCache
-        name="IDENTIFIERS">
-    </namedCache>
+        <!-- ***************************** -->
+        <!--   Cache to store identifiers  -->
+        <!-- ***************************** -->
+        <distributed-cache name="IDENTIFIERS" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
+
+    </cache-container>
 
 </infinispan>

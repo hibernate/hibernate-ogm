@@ -7,113 +7,78 @@
   -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-    xmlns="urn:infinispan:config:6.0">
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
 
-    <!-- *************************** -->
-    <!-- System-wide global settings -->
-    <!-- *************************** -->
+    <jgroups>
+        <!-- This is the default JGroups stack -->
+        <stack-file name="default-udp" path="default-configs/default-jgroups-udp.xml" />
+    </jgroups>
 
-    <global>
+    <cache-container name="HibernateOGM" default-cache="DEFAULT" statistics="false" shutdown-hook="DONT_REGISTER">
+        <transport stack="default-udp" />
+        <jmx duplicate-domains="true" />
 
-        <!-- Duplicate domains are allowed so that multiple deployments with default configuration
-            of Hibernate OGM applications work - a better solution would be to use JNDI to share
-            the CacheManager across applications, or use a custom configuration.
-            Only enable if needed - it has a performance impact. -->
-        <globalJmxStatistics
-            enabled="true"
-            cacheManagerName="HibernateOGM"
-            allowDuplicateDomains="true" />
+        <!-- *************************************** -->
+        <!--     Default cache used as template      -->
+        <!-- *************************************** -->
+        <distributed-cache name="DEFAULT" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-        <!-- If the transport is omitted, there is no way to create distributed or clustered
-            caches. There is no added cost to defining a transport but not creating a cache that uses one,
-            since the transport is created and initialized lazily. -->
-        <transport
-            clusterName="HibernateOGM-Infinispan-cluster"
-            distributedSyncTimeout="50000"
-            strictPeerToPeer="false">
-            <!-- This is the default TCP based configuration, bundled in Infinispan core jar -->
-            <properties>
-                <property name="configurationFile" value="jgroups-tcp.xml" />
-            </properties>
-        </transport>
+        <!-- *************************************** -->
+        <!--     Cache to store the OGM entities     -->
+        <!-- *************************************** -->
+        <distributed-cache name="ENTITIES" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-        <!-- Used to register JVM shutdown hooks. hookBehavior: DEFAULT, REGISTER, DONT_REGISTER.
-            Hibernate OGM takes care to stop the CacheManager so registering is not needed -->
-        <shutdown
-            hookBehavior="DONT_REGISTER" />
+        <!-- *********************************************** -->
+        <!--   Cache to store the relations across entities  -->
+        <!-- *********************************************** -->
+        <distributed-cache name="ASSOCIATIONS" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    </global>
+        <!-- ***************************** -->
+        <!--   Cache to store identifiers  -->
+        <!-- ***************************** -->
+        <distributed-cache name="IDENTIFIERS" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <eviction max-entries="-1" strategy="NONE" />
+            <expiration max-idle="-1" />
+            <indexing index="NONE" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    <!-- *************************** -->
-    <!--   Default cache settings    -->
-    <!-- *************************** -->
-
-    <default>
-
-        <!-- This element specifies that the cache is clustered. modes supported: distribution
-            (d), replication (r) or invalidation (i). Don't use invalidation as OGM storage! -->
-        <clustering
-            mode="distribution">
-
-            <!-- Force loading all data at startup: to be enabled when using replication
-            <stateRetrieval
-                timeout="20000"
-                fetchInMemoryState="true"
-                alwaysProvideInMemoryState="true" />  -->
-
-            <!-- Network calls are synchronous by default -->
-            <sync
-                replTimeout="25000" />
-
-            <!-- Keep L1 disabled until issues have been fixed -->
-            <l1 enabled="false" />
-
-        </clustering>
-
-        <transaction
-            transactionMode="TRANSACTIONAL"
-            transactionManagerLookupClass="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup">
-        </transaction>
-
-        <eviction
-            strategy="NONE" />
-
-        <expiration
-            wakeUpInterval="-1"
-            reaperEnabled="false" />
-
-    </default>
-
-    <!-- **************************************************************** -->
-    <!-- Individually configured "named" caches.                          -->
-    <!--                                                                  -->
-    <!-- Technically not necessary, use it as template to create          -->
-    <!-- your own configuration.                                          -->
-    <!--                                                                  -->
-    <!-- Current settings could lead to OutOfMemory exception as a        -->
-    <!-- CacheStore should be enabled.                                    -->
-    <!-- **************************************************************** -->
-
-    <!-- *************************************** -->
-    <!--     Cache to store the OGM entities     -->
-    <!-- *************************************** -->
-    <namedCache
-        name="ENTITIES">
-    </namedCache>
-
-    <!-- *********************************************** -->
-    <!--   Cache to store the relations across entities  -->
-    <!-- *********************************************** -->
-    <namedCache
-        name="ASSOCIATIONS">
-    </namedCache>
-
-    <!-- ***************************** -->
-    <!--   Cache to store identifiers  -->
-    <!-- ***************************** -->
-    <namedCache
-        name="IDENTIFIERS">
-    </namedCache>
+    </cache-container>
 
 </infinispan>
