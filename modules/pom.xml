@@ -34,4 +34,16 @@
         <module>eap</module>
         <module>wildfly</module>
     </modules>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <!-- Skipping it because neo4j uses a different Lucene version -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

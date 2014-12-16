@@ -28,6 +28,13 @@
     <build>
         <plugins>
             <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <!-- Skipping it because neo4j uses a different Lucene version -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
             </plugin>
         </plugins>
