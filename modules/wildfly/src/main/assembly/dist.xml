@@ -37,6 +37,11 @@
              <filtered>true</filtered>
         </file>
         <file>
+             <source>${module.xml.basedir}/ogm/infinispan/module.xml</source>
+             <outputDirectory>/org/hibernate/ogm/infinispan/main</outputDirectory>
+             <filtered>true</filtered>
+        </file>
+        <file>
              <source>${module.xml.basedir}/ogm/mongodb/module.xml</source>
              <outputDirectory>/org/hibernate/ogm/mongodb/main</outputDirectory>
              <filtered>true</filtered>
@@ -96,6 +101,14 @@
             <unpack>false</unpack>
             <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-core</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>org/hibernate/ogm/infinispan/${hibernate.ogm.infinispan.module.slot}</outputDirectory>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
+            <unpack>false</unpack>
+            <includes>
                 <include>org.hibernate.ogm:hibernate-ogm-infinispan</include>
             </includes>
         </dependencySet>

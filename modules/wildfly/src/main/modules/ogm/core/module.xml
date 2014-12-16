@@ -8,7 +8,6 @@
 <module xmlns="urn:jboss:module:1.1" name="org.hibernate" slot="${hibernate.ogm.module.slot}">
     <resources>
         <resource-root path="hibernate-ogm-core-${project.version}.jar" />
-        <resource-root path="hibernate-ogm-infinispan-${project.version}.jar" />
     </resources>
     <dependencies>
         <module name="org.hibernate" slot="${hibernateVersion}" export="true" />
@@ -22,8 +21,6 @@
         <module name="javax.transaction.api" export="true" />
         <module name="javax.validation.api" />
         <module name="org.dom4j" />
-        <module name="org.infinispan" optional="true" slot="${infinispan.module.slot}" />
-        <module name="org.infinispan.commons" optional="true" slot="${infinispan.module.slot}" />
         <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
         <module name="org.jboss.logging" />
 

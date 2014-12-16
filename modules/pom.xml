@@ -24,6 +24,7 @@
         <hibernate.ogm.module.xml>${module.xml.basedir}/ogm/core/module.xml</hibernate.ogm.module.xml>
         <hibernate.ogm.module.slot>ogm</hibernate.ogm.module.slot>
         <hibernate.ogm.ehcache.module.slot>main</hibernate.ogm.ehcache.module.slot>
+        <hibernate.ogm.infinispan.module.slot>main</hibernate.ogm.infinispan.module.slot>
         <hibernate.ogm.mongodb.module.slot>main</hibernate.ogm.mongodb.module.slot>
         <hibernate.ogm.neo4j.module.slot>main</hibernate.ogm.neo4j.module.slot>
         <hibernate.ogm.couchdb.module.slot>main</hibernate.ogm.couchdb.module.slot>
