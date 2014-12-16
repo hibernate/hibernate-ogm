@@ -310,8 +310,10 @@ and that should not be set:
 === Configuring Hibernate Search
 
 Hibernate Search integrates with Hibernate OGM just like it does with Hibernate ORM.
+The Hibernate Search version tested is {hibernate-search-version}.
+Add the dependency to your project - the group id is +org.hibernate+ and artifact id +hibernate-search-orm+.
 
-In other words, configure where you want to store your indexes,
+Then configure where you want to store your indexes,
 map your entities with the relevant index annotations and you are good to go.
 For more information, simply check the
 http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/[Hibernate Search reference documentation].
