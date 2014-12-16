@@ -323,12 +323,12 @@ This is useful even if you don't plan to use Infinispan as your primary data sto
 
 [[ogm-configuration-jbossmodule]]
 
-=== How to package Hibernate OGM applications for WildFly 8
+=== How to package Hibernate OGM applications for WildFly 8.2
 
-Provided you're deploying on WildFly 8,
+Provided you're deploying on WildFly 8.2,
 there is an additional way to add the OGM dependencies to your application.
 
-In WildFly 8, class loading is based on modules
+In WildFly 8.2, class loading is based on modules
 that have to define explicit dependencies on other modules.
 Modules allow to share the same artifacts across multiple applications,
 getting you smaller and quicker deployments.
@@ -336,14 +336,14 @@ getting you smaller and quicker deployments.
 More details about modules are described in
 https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[Class Loading in WildFly].
 
-==== Packaging Hibernate OGM applications for WildFly 8
+==== Packaging Hibernate OGM applications for WildFly 8.2
 
 You can download the pre-packaged module ZIP from:
 
 * https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-wildfly8-{hibernate-ogm-version}.zip[Sourceforge]
 * https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-wildfly8&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
 
-Unpack the archive into the +modules+ folder of your WildFly 8 installation.
+Unpack the archive into the +modules+ folder of your WildFly 8.2 installation.
 The modules included are:
 
 * _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
