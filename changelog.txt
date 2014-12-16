@@ -1,6 +1,24 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.0.Final (17-12-2014)
+-------------------------
+
+** Improvement
+    * [OGM-360] - Update reference guide on query capabilities
+    * [OGM-537] - Add support for Infinispan 7
+    * [OGM-683] - Refresh documentation before final
+    * [OGM-684] - Improve error message when unable to connect to datastore provider
+    * [OGM-690] - Make each datastore chapter a top level chapter
+
+** Task
+    * [OGM-474] - Use Hibernate Search 5
+    * [OGM-516] - Clarify what features and APIs are experimental
+    * [OGM-603] - Add list of unsupported JPA/Hibernate features to reference guide
+    * [OGM-652] - Upgrade Wildfly to version 8.2.0.Final
+    * [OGM-673] - Document behavior of @Column for embeddables for document stores
+
+
 4.1.0.CR1 (10-12-2014)
 -------------------------
 
