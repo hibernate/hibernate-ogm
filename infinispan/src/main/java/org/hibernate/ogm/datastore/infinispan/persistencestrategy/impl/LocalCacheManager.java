@@ -26,6 +26,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.global.SerializationConfigurationBuilder;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 
@@ -66,7 +67,9 @@ public abstract class LocalCacheManager<EK, AK, ISK> {
 		try {
 			InputStream configurationFile = configUrl.openStream();
 			try {
-				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationFile, false );
+				InfinispanConfigurationParser ispnConfiguration = new InfinispanConfigurationParser();
+				ConfigurationBuilderHolder configurationBuilderHolder = ispnConfiguration.parseFile( configurationFile );
+				EmbeddedCacheManager tmpCacheManager = new DefaultCacheManager( configurationBuilderHolder, false );
 
 				// override global configuration from the config file to inject externalizers
 				SerializationConfigurationBuilder serializationConfiguration = new GlobalConfigurationBuilder()

@@ -6,16 +6,11 @@
  */
 package org.hibernate.ogm.test.integration.jboss;
 
-import java.io.File;
-import java.net.URL;
-
 import org.hibernate.ogm.test.integration.jboss.model.Member;
 import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
@@ -35,7 +30,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 			.persistenceXml( persistenceXml() )
 			.manifestDependencies( "org.hibernate:ogm services, org.hibernate.search.orm:5.0.0.Final-orm-4.3.7.Final services" )
 			.createDeployment()
-			.addAsResource( infinispanXml(), "infinispan.xml" );
+			.addAsResource( "infinispan.xml", "infinispan.xml" );
 	}
 
 	private static PersistenceDescriptor persistenceXml() {
@@ -51,8 +46,4 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 			.up().up();
 	}
 
-	private static Asset infinispanXml() {
-		URL resource = InfinispanModuleMemberRegistrationIT.class.getResource( "/infinispan.xml" );
-		return new FileAsset( new File( resource.getFile() ) );
-	}
 }
