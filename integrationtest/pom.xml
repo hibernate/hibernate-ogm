@@ -157,7 +157,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <version.wildfly>8.1.0.Final</version.wildfly>
+                <version.wildfly>8.2.0.Final</version.wildfly>
                 <jboss.home>${project.build.directory}/wildfly-${version.wildfly}</jboss.home>
             </properties>
             <dependencies>
