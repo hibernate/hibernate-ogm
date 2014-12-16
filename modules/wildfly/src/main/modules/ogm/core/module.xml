@@ -22,8 +22,8 @@
         <module name="javax.transaction.api" export="true" />
         <module name="javax.validation.api" />
         <module name="org.dom4j" />
-        <module name="org.infinispan" optional="true" />
-        <module name="org.infinispan.commons" optional="true" />
+        <module name="org.infinispan" optional="true" slot="${infinispan.module.slot}" />
+        <module name="org.infinispan.commons" optional="true" slot="${infinispan.module.slot}" />
         <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
         <module name="org.jboss.logging" />
 
