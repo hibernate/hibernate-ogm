@@ -1,5 +1,7 @@
 [[ogm-infinispan]]
 
+// vim: set colorcolumn=100:
+
 == Infinispan
 
 Infinispan is an open source in-memory data grid focusing on high performance.
@@ -137,35 +139,38 @@ the basic structure is shown in the following example:
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-    xmlns="urn:infinispan:config:6.0">
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
 
+    <cache-container name="HibernateOGM" default-cache="DEFAULT">
 
-    <global>
-    </global>
+        <!-- *************************** -->
+        <!--   Default cache settings    -->
+        <!-- *************************** -->
+        <local-cache name="DEFAULT">
+            <transaction mode="NON_DURABLE_XA"
+                         transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+        </local-cache>
 
-    <default>
-    </default>
+        <local-cache name="User"/>
 
-    <namedCache name="User">
-    </namedCache>
+        <local-cache name="Order"/>
 
-    <namedCache name="Order">
-    </namedCache>
+        <local-cache name="associations_User_Order"/>
 
-    <namedCache name="associations_User_Order">
-    </namedCache>
-
+    </cache-container>
 </infinispan>
 ----
 ====
 
-The +global+ section contains elements which affect the whole instance;
-mainly of interest for Hibernate OGM users is the +transport+ element
+There are global settings that can be set before the +cache_container+ section.
+These settings will affect the whole instance;
+mainly of interest for Hibernate OGM users is the +jgroups+ element
 in which we will set JGroups configuration overrides.
 
-In the +namedCache+ section (or in +default+ if we want to affect all named caches)
-we will likely want to configure clustering modes, eviction policies and ++CacheStore++s.
+Inside the +cache-container+ section are defined explicit named caches and their configurations
+as well as the default cache (named +DEFAULT+ here) if we want to affect all named caches.
+This is where we will likely want to configure clustering modes, eviction policies and ++CacheStore++s.
 
 [[ogm-infinispan-storage]]
 
@@ -214,17 +219,23 @@ with a synchronous replication to other Infinispan nodes.
 
 [source, XML]
 ----
-<namedCache name="User">
-  <eviction strategy="LIRS" maxEntries="2000" />
-  <loaders passivation="true" shared="false">
-    <singleFile location="/var/infinispan/myapp/users" />
-  </loaders>
-</namedCache>
+<local-cache name="User">
+    <transaction mode="NON_DURABLE_XA"
+                 transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup"/>
+    <eviction strategy="LIRS" max-entries="2000"/>
+    <persistence passivation="true">
+        <file-store
+           shared="false"
+           path="/var/infinispan/myapp/users"
+            <write-behind flush-lock-timeout="15000" thread-pool-size="5" />
+        </file-store>
+    </persistence>
+</local-cache>
 ----
 
 ====
 
-In this example we enabled both +eviction+ and a +CacheStore+ (the +loader+ element).
+In this example we enabled both +eviction+ and a +CacheStore+ (the +persistence+ element).
 +LIRS+ is one of the choices we have for eviction strategies.
 Here it is configured to keep (approximately) 2000 entries in live memory
 and evict the remaining as a memory usage control strategy.
@@ -316,34 +327,57 @@ Let's see how to reconfigure this:
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd"
-    xmlns="urn:infinispan:config:6.0">
+    xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd"
+    xmlns="urn:infinispan:config:7.0">
 
-    <global>
-        <transport
-            clusterName="HibernateOGM-Infinispan-cluster">
-            <properties>
-                <property name="configurationFile" value="my-jgroups-conf.xml" />
-            </properties>
-        </transport>
-    </global>
+    <jgroups>
+        <stack-file name="custom-stack" path="my-jgroups-conf.xml" />
+    </jgroups>
 
-    <default>
-        <clustering
-            mode="distribution" />
-    </default>
+    <cache-container name="HibernateOGM" default-cache="DEFAULT">
+        <transport stack="custom-stack" />
 
-    <namedCache name="User">
+        <!-- *************************************** -->
+        <!--     Default cache used as template      -->
+        <!-- *************************************** -->
+        <distrubuted-cache name="DEFAULT" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
+
         <!-- Override the cache mode: -->
-        <clustering mode="replication" />
-    </namedCache>
+        <replicated-cache name="User" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </replicated-cache>
 
-    <namedCache
-        name="Order">
-    </namedCache>
+        <distributed-cache name="Order" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
 
-    <namedCache name="associations_User_Order">
-    </namedCache>
+        <distributed-cache name="associations_User_Order" mode="SYNC">
+            <locking striping="false" acquire-timeout="10000"
+                concurrency-level="500" write-skew="false" />
+            <transaction mode="NON_DURABLE_XA"
+                transaction-manager-lookup="org.infinispan.transaction.lookup.JBossStandaloneJTAManagerLookup" />
+            <state-transfer enabled="true" timeout="480000"
+                await-initial-transfer="true" />
+        </distributed-cache>
+
+    </cache-container>
 
 </infinispan>
 ----
