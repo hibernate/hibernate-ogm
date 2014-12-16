@@ -11,9 +11,8 @@ import java.util.Properties;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.search.MassIndexer;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
-import org.hibernate.search.hcore.impl.MassIndexerFactoryProvider;
-import org.hibernate.search.spi.MassIndexerFactory;
+import org.hibernate.search.batchindexing.spi.MassIndexerFactory;
+import org.hibernate.search.spi.SearchIntegrator;
 
 /**
  * {@link MassIndexerFactory} that can be used to register the {@link OgmMassIndexer} to Hibernate Search.
@@ -28,7 +27,7 @@ public class OgmMassIndexerFactory implements MassIndexerFactory {
 	}
 
 	@Override
-	public MassIndexer createMassIndexer(SearchFactoryImplementor searchFactory, SessionFactoryImplementor sessionFactory,
+	public MassIndexer createMassIndexer(SearchIntegrator searchFactory, SessionFactoryImplementor sessionFactory,
 			Class<?>... entities) {
 		return new OgmMassIndexer( sessionFactory.getServiceRegistry().getService( GridDialect.class ), searchFactory, sessionFactory, entities );
 	}

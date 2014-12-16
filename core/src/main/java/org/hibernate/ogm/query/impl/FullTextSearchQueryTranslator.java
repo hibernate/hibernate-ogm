@@ -32,11 +32,11 @@ import org.hibernate.internal.util.collections.BoundedConcurrentHashMap;
 import org.hibernate.ogm.service.impl.SessionFactoryEntityNamesResolver;
 import org.hibernate.search.FullTextQuery;
 import org.hibernate.search.FullTextSession;
-import org.hibernate.search.ProjectionConstants;
 import org.hibernate.search.Search;
-import org.hibernate.search.engine.spi.SearchFactoryImplementor;
+import org.hibernate.search.engine.ProjectionConstants;
 import org.hibernate.search.query.DatabaseRetrievalMethod;
 import org.hibernate.search.query.ObjectLookupMethod;
+import org.hibernate.search.spi.SearchIntegrator;
 
 /**
  * A {@link QueryTranslator} which translates JP-QL queries into equivalent Lucene queries and executes those via
@@ -145,7 +145,7 @@ public class FullTextSearchQueryTranslator extends LegacyParserBridgeQueryTransl
 	}
 
 	private LuceneProcessingChain createProcessingChain(Map<String, Object> namedParameters, FullTextSession fullTextSession) {
-		SearchFactoryImplementor searchFactory = (SearchFactoryImplementor) fullTextSession.getSearchFactory();
+		SearchIntegrator searchFactory = fullTextSession.getSearchFactory().unwrap( SearchIntegrator.class );
 
 		return new LuceneProcessingChain.Builder( searchFactory, entityNamesResolver )
 				.namedParameters( namedParameters )
