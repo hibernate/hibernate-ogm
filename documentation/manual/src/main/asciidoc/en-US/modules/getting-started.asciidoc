@@ -51,7 +51,7 @@ you will rather get the versions from the BOM automatically.
 
 [NOTE]
 ====
-If you're deploying your application onto JBoss WildFly or JBoss EAP,
+If you're deploying your application onto JBoss WildFly,
 you don't need to add the Hibernate OGM modules to your deployment unit
 but you can rather add them as modules to the application server itself.
 Refer to <<ogm-configuration-jbossmodule>> to learn more.

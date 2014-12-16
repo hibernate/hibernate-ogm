@@ -321,12 +321,12 @@ This is useful even if you don't plan to use Infinispan as your primary data sto
 
 [[ogm-configuration-jbossmodule]]
 
-=== How to package Hibernate OGM applications for WildFly 8 and JBoss EAP 6
+=== How to package Hibernate OGM applications for WildFly 8
 
-Provided you're deploying on WildFly 8 or JBoss EAP 6,
+Provided you're deploying on WildFly 8,
 there is an additional way to add the OGM dependencies to your application.
 
-In WildFly 8 and JBoss EAP 6, class loading is based on modules
+In WildFly 8, class loading is based on modules
 that have to define explicit dependencies on other modules.
 Modules allow to share the same artifacts across multiple applications,
 getting you smaller and quicker deployments.
@@ -377,78 +377,3 @@ Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the followin
 
 More information about the descriptor can be found in the
 https://docs.jboss.org/author/display/WFLY8/Class+Loading+in+WildFly[WildFly documentation].
-
-==== Packaging Hibernate OGM applications for JBoss EAP 6
-
-[WARNING]
-====
-The EAP 6 support in Hibernate OGM is  *experimental*.
-The contents of existing modules of the application server
-(_javax.persistence.api_, _javax.ws.rs.api:main_ and _org.javassist:main_) will be replaced with the versions required by Hibernate OGM
-when extracting the module ZIP into the application server directory.
-It is therefore recommended to use this module ZIP only for testing purposes.
-Efforts are underway to avoid this in future revisions (see https://hibernate.atlassian.net/browse/OGM-499[OGM-499]).
-====
-
-You can download the pre-packaged module ZIP from:
-
-* https://downloads.sourceforge.net/project/hibernate/hibernate-ogm/{hibernate-ogm-version}/hibernate-ogm-modules-eap6-{hibernate-ogm-version}-experimental.zip[Sourceforge]
-* https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=central&g=org.hibernate.ogm&a=hibernate-ogm-modules-eap6-experimental&v={hibernate-ogm-version}&e=zip[JBoss's Maven repository]
-
-Unpack the archive into the +modules+ folder of your JBoss EAP 6 installation.
-The modules included are:
-
-* _org.hibernate:ogm_, the core Hibernate OGM library and the Infinispan datastore provider.
-* _org.hibernate.ogm.<%DATASTORE%>:main_, one module for each datastore provider besides Infinispan, with _<%DATASTORE%>_ being one of _ehcache_, _mongodb_ etc.
-You only need to add those modules which you actually intend to use.
-* _javax.persistence.api:main_, this will upgrade the JPA API version in JBoss EAP to 2.1
-* _javax.ws.rs.api:main_, _org.jboss.resteasy.resteasy-*:main_>, this will upgrade the RESTEasy version in JBoss EAP to 3.0.x (JAX-RS 2);
-Note that the RESTEasy modules are obtained from the official RESTEasy distribution
-(which itself https://docs.jboss.org/resteasy/docs/3.0.7.Final/userguide/html_single/#upgrading-eap61[contains a module ZIP])
-and re-packaged into the module ZIP of Hibernate OGM for your convinience
-* Several shared dependencies such as _org.hibernate.hql:<%VERSION%>_ (containing the query parser) and others
-
-There are two ways to include the dependencies in your project:
-
-Using the manifest::
-Add this entry to the MANIFEST.MF in your archive (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
-
-[source]
-----
-Dependencies: org.hibernate:ogm, org.hibernate.ogm.<%DATASTORE%>:main services
-----
-
-Using jboss-deployment-structure.xml::
-This is a JBoss-specific descriptor.
-Add a +WEB-INF/jboss-deployment-structure.xml+ in your archive with the following content (replace _<%DATASTORE%>_ with the right value for your chosen datastore):
-
-[source, XML]
-----
-<jboss-deployment-structure>
-    <deployment>
-        <dependencies>
-            <module name="org.hibernate" slot="ogm" />
-            <module name="org.hibernate.ogm.<%DATASTORE%>" slot="main" services="export" />
-        </dependencies>
-    </deployment>
-</jboss-deployment-structure>
-----
-
-If you are working with the CouchDB backend, you furthermore need to add the following to your +jboss-deployment-structure.xml+:
-
-[source, XML]
-----
-...
-<deployment>
-    ...
-    <dependencies>
-        ...
-        <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import" />
-    </dependencies>
-    <exclusions>
-        <module name="org.jboss.resteasy.resteasy-jackson-provider" />
-    </exclusions>
-</deployment>
-----
-
-This causes the RESTEasy Jackson 2 provider to be enabled rather the Jackson 1 provider which is used in JBoss EAP 6.x by default. That step is required as the CouchDB dialect implementation depends on Jackson 2.
