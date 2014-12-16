@@ -6,13 +6,16 @@
  */
 package org.hibernate.ogm.test.integration.jboss;
 
+import java.io.File;
+import java.net.URL;
+
 import org.hibernate.ogm.test.integration.jboss.model.Member;
 import org.hibernate.ogm.test.integration.jboss.util.ModuleMemberRegistrationDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.asset.Asset;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.asset.FileAsset;
 import org.jboss.shrinkwrap.descriptor.api.Descriptors;
 import org.jboss.shrinkwrap.descriptor.api.persistence20.PersistenceDescriptor;
 import org.junit.runner.RunWith;
@@ -49,20 +52,7 @@ public class InfinispanModuleMemberRegistrationIT extends ModuleMemberRegistrati
 	}
 
 	private static Asset infinispanXml() {
-		String infinispanXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-			+ "<infinispan>"
-				+ "<global />"
-				+ "<default >"
-					+ "<transaction transactionMode=\"TRANSACTIONAL\" transactionManagerLookupClass=\"org.infinispan.transaction.lookup.GenericTransactionManagerLookup\" />"
-					+ "<jmxStatistics enabled=\"true\" />"
-					+ "<eviction strategy=\"NONE\" />"
-					+ "<expiration wakeUpInterval=\"-1\" reaperEnabled=\"false\" />"
-				+ "</default>"
-				+ "<namedCache name=\"ENTITIES\" />"
-				+ "<namedCache name=\"ASSOCIATIONS\" />"
-				+ "<namedCache name=\"IDENTIFIERS\" />"
-			+ "</infinispan>";
-		return new StringAsset( infinispanXml );
+		URL resource = InfinispanModuleMemberRegistrationIT.class.getResource( "/infinispan.xml" );
+		return new FileAsset( new File( resource.getFile() ) );
 	}
-
 }
