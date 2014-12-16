@@ -13,18 +13,6 @@
     <baseDirectory>/</baseDirectory>
 
     <files>
-        <!-- ORM -->
-        <file>
-            <source>${module.xml.basedir}/org/hibernate/module.xml</source>
-            <outputDirectory>/org/hibernate/${hibernateVersion}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
-        <!-- Search -->
-        <file>
-            <source>${module.xml.basedir}/org/hibernate/search/orm/module.xml</source>
-            <outputDirectory>/org/hibernate/search/orm/${hibernateSearchVersion}-orm-${hibernateVersion}</outputDirectory>
-            <filtered>true</filtered>
-        </file>
         <!-- OGM -->
         <file>
             <source>${hibernate.ogm.module.xml}</source>
@@ -69,30 +57,6 @@
     </files>
 
     <dependencySets>
-        <!--  ORM -->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/${hibernateVersion}</outputDirectory>
-            <useTransitiveFiltering>false</useTransitiveFiltering>
-            <unpack>false</unpack>
-            <includes>
-                <include>org.hibernate:hibernate-core</include>
-                <include>org.hibernate:hibernate-envers</include>
-                <include>org.hibernate:hibernate-entitymanager</include>
-                <include>org.hibernate:hibernate-infinispan</include>
-                <include>org.jipijapa:jipijapa-hibernate4-3</include>
-            </includes>
-        </dependencySet>
-        <!-- Search -->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>org/hibernate/search/orm/${hibernateSearchVersion}-orm-${hibernateVersion}</outputDirectory>
-            <useTransitiveFiltering>false</useTransitiveFiltering>
-            <unpack>false</unpack>
-            <includes>
-                <include>org.hibernate:hibernate-search-orm</include>
-            </includes>
-        </dependencySet>
         <!-- OGM -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>

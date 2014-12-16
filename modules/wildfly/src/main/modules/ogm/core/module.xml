@@ -10,10 +10,10 @@
         <resource-root path="hibernate-ogm-core-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" slot="${hibernateVersion}" export="true" />
+        <module name="org.hibernate" export="true" />
         <module name="org.hibernate.commons-annotations" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
-        <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}-orm-${hibernateVersion}" optional="true" />
+        <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}" optional="true" />
 
         <module name="javax.api" />
         <module name="javax.persistence.api" />
