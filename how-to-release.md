@@ -119,6 +119,9 @@ This parameterized job automates step 5 from this section as well as steps 1 and
    and by updating the roadmap in _ogm/roadmap.adoc_
    Remember to add a one line summary using the property _summary_.
    If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
+
+1. Check the getting started guide on the website. It is mostly copied from the reference documentation with a few twists.
+   Likewise, check the roadmap, move the new released to the previous section and adjust the roadmap as needed.
    When ready, deploy everything on production.
 
    Check:
