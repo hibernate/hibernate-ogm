@@ -17,7 +17,6 @@
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
         <module name="org.hibernate.search.engine" optional="true" slot="${hibernateSearchVersion}" />
         <module name="org.jboss.logging"/>
     </dependencies>

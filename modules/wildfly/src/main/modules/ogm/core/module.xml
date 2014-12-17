@@ -15,13 +15,8 @@
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
         <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}" optional="true" />
 
-        <module name="javax.api" />
         <module name="javax.persistence.api" />
-        <!-- Exporting as one of its types is exposed via Log which is extended in other modules -->
-        <module name="javax.transaction.api" export="true" />
-        <module name="javax.validation.api" />
-        <module name="org.dom4j" />
-        <module name="org.jboss.as.jpa.hibernate" slot="4" optional="true" />
+        <module name="javax.transaction.api" />
         <module name="org.jboss.logging" />
 
         <!-- Allow Hibernate ORM to load com.arjuna.ats.jta.TransactionManager -->

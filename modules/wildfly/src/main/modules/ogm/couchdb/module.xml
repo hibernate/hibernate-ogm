@@ -10,11 +10,12 @@
         <resource-root path="hibernate-ogm-couchdb-${project.version}.jar" />
     </resources>
     <dependencies>
-        <module name="org.hibernate" export="true" services="import" slot="${hibernate.ogm.module.slot}" />
+        <module name="org.hibernate" slot="${hibernate.ogm.module.slot}" />
         <module name="org.hibernate.hql" slot="${hibernate.hql.module.slot}" />
 
         <module name="javax.ws.rs.api" />
         <module name="javax.persistence.api" />
+        <module name="javax.transaction.api" />
         <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
         <module name="org.jboss.resteasy.resteasy-jaxrs" />
         <module name="org.jboss.logging" />

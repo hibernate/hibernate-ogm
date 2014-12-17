@@ -11,8 +11,8 @@
 
     <deployment>
         <dependencies>
-            <module name="org.hibernate" slot="ogm" services="export" />
-            <module name="org.hibernate.ogm.ehcache" slot="main" services="export" />
+            <module name="org.hibernate" slot="ogm" services="import" />
+            <module name="org.hibernate.ogm.ehcache" services="import" />
             <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}" services="import" />
         </dependencies>
     </deployment>

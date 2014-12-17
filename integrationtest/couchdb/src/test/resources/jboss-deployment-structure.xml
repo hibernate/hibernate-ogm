@@ -11,10 +11,10 @@
 
     <deployment>
         <dependencies>
-            <module name="org.hibernate" slot="ogm" services="export" />
-            <module name="org.hibernate.ogm.couchdb" slot="main" services="export" />
+            <module name="org.hibernate" slot="ogm" />
+            <module name="org.hibernate.ogm.couchdb" services="import" />
             <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}" services="import" />
-            <module name="org.jboss.resteasy.resteasy-jackson2-provider" services="import"/>
+            <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
         </dependencies>
         <exclusions>
            <!-- Use Jackson 2 provider; Implicitly the case on WF 8.1 but it's required for EAP 6.x  -->
