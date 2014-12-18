@@ -79,10 +79,10 @@ This parameterized job automates step 5 from this section as well as steps 1 and
    - Copy the _.zip distribution_ (in _target/checkout/distribution/target_)
    - Copy the _.tar.gz distribution_ (in _target/checkout/distribution/target_)
    - Copy the _.zip containing the JBoss Modules_. There are two .zip files:
-     - for **EAP 6**: in _target/checkout/modules/eap6/target_
      - for **WildFly 8**: in _target/checkout/modules/wildfly/target_
+     - for **EAP 6** (if it works): in _target/checkout/modules/eap6/target_
 
-1. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/hibernate/ogm/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
+2. Upload the documentation to [docs.jboss.org](http://docs.jboss.org/hibernate/ogm/). Do so using rsync (provided you are in the docs directory of the unpacked distribution):
 
    ```
        rsync -rzh --progress --delete \
@@ -96,21 +96,27 @@ This parameterized job automates step 5 from this section as well as steps 1 and
        scp -r reference hibernate@filemgmt.jboss.org:docs_htdocs/hibernate/ogm/[version-family]
    ```
 
-1. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
+3. If it is a final release, you have to add the symbolic link _/docs_htdocs/hibernate/stable/ogm_.
    You can't create symlinks on the server so you either create it locally then rsync it up, or make a copy of the documentation in that URL.
 
-1. Update the [community pages](http://community.jboss.org/en/hibernate/ogm).
-In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
-When doing the latter, create an API change report by running `mvn clirr:clirr -pl core`.
-The report created at _core/target/site/clirr-report.html_ provides an overview of all changed API/SPI types.
-After you have created the change log, don't forget to update the _comparisonVersion_ in the configuration of the Maven Clirr plug-in in _pom.xml_.
+   ```
+       rsync -rzh --progress --delete \
+             --protocol=28 docs/ hibernate@filemgmt.jboss.org:/docs_htdocs/hibernate/stable/ogm
+   ```
+
+4. Update the [community pages](http://community.jboss.org/en/hibernate/ogm).
+   In particular, update the [migration notes](https://community.jboss.org/wiki/HibernateOGMMigrationNotes).
+   When doing the latter, create an API change report by running `mvn clirr:clirr -pl core`.
+   The report created at _core/target/site/clirr-report.html_ provides an overview of all changed API/SPI types.
+   After you have created the change log, don't forget to update the _comparisonVersion_ in the configuration of the Maven Clirr plug-in in _pom.xml_.
 
 ### Announce
 
 1. Blog about the release on [in.relation.to](http://in.relation.to/), make sure to use the tags **Hibernate OGM**, **Hibernate** and **news** for the blog entry.
    This way the blog will be featured on the [web-site](http://www.hibernate.org/ogm) and on the JBoss blog federation.
 
-1. Update [hibernate.org](http://hibernate.org/) by adding a new release file to _data/projects/ogm/releases_.
+2. Update [hibernate.org](http://hibernate.org/) by adding a new release file to _data/projects/ogm/releases_
+   and by updating the roadmap in _ogm/roadmap.adoc_
    Remember to add a one line summary using the property _summary_.
    If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
    When ready, deploy everything on production.
@@ -118,8 +124,9 @@ After you have created the change log, don't forget to update the _comparisonVer
    Check:
    - http://www.hibernate.org/ogm/download
    - http://www.hibernate.org/ogm/documentation
+   - http://www.hibernate.org/ogm/roadmap
  
-1. Send email to _hibernate-dev_ and _hibernate-announce_.
+3. Send email to _hibernate-dev_ and _hibernate-announce_.
    A quick sum up paragraph in the email is necessary before pointing to the blog entry.
 
-1. Twitter
+4. Twitter
