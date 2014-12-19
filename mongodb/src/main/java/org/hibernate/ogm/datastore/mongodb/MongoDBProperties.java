@@ -68,6 +68,14 @@ public final class MongoDBProperties implements DocumentStoreProperties {
 	 */
 	public static final String ASSOCIATION_DOCUMENT_STORAGE = "hibernate.ogm.mongodb.association_document_storage";
 
+	/**
+	 * Specify the authentication mechanism that MongoDB will use to authenticate the connection.
+	 * Possible values include: MONGODB-CR (default), MONGODB-X509, PLAIN, GSSAPI
+	 *
+	 * @see com.mongodb.MongoCredential
+	 */
+	public static final String AUTHENTICATION_MECHANISM = "hibernate.ogm.mongodb.authentication_mechanism";
+
 	private MongoDBProperties() {
 	}
 }

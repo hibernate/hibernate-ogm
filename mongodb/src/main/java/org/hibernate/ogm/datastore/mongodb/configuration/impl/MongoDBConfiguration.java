@@ -53,6 +53,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private final int timeout;
 	private final WriteConcern writeConcern;
 	private final ReadPreference readPreference;
+	private final String authenticationMechanism;
 
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
@@ -66,6 +67,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		this.timeout = propertyReader.property( MongoDBProperties.TIMEOUT, int.class )
 				.withDefault( DEFAULT_TIMEOUT )
 				.withValidator( TIMEOUT_VALIDATOR )
+				.getValue();
+		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, String.class )
+				.withDefault( MongoCredential.MONGODB_CR_MECHANISM )
 				.getValue();
 
 		this.writeConcern = globalOptions.getUnique( WriteConcernOption.class );
@@ -83,13 +87,24 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		optionsBuilder.connectTimeout( timeout );
 		optionsBuilder.writeConcern( writeConcern );
 		optionsBuilder.readPreference( readPreference );
-
 		return optionsBuilder.build();
 	}
 
 	public List<MongoCredential> buildCredentials() {
 		if ( getUsername() != null) {
-			return Arrays.asList( MongoCredential.createMongoCRCredential( getUsername(), getDatabaseName(), password() ) );
+			if ( authenticationMechanism == MongoCredential.MONGODB_CR_MECHANISM ) {
+				return Arrays.asList( MongoCredential.createMongoCRCredential( getUsername(), getDatabaseName(), password() ) );
+			}
+			if ( authenticationMechanism == MongoCredential.GSSAPI_MECHANISM ) {
+				return Arrays.asList( MongoCredential.createGSSAPICredential( getUsername() ) );
+			}
+			if ( authenticationMechanism == MongoCredential.MONGODB_X509_MECHANISM) {
+				return Arrays.asList( MongoCredential.createMongoX509Credential( getUsername() ) );
+			}
+			if ( authenticationMechanism == MongoCredential.PLAIN_MECHANISM ) {
+				return Arrays.asList( MongoCredential.createPlainCredential( getUsername(), getDatabaseName(), password() ) );
+			}
+			throw log.authenticationMechanismNotRecognized( authenticationMechanism );
 		}
 		return null;
 	}

@@ -111,12 +111,12 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 	}
 
-	private MongoClient createMongoClient(MongoDBConfiguration config) {
+	protected MongoClient createMongoClient(MongoDBConfiguration config) {
+		MongoClientOptions clientOptions = config.buildOptions();
+		List<MongoCredential> credentials = config.buildCredentials();
+		log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
 		try {
 			ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
-			MongoClientOptions clientOptions = config.buildOptions();
-			List<MongoCredential> credentials = config.buildCredentials();
-			log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
 			return credentials == null
 					? new MongoClient( serverAddress, clientOptions )
 					: new MongoClient( serverAddress, credentials, clientOptions );
