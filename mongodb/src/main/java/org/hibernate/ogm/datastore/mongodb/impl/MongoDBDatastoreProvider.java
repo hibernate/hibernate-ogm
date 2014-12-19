@@ -45,8 +45,6 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private static final int AUTHENTICATION_FAILED_CODE = 18;
 
-	private static final int CONNECTION_TIMEOUT_CODE = -3;
-
 	private static final Log log = LoggerFactory.getLogger();
 
 	private ServiceRegistryImplementor serviceRegistry;

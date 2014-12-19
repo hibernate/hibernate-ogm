@@ -91,17 +91,17 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	}
 
 	public List<MongoCredential> buildCredentials() {
-		if ( getUsername() != null) {
-			if ( authenticationMechanism == MongoCredential.MONGODB_CR_MECHANISM ) {
+		if ( getUsername() != null ) {
+			if ( MongoCredential.MONGODB_CR_MECHANISM.equals( authenticationMechanism ) ) {
 				return Arrays.asList( MongoCredential.createMongoCRCredential( getUsername(), getDatabaseName(), password() ) );
 			}
-			if ( authenticationMechanism == MongoCredential.GSSAPI_MECHANISM ) {
+			if ( MongoCredential.GSSAPI_MECHANISM.equals( authenticationMechanism ) ) {
 				return Arrays.asList( MongoCredential.createGSSAPICredential( getUsername() ) );
 			}
-			if ( authenticationMechanism == MongoCredential.MONGODB_X509_MECHANISM) {
+			if ( MongoCredential.MONGODB_X509_MECHANISM.equals( authenticationMechanism ) ) {
 				return Arrays.asList( MongoCredential.createMongoX509Credential( getUsername() ) );
 			}
-			if ( authenticationMechanism == MongoCredential.PLAIN_MECHANISM ) {
+			if ( MongoCredential.PLAIN_MECHANISM.equals( authenticationMechanism ) ) {
 				return Arrays.asList( MongoCredential.createPlainCredential( getUsername(), getDatabaseName(), password() ) );
 			}
 			throw log.authenticationMechanismNotRecognized( authenticationMechanism );
