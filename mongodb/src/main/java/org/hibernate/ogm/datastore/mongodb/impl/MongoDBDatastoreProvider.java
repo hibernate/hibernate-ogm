@@ -94,22 +94,9 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	public void start() {
 		try {
 			if ( mongo == null ) {
-				try {
-					ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
-					MongoClientOptions clientOptions = config.buildOptions();
-
-					log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
-
-					this.mongo = new MongoClient( serverAddress, clientOptions );
-				}
-				catch (UnknownHostException e) {
-					throw log.mongoOnUnknownHost( config.getHost() );
-				}
-				catch (RuntimeException e) {
-					throw log.unableToInitializeMongoDB( e );
-				}
+				mongo = createMongoClient( config );
 			}
-			mongoDb = extractDatabase();
+			mongoDb = extractDatabase( mongo, config );
 		}
 		catch (Exception e) {
 			// Wrap Exception in a ServiceException to make the stack trace more friendly
@@ -118,20 +105,37 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		}
 	}
 
+	private MongoClient createMongoClient(MongoDBConfiguration config) {
+		try {
+			ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
+			MongoClientOptions clientOptions = config.buildOptions();
+
+			log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
+
+			return new MongoClient( serverAddress, clientOptions );
+		}
+		catch (UnknownHostException e) {
+			throw log.mongoOnUnknownHost( config.getHost() );
+		}
+		catch (RuntimeException e) {
+			throw log.unableToInitializeMongoDB( e );
+		}
+	}
+
 	@Override
 	public void stop() {
 		log.disconnectingFromMongo();
-		this.mongo.close();
+		mongo.close();
 	}
 
 	public DB getDatabase() {
 		return mongoDb;
 	}
 
-	private DB extractDatabase() {
+	private DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
 		try {
 			if ( config.getUsername() != null ) {
-				DB admin = this.mongo.getDB( "admin" );
+				DB admin = mongo.getDB( "admin" );
 				boolean auth = admin.authenticate( config.getUsername(), config.getPassword().toCharArray() );
 				if ( !auth ) {
 					throw log.authenticationFailed( config.getUsername() );
@@ -140,16 +144,16 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
-			if ( !this.mongo.getDatabaseNames().contains( databaseName ) ) {
+			if ( !mongo.getDatabaseNames().contains( databaseName ) ) {
 				log.creatingDatabase( databaseName );
 			}
-			return this.mongo.getDB( databaseName );
+			return mongo.getDB( databaseName );
 		}
-		catch ( HibernateException e ) {
+		catch (HibernateException e) {
 			throw e;
 		}
-		catch ( Exception e ) {
-			throw log.unableToConnectToDatastore( this.config.getHost(), this.config.getPort(), e );
+		catch (Exception e) {
+			throw log.unableToConnectToDatastore( config.getHost(), config.getPort(), e );
 		}
 	}
 }
