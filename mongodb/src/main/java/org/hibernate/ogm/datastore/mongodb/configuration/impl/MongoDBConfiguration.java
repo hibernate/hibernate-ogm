@@ -6,6 +6,9 @@
  */
 package org.hibernate.ogm.datastore.mongodb.configuration.impl;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.hibernate.HibernateException;
 import org.hibernate.ogm.cfg.spi.DocumentStoreConfiguration;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
@@ -19,6 +22,7 @@ import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReade
 import org.hibernate.ogm.util.configurationreader.spi.PropertyValidator;
 
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
 import com.mongodb.ReadPreference;
 import com.mongodb.WriteConcern;
 
@@ -81,6 +85,20 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 		optionsBuilder.readPreference( readPreference );
 
 		return optionsBuilder.build();
+	}
+
+	public List<MongoCredential> buildCredentials() {
+		if ( getUsername() != null) {
+			return Arrays.asList( MongoCredential.createMongoCRCredential( getUsername(), getDatabaseName(), password() ) );
+		}
+		return null;
+	}
+
+	private char[] password() {
+		if ( getPassword() == null ) {
+			return null;
+		}
+		return getPassword().toCharArray();
 	}
 
 	private static class TimeoutValidator implements PropertyValidator<Integer> {

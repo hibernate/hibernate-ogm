@@ -7,9 +7,9 @@
 package org.hibernate.ogm.datastore.mongodb.impl;
 
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
-import org.hibernate.HibernateException;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.datastore.mongodb.MongoDBDialect;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
@@ -31,6 +31,8 @@ import org.hibernate.service.spi.Stoppable;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.MongoException;
 import com.mongodb.ServerAddress;
 
 /**
@@ -40,6 +42,10 @@ import com.mongodb.ServerAddress;
  * @author Gunnar Morling
  */
 public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements Startable, Stoppable, Configurable, ServiceRegistryAwareService {
+
+	private static final int AUTHENTICATION_FAILED_CODE = 18;
+
+	private static final int CONNECTION_TIMEOUT_CODE = -3;
 
 	private static final Log log = LoggerFactory.getLogger();
 
@@ -109,10 +115,11 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		try {
 			ServerAddress serverAddress = new ServerAddress( config.getHost(), config.getPort() );
 			MongoClientOptions clientOptions = config.buildOptions();
-
+			List<MongoCredential> credentials = config.buildCredentials();
 			log.connectingToMongo( config.getHost(), config.getPort(), clientOptions.getConnectTimeout() );
-
-			return new MongoClient( serverAddress, clientOptions );
+			return credentials == null
+					? new MongoClient( serverAddress, clientOptions )
+					: new MongoClient( serverAddress, credentials, clientOptions );
 		}
 		catch (UnknownHostException e) {
 			throw log.mongoOnUnknownHost( config.getHost() );
@@ -134,13 +141,6 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 
 	private DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
 		try {
-			if ( config.getUsername() != null ) {
-				DB admin = mongo.getDB( "admin" );
-				boolean auth = admin.authenticate( config.getUsername(), config.getPassword().toCharArray() );
-				if ( !auth ) {
-					throw log.authenticationFailed( config.getUsername() );
-				}
-			}
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
@@ -149,11 +149,13 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			}
 			return mongo.getDB( databaseName );
 		}
-		catch (HibernateException e) {
-			throw e;
-		}
-		catch (Exception e) {
-			throw log.unableToConnectToDatastore( config.getHost(), config.getPort(), e );
+		catch (MongoException me) {
+			switch ( me.getCode() ) {
+				case AUTHENTICATION_FAILED_CODE:
+					throw log.authenticationFailed( config.getUsername() );
+				default:
+					throw log.unableToConnectToDatastore( config.getHost(), config.getPort(), me );
+			}
 		}
 	}
 }
