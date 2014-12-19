@@ -20,6 +20,7 @@ import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
+import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
@@ -29,6 +30,9 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -59,6 +63,89 @@ public class DatastoreInitializationTest {
 		error.expectMessage( "OGM000071" );
 		//nested exception
 		error.expectCause( hasMessage( containsString( "OGM001213" ) ) );
+
+		provider.start();
+	}
+
+	@Test
+	public void testDefaultAuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
+
+		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+		provider.start();
+
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.MONGODB_CR_MECHANISM );
+	}
+
+	@Test
+	public void testX509AuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.MONGODB_X509_MECHANISM );
+
+		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+		provider.start();
+
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.MONGODB_X509_MECHANISM );
+	}
+
+	@Test
+	public void testGSSAPIAuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.GSSAPI_MECHANISM );
+
+		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+		provider.start();
+
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.GSSAPI_MECHANISM );
+	}
+
+	@Test
+	public void testPlainAuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( OgmProperties.PASSWORD, "test" );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.PLAIN_MECHANISM );
+
+		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+		provider.start();
+
+		assertThat( provider.leakingClient.getCredentialsList().get( 0 ).getMechanism() ).isEqualTo( MongoCredential.PLAIN_MECHANISM );
+	}
+
+	@Test
+	public void testNotRecognizedAuthenticationMechanism() throws Exception {
+		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
+		cfg.put( OgmProperties.DATABASE, "test" );
+		cfg.put( OgmProperties.HOST, "www.hibernate.org" );
+		cfg.put( OgmProperties.USERNAME, "notauser" );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, "alhdfoiehfnl" );
+
+		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
+		provider.injectServices( getServiceRegistry( cfg ) );
+		provider.configure( cfg );
+
+		error.expect( ServiceException.class );
+		error.expectMessage( "OGM000071" );
+		//nested exception
+		error.expectCause( hasMessage( containsString( "OGM001220" ) ) );
 
 		provider.start();
 	}
@@ -121,5 +208,25 @@ public class DatastoreInitializationTest {
 		when( serviceRegistry.getService( OptionsService.class ) ).thenReturn( optionsService );
 
 		return serviceRegistry;
+	}
+
+	class LeakingMongoDBDatastoreProvider extends MongoDBDatastoreProvider {
+		public MongoClient leakingClient;
+
+		@Override
+		protected MongoClient createMongoClient(MongoDBConfiguration config) {
+			MongoClient mongoClient = super.createMongoClient( config );
+			this.leakingClient = mongoClient;
+			return mongoClient;
+		}
+
+		@Override
+		public void start() {
+			try {
+				super.start();
+			}
+			catch (Exception e) {
+			}
+		}
 	}
 }
