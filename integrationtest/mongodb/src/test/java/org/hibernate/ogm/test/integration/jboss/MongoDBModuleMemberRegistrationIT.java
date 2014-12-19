@@ -77,6 +77,7 @@ public class MongoDBModuleMemberRegistrationIT extends ModuleMemberRegistrationS
 		return propertiesContext
 					.createProperty().name( OgmProperties.DATASTORE_PROVIDER ).value( MongoDB.DATASTORE_PROVIDER_NAME ).up()
 					.createProperty().name( OgmProperties.DATABASE ).value( "ogm_test_database" ).up()
+					.createProperty().name( OgmProperties.CREATE_DATABASE ).value( "true" ).up()
 					.createProperty().name( "hibernate.search.default.directory_provider" ).value( "ram" ).up()
 				.up().up();
 	}

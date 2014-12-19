@@ -145,7 +145,12 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			log.connectingToMongoDatabase( databaseName );
 
 			if ( !mongo.getDatabaseNames().contains( databaseName ) ) {
-				log.creatingDatabase( databaseName );
+				if ( config.isCreateDatabase() ) {
+					log.creatingDatabase( databaseName );
+				}
+				else {
+					throw log.databaseDoesNotExistException( config.getDatabaseName() );
+				}
 			}
 			return mongo.getDB( databaseName );
 		}
