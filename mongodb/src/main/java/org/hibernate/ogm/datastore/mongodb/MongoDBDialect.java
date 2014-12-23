@@ -6,17 +6,26 @@
  */
 package org.hibernate.ogm.datastore.mongodb;
 
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
-import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.ReadPreference;
+import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
+import org.parboiled.Parboiled;
+import org.parboiled.errors.ErrorUtils;
+import org.parboiled.parserunners.RecoveringParseRunner;
+import org.parboiled.support.ParsingResult;
+
 import org.hibernate.HibernateException;
 import org.hibernate.annotations.common.AssertionFailure;
 import org.hibernate.engine.spi.QueryParameters;
@@ -76,24 +85,17 @@ import org.hibernate.ogm.model.spi.Association;
 import org.hibernate.ogm.model.spi.AssociationKind;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.model.spi.TupleOperation;
+import org.hibernate.ogm.type.impl.FloatType;
+import org.hibernate.ogm.type.impl.ShortType;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
-import org.parboiled.Parboiled;
-import org.parboiled.errors.ErrorUtils;
-import org.parboiled.parserunners.RecoveringParseRunner;
-import org.parboiled.support.ParsingResult;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.DuplicateKeyException;
-import com.mongodb.ReadPreference;
-import com.mongodb.WriteConcern;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.INSERT;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType.UPDATE;
+import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasField;
 
 /**
  * Each Tuple entry is stored as a property in a MongoDB document.
@@ -651,6 +653,12 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		}
 		else if ( type == StandardBasicTypes.BYTE ) {
 			return ByteStringType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.SHORT ) {
+			return ShortType.INSTANCE;
+		}
+		else if ( type == StandardBasicTypes.FLOAT ) {
+			return FloatType.INSTANCE;
 		}
 		else if ( type.getReturnedClass() == ObjectId.class ) {
 			return ObjectIdGridType.INSTANCE;

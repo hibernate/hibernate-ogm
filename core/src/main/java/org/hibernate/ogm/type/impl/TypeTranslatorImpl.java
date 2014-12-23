@@ -6,8 +6,6 @@
  */
 package org.hibernate.ogm.type.impl;
 
-import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
-
 import java.util.Collections;
 import java.util.Map;
 
@@ -28,6 +26,7 @@ import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
+import org.hibernate.type.descriptor.java.FloatTypeDescriptor;
 import org.hibernate.type.descriptor.java.IntegerTypeDescriptor;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import org.hibernate.type.descriptor.java.JdbcDateTypeDescriptor;
@@ -35,10 +34,13 @@ import org.hibernate.type.descriptor.java.JdbcTimeTypeDescriptor;
 import org.hibernate.type.descriptor.java.JdbcTimestampTypeDescriptor;
 import org.hibernate.type.descriptor.java.LongTypeDescriptor;
 import org.hibernate.type.descriptor.java.PrimitiveByteArrayTypeDescriptor;
+import org.hibernate.type.descriptor.java.ShortTypeDescriptor;
 import org.hibernate.type.descriptor.java.StringTypeDescriptor;
 import org.hibernate.type.descriptor.java.UUIDTypeDescriptor;
 import org.hibernate.type.descriptor.java.UrlTypeDescriptor;
 import org.hibernate.usertype.UserType;
+
+import static org.hibernate.ogm.util.impl.CollectionHelper.newHashMap;
 
 /**
  * @author Emmanuel Bernard
@@ -54,12 +56,14 @@ public class TypeTranslatorImpl implements TypeTranslator {
 	public TypeTranslatorImpl(GridDialect dialect) {
 		this.dialect = dialect;
 
-		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 17 );
+		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 19 );
 		tmpMap.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		tmpMap.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
 		tmpMap.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
 		tmpMap.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
 		tmpMap.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
+		tmpMap.put( ShortTypeDescriptor.INSTANCE,ShortType.INSTANCE );
+		tmpMap.put( FloatTypeDescriptor.INSTANCE,FloatType.INSTANCE );
 		tmpMap.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
 		tmpMap.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );
 		tmpMap.put( BigIntegerTypeDescriptor.INSTANCE, BigIntegerType.INSTANCE );
