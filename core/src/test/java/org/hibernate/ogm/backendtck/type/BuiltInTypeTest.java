@@ -6,9 +6,6 @@
  */
 package org.hibernate.ogm.backendtck.type;
 
-import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
@@ -28,9 +25,13 @@ import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.OgmTestCase;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
@@ -98,6 +99,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUserId( userId );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
+		final Short urlPort = Short.valueOf( (short) 80 );
+		b.setUrlPort( urlPort );
+		final Float visitRatio = Float.valueOf( (float) 10.4 );
+		b.setVisitRatio( visitRatio );
 		b.setType( BookmarkType.URL );
 		b.setTaxPercentage( 12.34d );
 		session.persist( b );
@@ -115,8 +120,9 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "serial number incorrect", serialNumber, b.getSerialNumber() );
 		assertEquals( "user id incorrect", userId, b.getUserId() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
-		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
-		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
+		assertEquals( "url port incorrect", urlPort, b.getUrlPort() );
+		assertEquals( "visit ratio incorrect", visitRatio, b.getVisitRatio() );
+		assertEquals( "Tax percentage as double is incorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
 		assertEquals( "Classifier as enum string is incorrect", Classifier.HOME, b.getClassifier() );
 		assertEquals( "Classifier stored as enum ordinal is incorrect", Classifier.WORK, b.getClassifierAsOrdinal() );
 
@@ -138,14 +144,26 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "Destruction date incorrect", now, b.getDestructionDate() );
 
 		//Calendar - DATE
-		assertEquals( "getCreationCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getCreationCalendar().getTimeZone().getRawOffset() );
+		assertEquals(
+				"getCreationCalendar time zone incorrect",
+				nowCalendar.getTimeZone().getRawOffset(),
+				b.getCreationCalendar().getTimeZone().getRawOffset()
+		);
 		assertEquals( nowCalendar.get( Calendar.YEAR ), b.getCreationCalendar().get( Calendar.YEAR ) );
 		assertEquals( nowCalendar.get( Calendar.MONTH ), b.getCreationCalendar().get( Calendar.MONTH ) );
 		assertEquals( nowCalendar.get( Calendar.DAY_OF_MONTH ), b.getCreationCalendar().get( Calendar.DAY_OF_MONTH ) );
 
 		//Calendar - TIMESTAMP
-		assertEquals( "destructionCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getDestructionCalendar().getTimeZone().getRawOffset() );
-		assertEquals( "destructionCalendar timestamp incorrect", nowCalendar.getTimeInMillis(), b.getDestructionCalendar().getTimeInMillis() );
+		assertEquals(
+				"destructionCalendar time zone incorrect",
+				nowCalendar.getTimeZone().getRawOffset(),
+				b.getDestructionCalendar().getTimeZone().getRawOffset()
+		);
+		assertEquals(
+				"destructionCalendar timestamp incorrect",
+				nowCalendar.getTimeInMillis(),
+				b.getDestructionCalendar().getTimeInMillis()
+		);
 
 		assertEquals( "Byte array incorrect length", blob.length, b.getBlob().length );
 		assertEquals( blob[0], b.getBlob()[0] );
@@ -179,6 +197,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setSerialNumber( serialNumber );
 		final Long userId = RANDOM.nextLong();
 		b.setUserId( userId );
+		final Short urlPort = Short.valueOf( "443" );
+		b.setUrlPort( urlPort );
+		final Float visitRatio = Float.valueOf( "10.3" );
+		b.setVisitRatio( visitRatio );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
 
@@ -190,8 +212,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b = (Bookmark) session.get( Bookmark.class, b.getId() );
 
 		//Check directly in the cache the values stored
-		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Bookmark", new String[]{ "id" } );
-		EntityKey key = new EntityKey( keyMetadata, new Object[]{ "42" } );
+		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Bookmark", new String[] {"id"} );
+		EntityKey key = new EntityKey( keyMetadata, new Object[] {"42"} );
 		Map<String, Object> entity = extractEntityTuple( sessions, key );
 
 		assertEquals( "Entity visits count incorrect", entity.get( "visits_count" ), "444" );
@@ -206,7 +228,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[]{
+		return new Class<?>[] {
 				Bookmark.class
 		};
 	}
