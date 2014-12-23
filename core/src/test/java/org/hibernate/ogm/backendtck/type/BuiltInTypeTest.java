@@ -197,8 +197,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setSerialNumber( serialNumber );
 		final Long userId = RANDOM.nextLong();
 		b.setUserId( userId );
-		Short urlPort = Short.valueOf( "443" );
+		final Short urlPort = Short.valueOf( "443" );
 		b.setUrlPort( urlPort );
+		final Float visitRatio = Float.valueOf( "10.3" );
+		b.setVisitRatio( visitRatio );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
 
