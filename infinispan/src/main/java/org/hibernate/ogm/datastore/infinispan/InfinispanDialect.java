@@ -170,17 +170,6 @@ public class InfinispanDialect<EK,AK,ISK> extends BaseGridDialect {
 				key.getMetadata()
 		);
 		AK cacheKey = getKeyProvider().getAssociationCacheKey( key );
-		// FIXME we ought to use AtomicMapLookup.getFineGrainedAtomicMap( cache, cacheKey, false)
-		// but that fails
-		// this temporary direct access is probably transactionally unsafe
-		// but we will address this in ISPN quickly
-		// At least we won't change the data structure so the fix will be compatible
-		Map<RowKey, Map<String, Object>> atomicMap = cache.get( cacheKey );
-		if ( atomicMap != null ) {
-			// Work around Infinispan bug not cleaning the AtomicMap state
-			// if an AtomicMap is then readded to the same key in the same transaction
-			atomicMap.clear();
-		}
 		AtomicMapLookup.removeAtomicMap( cache, cacheKey );
 	}
 
