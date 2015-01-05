@@ -242,4 +242,7 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 71, value = "Unable to start datatore provider")
 	ServiceException unableToStartDatastoreProvider(@Cause Exception e);
+
+	@Message(id = 72, value = "Unable to configure datatore provider")
+	ServiceException unableToConfigureDatastoreProvider(@Cause Exception e);
 }
