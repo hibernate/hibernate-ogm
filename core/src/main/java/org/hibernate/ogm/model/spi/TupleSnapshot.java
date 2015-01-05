@@ -9,11 +9,18 @@ package org.hibernate.ogm.model.spi;
 import java.util.Set;
 
 /**
- * Represents the Tuple snapshot as loaded by the datastore.
- * Interface implemented by the datastore dialect to avoid data
- * duplication in memory (if possible).
- *
- * Note that this snapshot will not be modified by the Hibernate OGM engine
+ * Represents a tuple snapshot as loaded by the datastore.
+ * <p>
+ * This interface is to be implemented by dialects to avoid data duplication in memory (if possible), typically wrapping
+ * a store-specific representation of the tuple data. This snapshot will never be modified by the Hibernate OGM engine.
+ * <p>
+ * Note that in the case of embeddables (e.g. composite ids), column names are given using dot notation, e.g.
+ * "id.countryCode" or "address.city.zipCode". The column names of the physical JPA model will be used, as e.g. given
+ * via {@code @Column} .
+ * <p>
+ * In some special cases implementations may chose to persist different names than mandated by this model, e.g. always
+ * {@code _id} will be used as id column name by MongoDB. It is the responsibility of such implementation in this case
+ * to do the required translation of column names internally.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
