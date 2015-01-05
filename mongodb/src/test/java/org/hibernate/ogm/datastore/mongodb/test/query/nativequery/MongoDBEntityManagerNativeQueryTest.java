@@ -41,12 +41,13 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	private final Poet christian = new Poet( "christian", "Christian Abendsonne" );
 	private final Poet james = new Poet( "james", "James Krass" );
 	private final LiteratureSociety stencilClub = new LiteratureSociety( "stencil-club", "Stencil Club Germany", christian, james );
+	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
 
 	@Before
 	public void init() throws Exception {
 		begin();
 
-		EntityManager em = persist( portia, athanasia, stencilClub );
+		EntityManager em = persist( portia, athanasia, stencilClub, critic );
 
 		commit();
 		close( em );
@@ -63,7 +64,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 	@After
 	public void tearDown() throws Exception {
 		begin();
-		EntityManager em = delete( portia, athanasia, stencilClub );
+		EntityManager em = delete( portia, athanasia, stencilClub, critic );
 		commit();
 		close( em );
 	}
@@ -281,6 +282,21 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 		close( em );
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-702")
+	public void testQueryWithCompositeId() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		@SuppressWarnings("unchecked")
+		List<Critic> critics = em.createNativeQuery( "{}", Critic.class ).getResultList();
+
+		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
+
+		commit();
+		close( em );
+	}
+
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );
@@ -290,7 +306,7 @@ public class MongoDBEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { OscarWildePoem.class, LiteratureSociety.class, Poet.class };
+		return new Class<?>[] { OscarWildePoem.class, LiteratureSociety.class, Poet.class, Critic.class };
 	}
 
 	private void close(EntityManager em) {
