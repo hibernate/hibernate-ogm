@@ -22,6 +22,7 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
+import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
 import org.hibernate.ogm.utils.TestHelper;
@@ -88,7 +89,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.DATABASE, "test" );
 		cfg.put( OgmProperties.USERNAME, "notauser" );
 		cfg.put( OgmProperties.PASSWORD, "test" );
-		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.MONGODB_X509_MECHANISM );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.MONGODB_X509.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
@@ -104,7 +105,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.DATABASE, "test" );
 		cfg.put( OgmProperties.USERNAME, "notauser" );
 		cfg.put( OgmProperties.PASSWORD, "test" );
-		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.GSSAPI_MECHANISM );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.GSSAPI.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
@@ -120,7 +121,7 @@ public class DatastoreInitializationTest {
 		cfg.put( OgmProperties.DATABASE, "test" );
 		cfg.put( OgmProperties.USERNAME, "notauser" );
 		cfg.put( OgmProperties.PASSWORD, "test" );
-		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, MongoCredential.PLAIN_MECHANISM );
+		cfg.put( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.PLAIN.name() );
 
 		LeakingMongoDBDatastoreProvider provider = new LeakingMongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
@@ -140,14 +141,13 @@ public class DatastoreInitializationTest {
 
 		MongoDBDatastoreProvider provider = new MongoDBDatastoreProvider();
 		provider.injectServices( getServiceRegistry( cfg ) );
-		provider.configure( cfg );
 
 		error.expect( ServiceException.class );
-		error.expectMessage( "OGM000071" );
+		error.expectMessage( "OGM000072" );
 		//nested exception
-		error.expectCause( hasMessage( containsString( "OGM001220" ) ) );
+		error.expectCause( hasMessage( containsString( "OGM000051" ) ) );
 
-		provider.start();
+		provider.configure( cfg );
 	}
 
 	@Test

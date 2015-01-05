@@ -17,7 +17,6 @@ import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
-import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 
 /**
@@ -76,8 +75,4 @@ public interface Log extends org.hibernate.ogm.util.impl.Log {
 
 	@Message(id = 1219, value = "Database %s does not exist. Either create it yourself or set property '" + OgmProperties.CREATE_DATABASE + "' to true.")
 	HibernateException databaseDoesNotExistException(String databaseName);
-
-	@Message(id = 1220, value = "Authentication mechanism %s not recognized. Accepted values are " + MongoCredential.GSSAPI_MECHANISM + ", "
-			+ MongoCredential.MONGODB_CR_MECHANISM + ", " + MongoCredential.MONGODB_X509_MECHANISM + " and " + MongoCredential.PLAIN_MECHANISM)
-	HibernateException authenticationMechanismNotRecognized(String authenticationMechanism);
 }

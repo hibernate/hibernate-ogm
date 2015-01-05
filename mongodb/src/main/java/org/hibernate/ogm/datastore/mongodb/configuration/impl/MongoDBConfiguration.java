@@ -15,6 +15,7 @@ import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.Log;
 import org.hibernate.ogm.datastore.mongodb.logging.impl.LoggerFactory;
+import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
 import org.hibernate.ogm.datastore.mongodb.options.impl.ReadPreferenceOption;
 import org.hibernate.ogm.datastore.mongodb.options.impl.WriteConcernOption;
 import org.hibernate.ogm.options.spi.OptionsContext;
@@ -53,7 +54,7 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 	private final int timeout;
 	private final WriteConcern writeConcern;
 	private final ReadPreference readPreference;
-	private final String authenticationMechanism;
+	private final AuthenticationMechanismType authenticationMechanism;
 
 	/**
 	 * Creates a new {@link MongoDBConfiguration}.
@@ -68,10 +69,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 				.withDefault( DEFAULT_TIMEOUT )
 				.withValidator( TIMEOUT_VALIDATOR )
 				.getValue();
-		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, String.class )
-				.withDefault( MongoCredential.MONGODB_CR_MECHANISM )
+		this.authenticationMechanism = propertyReader.property( MongoDBProperties.AUTHENTICATION_MECHANISM, AuthenticationMechanismType.class )
+				.withDefault( AuthenticationMechanismType.MONGODB_CR )
 				.getValue();
-
 		this.writeConcern = globalOptions.getUnique( WriteConcernOption.class );
 		this.readPreference = globalOptions.getUnique( ReadPreferenceOption.class );
 	}
@@ -92,28 +92,9 @@ public class MongoDBConfiguration extends DocumentStoreConfiguration {
 
 	public List<MongoCredential> buildCredentials() {
 		if ( getUsername() != null ) {
-			if ( MongoCredential.MONGODB_CR_MECHANISM.equals( authenticationMechanism ) ) {
-				return Arrays.asList( MongoCredential.createMongoCRCredential( getUsername(), getDatabaseName(), password() ) );
-			}
-			if ( MongoCredential.GSSAPI_MECHANISM.equals( authenticationMechanism ) ) {
-				return Arrays.asList( MongoCredential.createGSSAPICredential( getUsername() ) );
-			}
-			if ( MongoCredential.MONGODB_X509_MECHANISM.equals( authenticationMechanism ) ) {
-				return Arrays.asList( MongoCredential.createMongoX509Credential( getUsername() ) );
-			}
-			if ( MongoCredential.PLAIN_MECHANISM.equals( authenticationMechanism ) ) {
-				return Arrays.asList( MongoCredential.createPlainCredential( getUsername(), getDatabaseName(), password() ) );
-			}
-			throw log.authenticationMechanismNotRecognized( authenticationMechanism );
+			return Arrays.asList( authenticationMechanism.createCredential( getUsername(), getDatabaseName(), getPassword() ) );
 		}
 		return null;
-	}
-
-	private char[] password() {
-		if ( getPassword() == null ) {
-			return null;
-		}
-		return getPassword().toCharArray();
 	}
 
 	private static class TimeoutValidator implements PropertyValidator<Integer> {
