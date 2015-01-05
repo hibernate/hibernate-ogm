@@ -71,7 +71,14 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		ClassLoaderService classLoaderService = serviceRegistry.getService( ClassLoaderService.class );
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, classLoaderService );
 
-		this.config = new MongoDBConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
+		try {
+			this.config = new MongoDBConfiguration( propertyReader, optionsService.context().getGlobalOptions() );
+		}
+		catch (Exception e) {
+			// Wrap Exception in a ServiceException to make the stack trace more friendly
+			// Otherwise a generic unable to request service is thrown
+			throw log.unableToConfigureDatastoreProvider( e );
+		}
 	}
 
 	@Override

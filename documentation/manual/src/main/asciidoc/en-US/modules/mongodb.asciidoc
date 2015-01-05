@@ -79,8 +79,8 @@ The default value is +5000+.
 hibernate.ogm.mongodb.authentication_mechanism::
 Define the authentication mechanism to use. Possible values are:
 * +GSSAPI+: The GSSAPI mechanism. See the http://tools.ietf.org/html/rfc4752[RFC]
-* +MONGODB-CR+: The MongoDB Challenge Response mechanism. This is the default value.
-* +MONGODB-X509+: The MongoDB X.509
+* +MONGODB_CR+: The MongoDB Challenge Response mechanism. This is the default value.
+* +MONGODB_X509+: The MongoDB X.509
 * +PLAIN+: The PLAIN mechanism.  See the http://www.ietf.org/rfc/rfc4616.txt[RFC]
 hibernate.ogm.datastore.document.association_storage::
 Defines the way OGM stores association information in MongoDB.
