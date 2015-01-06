@@ -19,6 +19,7 @@ import javax.transaction.SystemException;
 
 import org.hibernate.ogm.backendtck.jpa.Poem;
 import org.hibernate.ogm.utils.PackagingRule;
+import org.hibernate.ogm.utils.TestForIssue;
 import org.hibernate.ogm.utils.jpa.JpaTestCase;
 import org.junit.After;
 import org.junit.Before;
@@ -37,11 +38,12 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 
 	private final OscarWildePoem portia = new OscarWildePoem( 1L, "Portia", "Oscar Wilde", new GregorianCalendar( 1808, 3, 10, 12, 45 ).getTime() );
 	private final OscarWildePoem athanasia = new OscarWildePoem( 2L, "Athanasia", "Oscar Wilde", new GregorianCalendar( 1810, 3, 10 ).getTime() );
+	private final Critic critic = new Critic( new CriticId( "de", "764" ), "Roger" );
 
 	@Before
 	public void init() throws Exception {
 		begin();
-		EntityManager em = persist( portia, athanasia );
+		EntityManager em = persist( portia, athanasia, critic );
 		commit();
 		close( em );
 	}
@@ -57,7 +59,7 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 	@After
 	public void tearDown() throws Exception {
 		begin();
-		EntityManager em = delete( portia, athanasia );
+		EntityManager em = delete( portia, athanasia, critic );
 		commit();
 		close( em );
 	}
@@ -141,6 +143,22 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 		close( em );
 	}
 
+	@Test
+	@TestForIssue(jiraKey = "OGM-702")
+	public void testQueryWithCompositeId() throws Exception {
+		begin();
+		EntityManager em = createEntityManager();
+
+		@SuppressWarnings("unchecked")
+		List<Critic> critics = em.createNativeQuery( "MATCH ( n:Critic ) RETURN n", Critic.class ).getResultList();
+
+		assertThat( critics ).onProperty( "id" ).containsExactly( new CriticId( "de", "764" ) );
+
+		commit();
+		close( em );
+	}
+
+
 	private void assertAreEquals(OscarWildePoem expectedPoem, OscarWildePoem poem) {
 		assertThat( poem ).isNotNull();
 		assertThat( poem.getId() ).as( "Wrong Id" ).isEqualTo( expectedPoem.getId() );
@@ -150,7 +168,7 @@ public class Neo4jEntityManagerNativeQueryTest extends JpaTestCase {
 
 	@Override
 	public Class<?>[] getEntities() {
-		return new Class<?>[] { OscarWildePoem.class };
+		return new Class<?>[] { OscarWildePoem.class, Critic.class };
 	}
 
 	private void close(EntityManager em) {
