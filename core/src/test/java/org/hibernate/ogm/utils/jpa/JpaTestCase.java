@@ -20,6 +20,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.SharedCacheMode;
 import javax.persistence.ValidationMode;
 import javax.persistence.spi.PersistenceUnitTransactionType;
+import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -114,7 +115,11 @@ public abstract class JpaTestCase {
 	}
 
 	@After
-	public void closeFactory() {
+	public void closeFactory() throws Exception {
+		if ( transactionManager != null && transactionManager.getStatus() == Status.STATUS_ACTIVE ) {
+			transactionManager.rollback();
+		}
+
 		if ( factory != null ) {
 			if ( factory.isOpen() ) {
 				dropSchemaAndDatabase( factory );
