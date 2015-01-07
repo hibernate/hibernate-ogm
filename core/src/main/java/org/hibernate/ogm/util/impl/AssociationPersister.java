@@ -101,7 +101,7 @@ public class AssociationPersister {
 
 	//action methods
 
-	private AssociationKey getAssociationKey() {
+	public AssociationKey getAssociationKey() {
 		if ( associationKey == null ) {
 			final Object[] columnValues = getKeyColumnValues();
 

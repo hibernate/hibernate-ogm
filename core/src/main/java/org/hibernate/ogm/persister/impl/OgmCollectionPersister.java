@@ -40,6 +40,7 @@ import org.hibernate.ogm.model.impl.DefaultAssociationKeyMetadata;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.impl.EntityKeyBuilder;
 import org.hibernate.ogm.model.impl.RowKeyBuilder;
+import org.hibernate.ogm.model.key.spi.AssociationKey;
 import org.hibernate.ogm.model.key.spi.AssociationKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKey;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
@@ -308,9 +309,10 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				if ( assocEntryTuple == null ) {
 					throw new AssertionFailure( "Updating a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + key + "} entry {" + entry + "}" );
 				}
+
 				// update the matching element
 				// FIXME update the associated entity key data
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, associationPersister.getAssociationKey(), assocEntryTuple, Action.REMOVE, assocEntryKey );
 
 				getElementGridType().nullSafeSet(
 						assocEntryTuple,
@@ -322,7 +324,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				// put back entry tuple to actually apply changes to the store
 				associationPersister.getAssociation().put( assocEntryKey, assocEntryTuple );
 
-				updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.ADD, assocEntryKey );
+				updateInverseSideOfAssociationNavigation( session, entry, associationPersister.getAssociationKey(), assocEntryTuple, Action.ADD, assocEntryKey );
 
 				count++;
 			}
@@ -489,7 +491,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						throw new AssertionFailure( "Deleting a collection tuple that is not present: " + "table {" + getTableName() + "} collectionKey {" + id + "} entry {" + entry + "}" );
 					}
 					// delete the tuple
-					updateInverseSideOfAssociationNavigation( session, entry, assocEntryTuple, Action.REMOVE, assocEntryKey );
+					updateInverseSideOfAssociationNavigation( session, entry, associationPersister.getAssociationKey(), assocEntryTuple, Action.REMOVE, assocEntryKey );
 					associationPersister.getAssociation().remove( assocEntryKey );
 
 					count++;
@@ -529,7 +531,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				if ( collection.needsInserting( entry, i, elementType ) ) {
 					// TODO: copy/paste from recreate()
 					RowKeyAndTuple associationRow = createAndPutAssociationRowForInsert( id, collection, associationPersister, session, i, entry );
-					updateInverseSideOfAssociationNavigation( session, entry, associationRow.tuple, Action.ADD, associationRow.key );
+					updateInverseSideOfAssociationNavigation( session, entry, associationPersister.getAssociationKey(), associationRow.tuple, Action.ADD, associationRow.key );
 					collection.afterRowInsert( this, entry, i );
 					count++;
 				}
@@ -567,7 +569,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 					if ( collection.entryExists( entry, i ) ) {
 						// TODO: copy/paste from insertRows()
 						RowKeyAndTuple keyAndTuple = createAndPutAssociationRowForInsert( id, collection, associationPersister, session, i, entry );
-						updateInverseSideOfAssociationNavigation( session, entry, keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
+						updateInverseSideOfAssociationNavigation( session, entry, associationPersister.getAssociationKey(), keyAndTuple.tuple, Action.ADD, keyAndTuple.key );
 						collection.afterRowInsert( this, entry, i );
 						count++;
 					}
@@ -589,7 +591,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 		}
 	}
 
-	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, Tuple associationRow, Action action, RowKey rowKey) {
+	private void updateInverseSideOfAssociationNavigation(SessionImplementor session, Object entity, AssociationKey associationKey, Tuple associationRow, Action action, RowKey rowKey) {
 		if ( associationType == AssociationType.EMBEDDED_FK_TO_ENTITY ) {
 			// update the associated object
 			Serializable entityId = (Serializable) gridTypeOfAssociatedId.nullSafeGet( associationRow, getElementColumnNames(), session, null );
@@ -602,8 +604,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				return;
 			}
 			if ( action == Action.ADD ) {
-				// copy all collection tuple entries in the entity tuple as this is the same table essentially
-				for ( String columnName : associationRow.getColumnNames() ) {
+				for ( String columnName : associationKey.getColumnNames() ) {
 					entityTuple.put( columnName, associationRow.get( columnName ) );
 				}
 			}
@@ -611,16 +612,12 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 				if ( hasIdentifier ) {
 					throw new AssertionFailure( "A true OneToMany with an identifier for the collection: " + getRole() );
 				}
-				if ( hasIndex ) {
-					// nullify the index
-					indexGridType.nullSafeSet( entityTuple, null, getIndexColumnNames(), session );
-				}
 				keyGridType.nullSafeSet( entityTuple, null, getKeyColumnNames(), session );
 			}
 			else {
 				throw new AssertionFailure( "Unknown action type: " + action );
 			}
-			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext() ); // update cache
+			gridDialect.insertOrUpdateTuple( entityKey, entityTuple, persister.getTupleContext() );
 		}
 		else if ( associationType == AssociationType.ASSOCIATION_TABLE_TO_ENTITY ) {
 			String[] elementColumnNames = getElementColumnNames();
@@ -643,7 +640,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 
 				Tuple inverseAssociationRow = new Tuple();
 				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
-				for ( String columnName : associationRow.getColumnNames() ) {
+				for ( String columnName : inverseRowKey.getColumnNames() ) {
 					inverseAssociationRow.put( columnName, associationRow.get( columnName ) );
 				}
 				associationPersister.getAssociation().put( inverseRowKey, inverseAssociationRow );
@@ -705,6 +702,7 @@ public class OgmCollectionPersister extends AbstractCollectionPersister implemen
 						updateInverseSideOfAssociationNavigation(
 								session,
 								null,
+								associationPersister.getAssociationKey(),
 								association.get( assocEntryKey ),
 								Action.REMOVE,
 								assocEntryKey
