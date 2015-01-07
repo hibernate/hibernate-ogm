@@ -273,7 +273,7 @@ public class MongoDBTestHelper implements TestableGridDialect {
 		MongoDBDatastoreProvider provider = MongoDBTestHelper.getProvider( sessionFactory );
 		DBObject actual = provider.getDatabase().getCollection( collection ).findOne( finder );
 
-		assertThat( isDBObjectAndContentEqual( actual, expected ) ).isTrue();
+		assertThat( isDBObjectAndContentEqual( actual, expected ) ).describedAs( "Expected: " + expected + " but was: " + actual ).isTrue();
 	}
 
 	/*
