@@ -79,6 +79,9 @@ Here is a list of supported Java types:
 * Double
 * Integer
 * Long
+* Short
+* Float
+* Character
 * String
 * BigDecimal (mapped as scientific notation)
 * BigInteger
