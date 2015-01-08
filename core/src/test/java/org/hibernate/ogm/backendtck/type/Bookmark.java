@@ -54,6 +54,8 @@ public class Bookmark {
 	private Double taxPercentage;
 	private Classifier classifier;
 	private Classifier classifierAsOrdinal;
+	private Float visitRatio;
+	private Short urlPort;
 
 	@Id
 	public String getId() {
@@ -236,5 +238,21 @@ public class Bookmark {
 
 	public void setTaxPercentage(Double taxPercentage) {
 		this.taxPercentage = taxPercentage;
+	}
+
+	public Float getVisitRatio() {
+		return visitRatio;
+	}
+
+	public void setVisitRatio(Float visitRatio) {
+		this.visitRatio = visitRatio;
+	}
+
+	public Short getUrlPort() {
+		return urlPort;
+	}
+
+	public void setUrlPort(Short urlPort) {
+		this.urlPort = urlPort;
 	}
 }
