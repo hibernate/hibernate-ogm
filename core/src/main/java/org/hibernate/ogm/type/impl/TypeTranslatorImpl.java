@@ -26,6 +26,7 @@ import org.hibernate.type.descriptor.java.BooleanTypeDescriptor;
 import org.hibernate.type.descriptor.java.ByteTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarDateTypeDescriptor;
 import org.hibernate.type.descriptor.java.CalendarTypeDescriptor;
+import org.hibernate.type.descriptor.java.CharacterTypeDescriptor;
 import org.hibernate.type.descriptor.java.ClassTypeDescriptor;
 import org.hibernate.type.descriptor.java.DoubleTypeDescriptor;
 import org.hibernate.type.descriptor.java.FloatTypeDescriptor;
@@ -56,13 +57,14 @@ public class TypeTranslatorImpl implements TypeTranslator {
 	public TypeTranslatorImpl(GridDialect dialect) {
 		this.dialect = dialect;
 
-		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 17 );
+		Map<JavaTypeDescriptor<?>, GridType> tmpMap = newHashMap( 20 );
 		tmpMap.put( ClassTypeDescriptor.INSTANCE, ClassType.INSTANCE );
 		tmpMap.put( LongTypeDescriptor.INSTANCE, LongType.INSTANCE );
 		tmpMap.put( IntegerTypeDescriptor.INSTANCE, IntegerType.INSTANCE );
 		tmpMap.put( DoubleTypeDescriptor.INSTANCE, DoubleType.INSTANCE );
 		tmpMap.put( FloatTypeDescriptor.INSTANCE, FloatType.INSTANCE );
 		tmpMap.put( ShortTypeDescriptor.INSTANCE, ShortType.INSTANCE );
+		tmpMap.put( CharacterTypeDescriptor.INSTANCE, CharacterType.INSTANCE );
 		tmpMap.put( StringTypeDescriptor.INSTANCE, StringType.INSTANCE );
 		tmpMap.put( UrlTypeDescriptor.INSTANCE, UrlType.INSTANCE );
 		tmpMap.put( BigDecimalTypeDescriptor.INSTANCE, BigDecimalType.INSTANCE );

@@ -56,6 +56,7 @@ public class Bookmark {
 	private Classifier classifierAsOrdinal;
 	private Float visitRatio;
 	private Short urlPort;
+	private Character delimiter;
 
 	@Id
 	public String getId() {
@@ -254,5 +255,13 @@ public class Bookmark {
 
 	public void setUrlPort(Short urlPort) {
 		this.urlPort = urlPort;
+	}
+
+	public Character getDelimiter() {
+		return delimiter;
+	}
+
+	public void setDelimiter(Character delimiter) {
+		this.delimiter = delimiter;
 	}
 }
