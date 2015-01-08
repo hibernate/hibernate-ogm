@@ -16,6 +16,7 @@ import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.id.PersistentIdentifierGenerator;
 import org.hibernate.id.enhanced.SequenceStyleGenerator;
 import org.hibernate.internal.util.config.ConfigurationHelper;
+import org.hibernate.ogm.dialect.impl.GridDialects;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.DefaultIdSourceKeyMetadata;
 import org.hibernate.ogm.model.key.spi.IdSourceKey;
@@ -136,7 +137,10 @@ public class OgmSequenceGenerator extends OgmGeneratorBase {
 			return new SequenceKeyAndMetadataProvider( generatorKeyMetadata );
 		}
 		else {
-			log.dialectDoesNotSupportSequences( gridDialect.getClass() );
+			log.dialectDoesNotSupportSequences(
+					GridDialects.getWrappedDialect( gridDialect ),
+					(String) params.get( SequenceStyleGenerator.JPA_ENTITY_NAME )
+			);
 
 			OgmTableGenerator tableGenerator = new OgmTableGenerator();
 			Properties newParams = new Properties();

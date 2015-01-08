@@ -24,7 +24,6 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.options.spi.AnnotationConverter;
 import org.hibernate.service.spi.ServiceException;
-
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.FormatWith;
@@ -200,8 +199,8 @@ public interface Log extends BasicLogger {
 	HibernateException unableToFindGridType(String typeName);
 
 	@LogMessage(level = WARN)
-	@Message(id = 60, value = "Grid dialect %1$s does not support sequences, falling back to table-based id generation. Consider to use @TableGenerator rather than @SequenceGenerator.")
-	void dialectDoesNotSupportSequences(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass);
+	@Message(id = 60, value = "Sequence id generator used for entity '%2$s' is not supported by grid dialect %1$s, falling back to table-based id generation. Consider to use @TableGenerator rather than @SequenceGenerator.")
+	void dialectDoesNotSupportSequences(@FormatWith(ClassObjectFormatter.class) Class<?> dialectClass, String entityName);
 
 	@LogMessage(level = WARN)
 	@Message(id = 61, value = "The option '@TableGenerator#catalog()' is not supported by Hibernate OGM. Its value %s is going to be ignored.")
