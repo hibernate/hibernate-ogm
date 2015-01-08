@@ -103,6 +103,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUrlPort( urlPort );
 		final Float visitRatio = Float.valueOf( (float) 10.4 );
 		b.setVisitRatio( visitRatio );
+		final Character delimiter = Character.valueOf( '/' );
+		b.setDelimiter( delimiter );
 		b.setType( BookmarkType.URL );
 		b.setTaxPercentage( 12.34d );
 		session.persist( b );
@@ -123,6 +125,7 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
 		assertEquals( "url port incorrect", urlPort, b.getUrlPort() );
 		assertEquals( "visit ratio incorrect", visitRatio, b.getVisitRatio() );
+		assertEquals( "delimieter incorrect", delimiter, b.getDelimiter() );
 		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
 		assertEquals( "Classifier as enum string is incorrect", Classifier.HOME, b.getClassifier() );
 		assertEquals( "Classifier stored as enum ordinal is incorrect", Classifier.WORK, b.getClassifierAsOrdinal() );
@@ -192,6 +195,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUrlPort( urlPort );
 		final Float visitRatio = Float.valueOf( (float) 10.4 );
 		b.setVisitRatio( visitRatio );
+		final Character delimiter = Character.valueOf( '/' );
+		b.setDelimiter( delimiter );
 
 		session.persist( b );
 		transaction.commit();
