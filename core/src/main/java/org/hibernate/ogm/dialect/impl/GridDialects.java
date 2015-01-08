@@ -21,7 +21,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
  *
  * @author Gunnar Morling
  */
-class GridDialects {
+public class GridDialects {
 
 	private GridDialects() {
 	}
@@ -51,12 +51,25 @@ class GridDialects {
 	 * @param facetType the dialect facet type of interest
 	 * @return {@code true} in case the given dialect implements the specified facet, {@code false} otherwise
 	 */
-	public static boolean hasFacet(GridDialect gridDialect, Class<? extends GridDialect> facetType) {
+	static boolean hasFacet(GridDialect gridDialect, Class<? extends GridDialect> facetType) {
 		if ( gridDialect instanceof ForwardingGridDialect ) {
 			return hasFacet( ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect(), facetType );
 		}
 		else {
 			return facetType.isAssignableFrom( gridDialect.getClass() );
+		}
+	}
+
+	/**
+	 * Returns the actual grid dialect type which may either be the type of the given dialect itself of the type of the
+	 * wrapped dialect in case the given dialect is a {@link ForwardingGridDialect}.
+	 */
+	public static Class<? extends GridDialect> getWrappedDialect(GridDialect gridDialect) {
+		if ( gridDialect instanceof ForwardingGridDialect ) {
+			return getWrappedDialect( ( (ForwardingGridDialect<?>) gridDialect ).getGridDialect() );
+		}
+		else {
+			return gridDialect.getClass();
 		}
 	}
 }
