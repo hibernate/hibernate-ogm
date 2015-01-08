@@ -33,8 +33,11 @@ import org.hibernate.ogm.util.impl.StringHelper;
  * An association collects changes applied to it. These changes are represented by a list of
  * {@link AssociationOperation}. It is intended that {@link GridDialect}s retrieve these actions and apply them to the
  * datastore. The list of changes is computed against the snapshot.
+ * <p>
+ * Note that the {@link Tuple}s representing association rows always also contain the columns of their {@link RowKey}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
+ * @author Gunnar Morling
  */
 public class Association {
 	private final AssociationSnapshot snapshot;
