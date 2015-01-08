@@ -36,6 +36,7 @@ import org.junit.Test;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Nicolas Helleringer
  * @author Oliver Carr <ocarr@redhat.com>
+ * @author Ajay Bhat
  */
 public class BuiltInTypeTest extends OgmTestCase {
 
@@ -98,6 +99,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUserId( userId );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
+		final Short urlPort = Short.valueOf( (short) 80 );
+		b.setUrlPort( urlPort );
+		final Float visitRatio = Float.valueOf( (float) 10.4 );
+		b.setVisitRatio( visitRatio );
 		b.setType( BookmarkType.URL );
 		b.setTaxPercentage( 12.34d );
 		session.persist( b );
@@ -116,6 +121,8 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertEquals( "user id incorrect", userId, b.getUserId() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
 		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
+		assertEquals( "url port incorrect", urlPort, b.getUrlPort() );
+		assertEquals( "visit ratio incorrect", visitRatio, b.getVisitRatio() );
 		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
 		assertEquals( "Classifier as enum string is incorrect", Classifier.HOME, b.getClassifier() );
 		assertEquals( "Classifier stored as enum ordinal is incorrect", Classifier.WORK, b.getClassifierAsOrdinal() );
@@ -181,6 +188,10 @@ public class BuiltInTypeTest extends OgmTestCase {
 		b.setUserId( userId );
 		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
 		b.setStockCount( stockCount );
+		final Short urlPort = Short.valueOf( (short) 80 );
+		b.setUrlPort( urlPort );
+		final Float visitRatio = Float.valueOf( (float) 10.4 );
+		b.setVisitRatio( visitRatio );
 
 		session.persist( b );
 		transaction.commit();
