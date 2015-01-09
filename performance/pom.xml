@@ -26,18 +26,6 @@
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>hibernate-ogm-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
 	<dependencies>
         <dependency>
             <groupId>org.hibernate.ogm</groupId>
