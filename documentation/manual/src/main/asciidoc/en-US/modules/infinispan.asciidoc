@@ -419,10 +419,14 @@ the key being the column name.
 Hibernate OGM support by default the following property types:
 
 * [classname]+java.lang.String+
+* [classname]+java.lang.Character+ (or char primitive)
 * [classname]+java.lang.Boolean+ (or boolean primitive)
 * [classname]+java.lang.Byte+ (or byte primitive)
+* [classname]+java.lang.Short+ (or short primitive)
+* [classname]+java.lang.Integer+ (or integer primitive)
 * [classname]+java.lang.Long+ (or long primitive)
 * [classname]+java.lang.Integer+ (or integer primitive)
+* [classname]+java.lang.Float+ (or float primitive)
 * [classname]+java.lang.Double+ (or double primitive)
 
 * [classname]+java.math.BigDecimal+

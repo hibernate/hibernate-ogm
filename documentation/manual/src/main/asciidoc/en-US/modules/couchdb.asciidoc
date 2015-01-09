@@ -196,6 +196,13 @@ Hibernate OGM support by default the following types:
   { "text" : "Hello world!" }
 ----
 
+* [classname]+java.lang.Character+ (or char primitive)
+
+[source, JSON]
+----
+  { "delimiter" : "/" }
+----
+
 * [classname]+java.lang.Boolean+ (or boolean primitive)
 
 [source, JSON]
@@ -210,6 +217,20 @@ Hibernate OGM support by default the following types:
   { "display_mask" : "70" }
 ----
 
+* [classname]+java.lang.Short+ (or short primitive)
+
+[source, JSON]
+----
+  { "urlPort" : 80 }
+----
+
+* [classname]+java.lang.Integer+ (or int primitive)
+
+[source, JSON]
+----
+  { "stockCount" : 12309 }
+----
+
 * [classname]+java.lang.Long+ (or long primitive)
 
 [source, JSON]
@@ -217,11 +238,11 @@ Hibernate OGM support by default the following types:
   { "userId" : "-6718902786625749549" }
 ----
 
-* [classname]+java.lang.Integer+ (or integer primitive)
+* [classname]+java.lang.Float+ (or float primitive)
 
 [source, JSON]
 ----
-  { "stockCount" : 12309 }
+  { "visitRatio" : 10.4 }
 ----
 
 * [classname]+java.lang.Double+ (or double primitive)

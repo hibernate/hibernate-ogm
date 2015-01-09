@@ -105,12 +105,13 @@ Each property or more precisely column is represented by an attribute of this no
 The following types (and corresponding primitives) get passed to Neo4j without any conversion:
 
 * [classname]+java.lang.Boolean+
-* [classname]+java.lang.Byte+
 * [classname]+java.lang.Character+
-* [classname]+java.lang.Double+
-* [classname]+java.lang.Float+
+* [classname]+java.lang.Byte+
+* [classname]+java.lang.Short+
 * [classname]+java.lang.Integer+
 * [classname]+java.lang.Long+
+* [classname]+java.lang.Float+
+* [classname]+java.lang.Double+
 * [classname]+java.lang.String+
 
 The following types get converted into [classname]+java.lang.String+:
