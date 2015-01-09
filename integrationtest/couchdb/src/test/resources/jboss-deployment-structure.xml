@@ -11,7 +11,7 @@
 
     <deployment>
         <dependencies>
-            <module name="org.hibernate" slot="ogm" />
+            <module name="org.hibernate" slot="ogm" services="import" />
             <module name="org.hibernate.ogm.couchdb" services="import" />
             <module name="org.hibernate.search.orm" slot="${hibernateSearchVersion}" services="import" />
             <module name="org.jboss.resteasy.resteasy-jackson2-provider" />
