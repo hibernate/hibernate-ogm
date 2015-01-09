@@ -8,9 +8,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.hibernate.ogm</groupId>
+    <parent>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-bom</artifactId>
+        <version>4.1.1-SNAPSHOT</version>
+        <relativePath>bom/pom.xml</relativePath>
+    </parent>
+
     <artifactId>hibernate-ogm-parent</artifactId>
-    <version>4.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Hibernate OGM Aggregator</name>
@@ -120,35 +125,6 @@
     </mailingLists>
 
     <properties>
-        <!-- compile/runtime dependency versions, managed in the BOM -->
-        <classmateVersion>1.0.0</classmateVersion>
-        <ehcacheVersion>2.6.9</ehcacheVersion>
-        <infinispanVersion>7.0.3.Final</infinispanVersion>
-        <mongodbVersion>2.12.4</mongodbVersion>
-        <neo4jVersion>2.1.6</neo4jVersion>
-
-        <!--
-             Not all the Neo4j artifacts are available in the latest version; Some artifacts with the older
-             version need to be explicitly managed as they have transitive dependencies in different versions
-             than Neo4j core
-        -->
-        <neo4jCypherCompilerOlderVersion>2.0.3</neo4jCypherCompilerOlderVersion>
-        <hibernateVersion>4.3.7.Final</hibernateVersion>
-        <hibernateSearchVersion>5.0.0.Final</hibernateSearchVersion>
-        <hibernateParserVersion>1.1.0.Final</hibernateParserVersion>
-        <hibernateCommonsAnnotationsVersion>4.0.5.Final</hibernateCommonsAnnotationsVersion>
-        <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
-        <jbossLoggingVersion>3.1.4.GA</jbossLoggingVersion>
-        <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
-        <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
-        <slf4jVersion>1.7.5</slf4jVersion>
-        <resteasyVersion>3.0.9.Final</resteasyVersion>
-        <jacksonVersion>2.4.1</jacksonVersion>
-        <parboiledVersion>1.1.6</parboiledVersion>
-        <scalaLibraryVersion>2.10.4</scalaLibraryVersion>
-        <concurrentlinkedhashmapVersion>1.3.1</concurrentlinkedhashmapVersion>
-        <asmVersion>4.1</asmVersion>
-        <luceneVersion>4.10.2</luceneVersion>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
