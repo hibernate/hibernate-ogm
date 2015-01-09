@@ -11,9 +11,9 @@
 
     <parent>
         <groupId>org.hibernate.ogm</groupId>
-        <artifactId>hibernate-ogm-parent</artifactId>
+        <artifactId>hibernate-ogm-build-parent</artifactId>
         <version>4.1.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../build-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>hibernate-ogm-core</artifactId>

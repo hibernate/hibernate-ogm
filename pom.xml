@@ -20,6 +20,7 @@
     <inceptionYear>2010</inceptionYear>
 
     <modules>
+        <module>build-parent</module>
         <module>bom</module>
         <module>core</module>
         <module>ehcache</module>
@@ -174,79 +175,6 @@
         <!-- Not using default port to reduce chances of shutting down an external MongoDB instance -->
         <embeddedMongoDbPort>27018</embeddedMongoDbPort>
     </properties>
-
-    <!-- Only for management of test-scoped dependencies; All other dependencies (which are exposed to users) are
-         managed in the BOM -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.11</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.easytesting</groupId>
-                <artifactId>fest-assert</artifactId>
-                <version>1.4</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.experlog</groupId>
-                <artifactId>xapool</artifactId>
-                <scope>test</scope>
-                <version>1.5.0</version>
-            </dependency>
-            <dependency>
-              <groupId>org.jboss.naming</groupId>
-              <artifactId>jnp-client</artifactId>
-              <scope>test</scope>
-              <version>${jbossNamingVersion}</version>
-            </dependency>
-            <dependency>
-              <groupId>org.jboss.naming</groupId>
-              <artifactId>jnpserver</artifactId>
-              <scope>test</scope>
-              <version>${jbossNamingVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.shrinkwrap</groupId>
-                <artifactId>shrinkwrap-bom</artifactId>
-                <version>${shrinkwrapVersion}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>1.9.5</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-core</artifactId>
-                <version>1.3</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>18.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.openjdk.jmh</groupId>
-                <artifactId>jmh-core</artifactId>
-                <version>${jmhVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.openjdk.jmh</groupId>
-                <artifactId>jmh-generator-annprocess</artifactId>
-                <version>${jmhVersion}</version>
-                <scope>provided</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <build>
         <defaultGoal>install</defaultGoal>
