@@ -1,6 +1,27 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.1.Final (12-01-2015)
+-------------------------
+
+** Bug
+    * [OGM-697] - [Infinispan] Fix manual clear of the atomic map when Infinispan 7.0.3 is used
+    * [OGM-701] - The MongoDB Datastore provider must authenticate against the specified database
+    * [OGM-702] - Native query fails when entity has an embedded id
+    * [OGM-704] - Don't persist association properties on inverse side of bi-directional association
+
+** Improvement
+    * [OGM-621] - The BOM POM should not export test dependencies
+    * [OGM-708] - Improve warning message OGM000060 triggered by OgmSequenceGenerator which does not give the true dialect
+    * [OGM-710] - Remove unneeded dependencies and dependency exports from WildFly modules
+    * [OGM-714] - Update to Hibernate ORM 4.3.8.Final
+
+** New Feature
+    * [OGM-401] - Add support for attributes of types short and float
+    * [OGM-640] - Add support for attribute of type Character
+    * [OGM-705] - Upgrade to Infinispan 7.0.3
+
+
 4.1.0.Final (17-12-2014)
 -------------------------
 

@@ -1,6 +1,6 @@
 # Hibernate OGM
 
-Version: 4.1.0.Final - 17 Dec 2014
+Version: 4.1.1.Final - 12 Jan 2015
 
 ## Description
 
