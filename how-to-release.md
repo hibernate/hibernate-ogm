@@ -24,15 +24,17 @@ Verify:
 
 1. the project status on [Jenkins](http://ci.hibernate.org/view/OGM/)
 
-2. there are no outstanding issues in JIRA
+2. the latest version of Hibernate ORM is used
 
-3. tests and artifacts:
+3. there are no outstanding issues in JIRA
+
+4. tests and artifacts:
 
    ```
        mvn clean install -s settings-example.xml
    ```
 
-4. the distribution package as built by Maven (_distribution/target/hibernate-ogm-[version]-dist_).
+5. the distribution package as built by Maven (_distribution/target/hibernate-ogm-[version]-dist_).
 
    They should contain the appropriate dependencies, without duplicates. The creation of these directories is driven by the assembly plugin (see _distribution/src/main/assembly/dist.xml_) which is very specific and might break with the inclusion of new dependencies.
 
