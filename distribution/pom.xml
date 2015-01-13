@@ -106,10 +106,6 @@
             <groupId>org.hibernate.ogm</groupId>
             <artifactId>hibernate-ogm-couchdb</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-infinispan</artifactId>
-        </dependency>
 
         <!--
             The following dependencies are listed because their are optional or shared among different backends.
