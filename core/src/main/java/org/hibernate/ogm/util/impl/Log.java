@@ -244,4 +244,8 @@ public interface Log extends BasicLogger {
 
 	@Message(id = 72, value = "Unable to configure datatore provider")
 	ServiceException unableToConfigureDatastoreProvider(@Cause Exception e);
+
+	@Message(id = 73, value = "Couldn't load the Lucene-based query parser backend. Make sure the dependency "
+			+ "org.hibernate.hql:hibernate-hql-lucene is part of the classpath.")
+	HibernateException cannotLoadLuceneParserBackend(@Cause Exception e);
 }

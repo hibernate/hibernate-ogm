@@ -14,6 +14,8 @@ import org.hibernate.hql.spi.FilterTranslator;
 import org.hibernate.hql.spi.QueryTranslator;
 import org.hibernate.hql.spi.QueryTranslatorFactory;
 import org.hibernate.ogm.query.spi.QueryParserService;
+import org.hibernate.ogm.util.impl.Log;
+import org.hibernate.ogm.util.impl.LoggerFactory;
 
 /**
  * Creates {@link QueryTranslator}s. Depending on whether the underlying datastore supports queries itself, a translator
@@ -22,6 +24,8 @@ import org.hibernate.ogm.query.spi.QueryParserService;
  * @author Gunnar Morling
  */
 public class OgmQueryTranslatorFactory implements QueryTranslatorFactory {
+
+	private static final Log LOG = LoggerFactory.make();
 
 	@Override
 	public QueryTranslator createQueryTranslator(String queryIdentifier, String queryString, Map filters, SessionFactoryImplementor factory,
@@ -32,7 +36,12 @@ public class OgmQueryTranslatorFactory implements QueryTranslatorFactory {
 			return new OgmQueryTranslator( factory, queryParser, queryIdentifier, queryString, filters );
 		}
 		else {
-			return new FullTextSearchQueryTranslator( factory, queryIdentifier, queryString, filters );
+			try {
+				return new FullTextSearchQueryTranslator( factory, queryIdentifier, queryString, filters );
+			}
+			catch (Exception e) {
+				throw LOG.cannotLoadLuceneParserBackend( e );
+			}
 		}
 	}
 

@@ -28,6 +28,10 @@
             <artifactId>hibernate-ogm-core</artifactId>
         </dependency>
         <dependency>
+             <groupId>org.hibernate.hql</groupId>
+             <artifactId>hibernate-hql-lucene</artifactId>
+         </dependency>
+        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->

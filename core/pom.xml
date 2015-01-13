@@ -42,6 +42,7 @@
         <dependency>
             <groupId>org.hibernate.hql</groupId>
             <artifactId>hibernate-hql-lucene</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
