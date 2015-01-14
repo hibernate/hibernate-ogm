@@ -60,7 +60,7 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Build Tuple object with key %1$s (does not trigger access to the datastore)", key );
+		log.tracef( "Build Tuple object with key %1$s to the datastore", key );
 		return super.createTuple( key, tupleContext );
 	}
 
@@ -89,7 +89,7 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		log.tracef( "Build association object with key %1$s (does not trigger access to the datastore)", key );
+		log.tracef( "Build association object with key %1$s to the datastore", key );
 		return super.createAssociation( key, associationContext );
 	}
 
