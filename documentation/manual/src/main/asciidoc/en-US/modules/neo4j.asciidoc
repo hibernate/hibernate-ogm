@@ -732,6 +732,23 @@ If required, you can set the initial value of a sequence and the increment size 
 +@TableGenerator#initialValue()+ and +@TableGenerator#allocationSize()+, respectively.
 The options +@TableGenerator#catalog()+, +@TableGenerator#schema()+, +@TableGenerator#uniqueConstraints()+ and +@TableGenerator#indexes()+  are not supported.
 
+==== Labels summary
+
+The maximum number of labels the database can contain is roughly 2 billion.
+
+The following summary will help you to keep track of the labels assigned to a new node:
+
+.Summary of the labels assigned to a new node
+[cols="2*", options="header"]
+|===
+     ^| NODE TYPE                   ^| LABELS
+
+      | Entity                       | ENTITY, <Entity class name>
+      | Embeddable                   | EMBEDDED, <Embeddable class name>
+      | GenerationType.SEQUENCE      | SEQUENCE
+      | GenerationType.TABLE         | TABLE_BASED_SEQUENCE, <Table name>
+|===
+
 [[ogm-neo4j-transactions]]
 === Transactions
 
