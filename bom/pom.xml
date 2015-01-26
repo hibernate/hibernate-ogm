@@ -26,6 +26,7 @@
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>7.0.3.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
+        <fongodbVersion>1.5.10</fongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
 
         <!--
@@ -399,6 +400,11 @@
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${mongodbVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.fakemongo</groupId>
+                <artifactId>fongo</artifactId>
+                <version>${fongodbVersion}</version>
             </dependency>
 
             <!-- Neo4j -->
