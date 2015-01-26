@@ -133,6 +133,53 @@ Common properties shared between stores are declared on +OgmProperties+
 For maximum portability between stores, use the most generic interface possible.
 ====
 
+==== FongoDB Provider
+
+Fongo is an in-memory java implementation of MongoDB.
+It intercepts calls to the standard mongo-java-driver for finds, updates, inserts, removes and other methods.
+The primary use is for lightweight unit testing where you don't want to spin up a +mongod+ process.
+
+Hibernate OGM provides a FongoDB provider so during tests it can be used instead of MongoDB driver.
+Note that you don't need to change your business code to adapt to FongoDB because all adaptations are done under the cover by Hibernate OGM.
+
+To start using FongoDB provider, you should do two things:
+
+The first one is register the provider by using +hibernate.ogm.datastore.provider+ and setting to +fongodb+.
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<persistence-unit name="ogm-jpa-tutorial" transaction-type="JTA">
+    <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+    <properties>
+        <property name="hibernate.ogm.datastore.provider" value="fongodb"/>
+        <property name="hibernate.transaction.jta.platform"
+                  value="org.hibernate.service.jta.platform.internal.JBossStandAloneJtaPlatform"/>
+    </properties>
+</persistence-unit>
+----
+
+The second one is adding FongoDB and SLF4J dependencies in your project.
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>com.github.fakemongo</groupId>
+    <artifactId>fongo</artifactId>
+    <scope>test</scope>
+    <version>${fongoDBVersion}</version>
+</dependency>
+<dependency>
+    <groupId>org.slf4j</groupId>
+    <artifactId>slf4j-simple</artifactId>
+    <version>${slf4jVersion}</version>
+    <scope>test</scope>
+</dependency>
+----
+
+You can read more about FongoDB project and its limitations at https://github.com/fakemongo/fongo
+
 [[ogm-mongodb-annotation-configuration]]
 ==== Annotation based configuration
 
@@ -509,7 +556,7 @@ public class Bookmark {
 [source, JSON]
 ----
 {
-  "_id" : "bookmark_1" 
+  "_id" : "bookmark_1"
   "title" : "Hibernate OGM documentation"
 }
 ----
@@ -618,7 +665,7 @@ The preferable strategy, Hibernate OGM will create the identifier upon insertion
 To apply this strategy the id must be one of the following:
 
 * annotated with +@Type(type="objectid")+
-* [classname]+org.bson.types.ObjectId+ 
+* [classname]+org.bson.types.ObjectId+
 
 like in the following examples:
 
@@ -710,7 +757,7 @@ hibernate_sequences collection
 
 [source, JSON]
 ----
-{ 
+{
     "_id" : "GuitarPlayer",
     "next_val" : 101
 }
@@ -794,7 +841,7 @@ hibernate_sequences collection
 
 [source, JSON]
 ----
-{ "_id" : "song_sequence_name", "next_val" : 21 } 
+{ "_id" : "song_sequence_name", "next_val" : 21 }
 ----
 ====
 
@@ -836,7 +883,7 @@ hibernate_sequences collection
 
 [source, JSON]
 ----
-{ "_id" : "song_seq", "next_val" : 42 } 
+{ "_id" : "song_seq", "next_val" : 42 }
 ----
 ====
 
@@ -870,7 +917,7 @@ If the property +hibernate.id.new_generator_mappings+  is set to +true+,
 ----
 @Entity
 public class DistributedRevisionControl {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
@@ -902,7 +949,7 @@ hibernate_sequences collection
 ----
 @Entity
 public class Comedian {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
   private ObjectId id;
@@ -1509,7 +1556,7 @@ Member collection as JSON in MongoDB
 ----
 ====
 
-.Bidirectional many-to-one 
+.Bidirectional many-to-one
 ====
 [source, JAVA]
 ----
@@ -1828,7 +1875,7 @@ User collection as JSON in MongoDB
 {
   "_id" : "user_001",
   "addresses" : [
-    { 
+    {
       "addresses_KEY" : "work",
       "addresses_id" : "address_001"
     },
@@ -1844,8 +1891,8 @@ Address collection as JSON in MongoDB
 
 [source, JSON]
 ----
-{ "_id" : "address_001", "city" : "Rome" } 
-{ "_id" : "address_002", "city" : "Paris" } 
+{ "_id" : "address_001", "city" : "Rome" }
+{ "_id" : "address_002", "city" : "Paris" }
 ----
 ====
 
@@ -1886,7 +1933,7 @@ User collection as JSON in MongoDB
 {
   "_id" : "user_001",
   "addresses" : [
-    { 
+    {
       "addressType" : "work",
       "addresses_id" : "address_001"
     },
@@ -1902,8 +1949,8 @@ Address collection as JSON in MongoDB
 
 [source, JSON]
 ----
-{ "_id" : "address_001", "city" : "Rome" } 
-{ "_id" : "address_002", "city" : "Paris" } 
+{ "_id" : "address_001", "city" : "Rome" }
+{ "_id" : "address_002", "city" : "Paris" }
 ----
 ====
 
@@ -1975,7 +2022,7 @@ ClassRoom collection
 ----
 ====
 
-.Bidirectional many-to-many 
+.Bidirectional many-to-many
 ====
 [source, JAVA]
 ----
@@ -2124,7 +2171,7 @@ For example, if the [classname]+BankAccount+ and [classname]+Owner+ are related,
 the collection used to store will be named +associations_Owner_BankAccount+. You can rename
 The prefix is useful to quickly identify the association collections from the entity collections.
 You can also decide to rename the collection representing the association using +@JoinTable+
-(see <<mongodb-one-collection-strategy-join-table, an example>>) 
+(see <<mongodb-one-collection-strategy-join-table, an example>>)
 
 Each document of an association collection has the following structure:
 
@@ -2445,7 +2492,7 @@ BankAccount collection
 }
 ----
 
-associations_AccountOwner_BankAccount collection 
+associations_AccountOwner_BankAccount collection
 
 [source, JSON]
 ----
@@ -2453,7 +2500,7 @@ associations_AccountOwner_BankAccount collection
   "_id" : {
     "bankAccounts_id" : "account_1"
   },
-  "rows" : [ "owner_1" ] 
+  "rows" : [ "owner_1" ]
 }
 {
   "_id" : {
@@ -2531,7 +2578,7 @@ OwnerBankAccount
   "_id" : {
     "bankAccounts_id" : "account_1"
   },
-  "rows" : [ "owner_1" ] 
+  "rows" : [ "owner_1" ]
 }
 {
   "_id" : {
@@ -2557,7 +2604,7 @@ that the current instance is related to.
 ====
 This strategy won't affect *-to-one associations or embedded collections.
 
-Generally, you should not make use of this strategy 
+Generally, you should not make use of this strategy
 unless embedding the association information proves to be too big for your document
 and you wish to separate them.
 ====
