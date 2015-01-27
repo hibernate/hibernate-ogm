@@ -146,6 +146,8 @@ To start using FongoDB provider, you should do two things:
 
 The first one is register the provider by using +hibernate.ogm.datastore.provider+ and setting to +fongodb+.
 
+.Configuring FongoDB provider
+====
 [source, XML]
 [subs="verbatim,attributes"]
 ----
@@ -158,6 +160,7 @@ The first one is register the provider by using +hibernate.ogm.datastore.provide
     </properties>
 </persistence-unit>
 ----
+====
 
 The second one is adding FongoDB and SLF4J dependencies in your project.
 
