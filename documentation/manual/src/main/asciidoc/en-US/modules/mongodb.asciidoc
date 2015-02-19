@@ -304,6 +304,13 @@ Hibernate OGM supports by default the following property types:
   { "display_mask" : "70" }
 ----
 
+* [classname]+java.lang.Byte[]+ (or byte[])
+
+[source, JSON]
+----
+  { "pdfAsBytes" : BinData(0,"MTIzNDU=") }
+----
+
 * [classname]+java.lang.Short+ (or short primitive)
 
 [source, JSON]
@@ -372,20 +379,6 @@ Hibernate OGM supports by default the following property types:
 [source, JSON]
 ----
   { "serialNumber" : "71f5713d-69c4-4b62-ad15-aed8ce8d10e0" }
-----
-
-* [classname]+java.util.URL+
-
-[source, JSON]
-----
-  { "url" : "http://www.hibernate.org/" }
-----
-
-* [classname]+java.util.URL+
-
-[source, JSON]
-----
-  { "url" : "http://www.hibernate.org/" }
 ----
 
 * [classname]+java.util.URL+
