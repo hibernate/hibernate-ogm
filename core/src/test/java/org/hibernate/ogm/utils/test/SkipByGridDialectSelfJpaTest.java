@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.utils.test;
 
-import junit.framework.Assert;
+import static org.junit.Assert.fail;
 
 import org.hibernate.ogm.backendtck.simpleentity.Hypothesis;
 import org.hibernate.ogm.utils.GridDialectType;
@@ -26,7 +26,7 @@ public class SkipByGridDialectSelfJpaTest extends JpaTestCase {
 		GridDialectType.HASHMAP, GridDialectType.INFINISPAN, GridDialectType.MONGODB, GridDialectType.EHCACHE, GridDialectType.NEO4J, GridDialectType.COUCHDB
 	})
 	public void testWhichAlwaysFails() {
-		Assert.fail( "This should never be executed" );
+		fail( "This should never be executed" );
 	}
 
 	@Test
