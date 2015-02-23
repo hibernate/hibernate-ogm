@@ -71,7 +71,7 @@
     </distributionManagement>
 
     <prerequisites>
-       <maven>3.0.4</maven>
+       <maven>3.2.3</maven>
     </prerequisites>
 
     <issueManagement>
