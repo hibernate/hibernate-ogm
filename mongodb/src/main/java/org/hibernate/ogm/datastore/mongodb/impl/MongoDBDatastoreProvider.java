@@ -149,13 +149,28 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
 
-			if ( !mongo.getDatabaseNames().contains( databaseName ) ) {
+			Boolean containsDatabase;
+			try {
+				containsDatabase = mongo.getDatabaseNames().contains( databaseName );
+			}
+			catch (MongoException me) {
+				// we don't have enough privileges, ignore the database creation
+				containsDatabase = null;
+			}
+
+			if ( containsDatabase != null && containsDatabase == Boolean.FALSE ) {
 				if ( config.isCreateDatabase() ) {
 					log.creatingDatabase( databaseName );
 				}
 				else {
 					throw log.databaseDoesNotExistException( config.getDatabaseName() );
 				}
+			}
+			DB db = mongo.getDB( databaseName );
+			if ( containsDatabase == null ) {
+				// force a connection to make sure we do have read access
+				// otherwise the connection failure happens during the first flush
+				db.collectionExists( "WeDoNotCareWhatItIsWeNeedToConnect" );
 			}
 			return mongo.getDB( databaseName );
 		}
