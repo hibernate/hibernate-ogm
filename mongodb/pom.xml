@@ -23,6 +23,9 @@
                         <MONGODB_PORT>${env.MONGODB_PORT}</MONGODB_PORT>
                     </environmentVariables>
                     <forkMode>once</forkMode>
+                    <!-- Apache Lucene uses assertions which currently fail on JDK9: -->
+                    <!-- not sure yet how that is going to be resolved, but it's not an OGM problem. -->
+                    <enableAssertions>false</enableAssertions>
                 </configuration>
             </plugin>
             <plugin>
