@@ -54,30 +54,30 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 
 	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Reading Tuple with key %1$s and context %2$s", key, tupleContext );
+		log.tracef( "Reading tuple with key %1$s and context %2$s", key, tupleContext );
 		return super.getTuple( key, tupleContext );
 	}
 
 	@Override
 	public Tuple createTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Build Tuple object with key %1$s to the datastore", key );
+		log.tracef( "Creating tuple with key %1$s", key );
 		return super.createTuple( key, tupleContext );
 	}
 
 	@Override
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		if ( tuple.getSnapshot().isEmpty() ) {
-			log.tracef( "Creating Tuple with key %1$s in datastore", key );
+			log.tracef( "Inserting tuple with key %1$s into datastore", key );
 		}
 		else {
-			log.tracef( "Updating Tuple with key %1$s in datastore", key );
+			log.tracef( "Updating tuple with key %1$s in datastore", key );
 		}
 		super.insertOrUpdateTuple( key, tuple, tupleContext );
 	}
 
 	@Override
 	public void removeTuple(EntityKey key, TupleContext tupleContext) {
-		log.tracef( "Removing Tuple with key %1$s from datastore", key );
+		log.tracef( "Removing tuple with key %1$s from datastore", key );
 		super.removeTuple( key, tupleContext );
 	}
 
@@ -89,7 +89,7 @@ public class GridDialectLogger extends ForwardingGridDialect<Serializable> {
 
 	@Override
 	public Association createAssociation(AssociationKey key, AssociationContext associationContext) {
-		log.tracef( "Build association object with key %1$s to the datastore", key );
+		log.tracef( "Creating association with key %1$s", key );
 		return super.createAssociation( key, associationContext );
 	}
 
