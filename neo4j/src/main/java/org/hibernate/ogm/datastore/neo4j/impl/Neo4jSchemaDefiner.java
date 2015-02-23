@@ -76,9 +76,9 @@ public class Neo4jSchemaDefiner extends BaseSchemaDefiner {
 	private void createEntityConstraints(GraphDatabaseService neo4jDb, Configuration configuration) {
 		UniqueConstraintSchemaUpdateStrategy constraintMethod = UniqueConstraintSchemaUpdateStrategy.interpret( configuration.getProperties().get(
 				Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY ) );
-		log.debugf( "%1$s property set to %2$s" , Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY );
+		log.debugf( "%1$s property set to %2$s" , Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, constraintMethod );
 		if ( constraintMethod == UniqueConstraintSchemaUpdateStrategy.SKIP ) {
-			log.tracef( "%1$s property set to %2$s: Skipping generation of unique constraints", Environment.UNIQUE_CONSTRAINT_SCHEMA_UPDATE_STRATEGY, UniqueConstraintSchemaUpdateStrategy.SKIP );
+			log.tracef( "Skipping generation of unique constraints" );
 		}
 		else {
 			log.debug( "Creating missing constraints" );
