@@ -12,11 +12,6 @@
     <name>Hibernate OGM for MongoDB</name>
     <description>Persist objects in MongoDB</description>
 
-    <properties>
-        <mongodbProvider>mongodb</mongodbProvider>
-        <slf4jVersion>1.7.10</slf4jVersion>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -85,12 +80,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4jVersion}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
             <!-- "provided" is used as "compile-only" here; It's NOT needed at runtime -->
@@ -148,33 +137,15 @@
     </dependencies>
 
     <profiles>
-        <profile>
-            <id>fongo</id>
-            <properties>
-                <mongodbProvider>fongodb</mongodbProvider>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <configuration>
-                            <systemPropertyVariables>
-                                <mongodbProvider>${mongodbProvider}</mongodbProvider>
-                            </systemPropertyVariables>
-                            <forkMode>once</forkMode>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+        <!-- Executes the tests against a MongoDB which is automatically started/stopped by this build -->
         <profile>
             <id>embedded-mongodb</id>
             <activation>
-                <property>
-                    <name>!useExternalMongoDb</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
+            <properties>
+                <datastoreProvider>mongodb</datastoreProvider>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -244,9 +215,6 @@
                                 <MONGODB_PORT>${embeddedMongoDbPort}</MONGODB_PORT>
                                 <MONGODB_HOSTNAME>${embeddedMongoDbBindIp}</MONGODB_HOSTNAME>
                             </environmentVariables>
-                            <systemPropertyVariables>
-                                <mongodbProvider>${mongodbProvider}</mongodbProvider>
-                            </systemPropertyVariables>
                             <forkMode>once</forkMode>
                         </configuration>
                     </plugin>
@@ -278,6 +246,41 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Executes the tests against an in-memory fake MongoDB (Fongo) -->
+        <profile>
+            <id>fongo</id>
+            <activation>
+                 <property>
+                     <name>mongodbProvider</name>
+                     <value>fongo</value>
+                 </property>
+            </activation>
+            <properties>
+                <datastoreProvider>fongo</datastoreProvider>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Executes the tests against a separately started MongoDB server -->
+        <profile>
+            <id>external-mongodb</id>
+            <activation>
+                 <property>
+                     <name>mongodbProvider</name>
+                     <value>external</value>
+                 </property>
+            </activation>
+            <properties>
+                <datastoreProvider>mongodb</datastoreProvider>
+            </properties>
         </profile>
     </profiles>
 </project>
