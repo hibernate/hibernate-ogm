@@ -79,7 +79,7 @@ import org.junit.runners.model.TestClass;
  * @see OgmTestCase Base class for tests which is configured with this runner for ease of use
  * @author Gunnar Morling
  */
-public class OgmTestRunner extends GridDialectSkippableTestRunner {
+public class OgmTestRunner extends SkippableTestRunner {
 
 	private static final Log LOG = LoggerFactory.make();
 
