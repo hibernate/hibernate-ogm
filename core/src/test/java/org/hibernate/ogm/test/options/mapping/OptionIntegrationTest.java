@@ -11,9 +11,9 @@ import static org.fest.assertions.Assertions.assertThat;
 import java.lang.annotation.ElementType;
 
 import org.hibernate.cfg.Configuration;
-import org.hibernate.ogm.OgmSessionFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.options.navigation.EntityContext;
 import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.options.navigation.PropertyContext;
@@ -40,7 +40,7 @@ import org.junit.Test;
  */
 public class OptionIntegrationTest extends OgmTestCase {
 
-	private OgmSessionFactory sessions;
+	private OgmSessionFactoryImplementor sessions;
 
 	@After
 	public void closeSessionFactory() {
@@ -147,7 +147,7 @@ public class OptionIntegrationTest extends OgmTestCase {
 	}
 
 	private void setupSessionFactory(OgmConfiguration ogmConfiguration) {
-		sessions = ogmConfiguration.buildSessionFactory();
+		sessions = (OgmSessionFactoryImplementor) ogmConfiguration.buildSessionFactory();
 	}
 
 	private OgmConfiguration getConfiguration() {
