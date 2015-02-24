@@ -26,7 +26,7 @@
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>7.1.1.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
-        <fongodbVersion>1.5.10</fongodbVersion>
+        <fongodbVersion>1.6.0</fongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
 
         <!--
@@ -555,6 +555,11 @@
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
                 <version>${parboiledVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jacksonVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
