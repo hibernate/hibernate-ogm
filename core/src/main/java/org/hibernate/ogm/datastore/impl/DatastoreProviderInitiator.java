@@ -64,9 +64,13 @@ public final class DatastoreProviderInitiator implements StandardServiceInitiato
 			if ( !isShortName ) {
 				// There is the legitimate case of the provider FQN name given; As we encourage the usage of the short
 				// names though, chances are much higher that a misspelled short name has been given; Let's thus raise a
-				// warning, accepting it to be superfluous in the FQN case
-				String validProviderNames = Arrays.toString( AvailableDatastoreProvider.values() );
-				log.noValidDatastoreProviderShortName( name, validProviderNames.substring( 1, validProviderNames.length() - 1 ) );
+				// warning, as long as the provided name does not look like a FQN (i.e. have two dots)
+				if ( name != null && name.indexOf( '.' ) == name.lastIndexOf( '.' ) ) {
+					// we know that there is at least two dots so the name looks like com.acme.SomeClass
+					// we check for null because we are good people
+					String validProviderNames = Arrays.toString( AvailableDatastoreProvider.values() );
+					log.noValidDatastoreProviderShortName( name, validProviderNames.substring( 1, validProviderNames.length() - 1 ) );
+				}
 			}
 
 			return isShortName;

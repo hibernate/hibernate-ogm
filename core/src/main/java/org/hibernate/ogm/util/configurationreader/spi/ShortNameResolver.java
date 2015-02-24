@@ -13,7 +13,13 @@ package org.hibernate.ogm.util.configurationreader.spi;
  */
 public interface ShortNameResolver {
 
+	/**
+	 * Does not accept null values for the {@code name} parameter.
+	 */
 	boolean isShortName(String name);
 
+	/**
+	 * Does not accept null values for the {@code name} parameter.
+	 */
 	String resolve(String shortName);
 }
