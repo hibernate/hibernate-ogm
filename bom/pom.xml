@@ -26,6 +26,7 @@
         <ehcacheVersion>2.6.9</ehcacheVersion>
         <infinispanVersion>7.0.3.Final</infinispanVersion>
         <mongodbVersion>2.12.4</mongodbVersion>
+        <fongodbVersion>1.6.0</fongodbVersion>
         <neo4jVersion>2.1.6</neo4jVersion>
 
         <!--
@@ -400,6 +401,11 @@
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${mongodbVersion}</version>
             </dependency>
+            <dependency>
+                <groupId>com.github.fakemongo</groupId>
+                <artifactId>fongo</artifactId>
+                <version>${fongodbVersion}</version>
+            </dependency>
 
             <!-- Neo4j -->
             <dependency>
@@ -549,6 +555,11 @@
                 <groupId>org.parboiled</groupId>
                 <artifactId>parboiled-java</artifactId>
                 <version>${parboiledVersion}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jacksonVersion}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>

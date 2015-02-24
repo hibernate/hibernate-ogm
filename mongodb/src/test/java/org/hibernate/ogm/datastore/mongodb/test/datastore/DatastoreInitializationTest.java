@@ -19,18 +19,22 @@ import java.util.Map;
 import org.hibernate.boot.registry.classloading.internal.ClassLoaderServiceImpl;
 import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.MongoDBProperties;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.impl.MongoDBDatastoreProvider;
 import org.hibernate.ogm.datastore.mongodb.options.AuthenticationMechanismType;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceImpl;
 import org.hibernate.ogm.options.spi.OptionsService;
+import org.hibernate.ogm.utils.SkippableTestRunner;
+import org.hibernate.ogm.utils.SkipByDatastoreProvider;
 import org.hibernate.ogm.utils.TestHelper;
 import org.hibernate.service.spi.ServiceException;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoCredential;
@@ -38,6 +42,7 @@ import com.mongodb.MongoCredential;
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
+@RunWith(SkippableTestRunner.class)
 public class DatastoreInitializationTest {
 
 	/**
@@ -50,6 +55,7 @@ public class DatastoreInitializationTest {
 	public ExpectedException error = ExpectedException.none();
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testAuthentication() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -69,6 +75,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testDefaultAuthenticationMechanism() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -84,6 +91,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testX509AuthenticationMechanism() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -100,6 +108,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testGSSAPIAuthenticationMechanism() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -116,6 +125,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testPlainAuthenticationMechanism() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -132,6 +142,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testNotRecognizedAuthenticationMechanism() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.DATABASE, "test" );
@@ -151,6 +162,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testConnectionErrorWrappedInHibernateException() throws Exception {
 		Map<String, String> cfg = TestHelper.getEnvironmentProperties();
 		cfg.put( OgmProperties.HOST, NON_EXISTENT_IP );
@@ -168,6 +180,7 @@ public class DatastoreInitializationTest {
 	}
 
 	@Test
+	@SkipByDatastoreProvider(AvailableDatastoreProvider.FONGO)
 	public void testConnectionTimeout() {
 		Map<String, Object> cfg = new HashMap<String, Object>();
 		cfg.put( MongoDBProperties.TIMEOUT, "30" );

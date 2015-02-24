@@ -24,7 +24,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -41,7 +43,9 @@ import com.arjuna.ats.arjuna.coordinator.TxControl;
 public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
-	private static final TestableGridDialect helper = createStoreSpecificHelper();
+
+	private static final GridDialectType gridDialectType = determineGridDialectType();
+	private static final TestableGridDialect helper = instantiate( gridDialectType.loadTestableGridDialectClass() );
 
 	static {
 		// set 5 hours timeout on transactions: enough for debug, but not too high in case of CI problems.
@@ -51,30 +55,42 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
+	private static GridDialectType determineGridDialectType() {
+		for ( GridDialectType gridType : GridDialectType.values() ) {
+			Class<TestableGridDialect> testDialectClass = gridType.loadTestableGridDialectClass();
+			if ( testDialectClass != null ) {
+				return gridType;
+			}
+		}
+
+		return GridDialectType.HASHMAP;
+	}
+
+	private static TestableGridDialect instantiate(Class<TestableGridDialect> testableGridDialectClass) {
+		if ( testableGridDialectClass == null ) {
+			return new HashMapTestHelper();
+		}
+
+		try {
+			TestableGridDialect testableGridDialect = testableGridDialectClass.newInstance();
+			log.debugf( "Using TestGridDialect %s", testableGridDialectClass );
+			return testableGridDialect;
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
+	}
+
 	public static long getNumberOfEntities(EntityManager em) {
 		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
-	private static TestableGridDialect createStoreSpecificHelper() {
-		for ( GridDialectType gridType : GridDialectType.values() ) {
-			Class<TestableGridDialect> classForName = gridType.loadTestableGridDialectClass();
-			if ( classForName != null ) {
-				try {
-					TestableGridDialect attempt = classForName.newInstance();
-					log.debugf( "Using TestGridDialect %s", classForName );
-					return attempt;
-				}
-				catch ( Exception e ) {
-					// but other errors are not expected:
-					log.errorf( e, "Could not load TestGridDialect by name from %s", gridType );
-				}
-			}
-		}
-		return new org.hibernate.ogm.utils.HashMapTestHelper();
+	public static GridDialectType getCurrentDialectType() {
+		return gridDialectType;
 	}
 
-	public static GridDialectType getCurrentDialectType() {
-		return GridDialectType.valueFromHelperClass( helper.getClass() );
+	public static AvailableDatastoreProvider getCurrentDatastoreProvider() {
+		return DatastoreProviderHolder.INSTANCE;
 	}
 
 	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
@@ -223,5 +239,23 @@ public class TestHelper {
 	 */
 	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return helper.configureDatastore( configuration );
+	}
+
+	private static class DatastoreProviderHolder {
+
+		private static final AvailableDatastoreProvider INSTANCE = getDatastoreProvider();
+
+		private static AvailableDatastoreProvider getDatastoreProvider() {
+			// This ignores the case where the provider is given as class or FQN; That's ok for now, can be extended if
+			// needed
+			String datastoreProviderProperty = new OgmConfiguration().getProperty( OgmProperties.DATASTORE_PROVIDER );
+			AvailableDatastoreProvider provider = AvailableDatastoreProvider.byShortName( datastoreProviderProperty );
+
+			if ( provider == null ) {
+				throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
+			}
+
+			return provider;
+		}
 	}
 }

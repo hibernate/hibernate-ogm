@@ -22,6 +22,9 @@
                         <MONGODB_HOSTNAME>${env.MONGODB_HOSTNAME}</MONGODB_HOSTNAME>
                         <MONGODB_PORT>${env.MONGODB_PORT}</MONGODB_PORT>
                     </environmentVariables>
+                    <systemPropertyVariables>
+                        <mongodbProvider>${mongodbProvider}</mongodbProvider>
+                    </systemPropertyVariables>
                     <forkMode>once</forkMode>
                 </configuration>
             </plugin>
@@ -37,6 +40,12 @@
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
     </build>
 
     <dependencies>
@@ -64,6 +73,11 @@
         <dependency>
             <groupId>org.parboiled</groupId>
             <artifactId>parboiled-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.fakemongo</groupId>
+            <artifactId>fongo</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -123,13 +137,15 @@
     </dependencies>
 
     <profiles>
+        <!-- Executes the tests against a MongoDB which is automatically started/stopped by this build -->
         <profile>
             <id>embedded-mongodb</id>
             <activation>
-                <property>
-                    <name>!useExternalMongoDb</name>
-                </property>
+                <activeByDefault>true</activeByDefault>
             </activation>
+            <properties>
+                <datastoreProvider>mongodb</datastoreProvider>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -230,6 +246,41 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- Executes the tests against an in-memory fake MongoDB (Fongo) -->
+        <profile>
+            <id>fongo</id>
+            <activation>
+                 <property>
+                     <name>mongodbProvider</name>
+                     <value>fongo</value>
+                 </property>
+            </activation>
+            <properties>
+                <datastoreProvider>fongo</datastoreProvider>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Executes the tests against a separately started MongoDB server -->
+        <profile>
+            <id>external-mongodb</id>
+            <activation>
+                 <property>
+                     <name>mongodbProvider</name>
+                     <value>external</value>
+                 </property>
+            </activation>
+            <properties>
+                <datastoreProvider>mongodb</datastoreProvider>
+            </properties>
         </profile>
     </profiles>
 </project>

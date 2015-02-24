@@ -77,7 +77,7 @@ server you want to run the test, changing the original setup.
 
 ### MongoDB
 
-For executing the tests in the _mongodb_ and _integrationtest/mongodb_ modules, the
+For executing the tests in the _mongodb_ and _integrationtest/mongodb_ modules, by default the
 [embedmongo-maven-plugin](https://github.com/joelittlejohn/embedmongo-maven-plugin) is used which downloads the MongoDB
 distribution, extracts it, starts a _mongod_ process and shuts it down after test execution.
 
@@ -86,9 +86,9 @@ and the target directory for the extracted binary (defaults to _${project.build.
 
     mvn clean install -s settings-example.xml -DembeddedMongoDbTempDir=<my-temp-dir> -DembeddedMongoDbPort=<my-port>
 
-To work with a separately installed MongoDB instance instead, specify the `useExternalMongoDb` property:
+To work with a separately installed MongoDB instance instead, specify the property `-DmongodbProvider=external`:
 
-    mvn clean install -s settings-example.xml -DuseExternalMongoDb
+    mvn clean install -s settings-example.xml -DmongodbProvider=external
 
 This assumes MongoDB to be installed on `localhost`, using the default port and no authentication.
 If you work with different settings, configure the required properties in hibernate.properties (for the tests in _mongodb_)
@@ -99,7 +99,11 @@ prior to running the tests:
     export MONGODB_PORT=1234
     export MONGODB_USERNAME=someUsername
     export MONGODB_PASSWORD=someP@ssw0rd
-    mvn clean install -s settings-example.xml
+    mvn clean install -s settings-example.xml -DmongodbProvider=external
+
+Finally, you also can run the test suite against the in-memory "fake implementation" Fongo:
+
+    mvn clean install -s settings-example.xml -DmongodbProvider=fongo
 
 ### CouchDB
 
