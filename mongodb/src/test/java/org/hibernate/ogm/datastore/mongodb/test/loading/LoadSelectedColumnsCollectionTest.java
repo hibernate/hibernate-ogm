@@ -146,7 +146,7 @@ public class LoadSelectedColumnsCollectionTest extends OgmTestCase {
 		AssociationContext associationContext = new AssociationContextImpl(
 				new AssociationTypeContextImpl(
 						OptionsContextImpl.forProperty(
-								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sessions.getProperties(), new ClassLoaderServiceImpl() ) ),
+								OptionValueSources.getDefaultSources( new ConfigurationPropertyReader( sfi().getProperties(), new ClassLoaderServiceImpl() ) ),
 								Project.class,
 								"modules"
 						),

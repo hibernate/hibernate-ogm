@@ -52,7 +52,8 @@ import org.hibernate.internal.NamedQueryRepository;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.metadata.CollectionMetadata;
 import org.hibernate.ogm.OgmSession;
-import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
+import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.persister.collection.CollectionPersister;
 import org.hibernate.persister.entity.EntityPersister;
@@ -67,7 +68,7 @@ import org.hibernate.type.TypeResolver;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
  */
-public class OgmSessionFactoryImpl implements SessionFactoryImplementor, OgmSessionFactory {
+public class OgmSessionFactoryImpl implements OgmSessionFactoryImplementor {
 
 	private final SessionFactoryImplementor delegate;
 
