@@ -32,7 +32,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 
 	@Test
 	public void inverseMetadataForUnidirectionalOneToManyShouldBeNull() {
-		OgmCollectionPersister persister = (OgmCollectionPersister) sessions.getCollectionPersister( Cloud.class.getName() + ".producedSnowFlakes" );
+		OgmCollectionPersister persister = getCollectionPersister( Cloud.class.getName() + ".producedSnowFlakes" );
 		OgmCollectionPersister inversePersister = BiDirectionalAssociationHelper.getInverseCollectionPersister( persister );
 		assertThat( inversePersister ).isNull();
 	}
@@ -40,7 +40,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void canObtainInverseMetadataForBiDirectionalManyToOne() {
 		// obtain inverse collection from the main side
-		OgmEntityPersister entityPersister = (OgmEntityPersister) sessions.getEntityPersister( SalesGuy.class.getName() );
+		OgmEntityPersister entityPersister = getEntityPersister( SalesGuy.class.getName() );
 		AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "salesForce" ) );
 		assertThat( inverseAssociationKeyMetadata ).isNotNull();
 		assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "SalesGuy" );
@@ -48,7 +48,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "salesForce_id", "id" } );
 
 		// no persister on the main side
-		OgmCollectionPersister collectionPersister = (OgmCollectionPersister) sessions.getCollectionPersister( SalesForce.class.getName() + ".salesGuys" );
+		OgmCollectionPersister collectionPersister = getCollectionPersister( SalesForce.class.getName() + ".salesGuys" );
 		OgmCollectionPersister mainSidePersister = BiDirectionalAssociationHelper.getInverseCollectionPersister( collectionPersister );
 		assertThat( mainSidePersister ).isNull();
 	}
@@ -56,7 +56,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void canObtainInverseMetadataForBiDirectionalManyToMany() {
 		// obtain inverse collection from the main side
-		OgmEntityPersister entityPersister = (OgmEntityPersister) sessions.getEntityPersister( AccountOwner.class.getName() );
+		OgmEntityPersister entityPersister = getEntityPersister( AccountOwner.class.getName() );
 		AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "bankAccounts" ) );
 		assertThat( inverseAssociationKeyMetadata ).isNotNull();
 		assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "AccountOwner_BankAccount" );
@@ -64,7 +64,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "bankAccounts_id", "owners_id" } );
 
 		// obtain main side collection from the inverse side
-		entityPersister = (OgmEntityPersister) sessions.getEntityPersister( BankAccount.class.getName() );
+		entityPersister = getEntityPersister( BankAccount.class.getName() );
 		AssociationKeyMetadata mainSideAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "owners" ) );
 		assertThat( mainSideAssociationKeyMetadata ).isNotNull();
 		assertThat( mainSideAssociationKeyMetadata.getTable() ).isEqualTo( "AccountOwner_BankAccount" );
@@ -75,7 +75,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void canHandleSeveralAssociationsOnInverseSide() {
 		// obtain inverse collection from the main side
-		OgmEntityPersister entityPersister = (OgmEntityPersister) sessions.getEntityPersister( Pancake.class.getName() );
+		OgmEntityPersister entityPersister = getEntityPersister( Pancake.class.getName() );
 		AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "eater" ) );
 		assertThat( inverseAssociationKeyMetadata ).isNotNull();
 		assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Pancake" );
@@ -83,7 +83,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 		assertThat( inverseAssociationKeyMetadata.getRowKeyColumnNames() ).isEqualTo( new String[]{ "eater_id", "id" } );
 
 		// obtain inverse collection from the main side, different entity
-		entityPersister = (OgmEntityPersister) sessions.getEntityPersister( Muffin.class.getName() );
+		entityPersister = getEntityPersister( Muffin.class.getName() );
 		inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "eater" ) );
 		assertThat( inverseAssociationKeyMetadata ).isNotNull();
 		assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Muffin" );
@@ -94,7 +94,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void canObtainInverseMetadataForBiDirectionalOneToOne() {
 		// obtain inverse collection from the main side
-		OgmEntityPersister entityPersister = (OgmEntityPersister) sessions.getEntityPersister( Husband.class.getName() );
+		OgmEntityPersister entityPersister = getEntityPersister( Husband.class.getName() );
 		AssociationKeyMetadata inverseAssociationKeyMetadata = BiDirectionalAssociationHelper.getInverseAssociationKeyMetadata( entityPersister, entityPersister.getPropertyIndex( "wife" ) );
 		assertThat( inverseAssociationKeyMetadata ).isNotNull();
 		assertThat( inverseAssociationKeyMetadata.getTable() ).isEqualTo( "Husband" );
@@ -104,7 +104,7 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 
 	@Test
 	public void canObtainMainSidePropertyNameForOneToMany() {
-		OgmCollectionPersister persister = (OgmCollectionPersister) sessions.getCollectionPersister( SalesForce.class.getName() + ".salesGuys" );
+		OgmCollectionPersister persister = getCollectionPersister( SalesForce.class.getName() + ".salesGuys" );
 		String mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( persister );
 		assertThat( mainSidePropertyName ).isEqualTo( "salesForce" );
 	}
@@ -112,25 +112,33 @@ public class BiDirectionalAssociationHelperTest extends OgmTestCase {
 	@Test
 	public void canObtainMainSidePropertyNameForManyToMany() {
 		// ask from main side
-		OgmCollectionPersister persister = (OgmCollectionPersister) sessions.getCollectionPersister( AccountOwner.class.getName() + ".bankAccounts" );
+		OgmCollectionPersister persister = getCollectionPersister( AccountOwner.class.getName() + ".bankAccounts" );
 		String mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( persister );
 		assertThat( mainSidePropertyName ).isEqualTo( "bankAccounts" );
 
 		// ask from inverse side
-		persister = (OgmCollectionPersister) sessions.getCollectionPersister( BankAccount.class.getName() + ".owners" );
+		persister = getCollectionPersister( BankAccount.class.getName() + ".owners" );
 		mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( persister );
 		assertThat( mainSidePropertyName ).isEqualTo( "bankAccounts" );
 	}
 
 	@Test
 	public void canObtainMainSidePropertyNameWithSeveralAssociationsOnInverseSide() {
-		OgmCollectionPersister persister = (OgmCollectionPersister) sessions.getCollectionPersister( Eater.class.getName() + ".muffins" );
+		OgmCollectionPersister persister = getCollectionPersister( Eater.class.getName() + ".muffins" );
 		String mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( persister );
 		assertThat( mainSidePropertyName ).isEqualTo( "eater" );
 
-		persister = (OgmCollectionPersister) sessions.getCollectionPersister( Eater.class.getName() + ".muffinsEatenAsStandin" );
+		persister = getCollectionPersister( Eater.class.getName() + ".muffinsEatenAsStandin" );
 		mainSidePropertyName = BiDirectionalAssociationHelper.getMainSidePropertyName( persister );
 		assertThat( mainSidePropertyName ).isEqualTo( "standinEater" );
+	}
+
+	private OgmEntityPersister getEntityPersister(String entityName) {
+		return (OgmEntityPersister) ( sfi() ).getEntityPersister( entityName );
+	}
+
+	private OgmCollectionPersister getCollectionPersister(String role) {
+		return (OgmCollectionPersister) ( sfi() ).getCollectionPersister( role );
 	}
 
 	@Override
