@@ -24,7 +24,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Environment;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.cfg.OgmConfiguration;
+import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.document.options.AssociationStorageType;
+import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.key.spi.EntityKey;
@@ -85,6 +87,10 @@ public class TestHelper {
 
 	public static GridDialectType getCurrentDialectType() {
 		return gridDialectType;
+	}
+
+	public static AvailableDatastoreProvider getCurrentDatastoreProvider() {
+		return DatastoreProviderHolder.INSTANCE;
 	}
 
 	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
@@ -233,5 +239,23 @@ public class TestHelper {
 	 */
 	public static GlobalContext<?, ?> configureDatastore(OgmConfiguration configuration) {
 		return helper.configureDatastore( configuration );
+	}
+
+	private static class DatastoreProviderHolder {
+
+		private static final AvailableDatastoreProvider INSTANCE = getDatastoreProvider();
+
+		private static AvailableDatastoreProvider getDatastoreProvider() {
+			// This ignores the case where the provider is given as class or FQN; That's ok for now, can be extended if
+			// needed
+			String datastoreProviderProperty = new OgmConfiguration().getProperty( OgmProperties.DATASTORE_PROVIDER );
+			AvailableDatastoreProvider provider = AvailableDatastoreProvider.byShortName( datastoreProviderProperty );
+
+			if ( provider == null ) {
+				throw new IllegalStateException( "Could not determine datastore provider from value: " + datastoreProviderProperty );
+			}
+
+			return provider;
+		}
 	}
 }
