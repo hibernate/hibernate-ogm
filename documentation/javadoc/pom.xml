@@ -15,7 +15,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-javadoc</artifactId>
     <packaging>jar</packaging>
 

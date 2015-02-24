@@ -16,7 +16,6 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.hibernate.ogm</groupId>
     <artifactId>hibernate-ogm-documentation-manual</artifactId>
     <packaging>jdocbook</packaging>
 
