@@ -59,6 +59,7 @@ import org.hibernate.jpa.spi.AbstractEntityManagerImpl;
 import org.hibernate.jpa.spi.AbstractEntityManagerImpl.TupleBuilderTransformer;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.hibernate.ogm.exception.EntityAlreadyExistsException;
 import org.hibernate.ogm.exception.NotSupportedException;
 import org.hibernate.ogm.hibernatecore.impl.OgmSessionFactoryImpl;
@@ -257,7 +258,7 @@ public class OgmEntityManager implements EntityManager {
 	}
 
 	private <T> TypedQuery<T> buildQueryFromName(String name, Class<T> resultType) {
-		OgmSessionFactory sessionFactory = (OgmSessionFactory) factory.getSessionFactory();
+		OgmSessionFactoryImplementor sessionFactory = (OgmSessionFactoryImplementor) factory.getSessionFactory();
 		NamedQueryDefinition queryDefinition = sessionFactory.getNamedSQLQuery( name );
 		if ( queryDefinition == null ) {
 			queryDefinition = sessionFactory.getNamedQuery( name );

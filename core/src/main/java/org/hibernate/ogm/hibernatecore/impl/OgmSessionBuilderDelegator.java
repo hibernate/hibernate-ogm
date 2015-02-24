@@ -18,7 +18,7 @@ import org.hibernate.engine.spi.SessionOwner;
 import org.hibernate.event.spi.EventSource;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
-import org.hibernate.ogm.OgmSessionFactory.OgmSessionBuilderImplementor;
+import org.hibernate.ogm.engine.spi.OgmSessionBuilderImplementor;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
