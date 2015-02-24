@@ -15,10 +15,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-
-import com.arjuna.ats.arjuna.coordinator.TxControl;
 
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -33,6 +32,8 @@ import org.hibernate.ogm.options.navigation.GlobalContext;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
+import com.arjuna.ats.arjuna.coordinator.TxControl;
+
 import static org.fest.assertions.Assertions.assertThat;
 
 /**
@@ -42,8 +43,9 @@ import static org.fest.assertions.Assertions.assertThat;
 public class TestHelper {
 
 	private static final Log log = LoggerFactory.make();
-	private static final TestableGridDialect helper = createStoreSpecificHelper();
 	private static final String TX_CONTROL_CLASS_NAME = "com.arjuna.ats.arjuna.coordinator.TxControl";
+	private static final GridDialectType gridDialectType = determineGridDialectType();
+	private static final TestableGridDialect helper = instantiate( gridDialectType.loadTestableGridDialectClass() );
 
 	static {
 		Class<?> txControlClass = loadClass( TX_CONTROL_CLASS_NAME );
@@ -69,30 +71,38 @@ public class TestHelper {
 	private TestHelper() {
 	}
 
+	private static GridDialectType determineGridDialectType() {
+		for ( GridDialectType gridType : GridDialectType.values() ) {
+			Class<TestableGridDialect> testDialectClass = gridType.loadTestableGridDialectClass();
+			if ( testDialectClass != null ) {
+				return gridType;
+			}
+		}
+
+		return GridDialectType.HASHMAP;
+	}
+
+	private static TestableGridDialect instantiate(Class<TestableGridDialect> testableGridDialectClass) {
+		if ( testableGridDialectClass == null ) {
+			return new HashMapTestHelper();
+		}
+
+		try {
+			TestableGridDialect testableGridDialect = testableGridDialectClass.newInstance();
+			log.debugf( "Using TestGridDialect %s", testableGridDialectClass );
+			return testableGridDialect;
+		}
+		catch (Exception e) {
+			throw new RuntimeException( e );
+		}
+	}
+
 	public static long getNumberOfEntities(EntityManager em) {
 		return getNumberOfEntities( em.unwrap( Session.class ) );
 	}
 
-	private static TestableGridDialect createStoreSpecificHelper() {
-		for ( GridDialectType gridType : GridDialectType.values() ) {
-			Class<TestableGridDialect> classForName = gridType.loadTestableGridDialectClass();
-			if ( classForName != null ) {
-				try {
-					TestableGridDialect attempt = classForName.newInstance();
-					log.debugf( "Using TestGridDialect %s", classForName );
-					return attempt;
-				}
-				catch ( Exception e ) {
-					// but other errors are not expected:
-					log.errorf( e, "Could not load TestGridDialect by name from %s", gridType );
-				}
-			}
-		}
-		return new org.hibernate.ogm.utils.HashMapTestHelper();
-	}
-
 	public static GridDialectType getCurrentDialectType() {
-		return GridDialectType.valueFromHelperClass( helper.getClass() );
+		return gridDialectType;
 	}
 
 	public static GridDialect getCurrentGridDialect(DatastoreProvider datastoreProvider) {
