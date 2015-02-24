@@ -75,6 +75,11 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.takari.junit</groupId>
+            <artifactId>takari-cpsuite</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- this is optional on core :( and needed for testing -->
         <dependency>
             <groupId>org.jboss.jbossts</groupId>
