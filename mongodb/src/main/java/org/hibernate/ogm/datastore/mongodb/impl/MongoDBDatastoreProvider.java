@@ -144,7 +144,7 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 		return mongoDb;
 	}
 
-	protected DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
+	private DB extractDatabase(MongoClient mongo, MongoDBConfiguration config) {
 		try {
 			String databaseName = config.getDatabaseName();
 			log.connectingToMongoDatabase( databaseName );
@@ -182,21 +182,5 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 					throw log.unableToConnectToDatastore( config.getHost(), config.getPort(), me );
 			}
 		}
-	}
-
-	protected MongoDBConfiguration getConfig() {
-		return config;
-	}
-
-	protected MongoClient getMongoClient() {
-		return mongo;
-	}
-
-	protected void setMongoClient(MongoClient mongoClient) {
-		mongo = mongoClient;
-	}
-
-	protected void setDatabase(DB database) {
-		mongoDb = database;
 	}
 }
