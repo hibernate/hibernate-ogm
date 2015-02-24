@@ -16,9 +16,9 @@ import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.ogm.OgmSession;
 import org.hibernate.ogm.OgmSessionFactory;
+import org.hibernate.ogm.engine.spi.OgmSessionFactoryImplementor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -94,8 +94,8 @@ public abstract class OgmTestCase {
 		}
 	}
 
-	protected SessionFactoryImplementor sfi() {
-		return sessions;
+	protected OgmSessionFactoryImplementor sfi() {
+		return (OgmSessionFactoryImplementor) sessions;
 	}
 
 	protected void checkCleanCache() {
