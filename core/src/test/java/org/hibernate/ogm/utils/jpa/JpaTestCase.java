@@ -27,7 +27,7 @@ import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.jpa.HibernateEntityManagerFactory;
 import org.hibernate.ogm.jpa.HibernateOgmPersistence;
-import org.hibernate.ogm.utils.GridDialectSkippableTestRunner;
+import org.hibernate.ogm.utils.SkippableTestRunner;
 import org.hibernate.ogm.utils.TestHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Sanne Grinovero &lt;sanne@hibernate.org&gt;
  */
-@RunWith(GridDialectSkippableTestRunner.class)
+@RunWith(SkippableTestRunner.class)
 public abstract class JpaTestCase {
 
 	private EntityManagerFactory factory;
