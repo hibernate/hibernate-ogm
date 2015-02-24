@@ -6,6 +6,7 @@
  */
 package org.hibernate.ogm.utils;
 
+
 /**
  * The testsuite needs some knowledge on all NoSQL stores it is meant to support.
  * We mainly need the name of it's TestableGridDialect implementation, but this
@@ -70,15 +71,5 @@ public enum GridDialectType {
 	 */
 	public boolean supportsQueries() {
 		return supportsQueries;
-	}
-
-	public static GridDialectType valueFromHelperClass(Class<? extends TestableGridDialect> class1) {
-		for ( GridDialectType type : values() ) {
-			if ( type.testHelperClassName.equals( class1.getName() ) ) {
-				return type;
-			}
-		}
-		throw new IllegalArgumentException( class1 +
-				" is not one of the TestableGridDialect implementation known to " + GridDialectType.class );
 	}
 }
