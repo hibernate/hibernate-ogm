@@ -46,6 +46,7 @@ import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.type.impl.Iso8601StringCalendarType;
 import org.hibernate.ogm.type.impl.Iso8601StringDateType;
 import org.hibernate.ogm.type.spi.GridType;
+import org.hibernate.type.BinaryType;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 
@@ -247,6 +248,9 @@ public class CouchDBDialect extends BaseGridDialect {
 		}
 		else if ( type == StandardBasicTypes.LONG ) {
 			return CouchDBLongType.INSTANCE;
+		}
+		else if ( type == BinaryType.INSTANCE ) {
+			return CouchDBBlobType.INSTANCE;
 		}
 
 		return null;
