@@ -6,8 +6,10 @@
  */
 package org.hibernate.ogm.datastore.mongodb.impl;
 
+import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
+
 import com.github.fakemongo.Fongo;
-import com.mongodb.DB;
+import com.mongodb.MongoClient;
 
 /**
  * Provides access to a FongoDB instance
@@ -19,17 +21,8 @@ public class FongoDBDatastoreProvider extends MongoDBDatastoreProvider {
 	private Fongo fongo;
 
 	@Override
-	public void start() {
-		if (fongo == null) {
-			fongo = new Fongo( "Fongo Hibernate OGM" );
-			setMongoClient( fongo.getMongo() );
-		}
-		DB database = extractDatabase( getMongoClient(), getConfig() );
-		setDatabase( database );
+	protected MongoClient createMongoClient(MongoDBConfiguration config) {
+		fongo = new Fongo( "Fongo Hibernate OGM" );
+		return fongo.getMongo();
 	}
-
-	@Override
-	public void stop() {
-	}
-
 }
