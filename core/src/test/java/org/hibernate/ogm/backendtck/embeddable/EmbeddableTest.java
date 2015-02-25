@@ -292,6 +292,56 @@ public class EmbeddableTest extends OgmTestCase {
 		session.close();
 	}
 
+	@Test
+	public void testNestedEmbeddedWithNullProperties() {
+		final Session session = openSession();
+
+		// persist entity with the embeddables
+		Transaction transaction = session.beginTransaction();
+		Account account = new Account();
+		account.setLogin( "gunnar" );
+		account.setHomeAddress( new Address() );
+		account.getHomeAddress().setCity( "Lima" );
+		account.getHomeAddress().setType( new AddressType( "primary" ) );
+		session.persist( account );
+
+		transaction.commit();
+		session.clear();
+
+
+		// set nested embedded to null
+		transaction = session.beginTransaction();
+		Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		loadedAccount.getHomeAddress().setType( null );
+		transaction.commit();
+		session.clear();
+
+		// read back nested embedded and set regular embedded to null
+		transaction = session.beginTransaction();
+		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress() ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress().getType() ).isNull();
+		loadedAccount.setHomeAddress( null );
+		transaction.commit();
+		session.clear();
+
+		// read back embedded
+		transaction = session.beginTransaction();
+		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+		assertThat( loadedAccount ).as( "Cannot load persisted object with nested embeddedables" ).isNotNull();
+		assertThat( loadedAccount.getHomeAddress() ).isNull();
+		session.delete( loadedAccount );
+		transaction.commit();
+		session.clear();
+
+		transaction = session.beginTransaction();
+		assertThat( session.get( Account.class, account.getLogin() ) ).isNull();
+		transaction.commit();
+
+		session.close();
+	}
+
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
 		return new Class<?>[] { Account.class, MultiAddressAccount.class, AccountWithPhone.class, Order.class };

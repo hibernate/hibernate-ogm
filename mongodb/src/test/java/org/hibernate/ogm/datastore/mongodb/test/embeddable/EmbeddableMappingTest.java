@@ -80,6 +80,8 @@ public class EmbeddableMappingTest extends OgmTestCase {
 		Account loadedAccount = (Account) session.get( Account.class, account.getLogin() );
 
 		// When
+
+		// set some values to null
 		loadedAccount.getHomeAddress().setCountry( null );
 		loadedAccount.setPassword( null );
 		session.merge( loadedAccount );
@@ -112,6 +114,74 @@ public class EmbeddableMappingTest extends OgmTestCase {
 
 		transaction.commit();
 
+		session.clear();
+
+		transaction = session.beginTransaction();
+
+		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+
+		// When
+		// set a nested embedded to null
+		loadedAccount.getHomeAddress().setType( null );
+		session.merge( loadedAccount );
+
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+
+		// Then
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Account",
+				// query
+				"{ '_id' : 'emmanuel' }",
+				// expected
+				"{ " +
+						"'_id' : 'emmanuel', " +
+						"'homeAddress' : {" +
+						"'city' : 'Paris', " +
+						"'street1' : '1 avenue des Champs Elysees'," +
+						"}, " +
+						"'postal_code' : '75007', " +
+						"'version': 2 " +
+						"}"
+		);
+
+		transaction.commit();
+
+		session.clear();
+
+		transaction = session.beginTransaction();
+
+		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
+
+		// When
+		// set all properties of an embedded to null
+		loadedAccount.getHomeAddress().setCity( null );
+		loadedAccount.getHomeAddress().setStreet1( null );
+		session.merge( loadedAccount );
+
+		transaction.commit();
+
+		transaction = session.beginTransaction();
+
+		// Then
+		assertDbObject(
+				session.getSessionFactory(),
+				// collection
+				"Account",
+				// query
+				"{ '_id' : 'emmanuel' }",
+				// expected
+				"{ " +
+						"'_id' : 'emmanuel', " +
+						"'postal_code' : '75007', " +
+						"'version': 3 " +
+						"}"
+		);
+
+		transaction.commit();
 		// Clean-Up
 		transaction = session.beginTransaction();
 		loadedAccount = (Account) session.get( Account.class, account.getLogin() );
