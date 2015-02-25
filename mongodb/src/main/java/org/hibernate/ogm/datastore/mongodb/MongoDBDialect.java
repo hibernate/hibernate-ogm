@@ -13,8 +13,10 @@ import static org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoHelpers.hasF
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.bson.types.ObjectId;
 import org.hibernate.HibernateException;
@@ -26,6 +28,7 @@ import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
+import org.hibernate.ogm.datastore.mongodb.dialect.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
@@ -295,7 +298,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	public void insertOrUpdateTuple(EntityKey key, Tuple tuple, TupleContext tupleContext) {
 		BasicDBObject idObject = this.prepareIdObject( key );
 
-		DBObject updater = objectForUpdate( tuple, idObject );
+		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
 		WriteConcern writeConcern = getWriteConcern( tupleContext );
 
 		try {
@@ -315,7 +318,7 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 			idObject.put( versionColumn, oldLockState.get( versionColumn ) );
 		}
 
-		DBObject updater = objectForUpdate( tuple, idObject );
+		DBObject updater = objectForUpdate( tuple, idObject, tupleContext );
 		DBObject doc = getCollection( entityKey ).findAndModify( idObject, updater );
 
 		return doc != null;
@@ -360,8 +363,10 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		return dbObject;
 	}
 
-	private DBObject objectForUpdate(Tuple tuple, DBObject idObject) {
+	private DBObject objectForUpdate(Tuple tuple, DBObject idObject, TupleContext tupleContext) {
 		MongoDBTupleSnapshot snapshot = (MongoDBTupleSnapshot) tuple.getSnapshot();
+		EmbeddableStateFinder embeddableStateFinder = new EmbeddableStateFinder( tuple, tupleContext );
+		Set<String> nullEmbeddables = new HashSet<String>();
 
 		BasicDBObject updater = new BasicDBObject();
 		for ( TupleOperation operation : tuple.getOperations() ) {
@@ -373,7 +378,21 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 					break;
 				case PUT_NULL:
 				case REMOVE:
-					this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
+					// try and find if this column is within an embeddable and if that embeddable is null
+					// if true, unset the full embeddable
+					String nullEmbeddable = embeddableStateFinder.getOuterMostNullEmbeddableIfAny( column );
+					if ( nullEmbeddable != null ) {
+						// we have a null embeddable
+						if ( ! nullEmbeddables.contains( nullEmbeddable ) ) {
+							// we have not processed it yet
+							this.addSubQuery( "$unset", updater, nullEmbeddable, Integer.valueOf( 1 ) );
+							nullEmbeddables.add( nullEmbeddable );
+						}
+					}
+					else {
+						// simply unset the column
+						this.addSubQuery( "$unset", updater, column, Integer.valueOf( 1 ) );
+					}
 					break;
 				}
 			}
