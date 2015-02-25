@@ -14,7 +14,7 @@ import org.hibernate.type.StringType;
 import org.hibernate.type.VersionType;
 
 /**
- * A {@link StringType} which implemenets the {@link VersionType} contract and thus supports optimistic locking done by
+ * A {@link StringType} which implements the {@link VersionType} contract and thus supports optimistic locking done by
  * the datastore.
  *
  * @author Gunnar Morling
