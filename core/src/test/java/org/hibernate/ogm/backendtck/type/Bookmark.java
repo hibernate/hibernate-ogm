@@ -55,6 +55,7 @@ public class Bookmark {
 	// byte arrays
 	@Lob
 	private byte[] lob;
+	private byte[] data;
 
 	// enum type
 	@Enumerated(EnumType.STRING)
@@ -213,6 +214,14 @@ public class Bookmark {
 
 	public void setLob(byte[] lob) {
 		this.lob = lob;
+	}
+
+	public byte[] getData() {
+		return data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = data;
 	}
 
 	public UUID getSerialNumber() {

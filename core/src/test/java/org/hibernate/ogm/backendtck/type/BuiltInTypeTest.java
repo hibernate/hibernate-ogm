@@ -145,6 +145,16 @@ public class BuiltInTypeTest extends OgmTestCase {
 		assertArrayEquals( "Original and loaded data do not match!", testData, loadedBookmark.getLob() );
 	}
 
+	@Test
+	public void testByteArraySupport() throws Exception {
+		byte[] testData = new byte[200];
+		new Random().nextBytes( testData );
+		bookmark.setData( testData );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertArrayEquals( "Original and loaded data do not match!", testData, loadedBookmark.getData() );
+	}
+
 	// enum types
 	@Test
 	public void testEnumTypeMappedAsStringSupport() throws Exception {
