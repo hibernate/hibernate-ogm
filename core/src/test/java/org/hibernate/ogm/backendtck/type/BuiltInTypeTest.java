@@ -6,45 +6,42 @@
  */
 package org.hibernate.ogm.backendtck.type;
 
-import static org.hibernate.ogm.utils.TestHelper.extractEntityTuple;
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.ogm.backendtck.type.Bookmark.Classifier;
-import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
-import org.hibernate.ogm.model.key.spi.EntityKey;
-import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
-import org.hibernate.ogm.util.impl.Log;
-import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.ogm.utils.OgmTestCase;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Nicolas Helleringer
- * @author Oliver Carr <ocarr@redhat.com>
+ * @author Oliver Carr &lt;ocarr@redhat.com&gt;
  * @author Ajay Bhat
+ * @author Hardy Ferentschik
  */
 public class BuiltInTypeTest extends OgmTestCase {
-
-	private static final Log log = LoggerFactory.make();
-
 	private static final Random RANDOM = new Random();
-
 	private static TimeZone originalTimeZone = null;
+
+	private Calendar calendar;
+	private Session session;
+	private Bookmark bookmark;
 
 	@BeforeClass
 	public static void setDefaultTimeZone() {
@@ -52,177 +49,274 @@ public class BuiltInTypeTest extends OgmTestCase {
 		TimeZone.setDefault( TimeZone.getTimeZone( "UTC" ) );
 	}
 
+	@Before
+	public void setup() {
+		session = openSession();
+		calendar = Calendar.getInstance();
+		bookmark = new Bookmark();
+	}
+
 	@AfterClass
-	public static void resetDefautlTimeZone() {
+	public static void resetDefaultTimeZone() {
 		TimeZone.setDefault( originalTimeZone );
 	}
 
+	// basic types
 	@Test
-	public void testTypesSupport() throws Exception {
-		final Session session = openSession();
+	public void testStringSupport() throws Exception {
+		bookmark.setDescription( "Hibernate Site" );
 
-		Transaction transaction = session.beginTransaction();
-		Bookmark b = new Bookmark();
-		b.setId( "42" );
-		b.setDescription( "Hibernate Site" );
-		b.setUrl( new URL( "http://www.hibernate.org/" ) );
-		BigDecimal weight = new BigDecimal( "21.77" );
-		b.setSiteWeight( weight );
-		BigInteger visitCount = new BigInteger( "444" );
-		b.setVisitCount( visitCount );
-		b.setFavourite( Boolean.TRUE );
-		Byte displayMask = Byte.valueOf( (byte) '8' );
-		b.setDisplayMask( displayMask );
-		b.setClassifier( Classifier.HOME );
-		b.setClassifierAsOrdinal( Classifier.WORK );
-
-		Date now = new Date( System.currentTimeMillis() );
-		Calendar nowCalendar = Calendar.getInstance();
-		nowCalendar.setTime( now );
-
-		b.setCreationDate( now );
-		b.setDestructionDate( now );
-		b.setUpdateTime( now );
-		b.setCreationCalendar( nowCalendar );
-		b.setDestructionCalendar( nowCalendar );
-		byte[] blob = new byte[5];
-		blob[0] = '1';
-		blob[1] = '2';
-		blob[2] = '3';
-		blob[3] = '4';
-		blob[4] = '5';
-		b.setBlob( blob );
-		UUID serialNumber = UUID.randomUUID();
-		b.setSerialNumber( serialNumber );
-		final Long userId = RANDOM.nextLong();
-		log.infof( "User ID created: $s", userId );
-		b.setUserId( userId );
-		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
-		b.setStockCount( stockCount );
-		final Short urlPort = Short.valueOf( (short) 80 );
-		b.setUrlPort( urlPort );
-		final Float visitRatio = Float.valueOf( (float) 10.4 );
-		b.setVisitRatio( visitRatio );
-		final Character delimiter = Character.valueOf( '/' );
-		b.setDelimiter( delimiter );
-		b.setType( BookmarkType.URL );
-		b.setTaxPercentage( 12.34d );
-		session.persist( b );
-		transaction.commit();
-
-		session.clear();
-
-		transaction = session.beginTransaction();
-		b = (Bookmark) session.get( Bookmark.class, b.getId() );
-		assertEquals( "http://www.hibernate.org/", b.getUrl().toString() );
-		assertEquals( weight, b.getSiteWeight() );
-		assertEquals( visitCount, b.getVisitCount() );
-		assertEquals( Boolean.TRUE, b.isFavourite() );
-		assertEquals( displayMask, b.getDisplayMask() );
-		assertEquals( "serial number incorrect", serialNumber, b.getSerialNumber() );
-		assertEquals( "user id incorrect", userId, b.getUserId() );
-		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
-		assertEquals( "stock count incorrect", stockCount, b.getStockCount() );
-		assertEquals( "url port incorrect", urlPort, b.getUrlPort() );
-		assertEquals( "visit ratio incorrect", visitRatio, b.getVisitRatio() );
-		assertEquals( "delimieter incorrect", delimiter, b.getDelimiter() );
-		assertEquals( "Tax percentage as double inscorrect", 0, b.getTaxPercentage().compareTo( 12.34d ) );
-		assertEquals( "Classifier as enum string is incorrect", Classifier.HOME, b.getClassifier() );
-		assertEquals( "Classifier stored as enum ordinal is incorrect", Classifier.WORK, b.getClassifierAsOrdinal() );
-
-		//Date - DATE
-		Calendar creationDate = Calendar.getInstance();
-		creationDate.setTime( b.getCreationDate() );
-		assertEquals( nowCalendar.get( Calendar.YEAR ), creationDate.get( Calendar.YEAR ) );
-		assertEquals( nowCalendar.get( Calendar.MONTH ), creationDate.get( Calendar.MONTH ) );
-		assertEquals( nowCalendar.get( Calendar.DAY_OF_MONTH ), creationDate.get( Calendar.DAY_OF_MONTH ) );
-
-		//Date - TIME
-		Calendar updateTime = Calendar.getInstance();
-		updateTime.setTime( b.getUpdateTime() );
-		assertEquals( nowCalendar.get( Calendar.HOUR_OF_DAY ), updateTime.get( Calendar.HOUR_OF_DAY ) );
-		assertEquals( nowCalendar.get( Calendar.MINUTE ), updateTime.get( Calendar.MINUTE ) );
-		assertEquals( nowCalendar.get( Calendar.SECOND ), updateTime.get( Calendar.SECOND ) );
-
-		//Date - TIMESTAMP
-		assertEquals( "Destruction date incorrect", now, b.getDestructionDate() );
-
-		//Calendar - DATE
-		assertEquals( "getCreationCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getCreationCalendar().getTimeZone().getRawOffset() );
-		assertEquals( nowCalendar.get( Calendar.YEAR ), b.getCreationCalendar().get( Calendar.YEAR ) );
-		assertEquals( nowCalendar.get( Calendar.MONTH ), b.getCreationCalendar().get( Calendar.MONTH ) );
-		assertEquals( nowCalendar.get( Calendar.DAY_OF_MONTH ), b.getCreationCalendar().get( Calendar.DAY_OF_MONTH ) );
-
-		//Calendar - TIMESTAMP
-		assertEquals( "destructionCalendar time zone incorrect", nowCalendar.getTimeZone().getRawOffset(), b.getDestructionCalendar().getTimeZone().getRawOffset() );
-		assertEquals( "destructionCalendar timestamp incorrect", nowCalendar.getTimeInMillis(), b.getDestructionCalendar().getTimeInMillis() );
-
-		assertEquals( "Byte array incorrect length", blob.length, b.getBlob().length );
-		assertEquals( blob[0], b.getBlob()[0] );
-		assertEquals( '1', b.getBlob()[0] );
-		assertEquals( '2', b.getBlob()[1] );
-		assertEquals( '3', b.getBlob()[2] );
-		assertEquals( '4', b.getBlob()[3] );
-		assertEquals( '5', b.getBlob()[4] );
-
-		assertEquals( BookmarkType.URL, b.getType() );
-
-		session.delete( b );
-		transaction.commit();
-
-		session.close();
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "String value does not match", bookmark.getDescription(), loadedBookmark.getDescription() );
 	}
 
 	@Test
-	public void testStringMappedTypeSerialisation() throws Exception {
-		final Session session = openSession();
-		Transaction transaction = session.beginTransaction();
+	public void testCharacterSupport() throws Exception {
+		bookmark.setDelimiter( '/' );
 
-		Bookmark b = new Bookmark();
-		b.setId( "42" );
-		b.setUrl( new URL( "http://www.hibernate.org/" ) );
-		BigDecimal weight = new BigDecimal( "21.77" );
-		b.setSiteWeight( weight );
-		BigInteger visitCount = new BigInteger( "444" );
-		b.setVisitCount( visitCount );
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Character value does not match", bookmark.getDelimiter(), loadedBookmark.getDelimiter() );
+	}
+
+	@Test
+	public void testIntegerSupport() throws Exception {
+		bookmark.setStockCount( RANDOM.nextInt() );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Integer value does not match", bookmark.getStockCount(), loadedBookmark.getStockCount() );
+	}
+
+	@Test
+	public void testShortSupport() throws Exception {
+		bookmark.setUrlPort( (short) 80 );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Short value does not match", bookmark.getUrlPort(), loadedBookmark.getUrlPort() );
+	}
+
+	@Test
+	public void testLongSupport() throws Exception {
+		bookmark.setUserId( RANDOM.nextLong() );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Long value does not match", bookmark.getUserId(), loadedBookmark.getUserId() );
+	}
+
+	@Test
+	public void testFloatSupport() throws Exception {
+		bookmark.setVisitRatio( (float) 10.4 );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Long value does not match", bookmark.getVisitRatio(), loadedBookmark.getVisitRatio() );
+	}
+
+	@Test
+	public void testDoubleSupport() throws Exception {
+		bookmark.setTaxPercentage( 12.34d );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Long value does not match", bookmark.getTaxPercentage(), loadedBookmark.getTaxPercentage() );
+	}
+
+	@Test
+	public void testBooleanSupport() throws Exception {
+		bookmark.setFavourite( Boolean.TRUE );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Boolean value does not match", bookmark.getFavourite(), loadedBookmark.getFavourite() );
+	}
+
+	@Test
+	public void testByteSupport() throws Exception {
+		bookmark.setDisplayMask( (byte) '8' );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "Byte value does not match", bookmark.getDisplayMask(), loadedBookmark.getDisplayMask() );
+	}
+
+	// byte arrays
+	@Test
+	public void testByteArrayAsLobSupport() throws Exception {
+		byte[] testData = new byte[200];
+		new Random().nextBytes( testData );
+		bookmark.setLob( testData );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertArrayEquals( "Original and loaded data do not match!", testData, loadedBookmark.getLob() );
+	}
+
+	// enum types
+	@Test
+	public void testEnumTypeMappedAsStringSupport() throws Exception {
+		bookmark.setClassifier( Classifier.HOME );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals(
+				"String mapped enum value does not match", bookmark.getClassifier(), loadedBookmark.getClassifier()
+		);
+	}
+
+	@Test
+	public void testEnumTypeMappedAsOrdinalSupport() throws Exception {
+		bookmark.setClassifierAsOrdinal( Classifier.WORK );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals(
+				"Ordinal mapped enum value does not match", bookmark.getClassifierAsOrdinal(),
+				loadedBookmark.getClassifierAsOrdinal()
+		);
+	}
+
+	// Date/time types
+	@Test
+	public void testDatePersistedAsTemporalTypeDateSupport() throws Exception {
+		Date creationDate = new Date();
+		bookmark.setCreationDate( creationDate );
+
+		// TemporalType#Date only deals with year/month/day
+		calendar.setTime( creationDate );
+		int expectedYear = calendar.get( Calendar.YEAR );
+		int expectedMonth = calendar.get( Calendar.MONTH );
+		int expectedDay = calendar.get( Calendar.DAY_OF_MONTH );
+		int expectedTimeZoneOffset = calendar.getTimeZone().getRawOffset();
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		calendar.setTime( loadedBookmark.getCreationDate() );
+		int actualYear = calendar.get( Calendar.YEAR );
+		int actualMonth = calendar.get( Calendar.MONTH );
+		int actualDay = calendar.get( Calendar.DAY_OF_MONTH );
+		int actualTimeZoneOffset = calendar.getTimeZone().getRawOffset();
+
+		assertEquals( "Year value does not match", expectedYear, actualYear );
+		assertEquals( "Month value does not match", expectedMonth, actualMonth );
+		assertEquals( "Day value does not match", expectedDay, actualDay );
+		assertEquals( "Time zones doe not match", expectedTimeZoneOffset, actualTimeZoneOffset );
+	}
+
+	@Test
+	public void testDatePersistedAsTemporalTypeTimeSupport() throws Exception {
+		Date updateTime = new Date();
+		bookmark.setUpdateTime( updateTime );
+
+		// TemporalType#time only deals with the time component. Date should be set to zero epoch
+		calendar.setTime( updateTime );
+		int expectedHour = calendar.get( Calendar.HOUR_OF_DAY );
+		int expectedMinute = calendar.get( Calendar.MINUTE );
+		int expectedSecond = calendar.get( Calendar.SECOND );
+		int expectedTimeZoneOffset = calendar.getTimeZone().getRawOffset();
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		calendar.setTime( loadedBookmark.getUpdateTime() );
+		int actualHour = calendar.get( Calendar.HOUR_OF_DAY );
+		int actualMinute = calendar.get( Calendar.MINUTE );
+		int actualSecond = calendar.get( Calendar.SECOND );
+		int actualTimeZoneOffset = calendar.getTimeZone().getRawOffset();
+
+		assertEquals( "Hour value does not match", expectedHour, actualHour );
+		assertEquals( "Minute value does not match", expectedMinute, actualMinute );
+		assertEquals( "Second value does not match", expectedSecond, actualSecond );
+		assertEquals( "Time zones doe not match", expectedTimeZoneOffset, actualTimeZoneOffset );
+	}
+
+	@Test
+	public void testDatePersistedAsTemporalTypeTimestampSupport() throws Exception {
+		Date destructionDate = new Date();
+		bookmark.setDestructionDate( destructionDate );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+
+		assertEquals( "Year value does not match", bookmark.getDestructionDate(), loadedBookmark.getDestructionDate() );
+	}
+
+	@Test
+	public void testCalendarTemporalTypeTimestampSupport() throws Exception {
+		bookmark.setDestructionCalendar( Calendar.getInstance() );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+
+		assertEquals(
+				"Calendar value does not match", bookmark.getDestructionCalendar().getTime(),
+				loadedBookmark.getDestructionCalendar().getTime()
+		);
+	}
+
+	@Test
+	public void testCalendarPersistedAsTemporalTypeDateSupport() throws Exception {
+		Calendar creationCalendar = Calendar.getInstance();
+		bookmark.setCreationCalendar( creationCalendar );
+
+		// TemporalType#Date only deals with year/month/day
+		int expectedYear = creationCalendar.get( Calendar.YEAR );
+		int expectedMonth = creationCalendar.get( Calendar.MONTH );
+		int expectedDay = creationCalendar.get( Calendar.DAY_OF_MONTH );
+		int expectedTimeZoneOffset = creationCalendar.getTimeZone().getRawOffset();
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		Calendar loadedCalendar = loadedBookmark.getCreationCalendar();
+		int actualYear = loadedCalendar.get( Calendar.YEAR );
+		int actualMonth = loadedCalendar.get( Calendar.MONTH );
+		int actualDay = loadedCalendar.get( Calendar.DAY_OF_MONTH );
+		int actualTimeZoneOffset = loadedCalendar.getTimeZone().getRawOffset();
+
+		assertEquals( "Year value does not match", expectedYear, actualYear );
+		assertEquals( "Month value does not match", expectedMonth, actualMonth );
+		assertEquals( "Day value does not match", expectedDay, actualDay );
+		assertEquals( "Time zones doe not match", expectedTimeZoneOffset, actualTimeZoneOffset );
+	}
+
+	// Misc
+	@Test
+	public void testURLSupport() throws Exception {
+		bookmark.setUrl( new URL( "http://www.hibernate.org/" ) );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "URL value does not match", bookmark.getUrl(), loadedBookmark.getUrl() );
+	}
+
+	@Test
+	public void testUUIDSupport() throws Exception {
 		UUID serialNumber = UUID.randomUUID();
-		b.setSerialNumber( serialNumber );
-		final Long userId = RANDOM.nextLong();
-		b.setUserId( userId );
-		final Integer stockCount = Integer.valueOf( RANDOM.nextInt() );
-		b.setStockCount( stockCount );
-		final Short urlPort = Short.valueOf( (short) 80 );
-		b.setUrlPort( urlPort );
-		final Float visitRatio = Float.valueOf( (float) 10.4 );
-		b.setVisitRatio( visitRatio );
-		final Character delimiter = Character.valueOf( '/' );
-		b.setDelimiter( delimiter );
+		bookmark.setSerialNumber( serialNumber );
 
-		session.persist( b );
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "UUID value does not match", bookmark.getSerialNumber(), loadedBookmark.getSerialNumber() );
+	}
+
+	@Test
+	public void testBigDecimalSupport() throws Exception {
+		bookmark.setSiteWeight( new BigDecimal( "21.77" ) );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "BigDecimal value does not match", bookmark.getSiteWeight(), loadedBookmark.getSiteWeight() );
+	}
+
+	@Test
+	public void testBigIntegerSupport() throws Exception {
+		bookmark.setVisitCount( new BigInteger( "444" ) );
+
+		Bookmark loadedBookmark = saveAndGet( bookmark );
+		assertEquals( "BigInteger value does not match", bookmark.getVisitCount(), loadedBookmark.getVisitCount() );
+	}
+
+	private Bookmark saveAndGet(Bookmark bookmark) {
+		// persist
+		Transaction transaction = session.beginTransaction();
+		session.persist( bookmark );
 		transaction.commit();
+
+		// making sure the session is cleared
 		session.clear();
 
+		// get
 		transaction = session.beginTransaction();
-		b = (Bookmark) session.get( Bookmark.class, b.getId() );
-
-		//Check directly in the cache the values stored
-		EntityKeyMetadata keyMetadata = new DefaultEntityKeyMetadata( "Bookmark", new String[]{ "id" } );
-		EntityKey key = new EntityKey( keyMetadata, new Object[]{ "42" } );
-		Map<String, Object> entity = extractEntityTuple( sessions, key );
-
-		assertEquals( "Entity visits count incorrect", entity.get( "visits_count" ), "444" );
-		assertEquals( "Entity serial number incorrect", entity.get( "serialNumber" ), serialNumber.toString() );
-		assertEquals( "Entity URL incorrect", entity.get( "url" ), "http://www.hibernate.org/" );
-		assertEquals( "Entity site weight incorrect", entity.get( "site_weight" ), "21.77" );
-
-		session.delete( b );
+		Bookmark retrievedBookmark = (Bookmark) session.get( Bookmark.class, bookmark.getId() );
 		transaction.commit();
-		session.close();
+		return retrievedBookmark;
 	}
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[]{
+		return new Class<?>[] {
 				Bookmark.class
 		};
 	}

@@ -12,20 +12,22 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
-
-import javax.persistence.Basic;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.GenericGenerator;
+
 /**
+ * Test entity containing the data types each data store needs to handle.
+ *
  * @author Nicolas Helleringer
+ * @author Hardy Ferentschik
  */
 @Entity
 public class Bookmark {
@@ -34,31 +36,55 @@ public class Bookmark {
 		HOME, WORK
 	}
 
+	@Id
+	@GeneratedValue(generator = "uuid")
+	@GenericGenerator(name = "uuid", strategy = "uuid2")
 	private String id;
-	private Long userId;
-	private Calendar destructionCalendar;
-	private BookmarkType type;
-	private byte[] blob;
-	private UUID serialNumber;
-	private Integer stockCount;
-	private Date creationDate;
-	private URL url;
+
+	// basic types
 	private String description;
+	private Character delimiter;
+	private Integer stockCount;
+	private Short urlPort;
+	private Long userId;
+	private Float visitRatio;
+	private Double taxPercentage;
+	private Boolean favourite;
+	private Byte displayMask;
+
+	// byte arrays
+	@Lob
+	private byte[] lob;
+
+	// enum type
+	@Enumerated(EnumType.STRING)
+	private Classifier classifier;
+
+	@Enumerated(EnumType.ORDINAL)
+	private Classifier classifierAsOrdinal;
+
+	// Date/time types
+	@Temporal(TemporalType.DATE)
+	private Date creationDate;
+
+	@Temporal(TemporalType.TIME)
+	private Date updateTime;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date destructionDate;
+
+	@Temporal(TemporalType.DATE)
+	private Calendar creationCalendar;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Calendar destructionCalendar;
+
+	// "special" types
+	private UUID serialNumber;
+	private URL url;
 	private BigDecimal siteWeight;
 	private BigInteger visitCount;
-	private Byte displayMask;
-	private Date updateTime;
-	private Date destructionDate;
-	private Calendar creationCalendar;
-	private Boolean favourite;
-	private Double taxPercentage;
-	private Classifier classifier;
-	private Classifier classifierAsOrdinal;
-	private Float visitRatio;
-	private Short urlPort;
-	private Character delimiter;
 
-	@Id
 	public String getId() {
 		return id;
 	}
@@ -67,7 +93,6 @@ public class Bookmark {
 		this.id = id;
 	}
 
-	@Enumerated(EnumType.STRING)
 	public Classifier getClassifier() {
 		return classifier;
 	}
@@ -76,7 +101,6 @@ public class Bookmark {
 		this.classifier = classifier;
 	}
 
-	@Enumerated(EnumType.ORDINAL)
 	public Classifier getClassifierAsOrdinal() {
 		return classifierAsOrdinal;
 	}
@@ -101,7 +125,6 @@ public class Bookmark {
 		this.url = url;
 	}
 
-	@Column(name = "site_weight")
 	public BigDecimal getSiteWeight() {
 		return siteWeight;
 	}
@@ -110,7 +133,6 @@ public class Bookmark {
 		this.siteWeight = siteWeight;
 	}
 
-	@Column(name = "visits_count")
 	public BigInteger getVisitCount() {
 		return visitCount;
 	}
@@ -119,7 +141,6 @@ public class Bookmark {
 		this.visitCount = visitCount;
 	}
 
-	@Column(name = "is_favourite")
 	public Boolean isFavourite() {
 		return favourite;
 	}
@@ -128,7 +149,10 @@ public class Bookmark {
 		this.favourite = favourite;
 	}
 
-	@Column(name = "display_mask")
+	public Boolean getFavourite() {
+		return favourite;
+	}
+
 	public Byte getDisplayMask() {
 		return displayMask;
 	}
@@ -137,8 +161,6 @@ public class Bookmark {
 		this.displayMask = displayMask;
 	}
 
-
-	@Temporal(TemporalType.DATE)
 	public Date getCreationDate() {
 		return creationDate;
 	}
@@ -147,7 +169,6 @@ public class Bookmark {
 		this.creationDate = date;
 	}
 
-	@Temporal(TemporalType.TIME)
 	public Date getUpdateTime() {
 		return updateTime;
 	}
@@ -156,7 +177,6 @@ public class Bookmark {
 		this.updateTime = updateTime;
 	}
 
-	@Temporal(TemporalType.TIMESTAMP)
 	public Date getDestructionDate() {
 		return destructionDate;
 	}
@@ -165,7 +185,6 @@ public class Bookmark {
 		this.destructionDate = destructionDate;
 	}
 
-	@Temporal(TemporalType.DATE)
 	public Calendar getCreationCalendar() {
 		return creationCalendar;
 	}
@@ -180,7 +199,6 @@ public class Bookmark {
 	// public void setUpdateCalendar(Calendar updateCalendar) { this.updateCalendar = updateCalendar; }
 	// private Calendar updateCalendar;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	public Calendar getDestructionCalendar() {
 		return destructionCalendar;
 	}
@@ -189,24 +207,12 @@ public class Bookmark {
 		this.destructionCalendar = destructionCalendar;
 	}
 
-	@Enumerated(EnumType.STRING)
-	public BookmarkType getType() {
-		return type;
+	public byte[] getLob() {
+		return lob;
 	}
 
-	public void setType(BookmarkType type) {
-		this.type = type;
-	}
-
-	@Lob
-	@Basic(fetch = FetchType.EAGER)
-	@Column(name = "DS_BLOB")
-	public byte[] getBlob() {
-		return blob;
-	}
-
-	public void setBlob(byte[] blob) {
-		this.blob = blob;
+	public void setLob(byte[] lob) {
+		this.lob = lob;
 	}
 
 	public UUID getSerialNumber() {
