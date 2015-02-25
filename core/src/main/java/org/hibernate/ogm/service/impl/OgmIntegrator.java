@@ -33,6 +33,8 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.jdbc.impl.OgmConnectionProviderInitiator;
 import org.hibernate.ogm.jpa.impl.OgmPersisterClassResolverInitiator;
 import org.hibernate.ogm.options.navigation.impl.OptionsServiceInitiator;
+import org.hibernate.ogm.service.listener.batch.impl.AutoFlushBatchManagerEventListener;
+import org.hibernate.ogm.service.listener.batch.impl.FlushBatchManagerEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultMergeEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultPersistEventListener;
 import org.hibernate.ogm.service.listener.impl.OgmDefaultPersistOnFlushEventListener;
