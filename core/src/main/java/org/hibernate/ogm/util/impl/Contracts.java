@@ -47,6 +47,21 @@ public final class Contracts {
 		}
 	}
 
+	/**
+	 * Asserts that the given {@code String} is neither {@code null} nor an empty string.
+	 *
+	 * @param parameter the parameter to validate
+	 * @param parameterName the name of the parameter, will be used in the logging message in case the given object is
+	 * {@code null} or empty.
+	 * @throws IllegalArgumentException in case the given parameter is {@code null} or empty
+	 */
+	public static void assertStringParameterNotEmpty(String parameter, String parameterName) {
+		assertParameterNotNull( parameter, parameterName );
+		if ( parameter.length() == 0 ) {
+			throw log.parameterSringMustNotBeEmpty( parameterName );
+		}
+	}
+
 	public static void assertTrue(boolean condition, String message) {
 		if ( !condition ) {
 			throw new AssertionFailure( message );
