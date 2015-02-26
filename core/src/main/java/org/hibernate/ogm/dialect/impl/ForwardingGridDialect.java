@@ -23,6 +23,7 @@ import org.hibernate.ogm.dialect.query.spi.ParameterMetadataBuilder;
 import org.hibernate.ogm.dialect.query.spi.QueryableGridDialect;
 import org.hibernate.ogm.dialect.spi.AssociationContext;
 import org.hibernate.ogm.dialect.spi.AssociationTypeContext;
+import org.hibernate.ogm.dialect.spi.DialectNamingAdaptor;
 import org.hibernate.ogm.dialect.spi.DuplicateInsertPreventionStrategy;
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.dialect.spi.ModelConsumer;
@@ -267,4 +268,10 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
+
+	@Override
+	public DialectNamingAdaptor getNamingAdaptor() {
+		return gridDialect.getNamingAdaptor();
+	}
+
 }
