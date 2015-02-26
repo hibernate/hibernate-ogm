@@ -7,10 +7,10 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>hibernate-ogm-documentation-examples</artifactId>
-  <version>4.1.3-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hibernate OGM Examples</name>
   <modules>
   	<module>gettingstarted</module>
   </modules>
 </project>
+
