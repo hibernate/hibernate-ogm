@@ -62,7 +62,7 @@ public class ObjectIdWithEmbeddableTest extends OgmTestCase {
 
 		// given
 		EntityWithObjectIdAndEmbeddable entity = new EntityWithObjectIdAndEmbeddable();
-		AnotherEmbeddable anotherEmbeddable = new AnotherEmbeddable( "Another nice string ... nested" );
+		AnotherEmbeddable anotherEmbeddable = new AnotherEmbeddable( "Another nice string ... nested", 5 );
 		AnEmbeddable anEmbeddable = new AnEmbeddable( "a very nice string", anotherEmbeddable );
 		entity.setAnEmbeddable( anEmbeddable );
 

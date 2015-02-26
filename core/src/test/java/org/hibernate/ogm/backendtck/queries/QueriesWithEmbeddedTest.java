@@ -67,8 +67,32 @@ public class QueriesWithEmbeddedTest extends OgmTestCase {
 	}
 
 	@Test
+	public void testQueryWithInOperator() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString IN ( 'string 1' )" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	public void testQueryWithBetweenOperator() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedInteger BETWEEN 1 AND 6" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	public void testQueryWithLikeOperator() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString LIKE 'stri%'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
 	public void testQueryWithNestedEmbeddableInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
+		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
+	}
+
+	@Test
+	public void testQueryWithComparisonOnMultipleProperties() throws Exception {
+		List<?> result = session.createQuery( "from WithEmbedded e where e.yetAnotherEmbeddable.embeddedString = 'string 3' AND e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
 	}
 
@@ -92,15 +116,27 @@ public class QueriesWithEmbeddedTest extends OgmTestCase {
 			.onProperty( "anotherEmbeddable" )
 			.onProperty( "embeddedString" )
 			.containsExactly( "string 2" );
+
+		assertThat( list )
+			.onProperty( "yetAnotherEmbeddable" )
+			.onProperty( "embeddedString" )
+			.containsExactly( "string 3" );
 	}
 
 	@BeforeClass
 	public static void insertTestEntities() throws Exception {
+		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1", new AnotherEmbeddable( "string 2", 2 ) ) );
+		with.setYetAnotherEmbeddable( new AnEmbeddable( "string 3", null ) );
+		persist( with );
+	}
+
+	private static void persist(Object... entities) {
 		final Session session = sessions.openSession();
 		Transaction transaction = session.beginTransaction();
 
-		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1", new AnotherEmbeddable( "string 2" ) ) );
-		session.persist( with );
+		for ( Object entity : entities ) {
+			session.persist( entity );
+		}
 
 		transaction.commit();
 		session.close();

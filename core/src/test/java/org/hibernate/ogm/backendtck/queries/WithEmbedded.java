@@ -24,6 +24,10 @@ public class WithEmbedded {
 	@IndexedEmbedded
 	private AnEmbeddable anEmbeddable;
 
+	@Embedded
+	@IndexedEmbedded
+	private AnEmbeddable yetAnotherEmbeddable;
+
 	public WithEmbedded() {
 	}
 
@@ -38,5 +42,13 @@ public class WithEmbedded {
 
 	public AnEmbeddable getAnEmbeddable() {
 		return anEmbeddable;
+	}
+
+	public AnEmbeddable getYetAnotherEmbeddable() {
+		return yetAnotherEmbeddable;
+	}
+
+	public void setYetAnotherEmbeddable(AnEmbeddable yetAnotherEmbeddable) {
+		this.yetAnotherEmbeddable = yetAnotherEmbeddable;
 	}
 }
