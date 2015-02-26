@@ -16,6 +16,7 @@ import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.type.spi.TypeTranslator;
 import org.hibernate.type.AbstractStandardBasicType;
+import org.hibernate.type.ComponentType;
 import org.hibernate.type.Type;
 
 /**
@@ -37,11 +38,12 @@ public class Neo4jPropertyHelper implements PropertyHelper {
 	public Object convertToPropertyType(String entityType, List<String> propertyPath, String value) {
 		//TODO Don't invoke for params
 
-		if ( propertyPath.size() > 1 ) {
-			throw new UnsupportedOperationException( "Queries on embedded/associated entities are not supported yet." );
+		Type propertyType = getPropertyType( entityType, propertyPath );
+
+		if ( propertyType.isEntityType() ) {
+			throw new UnsupportedOperationException( "Queries on associated entities are not supported yet." );
 		}
-		OgmEntityPersister persister = getPersister( entityType );
-		Type propertyType = persister.getPropertyType( propertyPath.get( propertyPath.size() - 1 ) );
+
 		if ( propertyType instanceof AbstractStandardBasicType ) {
 			return ( (AbstractStandardBasicType<?>) propertyType ).fromString( value );
 		}
@@ -50,12 +52,35 @@ public class Neo4jPropertyHelper implements PropertyHelper {
 		}
 	}
 
-	public Object convertToLiteral(String entityType, List<String> propertyPath, Object value) {
-		if ( propertyPath.size() > 1 ) {
-			throw new UnsupportedOperationException( "Queries on embedded/associated entities are not supported yet." );
-		}
+	private Type getPropertyType(String entityType, List<String> propertyPath) {
 		OgmEntityPersister persister = getPersister( entityType );
-		Type propertyType = persister.getPropertyType( propertyPath.get( propertyPath.size() - 1 ) );
+		String propertyName = propertyPath.get( 0 );
+		Type propertyType = persister.getPropertyType( propertyName );
+		if ( propertyPath.size() == 1 ) {
+			return propertyType;
+		}
+		else if ( propertyType.isComponentType() ) {
+			return embeddedPropertyType( propertyPath, (ComponentType) propertyType );
+		}
+		throw new UnsupportedOperationException( "Queries on associated entities are not supported yet." );
+	}
+
+	private Type embeddedPropertyType(List<String> propertyPath, ComponentType propertyType) {
+		Type subType = propertyType;
+		for ( int i = 1; i < propertyPath.size(); i++ ) {
+			ComponentType componentType = (ComponentType) subType;
+			String name = propertyPath.get( i );
+			int propertyIndex = componentType.getPropertyIndex( name );
+			subType = componentType.getSubtypes()[propertyIndex];
+			if ( subType.isAnyType() || subType.isAssociationType() || subType.isEntityType() ) {
+				throw new UnsupportedOperationException( "Queries on associated entities are not supported yet." );
+			}
+		}
+		return subType;
+	}
+
+	public Object convertToLiteral(String entityType, List<String> propertyPath, Object value) {
+		Type propertyType = getPropertyType( entityType, propertyPath );
 		Object gridValue = convertToGridType( value, propertyType );
 		return gridValue;
 	}
@@ -80,9 +105,14 @@ public class Neo4jPropertyHelper implements PropertyHelper {
 	}
 
 	public String getColumnName(OgmEntityPersister persister, String propertyName) {
-		String columnName = propertyName;
-		String[] columnNames = persister.getPropertyColumnNames( columnName );
-		columnName = columnNames[0];
+		String[] columnNames = persister.getPropertyColumnNames( propertyName );
+		String columnName = columnNames[0];
+		return columnName;
+	}
+
+	public String getEmbeddeColumnName(String entityType, String propertyPath) {
+		String columnName = getColumnName( entityType, propertyPath );
+		columnName = columnName.substring( columnName.lastIndexOf( '.' ) + 1, columnName.length() );
 		return columnName;
 	}
 
@@ -95,4 +125,9 @@ public class Neo4jPropertyHelper implements PropertyHelper {
 		return (OgmEntityPersister) sessionFactory.getEntityPersister( targetedType.getName() );
 	}
 
+	public boolean isEmbedddedProperty(String targetTypeName, List<String> namesWithoutAlias) {
+		OgmEntityPersister persister = getPersister( targetTypeName );
+		Type propertyType = persister.getPropertyType( namesWithoutAlias.get( 0 ) );
+		return propertyType.isComponentType() && !propertyType.isAssociationType();
+	}
 }

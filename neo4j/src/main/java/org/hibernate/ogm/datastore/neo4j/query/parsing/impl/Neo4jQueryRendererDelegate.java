@@ -9,6 +9,7 @@ package org.hibernate.ogm.datastore.neo4j.query.parsing.impl;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.as;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.identifier;
 import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.node;
+import static org.hibernate.ogm.datastore.neo4j.query.parsing.cypherdsl.impl.CypherDSL.relationship;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ import org.hibernate.hql.ast.spi.EntityNamesResolver;
 import org.hibernate.hql.ast.spi.SingleEntityQueryBuilder;
 import org.hibernate.hql.ast.spi.SingleEntityQueryRendererDelegate;
 import org.hibernate.hql.ast.spi.predicate.ComparisonPredicate.Type;
+import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodeLabel;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.predicate.impl.Neo4jPredicateFactory;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
@@ -35,6 +37,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	private final Neo4jQueryResolverDelegate resolverDelegate;
 	private final SessionFactoryImplementor sessionFactory;
 	private List<OrderByClause> orderByExpressions;
+	private final List<String> embeddedPropertyProjection;
 
 	public Neo4jQueryRendererDelegate(SessionFactoryImplementor sessionFactory, Neo4jQueryResolverDelegate resolverDelegate, EntityNamesResolver entityNames,
 			Neo4jPropertyHelper propertyHelper, Map<String, Object> namedParameters) {
@@ -42,6 +45,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		this.sessionFactory = sessionFactory;
 		this.resolverDelegate = resolverDelegate;
 		this.propertyHelper = propertyHelper;
+		this.embeddedPropertyProjection = new ArrayList<String>();
 	}
 
 	private static SingleEntityQueryBuilder<StringBuilder> singleEntityQueryBuilder(Neo4jPropertyHelper propertyHelper,
@@ -60,6 +64,7 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		String label = getKeyMetaData( targetType ).getTable();
 		StringBuilder queryBuilder = new StringBuilder();
 		match( queryBuilder, targetAlias, label );
+		optionalMatch( queryBuilder, targetAlias );
 		where( queryBuilder );
 		returns( queryBuilder, targetAlias );
 		orderBy( queryBuilder );
@@ -69,6 +74,33 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	private void match(StringBuilder queryBuilder, String targetAlias, String label) {
 		queryBuilder.append( "MATCH " );
 		node( queryBuilder, targetAlias, label );
+	}
+
+	private void optionalMatch(StringBuilder queryBuilder, String targetAlias) {
+		EmbeddedAliasTree node = resolverDelegate.getAliasTree( targetAlias );
+		if ( node != null ) {
+			for ( EmbeddedAliasTree child : node.getChildren() ) {
+				StringBuilder optionalMatch = new StringBuilder( " OPTIONAL MATCH " );
+				node( optionalMatch, targetAlias );
+				relationship( optionalMatch, child.getName() );
+				node( optionalMatch, child.getAlias(), NodeLabel.EMBEDDED.name() );
+				appendEmbedded( queryBuilder, optionalMatch.toString(), child );
+			}
+		}
+	}
+
+	private void appendEmbedded(StringBuilder queryBuilder, String optionalMatch, EmbeddedAliasTree node) {
+		if ( node.getChildren().isEmpty() ) {
+			queryBuilder.append( optionalMatch );
+		}
+		else {
+			for ( EmbeddedAliasTree child : node.getChildren() ) {
+				StringBuilder builder = new StringBuilder( optionalMatch );
+				relationship( builder, child.getName() );
+				node( builder, child.getAlias(), NodeLabel.EMBEDDED.name() );
+				appendEmbedded( queryBuilder, builder.toString(), child );
+			}
+		}
 	}
 
 	private void where(StringBuilder queryBuilder) {
@@ -100,8 +132,13 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 		else {
 			int counter = 1;
 			for ( String projection : projections ) {
-				identifier( builder, targetAlias, projection );
-				as( builder, projection );
+				if ( embeddedPropertyProjection.contains( projection ) ) {
+					builder.append( projection );
+				}
+				else {
+					identifier( builder, targetAlias, projection );
+					as( builder, projection );
+				}
 				if ( counter++ < projections.size() ) {
 					builder.append( ", " );
 				}
@@ -112,18 +149,41 @@ public class Neo4jQueryRendererDelegate extends SingleEntityQueryRendererDelegat
 	@Override
 	public void setPropertyPath(PropertyPath propertyPath) {
 		if ( status == Status.DEFINING_SELECT ) {
-			// currently only support selecting non-nested properties (either qualified or unqualified)
-			if ( ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
-					|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() ) ) {
+			if ( isSimpleProperty( propertyPath ) ) {
 				projections.add( propertyHelper.getColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() ) );
 			}
-			else if ( propertyPath.getNodes().size() != 1 ) {
-				throw new UnsupportedOperationException( "Selecting nested/associated properties not yet implemented." );
+			else if ( isNestedProperty( propertyPath ) ) {
+				if ( propertyHelper.isEmbedddedProperty( targetTypeName, propertyPath.getNodeNamesWithoutAlias() ) ) {
+					String entityAlias = propertyPath.getNodes().get( 0 ).getName();
+					String embeddedAlias = resolverDelegate.createAliasForEmbedded( entityAlias, propertyPath.getNodeNamesWithoutAlias() );
+					String columnName = propertyHelper.getEmbeddeColumnName( targetTypeName, propertyPath.asStringPathWithoutAlias() );
+					String projection = identifier( embeddedAlias, columnName );
+					projections.add( projection );
+					embeddedPropertyProjection.add( projection );
+				}
+				else {
+					throw new UnsupportedOperationException( "Selecting associated properties not yet implemented." );
+				}
 			}
 		}
 		else {
 			this.propertyPath = propertyPath;
 		}
+	}
+
+	/*
+	 * Property path looks like: [alias, anEmbeddable, anotherEmbeddedable, propertyName]
+	 */
+	private boolean isNestedProperty(PropertyPath propertyPath) {
+		return propertyPath.getNodes().size() > 2 && propertyPath.getNodes().get( 0 ).isAlias();
+	}
+
+	/*
+	 * Property path looks like: [propertyName] or [alias, propertyName]
+	 */
+	private boolean isSimpleProperty(PropertyPath propertyPath) {
+		return ( propertyPath.getNodes().size() == 1 && !propertyPath.getLastNode().isAlias() )
+				|| ( propertyPath.getNodes().size() == 2 && propertyPath.getNodes().get( 0 ).isAlias() );
 	}
 
 	@Override
