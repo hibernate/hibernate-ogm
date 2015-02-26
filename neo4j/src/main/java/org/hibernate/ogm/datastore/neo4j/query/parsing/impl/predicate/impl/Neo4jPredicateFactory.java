@@ -23,6 +23,7 @@ import org.hibernate.hql.ast.spi.predicate.RootPredicate;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jPropertyHelper;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryParameter;
 import org.hibernate.ogm.datastore.neo4j.query.parsing.impl.Neo4jQueryResolverDelegate;
+import org.hibernate.ogm.util.impl.StringHelper;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
@@ -46,9 +47,9 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 
 	@Override
 	public ComparisonPredicate<StringBuilder> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
-		String columnName = columnName( entityType, propertyPath );
-		String alias = alias( entityType );
 		Object neo4jValue = value instanceof Neo4jQueryParameter ? value : propertyHelper.convertToLiteral( entityType, propertyPath, value );
+		String columnName = columnName( entityType, propertyPath );
+		String alias = alias( entityType, propertyPath );
 		return new Neo4jComparisonPredicate( builder, alias, columnName, comparisonType, neo4jValue );
 	}
 
@@ -65,7 +66,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	@Override
 	public InPredicate<StringBuilder> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
 		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType );
+		String alias = alias( entityType, propertyPath );
 		List<Object> gridTypedElements = new ArrayList<Object>( typedElements.size() );
 		for ( Object typedElement : typedElements ) {
 			gridTypedElements.add( propertyHelper.convertToLiteral( entityType, propertyPath, typedElement ) );
@@ -76,7 +77,7 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	@Override
 	public RangePredicate<StringBuilder> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
 		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType );
+		String alias = alias( entityType, propertyPath );
 		Object neo4jLowerValue = lowerValue instanceof Neo4jQueryParameter ? lowerValue : propertyHelper.convertToLiteral( entityType, propertyPath, lowerValue );
 		Object neo4jUpperValue = upperValue instanceof Neo4jQueryParameter ? upperValue : propertyHelper.convertToLiteral( entityType, propertyPath, upperValue );
 		return new Neo4jRangePredicate( builder, alias, propertyName, neo4jLowerValue, neo4jUpperValue );
@@ -90,23 +91,29 @@ public class Neo4jPredicateFactory implements PredicateFactory<StringBuilder> {
 	@Override
 	public LikePredicate<StringBuilder> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
 		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType );
+		String alias = alias( entityType, propertyPath );
 		return new Neo4jLikePredicate( builder, alias, propertyName, patternValue, escapeCharacter );
 	}
 
 	@Override
 	public IsNullPredicate<StringBuilder> getIsNullPredicate(String entityType, List<String> propertyPath) {
 		String propertyName = columnName( entityType, propertyPath );
-		String alias = alias( entityType );
+		String alias = alias( entityType, propertyPath );
 		return new Neo4jIsNullPredicate( builder, alias, propertyName );
 	}
 
-	private String alias(String entityType) {
-		return resolverDelegate.findAliasForType( entityType );
-	}
-
 	private String columnName(String entityType, List<String> propertyPath) {
-		return propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		if ( propertyHelper.isEmbedddedProperty( entityType, propertyPath ) ) {
+			return propertyHelper.getEmbeddeColumnName( entityType, StringHelper.join( propertyPath, "." ) );
+		}
+		return propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
 	}
 
+	private String alias(String entityType, List<String> propertyPath) {
+		String targetEntityAlias = resolverDelegate.findAliasForType( entityType );
+		if ( propertyHelper.isEmbedddedProperty( entityType, propertyPath ) ) {
+			return resolverDelegate.createAliasForEmbedded( targetEntityAlias, propertyPath );
+		}
+		return targetEntityAlias;
+	}
 }

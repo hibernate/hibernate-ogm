@@ -31,6 +31,12 @@ public class CypherDSL {
 		escapeIdentifier( builder, identifier );
 	}
 
+	public static String identifier(String identifier, String propertyName) {
+		StringBuilder builder = new StringBuilder();
+		identifier( builder, identifier, propertyName );
+		return builder.toString();
+	}
+
 	public static StringBuilder identifier(StringBuilder builder, String identifier, String propertyName) {
 		identifier( builder, identifier );
 		if ( propertyName != null ) {
@@ -57,11 +63,21 @@ public class CypherDSL {
 	public static StringBuilder node(StringBuilder builder, String alias, String... labels) {
 		builder.append( "(" );
 		escapeIdentifier( builder, alias );
-		for ( String label : labels ) {
-			builder.append( ":" );
-			escapeIdentifier( builder, label );
+		if ( labels != null ) {
+			for ( String label : labels ) {
+				builder.append( ":" );
+				escapeIdentifier( builder, label );
+			}
 		}
 		builder.append( ")" );
+		return builder;
+	}
+
+
+	public static StringBuilder relationship(StringBuilder builder, String relationshipType) {
+		builder.append( " -[:" );
+		escapeIdentifier( builder, relationshipType );
+		builder.append( "]-> " );
 		return builder;
 	}
 
