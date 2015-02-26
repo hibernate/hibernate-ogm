@@ -85,7 +85,7 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Test
 	public void testSimpleQueryOnUnindexedSuperType() throws Exception {
-		assertQuery( session, 18, session.createQuery(
+		assertQuery( session, 17, session.createQuery(
 				"from java.lang.Object" ) );
 	}
 
@@ -182,24 +182,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	public void testQueryWithPropertyFromAssociatedEntityInWhereClause() throws Exception {
 		List<?> result = session.createQuery( "from Hypothesis h where h.author.name = 'alfred'" ).list();
 		assertThat( result ).onProperty( "id" ).containsOnly( "16" );
-	}
-
-	@Test
-	public void testQueryWithEmbeddableInWhereClause() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.embeddedString = 'string 1'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
-	}
-
-	@Test
-	public void testQueryWithNestedEmbeddableInWhereClause() throws Exception {
-		List<?> result = session.createQuery( "from WithEmbedded e where e.anEmbeddable.anotherEmbeddable.embeddedString = 'string 2'" ).list();
-		assertThat( result ).onProperty( "id" ).containsOnly( 1L );
-	}
-
-	@Test
-	public void testQueryWithEmbeddablePropertyInSelectClause() throws Exception {
-		List<ProjectionResult> result = asProjectionResults( "select e.id, e.anEmbeddable.embeddedString from WithEmbedded e" );
-		assertThat( result ).containsOnly( new ProjectionResult( 1L, "string 1" ) );
 	}
 
 	@Test
@@ -489,22 +471,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 	}
 
 	@Test
-	public void testQueryReturningEmbeddedObject() {
-		List<?> list = session.createQuery( "from WithEmbedded we" ).list();
-
-		assertThat( list )
-			.onProperty( "anEmbeddable" )
-			.onProperty( "embeddedString" )
-			.containsExactly( "string 1" );
-
-		assertThat( list )
-			.onProperty( "anEmbeddable" )
-			.onProperty( "anotherEmbeddable" )
-			.onProperty( "embeddedString" )
-			.containsExactly( "string 2" );
-	}
-
-	@Test
 	@TestForIssue(jiraKey = "OGM-424")
 	public void testAutoFlushIsAppliedDuringQueryExecution() throws Exception {
 		Query query = session.createQuery( "from Hypothesis" );
@@ -696,9 +662,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 		fool.setDate( calendar.getTime() );
 		session.persist( fool );
 
-		WithEmbedded with = new WithEmbedded( 1L, new AnEmbeddable( "string 1", new AnotherEmbeddable( "string 2" ) ) );
-		session.persist( with );
-
 		transaction.commit();
 		session.close();
 	}
@@ -775,6 +738,6 @@ public class SimpleQueriesTest extends OgmTestCase {
 
 	@Override
 	protected Class<?>[] getAnnotatedClasses() {
-		return new Class<?>[] { Hypothesis.class, Helicopter.class, Author.class, Address.class, WithEmbedded.class };
+		return new Class<?>[] { Hypothesis.class, Helicopter.class, Author.class, Address.class };
 	}
 }
