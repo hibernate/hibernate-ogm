@@ -14,16 +14,23 @@ import org.hibernate.search.annotations.Store;
 
 @Embeddable
 public class AnotherEmbeddable {
+
 	// Store.YES for filtering in query
 	// Analyze.NO for projection in query
 	@Field(store = Store.YES, analyze = Analyze.NO)
-	String embeddedString;
+	private String embeddedString;
+
+	// Store.YES for filtering in query
+	// Analyze.NO for projection in query
+	@Field(store = Store.YES, analyze = Analyze.NO)
+	private Integer embeddedInteger;
 
 	public AnotherEmbeddable() {
 	}
 
-	public AnotherEmbeddable(String embeddedString) {
+	public AnotherEmbeddable(String embeddedString, Integer embeddedInteger) {
 		this.embeddedString = embeddedString;
+		this.embeddedInteger = embeddedInteger;
 	}
 
 	public String getEmbeddedString() {
@@ -32,5 +39,13 @@ public class AnotherEmbeddable {
 
 	public void setEmbeddedString(String embeddedString) {
 		this.embeddedString = embeddedString;
+	}
+
+	public Integer getEmbeddedInteger() {
+		return embeddedInteger;
+	}
+
+	public void setEmbeddedInteger(Integer embeddedInteger) {
+		this.embeddedInteger = embeddedInteger;
 	}
 }
