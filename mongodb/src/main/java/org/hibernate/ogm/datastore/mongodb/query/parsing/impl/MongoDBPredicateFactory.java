@@ -53,13 +53,13 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public ComparisonPredicate<DBObject> getComparisonPredicate(String entityType, Type comparisonType, List<String> propertyPath, Object value) {
-		String columnName = propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
+		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBComparisonPredicate( columnName, comparisonType, value );
 	}
 
 	@Override
 	public RangePredicate<DBObject> getRangePredicate(String entityType, List<String> propertyPath, Object lowerValue, Object upperValue) {
-		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBRangePredicate( columnName, lowerValue, upperValue );
 	}
 
@@ -80,19 +80,23 @@ public class MongoDBPredicateFactory implements PredicateFactory<DBObject> {
 
 	@Override
 	public InPredicate<DBObject> getInPredicate(String entityType, List<String> propertyPath, List<Object> typedElements) {
-		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBInPredicate( columnName, typedElements );
 	}
 
 	@Override
 	public IsNullPredicate<DBObject> getIsNullPredicate(String entityType, List<String> propertyPath) {
-		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBIsNullPredicate( columnName );
 	}
 
 	@Override
 	public LikePredicate<DBObject> getLikePredicate(String entityType, List<String> propertyPath, String patternValue, Character escapeCharacter) {
-		String columnName = propertyHelper.getColumnName( entityType, propertyPath.get( propertyPath.size() - 1 ) );
+		String columnName = columnName( entityType, propertyPath );
 		return new MongoDBLikePredicate( columnName, patternValue, escapeCharacter );
+	}
+
+	private String columnName(String entityType, List<String> propertyPath) {
+		return propertyHelper.getColumnName( entityType, StringHelper.join( propertyPath, "." ) );
 	}
 }
