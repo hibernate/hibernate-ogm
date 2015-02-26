@@ -260,4 +260,8 @@ public interface Log extends BasicLogger {
 	@LogMessage(level = INFO)
 	@Message(id = 76, value = "No explicit or implicit defined JTAPlatform. Using NoJtaPlatform")
 	void noJtaPlatformDetected();
+
+	@Message(id = 77, value = "Parameter '%s' must not be an empty string")
+	IllegalArgumentException parameterSringMustNotBeEmpty(String parameterName);
+
 }
