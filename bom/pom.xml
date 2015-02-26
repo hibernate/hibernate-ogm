@@ -43,7 +43,6 @@
         <jbossjtaVersion>4.16.4.Final</jbossjtaVersion>
         <jbossLoggingVersion>3.1.4.GA</jbossLoggingVersion>
         <jbossLoggingProcessorVersion>1.2.0.Final</jbossLoggingProcessorVersion>
-        <jipiJapaVersion>1.0.1.Final</jipiJapaVersion>
         <slf4jVersion>1.7.5</slf4jVersion>
         <resteasyVersion>3.0.9.Final</resteasyVersion>
         <jacksonVersion>2.4.1</jacksonVersion>
@@ -209,11 +208,6 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-infinispan</artifactId>
                 <version>${hibernateVersion}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jipijapa</groupId>
-                <artifactId>jipijapa-hibernate4-3</artifactId>
-                <version>${jipiJapaVersion}</version>
             </dependency>
 
             <!-- Hibernate Search -->
