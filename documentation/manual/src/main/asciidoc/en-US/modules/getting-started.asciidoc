@@ -9,7 +9,7 @@ and retrieving an entity using Hibernate OGM.
 Before we can start, make sure you have the following tools configured:
 
 * Java JDK 7 or above
-* Maven 3.x
+* Maven 3.2.3 or above
 
 Hibernate OGM is published in the JBoss hosted Maven repository.
 Adjust your [filename]+$$~/.m2/settings.xml$$+ file
