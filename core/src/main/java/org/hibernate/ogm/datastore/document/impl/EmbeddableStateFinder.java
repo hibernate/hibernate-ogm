@@ -5,7 +5,7 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 
-package org.hibernate.ogm.datastore.mongodb.dialect.impl;
+package org.hibernate.ogm.datastore.document.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;

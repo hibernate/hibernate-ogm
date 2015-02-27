@@ -5,7 +5,7 @@
  * See the lgpl.txt file in the root directory or <http://www.gnu.org/licenses/lgpl-2.1.html>.
  */
 
-package org.hibernate.ogm.datastore.mongodb.utils;
+package org.hibernate.ogm.test.datastore.document;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +15,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.EmbeddableStateFinder;
+import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.dialect.batch.spi.OperationsQueue;
 import org.hibernate.ogm.dialect.spi.TupleContext;
 import org.hibernate.ogm.model.key.spi.AssociatedEntityKeyMetadata;

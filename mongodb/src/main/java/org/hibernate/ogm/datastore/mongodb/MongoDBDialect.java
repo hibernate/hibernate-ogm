@@ -28,7 +28,7 @@ import org.hibernate.ogm.datastore.document.options.spi.AssociationStorageOption
 import org.hibernate.ogm.datastore.map.impl.MapTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.configuration.impl.MongoDBConfiguration;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.AssociationStorageStrategy;
-import org.hibernate.ogm.datastore.mongodb.dialect.impl.EmbeddableStateFinder;
+import org.hibernate.ogm.datastore.document.impl.EmbeddableStateFinder;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBAssociationSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot;
 import org.hibernate.ogm.datastore.mongodb.dialect.impl.MongoDBTupleSnapshot.SnapshotType;
