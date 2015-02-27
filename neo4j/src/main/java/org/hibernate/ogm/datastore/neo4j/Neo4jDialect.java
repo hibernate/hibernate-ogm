@@ -425,7 +425,7 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	}
 
 	/*
-	 * It will remove remove a property from an embedded node if it exists.
+	 * It will remove a property from an embedded node if it exists.
 	 * After deleting the property, if the node does not have any more properties and relationships (except for an incoming one),
 	 * it will delete the embedded node as well.
 	 */

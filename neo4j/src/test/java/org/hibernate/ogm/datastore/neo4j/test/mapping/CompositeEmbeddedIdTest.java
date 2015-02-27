@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * @author Davide D'Alto
  */
-public class CompositeEmbeddedITest extends Neo4jJpaTestCase {
+public class CompositeEmbeddedIdTest extends Neo4jJpaTestCase {
 
 	final NewsID newsOgmID = new NewsID( "How to use Hibernate OGM ?", "Guillaume" );
 	final List<Label> newsOgmLabels = labels( "OGM", "hibernate" );

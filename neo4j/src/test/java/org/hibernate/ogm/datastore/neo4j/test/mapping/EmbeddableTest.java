@@ -26,7 +26,7 @@ public class EmbeddableTest extends Neo4jJpaTestCase {
 	private Address address;
 
 	@Before
-	public void preapreDB() throws Exception {
+	public void prepareDB() throws Exception {
 		getTransactionManager().begin();
 		final EntityManager em = getFactory().createEntityManager();
 
