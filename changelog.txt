@@ -1,6 +1,27 @@
 Hibernate OGM Changelog
 =======================
 
+4.1.2.Final (27-01-2015)
+-------------------------
+
+** Bug
+    * [OGM-488] - Remove "(does not trigger access to the datastore)" from log messages in the GridDialectLogger class
+    * [OGM-674] - [MongoDB] Remove containing document when setting the last value of an embeddable to null
+    * [OGM-729] - [Neo4j] MissingFormatArgumentException raised when using log level DEBUG
+    * [OGM-733] - [MongoDB] Database name validation fails if lacking rights to obtain database names
+    * [OGM-735] - [CouchDB] Using @Column byte[] field causes java.lang.IllegalArgumentException when reading the object
+    * [OGM-737] - [Neo4J] Using embedded object in JPQL and binding a named parameter causes an exception
+
+** Improvement
+    * [OGM-722] - [Neo4j] Add a summary of the labels created by the dialect in the docs
+    * [OGM-727] - [MongoDB] Fix documentation about built-in types
+    * [OGM-736] - [Neo4J] Clarify in the documentation that executing query in Neo4J requires active transaction
+    * [OGM-739] - Don't raise a warning when given datastore provider by FQN
+
+** Task
+    * [OGM-355] - Describe required PermGen sizing for running the Maven build in contribution section of the ref guide
+
+
 4.1.1.Final (14-01-2015)
 -------------------------
 
