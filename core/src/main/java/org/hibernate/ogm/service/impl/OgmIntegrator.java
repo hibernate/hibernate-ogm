@@ -53,9 +53,8 @@ import org.hibernate.ogm.util.impl.TemporaryWorkaround;
 import org.hibernate.service.spi.SessionFactoryServiceRegistry;
 
 /**
- * Apply required services changes to run Hibernate OGM atop Hibernate Core
- *
- * In particular, set or override OGM specific services.
+ * Apply required services changes to run Hibernate OGM atop Hibernate ORM by setting OGM specific services and overriding
+ * existing ORM services.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  * @author Gunnar Morling
@@ -124,6 +123,7 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		eventListenerRegistry.getEventListenerGroup( EventType.SAVE_UPDATE ).appendListener( new OgmJpaSaveOrUpdateEventListener() );
 	}
 
+	@SuppressWarnings( "unchecked" )
 	private <T extends Integrator> T getIntegrator(Class<T> integratorType, SessionFactoryServiceRegistry serviceRegistry) {
 		Iterable<Integrator> integrators = serviceRegistry.getService( IntegratorService.class ).getIntegrators();
 
