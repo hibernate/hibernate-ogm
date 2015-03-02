@@ -13,7 +13,6 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -24,7 +23,7 @@ import org.hibernate.service.spi.ServiceRegistryImplementor;
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
 @SuppressWarnings("rawtypes")
-public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<TransactionFactory> {
+public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<TransactionFactory> {
 
 	public static final OgmTransactionFactoryInitiator INSTANCE = new OgmTransactionFactoryInitiator();
 
@@ -36,7 +35,7 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 	}
 
 	@Override
-	protected TransactionFactory<?> buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	public TransactionFactory<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
 
 		// Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
@@ -50,11 +49,5 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 
 	private boolean representsJdbcTransactionFactory(final Object strategy) {
 		return JdbcTransactionFactory.class.getName().equals( strategy ) || JdbcTransactionFactory.class.equals( strategy );
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	protected StandardServiceInitiator<TransactionFactory> backupInitiator() {
-		return TransactionFactoryInitiator.INSTANCE;
 	}
 }

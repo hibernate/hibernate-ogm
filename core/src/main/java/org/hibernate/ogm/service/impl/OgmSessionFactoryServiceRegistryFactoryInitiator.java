@@ -9,14 +9,13 @@ package org.hibernate.ogm.service.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
-import org.hibernate.service.internal.SessionFactoryServiceRegistryFactoryInitiator;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 import org.hibernate.service.spi.SessionFactoryServiceRegistryFactory;
 
 /**
  * @author Davide D'Alto &lt;davide@hibernate.org&gt;
  */
-public class OgmSessionFactoryServiceRegistryFactoryInitiator extends OptionalServiceInitiator<SessionFactoryServiceRegistryFactory> {
+public class OgmSessionFactoryServiceRegistryFactoryInitiator implements StandardServiceInitiator<SessionFactoryServiceRegistryFactory> {
 
 	public static final OgmSessionFactoryServiceRegistryFactoryInitiator INSTANCE = new OgmSessionFactoryServiceRegistryFactoryInitiator();
 
@@ -26,12 +25,7 @@ public class OgmSessionFactoryServiceRegistryFactoryInitiator extends OptionalSe
 	}
 
 	@Override
-	protected SessionFactoryServiceRegistryFactory buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	public SessionFactoryServiceRegistryFactory initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		return new OgmSessionFactoryServiceRegistryFactoryImpl( registry );
-	}
-
-	@Override
-	protected StandardServiceInitiator<SessionFactoryServiceRegistryFactory> backupInitiator() {
-		return SessionFactoryServiceRegistryFactoryInitiator.INSTANCE;
 	}
 }

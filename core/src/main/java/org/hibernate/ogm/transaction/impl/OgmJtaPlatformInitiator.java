@@ -19,14 +19,13 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
 import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatform> {
+public class OgmJtaPlatformInitiator implements StandardServiceInitiator<JtaPlatform> {
 	public static final OgmJtaPlatformInitiator INSTANCE = new OgmJtaPlatformInitiator();
 
 	@Override
@@ -35,7 +34,7 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 	}
 
 	@Override
-	protected JtaPlatform buildServiceInstance(Map configurationValues, ServiceRegistryImplementor registry) {
+	public JtaPlatform initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		if ( hasExplicitPlatform( configurationValues ) ) {
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
@@ -57,11 +56,6 @@ public class OgmJtaPlatformInitiator extends OptionalServiceInitiator<JtaPlatfor
 		return configuredProvider != null &&
 				configuredProvider.getClass().getName().equals(
 						AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName() );
-	}
-
-	@Override
-	protected StandardServiceInitiator<JtaPlatform> backupInitiator() {
-		return JtaPlatformInitiator.INSTANCE;
 	}
 
 	private boolean hasExplicitPlatform(Map configVales) {
