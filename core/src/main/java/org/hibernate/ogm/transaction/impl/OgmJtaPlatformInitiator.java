@@ -9,17 +9,13 @@ package org.hibernate.ogm.transaction.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
-import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossStandAloneJtaPlatform;
 import org.hibernate.engine.transaction.jta.platform.internal.JtaPlatformInitiator;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.impl.AvailableDatastoreProvider;
-import org.hibernate.ogm.datastore.impl.DatastoreProviderInitiator;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
-import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
@@ -34,28 +30,22 @@ public class OgmJtaPlatformInitiator implements StandardServiceInitiator<JtaPlat
 	}
 
 	@Override
+	@SuppressWarnings( "unchecked" )
 	public JtaPlatform initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		if ( hasExplicitPlatform( configurationValues ) ) {
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
-		if ( isNeo4j( configurationValues, registry.getService( ClassLoaderService.class ) ) ) {
+
+		if ( isNeo4j( registry.getService( DatastoreProvider.class ) ) ) {
 			configurationValues.put( Environment.JTA_PLATFORM, "org.hibernate.ogm.datastore.neo4j.transaction.impl.Neo4jJtaPlatform" );
 			return JtaPlatformInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 		return new JBossStandAloneJtaPlatform();
 	}
 
-	//TODO OGM-370 get rid of this!!!
-	private boolean isNeo4j(Map configuration, ClassLoaderService classLoaderService) {
-		DatastoreProvider configuredProvider = new ConfigurationPropertyReader( configuration, classLoaderService )
-			.property( OgmProperties.DATASTORE_PROVIDER, DatastoreProvider.class )
-			.instantiate()
-			.withShortNameResolver( new DatastoreProviderInitiator.DatastoreProviderShortNameResolver() )
-			.getValue();
-
-		return configuredProvider != null &&
-				configuredProvider.getClass().getName().equals(
-						AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName() );
+	private boolean isNeo4j(DatastoreProvider datastoreProvider) {
+		return AvailableDatastoreProvider.NEO4J_EMBEDDED.getDatastoreProviderClassName()
+				.equals( datastoreProvider.getClass().getName() );
 	}
 
 	private boolean hasExplicitPlatform(Map configVales) {
