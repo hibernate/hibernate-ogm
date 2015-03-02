@@ -25,4 +25,9 @@ public abstract class BaseDatastoreProvider implements DatastoreProvider {
 	public Class<? extends SchemaDefiner> getSchemaDefinerType() {
 		return BaseSchemaDefiner.class;
 	}
+
+	@Override
+	public boolean allowsTransactionEmulation() {
+		return false;
+	}
 }

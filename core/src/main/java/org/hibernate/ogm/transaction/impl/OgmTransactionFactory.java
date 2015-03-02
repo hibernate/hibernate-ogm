@@ -18,15 +18,31 @@ import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
 
 /**
- * TransactionFactory using JTA transactions exclusively from the TransactionManager
+ * {@code TransactionFactory} allowing to choose between JTA transactions retrieved from the {@code TransactionManager}
+ * or to emulate transactions via {@code EmulatedLocalTransaction}.
+ *
+ * The latter is not a proper {@code Transaction} implementation, but only used to make sure that the appropriate
+ * flush events are triggered at commit time. This transaction can be useful in the case where the configured transaction
+ * type is resource local and the data store does not implement transactions (eg MongoDB).
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JTATransactionManagerTransactionFactory implements TransactionFactory {
+public class OgmTransactionFactory implements TransactionFactory {
+
+	private final boolean emulateTransaction;
+
+	public OgmTransactionFactory(boolean emulateTransaction) {
+		this.emulateTransaction = emulateTransaction;
+	}
 
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction( coordinator );
+		if ( emulateTransaction ) {
+			return new EmulatedLocalTransaction( coordinator );
+		}
+		else {
+			return new JTATransaction( coordinator );
+		}
 	}
 
 	@Override
@@ -36,12 +52,16 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 
 	@Override
 	public boolean compatibleWithJtaSynchronization() {
-		return true;
+		return !emulateTransaction;
 	}
 
 	@Override
 	public boolean isJoinableJtaTransaction(TransactionCoordinator transactionCoordinator,
 			TransactionImplementor transaction) {
+		if ( emulateTransaction ) {
+			return false;
+		}
+
 		try {
 			final JtaPlatform jtaPlatform = transactionCoordinator
 					.getTransactionContext()

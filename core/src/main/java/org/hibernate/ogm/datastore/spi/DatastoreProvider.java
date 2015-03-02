@@ -8,6 +8,7 @@ package org.hibernate.ogm.datastore.spi;
 
 import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.query.spi.QueryParserService;
+import org.hibernate.ogm.util.Experimental;
 import org.hibernate.service.Service;
 
 /**
@@ -46,4 +47,17 @@ public interface DatastoreProvider extends Service {
 	 * @return the schema definer type
 	 */
 	Class<? extends SchemaDefiner> getSchemaDefinerType();
+
+	/**
+	 * Whether this underlying datastore allows emulation of transactions.
+	 *
+	 * When transaction emulation is used, transactions only demarcate a unit of work. The transaction emulation will
+	 * make sure that at commit time all required changes are flushed, but there are otherwise no true transaction,
+	 * in particular rollback, semantics.
+	 *
+	 * @return {@code true} if the underlying datastore allows transaction emulation, {@code false} otherwise.
+	 *
+	 */
+	@Experimental("This contract might evolve into something which differentiates in more detail various transactional capabilities (see OGM-763)")
+	boolean allowsTransactionEmulation();
 }

@@ -102,6 +102,11 @@ public class MongoDBDatastoreProvider extends BaseDatastoreProvider implements S
 	}
 
 	@Override
+	public boolean allowsTransactionEmulation() {
+		return true;
+	}
+
+	@Override
 	public void start() {
 		try {
 			if ( mongo == null ) {

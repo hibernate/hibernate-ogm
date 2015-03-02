@@ -248,4 +248,16 @@ public interface Log extends BasicLogger {
 	@Message(id = 73, value = "Couldn't load the Lucene-based query parser backend. Make sure the dependency "
 			+ "org.hibernate.hql:hibernate-hql-lucene is part of the classpath.")
 	HibernateException cannotLoadLuceneParserBackend(@Cause Exception e);
+
+	@LogMessage(level = INFO)
+	@Message(id = 74, value = "Could not close session; swallowing exception as transaction completed")
+	void unableToCloseSessionButSwallowingError( @Cause Exception e);
+
+	@LogMessage(level = INFO)
+	@Message(id = 75, value = "JBoss Transaction Manager (com.arjuna.ats.jta.TransactionManager) detected on classpath. Using JBossStandAloneJtaPlatform as JTAPlatform implementation")
+	void jbossTransactionManagerDetected();
+
+	@LogMessage(level = INFO)
+	@Message(id = 76, value = "No explicit or implicit defined JTAPlatform. Using NoJtaPlatform")
+	void noJtaPlatformDetected();
 }
