@@ -122,7 +122,7 @@ This parameterized job automates step 5 from this section as well as steps 1 and
    Remember to add a one line summary using the property _summary_.
    If you don't want to display an older release, set the property _displayed_ to false in the corresponding .yml file.
 
-1. Check the getting started guide on the website. It is mostly copied from the reference documentation with a few twists.
+3. Check the getting started guide on the website. It is mostly copied from the reference documentation with a few twists.
    Likewise, check the roadmap, move the new released to the previous section and adjust the roadmap as needed.
    When ready, deploy everything on production.
 
@@ -131,7 +131,9 @@ This parameterized job automates step 5 from this section as well as steps 1 and
    - http://www.hibernate.org/ogm/documentation
    - http://www.hibernate.org/ogm/roadmap
  
-3. Send email to _hibernate-dev_ and _hibernate-announce_.
+4. Update the sticky post in the forum: https://forum.hibernate.org/viewtopic.php?f=31&t=1037570
+
+5. Send email to _hibernate-dev_ and _hibernate-announce_.
    A quick sum up paragraph in the email is necessary before pointing to the blog entry.
 
-4. Twitter
+6. Twitter
