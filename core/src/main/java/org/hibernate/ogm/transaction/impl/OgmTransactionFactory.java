@@ -18,15 +18,26 @@ import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
 
 /**
- * TransactionFactory using JTA transactions exclusively from the TransactionManager
+ * {@code TransactionFactory} using JTA transactions exclusively from the {@code TransactionManager}.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
-public class JTATransactionManagerTransactionFactory implements TransactionFactory {
+public class OgmTransactionFactory implements TransactionFactory {
+
+	private final boolean emulateTransaction;
+
+	public OgmTransactionFactory(boolean emulateTransaction) {
+		this.emulateTransaction = emulateTransaction;
+	}
 
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction( coordinator );
+		if ( emulateTransaction ) {
+			return new EmulatedLocalTransaction( coordinator );
+		}
+		else {
+			return new JTATransaction( coordinator );
+		}
 	}
 
 	@Override
@@ -36,12 +47,16 @@ public class JTATransactionManagerTransactionFactory implements TransactionFacto
 
 	@Override
 	public boolean compatibleWithJtaSynchronization() {
-		return true;
+		return !emulateTransaction;
 	}
 
 	@Override
 	public boolean isJoinableJtaTransaction(TransactionCoordinator transactionCoordinator,
 			TransactionImplementor transaction) {
+		if ( emulateTransaction ) {
+			return false;
+		}
+
 		try {
 			final JtaPlatform jtaPlatform = transactionCoordinator
 					.getTransactionContext()

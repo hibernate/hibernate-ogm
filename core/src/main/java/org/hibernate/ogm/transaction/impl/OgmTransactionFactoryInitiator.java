@@ -13,12 +13,13 @@ import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
+import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
 
 /**
- * Use JTATransactionManagerTransactionFactory as the default value if no TransactionFactory is set
+ * Use {@code JTATransactionManagerTransactionFactory} as the default value if no {@code TransactionFactory} is set.
  *
  * @author Emmanuel Bernard &lt;emmanuel@hibernate.org&gt;
  */
@@ -36,18 +37,33 @@ public class OgmTransactionFactoryInitiator implements StandardServiceInitiator<
 
 	@Override
 	public TransactionFactory<?> initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
-		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
-
-		// Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
-		if ( strategy == null || representsJdbcTransactionFactory( strategy ) ) {
-			log.usingDefaultTransactionFactory();
-			return new JTATransactionManagerTransactionFactory();
+		// if there is a explicitly set transaction factory let ORM instantiate it
+		if ( hasExplicitNonResourceLocalTransactionFactory( configurationValues ) ) {
+			return TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );
 		}
 
-		return TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );
+		// if the strategy is not explicitly set or resource local we decide based on the dialect
+		GridDialect gridDialect = registry.getService( GridDialect.class );
+		boolean emulateTransactions;
+		if ( gridDialect.supportsTransactions() ) {
+			log.usingDefaultTransactionFactory();
+			emulateTransactions = false;
+		}
+		else {
+			// for resource local transaction type where the datastore does not support transactions
+			// it is enough to simulate transaction. In this case transactions are just used to scope a unit
+			// of work and to make sure that the appropriate flush event occurs
+			emulateTransactions = true;
+		}
+		return new OgmTransactionFactory( emulateTransactions );
 	}
 
-	private boolean representsJdbcTransactionFactory(final Object strategy) {
+	private boolean hasExplicitNonResourceLocalTransactionFactory(Map configurationValues) {
+		final Object strategy = configurationValues.get( Environment.TRANSACTION_STRATEGY );
+		return strategy != null && !isResourceLocalTransactionType( strategy );
+	}
+
+	private boolean isResourceLocalTransactionType(Object strategy) {
 		return JdbcTransactionFactory.class.getName().equals( strategy ) || JdbcTransactionFactory.class.equals( strategy );
 	}
 }

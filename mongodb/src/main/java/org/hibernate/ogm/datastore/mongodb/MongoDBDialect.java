@@ -144,6 +144,11 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 	}
 
 	@Override
+	public boolean supportsTransactions() {
+		return false;
+	}
+
+	@Override
 	public Tuple getTuple(EntityKey key, TupleContext tupleContext) {
 		DBObject found = this.getObject( key, tupleContext );
 		if ( found != null ) {
