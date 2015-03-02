@@ -15,6 +15,8 @@ import org.hibernate.ogm.cfg.OgmProperties;
 import org.hibernate.ogm.datastore.spi.DatastoreProvider;
 import org.hibernate.ogm.dialect.batch.spi.BatchableGridDialect;
 import org.hibernate.ogm.dialect.spi.GridDialect;
+import org.hibernate.ogm.exception.impl.GridDialectInvocationCollector;
+import org.hibernate.ogm.exception.impl.InvocationCollectingGridDialect;
 import org.hibernate.ogm.util.configurationreader.impl.DefaultClassPropertyReaderContext;
 import org.hibernate.ogm.util.configurationreader.impl.Instantiator;
 import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
@@ -46,21 +48,25 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 	@Override
 	public GridDialect initiateService(Map configurationValues, ServiceRegistryImplementor registry) {
 		DatastoreProvider datastore = registry.getService( DatastoreProvider.class );
+		GridDialectInvocationCollector invocationCollector = registry.getService( GridDialectInvocationCollector.class );
+
 		ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
 
 		return ( (DefaultClassPropertyReaderContext<GridDialect>) propertyReader.property( OgmProperties.GRID_DIALECT, GridDialect.class )
 				.instantiate() )
 				.withDefaultImplementation( registry.getService( DatastoreProvider.class ).getDefaultDialect() )
-				.withInstantiator( new GridDialectInstantiator( datastore ) )
+				.withInstantiator( new GridDialectInstantiator( datastore, invocationCollector ) )
 				.getValue();
 	}
 
 	private static class GridDialectInstantiator implements Instantiator<GridDialect> {
 
 		private final DatastoreProvider datastore;
+		private final GridDialectInvocationCollector invocationCollector;
 
-		public GridDialectInstantiator(DatastoreProvider datastore) {
+		public GridDialectInstantiator(DatastoreProvider datastore, GridDialectInvocationCollector invocationCollector) {
 			this.datastore = datastore;
+			this.invocationCollector = invocationCollector;
 		}
 
 		@Override
@@ -81,6 +87,10 @@ public class GridDialectInitiator implements StandardServiceInitiator<GridDialec
 					log.gridDialectHasNoProperConstructor( clazz );
 				}
 				GridDialect gridDialect = (GridDialect) injector.newInstance( datastore );
+
+				if ( invocationCollector != null ) {
+					gridDialect = new InvocationCollectingGridDialect( gridDialect, invocationCollector );
+				}
 
 				if ( GridDialects.hasFacet( gridDialect, BatchableGridDialect.class ) ) {
 					BatchableGridDialect batchable = (BatchableGridDialect) gridDialect;
