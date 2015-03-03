@@ -16,6 +16,10 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionImplementor;
+import org.hibernate.ogm.exception.impl.DefaultErrorHandlerManager;
+import org.hibernate.ogm.exception.impl.ErrorHandlerManager;
+import org.hibernate.ogm.exception.impl.NoOpErrorHandlerManager;
+import org.hibernate.ogm.exception.spi.ErrorHandler;
 
 /**
  * TransactionFactory using JTA transactions exclusively from the TransactionManager
@@ -24,9 +28,19 @@ import org.hibernate.engine.transaction.spi.TransactionImplementor;
  */
 public class JTATransactionManagerTransactionFactory implements TransactionFactory {
 
+	private final ErrorHandler errorHandler;
+
+	public JTATransactionManagerTransactionFactory(ErrorHandler errorHandler) {
+		this.errorHandler = errorHandler;
+	}
+
 	@Override
 	public TransactionImplementor createTransaction(TransactionCoordinator coordinator) {
-		return new JTATransactionManagerTransaction( coordinator );
+		return new JTATransactionManagerTransaction( coordinator, getErrorHandlerManager() );
+	}
+
+	private ErrorHandlerManager getErrorHandlerManager() {
+		return errorHandler != null ? new DefaultErrorHandlerManager( errorHandler ) : NoOpErrorHandlerManager.INSTANCE;
 	}
 
 	@Override

@@ -34,6 +34,7 @@
     </modules>
 
     <properties>
+        <javaVersion>1.7</javaVersion>
         <!-- test / build-only dependency versions, managed below -->
         <jbossNamingVersion>7.1.0.Final</jbossNamingVersion>
         <shrinkwrapVersion>1.2.2</shrinkwrapVersion>
@@ -314,7 +315,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${javaVersion} -target ${javaVersion}</compilerArguments>
                             </configuration>
                         </execution>
                         <!-- Run annotation processors on src/test/java sources -->
@@ -328,7 +329,7 @@
                                 <processors>
                                     <processor>org.jboss.logging.processor.apt.LoggingToolsProcessor</processor>
                                 </processors>
-                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source 1.6 -target 1.6</compilerArguments>
+                                <compilerArguments>-AtranslationFilesPath=${project.basedir}/src/main/resources/ -source ${javaVersion} -target ${javaVersion}</compilerArguments>
                             </configuration>
                         </execution>
                     </executions>
@@ -622,7 +623,7 @@
             <id>doc</id>
             <activation>
                 <!-- asciidoctor won't work on JDK9  -->
-                <jdk>[1.7, 1.9)</jdk>
+                <jdk>[${javaVersion}, 1.9)</jdk>
                 <property>
                     <name>skipDocs</name>
                     <value>!true</value>
@@ -637,7 +638,7 @@
             <activation>
             <!-- At the moment we don't generate the documentation with JDK 9.
                  We don't want to release a distribution without documentation -->
-                <jdk>[1.7, 1.9)</jdk>
+                <jdk>[${javaVersion}, 1.9)</jdk>
                 <property>
                     <name>skipDistro</name>
                     <value>!true</value>
@@ -661,7 +662,7 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                   <version>[1.7, 1.9)</version>
+                                   <version>[${javaVersion}, 1.9)</version>
                                 </requireJavaVersion>
                                 <DependencyConvergence />
                             </rules>
