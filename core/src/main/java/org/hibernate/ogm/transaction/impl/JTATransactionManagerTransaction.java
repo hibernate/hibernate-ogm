@@ -21,7 +21,7 @@ import org.hibernate.engine.transaction.spi.JoinStatus;
 import org.hibernate.engine.transaction.spi.LocalStatus;
 import org.hibernate.engine.transaction.spi.TransactionContext;
 import org.hibernate.engine.transaction.spi.TransactionCoordinator;
-import org.hibernate.ogm.exception.impl.ErrorHandlerService;
+import org.hibernate.ogm.exception.impl.ErrorHandlerManager;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 
@@ -35,16 +35,19 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	private static final Log log = LoggerFactory.make();
 
-	private final ErrorHandlerService errorHandler;
+	/**
+	 * The error handler manager, either managing the user-provided {@link ErrorHandler} or a no-op implementation.
+	 */
+	private final ErrorHandlerManager errorHandlerManager;
 	private boolean newTransaction;
 	private final TransactionManager transactionManager;
 	private boolean isDriver;
 	private boolean isInitiator;
 
-	public JTATransactionManagerTransaction(TransactionCoordinator coordinator, ErrorHandlerService errorHandler) {
+	public JTATransactionManagerTransaction(TransactionCoordinator coordinator, ErrorHandlerManager errorHandlerManager) {
 		super( coordinator );
 
-		this.errorHandler = errorHandler;
+		this.errorHandlerManager = errorHandlerManager;
 
 		final JtaPlatform jtaPlatform = coordinator
 					.getTransactionContext()
@@ -103,10 +106,6 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 			transactionContext.beforeTransactionCompletion( this );
 		}
 
-		if ( errorHandler != null ) {
-			errorHandler.onCommit();
-		}
-
 		closeIfRequired();
 	}
 
@@ -150,9 +149,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 
 	@Override
 	protected void beforeTransactionRollBack() {
-		if ( errorHandler != null ) {
-			errorHandler.onRollback();
-		}
+		errorHandlerManager.onRollback();
 	}
 
 	@Override
@@ -240,4 +237,7 @@ public class JTATransactionManagerTransaction extends AbstractTransactionImpl im
 		return JtaStatusHelper.isActive( transactionManager ) ? JoinStatus.JOINED : JoinStatus.NOT_JOINED;
 	}
 
+	public ErrorHandlerManager getErrorHandlerManager() {
+		return errorHandlerManager;
+	}
 }

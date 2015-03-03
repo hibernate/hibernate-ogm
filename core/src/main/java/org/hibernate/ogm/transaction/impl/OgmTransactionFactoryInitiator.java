@@ -9,11 +9,15 @@ package org.hibernate.ogm.transaction.impl;
 import java.util.Map;
 
 import org.hibernate.boot.registry.StandardServiceInitiator;
+import org.hibernate.boot.registry.classloading.spi.ClassLoaderService;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.transaction.internal.TransactionFactoryInitiator;
 import org.hibernate.engine.transaction.internal.jdbc.JdbcTransactionFactory;
 import org.hibernate.engine.transaction.spi.TransactionFactory;
+import org.hibernate.ogm.cfg.OgmProperties;
+import org.hibernate.ogm.exception.spi.ErrorHandler;
 import org.hibernate.ogm.service.impl.OptionalServiceInitiator;
+import org.hibernate.ogm.util.configurationreader.spi.ConfigurationPropertyReader;
 import org.hibernate.ogm.util.impl.Log;
 import org.hibernate.ogm.util.impl.LoggerFactory;
 import org.hibernate.service.spi.ServiceRegistryImplementor;
@@ -42,7 +46,14 @@ public class OgmTransactionFactoryInitiator extends OptionalServiceInitiator<Tra
 		// Hibernate EntityManager sets to JdbcTransactionFactory when RESOURCE_LOCAL is used
 		if ( strategy == null || representsJdbcTransactionFactory( strategy ) ) {
 			log.usingDefaultTransactionFactory();
-			return new JTATransactionManagerTransactionFactory();
+
+			ConfigurationPropertyReader propertyReader = new ConfigurationPropertyReader( configurationValues, registry.getService( ClassLoaderService.class ) );
+
+			ErrorHandler errorHandler = propertyReader.property( OgmProperties.ERROR_HANDLER, ErrorHandler.class )
+					.instantiate()
+					.getValue();
+
+			return new JTATransactionManagerTransactionFactory( errorHandler );
 		}
 
 		return TransactionFactoryInitiator.INSTANCE.initiateService( configurationValues, registry );

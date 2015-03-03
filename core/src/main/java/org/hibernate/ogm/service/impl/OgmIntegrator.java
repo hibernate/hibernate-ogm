@@ -31,8 +31,6 @@ import org.hibernate.ogm.dialect.impl.OptimisticLockingAwareGridDialectInitiator
 import org.hibernate.ogm.dialect.impl.QueryableGridDialectInitiator;
 import org.hibernate.ogm.dialect.impl.SessionFactoryLifecycleAwareDialectInitializer;
 import org.hibernate.ogm.dialect.spi.GridDialect;
-import org.hibernate.ogm.exception.impl.ErrorHandlerService;
-import org.hibernate.ogm.exception.impl.ErrorHandlerServiceInitiator;
 import org.hibernate.ogm.exception.impl.GridDialectInvocationCollector;
 import org.hibernate.ogm.exception.impl.GridDialectInvocationCollectorInitiator;
 import org.hibernate.ogm.exception.impl.InvocationCollectingAutoFlushEventListener;
@@ -115,14 +113,13 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		if ( configuration.getProperties().get( OgmProperties.ERROR_HANDLER ) != null ) {
 			EventListenerRegistry eventListenerRegistry = serviceRegistry.getService( EventListenerRegistry.class );
 
-			ErrorHandlerService errorHandler = serviceRegistry.getService( ErrorHandlerService.class);
 			GridDialectInvocationCollector invocationCollector = serviceRegistry.getService( GridDialectInvocationCollector.class);
 
 			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingAutoFlushEventListenerDuplicationStrategy() );
-			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new InvocationCollectingAutoFlushEventListener( invocationCollector, errorHandler ) );
+			eventListenerRegistry.getEventListenerGroup( EventType.AUTO_FLUSH ).appendListener( new InvocationCollectingAutoFlushEventListener( invocationCollector ) );
 
 			eventListenerRegistry.addDuplicationStrategy( new InvocationCollectingFlushEventListenerDuplicationStrategy() );
-			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new InvocationCollectingFlushEventListener( invocationCollector, errorHandler ) );
+			eventListenerRegistry.getEventListenerGroup( EventType.FLUSH ).appendListener( new InvocationCollectingFlushEventListener( invocationCollector ) );
 		}
 	}
 
@@ -196,7 +193,6 @@ public class OgmIntegrator implements Integrator, ServiceContributingIntegrator 
 		serviceRegistryBuilder.addInitiator( QueryableGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( IdentityColumnAwareGridDialectInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( OptimisticLockingAwareGridDialectInitiator.INSTANCE );
-		serviceRegistryBuilder.addInitiator( ErrorHandlerServiceInitiator.INSTANCE );
 		serviceRegistryBuilder.addInitiator( GridDialectInvocationCollectorInitiator.INSTANCE );
 	}
 

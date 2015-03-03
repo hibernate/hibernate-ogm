@@ -27,6 +27,10 @@ public class Shipment {
 	Shipment() {
 	}
 
+	public Shipment(String id) {
+		this.id = id;
+	}
+
 	public Shipment(String id, String state) {
 		this.id = id;
 		this.state = state;
