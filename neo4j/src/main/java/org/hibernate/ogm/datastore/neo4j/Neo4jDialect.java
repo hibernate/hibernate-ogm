@@ -34,6 +34,7 @@ import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTupleSnapshot;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.Neo4jTypeConverter;
 import org.hibernate.ogm.datastore.neo4j.dialect.impl.NodesTupleIterator;
 import org.hibernate.ogm.datastore.neo4j.impl.Neo4jDatastoreProvider;
+import org.hibernate.ogm.datastore.neo4j.impl.StringLoggerToJBossLoggingAdaptor;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.GraphLogger;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.Log;
 import org.hibernate.ogm.datastore.neo4j.logging.impl.LoggerFactory;
@@ -80,7 +81,6 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.kernel.api.exceptions.schema.UniqueConstraintViolationKernelException;
-import org.neo4j.kernel.impl.util.StringLogger;
 
 /**
  * Abstracts Hibernate OGM from Neo4j.
@@ -113,7 +113,10 @@ public class Neo4jDialect extends BaseGridDialect implements QueryableGridDialec
 	private final ExecutionEngine executionEngine;
 
 	public Neo4jDialect(Neo4jDatastoreProvider provider) {
-		this.executionEngine = new ExecutionEngine( provider.getDataBase(), StringLogger.SYSTEM_DEBUG );
+		this.executionEngine = new ExecutionEngine(
+				provider.getDataBase(),
+				StringLoggerToJBossLoggingAdaptor.JBOSS_LOGGING_STRING_LOGGER
+		);
 		this.neo4jSequenceGenerator = provider.getSequenceGenerator();
 	}
 
