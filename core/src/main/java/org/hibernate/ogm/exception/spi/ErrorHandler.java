@@ -21,8 +21,16 @@ public interface ErrorHandler {
 
 	void onRollback(RollbackContext context);
 
+	/**
+	 * Provides contextual information when notifying an {@link ErrorHandler} about a transaction rollback.
+	 */
 	interface RollbackContext {
 
+		/**
+		 * The operations successfully applied to the datastore before the rollback attempt was made.
+		 *
+		 * @return An unmodifiable list of successfully applied operations.
+		 */
 		List<GridDialectOperation> getAppliedOperations();
 	}
 }
