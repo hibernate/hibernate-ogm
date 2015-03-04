@@ -6,7 +6,7 @@
  */
 package org.hibernate.ogm.exception.impl;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.hibernate.ogm.exception.operation.spi.GridDialectOperation;
@@ -20,8 +20,7 @@ public class DefaultRollbackContext implements ErrorHandler.RollbackContext {
 	private final List<GridDialectOperation> appliedOperations;
 
 	public DefaultRollbackContext(List<GridDialectOperation> appliedOperations) {
-		super();
-		this.appliedOperations = new ArrayList<GridDialectOperation>( appliedOperations );
+		this.appliedOperations = Collections.unmodifiableList( appliedOperations );
 	}
 
 	@Override

@@ -10,7 +10,7 @@ import org.hibernate.ogm.model.key.spi.EntityKey;
 
 /**
  * Represents one execution of
- * {@link GridDialect#createTuple(org.hibernate.ogm.model.key.spi.EntityKey, org.hibernate.ogm.dialect.spi.TupleContext).
+ * {@link GridDialect#createTuple(EntityKey, org.hibernate.ogm.dialect.spi.TupleContext).
  *
  * @author Gunnar Morling
  */

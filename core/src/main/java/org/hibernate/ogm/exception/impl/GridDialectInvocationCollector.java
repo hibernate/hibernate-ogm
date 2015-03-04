@@ -39,7 +39,7 @@ public class GridDialectInvocationCollector implements Service {
 	};
 
 	public void add(GridDialectOperation operation) {
-		LOG.debugf( "Adding grid operation %s", operation );
+		LOG.tracef( "Adding grid operation %s", operation );
 		appliedOperations.get().add( operation );
 	}
 
@@ -48,7 +48,7 @@ public class GridDialectInvocationCollector implements Service {
 	}
 
 	public void finishFlushCycle() {
-		LOG.debug( "Finishing flush cyle" );
+		LOG.trace( "Finishing flush cyle" );
 		appliedOperations.remove();
 	}
 }
