@@ -190,10 +190,12 @@ public abstract class OgmEntityPersister extends AbstractEntityPersister impleme
 			throw log.getIdentityGenerationStrategyNotSupportedException( getEntityName() );
 		}
 
-		tableName = persistentClass.getTable().getQualifiedName(
-				factory.getDialect(),
-				factory.getSettings().getDefaultCatalogName(),
-				factory.getSettings().getDefaultSchemaName()
+		tableName = gridDialect.makeValidTableName(
+				persistentClass.getTable().getQualifiedName(
+						factory.getDialect(),
+						factory.getSettings().getDefaultCatalogName(),
+						factory.getSettings().getDefaultSchemaName()
+				)
 		);
 
 		this.discriminator = discriminator;

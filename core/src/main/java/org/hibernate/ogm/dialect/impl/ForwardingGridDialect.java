@@ -267,4 +267,9 @@ public class ForwardingGridDialect<T extends Serializable> implements GridDialec
 
 		return sb.toString();
 	}
+
+	@Override
+	public String makeValidTableName(String requestedName) {
+		return gridDialect.makeValidTableName( requestedName );
+	}
 }

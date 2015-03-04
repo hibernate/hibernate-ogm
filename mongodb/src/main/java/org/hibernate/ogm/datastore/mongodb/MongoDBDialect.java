@@ -82,6 +82,7 @@ import org.hibernate.ogm.model.spi.TupleOperation;
 import org.hibernate.ogm.type.impl.StringCalendarDateType;
 import org.hibernate.ogm.type.spi.GridType;
 import org.hibernate.ogm.util.impl.CollectionHelper;
+import org.hibernate.ogm.util.impl.StringHelper;
 import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.parboiled.Parboiled;
@@ -1056,5 +1057,22 @@ public class MongoDBDialect extends BaseGridDialect implements QueryableGridDial
 		public boolean isEmpty() {
 			return inserts.isEmpty();
 		}
+	}
+
+	@Override
+	public String makeValidTableName(String qualifiedName) {
+		if ( StringHelper.isEmpty( qualifiedName ) ) {
+			throw new org.hibernate.AssertionFailure( "qualifiedName is not expected to be null at this point" );
+		}
+		else if ( qualifiedName.startsWith( "system." ) ) {
+			throw log.collectionNameHasInvalidSystemPrefix( qualifiedName );
+		}
+		else if ( qualifiedName.contains( "\u0000" ) ) {
+			throw log.collectionNameContainsNULCharacter( qualifiedName );
+		}
+		else if ( qualifiedName.contains( "$" ) ) {
+			throw log.collectionNameContainsDollarCharacter( qualifiedName );
+		}
+		return qualifiedName;
 	}
 }
