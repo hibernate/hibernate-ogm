@@ -6,6 +6,12 @@
  */
 package org.hibernate.ogm.test.integration.jboss.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
 import org.hibernate.ogm.test.integration.jboss.ModuleMemberRegistrationScenario;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistration;
 import org.hibernate.ogm.test.integration.jboss.controller.MemberRegistrationWithJta;
@@ -56,8 +62,34 @@ public class ModuleMemberRegistrationDeployment {
 		}
 
 		public Builder manifestDependencies(String dependencies) {
-			archive.add( manifest( dependencies ), "META-INF/MANIFEST.MF" );
+			archive.add( manifest( injectVariables( dependencies ) ), "META-INF/MANIFEST.MF" );
 			return this;
+		}
+
+		private String injectVariables(String dependencies) {
+			Properties projectCompilationProperties = new Properties();
+			final InputStream resourceAsStream = this.getClass().getClassLoader().getResourceAsStream( "module-versions.properties" );
+			try {
+				projectCompilationProperties.load( resourceAsStream );
+			}
+			catch (IOException e) {
+				throw new RuntimeException( e );
+			}
+			finally {
+				try {
+					resourceAsStream.close();
+				}
+				catch (IOException e) {
+					throw new RuntimeException( e );
+				}
+			}
+			Set<Entry<Object,Object>> entrySet = projectCompilationProperties.entrySet();
+			for ( Entry<Object,Object> entry : entrySet ) {
+				String key = (String) entry.getKey();
+				String value = (String) entry.getValue();
+				dependencies = dependencies.replace( "${" + key + "}", value );
+			}
+			return dependencies;
 		}
 
 		public Builder addClasses(Class<?> clazz, Class<?>...furtherClasses) {
