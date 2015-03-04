@@ -24,7 +24,7 @@ import org.hibernate.ogm.loader.impl.OgmLoadingContext;
 import org.hibernate.ogm.model.spi.Tuple;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
 import org.hibernate.search.backend.AddLuceneWork;
-import org.hibernate.search.backend.impl.batch.BatchBackend;
+import org.hibernate.search.backend.spi.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.bridge.spi.ConversionContext;
 import org.hibernate.search.bridge.util.impl.ContextualExceptionBridgeHelper;

@@ -14,7 +14,7 @@ import org.hibernate.ogm.dialect.spi.GridDialect;
 import org.hibernate.ogm.model.impl.DefaultEntityKeyMetadata;
 import org.hibernate.ogm.model.key.spi.EntityKeyMetadata;
 import org.hibernate.ogm.persister.impl.OgmEntityPersister;
-import org.hibernate.search.backend.impl.batch.BatchBackend;
+import org.hibernate.search.backend.spi.BatchBackend;
 import org.hibernate.search.batchindexing.MassIndexerProgressMonitor;
 import org.hibernate.search.spi.SearchIntegrator;
 import org.hibernate.search.engine.integration.impl.ExtendedSearchIntegrator;
