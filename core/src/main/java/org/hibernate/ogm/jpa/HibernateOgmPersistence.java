@@ -23,6 +23,7 @@ import org.hibernate.jpa.AvailableSettings;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.boot.internal.ParsedPersistenceXmlDescriptor;
 import org.hibernate.jpa.boot.internal.PersistenceXmlParser;
+import org.hibernate.ogm.cfg.impl.HibernateSearchIntegration;
 import org.hibernate.ogm.cfg.impl.InternalProperties;
 import org.hibernate.ogm.cfg.impl.OgmNamingStrategy;
 import org.hibernate.ogm.jpa.impl.DelegatorPersistenceUnitInfo;
@@ -89,10 +90,7 @@ public class HibernateOgmPersistence implements PersistenceProvider {
 		map.put( Configuration.USE_NEW_ID_GENERATOR_MAPPINGS, "true" ); //needed to guarantee the table id generator mapping
 		map.put( InternalProperties.OGM_ON, "true" );
 		map.put( org.hibernate.cfg.AvailableSettings.QUERY_TRANSLATOR, OgmQueryTranslatorFactory.class.getName() );
-		//set the OGM specific mass indexer in case we use Hibernate Search
-		map.put( "hibernate.search.massindexer.factoryclass", "org.hibernate.ogm.massindex.impl.OgmMassIndexerFactory" );
-		//set the Hibernate Search strategy to load query matches by id rather then recurse into another query
-		map.put( "hibernate.search.query.database_retrieval_method", "FIND_BY_ID" );
+		HibernateSearchIntegration.resetProperties( map );
 	}
 
 	@Override
