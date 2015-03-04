@@ -271,9 +271,6 @@ Query lq = b.keyword().onField("description").matching("tomorrow").createQuery()
 
 //Transform the Lucene Query in a JPA Query:
 FullTextQuery ftQuery = ftem.createFullTextQuery(lq, Hypothesis.class);
-//This is a requirement when using Hibernate OGM instead of ORM:
-ftQuery.initializeObjectsWith(ObjectLookupMethod.SKIP,
-      DatabaseRetrievalMethod.FIND_BY_ID);
 
 //List all matching Hypothesis:
 List<Hypothesis> resultList = ftQuery.getResultList();
